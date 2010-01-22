@@ -523,7 +523,7 @@ static void loc_eng_delete_aiding_data (GpsAidingData f)
         loc_eng_data.aiding_data_for_deletion |= f;
     }
 
-    if ((loc_eng_data.engine_status != GPS_STATUS_ENGINE_ON) &&
+    if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
         (loc_eng_data.aiding_data_for_deletion != 0))
     {
         pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
@@ -966,25 +966,25 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
     {
         if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_ON)
         {
+            status.status = GPS_STATUS_ENGINE_ON;
+            loc_eng_data.status_cb (&status);
             status.status = GPS_STATUS_SESSION_BEGIN;
+            loc_eng_data.status_cb (&status);
         }
         else if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_OFF)
         {
             status.status = GPS_STATUS_SESSION_END;
+            loc_eng_data.status_cb (&status);
+            status.status = GPS_STATUS_ENGINE_OFF;
+            loc_eng_data.status_cb (&status);
         }
-    }
-
-    if ((status.status != GPS_STATUS_NONE) && (loc_eng_data.status_cb != NULL))
-    {
-        LOGV ("loc_eng_report_status: issue callback with status %d\n", status.status);
-        loc_eng_data.status_cb (&status);
     }
 
     pthread_mutex_lock (&loc_eng_data.deferred_action_mutex);
     loc_eng_data.engine_status = status.status;
 
     // Wake up the thread for aiding data deletion.
-    if ((loc_eng_data.engine_status != GPS_STATUS_ENGINE_ON) &&
+    if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
         (loc_eng_data.aiding_data_for_deletion != 0))
     {
         pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
@@ -1350,7 +1350,7 @@ static void* loc_eng_process_deferred_action (void* arg)
         pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
 
         // send_delete_aiding_data must be done when GPS engine is off
-        if ((loc_eng_data.engine_status != GPS_STATUS_ENGINE_ON) &&
+        if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
             (loc_eng_data.aiding_data_for_deletion != 0))
         {
             loc_eng_delete_aiding_data_deferred_action ();
