@@ -68,6 +68,10 @@ typedef struct
 
     loc_eng_ioctl_data_s_type      ioctl_data;
 
+    // data from loc_event_cb
+    rpc_loc_event_mask_type         loc_event;
+    rpc_loc_event_payload_u_type    loc_event_payload;
+
     boolean                        data_connection_succeeded;
     boolean                        data_connection_closed;
     boolean                        data_connection_failed;

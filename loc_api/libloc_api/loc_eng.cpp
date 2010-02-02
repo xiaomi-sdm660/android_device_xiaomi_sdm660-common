@@ -92,7 +92,8 @@ static void loc_eng_report_nmea (const rpc_loc_nmea_report_s_type *nmea_report_p
 static void loc_eng_process_conn_request (const rpc_loc_server_request_s_type *server_request_ptr);
 
 static void* loc_eng_process_deferred_action (void* arg);
-static void loc_eng_process_atl_deferred_action (void);
+static void loc_eng_process_atl_deferred_action (boolean data_connection_succeeded,
+        boolean data_connection_closed);
 static void loc_eng_delete_aiding_data_deferred_action (void);
 
 static int set_agps_server();
@@ -200,6 +201,7 @@ static int loc_eng_init(GpsCallbacks* callbacks)
     pthread_cond_init  (&(loc_eng_data.deferred_action_cond) , NULL);
     loc_eng_data.deferred_action_thread_need_exit = FALSE;
  
+    loc_eng_data.loc_event = 0;
     loc_eng_data.data_connection_succeeded = FALSE;
     loc_eng_data.data_connection_closed = FALSE;
     loc_eng_data.data_connection_failed = FALSE;
@@ -668,68 +670,12 @@ static int32 loc_event_cb(
     LOGV ("loc_event_cb, client = %d, loc_event = 0x%x", (int32) client_handle, (uint32) loc_event);
     if (client_handle == loc_eng_data.client_handle)
     {
-        if (loc_event & RPC_LOC_EVENT_PARSED_POSITION_REPORT)
-        {
-            loc_eng_report_position (&(loc_event_payload->rpc_loc_event_payload_u_type_u.parsed_location_report));
-        }
+        pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
+        loc_eng_data.loc_event = loc_event;
+        memcpy(&loc_eng_data.loc_event_payload, loc_event_payload, sizeof(*loc_event_payload));
 
-        if (loc_event & RPC_LOC_EVENT_SATELLITE_REPORT)
-        {
-            loc_eng_report_sv (&(loc_event_payload->rpc_loc_event_payload_u_type_u.gnss_report));
-        }
-
-        if (loc_event & RPC_LOC_EVENT_STATUS_REPORT)
-        {
-            loc_eng_report_status (&(loc_event_payload->rpc_loc_event_payload_u_type_u.status_report));
-        }
-
-        if (loc_event & RPC_LOC_EVENT_NMEA_POSITION_REPORT)
-        {
-            loc_eng_report_nmea (&(loc_event_payload->rpc_loc_event_payload_u_type_u.nmea_report));
-        }
-
-        // Android XTRA interface supports only XTRA download
-        if (loc_event & RPC_LOC_EVENT_ASSISTANCE_DATA_REQUEST)
-        {
-            if (loc_event_payload->rpc_loc_event_payload_u_type_u.assist_data_request.event ==
-                    RPC_LOC_ASSIST_DATA_PREDICTED_ORBITS_REQ)
-            {
-                LOGD ("loc_event_cb: xtra download requst");
-
-                // Call Registered callback
-                if (loc_eng_data.xtra_module_data.download_request_cb != NULL)
-                {
-                    loc_eng_data.xtra_module_data.download_request_cb ();
-                }
-            }
-        }
-
-        if (loc_event & RPC_LOC_EVENT_IOCTL_REPORT)
-        {
-            // Process the received RPC_LOC_EVENT_IOCTL_REPORT
-            (void) loc_eng_ioctl_process_cb (client_handle,
-                                            &(loc_event_payload->rpc_loc_event_payload_u_type_u.ioctl_report));
-        }
-
-        if (loc_event & RPC_LOC_EVENT_LOCATION_SERVER_REQUEST)
-        {
-            loc_eng_process_conn_request (&(loc_event_payload->rpc_loc_event_payload_u_type_u.loc_server_request));
-        }
-
-        loc_eng_ni_callback(loc_event, loc_event_payload);
-
-#if DEBUG_MOCK_NI == 1
-        // DEBUG only
-        if ((loc_event & RPC_LOC_EVENT_STATUS_REPORT) &&
-            loc_event_payload->rpc_loc_event_payload_u_type_u.status_report.
-            payload.rpc_loc_status_event_payload_u_type_u.engine_state
-            == RPC_LOC_ENGINE_STATE_OFF)
-        {
-            // Mock an NI request
-            pthread_t th;
-            pthread_create (&th, NULL, mock_ni, (void*) client_handle);
-        }
-#endif /* DEBUG_MOCK_NI == 1 */
+        pthread_cond_signal  (&loc_eng_data.deferred_action_cond);
+        pthread_mutex_unlock (&loc_eng_data.deferred_action_mutex);
     }
     else
     {
@@ -966,15 +912,13 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
     {
         if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_ON)
         {
-            status.status = GPS_STATUS_ENGINE_ON;
-            loc_eng_data.status_cb (&status);
+            // GPS_STATUS_SESSION_BEGIN implies GPS_STATUS_ENGINE_ON
             status.status = GPS_STATUS_SESSION_BEGIN;
             loc_eng_data.status_cb (&status);
         }
         else if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_OFF)
         {
-            status.status = GPS_STATUS_SESSION_END;
-            loc_eng_data.status_cb (&status);
+            // GPS_STATUS_SESSION_END implies GPS_STATUS_ENGINE_OFF
             status.status = GPS_STATUS_ENGINE_OFF;
             loc_eng_data.status_cb (&status);
         }
@@ -1252,7 +1196,8 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-static void loc_eng_process_atl_deferred_action (void)
+static void loc_eng_process_atl_deferred_action (boolean data_connection_succeeded,
+        boolean data_connection_closed)
 {
     rpc_loc_server_open_status_s_type  *conn_open_status_ptr;
     rpc_loc_server_close_status_s_type *conn_close_status_ptr;
@@ -1264,20 +1209,19 @@ static void loc_eng_process_atl_deferred_action (void)
 
     memset (&ioctl_data, 0, sizeof (rpc_loc_ioctl_data_u_type));
  
-    if (loc_eng_data.data_connection_closed)
+    if (data_connection_closed)
     {
         ioctl_data.disc = RPC_LOC_IOCTL_INFORM_SERVER_CLOSE_STATUS;
         conn_close_status_ptr = &(ioctl_data.rpc_loc_ioctl_data_u_type_u.conn_close_status);
         conn_close_status_ptr->conn_handle = loc_eng_data.conn_handle;
         conn_close_status_ptr->close_status = RPC_LOC_SERVER_CLOSE_SUCCESS;
-        loc_eng_data.data_connection_closed = FALSE;
     }
     else
     {
         ioctl_data.disc = RPC_LOC_IOCTL_INFORM_SERVER_OPEN_STATUS;
         conn_open_status_ptr = &ioctl_data.rpc_loc_ioctl_data_u_type_u.conn_open_status;
         conn_open_status_ptr->conn_handle = loc_eng_data.conn_handle;
-        if (loc_eng_data.data_connection_succeeded)
+        if (data_connection_succeeded)
         {
             conn_open_status_ptr->open_status = RPC_LOC_SERVER_OPEN_SUCCESS;
             // Both buffer are of the same maximum size, and the source is null terminated
@@ -1286,12 +1230,10 @@ static void loc_eng_process_atl_deferred_action (void)
             // Delay this so that PDSM ATL module will behave properly
             sleep (1);
             LOGD("loc_eng_ioctl for ATL with apn_name = %s\n", conn_open_status_ptr->apn_name);
-            loc_eng_data.data_connection_succeeded = FALSE;
         }
         else // data_connection_failed
         {
             conn_open_status_ptr->open_status = RPC_LOC_SERVER_OPEN_FAIL;
-            loc_eng_data.data_connection_failed = FALSE;
         }
         // Delay this so that PDSM ATL module will behave properly
         sleep (1);
@@ -1304,6 +1246,89 @@ static void loc_eng_process_atl_deferred_action (void)
                              NULL);
 
     LOGD("loc_eng_ioctl for ATL returned %d (1 for success)\n", ret_val);
+}
+
+/*===========================================================================
+FUNCTION    loc_eng_process_loc_event
+
+DESCRIPTION
+   This is used to process events received from the location engine.
+
+DEPENDENCIES
+   None
+
+RETURN VALUE
+   N/A
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_eng_process_loc_event (rpc_loc_event_mask_type loc_event,
+        rpc_loc_event_payload_u_type* loc_event_payload)
+{
+    if (loc_event & RPC_LOC_EVENT_PARSED_POSITION_REPORT)
+    {
+        loc_eng_report_position (&(loc_event_payload->rpc_loc_event_payload_u_type_u.parsed_location_report));
+    }
+
+    if (loc_event & RPC_LOC_EVENT_SATELLITE_REPORT)
+    {
+        loc_eng_report_sv (&(loc_event_payload->rpc_loc_event_payload_u_type_u.gnss_report));
+    }
+
+    if (loc_event & RPC_LOC_EVENT_STATUS_REPORT)
+    {
+        loc_eng_report_status (&(loc_event_payload->rpc_loc_event_payload_u_type_u.status_report));
+    }
+
+    if (loc_event & RPC_LOC_EVENT_NMEA_POSITION_REPORT)
+    {
+        loc_eng_report_nmea (&(loc_event_payload->rpc_loc_event_payload_u_type_u.nmea_report));
+    }
+
+    // Android XTRA interface supports only XTRA download
+    if (loc_event & RPC_LOC_EVENT_ASSISTANCE_DATA_REQUEST)
+    {
+        if (loc_event_payload->rpc_loc_event_payload_u_type_u.assist_data_request.event ==
+                RPC_LOC_ASSIST_DATA_PREDICTED_ORBITS_REQ)
+        {
+            LOGD ("loc_event_cb: xtra download requst");
+
+            // Call Registered callback
+            if (loc_eng_data.xtra_module_data.download_request_cb != NULL)
+            {
+                loc_eng_data.xtra_module_data.download_request_cb ();
+            }
+        }
+    }
+
+    if (loc_event & RPC_LOC_EVENT_IOCTL_REPORT)
+    {
+        // Process the received RPC_LOC_EVENT_IOCTL_REPORT
+        (void) loc_eng_ioctl_process_cb (loc_eng_data.client_handle,
+                                &(loc_event_payload->rpc_loc_event_payload_u_type_u.ioctl_report));
+    }
+
+    if (loc_event & RPC_LOC_EVENT_LOCATION_SERVER_REQUEST)
+    {
+        loc_eng_process_conn_request (&(loc_event_payload->rpc_loc_event_payload_u_type_u.loc_server_request));
+    }
+
+    loc_eng_ni_callback(loc_event, loc_event_payload);
+
+#if DEBUG_MOCK_NI == 1
+    // DEBUG only
+    if ((loc_event & RPC_LOC_EVENT_STATUS_REPORT) &&
+        loc_event_payload->rpc_loc_event_payload_u_type_u.status_report.
+        payload.rpc_loc_status_event_payload_u_type_u.engine_state
+        == RPC_LOC_ENGINE_STATE_OFF)
+    {
+        // Mock an NI request
+        pthread_t th;
+        pthread_create (&th, NULL, mock_ni, (void*) client_handle);
+    }
+#endif /* DEBUG_MOCK_NI == 1 */
 }
 
 /*===========================================================================
@@ -1325,6 +1350,9 @@ SIDE EFFECTS
 ===========================================================================*/
 static void* loc_eng_process_deferred_action (void* arg)
 {
+    AGpsStatus      status;
+    status.type = AGPS_TYPE_SUPL;
+
     LOGD("loc_eng_process_deferred_action started\n");
 
      // make sure we do not run in background scheduling group
@@ -1335,44 +1363,66 @@ static void* loc_eng_process_deferred_action (void* arg)
 
     while (loc_eng_data.deferred_action_thread_need_exit == FALSE)
     {
+        GpsAidingData   aiding_data_for_deletion;
+        GpsStatusValue  engine_status;
+        boolean         data_connection_succeeded;
+        boolean         data_connection_closed;
+        boolean         data_connection_failed;
+
+        rpc_loc_event_mask_type         loc_event;
+        rpc_loc_event_payload_u_type    loc_event_payload;
+
         // Wait until we are signalled to do a deferred action, or exit
         pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
         pthread_cond_wait(&loc_eng_data.deferred_action_cond,
                             &loc_eng_data.deferred_action_mutex);
 
-        pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
-
         if (loc_eng_data.deferred_action_thread_need_exit == TRUE)
         {
+            pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
             break;
         }
 
-        pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
+        // copy anything we need before releasing the mutex
+        loc_event = loc_eng_data.loc_event;
+        if (loc_event != 0) {
+            memcpy(&loc_event_payload, &loc_eng_data.loc_event_payload, sizeof(loc_event_payload));
+            loc_eng_data.loc_event = 0;
+        }
+
+        engine_status = loc_eng_data.agps_status;
+        aiding_data_for_deletion = loc_eng_data.aiding_data_for_deletion;
+        status.status = loc_eng_data.agps_status;
+        loc_eng_data.agps_status = 0;
+        data_connection_succeeded = loc_eng_data.data_connection_succeeded;
+        data_connection_closed = loc_eng_data.data_connection_closed;
+        data_connection_failed = loc_eng_data.data_connection_failed;
+        loc_eng_data.data_connection_closed = FALSE;
+        loc_eng_data.data_connection_succeeded = FALSE;
+        loc_eng_data.data_connection_failed = FALSE;
+
+        // perform all actions after releasing the mutex to avoid blocking RPCs from the ARM9
+        pthread_mutex_unlock(&(loc_eng_data.deferred_action_mutex));
+
+        if (loc_event != 0) {
+            loc_eng_process_loc_event(loc_event, &loc_event_payload);
+        }
 
         // send_delete_aiding_data must be done when GPS engine is off
-        if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
-            (loc_eng_data.aiding_data_for_deletion != 0))
+        if ((engine_status != GPS_STATUS_SESSION_BEGIN) && (aiding_data_for_deletion != 0))
         {
             loc_eng_delete_aiding_data_deferred_action ();
-            loc_eng_data.aiding_data_for_deletion = 0;
         }
 
-        if (loc_eng_data.data_connection_succeeded ||
-            loc_eng_data.data_connection_closed ||
-            loc_eng_data.data_connection_failed)
+        if (data_connection_succeeded || data_connection_closed || data_connection_failed)
         {
-            loc_eng_process_atl_deferred_action ();
+            loc_eng_process_atl_deferred_action(data_connection_succeeded, data_connection_closed);
         }
 
-        if (loc_eng_data.agps_status != 0 && loc_eng_data.agps_status_cb) {
-            AGpsStatus status;
-            status.type = AGPS_TYPE_SUPL;
-            status.status = loc_eng_data.agps_status;
+        if (status.status != 0 && loc_eng_data.agps_status_cb) {
             loc_eng_data.agps_status_cb(&status);
-            loc_eng_data.agps_status = 0;
         }
 
-        pthread_mutex_unlock(&(loc_eng_data.deferred_action_mutex));
     }
 
     LOGD("loc_eng_process_deferred_action thread exiting\n");
