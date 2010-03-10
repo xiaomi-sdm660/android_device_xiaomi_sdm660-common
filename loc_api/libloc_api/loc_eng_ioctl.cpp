@@ -44,7 +44,7 @@ $Author: $
 #include <rpc/rpc.h>
 #include <loc_api_rpc_glue.h>
 
-#include <hardware_legacy/gps.h>
+#include <hardware/gps.h>
 
 #include <loc_eng.h>
 

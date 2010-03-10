@@ -46,7 +46,6 @@ $Author: $
 #include "loc_api_rpc_glue.h"
 #include "loc_apicb_appinit.h"
 
-#include <hardware_legacy/gps.h>
 #include <cutils/properties.h>
 #include <cutils/sched_policy.h>
 #include <utils/SystemClock.h>
@@ -101,6 +100,7 @@ static int set_agps_server();
 // Defines the GpsInterface in gps.h
 static const GpsInterface sLocEngInterface =
 {
+    sizeof(GpsInterface),
     loc_eng_init,
     loc_eng_start,
     loc_eng_stop,
@@ -114,6 +114,7 @@ static const GpsInterface sLocEngInterface =
 
 static const AGpsInterface sLocEngAGpsInterface =
 {
+    sizeof(AGpsInterface),
     loc_eng_agps_init,
     loc_eng_agps_data_conn_open,
     loc_eng_agps_data_conn_closed,
@@ -708,7 +709,8 @@ static void loc_eng_report_position (const rpc_loc_parsed_position_s_type *locat
     LOGV ("loc_eng_report_position: location report, valid mask = 0x%x, sess status = %d\n",
          (uint32) location_report_ptr->valid_mask, location_report_ptr->session_status);
 
-    memset (&location, 0, sizeof (GpsLocation));
+    memset (&location, 0, sizeof(location));
+    location.size = sizeof(location);
     if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SESSION_STATUS)
     {
         // Not a position report, return
@@ -818,6 +820,7 @@ static void loc_eng_report_sv (const rpc_loc_gnss_info_s_type *gnss_report_ptr)
             {
                 if (sv_info_ptr->system == RPC_LOC_SV_SYSTEM_GPS)
                 {
+                    SvStatus.sv_list[SvStatus.num_svs].size = sizeof(GpsSvStatus);
                     SvStatus.sv_list[SvStatus.num_svs].prn = sv_info_ptr->prn;
 
                     // We only have the data field to report gps eph and alm mask
@@ -906,7 +909,8 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
 
     LOGV ("loc_eng_report_status: event = %d\n", status_report_ptr->event);
 
-    memset (&status, 0, sizeof (GpsStatus));
+    memset (&status, 0, sizeof(status));
+    status.size = sizeof(status);
     status.status = GPS_STATUS_NONE;
     if (status_report_ptr->event == RPC_LOC_STATUS_EVENT_ENGINE_STATE)
     {
@@ -1351,6 +1355,7 @@ SIDE EFFECTS
 static void* loc_eng_process_deferred_action (void* arg)
 {
     AGpsStatus      status;
+    status.size = sizeof(status);
     status.type = AGPS_TYPE_SUPL;
 
     LOGD("loc_eng_process_deferred_action started\n");
@@ -1427,4 +1432,10 @@ static void* loc_eng_process_deferred_action (void* arg)
 
     LOGD("loc_eng_process_deferred_action thread exiting\n");
     return NULL;
+}
+
+// for gps.c
+extern "C" const GpsInterface* get_gps_interface()
+{
+    return &sLocEngInterface;
 }

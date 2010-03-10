@@ -47,7 +47,7 @@ typedef unsigned char boolean;
 
 #include <loc_eng_ioctl.h>
 #include <loc_eng_xtra.h>
-#include <hardware_legacy/gps_ni.h>
+#include <hardware/gps.h>
 
 #define LOC_IOCTL_DEFAULT_TIMEOUT 1000 // 1000 milli-seconds
 

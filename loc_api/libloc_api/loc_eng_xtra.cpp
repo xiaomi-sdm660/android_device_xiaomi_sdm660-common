@@ -43,8 +43,6 @@ $Author: $
 #include <rpc/rpc.h>
 #include <loc_api_rpc_glue.h>
 
-#include <hardware_legacy/gps.h>
-
 #include <loc_eng.h>
 
 #define LOG_TAG "lib_locapi"
@@ -62,6 +60,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length);
 
 const GpsXtraInterface sLocEngXTRAInterface =
 {
+    sizeof(GpsXtraInterface),
     qct_loc_eng_xtra_init,
     qct_loc_eng_inject_xtra_data,
 };

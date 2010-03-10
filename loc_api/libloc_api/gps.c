@@ -1,9 +1,9 @@
 /******************************************************************************
-  @file:  loc_eng.h
+  @file:  gps.c
   @brief:
 
   DESCRIPTION
-    This file defines the data structure used by this XTRA module.
+    This file defines the implemenation for GPS hardware abstraction layer.
 
   INITIALIZATION AND SEQUENCING REQUIREMENTS
 
@@ -25,25 +25,42 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ******************************************************************************/
 
-/*=====================================================================
-$Header: $
-$DateTime: $
-$Author: $
-======================================================================*/
-
-#ifndef LOC_ENG_XTRA_H
-#define LOC_ENG_XTRA_H
-
 #include <hardware/gps.h>
 
-extern const GpsXtraInterface sLocEngXTRAInterface;
+#include <stdlib.h>
 
-// Module data
-typedef struct
+extern const GpsInterface* get_gps_interface();
+
+const GpsInterface* gps__get_gps_interface(struct gps_device_t* dev)
 {
-    // loc_eng_ioctl_cb_data_s_type   ioctl_cb_data;
-    gps_xtra_download_request      download_request_cb;
+    return get_gps_interface();
+}
 
-} loc_eng_xtra_data_s_type;
+static int open_gps(const struct hw_module_t* module, char const* name,
+        struct hw_device_t** device)
+{
+    struct gps_device_t *dev = malloc(sizeof(struct gps_device_t));
+    memset(dev, 0, sizeof(*dev));
 
-#endif // LOC_ENG_XTRA_H
+    dev->common.tag = HARDWARE_DEVICE_TAG;
+    dev->common.version = 0;
+    dev->common.module = (struct hw_module_t*)module;
+    dev->get_gps_interface = gps__get_gps_interface;
+
+    *device = (struct hw_device_t*)dev;
+    return 0;
+}
+
+static struct hw_module_methods_t gps_module_methods = {
+    .open = open_gps
+};
+
+const struct hw_module_t HAL_MODULE_INFO_SYM = {
+    .tag = HARDWARE_MODULE_TAG,
+    .version_major = 1,
+    .version_minor = 0,
+    .id = GPS_HARDWARE_MODULE_ID,
+    .name = "loc_api GPS Module",
+    .author = "Qualcomm USA, Inc.",
+    .methods = &gps_module_methods,
+};

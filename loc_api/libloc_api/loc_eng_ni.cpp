@@ -37,8 +37,6 @@ $Id:
 #include <unistd.h>
 #include <time.h>
 
-#include <hardware_legacy/gps.h>
-
 #include <rpc/rpc.h>
 #include <loc_api_rpc_glue.h>
 #include <loc_eng.h>
@@ -59,6 +57,7 @@ $Id:
 
 const GpsNiInterface sLocEngNiInterface =
 {
+    sizeof(GpsNiInterface),
     loc_eng_ni_init,
     loc_eng_ni_respond,
 };
@@ -251,6 +250,7 @@ RETURN VALUE
 static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_type *ni_req)
 {
     GpsNiNotification notif;
+    notif.size = sizeof(notif);
     strlcpy(notif.text, "[text]", sizeof notif.text);    // defaults
     strlcpy(notif.requestor_id, "[requestor id]", sizeof notif.requestor_id);
 
