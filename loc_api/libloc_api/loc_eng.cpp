@@ -275,8 +275,8 @@ static void loc_eng_cleanup()
     pthread_mutex_destroy (&loc_eng_data.ioctl_data.cb_data_mutex);
     pthread_cond_destroy  (&loc_eng_data.ioctl_data.cb_arrived_cond);
 
-    // RPC glue code
-    loc_apicb_app_deinit();
+// Do not call this as it can result in the ARM9 crashing if it sends events while we are disabled
+//    loc_apicb_app_deinit();
 }
 
 
