@@ -513,18 +513,9 @@ static void loc_eng_delete_aiding_data (GpsAidingData f)
 {
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
 
-    // If this is DELETE ALL
-    if (f == GPS_DELETE_ALL)
-    {
+    // Currently, LOC API only support deletion of all aiding data,
+    if (f)
         loc_eng_data.aiding_data_for_deletion = GPS_DELETE_ALL;
-    }
-    else
-    {
-        // Currently, LOC API only support deletion of all aiding data,
-        // since the Android defined aiding data mask matches with modem,
-        // so just pass them down without any translation
-        loc_eng_data.aiding_data_for_deletion |= f;
-    }
 
     if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
         (loc_eng_data.aiding_data_for_deletion != 0))
@@ -1162,16 +1153,10 @@ static void loc_eng_delete_aiding_data_deferred_action (void)
     boolean                             ret_val;
 
     ioctl_data.disc = RPC_LOC_IOCTL_DELETE_ASSIST_DATA;
-
     assist_data_ptr = &(ioctl_data.rpc_loc_ioctl_data_u_type_u.assist_data_delete);
-    if (loc_eng_data.aiding_data_for_deletion == GPS_DELETE_ALL)
-    {
-        assist_data_ptr->type = RPC_LOC_ASSIST_DATA_ALL;
-    }
-    else
-    {
-        assist_data_ptr->type = loc_eng_data.aiding_data_for_deletion;
-    }
+    assist_data_ptr->type = loc_eng_data.aiding_data_for_deletion;
+    loc_eng_data.aiding_data_for_deletion = 0;
+
     memset (&(assist_data_ptr->reserved), 0, sizeof (assist_data_ptr->reserved));
 
     ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
