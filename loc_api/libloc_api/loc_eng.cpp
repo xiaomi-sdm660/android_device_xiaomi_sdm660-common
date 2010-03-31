@@ -1360,10 +1360,11 @@ static void* loc_eng_process_deferred_action (void* arg)
 
     LOGD("loc_eng_process_deferred_action started\n");
 
-     // make sure we do not run in background scheduling group
-     set_sched_policy(gettid(), SP_FOREGROUND);
+    // make sure we do not run in background scheduling group
+    set_sched_policy(gettid(), SP_FOREGROUND);
 
-    // disable GPS lock
+    // disable the GPS lock
+    LOGD("Setting GPS privacy lock to RPC_LOC_LOCK_NONE\n");
     loc_eng_set_gps_lock(RPC_LOC_LOCK_NONE);
 
     while (loc_eng_data.deferred_action_thread_need_exit == FALSE)
@@ -1429,6 +1430,10 @@ static void* loc_eng_process_deferred_action (void* arg)
         }
 
     }
+
+    // reenable the GPS lock
+    LOGD("Setting GPS privacy lock to RPC_LOC_LOCK_ALL\n");
+    loc_eng_set_gps_lock(RPC_LOC_LOCK_ALL);
 
     LOGD("loc_eng_process_deferred_action thread exiting\n");
     return NULL;
