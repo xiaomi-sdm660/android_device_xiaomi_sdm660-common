@@ -91,8 +91,7 @@ static void loc_eng_report_nmea (const rpc_loc_nmea_report_s_type *nmea_report_p
 static void loc_eng_process_conn_request (const rpc_loc_server_request_s_type *server_request_ptr);
 
 static void* loc_eng_process_deferred_action (void* arg);
-static void loc_eng_process_atl_deferred_action (boolean data_connection_succeeded,
-        boolean data_connection_closed);
+static void loc_eng_process_atl_deferred_action (int flags);
 static void loc_eng_delete_aiding_data_deferred_action (void);
 
 static int set_agps_server();
@@ -182,10 +181,12 @@ static int loc_eng_init(GpsCallbacks* callbacks)
     memset (&loc_eng_data, 0, sizeof (loc_eng_data_s_type));
 
     // LOC ENG module data initialization
-    loc_eng_data.location_cb  = callbacks->location_cb;
-    loc_eng_data.sv_status_cb = callbacks->sv_status_cb;
-    loc_eng_data.status_cb    = callbacks->status_cb;
-    loc_eng_data.nmea_cb    = callbacks->nmea_cb;
+    loc_eng_data.location_cb    = callbacks->location_cb;
+    loc_eng_data.sv_status_cb   = callbacks->sv_status_cb;
+    loc_eng_data.status_cb      = callbacks->status_cb;
+    loc_eng_data.nmea_cb        = callbacks->nmea_cb;
+    loc_eng_data.acquire_wakelock_cb = callbacks->acquire_wakelock_cb;
+    loc_eng_data.release_wakelock_cb = callbacks->release_wakelock_cb;
 
     rpc_loc_event_mask_type event = RPC_LOC_EVENT_PARSED_POSITION_REPORT |
                                     RPC_LOC_EVENT_SATELLITE_REPORT |
@@ -200,12 +201,9 @@ static int loc_eng_init(GpsCallbacks* callbacks)
 
     pthread_mutex_init (&(loc_eng_data.deferred_action_mutex), NULL);
     pthread_cond_init  (&(loc_eng_data.deferred_action_cond) , NULL);
-    loc_eng_data.deferred_action_thread_need_exit = FALSE;
  
     loc_eng_data.loc_event = 0;
-    loc_eng_data.data_connection_succeeded = FALSE;
-    loc_eng_data.data_connection_closed = FALSE;
-    loc_eng_data.data_connection_failed = FALSE;
+    loc_eng_data.deferred_action_flags = 0;
     memset (loc_eng_data.apn_name, 0, sizeof (loc_eng_data.apn_name));
 
     loc_eng_data.aiding_data_for_deletion = 0;
@@ -256,10 +254,12 @@ static void loc_eng_cleanup()
     if (loc_eng_data.deferred_action_thread)
     {
         /* Terminate deferred action working thread */
-        pthread_mutex_lock (&loc_eng_data.deferred_action_mutex);
-        loc_eng_data.deferred_action_thread_need_exit = TRUE;
-        pthread_cond_signal  (&loc_eng_data.deferred_action_cond);
-        pthread_mutex_unlock (&loc_eng_data.deferred_action_mutex);
+        pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
+        /* hold a wake lock while events are pending for deferred_action_thread */
+        loc_eng_data.acquire_wakelock_cb();
+        loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_QUIT;
+        pthread_cond_signal(&loc_eng_data.deferred_action_cond);
+        pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
 
         void* ignoredValue;
         pthread_join(loc_eng_data.deferred_action_thread, &ignoredValue);
@@ -520,6 +520,9 @@ static void loc_eng_delete_aiding_data (GpsAidingData f)
     if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
         (loc_eng_data.aiding_data_for_deletion != 0))
     {
+        /* hold a wake lock while events are pending for deferred_action_thread */
+        loc_eng_data.acquire_wakelock_cb();
+        loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_DELETE_AIDING;
         pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
 
         // In case gps engine is ON, the assistance data will be deleted when the engine is OFF
@@ -666,8 +669,11 @@ static int32 loc_event_cb(
         loc_eng_data.loc_event = loc_event;
         memcpy(&loc_eng_data.loc_event_payload, loc_event_payload, sizeof(*loc_event_payload));
 
-        pthread_cond_signal  (&loc_eng_data.deferred_action_cond);
-        pthread_mutex_unlock (&loc_eng_data.deferred_action_mutex);
+        /* hold a wake lock while events are pending for deferred_action_thread */
+        loc_eng_data.acquire_wakelock_cb();
+        loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_EVENT;
+        pthread_cond_signal(&loc_eng_data.deferred_action_cond);
+        pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
     }
     else
     {
@@ -919,18 +925,21 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
         }
     }
 
-    pthread_mutex_lock (&loc_eng_data.deferred_action_mutex);
+    pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
     loc_eng_data.engine_status = status.status;
 
     // Wake up the thread for aiding data deletion.
     if ((loc_eng_data.engine_status != GPS_STATUS_SESSION_BEGIN) &&
         (loc_eng_data.aiding_data_for_deletion != 0))
     {
+        /* hold a wake lock while events are pending for deferred_action_thread */
+        loc_eng_data.acquire_wakelock_cb();
+        loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_DELETE_AIDING;
         pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
         // In case gps engine is ON, the assistance data will be deleted when the engine is OFF
     }
 
-    pthread_mutex_unlock (&loc_eng_data.deferred_action_mutex);
+    pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
 }
 
 static void loc_eng_report_nmea (const rpc_loc_nmea_report_s_type *nmea_report_ptr)
@@ -982,8 +991,11 @@ static void loc_eng_process_conn_request (const rpc_loc_server_request_s_type *s
         loc_eng_data.agps_status = GPS_RELEASE_AGPS_DATA_CONN;
     }
 
-    pthread_cond_signal  (&loc_eng_data.deferred_action_cond);
-    pthread_mutex_unlock (&loc_eng_data.deferred_action_mutex);
+    /* hold a wake lock while events are pending for deferred_action_thread */
+    loc_eng_data.acquire_wakelock_cb();
+    loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_AGPS_STATUS;
+    pthread_cond_signal(&loc_eng_data.deferred_action_cond);
+    pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
 }
 
 /*===========================================================================
@@ -1014,7 +1026,6 @@ static int loc_eng_agps_data_conn_open(const char* apn)
     LOGD("loc_eng_agps_data_conn_open: %s\n", apn);
 
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
-    loc_eng_data.data_connection_succeeded = TRUE;
 
     if (apn != NULL)
     {
@@ -1030,6 +1041,9 @@ static int loc_eng_agps_data_conn_open(const char* apn)
         loc_eng_data.apn_name[apn_len] = '\0';
     }
 
+    /* hold a wake lock while events are pending for deferred_action_thread */
+    loc_eng_data.acquire_wakelock_cb();
+    loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_AGPS_DATA_SUCCESS;
     pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
     pthread_mutex_unlock(&(loc_eng_data.deferred_action_mutex));
     return 0;
@@ -1039,8 +1053,9 @@ static int loc_eng_agps_data_conn_closed()
 {
     LOGD("loc_eng_agps_data_conn_closed\n");
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
-    loc_eng_data.data_connection_closed = TRUE;
-// DO WE NEED TO SIGNAL HERE?
+    /* hold a wake lock while events are pending for deferred_action_thread */
+    loc_eng_data.acquire_wakelock_cb();
+    loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_AGPS_DATA_CLOSED;
     pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
     pthread_mutex_unlock(&(loc_eng_data.deferred_action_mutex));
     return 0;
@@ -1051,7 +1066,9 @@ static int loc_eng_agps_data_conn_failed()
     LOGD("loc_eng_agps_data_conn_failed\n");
 
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
-    loc_eng_data.data_connection_failed = TRUE;
+    /* hold a wake lock while events are pending for deferred_action_thread */
+    loc_eng_data.acquire_wakelock_cb();
+    loc_eng_data.deferred_action_flags |= DEFERRED_ACTION_AGPS_DATA_FAILED;
     pthread_cond_signal(&(loc_eng_data.deferred_action_cond));
     pthread_mutex_unlock(&(loc_eng_data.deferred_action_mutex));
     return 0;
@@ -1185,8 +1202,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-static void loc_eng_process_atl_deferred_action (boolean data_connection_succeeded,
-        boolean data_connection_closed)
+static void loc_eng_process_atl_deferred_action (int flags)
 {
     rpc_loc_server_open_status_s_type  *conn_open_status_ptr;
     rpc_loc_server_close_status_s_type *conn_close_status_ptr;
@@ -1198,7 +1214,7 @@ static void loc_eng_process_atl_deferred_action (boolean data_connection_succeed
 
     memset (&ioctl_data, 0, sizeof (rpc_loc_ioctl_data_u_type));
  
-    if (data_connection_closed)
+    if (flags & DEFERRED_ACTION_AGPS_DATA_CLOSED)
     {
         ioctl_data.disc = RPC_LOC_IOCTL_INFORM_SERVER_CLOSE_STATUS;
         conn_close_status_ptr = &(ioctl_data.rpc_loc_ioctl_data_u_type_u.conn_close_status);
@@ -1210,7 +1226,7 @@ static void loc_eng_process_atl_deferred_action (boolean data_connection_succeed
         ioctl_data.disc = RPC_LOC_IOCTL_INFORM_SERVER_OPEN_STATUS;
         conn_open_status_ptr = &ioctl_data.rpc_loc_ioctl_data_u_type_u.conn_open_status;
         conn_open_status_ptr->conn_handle = loc_eng_data.conn_handle;
-        if (data_connection_succeeded)
+        if (flags & DEFERRED_ACTION_AGPS_DATA_SUCCESS)
         {
             conn_open_status_ptr->open_status = RPC_LOC_SERVER_OPEN_SUCCESS;
             // Both buffer are of the same maximum size, and the source is null terminated
@@ -1352,23 +1368,24 @@ static void* loc_eng_process_deferred_action (void* arg)
     LOGD("Setting GPS privacy lock to RPC_LOC_LOCK_NONE\n");
     loc_eng_set_gps_lock(RPC_LOC_LOCK_NONE);
 
-    while (loc_eng_data.deferred_action_thread_need_exit == FALSE)
+    while (1)
     {
         GpsAidingData   aiding_data_for_deletion;
         GpsStatusValue  engine_status;
-        boolean         data_connection_succeeded;
-        boolean         data_connection_closed;
-        boolean         data_connection_failed;
 
         rpc_loc_event_mask_type         loc_event;
         rpc_loc_event_payload_u_type    loc_event_payload;
 
         // Wait until we are signalled to do a deferred action, or exit
         pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
+
+        if (loc_eng_data.deferred_action_flags == 0)
+            loc_eng_data.release_wakelock_cb();
+
         pthread_cond_wait(&loc_eng_data.deferred_action_cond,
                             &loc_eng_data.deferred_action_mutex);
 
-        if (loc_eng_data.deferred_action_thread_need_exit == TRUE)
+        if (loc_eng_data.deferred_action_flags & DEFERRED_ACTION_QUIT)
         {
             pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
             break;
@@ -1381,16 +1398,12 @@ static void* loc_eng_process_deferred_action (void* arg)
             loc_eng_data.loc_event = 0;
         }
 
+        int flags = loc_eng_data.deferred_action_flags;
+        loc_eng_data.deferred_action_flags = 0;
         engine_status = loc_eng_data.agps_status;
         aiding_data_for_deletion = loc_eng_data.aiding_data_for_deletion;
         status.status = loc_eng_data.agps_status;
         loc_eng_data.agps_status = 0;
-        data_connection_succeeded = loc_eng_data.data_connection_succeeded;
-        data_connection_closed = loc_eng_data.data_connection_closed;
-        data_connection_failed = loc_eng_data.data_connection_failed;
-        loc_eng_data.data_connection_closed = FALSE;
-        loc_eng_data.data_connection_succeeded = FALSE;
-        loc_eng_data.data_connection_failed = FALSE;
 
         // perform all actions after releasing the mutex to avoid blocking RPCs from the ARM9
         pthread_mutex_unlock(&(loc_eng_data.deferred_action_mutex));
@@ -1405,15 +1418,16 @@ static void* loc_eng_process_deferred_action (void* arg)
             loc_eng_delete_aiding_data_deferred_action ();
         }
 
-        if (data_connection_succeeded || data_connection_closed || data_connection_failed)
+        if (flags & (DEFERRED_ACTION_AGPS_DATA_SUCCESS |
+                     DEFERRED_ACTION_AGPS_DATA_CLOSED |
+                     DEFERRED_ACTION_AGPS_DATA_FAILED))
         {
-            loc_eng_process_atl_deferred_action(data_connection_succeeded, data_connection_closed);
+            loc_eng_process_atl_deferred_action(flags);
         }
 
         if (status.status != 0 && loc_eng_data.agps_status_cb) {
             loc_eng_data.agps_status_cb(&status);
         }
-
     }
 
     // reenable the GPS lock
@@ -1421,6 +1435,7 @@ static void* loc_eng_process_deferred_action (void* arg)
     loc_eng_set_gps_lock(RPC_LOC_LOCK_ALL);
 
     LOGD("loc_eng_process_deferred_action thread exiting\n");
+    loc_eng_data.release_wakelock_cb();
     return NULL;
 }
 

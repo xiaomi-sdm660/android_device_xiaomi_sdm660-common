@@ -51,52 +51,62 @@ typedef unsigned char boolean;
 
 #define LOC_IOCTL_DEFAULT_TIMEOUT 1000 // 1000 milli-seconds
 
+enum {
+    DEFERRED_ACTION_EVENT               = 0x01,
+    DEFERRED_ACTION_DELETE_AIDING       = 0x02,
+    DEFERRED_ACTION_AGPS_STATUS         = 0x04,
+    DEFERRED_ACTION_AGPS_DATA_SUCCESS   = 0x08,
+    DEFERRED_ACTION_AGPS_DATA_CLOSED    = 0x10,
+    DEFERRED_ACTION_AGPS_DATA_FAILED    = 0x20,
+    DEFERRED_ACTION_QUIT                = 0x40,
+};
+
 // Module data
 typedef struct
 {
-    rpc_loc_client_handle_type     client_handle;
+    rpc_loc_client_handle_type  client_handle;
 
-    gps_location_callback          location_cb;
-    gps_status_callback            status_cb;
-    gps_sv_status_callback         sv_status_cb;
-    agps_status_callback           agps_status_cb;
-    gps_nmea_callback              nmea_cb;
-    gps_ni_notify_callback         ni_notify_cb;
-    int                            agps_status;
+    gps_location_callback           location_cb;
+    gps_status_callback             status_cb;
+    gps_sv_status_callback          sv_status_cb;
+    agps_status_callback            agps_status_cb;
+    gps_nmea_callback               nmea_cb;
+    gps_ni_notify_callback          ni_notify_cb;
+    gps_acquire_wakelock            acquire_wakelock_cb;
+    gps_release_wakelock            release_wakelock_cb;
+    int                             agps_status;
 
-    loc_eng_xtra_data_s_type       xtra_module_data;
+    loc_eng_xtra_data_s_type        xtra_module_data;
 
-    loc_eng_ioctl_data_s_type      ioctl_data;
+    loc_eng_ioctl_data_s_type       ioctl_data;
 
     // data from loc_event_cb
     rpc_loc_event_mask_type         loc_event;
     rpc_loc_event_payload_u_type    loc_event_payload;
 
-    boolean                        data_connection_succeeded;
-    boolean                        data_connection_closed;
-    boolean                        data_connection_failed;
     // TBD:
-    char                           agps_server_host[256];
-    int                            agps_server_port;
-    uint32                         agps_server_address;
-    char                           apn_name[100];
-    int                            position_mode;
+    char                            agps_server_host[256];
+    int                             agps_server_port;
+    uint32                          agps_server_address;
+    char                            apn_name[100];
+    int                             position_mode;
     rpc_loc_server_connection_handle  conn_handle;
 
     // GPS engine status
-    GpsStatusValue                 engine_status;
+    GpsStatusValue                  engine_status;
 
     // Aiding data information to be deleted, aiding data can only be deleted when GPS engine is off
-    GpsAidingData                  aiding_data_for_deletion;
+    GpsAidingData                   aiding_data_for_deletion;
 
     // Data variables used by deferred action thread
-    pthread_t                      deferred_action_thread;
-    // Signal deferred action thread to exit
-    boolean                        deferred_action_thread_need_exit;
+    pthread_t                       deferred_action_thread;
     // Mutex used by deferred action thread
-    pthread_mutex_t                deferred_action_mutex;
+    pthread_mutex_t                 deferred_action_mutex;
     // Condition variable used by deferred action thread
-    pthread_cond_t                 deferred_action_cond;
+    pthread_cond_t                  deferred_action_cond;
+
+    // flags for pending events for deferred action thread
+    int                             deferred_action_flags;
 } loc_eng_data_s_type;
    
 extern loc_eng_data_s_type loc_eng_data;
