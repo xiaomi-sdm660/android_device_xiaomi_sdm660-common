@@ -66,7 +66,8 @@ $Author: $
 static int  loc_eng_init(GpsCallbacks* callbacks);
 static int  loc_eng_start();
 static int  loc_eng_stop();
-static int  loc_eng_set_position_mode(GpsPositionMode mode, int fix_frequency);
+static int  loc_eng_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence recurrence,
+            uint32_t min_interval, uint32_t preferred_accuracy, uint32_t preferred_time);
 static void loc_eng_cleanup();
 static int  loc_eng_inject_time(GpsUtcTime time, int64_t timeReference, int uncertainty);
 static int  loc_eng_inject_location(double latitude, double longitude, float accuracy);
@@ -177,6 +178,8 @@ static int loc_eng_init(GpsCallbacks* callbacks)
 {
     // Start the LOC api RPC service
     loc_api_glue_init ();
+
+    callbacks->set_capabilities_cb(GPS_CAPABILITY_SCHEDULING | GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
 
     memset (&loc_eng_data, 0, sizeof (loc_eng_data_s_type));
 
@@ -379,7 +382,7 @@ static int loc_eng_set_gps_lock(rpc_loc_lock_e_type lock_type)
 FUNCTION    loc_eng_set_position_mode
 
 DESCRIPTION
-   Sets the mode and fix frequnecy (in seconds) for the tracking session.
+   Sets the mode and fix frequency for the tracking session.
 
 DEPENDENCIES
    None
@@ -391,37 +394,56 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-static int loc_eng_set_position_mode(GpsPositionMode mode, int fix_frequency)
+static int loc_eng_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence recurrence,
+            uint32_t min_interval, uint32_t preferred_accuracy, uint32_t preferred_time)
 {
     rpc_loc_ioctl_data_u_type    ioctl_data;
     rpc_loc_fix_criteria_s_type *fix_criteria_ptr;
     boolean                      ret_val;
 
     LOGD ("loc_eng_set_position mode, client = %d, interval = %d, mode = %d\n",
-            (int32) loc_eng_data.client_handle, fix_frequency, mode);
+            (int32) loc_eng_data.client_handle, min_interval, mode);
 
     loc_eng_data.position_mode = mode;
     ioctl_data.disc = RPC_LOC_IOCTL_SET_FIX_CRITERIA;
 
     fix_criteria_ptr = &(ioctl_data.rpc_loc_ioctl_data_u_type_u.fix_criteria);
-    fix_criteria_ptr->valid_mask = RPC_LOC_FIX_CRIT_VALID_MIN_INTERVAL |
-                                   RPC_LOC_FIX_CRIT_VALID_PREFERRED_OPERATION_MODE |
+    fix_criteria_ptr->valid_mask = RPC_LOC_FIX_CRIT_VALID_PREFERRED_OPERATION_MODE |
                                    RPC_LOC_FIX_CRIT_VALID_RECURRENCE_TYPE;
-    fix_criteria_ptr->min_interval = fix_frequency * 1000; // Translate to ms
-    fix_criteria_ptr->recurrence_type = RPC_LOC_PERIODIC_FIX;
 
-    if (mode == GPS_POSITION_MODE_MS_BASED)
-    {
-        fix_criteria_ptr->preferred_operation_mode = RPC_LOC_OPER_MODE_MSB;
+    switch (mode) {
+        case GPS_POSITION_MODE_MS_BASED:
+            fix_criteria_ptr->preferred_operation_mode = RPC_LOC_OPER_MODE_MSB;
+            break;
+        case GPS_POSITION_MODE_MS_ASSISTED:
+            fix_criteria_ptr->preferred_operation_mode = RPC_LOC_OPER_MODE_MSA;
+            break;
+        case GPS_POSITION_MODE_STANDALONE:
+        default:
+            fix_criteria_ptr->preferred_operation_mode = RPC_LOC_OPER_MODE_STANDALONE;
+            break;
     }
-    else if (mode == GPS_POSITION_MODE_MS_ASSISTED)
-    {
-        fix_criteria_ptr->preferred_operation_mode = RPC_LOC_OPER_MODE_MSA;
+    if (min_interval > 0) {
+        fix_criteria_ptr->min_interval = min_interval;
+        fix_criteria_ptr->valid_mask |= RPC_LOC_FIX_CRIT_VALID_MIN_INTERVAL;
     }
-    // Default: standalone
-    else
-    {
-        fix_criteria_ptr->preferred_operation_mode = RPC_LOC_OPER_MODE_STANDALONE;
+    if (preferred_accuracy > 0) {
+        fix_criteria_ptr->preferred_accuracy = preferred_accuracy;
+        fix_criteria_ptr->valid_mask |= RPC_LOC_FIX_CRIT_VALID_PREFERRED_ACCURACY;
+    }
+    if (preferred_time > 0) {
+        fix_criteria_ptr->preferred_response_time = preferred_time;
+        fix_criteria_ptr->valid_mask |= RPC_LOC_FIX_CRIT_VALID_PREFERRED_RESPONSE_TIME;
+    }
+
+    switch (recurrence) {
+        case GPS_POSITION_RECURRENCE_SINGLE:
+            fix_criteria_ptr->recurrence_type = RPC_LOC_SINGLE_FIX;
+            break;
+        case GPS_POSITION_RECURRENCE_PERIODIC:
+        default:
+            fix_criteria_ptr->recurrence_type = RPC_LOC_PERIODIC_FIX;
+            break;
     }
 
     ret_val = loc_eng_ioctl(loc_eng_data.client_handle,
