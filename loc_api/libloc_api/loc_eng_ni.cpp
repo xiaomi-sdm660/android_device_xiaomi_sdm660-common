@@ -323,12 +323,20 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 
                 // Stores notification text
                 hexcode(notif.text, sizeof notif.text,
+#if (AMSS_VERSION==3200)
                         umts_cp_req->notification_text.notification_text_val,
+#else
+                        umts_cp_req->notification_text,
+#endif
                         umts_cp_req->notification_length);
 
                 // Stores requestor ID
                 hexcode(notif.requestor_id, sizeof notif.requestor_id,
+#if (AMSS_VERSION==3200)
                         umts_cp_req->requestor_id.requestor_id_string.requestor_id_string_val,
+#else
+                        umts_cp_req->requestor_id.requestor_id_string,
+#endif
                         umts_cp_req->requestor_id.string_len);
 
                 notif.text_encoding = convert_encoding_type(umts_cp_req->datacoding_scheme);
@@ -351,7 +359,11 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
                 if (supl_req->flags & RPC_LOC_NI_CLIENT_NAME_PRESENT)
                 {
                     hexcode(notif.text, sizeof notif.text,
+#if (AMSS_VERSION==3200)
                             supl_req->client_name.client_name_string.client_name_string_val,   /* buffer */
+#else
+                            supl_req->client_name.client_name_string,                          /* buffer */
+#endif
                             supl_req->client_name.string_len                                   /* length */
                     );
                     LOGD("SUPL NI: client_name: %s len=%d", notif.text, supl_req->client_name.string_len);
@@ -363,7 +375,11 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
                 if (supl_req->flags & RPC_LOC_NI_REQUESTOR_ID_PRESENT)
                 {
                     hexcode(notif.requestor_id, sizeof notif.requestor_id,
+#if (AMSS_VERSION==3200)
                             supl_req->requestor_id.requestor_id_string.requestor_id_string_val,  /* buffer */
+#else
+                            supl_req->requestor_id.requestor_id_string,                          /* buffer */
+#endif
                             supl_req->requestor_id.string_len                                    /* length */
                     );
                     LOGD("SUPL NI: requestor_id: %s len=%d", notif.requestor_id, supl_req->requestor_id.string_len);

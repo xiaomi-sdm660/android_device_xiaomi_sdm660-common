@@ -973,8 +973,12 @@ static void loc_eng_report_nmea (const rpc_loc_nmea_report_s_type *nmea_report_p
         gettimeofday(&tv, (struct timezone *) NULL);
         long long now = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
 
+#if (AMSS_VERSION==3200)
         loc_eng_data.nmea_cb(now, nmea_report_ptr->nmea_sentences.nmea_sentences_val,
                 nmea_report_ptr->nmea_sentences.nmea_sentences_len);
+#else
+        loc_eng_data.nmea_cb(now, nmea_report_ptr->nmea_sentences, nmea_report_ptr->length);
+#endif
     }
 }
 
@@ -1102,8 +1106,6 @@ static int set_agps_server()
     rpc_loc_server_info_s_type      *server_info_ptr;
     boolean                         ret_val;
     uint16                          port_temp;
-    char                            url[24];
-    int                             len;
     unsigned char                   *b_ptr;
 
     if (loc_eng_data.agps_server_host[0] == 0 || loc_eng_data.agps_server_port == 0)
@@ -1118,22 +1120,36 @@ static int set_agps_server()
         return -1;
 
     b_ptr = (unsigned char*) (&loc_eng_data.agps_server_address);
-    memset(url, 0, sizeof(url));
-    snprintf(url, sizeof(url) - 1, "%d.%d.%d.%d:%d",
-            (*(b_ptr + 0)  & 0x000000ff), (*(b_ptr+1) & 0x000000ff),
-            (*(b_ptr + 2)  & 0x000000ff), (*(b_ptr+3) & 0x000000ff),
-            (loc_eng_data.agps_server_port & (0x0000ffff)));
-    len = strlen (url);
+
 
     server_info_ptr = &(ioctl_data.rpc_loc_ioctl_data_u_type_u.server_addr);
     ioctl_data.disc = RPC_LOC_IOCTL_SET_UMTS_SLP_SERVER_ADDR;
     server_info_ptr->addr_type = RPC_LOC_SERVER_ADDR_URL;
     server_info_ptr->addr_info.disc =  RPC_LOC_SERVER_ADDR_URL;
-    server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.length = len;
-    server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_val = url;
-    server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_len= len;
 
+#if (AMSS_VERSION==3200)
+    char   url[24];
+    memset(url, 0, sizeof(url));
+    snprintf(url, sizeof(url) - 1, "%d.%d.%d.%d:%d",
+            (*(b_ptr + 0)  & 0x000000ff), (*(b_ptr+1) & 0x000000ff),
+            (*(b_ptr + 2)  & 0x000000ff), (*(b_ptr+3) & 0x000000ff),
+            (loc_eng_data.agps_server_port & (0x0000ffff)));
+
+    server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_val = url;
+    server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_len = strlen(url);
     LOGD ("set_agps_server, addr = %s\n", server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_val);
+#else
+    char* buf = server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr;
+    int buf_len = sizeof(server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr);
+    memset(buf, 0, buf_len);
+    snprintf(buf, buf_len - 1, "%d.%d.%d.%d:%d",
+            (*(b_ptr + 0)  & 0x000000ff), (*(b_ptr+1) & 0x000000ff),
+            (*(b_ptr + 2)  & 0x000000ff), (*(b_ptr+3) & 0x000000ff),
+            (loc_eng_data.agps_server_port & (0x0000ffff)));
+
+    server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.length = buf_len;
+    LOGD ("set_agps_server, addr = %s\n", buf);
+#endif
 
     ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
                             RPC_LOC_IOCTL_SET_UMTS_SLP_SERVER_ADDR,
@@ -1253,7 +1269,13 @@ static void loc_eng_process_atl_deferred_action (int flags)
             conn_open_status_ptr->open_status = RPC_LOC_SERVER_OPEN_SUCCESS;
             // Both buffer are of the same maximum size, and the source is null terminated
             // strcpy (&(ioctl_data.rpc_loc_ioctl_data_u_type_u.conn_open_status.apn_name), &(loc_eng_data.apn_name));
+#if (AMSS_VERSION==3200)
             conn_open_status_ptr->apn_name = loc_eng_data.apn_name;
+#else
+            memset(conn_open_status_ptr->apn_name, 0, sizeof(conn_open_status_ptr->apn_name));
+            strncpy(conn_open_status_ptr->apn_name, loc_eng_data.apn_name,
+                    sizeof(conn_open_status_ptr->apn_name) - 1);
+#endif
             // Delay this so that PDSM ATL module will behave properly
             sleep (1);
             LOGD("loc_eng_ioctl for ATL with apn_name = %s\n", conn_open_status_ptr->apn_name);
