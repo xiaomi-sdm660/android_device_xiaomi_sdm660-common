@@ -15,10 +15,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
  -------------------------------------------------------------------------------
  */ 
 #include "rpc/rpc.h"
-#include "rpc_inc/loc_api_common.h"
-#include "rpc_inc/loc_api.h"
-#include "rpc_inc/loc_api_cb.h"
-#include "rpc_inc/loc_api_fixup.h"
+#include "loc_api_common.h"
+#include "loc_api.h"
+#include "loc_api_cb.h"
+#include "loc_api_fixup.h"
 
 #include "loc_apicb_appinit.h"
 

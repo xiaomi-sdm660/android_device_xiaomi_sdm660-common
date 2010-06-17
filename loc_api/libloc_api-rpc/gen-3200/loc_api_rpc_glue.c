@@ -57,10 +57,10 @@ when       who      what, where, why
 #include <rpc/clnt.h>
 
 /* Include RPC headers */
-#include "rpc_inc/loc_api_rpc_glue.h"
+#include "loc_api_rpc_glue.h"
 
 /* Callback init */
-#include "rpc_inc/loc_apicb_appinit.h"
+#include "loc_apicb_appinit.h"
 
 /* Logging */
 #define LOG_TAG "lib_api_rpc_glue"
