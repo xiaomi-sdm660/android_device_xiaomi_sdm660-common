@@ -91,7 +91,7 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
 static void loc_eng_report_nmea (const rpc_loc_nmea_report_s_type *nmea_report_ptr);
 static void loc_eng_process_conn_request (const rpc_loc_server_request_s_type *server_request_ptr);
 
-static void* loc_eng_process_deferred_action (void* arg);
+static void loc_eng_process_deferred_action (void* arg);
 static void loc_eng_process_atl_deferred_action (int flags);
 static void loc_eng_delete_aiding_data_deferred_action (void);
 
@@ -227,10 +227,8 @@ static int loc_eng_init(GpsCallbacks* callbacks)
     pthread_cond_init(&loc_eng_data.ioctl_data.cb_arrived_cond, NULL);
 
     loc_eng_data.deferred_action_thread = NULL;
-    pthread_create (&(loc_eng_data.deferred_action_thread),
-                    NULL,
-                    loc_eng_process_deferred_action,
-                    NULL);
+    loc_eng_data.deferred_action_thread = callbacks->create_thread_cb("loc_api",
+                                            loc_eng_process_deferred_action, NULL);
 
     LOGD ("loc_eng_init called, client id = %d\n", (int32) loc_eng_data.client_handle);
     return 0;
@@ -937,13 +935,13 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
         {
             // GPS_STATUS_SESSION_BEGIN implies GPS_STATUS_ENGINE_ON
             status.status = GPS_STATUS_SESSION_BEGIN;
-            loc_eng_data.status_cb (&status);
+            loc_eng_data.status_cb(&status);
         }
         else if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_OFF)
         {
             // GPS_STATUS_SESSION_END implies GPS_STATUS_ENGINE_OFF
             status.status = GPS_STATUS_ENGINE_OFF;
-            loc_eng_data.status_cb (&status);
+            loc_eng_data.status_cb(&status);
         }
     }
 
@@ -1397,7 +1395,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-static void* loc_eng_process_deferred_action (void* arg)
+static void loc_eng_process_deferred_action (void* arg)
 {
     AGpsStatus      status;
     status.size = sizeof(status);
@@ -1480,7 +1478,8 @@ static void* loc_eng_process_deferred_action (void* arg)
 
     LOGD("loc_eng_process_deferred_action thread exiting\n");
     loc_eng_data.release_wakelock_cb();
-    return NULL;
+
+    loc_eng_data.deferred_action_thread = 0;
 }
 
 // for gps.c

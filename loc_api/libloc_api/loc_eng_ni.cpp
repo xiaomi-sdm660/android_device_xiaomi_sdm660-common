@@ -520,7 +520,7 @@ int loc_eng_ni_callback (
 FUNCTION loc_ni_thread_proc
 
 ===========================================================================*/
-static void* loc_ni_thread_proc(void *threadid)
+static void loc_ni_thread_proc(void *unused)
 {
     LOGI("Starting Loc NI thread...\n");
 
@@ -543,29 +543,6 @@ static void* loc_ni_thread_proc(void *threadid)
 
         pthread_mutex_unlock(&loc_eng_ni_data.loc_ni_lock);
     } /* while (1) */
-
-    pthread_exit(NULL);
-    return NULL;
-}
-
-/*===========================================================================
-
-FUNCTION loc_ni_thread_start
-
-===========================================================================*/
-static int loc_ni_thread_start(void)
-{
-    int rc = 0;
-
-    rc = pthread_create(&loc_eng_ni_data.loc_ni_thread, NULL, loc_ni_thread_proc, NULL);
-
-    if (rc)
-    {
-        LOGE("Loc NI thread is not created.\n");
-        return -1;
-    }
-
-    return 0;
 }
 
 /*===========================================================================
@@ -591,7 +568,7 @@ void loc_eng_ni_init(GpsNiCallbacks *callbacks)
     if (!loc_eng_ni_data_init)
     {
         pthread_mutex_init(&loc_eng_ni_data.loc_ni_lock, NULL);
-        loc_ni_thread_start();
+        callbacks->create_thread_cb("loc_api_ni", loc_ni_thread_proc, NULL);
         loc_eng_ni_data_init = TRUE;
     }
 

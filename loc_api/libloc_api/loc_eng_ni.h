@@ -36,7 +36,6 @@ $Id:
 extern const GpsNiInterface sLocEngNiInterface;
 
 typedef struct {
-    pthread_t               loc_ni_thread;            /* NI thread */
     pthread_mutex_t         loc_ni_lock;
     int                     response_time_left;       /* examine time for NI response */
     boolean                 notif_in_progress;        /* NI notification/verification in progress */
