@@ -174,8 +174,18 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
+
+// fully shutting down the GPS is temporarily disabled to avoid intermittent BP crash
+#define DISABLE_CLEANUP 1
+
 static int loc_eng_init(GpsCallbacks* callbacks)
 {
+#if DISABLE_CLEANUP
+    if (loc_eng_data.deferred_action_thread) {
+        // already initialized
+        return 0;
+    }
+#endif
     // Start the LOC api RPC service
     loc_api_glue_init ();
 
@@ -226,7 +236,6 @@ static int loc_eng_init(GpsCallbacks* callbacks)
     pthread_mutex_init (&(loc_eng_data.ioctl_data.cb_data_mutex), NULL);
     pthread_cond_init(&loc_eng_data.ioctl_data.cb_arrived_cond, NULL);
 
-    loc_eng_data.deferred_action_thread = NULL;
     loc_eng_data.deferred_action_thread = callbacks->create_thread_cb("loc_api",
                                             loc_eng_process_deferred_action, NULL);
 
@@ -252,6 +261,9 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_eng_cleanup()
 {
+#if DISABLE_CLEANUP
+    return;
+#else
     if (loc_eng_data.deferred_action_thread)
     {
         /* Terminate deferred action working thread */
@@ -278,6 +290,7 @@ static void loc_eng_cleanup()
 
 // Do not call this as it can result in the ARM9 crashing if it sends events while we are disabled
 //    loc_apicb_app_deinit();
+#endif
 }
 
 
