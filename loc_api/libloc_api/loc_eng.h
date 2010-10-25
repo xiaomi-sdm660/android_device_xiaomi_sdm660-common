@@ -76,6 +76,11 @@ typedef struct
     gps_release_wakelock            release_wakelock_cb;
     int                             agps_status;
 
+    // used to defer stopping the GPS engine until AGPS data calls are done
+    boolean                         agps_request_pending;
+    boolean                         stop_request_pending;
+    pthread_mutex_t                 deferred_stop_mutex;
+
     loc_eng_xtra_data_s_type        xtra_module_data;
 
     loc_eng_ioctl_data_s_type       ioctl_data;
