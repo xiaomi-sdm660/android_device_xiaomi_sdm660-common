@@ -1500,7 +1500,11 @@ static void loc_eng_process_deferred_action (void* arg)
             loc_eng_data.agps_request_pending = false;
             if (loc_eng_data.stop_request_pending)
             {
-                loc_eng_stop();
+                LOGD ("handling deferred stop\n");
+                if (loc_stop_fix(loc_eng_data.client_handle) != RPC_LOC_API_SUCCESS)
+                {
+                    LOGD ("loc_stop_fix failed!\n");
+                }
             }
             pthread_mutex_unlock(&(loc_eng_data.deferred_stop_mutex));
         }
