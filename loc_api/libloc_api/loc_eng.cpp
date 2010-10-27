@@ -1449,11 +1449,17 @@ static void loc_eng_process_deferred_action (void* arg)
         // Wait until we are signalled to do a deferred action, or exit
         pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
 
-        if (loc_eng_data.deferred_action_flags == 0)
+        // If we have an event we should process it immediately,
+        // otherwise wait until we are signalled
+        if (loc_eng_data.deferred_action_flags == 0) {
+            // do not hold a wake lock while waiting for an event...
             loc_eng_data.release_wakelock_cb();
-
-        pthread_cond_wait(&loc_eng_data.deferred_action_cond,
-                            &loc_eng_data.deferred_action_mutex);
+            pthread_cond_wait(&loc_eng_data.deferred_action_cond,
+                                &loc_eng_data.deferred_action_mutex);
+            // but after we are signalled reacquire the wake lock
+            // until we are done processing the event.
+            loc_eng_data.acquire_wakelock_cb();
+        }
 
         if (loc_eng_data.deferred_action_flags & DEFERRED_ACTION_QUIT)
         {
