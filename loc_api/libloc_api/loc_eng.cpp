@@ -708,7 +708,7 @@ static int32 loc_event_cb(
     const rpc_loc_event_payload_u_type*  loc_event_payload
     )
 {
-    LOGV ("loc_event_cb, client = %d, loc_event = 0x%x", (int32) client_handle, (uint32) loc_event);
+    ALOGV ("loc_event_cb, client = %d, loc_event = 0x%x", (int32) client_handle, (uint32) loc_event);
     if (client_handle == loc_eng_data.client_handle)
     {
         pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
@@ -749,7 +749,7 @@ static void loc_eng_report_position (const rpc_loc_parsed_position_s_type *locat
 {
     GpsLocation location;
 
-    LOGV ("loc_eng_report_position: location report, valid mask = 0x%x, sess status = %d\n",
+    ALOGV ("loc_eng_report_position: location report, valid mask = 0x%x, sess status = %d\n",
          (uint32) location_report_ptr->valid_mask, location_report_ptr->session_status);
 
     memset (&location, 0, sizeof(location));
@@ -800,18 +800,18 @@ static void loc_eng_report_position (const rpc_loc_parsed_position_s_type *locat
 
             if (loc_eng_data.location_cb != NULL)
             {
-                LOGV ("loc_eng_report_position: fire callback\n");
+                ALOGV ("loc_eng_report_position: fire callback\n");
                 loc_eng_data.location_cb (&location);
             }
         }
         else
         {
-            LOGV ("loc_eng_report_position: ignore position report when session status = %d\n", location_report_ptr->session_status);
+            ALOGV ("loc_eng_report_position: ignore position report when session status = %d\n", location_report_ptr->session_status);
         }
     }
     else
     {
-        LOGV ("loc_eng_report_position: ignore position report when session status is not set\n");
+        ALOGV ("loc_eng_report_position: ignore position report when session status is not set\n");
     }
 }
 
@@ -837,7 +837,7 @@ static void loc_eng_report_sv (const rpc_loc_gnss_info_s_type *gnss_report_ptr)
     int             num_svs_max, i;
 	const rpc_loc_sv_info_s_type *sv_info_ptr;
 
-    LOGV ("loc_eng_report_sv: valid_mask = 0x%x, num of sv = %d\n",
+    ALOGV ("loc_eng_report_sv: valid_mask = 0x%x, num of sv = %d\n",
             (uint32) gnss_report_ptr->valid_mask,
             gnss_report_ptr->sv_count);
 
@@ -923,7 +923,7 @@ static void loc_eng_report_sv (const rpc_loc_gnss_info_s_type *gnss_report_ptr)
         }
     }
 
-    LOGV ("num_svs = %d, eph mask = %d, alm mask = %d\n", SvStatus.num_svs, SvStatus.ephemeris_mask, SvStatus.almanac_mask );
+    ALOGV ("num_svs = %d, eph mask = %d, alm mask = %d\n", SvStatus.num_svs, SvStatus.ephemeris_mask, SvStatus.almanac_mask );
     if ((SvStatus.num_svs != 0) && (loc_eng_data.sv_status_cb != NULL))
     {
         loc_eng_data.sv_status_cb(&SvStatus);
@@ -950,7 +950,7 @@ static void loc_eng_report_status (const rpc_loc_status_event_s_type *status_rep
 {
     GpsStatus status;
 
-    LOGV ("loc_eng_report_status: event = %d\n", status_report_ptr->event);
+    ALOGV ("loc_eng_report_status: event = %d\n", status_report_ptr->event);
 
     memset (&status, 0, sizeof(status));
     status.size = sizeof(status);
@@ -1068,7 +1068,7 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_eng_agps_init(AGpsCallbacks* callbacks)
 {
-    LOGV("loc_eng_agps_init\n");
+    ALOGV("loc_eng_agps_init\n");
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 }
 
@@ -1190,7 +1190,7 @@ static int set_agps_server()
     }
     else
     {
-        LOGV ("set_agps_server successful\n");
+        ALOGV ("set_agps_server successful\n");
         return 0;
     }
 }
@@ -1274,7 +1274,7 @@ static void loc_eng_process_atl_deferred_action (int flags)
     boolean                             ret_val;
     int                                 agps_status = -1;
 
-    LOGV("loc_eng_process_atl_deferred_action, agps_status = %d\n", loc_eng_data.agps_status);
+    ALOGV("loc_eng_process_atl_deferred_action, agps_status = %d\n", loc_eng_data.agps_status);
 
     memset (&ioctl_data, 0, sizeof (rpc_loc_ioctl_data_u_type));
  

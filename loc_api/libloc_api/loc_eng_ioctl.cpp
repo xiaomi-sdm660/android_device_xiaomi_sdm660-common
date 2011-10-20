@@ -97,7 +97,7 @@ boolean loc_eng_ioctl(
     int                        rpc_ret_val;
     loc_eng_ioctl_data_s_type *ioctl_cb_data_ptr;
 
-    LOGV ("loc_eng_ioctl: client = %d, ioctl_type = %d, cb_data =0x%x\n", (int32) handle, ioctl_type, (uint32) cb_data_ptr);
+    ALOGV ("loc_eng_ioctl: client = %d, ioctl_type = %d, cb_data =0x%x\n", (int32) handle, ioctl_type, (uint32) cb_data_ptr);
 
     ioctl_cb_data_ptr = &(loc_eng_data.ioctl_data);
     // Select the callback we are waiting for
@@ -109,7 +109,7 @@ boolean loc_eng_ioctl(
                                     ioctl_type,
                                     ioctl_data_ptr);
 
-        LOGV ("loc_eng_ioctl: loc_ioctl returned %d \n", rpc_ret_val);
+        ALOGV ("loc_eng_ioctl: loc_ioctl returned %d \n", rpc_ret_val);
 
         if (rpc_ret_val == RPC_LOC_API_SUCCESS)
         {
@@ -260,7 +260,7 @@ boolean loc_eng_ioctl_wait_cb(
             ret_val = FALSE;
         }
 
-        LOGV ("loc_eng_ioctl_wait_cb: pthread_cond_timedwait returned %d\n", rc);
+        ALOGV ("loc_eng_ioctl_wait_cb: pthread_cond_timedwait returned %d\n", rc);
 
     } while (0);
 
@@ -286,7 +286,7 @@ boolean loc_eng_ioctl_wait_cb(
 
     pthread_mutex_unlock(&ioctl_cb_data_ptr->cb_data_mutex);
 
-    LOGV ("loc_eng_ioctl_wait_cb: returned %d\n", ret_val);
+    ALOGV ("loc_eng_ioctl_wait_cb: returned %d\n", ret_val);
     return ret_val;
 }
 
@@ -339,7 +339,7 @@ boolean loc_eng_ioctl_process_cb (
 
         ioctl_cb_data_ptr->cb_has_arrived = TRUE;
 
-        LOGV ("loc_eng_ioctl_process_cb: callback arrived for client = %d, ioctl = %d, status = %d\n",
+        ALOGV ("loc_eng_ioctl_process_cb: callback arrived for client = %d, ioctl = %d, status = %d\n",
                 (int32) ioctl_cb_data_ptr->client_handle, ioctl_cb_data_ptr->ioctl_type,
                 (int32) ioctl_cb_data_ptr->cb_payload.status);
 

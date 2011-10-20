@@ -120,7 +120,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
     rpc_loc_ioctl_data_u_type            ioctl_data;
     rpc_loc_predicted_orbits_data_s_type *predicted_orbits_data_ptr;
 
-    LOGV ("qct_loc_eng_inject_xtra_data, xtra size = %d, data ptr = 0x%x\n", length, (int) data);
+    ALOGV ("qct_loc_eng_inject_xtra_data, xtra size = %d, data ptr = 0x%x\n", length, (int) data);
 
     ioctl_data.disc = RPC_LOC_IOCTL_INJECT_PREDICTED_ORBITS_DATA;
 
@@ -147,8 +147,8 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
         predicted_orbits_data_ptr->data_ptr.data_ptr_len = predicted_orbits_data_ptr->part_len;
         predicted_orbits_data_ptr->data_ptr.data_ptr_val = data + len_injected;
 
-        LOGV ("qct_loc_eng_inject_xtra_data, inject part = %d, len = %d, len = %d\n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len, predicted_orbits_data_ptr->data_ptr.data_ptr_len);
-        LOGV ("qct_loc_eng_inject_xtra_data, total part = %d, len = %d \n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len);
+        ALOGV ("qct_loc_eng_inject_xtra_data, inject part = %d, len = %d, len = %d\n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len, predicted_orbits_data_ptr->data_ptr.data_ptr_len);
+        ALOGV ("qct_loc_eng_inject_xtra_data, total part = %d, len = %d \n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len);
 
         if (part < total_parts)
         {
@@ -176,7 +176,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
         }
 
         len_injected += predicted_orbits_data_ptr->part_len;
-        LOGV ("loc_ioctl for xtra len injected %d \n", len_injected);
+        ALOGV ("loc_ioctl for xtra len injected %d \n", len_injected);
     }
 
     return ret_val;
