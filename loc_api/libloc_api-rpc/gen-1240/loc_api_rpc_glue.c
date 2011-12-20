@@ -67,8 +67,8 @@ when       who      what, where, why
 #include <utils/Log.h>
 
 /* Comment this out to enable logging */
-#undef LOGD
-#define LOGD(...) {}
+#undef ALOGD
+#define ALOGD(...) {}
 
 /*=====================================================================
      External declarations
@@ -99,17 +99,17 @@ bool_t rpc_loc_event_cb_f_type_0x00040001_svc(
     /* Callback not registered, or unexpected ID (shouldn't happen) */
     if (loc_api_saved_cb == NULL || argp->cb_id != LOC_API_CB_ID)
     {
-        LOGD("Warning: No callback handler.\n");
+        ALOGD("Warning: No callback handler.\n");
         ret->loc_event_cb_f_type_result = 0;
         return 1; /* simply return */
     }
 
-    LOGD("proc: %x  prog: %x  vers: %x\n",
+    ALOGD("proc: %x  prog: %x  vers: %x\n",
             (int) req->rq_proc,
             (int) req->rq_prog,
             (int) req->rq_vers);
 
-    LOGD("Callback received: %x (handle=%d ret_ptr=%d)\n",
+    ALOGD("Callback received: %x (handle=%d ret_ptr=%d)\n",
             (int) argp->loc_event,
             (int) argp->loc_handle,
             (int) ret);
@@ -133,7 +133,7 @@ int loc_apicbprog_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t res
     /*
      * Insert additional freeing code here, if needed
      */
-    // LOGD("***** loc_apicbprog_freeresult\n");
+    // ALOGD("***** loc_apicbprog_freeresult\n");
 
     return 1;
 }
@@ -160,9 +160,9 @@ int loc_api_glue_init(void)
     if (loc_api_clnt == NULL)
     {
         /* Print msg */
-        LOGD("Trying to create RPC client...\n");
+        ALOGD("Trying to create RPC client...\n");
         loc_api_clnt = clnt_create(NULL, LOC_APIPROG, LOC_APIVERS, NULL);
-        LOGD("Created loc_api_clnt ---- %x\n", (unsigned int)loc_api_clnt);
+        ALOGD("Created loc_api_clnt ---- %x\n", (unsigned int)loc_api_clnt);
 
         if (loc_api_clnt == NULL)
         {
@@ -174,7 +174,7 @@ int loc_api_glue_init(void)
         int rc = loc_apicb_app_init();
         if (rc >= 0)
         {
-            LOGD("Loc API callback initialized.\n");
+            ALOGD("Loc API callback initialized.\n");
         } else {
             fprintf(stderr, "Loc API callback initialization failed.\n");
             return 0;

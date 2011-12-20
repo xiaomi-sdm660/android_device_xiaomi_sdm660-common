@@ -25,7 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define PRINT(x...) do {                                    \
         fprintf(stdout, "%s(%d) ", __FUNCTION__, __LINE__); \
         fprintf(stdout, ##x);                               \
-        LOGD(x);                               \
+        ALOGD(x);                               \
     } while(0)
 
 #ifdef DEBUG

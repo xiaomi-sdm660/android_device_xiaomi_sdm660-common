@@ -46,8 +46,8 @@ $Id:
 #include <utils/Log.h>
 
 // comment this out to enable logging
-// #undef LOGD
-// #define LOGD(...) {}
+// #undef ALOGD
+// #define ALOGD(...) {}
 
 /*=============================================================================
  *
@@ -119,7 +119,7 @@ static void loc_ni_respond(rpc_loc_ni_user_resp_e_type resp,
                     const rpc_loc_ni_event_s_type *request_pass_back
 )
 {
-    LOGD("Sending NI response: %s\n", respond_from_enum(resp));
+    ALOGD("Sending NI response: %s\n", respond_from_enum(resp));
 
     rpc_loc_ioctl_data_u_type data;
     rpc_loc_ioctl_callback_s_type callback_payload;
@@ -272,7 +272,7 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
     }
     else {
         /* Print notification */
-        LOGD("NI Notification: %s, event: %d", msg, ni_req->event);
+        ALOGD("NI Notification: %s, event: %d", msg, ni_req->event);
 
         pthread_mutex_lock(&loc_eng_ni_data.loc_ni_lock);
 
@@ -366,9 +366,9 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 #endif
                             supl_req->client_name.string_len                                   /* length */
                     );
-                    LOGD("SUPL NI: client_name: %s len=%d", notif.text, supl_req->client_name.string_len);
+                    ALOGD("SUPL NI: client_name: %s len=%d", notif.text, supl_req->client_name.string_len);
                 } else {
-                    LOGD("SUPL NI: client_name not present.");
+                    ALOGD("SUPL NI: client_name not present.");
                 }
 
                 // Requestor ID
@@ -382,9 +382,9 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 #endif
                             supl_req->requestor_id.string_len                                    /* length */
                     );
-                    LOGD("SUPL NI: requestor_id: %s len=%d", notif.requestor_id, supl_req->requestor_id.string_len);
+                    ALOGD("SUPL NI: requestor_id: %s len=%d", notif.requestor_id, supl_req->requestor_id.string_len);
                 } else {
-                    LOGD("SUPL NI: requestor_id not present.");
+                    ALOGD("SUPL NI: requestor_id not present.");
                 }
 
                 // Encoding type
@@ -440,7 +440,7 @@ RETURN VALUE
 ===========================================================================*/
 int loc_ni_process_user_response(GpsUserResponseType userResponse)
 {
-    LOGD("NI response from UI: %d", userResponse);
+    ALOGD("NI response from UI: %d", userResponse);
 
     rpc_loc_ni_user_resp_e_type resp;
     switch (userResponse)
@@ -563,7 +563,7 @@ SIDE EFFECTS
 ===========================================================================*/
 void loc_eng_ni_init(GpsNiCallbacks *callbacks)
 {
-    LOGD("loc_eng_ni_init: entered.");
+    ALOGD("loc_eng_ni_init: entered.");
 
     if (!loc_eng_ni_data_init)
     {

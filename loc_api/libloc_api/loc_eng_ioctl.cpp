@@ -52,8 +52,8 @@ $Author: $
 #include <utils/Log.h>
 
 // comment this out to enable logging
-// #undef LOGD
-// #define LOGD(...) {}
+// #undef ALOGD
+// #define ALOGD(...) {}
 
 // Function declarations
 static boolean loc_eng_ioctl_setup_cb(
@@ -164,7 +164,7 @@ static boolean loc_eng_ioctl_setup_cb(
     pthread_mutex_lock(&ioctl_cb_data_ptr->cb_data_mutex);
     if (ioctl_cb_data_ptr->cb_is_selected == TRUE)
     {
-        LOGD ("loc_eng_ioctl_setup_cb: ERROR, another ioctl in progress \n");
+        ALOGD ("loc_eng_ioctl_setup_cb: ERROR, another ioctl in progress \n");
         ret_val = FALSE;
     }
     else
@@ -222,7 +222,7 @@ boolean loc_eng_ioctl_wait_cb(
     do {
         if (ioctl_cb_data_ptr->cb_is_selected == FALSE)
         {
-            LOGD ("loc_eng_ioctl_wait_cb: ERROR called when cb_is_waiting is set to FALSE \n");
+            ALOGD ("loc_eng_ioctl_wait_cb: ERROR called when cb_is_waiting is set to FALSE \n");
             ret_val = FALSE;
             break;
         }
@@ -240,7 +240,7 @@ boolean loc_eng_ioctl_wait_cb(
         // Special case where callback is issued before loc_ioctl ever returns
         if (ioctl_cb_data_ptr->cb_has_arrived == TRUE)
         {
-            LOGD ("loc_eng_ioctl_wait_cb: cb has arrived without waiting \n");
+            ALOGD ("loc_eng_ioctl_wait_cb: cb has arrived without waiting \n");
             ret_val = TRUE;
             break;
         }
@@ -321,13 +321,13 @@ boolean loc_eng_ioctl_process_cb (
     pthread_mutex_lock(&ioctl_cb_data_ptr->cb_data_mutex);
     if (client_handle != ioctl_cb_data_ptr->client_handle)
     {
-        LOGD ("loc_eng_ioctl_process_cb: client handle mismatch, received = %d, expected = %d \n",
+        ALOGD ("loc_eng_ioctl_process_cb: client handle mismatch, received = %d, expected = %d \n",
                 (int32) client_handle, (int32) ioctl_cb_data_ptr->client_handle);
         ret_val = FALSE;
     }
     else if (cb_data_ptr->type != ioctl_cb_data_ptr->ioctl_type)
     {
-        LOGD ("loc_eng_ioctl_process_cb: ioctl type mismatch, received = %d, expected = %d \n",
+        ALOGD ("loc_eng_ioctl_process_cb: ioctl type mismatch, received = %d, expected = %d \n",
                  cb_data_ptr->type, ioctl_cb_data_ptr->ioctl_type);
         ret_val = FALSE;
     }

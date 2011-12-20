@@ -57,8 +57,8 @@ $Author: $
 #include <utils/Log.h>
 
 // comment this out to enable logging
-// #undef LOGD
-// #define LOGD(...) {}
+// #undef ALOGD
+// #define ALOGD(...) {}
 
 #define DEBUG_MOCK_NI 0
 
@@ -150,7 +150,7 @@ const GpsInterface* gps_get_hardware_interface ()
     property_get("gps.disable", propBuf, "");
     if (propBuf[0] == '1')
     {
-        LOGD("gps_get_interface returning NULL because gps.disable=1\n");
+        ALOGD("gps_get_interface returning NULL because gps.disable=1\n");
         return NULL;
     }
 
@@ -240,7 +240,7 @@ static int loc_eng_init(GpsCallbacks* callbacks)
     loc_eng_data.deferred_action_thread = callbacks->create_thread_cb("loc_api",
                                             loc_eng_process_deferred_action, NULL);
 
-    LOGD ("loc_eng_init called, client id = %d\n", (int32) loc_eng_data.client_handle);
+    ALOGD ("loc_eng_init called, client id = %d\n", (int32) loc_eng_data.client_handle);
     return 0;
 }
 
@@ -314,20 +314,20 @@ SIDE EFFECTS
 static int loc_eng_start()
 {
     int ret_val;
-    LOGD ("loc_eng_start\n");
+    ALOGD ("loc_eng_start\n");
 
     if (loc_eng_data.position_mode != GPS_POSITION_MODE_STANDALONE &&
             loc_eng_data.agps_server_host[0] != 0 &&
             loc_eng_data.agps_server_port != 0) {
         int result = set_agps_server();
-        LOGD ("set_agps_server returned = %d\n", result);
+        ALOGD ("set_agps_server returned = %d\n", result);
     }
 
     ret_val = loc_start_fix (loc_eng_data.client_handle);
 
     if (ret_val != RPC_LOC_API_SUCCESS)
     {
-        LOGD ("loc_eng_start returned error = %d\n", ret_val);
+        ALOGD ("loc_eng_start returned error = %d\n", ret_val);
     }
 
     return 0;
@@ -354,7 +354,7 @@ static int loc_eng_stop()
 {
     int ret_val;
 
-    LOGD ("loc_eng_stop\n");
+    ALOGD ("loc_eng_stop\n");
 
     pthread_mutex_lock(&(loc_eng_data.deferred_stop_mutex));
     // work around problem with loc_eng_stop when AGPS requests are pending
@@ -362,7 +362,7 @@ static int loc_eng_stop()
     if (loc_eng_data.agps_request_pending)
     {
         loc_eng_data.stop_request_pending = true;
-        LOGD ("deferring stop until AGPS data call is finished\n");
+        ALOGD ("deferring stop until AGPS data call is finished\n");
         pthread_mutex_unlock(&(loc_eng_data.deferred_stop_mutex));
         return 0;
     }
@@ -371,7 +371,7 @@ static int loc_eng_stop()
     ret_val = loc_stop_fix (loc_eng_data.client_handle);
     if (ret_val != RPC_LOC_API_SUCCESS)
     {
-        LOGD ("loc_eng_stop returned error = %d\n", ret_val);
+        ALOGD ("loc_eng_stop returned error = %d\n", ret_val);
     }
 
     return 0;
@@ -382,7 +382,7 @@ static int loc_eng_set_gps_lock(rpc_loc_lock_e_type lock_type)
     rpc_loc_ioctl_data_u_type    ioctl_data;
     boolean                      ret_val;
 
-    LOGD ("loc_eng_set_gps_lock mode, client = %d, lock_type = %d\n",
+    ALOGD ("loc_eng_set_gps_lock mode, client = %d, lock_type = %d\n",
             (int32) loc_eng_data.client_handle, lock_type);
 
     ioctl_data.rpc_loc_ioctl_data_u_type_u.engine_lock = lock_type;
@@ -396,7 +396,7 @@ static int loc_eng_set_gps_lock(rpc_loc_lock_e_type lock_type)
 
     if (ret_val != TRUE)
     {
-        LOGD ("loc_eng_set_gps_lock mode failed\n");
+        ALOGD ("loc_eng_set_gps_lock mode failed\n");
     }
 
     return 0;
@@ -425,7 +425,7 @@ static int loc_eng_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence
     rpc_loc_fix_criteria_s_type *fix_criteria_ptr;
     boolean                      ret_val;
 
-    LOGD ("loc_eng_set_position mode, client = %d, interval = %d, mode = %d\n",
+    ALOGD ("loc_eng_set_position mode, client = %d, interval = %d, mode = %d\n",
             (int32) loc_eng_data.client_handle, min_interval, mode);
 
     loc_eng_data.position_mode = mode;
@@ -478,7 +478,7 @@ static int loc_eng_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence
 
     if (ret_val != TRUE)
     {
-        LOGD ("loc_eng_set_position mode failed\n");
+        ALOGD ("loc_eng_set_position mode failed\n");
     }
 
     return 0;
@@ -506,7 +506,7 @@ static int loc_eng_inject_time (GpsUtcTime time, int64_t timeReference, int unce
     rpc_loc_assist_data_time_s_type *time_info_ptr;
     boolean                          ret_val;
 
-    LOGD ("loc_eng_inject_time, uncertainty = %d\n", uncertainty);
+    ALOGD ("loc_eng_inject_time, uncertainty = %d\n", uncertainty);
 
     ioctl_data.disc = RPC_LOC_IOCTL_INJECT_UTC_TIME;
 
@@ -523,7 +523,7 @@ static int loc_eng_inject_time (GpsUtcTime time, int64_t timeReference, int unce
 
     if (ret_val != TRUE)
     {
-        LOGD ("loc_eng_inject_time failed\n");
+        ALOGD ("loc_eng_inject_time failed\n");
     }
 
     return 0;
@@ -723,7 +723,7 @@ static int32 loc_event_cb(
     }
     else
     {
-        LOGD ("loc client mismatch: received = %d, expected = %d \n", (int32) client_handle, (int32) loc_eng_data.client_handle);
+        ALOGD ("loc client mismatch: received = %d, expected = %d \n", (int32) client_handle, (int32) loc_eng_data.client_handle);
     }
 
     return RPC_LOC_API_SUCCESS;
@@ -1024,7 +1024,7 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_eng_process_conn_request (const rpc_loc_server_request_s_type *server_request_ptr)
 {
-    LOGD ("loc_event_cb: get loc event location server request, event = %d\n", server_request_ptr->event);
+    ALOGD ("loc_event_cb: get loc event location server request, event = %d\n", server_request_ptr->event);
 
     // Signal DeferredActionThread to send the APN name
     pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
@@ -1075,7 +1075,7 @@ static void loc_eng_agps_init(AGpsCallbacks* callbacks)
 static int loc_eng_agps_data_conn_open(const char* apn)
 {
     int apn_len;
-    LOGD("loc_eng_agps_data_conn_open: %s\n", apn);
+    ALOGD("loc_eng_agps_data_conn_open: %s\n", apn);
 
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
 
@@ -1085,7 +1085,7 @@ static int loc_eng_agps_data_conn_open(const char* apn)
 
         if (apn_len >= sizeof(loc_eng_data.apn_name))
         {
-            LOGD ("loc_eng_set_apn: error, apn name exceeds maximum lenght of 100 chars\n");
+            ALOGD ("loc_eng_set_apn: error, apn name exceeds maximum lenght of 100 chars\n");
             apn_len = sizeof(loc_eng_data.apn_name) - 1;
         }
 
@@ -1103,7 +1103,7 @@ static int loc_eng_agps_data_conn_open(const char* apn)
 
 static int loc_eng_agps_data_conn_closed()
 {
-    LOGD("loc_eng_agps_data_conn_closed\n");
+    ALOGD("loc_eng_agps_data_conn_closed\n");
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
     /* hold a wake lock while events are pending for deferred_action_thread */
     loc_eng_data.acquire_wakelock_cb();
@@ -1115,7 +1115,7 @@ static int loc_eng_agps_data_conn_closed()
 
 static int loc_eng_agps_data_conn_failed()
 {
-    LOGD("loc_eng_agps_data_conn_failed\n");
+    ALOGD("loc_eng_agps_data_conn_failed\n");
 
     pthread_mutex_lock(&(loc_eng_data.deferred_action_mutex));
     /* hold a wake lock while events are pending for deferred_action_thread */
@@ -1163,7 +1163,7 @@ static int set_agps_server()
 
     server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_val = url;
     server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_len = strlen(url);
-    LOGD ("set_agps_server, addr = %s\n", server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_val);
+    ALOGD ("set_agps_server, addr = %s\n", server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr.addr_val);
 #else
     char* buf = server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr;
     int buf_len = sizeof(server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.addr);
@@ -1174,7 +1174,7 @@ static int set_agps_server()
             (loc_eng_data.agps_server_port & (0x0000ffff)));
 
     server_info_ptr->addr_info.rpc_loc_server_addr_u_type_u.url.length = buf_len;
-    LOGD ("set_agps_server, addr = %s\n", buf);
+    ALOGD ("set_agps_server, addr = %s\n", buf);
 #endif
 
     ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
@@ -1185,7 +1185,7 @@ static int set_agps_server()
 
     if (ret_val != TRUE)
     {
-        LOGD ("set_agps_server failed\n");
+        ALOGD ("set_agps_server failed\n");
         return -1;
     }
     else
@@ -1197,7 +1197,7 @@ static int set_agps_server()
 
 static int loc_eng_agps_set_server(AGpsType type, const char* hostname, int port)
 {
-    LOGD ("loc_eng_set_default_agps_server, type = %d, hostname = %s, port = %d\n", type, hostname, port);
+    ALOGD ("loc_eng_set_default_agps_server, type = %d, hostname = %s, port = %d\n", type, hostname, port);
 
     if (type != AGPS_TYPE_SUPL)
         return -1;
@@ -1246,7 +1246,7 @@ static void loc_eng_delete_aiding_data_deferred_action (void)
                              LOC_IOCTL_DEFAULT_TIMEOUT,
                              NULL);
 
-    LOGD("loc_eng_ioctl for aiding data deletion returned %d, 1 for success\n", ret_val);
+    ALOGD("loc_eng_ioctl for aiding data deletion returned %d, 1 for success\n", ret_val);
 }
 
 /*===========================================================================
@@ -1304,7 +1304,7 @@ static void loc_eng_process_atl_deferred_action (int flags)
 #endif
             // Delay this so that PDSM ATL module will behave properly
             sleep (1);
-            LOGD("loc_eng_ioctl for ATL with apn_name = %s\n", conn_open_status_ptr->apn_name);
+            ALOGD("loc_eng_ioctl for ATL with apn_name = %s\n", conn_open_status_ptr->apn_name);
         }
         else // data_connection_failed
         {
@@ -1320,7 +1320,7 @@ static void loc_eng_process_atl_deferred_action (int flags)
                              LOC_IOCTL_DEFAULT_TIMEOUT,
                              NULL);
 
-    LOGD("loc_eng_ioctl for ATL returned %d (1 for success)\n", ret_val);
+    ALOGD("loc_eng_ioctl for ATL returned %d (1 for success)\n", ret_val);
 }
 
 /*===========================================================================
@@ -1368,7 +1368,7 @@ static void loc_eng_process_loc_event (rpc_loc_event_mask_type loc_event,
         if (loc_event_payload->rpc_loc_event_payload_u_type_u.assist_data_request.event ==
                 RPC_LOC_ASSIST_DATA_PREDICTED_ORBITS_REQ)
         {
-            LOGD ("loc_event_cb: xtra download requst");
+            ALOGD ("loc_event_cb: xtra download requst");
 
             // Call Registered callback
             if (loc_eng_data.xtra_module_data.download_request_cb != NULL)
@@ -1429,13 +1429,13 @@ static void loc_eng_process_deferred_action (void* arg)
     status.size = sizeof(status);
     status.type = AGPS_TYPE_SUPL;
 
-    LOGD("loc_eng_process_deferred_action started\n");
+    ALOGD("loc_eng_process_deferred_action started\n");
 
     // make sure we do not run in background scheduling group
     set_sched_policy(gettid(), SP_FOREGROUND);
 
     // disable the GPS lock
-    LOGD("Setting GPS privacy lock to RPC_LOC_LOCK_NONE\n");
+    ALOGD("Setting GPS privacy lock to RPC_LOC_LOCK_NONE\n");
     loc_eng_set_gps_lock(RPC_LOC_LOCK_NONE);
 
     while (1)
@@ -1506,10 +1506,10 @@ static void loc_eng_process_deferred_action (void* arg)
             loc_eng_data.agps_request_pending = false;
             if (loc_eng_data.stop_request_pending)
             {
-                LOGD ("handling deferred stop\n");
+                ALOGD ("handling deferred stop\n");
                 if (loc_stop_fix(loc_eng_data.client_handle) != RPC_LOC_API_SUCCESS)
                 {
-                    LOGD ("loc_stop_fix failed!\n");
+                    ALOGD ("loc_stop_fix failed!\n");
                 }
             }
             pthread_mutex_unlock(&(loc_eng_data.deferred_stop_mutex));
@@ -1521,10 +1521,10 @@ static void loc_eng_process_deferred_action (void* arg)
     }
 
     // reenable the GPS lock
-    LOGD("Setting GPS privacy lock to RPC_LOC_LOCK_ALL\n");
+    ALOGD("Setting GPS privacy lock to RPC_LOC_LOCK_ALL\n");
     loc_eng_set_gps_lock(RPC_LOC_LOCK_ALL);
 
-    LOGD("loc_eng_process_deferred_action thread exiting\n");
+    ALOGD("loc_eng_process_deferred_action thread exiting\n");
     loc_eng_data.release_wakelock_cb();
 
     loc_eng_data.deferred_action_thread = 0;
