@@ -407,15 +407,15 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
         }
 
         /* Log requestor ID and text for debugging */
-        LOGI("Notification: notif_type: %d, timeout: %d, default_resp: %d", notif.ni_type, notif.timeout, notif.default_response);
-        LOGI("              requestor_id: %s (encoding: %d)", notif.requestor_id, notif.requestor_id_encoding);
-        LOGI("              text: %s text (encoding: %d)", notif.text, notif.text_encoding);
+        ALOGI("Notification: notif_type: %d, timeout: %d, default_resp: %d", notif.ni_type, notif.timeout, notif.default_response);
+        ALOGI("              requestor_id: %s (encoding: %d)", notif.requestor_id, notif.requestor_id_encoding);
+        ALOGI("              text: %s text (encoding: %d)", notif.text, notif.text_encoding);
 
         /* For robustness, always sets a timeout to clear up the notification status, even though
         * the OEM layer in java does not do so.
         **/
         loc_eng_ni_data.response_time_left = 5 + (notif.timeout != 0 ? notif.timeout : LOC_NI_NO_RESPONSE_TIME);
-        LOGI("Automatically sends 'no response' in %d seconds (to clear status)\n", loc_eng_ni_data.response_time_left);
+        ALOGI("Automatically sends 'no response' in %d seconds (to clear status)\n", loc_eng_ni_data.response_time_left);
 
         pthread_mutex_unlock(&loc_eng_ni_data.loc_ni_lock);
 
@@ -493,17 +493,17 @@ int loc_eng_ni_callback (
         switch (ni_req->event)
         {
             case RPC_LOC_NI_EVENT_VX_NOTIFY_VERIFY_REQ:
-                LOGI("VX Notification");
+                ALOGI("VX Notification");
                 loc_ni_request_handler("VX Notify", ni_req);
                 break;
 
             case RPC_LOC_NI_EVENT_UMTS_CP_NOTIFY_VERIFY_REQ:
-                LOGI("UMTS CP Notification\n");
+                ALOGI("UMTS CP Notification\n");
                 loc_ni_request_handler("UMTS CP Notify", ni_req);
                 break;
 
             case RPC_LOC_NI_EVENT_SUPL_NOTIFY_VERIFY_REQ:
-                LOGI("SUPL Notification\n");
+                ALOGI("SUPL Notification\n");
                 loc_ni_request_handler("SUPL Notify", ni_req);
                 break;
 
@@ -522,7 +522,7 @@ FUNCTION loc_ni_thread_proc
 ===========================================================================*/
 static void loc_ni_thread_proc(void *unused)
 {
-    LOGI("Starting Loc NI thread...\n");
+    ALOGI("Starting Loc NI thread...\n");
 
     while (1)
     {
@@ -600,7 +600,7 @@ void loc_eng_ni_respond(int notif_id, GpsUserResponseType user_response)
 {
     if (notif_id == loc_eng_ni_data.current_notif_id && loc_eng_ni_data.notif_in_progress)
     {
-        LOGI("loc_eng_ni_respond: send user response %d for notif %d", user_response, notif_id);
+        ALOGI("loc_eng_ni_respond: send user response %d for notif %d", user_response, notif_id);
         loc_ni_process_user_response(user_response);
     } else {
         LOGE("loc_eng_ni_respond: notif_id %d mismatch or notification not in progress, response: %d",
