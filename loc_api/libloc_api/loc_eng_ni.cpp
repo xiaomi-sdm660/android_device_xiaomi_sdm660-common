@@ -267,7 +267,7 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 
         loc_ni_respond(response, ni_req); */
 #endif
-        LOGW("loc_ni_request_handler, notification in progress, new NI request ignored, type: %d",
+        ALOGW("loc_ni_request_handler, notification in progress, new NI request ignored, type: %d",
                 ni_req->event);
     }
     else {
