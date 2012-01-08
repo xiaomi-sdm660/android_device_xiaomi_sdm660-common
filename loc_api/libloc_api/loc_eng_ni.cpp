@@ -402,7 +402,7 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
                 break;
 
             default:
-                LOGE("loc_ni_request_handler, unknown request event: %d", ni_req->event);
+                ALOGE("loc_ni_request_handler, unknown request event: %d", ni_req->event);
                 return;
         }
 
@@ -508,7 +508,7 @@ int loc_eng_ni_callback (
                 break;
 
             default:
-                LOGE("Unknown NI event: %x\n", (int) ni_req->event);
+                ALOGE("Unknown NI event: %x\n", (int) ni_req->event);
                 break;
         }
     }
@@ -603,7 +603,7 @@ void loc_eng_ni_respond(int notif_id, GpsUserResponseType user_response)
         ALOGI("loc_eng_ni_respond: send user response %d for notif %d", user_response, notif_id);
         loc_ni_process_user_response(user_response);
     } else {
-        LOGE("loc_eng_ni_respond: notif_id %d mismatch or notification not in progress, response: %d",
+        ALOGE("loc_eng_ni_respond: notif_id %d mismatch or notification not in progress, response: %d",
             notif_id, user_response);
     }
 }

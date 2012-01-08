@@ -159,7 +159,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
 
             if (rpc_ret_val != RPC_LOC_API_SUCCESS)
             {
-                LOGE ("loc_ioctl for xtra returned %d \n", rpc_ret_val);
+                ALOGE ("loc_ioctl for xtra returned %d \n", rpc_ret_val);
                 ret_val = EINVAL; // return error
                 break;
             }
