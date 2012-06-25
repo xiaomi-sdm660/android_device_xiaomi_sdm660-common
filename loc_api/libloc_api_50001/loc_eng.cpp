@@ -1484,13 +1484,21 @@ static void loc_eng_deferred_action_thread(void* arg)
                     }
                     // what's in the else if is... (line by line)
                     // 1. this is a good fix; or
+                    //   1.1 there is source info; or
+                    //   1.1.1 this is from hybrid provider;
+                    //   1.2 it is a Satellite fix; or
+                    //   1.2.1 it is a sensor fix
                     // 2. (must be intermediate fix... implicit)
                     //   2.1 we accepte intermediate; and
                     //   2.2 it is NOT the case that
                     //   2.2.1 there is inaccuracy; and
                     //   2.2.2 we care about inaccuracy; and
                     //   2.2.3 the inaccuracy exceeds our tolerance
-                    else if (LOC_SESS_SUCCESS == rpMsg->status ||
+                    else if ((LOC_SESS_SUCCESS == rpMsg->status &&
+                              ((LOCATION_HAS_SOURCE_INFO == rpMsg->location.flags &&
+                                ULP_LOCATION_IS_FROM_HYBRID == rpMsg->location.position_source) ||
+                               ((LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask) ||
+                                (LOC_POS_TECH_MASK_SENSORS & rpMsg->technology_mask)))) ||
                              (LOC_SESS_INTERMEDIATE == loc_eng_data_p->intermediateFix &&
                               !((rpMsg->location.flags & GPS_LOCATION_HAS_ACCURACY) &&
                                 (gps_conf.ACCURACY_THRES != 0) &&

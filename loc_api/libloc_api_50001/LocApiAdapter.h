@@ -122,7 +122,8 @@ public:
 
     void reportPosition(GpsLocation &location,
                         void* locationExt,
-                        enum loc_sess_status status);
+                        enum loc_sess_status status,
+                        LocPosTechMask loc_technology_mask = LOC_POS_TECH_MASK_DEFAULT);
     void reportSv(GpsSvStatus &svStatus, void* svExt);
     void reportStatus(GpsStatusValue status);
     void reportNmea(const char* nmea, int length);

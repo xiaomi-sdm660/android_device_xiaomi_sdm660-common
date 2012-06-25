@@ -114,12 +114,14 @@ int LocApiAdapter::decodeAddress(char *addr_string, int string_size,
 
 void LocApiAdapter::reportPosition(GpsLocation &location,
                                    void* locationExt,
-                                   enum loc_sess_status status)
+                                   enum loc_sess_status status,
+                                   LocPosTechMask loc_technology_mask )
 {
     loc_eng_msg_report_position *msg(new loc_eng_msg_report_position(locEngHandle.owner,
                                                                      location,
                                                                      locationExt,
-                                                                     status));
+                                                                     status,
+                                                                     loc_technology_mask));
     if (locEngHandle.sendUlpMsg) {
         locEngHandle.sendUlpMsg(locEngHandle.owner, msg);
     } else {
