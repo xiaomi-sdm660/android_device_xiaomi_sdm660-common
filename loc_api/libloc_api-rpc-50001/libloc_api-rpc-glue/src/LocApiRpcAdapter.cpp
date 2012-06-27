@@ -797,29 +797,24 @@ void LocApiRpcAdapter::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
 
 void LocApiRpcAdapter::reportStatus(const rpc_loc_status_event_s_type *status_report_ptr)
 {
-    GpsStatusValue status = GPS_STATUS_NONE;
 
     if (status_report_ptr->event == RPC_LOC_STATUS_EVENT_ENGINE_STATE) {
         if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_ON)
         {
-            status = GPS_STATUS_ENGINE_ON;
+            LocApiAdapter::reportStatus(GPS_STATUS_ENGINE_ON);
+            LocApiAdapter::reportStatus(GPS_STATUS_SESSION_BEGIN);
         }
         else if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_OFF)
         {
-            status = GPS_STATUS_ENGINE_OFF;
+            LocApiAdapter::reportStatus(GPS_STATUS_SESSION_END);
+            LocApiAdapter::reportStatus(GPS_STATUS_ENGINE_OFF);
         }
-    } else if (status_report_ptr->event == RPC_LOC_STATUS_EVENT_FIX_SESSION_STATE) {
-        if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.fix_session_state == RPC_LOC_FIX_SESSION_STATE_BEGIN)
+        else
         {
-            status = GPS_STATUS_SESSION_BEGIN;
-        }
-        else if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.fix_session_state == RPC_LOC_FIX_SESSION_STATE_END)
-        {
-            status = GPS_STATUS_SESSION_END;
+            LocApiAdapter::reportStatus(GPS_STATUS_NONE);
         }
     }
 
-    LocApiAdapter::reportStatus(status);
 }
 
 void LocApiRpcAdapter::reportNmea(const rpc_loc_nmea_report_s_type *nmea_report_ptr)
