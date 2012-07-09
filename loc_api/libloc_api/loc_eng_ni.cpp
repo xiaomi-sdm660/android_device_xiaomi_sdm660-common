@@ -1,33 +1,33 @@
-/******************************************************************************
-  @file:  loc_eng_ni.cpp
-  @brief:  module for network initiated interactions
-
-  DESCRIPTION
-     LOC_API network initiated operation support
-
-  INITIALIZATION AND SEQUENCING REQUIREMENTS
-
-  -----------------------------------------------------------------------------
-  Copyright (c) 2009 QUALCOMM Incorporated.
-  All Rights Reserved. QUALCOMM Proprietary and Confidential.
-  -----------------------------------------------------------------------------
-******************************************************************************/
-
-/*=====================================================================
-                        EDIT HISTORY FOR MODULE
-
-  This section contains comments describing changes made to the module.
-  Notice that changes are listed in reverse chronological order.
-
-when       who      what, where, why
---------   ---      -------------------------------------------------------
-07/30/09   dx       Initial version
-
-$Id:
-======================================================================*/
+/* Copyright (c) 2009,2011 Code Aurora Forum. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
 
 #define LOG_NDDEBUG 0
-#define LOG_NIDEBUG 0
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,8 +46,8 @@ $Id:
 #include <utils/Log.h>
 
 // comment this out to enable logging
-// #undef ALOGD
-// #define ALOGD(...) {}
+// #undef LOGD
+// #define LOGD(...) {}
 
 /*=============================================================================
  *
@@ -119,7 +119,7 @@ static void loc_ni_respond(rpc_loc_ni_user_resp_e_type resp,
                     const rpc_loc_ni_event_s_type *request_pass_back
 )
 {
-    ALOGD("Sending NI response: %s\n", respond_from_enum(resp));
+    LOGD("Sending NI response: %s\n", respond_from_enum(resp));
 
     rpc_loc_ioctl_data_u_type data;
     rpc_loc_ioctl_callback_s_type callback_payload;
@@ -267,12 +267,12 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 
         loc_ni_respond(response, ni_req); */
 #endif
-        ALOGW("loc_ni_request_handler, notification in progress, new NI request ignored, type: %d",
+        LOGW("loc_ni_request_handler, notification in progress, new NI request ignored, type: %d",
                 ni_req->event);
     }
     else {
         /* Print notification */
-        ALOGD("NI Notification: %s, event: %d", msg, ni_req->event);
+        LOGD("NI Notification: %s, event: %d", msg, ni_req->event);
 
         pthread_mutex_lock(&loc_eng_ni_data.loc_ni_lock);
 
@@ -366,9 +366,9 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 #endif
                             supl_req->client_name.string_len                                   /* length */
                     );
-                    ALOGD("SUPL NI: client_name: %s len=%d", notif.text, supl_req->client_name.string_len);
+                    LOGD("SUPL NI: client_name: %s len=%d", notif.text, supl_req->client_name.string_len);
                 } else {
-                    ALOGD("SUPL NI: client_name not present.");
+                    LOGD("SUPL NI: client_name not present.");
                 }
 
                 // Requestor ID
@@ -382,9 +382,9 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
 #endif
                             supl_req->requestor_id.string_len                                    /* length */
                     );
-                    ALOGD("SUPL NI: requestor_id: %s len=%d", notif.requestor_id, supl_req->requestor_id.string_len);
+                    LOGD("SUPL NI: requestor_id: %s len=%d", notif.requestor_id, supl_req->requestor_id.string_len);
                 } else {
-                    ALOGD("SUPL NI: requestor_id not present.");
+                    LOGD("SUPL NI: requestor_id not present.");
                 }
 
                 // Encoding type
@@ -402,20 +402,20 @@ static void loc_ni_request_handler(const char *msg, const rpc_loc_ni_event_s_typ
                 break;
 
             default:
-                ALOGE("loc_ni_request_handler, unknown request event: %d", ni_req->event);
+                LOGE("loc_ni_request_handler, unknown request event: %d", ni_req->event);
                 return;
         }
 
         /* Log requestor ID and text for debugging */
-        ALOGI("Notification: notif_type: %d, timeout: %d, default_resp: %d", notif.ni_type, notif.timeout, notif.default_response);
-        ALOGI("              requestor_id: %s (encoding: %d)", notif.requestor_id, notif.requestor_id_encoding);
-        ALOGI("              text: %s text (encoding: %d)", notif.text, notif.text_encoding);
+        LOGI("Notification: notif_type: %d, timeout: %d, default_resp: %d", notif.ni_type, notif.timeout, notif.default_response);
+        LOGI("              requestor_id: %s (encoding: %d)", notif.requestor_id, notif.requestor_id_encoding);
+        LOGI("              text: %s text (encoding: %d)", notif.text, notif.text_encoding);
 
         /* For robustness, always sets a timeout to clear up the notification status, even though
         * the OEM layer in java does not do so.
         **/
         loc_eng_ni_data.response_time_left = 5 + (notif.timeout != 0 ? notif.timeout : LOC_NI_NO_RESPONSE_TIME);
-        ALOGI("Automatically sends 'no response' in %d seconds (to clear status)\n", loc_eng_ni_data.response_time_left);
+        LOGI("Automatically sends 'no response' in %d seconds (to clear status)\n", loc_eng_ni_data.response_time_left);
 
         pthread_mutex_unlock(&loc_eng_ni_data.loc_ni_lock);
 
@@ -440,7 +440,7 @@ RETURN VALUE
 ===========================================================================*/
 int loc_ni_process_user_response(GpsUserResponseType userResponse)
 {
-    ALOGD("NI response from UI: %d", userResponse);
+    LOGD("NI response from UI: %d", userResponse);
 
     rpc_loc_ni_user_resp_e_type resp;
     switch (userResponse)
@@ -493,22 +493,22 @@ int loc_eng_ni_callback (
         switch (ni_req->event)
         {
             case RPC_LOC_NI_EVENT_VX_NOTIFY_VERIFY_REQ:
-                ALOGI("VX Notification");
+                LOGI("VX Notification");
                 loc_ni_request_handler("VX Notify", ni_req);
                 break;
 
             case RPC_LOC_NI_EVENT_UMTS_CP_NOTIFY_VERIFY_REQ:
-                ALOGI("UMTS CP Notification\n");
+                LOGI("UMTS CP Notification\n");
                 loc_ni_request_handler("UMTS CP Notify", ni_req);
                 break;
 
             case RPC_LOC_NI_EVENT_SUPL_NOTIFY_VERIFY_REQ:
-                ALOGI("SUPL Notification\n");
+                LOGI("SUPL Notification\n");
                 loc_ni_request_handler("SUPL Notify", ni_req);
                 break;
 
             default:
-                ALOGE("Unknown NI event: %x\n", (int) ni_req->event);
+                LOGE("Unknown NI event: %x\n", (int) ni_req->event);
                 break;
         }
     }
@@ -522,7 +522,7 @@ FUNCTION loc_ni_thread_proc
 ===========================================================================*/
 static void loc_ni_thread_proc(void *unused)
 {
-    ALOGI("Starting Loc NI thread...\n");
+    LOGI("Starting Loc NI thread...\n");
 
     while (1)
     {
@@ -563,7 +563,7 @@ SIDE EFFECTS
 ===========================================================================*/
 void loc_eng_ni_init(GpsNiCallbacks *callbacks)
 {
-    ALOGD("loc_eng_ni_init: entered.");
+    LOGD("loc_eng_ni_init: entered.");
 
     if (!loc_eng_ni_data_init)
     {
@@ -600,10 +600,10 @@ void loc_eng_ni_respond(int notif_id, GpsUserResponseType user_response)
 {
     if (notif_id == loc_eng_ni_data.current_notif_id && loc_eng_ni_data.notif_in_progress)
     {
-        ALOGI("loc_eng_ni_respond: send user response %d for notif %d", user_response, notif_id);
+        LOGI("loc_eng_ni_respond: send user response %d for notif %d", user_response, notif_id);
         loc_ni_process_user_response(user_response);
     } else {
-        ALOGE("loc_eng_ni_respond: notif_id %d mismatch or notification not in progress, response: %d",
+        LOGE("loc_eng_ni_respond: notif_id %d mismatch or notification not in progress, response: %d",
             notif_id, user_response);
     }
 }
