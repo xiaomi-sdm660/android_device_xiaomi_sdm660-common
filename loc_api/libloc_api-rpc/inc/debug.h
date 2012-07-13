@@ -25,7 +25,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define PRINT(x...) do {                                    \
         fprintf(stdout, "%s(%d) ", __FUNCTION__, __LINE__); \
         fprintf(stdout, ##x);                               \
-        ALOGD(x);                               \
+        LOGD(x);                               \
     } while(0)
 
 #ifdef DEBUG
@@ -43,14 +43,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define E(x...) do {                                        \
         fprintf(stderr, "%s(%d) ", __FUNCTION__, __LINE__); \
         fprintf(stderr, ##x);                               \
-        ALOGE(x);                                            \
+        LOGE(x);                                            \
     } while(0)
 
 #define FAILIF(cond, msg...) do {                                              \
         if (__builtin_expect (cond, 0)) {                                      \
             fprintf(stderr, "%s:%s:(%d): ", __FILE__, __FUNCTION__, __LINE__); \
             fprintf(stderr, ##msg);                                            \
-            ALOGE(##msg);                                                       \
+            LOGE(##msg);                                                       \
         }                                                                      \
     } while(0)
 

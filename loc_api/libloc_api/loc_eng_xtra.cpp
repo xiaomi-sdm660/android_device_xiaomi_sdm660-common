@@ -1,35 +1,32 @@
-/******************************************************************************
-  @file:  loc_eng.cpp
-  @brief:
+/* Copyright (c) 2009,2011 Code Aurora Forum. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials provided
+ *       with the distribution.
+ *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
 
-  DESCRIPTION
-    This file defines the implemenation for GPS hardware abstraction layer.
-
-  INITIALIZATION AND SEQUENCING REQUIREMENTS
-
-  -----------------------------------------------------------------------------
-Copyright (c) 2009, QUALCOMM USA, INC.
-
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-·         Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
-
-·         Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution. 
-
-·         Neither the name of the QUALCOMM USA, INC.  nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. 
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  -----------------------------------------------------------------------------
-
-******************************************************************************/
-
-/*=====================================================================
-$Header: $
-$DateTime: $
-$Author: $
-======================================================================*/
 #define LOG_NDDEBUG 0
 
 #include <stdio.h>
@@ -49,8 +46,8 @@ $Author: $
 #include <utils/Log.h>
 
 // comment this out to enable logging
-// #undef ALOGD
-// #define ALOGD(...) {}
+// #undef LOGD
+// #define LOGD(...) {}
 
 #define LOC_XTRA_INJECT_DEFAULT_TIMEOUT (3100)
 #define XTRA_BLOCK_SIZE                 (400)
@@ -120,7 +117,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
     rpc_loc_ioctl_data_u_type            ioctl_data;
     rpc_loc_predicted_orbits_data_s_type *predicted_orbits_data_ptr;
 
-    ALOGV ("qct_loc_eng_inject_xtra_data, xtra size = %d, data ptr = 0x%x\n", length, (int) data);
+    LOGV ("qct_loc_eng_inject_xtra_data, xtra size = %d, data ptr = 0x%x\n", length, (int) data);
 
     ioctl_data.disc = RPC_LOC_IOCTL_INJECT_PREDICTED_ORBITS_DATA;
 
@@ -147,8 +144,8 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
         predicted_orbits_data_ptr->data_ptr.data_ptr_len = predicted_orbits_data_ptr->part_len;
         predicted_orbits_data_ptr->data_ptr.data_ptr_val = data + len_injected;
 
-        ALOGV ("qct_loc_eng_inject_xtra_data, inject part = %d, len = %d, len = %d\n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len, predicted_orbits_data_ptr->data_ptr.data_ptr_len);
-        ALOGV ("qct_loc_eng_inject_xtra_data, total part = %d, len = %d \n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len);
+        LOGV ("qct_loc_eng_inject_xtra_data, inject part = %d, len = %d, len = %d\n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len, predicted_orbits_data_ptr->data_ptr.data_ptr_len);
+        LOGV ("qct_loc_eng_inject_xtra_data, total part = %d, len = %d \n", predicted_orbits_data_ptr->part, predicted_orbits_data_ptr->part_len);
 
         if (part < total_parts)
         {
@@ -159,7 +156,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
 
             if (rpc_ret_val != RPC_LOC_API_SUCCESS)
             {
-                ALOGE ("loc_ioctl for xtra returned %d \n", rpc_ret_val);
+                LOGE ("loc_ioctl for xtra returned %d \n", rpc_ret_val);
                 ret_val = EINVAL; // return error
                 break;
             }
@@ -176,7 +173,7 @@ static int qct_loc_eng_inject_xtra_data(char* data, int length)
         }
 
         len_injected += predicted_orbits_data_ptr->part_len;
-        ALOGV ("loc_ioctl for xtra len injected %d \n", len_injected);
+        LOGV ("loc_ioctl for xtra len injected %d \n", len_injected);
     }
 
     return ret_val;
