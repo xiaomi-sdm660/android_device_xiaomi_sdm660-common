@@ -38,6 +38,8 @@ extern "C" {
 #include <cutils/properties.h>
 #include <hardware/gps.h>
 
+#define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+
 typedef enum loc_server_type {
     LOC_AGPS_CDMA_PDE_SERVER,
     LOC_AGPS_CUSTOM_PDE_SERVER,
@@ -78,6 +80,7 @@ enum loc_sess_status {
     LOC_SESS_FAILURE
 };
 
+void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
 
 #ifdef __cplusplus
 }

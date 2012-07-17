@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011 - 2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -33,7 +33,17 @@
 #include <hardware/gps.h>
 #include <loc_eng.h>
 #include <loc_log.h>
+#include <msg_q.h>
+#include <dlfcn.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+
+//Globals defns
+static const ulpInterface * loc_eng_ulp_inf = NULL;
+static const ulpInterface * loc_eng_get_ulp_inf(void);
 static gps_location_callback gps_loc_cb = NULL;
 static gps_sv_status_callback gps_sv_cb = NULL;
 
@@ -52,9 +62,12 @@ static int  loc_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence re
                                   uint32_t min_interval, uint32_t preferred_accuracy,
                                   uint32_t preferred_time);
 static const void* loc_get_extension(const char* name);
-#ifdef QCOM_FEATURE_ULP
-static int  loc_update_criteria(UlpLocationCriteria criteria);
-#endif
+//ULP/Hybrid provider Function definitions
+static int loc_update_criteria(UlpLocationCriteria criteria);
+static int loc_ulp_network_init(UlpNetworkLocationCallbacks *callbacks);
+static int loc_ulp_send_network_position(UlpNetworkPositionReport *position_report);
+static int loc_ulp_phone_context_init(UlpPhoneContextCallbacks *callback);
+static int loc_ulp_phone_context_settings_update(UlpPhoneContextSettings *settings);
 
 // Defines the GpsInterface in gps.h
 static const GpsInterface sLocEngInterface =
@@ -68,24 +81,16 @@ static const GpsInterface sLocEngInterface =
    loc_inject_location,
    loc_delete_aiding_data,
    loc_set_position_mode,
-   loc_get_extension
-#ifdef QCOM_FEATURE_ULP
-   ,loc_update_criteria
-#endif
+   loc_get_extension,
+   loc_update_criteria
 };
 
 // Function declarations for sLocEngAGpsInterface
 static void loc_agps_init(AGpsCallbacks* callbacks);
-#ifdef QCOM_FEATURE_IPV6
 static int  loc_agps_open(AGpsType agpsType,
                           const char* apn, AGpsBearerType bearerType);
 static int  loc_agps_closed(AGpsType agpsType);
 static int  loc_agps_open_failed(AGpsType agpsType);
-#else
-static int  loc_agps_open(const char* apn);
-static int  loc_agps_closed();
-static int  loc_agps_open_failed();
-#endif
 static int  loc_agps_set_server(AGpsType type, const char *hostname, int port);
 
 static const AGpsInterface sLocEngAGpsInterface =
@@ -136,7 +141,6 @@ static const AGpsRilInterface sLocEngAGpsRilInterface =
    loc_agps_ril_update_network_availability
 };
 
-#ifdef QCOM_FEATURE_ULP
 static bool loc_inject_raw_command(char* command, int length);
 
 static const InjectRawCmdInterface sLocEngInjectRawCmdInterface =
@@ -144,9 +148,81 @@ static const InjectRawCmdInterface sLocEngInjectRawCmdInterface =
    sizeof(InjectRawCmdInterface),
    loc_inject_raw_command
 };
-#endif
 
+//ULP/Hybrid provider interfaces
+static const UlpNetworkInterface sUlpNetworkInterface =
+{
+   sizeof(UlpNetworkInterface),
+   loc_ulp_network_init,
+   loc_ulp_send_network_position
+};
+static const UlpPhoneContextInterface sLocEngUlpPhoneContextInterface =
+{
+    sizeof(UlpPhoneContextInterface),
+    loc_ulp_phone_context_init,
+    loc_ulp_phone_context_settings_update
+};
 static loc_eng_data_s_type loc_afw_data;
+static int gss_fd = 0;
+
+#define TARGET_NAME_OTHER              0
+#define TARGET_NAME_APQ8064_STANDALONE 1
+#define TARGET_NAME_APQ8064_FUSION3    2
+
+static int read_a_line(const char * file_path, char * line, int line_size)
+{
+    FILE *fp;
+    int result = 0;
+
+    * line = '\0';
+    fp = fopen(file_path, "r" );
+    if( fp == NULL ) {
+        LOC_LOGE("open failed: %s: %s\n", file_path, strerror(errno));
+        result = -1;
+    } else {
+        int len;
+        fgets(line, line_size, fp);
+        len = strlen(line);
+        len = len < line_size - 1? len : line_size - 1;
+        line[len] = '\0';
+        LOC_LOGD("cat %s: %s", file_path, line);
+        fclose(fp);
+    }
+    return result;
+}
+
+#define LINE_LEN 100
+#define STR_LIQUID    "Liquid"
+#define STR_SURF      "Surf"
+#define STRLEN_LIQUID (sizeof(STR_LIQUID) - 1)
+#define STRLEN_SURF   (sizeof(STR_SURF) - 1)
+#define IS_STR_END(c) ((c) == '\0' || (c) == '\n' || (c) == '\r')
+
+static int get_target_name(void)
+{
+    int target_name = TARGET_NAME_OTHER;
+
+    char hw_platform[]      = "/sys/devices/system/soc/soc0/hw_platform"; // "Liquid" or "Surf"
+    char id[]               = "/sys/devices/system/soc/soc0/id"; //109
+    char mdm[]              = "/dev/mdm"; // No such file or directory
+
+    char line[LINE_LEN];
+
+    read_a_line( hw_platform, line, LINE_LEN);
+    if(( !memcmp(line, STR_LIQUID, STRLEN_LIQUID) && IS_STR_END(line[STRLEN_LIQUID]) ) ||
+       ( !memcmp(line, STR_SURF,   STRLEN_SURF)   && IS_STR_END(line[STRLEN_SURF])   )
+      ) {
+        if (!read_a_line( mdm, line, LINE_LEN)) {
+            target_name = TARGET_NAME_APQ8064_FUSION3;
+        } else {
+            read_a_line( id, line, LINE_LEN);
+            if(!strncmp(line, "109", strlen("109"))) {
+                target_name = TARGET_NAME_APQ8064_STANDALONE;
+            }
+        }
+    }
+    return target_name;
+}
 
 /*===========================================================================
 FUNCTION    gps_get_hardware_interface
@@ -189,8 +265,26 @@ const GpsInterface* gps_get_hardware_interface ()
 // for gps.c
 extern "C" const GpsInterface* get_gps_interface()
 {
+    loc_eng_read_config();
+    //We load up libulp module at this point itself if ULP configured to be On
+    if(gps_conf.CAPABILITIES & ULP_CAPABILITY) {
+       loc_eng_ulp_inf = loc_eng_get_ulp_inf();
+    }
     return &sLocEngInterface;
 }
+
+static void loc_free_msg(void* msg)
+{
+    delete (loc_eng_msg*)msg;
+}
+
+
+void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg)
+{
+    LocEngContext* loc_eng_context = (LocEngContext*)((loc_eng_data_s_type*)loc_eng_data_p)->context;
+    msg_q_snd((void*)loc_eng_context->ulp_q, msg, loc_free_msg);
+}
+
 /*===========================================================================
 FUNCTION    loc_init
 
@@ -233,10 +327,28 @@ static int loc_init(GpsCallbacks* callbacks)
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
 
-    int ret_val = loc_eng_init(loc_afw_data, &clientCallbacks, event);
+    if (get_target_name() == TARGET_NAME_APQ8064_STANDALONE)
+    {
+        gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
+        gss_fd = open("/dev/gss", O_RDONLY);
+        if (gss_fd < 0) {
+            LOC_LOGE("GSS open failed: %s\n", strerror(errno));
+            return NULL;
+        }
+        LOC_LOGD("GSS open success! CAPABILITIES %0x\n", gps_conf.CAPABILITIES);
+    }
 
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
+    int retVal = -1;
+    if (loc_eng_ulp_inf == NULL)
+        retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event,
+                              NULL);
+    else
+        retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event,
+                              loc_ulp_msg_sender);
+    int ret_val1 = loc_eng_ulp_init(loc_afw_data, loc_eng_ulp_inf);
+    LOC_LOGD("loc_eng_ulp_init returned %d\n",ret_val1);
+    EXIT_LOG(%d, retVal);
+    return retVal;
 }
 
 /*===========================================================================
@@ -261,6 +373,15 @@ static void loc_cleanup()
     loc_eng_cleanup(loc_afw_data);
     gps_loc_cb = NULL;
     gps_sv_cb = NULL;
+
+    /*
+     * if (get_target_name() == TARGET_NAME_APQ8064_STANDALONE)
+     * {
+     *     close(gss_fd);
+     *     LOC_LOGD("GSS shutdown.\n");
+     * }
+     */
+
     EXIT_LOG(%s, VOID_RET);
 }
 
@@ -349,9 +470,10 @@ static int  loc_set_position_mode(GpsPositionMode mode,
         locMode = LOC_POSITION_MODE_STANDALONE;
         break;
     }
-    int ret_val = loc_eng_set_position_mode(loc_afw_data, locMode,
-                                            recurrence, min_interval,
-                                            preferred_accuracy, preferred_time);
+
+    LocPosMode params(locMode, recurrence, min_interval,
+                      preferred_accuracy, preferred_time, NULL, NULL);
+    int ret_val = loc_eng_set_position_mode(loc_afw_data, params);
 
     EXIT_LOG(%d, ret_val);
     return ret_val;
@@ -437,7 +559,6 @@ static void loc_delete_aiding_data(GpsAidingData f)
     EXIT_LOG(%s, VOID_RET);
 }
 
-#ifdef QCOM_FEATURE_ULP
 /*===========================================================================
 FUNCTION    loc_update_criteria
 
@@ -462,7 +583,6 @@ static int loc_update_criteria(UlpLocationCriteria criteria)
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
-#endif
 
 /*===========================================================================
 FUNCTION    loc_get_extension
@@ -502,19 +622,32 @@ static const void* loc_get_extension(const char* name)
 
    else if (strcmp(name, AGPS_RIL_INTERFACE) == 0)
    {
-      ret_val = &sLocEngAGpsRilInterface;
+       char baseband[PROPERTY_VALUE_MAX];
+       property_get("ro.baseband", baseband, "msm");
+       if (strcmp(baseband, "csfb") == 0)
+       {
+           ret_val = &sLocEngAGpsRilInterface;
+       }
    }
-#ifdef QCOM_FEATURE_ULP
    else if (strcmp(name, ULP_RAW_CMD_INTERFACE) == 0)
    {
       ret_val = &sLocEngInjectRawCmdInterface;
    }
-#endif
+   else if(strcmp(name, ULP_PHONE_CONTEXT_INTERFACE) == 0)
+   {
+     ret_val = &sLocEngUlpPhoneContextInterface;
+   }
+   else if(strcmp(name, ULP_NETWORK_INTERFACE) == 0)
+   {
+     //Return a valid value for ULP Network Interface only if ULP
+     //turned on in gps.conf
+     if(gps_conf.CAPABILITIES & ULP_CAPABILITY)
+         ret_val = &sUlpNetworkInterface;
+   }
    else
    {
       LOC_LOGE ("get_extension: Invalid interface passed in\n");
    }
-
     EXIT_LOG(%p, ret_val);
     return ret_val;
 }
@@ -559,7 +692,6 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-#ifdef QCOM_FEATURE_IPV6
 static int loc_agps_open(AGpsType agpsType,
                          const char* apn, AGpsBearerType bearerType)
 {
@@ -569,16 +701,6 @@ static int loc_agps_open(AGpsType agpsType,
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
-#else
-static int loc_agps_open(const char* apn)
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_agps_open(loc_afw_data, apn);
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-#endif
 
 /*===========================================================================
 FUNCTION    loc_agps_closed
@@ -597,7 +719,6 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-#ifdef QCOM_FEATURE_IPV6
 static int loc_agps_closed(AGpsType agpsType)
 {
     ENTRY_LOG();
@@ -606,16 +727,6 @@ static int loc_agps_closed(AGpsType agpsType)
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
-#else
-static int loc_agps_closed()
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_agps_closed(loc_afw_data);
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-#endif
 
 /*===========================================================================
 FUNCTION    loc_agps_open_failed
@@ -634,7 +745,6 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-#ifdef QCOM_FEATURE_IPV6
 int loc_agps_open_failed(AGpsType agpsType)
 {
     ENTRY_LOG();
@@ -643,16 +753,6 @@ int loc_agps_open_failed(AGpsType agpsType)
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
-#else
-int loc_agps_open_failed()
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_agps_open_failed(loc_afw_data);
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-#endif
 
 /*===========================================================================
 FUNCTION    loc_agps_set_server
@@ -818,7 +918,6 @@ static void loc_agps_ril_update_network_availability(int available, const char* 
     EXIT_LOG(%s, VOID_RET);
 }
 
-#ifdef QCOM_FEATURE_ULP
 /*===========================================================================
 FUNCTION    loc_inject_raw_command
 
@@ -842,18 +941,13 @@ static bool loc_inject_raw_command(char* command, int length)
     EXIT_LOG(%s, loc_logger_boolStr[ret_val!=0]);
     return ret_val;
 }
-#endif
 
 
 static void loc_cb(GpsLocation* location, void* locExt)
 {
     ENTRY_LOG();
     if (NULL != gps_loc_cb && NULL != location) {
-#ifdef QCOM_FEATURE_ULP
         CALLBACK_LOG_CALLFLOW("location_cb - from", %d, location->position_source);
-#else
-        CALLBACK_LOG_CALLFLOW("location_cb - at", %llu, location->timestamp);
-#endif
         gps_loc_cb(location);
     }
     EXIT_LOG(%s, VOID_RET);
@@ -867,4 +961,157 @@ static void sv_cb(GpsSvStatus* sv_status, void* svExt)
         gps_sv_cb(sv_status);
     }
     EXIT_LOG(%s, VOID_RET);
+}
+/*===========================================================================
+FUNCTION loc_eng_get_ulp_inf
+
+DESCRIPTION
+   This function checks if ULP is enabled, and loads the libulp2.so and
+   returns its interface
+
+DEPENDENCIES
+   None
+
+RETURN VALUE
+   interface pointer to libulp: no error
+   NULL: errors
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+const ulpInterface * loc_eng_get_ulp_inf(void)
+{
+    ENTRY_LOG();
+    void *handle;
+    const char *error;
+    get_ulp_interface* get_ulp_inf;
+    const ulpInterface* loc_eng_ulpInf = NULL;
+
+    if (!(gps_conf.CAPABILITIES & ULP_CAPABILITY)) {
+       LOC_LOGD ("%s, ULP is not configured to be On in gps.conf\n", __func__);
+       goto exit;
+    }
+    dlerror();    /* Clear any existing error */
+
+    handle = dlopen ("libulp2.so", RTLD_NOW);
+
+    if (!handle)
+    {
+        if ((error = dlerror()) != NULL)  {
+            LOC_LOGE ("%s, dlopen for libulp.so failed, error = %s\n", __func__, error);
+           }
+        goto exit;
+    }
+    dlerror();    /* Clear any existing error */
+    get_ulp_inf = (get_ulp_interface*) dlsym(handle, "ulp_get_interface");
+    if ((error = dlerror()) != NULL)  {
+        LOC_LOGE ("%s, dlsym for ulpInterface failed, error = %s\n", __func__, error);
+        goto exit;
+     }
+
+    // Initialize the ULP interface
+    loc_eng_ulpInf = get_ulp_inf();
+
+exit:
+    EXIT_LOG(%d, loc_eng_ulpInf == NULL);
+    return loc_eng_ulpInf;
+}
+
+/*===========================================================================
+FUNCTION    loc_ulp_network_init
+
+DESCRIPTION
+   Initialize the ULP network interface.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   0
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static int loc_ulp_phone_context_init(UlpPhoneContextCallbacks *callbacks)
+{
+    ENTRY_LOG();
+    int ret_val = loc_eng_ulp_phone_context_init(loc_afw_data, callbacks);
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+/*===========================================================================
+FUNCTION    loc_ulp_phone_context_settings_update
+
+DESCRIPTION
+   This is used to inform the ULP module of phone settings changes carried out
+   by the users
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   0: success
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+
+static int loc_ulp_phone_context_settings_update(UlpPhoneContextSettings *settings)
+{
+    ENTRY_LOG();
+    int ret_val = -1;
+    ret_val = loc_eng_ulp_phone_context_settings_update(loc_afw_data, settings);
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_ulp_network_init
+
+DESCRIPTION
+   Initialize the ULP network interface.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   0
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static int loc_ulp_network_init(UlpNetworkLocationCallbacks *callbacks)
+{
+   ENTRY_LOG();
+   int ret_val = loc_eng_ulp_network_init(loc_afw_data, callbacks);
+   EXIT_LOG(%d, ret_val);
+   return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_eng_ulp_send_network_position
+
+DESCRIPTION
+   Ulp send data
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   0
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+int loc_ulp_send_network_position(UlpNetworkPositionReport *position_report)
+{
+    ENTRY_LOG();
+    int ret_val = -1;
+    ret_val = loc_eng_ulp_send_network_position(loc_afw_data, position_report);
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
 }

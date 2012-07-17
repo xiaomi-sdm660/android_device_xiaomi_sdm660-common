@@ -195,7 +195,7 @@ void loc_api_callback_process_sync_call(
 {
    int i;
 
-   LOGV("loc_handle = 0x%lx, loc_event = 0x%lx", loc_handle, loc_event);
+   ALOGV("loc_handle = 0x%lx, loc_event = 0x%lx", loc_handle, loc_event);
    for (i = 0; i < loc_sync_data.num_of_slots; i++)
    {
       loc_sync_call_slot_s_type *slot = &loc_sync_data.slots[i];
@@ -211,7 +211,7 @@ void loc_api_callback_process_sync_call(
 
          slot->loc_cb_received_event_mask = loc_event;
 
-         LOGV("signal slot %d in_use %d, loc_handle 0x%lx, event_mask 0x%1x, ioctl_type %d", i, slot->in_use, slot->loc_handle, (int) slot->loc_cb_wait_event_mask, (int) slot->ioctl_type);
+         ALOGV("signal slot %d in_use %d, loc_handle 0x%lx, event_mask 0x%1x, ioctl_type %d", i, slot->in_use, slot->loc_handle, (int) slot->loc_cb_wait_event_mask, (int) slot->ioctl_type);
          pthread_cond_signal(&slot->loc_cb_arrived_cond);
          slot->signal_sent = 1;
 
@@ -252,7 +252,7 @@ static int loc_lock_a_slot()
       loc_sync_call_slot_s_type *slot = &loc_sync_data.slots[i];
       if (pthread_mutex_trylock(&slot->lock) == EBUSY)
       {
-         LOGV("trylock EBUSY : %d", i);
+         ALOGV("trylock EBUSY : %d", i);
          continue;
       }
 
@@ -266,7 +266,7 @@ static int loc_lock_a_slot()
           */
          break;
       }
-      /* LOGV("slot %d in_use = %d, not_available = %d : %d", i, slot->in_use, slot->not_available, i); */
+      /* ALOGV("slot %d in_use = %d, not_available = %d : %d", i, slot->in_use, slot->not_available, i); */
       pthread_mutex_unlock(&slot->lock);
    }
 
@@ -417,7 +417,7 @@ static int loc_api_wait_callback(
    if (rc == ETIMEDOUT)
    {
       ret_val = RPC_LOC_API_TIMEOUT; /* Timed out */
-      LOGE("TIMEOUT: %d", select_id);
+      ALOGE("TIMEOUT: %d", select_id);
    }
    else {
       /* Obtained the first awaited callback */
@@ -462,7 +462,7 @@ int loc_api_sync_ioctl
 
    if (select_id < 0 || select_id >= loc_sync_data.num_of_slots)
    {
-      LOGE("slot not available ioctl_type = %s",
+      ALOGE("slot not available ioctl_type = %s",
            loc_get_ioctl_type_name(ioctl_type));
       return rc;
    }
@@ -474,17 +474,17 @@ int loc_api_sync_ioctl
 
    if (rc != RPC_LOC_API_SUCCESS)
    {
-      LOGE("loc_ioctl failed select_id = %d, ioctl_type %s, returned %s",
+      ALOGE("loc_ioctl failed select_id = %d, ioctl_type %s, returned %s",
            select_id, loc_get_ioctl_type_name(ioctl_type), loc_get_ioctl_status_name(rc));
    }
    else {
-      LOGV("select_id = %d, ioctl_type %d, returned RPC_LOC_API_SUCCESS",
+      ALOGV("select_id = %d, ioctl_type %d, returned RPC_LOC_API_SUCCESS",
           select_id, ioctl_type);
       // Wait for the callback of loc_ioctl
       if ((rc = loc_api_wait_callback(select_id, timeout_msec / 1000, NULL, &callback_data)) != 0)
       {
          // Callback waiting failed
-         LOGE("callback wait failed select_id = %d, ioctl_type %s, returned %s",
+         ALOGE("callback wait failed select_id = %d, ioctl_type %s, returned %s",
               select_id, loc_get_ioctl_type_name(ioctl_type), loc_get_ioctl_status_name(rc));
       }
       else
@@ -493,10 +493,10 @@ int loc_api_sync_ioctl
          if (callback_data.status != RPC_LOC_API_SUCCESS)
          {
             rc = callback_data.status;
-            LOGE("callback status failed select_id = %d, ioctl_type %s, returned %s",
+            ALOGE("callback status failed select_id = %d, ioctl_type %s, returned %s",
                  select_id, loc_get_ioctl_type_name(ioctl_type), loc_get_ioctl_status_name(rc));
          } else {
-            LOGV("callback status success select_id = %d, ioctl_type %d, returned %d",
+            ALOGV("callback status success select_id = %d, ioctl_type %d, returned %d",
                 select_id, ioctl_type, rc);
          }
       } /* wait callback */

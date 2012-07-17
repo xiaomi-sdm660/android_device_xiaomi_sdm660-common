@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011,2012 Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -76,11 +76,48 @@ enum loc_eng_msg_ids_t {
     LOC_ENG_MSG_RELEASE_BIT,
     LOC_ENG_MSG_REQUEST_ATL,
     LOC_ENG_MSG_RELEASE_ATL,
+    LOC_ENG_MSG_REQUEST_WIFI,
+    LOC_ENG_MSG_RELEASE_WIFI,
     LOC_ENG_MSG_REQUEST_NI,
     LOC_ENG_MSG_INFORM_NI_RESPONSE,
     LOC_ENG_MSG_REQUEST_XTRA_DATA,
     LOC_ENG_MSG_REQUEST_TIME,
-    LOC_ENG_MSG_REQUEST_POSITION
+    LOC_ENG_MSG_REQUEST_POSITION,
+    LOC_ENG_MSG_EXT_POWER_CONFIG,
+
+    // The following messages are added for ulp
+    LOC_ENG_MSG_REQUEST_PHONE_CONTEXT,
+    LOC_ENG_MSG_REQUEST_NETWORK_POSIITON,
+
+    /* Following messages are for ulp, start at index 0x600 */
+
+    // Message is sent by GPS HAL layer to add/remove unique request criteria
+    ULP_MSG_UPDATE_CRITERIA = 0x600,
+
+    // Message is sent by GPS HAL layer to request ULP to start producing position fixes
+
+    ULP_MSG_START_FIX,
+
+    // Message is sent by Android framework(GpsLocationProvider)
+    // to request ULP to stop producing position fixes
+    ULP_MSG_STOP_FIX,
+
+    // Message is sent by Android framework(GpsLocationProvider)
+    // to inject phone context setting  include initial phone context setting and subsequent changes
+    ULP_MSG_INJECT_PHONE_CONTEXT_SETTINGS,
+
+    // Message is sent by network provider to INJECT the position in UlpNetworkPositionReport format
+    ULP_MSG_INJECT_NETWORK_POSITION,
+
+    // Message is sent by QUIPC provider in order to report the position in GpsPosition format with QUIPC status
+    ULP_MSG_REPORT_QUIPC_POSITION,
+
+    // Message is sent by QUIPC module in order to request some info from ULP
+    ULP_MSG_REQUEST_COARSE_POSITION,
+
+    /* Message is sent by HAL to LOC API to configure LTE Positioning
+       Profile in modem */
+    LOC_ENG_MSG_LPP_CONFIG
 };
 
 #ifdef __cplusplus

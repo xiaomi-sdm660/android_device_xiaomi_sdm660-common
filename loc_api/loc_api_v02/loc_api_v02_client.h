@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -112,8 +112,11 @@ typedef enum
   eLOC_CLIENT_FAILURE_INTERNAL                     = 11,
   /**< Failed because of an internal error in the service. */
 
-  eLOC_CLIENT_FAILURE_NOT_INITIALIZED              = 12
+  eLOC_CLIENT_FAILURE_NOT_INITIALIZED              = 12,
   /**< Failed because the service has not been initialized. */
+
+  eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY             = 13
+  /**< Failed because not rnough memory to do the operation.*/
 
 }locClientStatusEnumType;
 
@@ -154,6 +157,8 @@ typedef enum
   - GetOperationMode
   - GetCradleMountConfig
   - GetExternalPowerConfig
+  - GetSensorControlConfig
+  - GetSensorPerformanceControlConfiguration
 */
 typedef union
 {
@@ -451,6 +456,17 @@ typedef union
         QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02.
         @newpage */
 
+   const qmiLocGetSensorPropertiesReqMsgT_v02* pGetSensorPropertiesReq;
+   /**< Retrieves the sensor properties from the engine.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_GET_SENSOR_PROPERTIES_IND_V02.
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02.
+        @newpage */
+
    const qmiLocSetSensorPropertiesReqMsgT_v02* pSetSensorPropertiesReq;
    /**< Sets the sensor properties in the engine.
 
@@ -507,6 +523,65 @@ typedef union
          To send this request, set the reqId field in locClientSendReq() to
          QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02.
          @newpage */
+
+   const qmiLocAddCircularGeofenceReqMsgT_v02* pAddCircularGeofenceReq;
+   /**< Adds a Circular Geofence.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02.
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02
+        @newpage */
+
+   const qmiLocDeleteGeofenceReqMsgT_v02* pDeleteGeofenceReq;
+   /**< Deletes a Geofence.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_DELETE_GEOFENCE_IND_V02.
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_DELETE_GEOFENCE_REQ_V02
+        @newpage */
+
+   const qmiLocQueryGeofenceReqMsgT_v02* pQueryGeofenceReq;
+   /**< Queries a Geofence.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_QUERY_GEOFENCE_IND_V02
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_QUERY_GEOFENCE_REQ_V02
+
+        @newpage */
+
+    const qmiLocEditGeofenceReqMsgT_v02* pEditGeofenceReq;
+    /**< Edits Geofence Parameters.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_EDIT_GEOFENCE_IND_V02
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_EDIT_GEOFENCE_REQ_V02
+
+        @newpage */
+
+    const qmiLocGetBestAvailablePositionReqMsgT_v02*
+      pGetBestAvailablePositionReq;
+    /**< Get the best available position from location engine
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02
+
+        @newpage */
 
 }locClientReqUnionType;
 
@@ -634,6 +709,31 @@ typedef union
 
         The eventIndId field in the event indication callback is set to
         QMI_LOC_EVENT_LOCATION_SERVER_CONNECTION_REQ_IND_V02.
+        @newpage */
+
+   const qmiLocEventNiGeofenceNotificationIndMsgT_v02*
+     pNiGeofenceNotificationEvent;
+   /**< Sent by the engine to notify the client about changes to a
+        Network Initiated Geofence.
+
+        The eventIndId field in the event indication callback is set to
+        QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02.
+        @newpage */
+
+   const qmiLocEventGeofenceGenAlertIndMsgT_v02* pGeofenceGenAlertEvent;
+   /**< Sent by the engine to notify the client about updates that may
+        affect a Geofence operation.
+
+        The eventIndId field in the event indication callback is set to
+        QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02.
+        @newpage */
+
+   const qmiLocEventGeofenceBreachIndMsgT_v02* pGeofenceBreachEvent;
+   /**< Sent by the engine to notify the client about a Geofence Breach
+        Event.
+
+        The eventIndId field in the event indication callback is set to
+        QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02.
         @newpage */
 
 }locClientEventIndUnionType;
@@ -951,7 +1051,43 @@ typedef union
     /**< Response to the request,
         QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02
         The respIndId field in the response indication callback is set to
-        QMI_LOC_ET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02.
+        QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02.
+        @newpage */
+
+   const qmiLocAddCircularGeofenceIndMsgT_v02* pAddCircularGeofenceInd;
+   /**< Response to the request,
+        QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02
+        @newpage */
+
+   const qmiLocDeleteGeofenceIndMsgT_v02* pDeleteGeofenceInd;
+   /**< Response to the request,
+        QMI_LOC_DELETE_GEOFENCE_REQ_V02
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_DELETE_GEOFENCE_IND_V02
+        @newpage */
+
+   const qmiLocQueryGeofenceIndMsgT_v02* pQueryGeofenceInd;
+    /**< Response to the request,
+        QMI_LOC_QUERY_GEOFENCE_REQ_V02
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_QUERY_GEOFENCE_IND_V02
+        @newpage */
+
+    const qmiLocEditGeofenceIndMsgT_v02* pEditGeofenceInd;
+    /**< Response to the request,
+        QMI_LOC_EDIT_GEOFENCE_REQ_V02
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_EDIT_GEOFENCE_IND_V02
+        @newpage */
+
+    const qmiLocGetBestAvailablePositionIndMsgT_v02*
+      pGetBestAvailablePositionInd;
+    /**< Response to the request,
+        QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02
         @newpage */
 
 }locClientRespIndUnionType;

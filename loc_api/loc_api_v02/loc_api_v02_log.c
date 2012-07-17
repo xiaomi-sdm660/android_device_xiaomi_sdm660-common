@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -191,6 +191,24 @@ static loc_name_val_s_type loc_v02_event_name[] =
     NAME_VAL(QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02),
     NAME_VAL(QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_RESP_V02),
     NAME_VAL(QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02),
+    NAME_VAL(QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_ADD_CIRCULAR_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_DELETE_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_DELETE_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_DELETE_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_QUERY_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_QUERY_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_QUERY_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_EDIT_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_EDIT_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_EDIT_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02),
+    NAME_VAL(QMI_LOC_GET_BEST_AVAILABLE_POSITION_RESP_V02),
+    NAME_VAL(QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02),
 };
 static int loc_v02_event_num = sizeof(loc_v02_event_name) / sizeof(loc_name_val_s_type);
 
@@ -214,6 +232,7 @@ static loc_name_val_s_type loc_v02_client_status_name[] =
     NAME_VAL(eLOC_CLIENT_FAILURE_INVALID_HANDLE),
     NAME_VAL(eLOC_CLIENT_FAILURE_INTERNAL),
     NAME_VAL(eLOC_CLIENT_FAILURE_NOT_INITIALIZED),
+    NAME_VAL(eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY),
 };
 static int loc_v02_client_status_num = sizeof(loc_v02_client_status_name) / sizeof(loc_name_val_s_type);
 
@@ -233,6 +252,8 @@ static loc_name_val_s_type loc_v02_qmi_status_name[] =
     eQMI_LOC_ENGINE_BUSY_V02,
     eQMI_LOC_PHONE_OFFLINE_V02,
     eQMI_LOC_TIMEOUT_V02,
+    eQMI_LOC_CONFIG_NOT_SUPPORTED_V02,
+    eQMI_LOC_INSUFFICIENT_MEMORY_V02,
     QMILOCSTATUSENUMT_MAX_ENUM_VAL_V02
 };
 static int loc_v02_qmi_status_num = sizeof(loc_v02_qmi_status_name) / sizeof(loc_name_val_s_type);

@@ -249,7 +249,7 @@ msq_q_err_type msg_q_rcv(void* msg_q_data, void** msg_obj)
 
    pthread_mutex_unlock(&p_msg_q->list_mutex);
 
-   LOC_LOGD("%s: Received message %p rv = %d\n", __FUNCTION__, *msg_obj, rv);
+   LOC_LOGD("%s: Received message 0x%08X rv = %d\n", __FUNCTION__, *msg_obj, rv);
 
    return rv;
 }

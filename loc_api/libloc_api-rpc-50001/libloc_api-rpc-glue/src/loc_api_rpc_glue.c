@@ -62,8 +62,8 @@
 /* Logging Improvement */
 #include "log_util.h"
 
-/* Uncomment to force LOGD messages */
-// #define LOGD LOGI
+/* Uncomment to force ALOGD messages */
+// #define ALOGD ALOGI
 
 /*=====================================================================
      External declarations
@@ -316,30 +316,23 @@ rpc_loc_client_handle_type loc_open (
     rpc_loc_open_args args;
     args.event_reg_mask = event_reg_mask;
 
-    int i;
+    int i, j = LOC_API_CB_MAX_CLIENTS;
     for (i = 0; i < LOC_API_CB_MAX_CLIENTS; i++)
     {
-        if (loc_glue_callback_table[i].cb_func == event_callback ||
-            loc_glue_callback_table[i].user == userData)
+        if (loc_glue_callback_table[i].user == userData)
         {
             LOC_LOGW("Client already opened service (callback=%p)...\n",
                   event_callback);
             break;
+        } else if (j == LOC_API_CB_MAX_CLIENTS &&
+                   loc_glue_callback_table[i].user == NULL) {
+            j = i;
         }
     }
 
     if (i == LOC_API_CB_MAX_CLIENTS)
     {
-        for (i = 0; i < LOC_API_CB_MAX_CLIENTS; i++)
-        {
-            if (loc_glue_callback_table[i].cb_func == NULL)
-            {
-                loc_glue_callback_table[i].cb_func = event_callback;
-                loc_glue_callback_table[i].rpc_cb = rpc_cb;
-                loc_glue_callback_table[i].user = userData;
-                break;
-            }
-        }
+        i = j;
     }
 
     if (i == LOC_API_CB_MAX_CLIENTS)
@@ -347,6 +340,10 @@ rpc_loc_client_handle_type loc_open (
         LOC_LOGE("Too many clients opened at once...\n");
         return RPC_LOC_CLIENT_HANDLE_INVALID;
     }
+
+    loc_glue_callback_table[i].cb_func = event_callback;
+    loc_glue_callback_table[i].rpc_cb = rpc_cb;
+    loc_glue_callback_table[i].user = userData;
 
     args.event_callback = loc_glue_callback_table[i].cb_id;
     LOC_LOGV("cb_id=%d, func=0x%x", i, (unsigned int) event_callback);
@@ -405,6 +402,7 @@ void loc_clear(rpc_loc_client_handle_type handle) {
             loc_glue_callback_table[i].cb_func = NULL;
             loc_glue_callback_table[i].rpc_cb = NULL;
             loc_glue_callback_table[i].handle = -1;
+            loc_glue_callback_table[i].user = NULL;
             break;
         }
     }

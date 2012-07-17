@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011,2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +32,9 @@
 #include <linux/types.h>
 #include <arpa/inet.h>
 
+//for SSID_BUF_SIZE
+#include <hardware/gps.h>
+
 enum {
     /* 0x0 - 0xEF is reserved for daemon internal */
     GPSONE_LOC_API_IF_REQUEST   = 0xF0,
@@ -55,10 +58,26 @@ struct ctrl_msg_unblock {
     int reserved;
 };
 
+typedef enum {
+  IF_REQUEST_TYPE_SUPL = 0,
+  IF_REQUEST_TYPE_WIFI,
+  IF_REQUEST_TYPE_ANY
+} ctrl_if_req_type_e_type;
+
+typedef enum {
+  IF_REQUEST_SENDER_ID_QUIPC = 0,
+  IF_REQUEST_SENDER_ID_MSAPM,
+  IF_REQUEST_SENDER_ID_GPSONE_DAEMON,
+  IF_REQUEST_SENDER_ID_MODEM
+} ctrl_if_req_sender_id_e_type;
+
 struct ctrl_msg_if_request {
-    unsigned is_supl; /* 1: use Android SUPL connection; 0: use Android default internet connection */
+    ctrl_if_req_type_e_type type;
+    ctrl_if_req_sender_id_e_type sender_id;
     unsigned long ipv4_addr;
     unsigned char ipv6_addr[16];
+    char ssid[SSID_BUF_SIZE];
+    char password[SSID_BUF_SIZE];
 };
 
 /* do not change this structure */

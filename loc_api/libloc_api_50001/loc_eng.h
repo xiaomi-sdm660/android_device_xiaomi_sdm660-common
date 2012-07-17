@@ -1,4 +1,4 @@
-/* Copyright (c) 2009,2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012 Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,6 +36,7 @@ extern "C" {
 
 // Uncomment to keep all LOG messages (LOGD, LOGI, LOGV, etc.)
 #define MAX_NUM_ATL_CONNECTIONS  2
+
 // Define boolean type to be used by libgps on loc api module
 typedef unsigned char boolean;
 
@@ -67,14 +68,25 @@ typedef unsigned char boolean;
 #define FAILURE                 FALSE
 #define INVALID_ATL_CONNECTION_HANDLE -1
 
-#define MAX_APN_LEN 100
-#define MAX_URL_LEN 256
-#define smaller_of(a, b) (((a) > (b)) ? (b) : (a))
-
 enum loc_mute_session_e_type {
    LOC_MUTE_SESS_NONE = 0,
    LOC_MUTE_SESS_WAIT,
    LOC_MUTE_SESS_IN_SESSION
+};
+
+struct LocEngContext {
+    // Data variables used by deferred action thread
+    const void* deferred_q;
+    const void* ulp_q;
+    const pthread_t deferred_action_thread;
+    static LocEngContext* get(gps_create_thread threadCreator);
+    void drop();
+    static pthread_mutex_t lock;
+    static pthread_cond_t cond;
+private:
+    int counter;
+    static LocEngContext *me;
+    LocEngContext(gps_create_thread threadCreator);
 };
 
 // Module data
@@ -89,6 +101,8 @@ typedef struct
     gps_ni_notify_callback         ni_notify_cb;
     gps_acquire_wakelock           acquire_wakelock_cb;
     gps_release_wakelock           release_wakelock_cb;
+    ulp_network_location_request   ulp_network_callback;
+    ulp_request_phone_context      ulp_phone_context_req_cb;
     boolean                        intermediateFix;
     AGpsStatusValue                agps_status;
     // used to defer stopping the GPS engine until AGPS data calls are done
@@ -97,11 +111,10 @@ typedef struct
     loc_eng_xtra_data_s_type       xtra_module_data;
     loc_eng_ni_data_s_type         loc_eng_ni_data;
 
-    boolean                        navigating;
-
     // AGPS state machines
     AgpsStateMachine*              agnss_nif;
     AgpsStateMachine*              internet_nif;
+    AgpsStateMachine*              wifi_nif;
 
     // GPS engine status
     GpsStatusValue                 engine_status;
@@ -111,8 +124,6 @@ typedef struct
     GpsAidingData                  aiding_data_for_deletion;
 
     void*                          context;
-
-    loc_eng_msg_position_mode      position_mode;
 
     // For muting session broadcast
     loc_mute_session_e_type        mute_session_state;
@@ -127,12 +138,47 @@ typedef struct
     int    mpc_host_set;
     char   mpc_host_buf[101];
     int    mpc_port_buf;
+    bool   ulp_initialized;
 } loc_eng_data_s_type;
 
+#include "ulp.h"
+
+/* GPS.conf support */
+typedef struct loc_gps_cfg_s
+{
+  unsigned long  INTERMEDIATE_POS;
+  unsigned long  ACCURACY_THRES;
+  unsigned long  ENABLE_WIPER;
+  unsigned long  SUPL_VER;
+  unsigned long  CAPABILITIES;
+  uint8_t        GYRO_BIAS_RANDOM_WALK_VALID;
+  double         GYRO_BIAS_RANDOM_WALK;
+  unsigned long  SENSOR_ACCEL_BATCHES_PER_SEC;
+  unsigned long  SENSOR_ACCEL_SAMPLES_PER_BATCH;
+  unsigned long  SENSOR_GYRO_BATCHES_PER_SEC;
+  unsigned long  SENSOR_GYRO_SAMPLES_PER_BATCH;
+  unsigned long  SENSOR_CONTROL_MODE;
+  unsigned long  SENSOR_USAGE;
+  unsigned long  QUIPC_ENABLED;
+  unsigned long  LPP_PROFILE;
+  unsigned long  SENSOR_ALGORITHM_CONFIG_MASK;
+  uint8_t        ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
+  double         ACCEL_RANDOM_WALK_SPECTRAL_DENSITY;
+  uint8_t        ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
+  double         ANGLE_RANDOM_WALK_SPECTRAL_DENSITY;
+  uint8_t        RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
+  double         RATE_RANDOM_WALK_SPECTRAL_DENSITY;
+  uint8_t        VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
+  double         VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY;
+} loc_gps_cfg_s_type;
+
+extern loc_gps_cfg_s_type gps_conf;
 
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,
                   LocCallbacks* callbacks,
-                  LOC_API_ADAPTER_EVENT_MASK_T event);
+                  LOC_API_ADAPTER_EVENT_MASK_T event,
+                  void (*loc_external_msg_sender) (void*, void*));
+int loc_eng_ulp_init(loc_eng_data_s_type &loc_eng_data, const ulpInterface * loc_eng_ulpInf);
 int  loc_eng_start(loc_eng_data_s_type &loc_eng_data);
 int  loc_eng_stop(loc_eng_data_s_type &loc_eng_data);
 void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data);
@@ -145,29 +191,19 @@ int  loc_eng_inject_location(loc_eng_data_s_type &loc_eng_data,
 void loc_eng_delete_aiding_data(loc_eng_data_s_type &loc_eng_data,
                                 GpsAidingData f);
 int  loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
-                               LocPositionMode mode, GpsPositionRecurrence recurrence,
-                               uint32_t min_interval, uint32_t preferred_accuracy,
-                               uint32_t preferred_time);
+                               LocPosMode &params);
 const void* loc_eng_get_extension(loc_eng_data_s_type &loc_eng_data,
                                   const char* name);
-#ifdef QCOM_FEATURE_ULP
 int  loc_eng_update_criteria(loc_eng_data_s_type &loc_eng_data,
                              UlpLocationCriteria criteria);
-#endif
+
 
 void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data,
                        AGpsCallbacks* callbacks);
-#ifdef QCOM_FEATURE_IPV6
 int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType,
                       const char* apn, AGpsBearerType bearerType);
 int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType);
 int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType);
-#else
-int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, const char* apn);
-int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data);
-int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data);
-#endif
-
 int  loc_eng_set_server_proxy(loc_eng_data_s_type &loc_eng_data,
                               LocServerType type, const char *hostname, int port);
 
@@ -196,7 +232,15 @@ extern void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
                                    const GpsNiNotification *notif,
                                    const void* passThrough);
 extern void loc_eng_ni_reset_on_engine_restart(loc_eng_data_s_type &loc_eng_data);
+int loc_eng_ulp_network_init(loc_eng_data_s_type &loc_eng_data, UlpNetworkLocationCallbacks *callbacks);
 
+int loc_eng_ulp_phone_context_settings_update(loc_eng_data_s_type &loc_eng_data,
+                                              UlpPhoneContextSettings *settings);
+int loc_eng_ulp_phone_context_init(loc_eng_data_s_type &loc_eng_data,
+                                   UlpPhoneContextCallbacks *callback);
+int loc_eng_ulp_send_network_position(loc_eng_data_s_type &loc_eng_data,
+                                             UlpNetworkPositionReport *position_report);
+int loc_eng_read_config(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

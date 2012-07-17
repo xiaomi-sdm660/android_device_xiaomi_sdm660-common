@@ -3,6 +3,7 @@ ifneq ($(BUILD_TINY_ANDROID),true)
 
 BIT_ENABLED_BOARD_PLATFORM_LIST := msm7630_fusion
 BIT_ENABLED_BOARD_PLATFORM_LIST += msm8660
+BIT_ENABLED_BOARD_PLATFORM_LIST += msm8960
 ifeq ($(call is-board-platform-in-list,$(BIT_ENABLED_BOARD_PLATFORM_LIST)),true)
 FEATURE_GNSS_BIT_API := true
 endif # is-board-platform-in-list
@@ -57,8 +58,7 @@ LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
     libloc_adapter \
-    libgps.utils \
-    libdl
+    libgps.utils
 
 LOCAL_SRC_FILES += \
     loc_eng.cpp \
@@ -78,12 +78,16 @@ LOCAL_SRC_FILES += \
     loc_eng_dmn_conn_glue_msg.c \
     loc_eng_dmn_conn_glue_pipe.c
 
+# if QMI is supported then link to loc_api_v02
+ifeq ($(call is-board-platform-in-list,$(QMI_BOARD_PLATFORM_LIST)),true)
+LOCAL_SHARED_LIBRARIES += libloc_api_v02
+else
 ## Check if RPC is not unsupported
 ifneq ($(TARGET_NO_RPC),true)
 LOCAL_SHARED_LIBRARIES += libloc_api-rpc-qc
-else
-LOCAL_SHARED_LIBRARIES += libloc_api_v02
 endif #TARGET_NO_RPC
+
+endif #is-board-platform-in-list
 
 LOCAL_CFLAGS += \
      -fno-short-enums \
@@ -109,7 +113,8 @@ LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
     libloc_eng \
-    libgps.utils
+    libgps.utils \
+    libdl
 
 LOCAL_SRC_FILES += \
     loc.cpp \
@@ -121,7 +126,8 @@ LOCAL_CFLAGS += \
 
 ## Includes
 LOCAL_C_INCLUDES:= \
-    $(TARGET_OUT_HEADERS)/gps.utils
+    $(TARGET_OUT_HEADERS)/gps.utils \
+    hardware/qcom/gps/loc_api/ulp/inc
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw

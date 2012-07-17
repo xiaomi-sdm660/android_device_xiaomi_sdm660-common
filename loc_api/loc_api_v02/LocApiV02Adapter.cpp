@@ -26,6 +26,9 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#define LOG_NDEBUG 0
+#define LOG_TAG "LocSvc_adapter"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,9 +43,6 @@
 #include "loc_api_v02_log.h"
 #include "loc_api_sync_req.h"
 #include "LocApiAdapter.h"
-
-#define LOG_NDEBUG 0
-#define LOG_TAG "LocSvc_adapter"
 #include "loc_util_log.h"
 
 
@@ -161,10 +161,7 @@ locClientCallbacksType globalCallbacks =
 /* Constructor for LocApiV02Adapter */
 LocApiV02Adapter :: LocApiV02Adapter(LocEng &locEng):
   LocApiAdapter(locEng), clientHandle( LOC_CLIENT_INVALID_HANDLE_VALUE),
-  eventMask(convertMask(locEng.eventMask)), navigating(false),
-   fixCriteria (LOC_POSITION_MODE_MS_BASED, GPS_POSITION_RECURRENCE_PERIODIC,
-                LOC_API_V02_DEF_MIN_INTERVAL, LOC_API_V02_DEF_HORZ_ACCURACY,
-                LOC_API_V02_DEF_TIMEOUT )
+  eventMask(convertMask(locEng.eventMask))
 {
   // initialize loc_sync_req interface
   loc_sync_req_init();
@@ -236,6 +233,7 @@ enum loc_api_adapter_err LocApiV02Adapter :: startFix()
   memset (&set_mode_ind, 0, sizeof(set_mode_ind));
 
   LOC_LOGV("%s:%d]: start \n", __func__, __LINE__);
+  fixCriteria.logv();
 
   // fill in the start request
   switch(fixCriteria.mode)
@@ -277,28 +275,27 @@ enum loc_api_adapter_err LocApiV02Adapter :: startFix()
     return LOC_API_ADAPTER_ERR_GENERAL_FAILURE; // error
   }
 
-  if(fixCriteria.min_interval > 0)
-  {
-    start_msg.minInterval_valid = 1;
-    start_msg.minInterval = fixCriteria.min_interval;
-  }
+  start_msg.minInterval_valid = 1;
+  start_msg.minInterval = fixCriteria.min_interval;
 
-  start_msg.horizontalAccuracyLevel_valid = 1;
+  if (fixCriteria.preferred_accuracy > 0) {
+      start_msg.horizontalAccuracyLevel_valid = 1;
 
-  if (fixCriteria.preferred_accuracy <= 100)
-  {
-    // fix needs high accuracy
-    start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_HIGH_V02;
-  }
-  else if (fixCriteria.preferred_accuracy <= 1000)
-  {
-    //fix needs med accuracy
-    start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_MED_V02;
-  }
-  else
-  {
-    //fix needs low accuracy
-    start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_LOW_V02;
+      if (fixCriteria.preferred_accuracy <= 100)
+      {
+          // fix needs high accuracy
+          start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_HIGH_V02;
+      }
+      else if (fixCriteria.preferred_accuracy <= 1000)
+      {
+          //fix needs med accuracy
+          start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_MED_V02;
+      }
+      else
+      {
+          //fix needs low accuracy
+          start_msg.horizontalAccuracyLevel =  eQMI_LOC_ACCURACY_LOW_V02;
+      }
   }
 
   start_msg.fixRecurrence_valid = 1;
@@ -313,7 +310,25 @@ enum loc_api_adapter_err LocApiV02Adapter :: startFix()
 
   //dummy session id
   // TBD: store session ID, check for session id in pos reports.
-  start_msg.sessionId = LOC_API_V02_DEF_SESSION_ID;;
+  start_msg.sessionId = LOC_API_V02_DEF_SESSION_ID;
+
+  if (fixCriteria.credentials[0] != 0) {
+      int size1 = sizeof(start_msg.applicationId.applicationName);
+      int size2 = sizeof(fixCriteria.credentials);
+      int len = ((size1 < size2) ? size1 : size2) - 1;
+      memcpy(start_msg.applicationId.applicationName,
+             fixCriteria.credentials,
+             len);
+
+      size1 = sizeof(start_msg.applicationId.applicationProvider);
+      size2 = sizeof(fixCriteria.provider);
+      len = ((size1 < size2) ? size1 : size2) - 1;
+      memcpy(start_msg.applicationId.applicationProvider,
+             fixCriteria.provider,
+             len);
+
+      start_msg.applicationId_valid = 1;
+  }
 
   req_union.pStartReq = &start_msg;
 
@@ -322,12 +337,8 @@ enum loc_api_adapter_err LocApiV02Adapter :: startFix()
 
   if( eLOC_CLIENT_SUCCESS == status)
   {
-    navigating = true;
     return LOC_API_ADAPTER_ERR_SUCCESS;
   }
-
-  // start_fix failed so MO fix is not in progress
-  navigating = false;
 
   return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
 }
@@ -355,7 +366,6 @@ enum loc_api_adapter_err LocApiV02Adapter :: stopFix()
 
   if( eLOC_CLIENT_SUCCESS == status)
   {
-    navigating = false;
     return LOC_API_ADAPTER_ERR_SUCCESS;
   }
 
@@ -366,42 +376,28 @@ enum loc_api_adapter_err LocApiV02Adapter :: stopFix()
 
 /* set the positioning fix criteria */
 enum loc_api_adapter_err LocApiV02Adapter ::  setPositionMode(
-  LocPositionMode mode, GpsPositionRecurrence recurrence,
-  uint32_t min_interval, uint32_t preferred_accuracy,
-  uint32_t preferred_time)
+  const LocPosMode *posMode)
 {
+    LOC_LOGV ("%s:%d]: posMode %p",__func__, __LINE__, posMode);
 
-  LOC_LOGV ("%s:%d]: interval = %d, mode = %d, recurrence = %d, preferred_accuracy = %d\n",__func__, __LINE__,
-                 min_interval, mode, recurrence, preferred_accuracy);
+    if (NULL != posMode &&
+        !fixCriteria.equals(*posMode)) {
+        //making a copy of the fix criteria
+        fixCriteria = *posMode;
 
-  //store the fix criteria
-  fixCriteria.mode = mode;
+        LOC_LOGD ("%s:%d]: new fix criteria", __func__, __LINE__);
 
-  fixCriteria.recurrence = recurrence;
+        if(true == navigating)
+        {
+            //fix is in progress, send a restart
+            LOC_LOGD ("%s:%d]: fix is in progress restarting the fix with new "
+                      "criteria\n", __func__, __LINE__);
 
-  if(min_interval == 0)
-  {
-    fixCriteria.min_interval = MIN_POSSIBLE_FIX_INTERVAL;
-  }
-  else
-  {
-    fixCriteria.min_interval = min_interval;
-  }
+            return( startFix());
+        }
+    }
 
-  fixCriteria.preferred_accuracy = preferred_accuracy;
-
-  fixCriteria.preferred_time = preferred_time;
-
-  if(true == navigating)
-  {
-      //fix is in progress, send a restart
-    LOC_LOGD ("%s:%d]: fix is in progress restarting the fix with new "
-                   "criteria\n", __func__, __LINE__);
-
-    return( startFix());
-  }
-
-  return LOC_API_ADAPTER_ERR_SUCCESS;
+    return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
 /* inject time into the position engine */
@@ -563,13 +559,12 @@ enum loc_api_adapter_err LocApiV02Adapter ::  deleteAidingData(GpsAidingData f)
 
     }
 
-#ifdef QCOM_FEATURE_DELEXT
     if( f & GPS_DELETE_TIME_GPS )
     {
       delete_req.deleteGnssDataMask_valid = 1;
       delete_req.deleteGnssDataMask |= QMI_LOC_MASK_DELETE_GPS_TIME_V02;
     }
-#endif
+
     if(f & GPS_DELETE_POSITION )
     {
       delete_req.deleteGnssDataMask_valid = 1;
@@ -631,7 +626,6 @@ enum loc_api_adapter_err LocApiV02Adapter ::  deleteAidingData(GpsAidingData f)
           QMI_LOC_MASK_DELETE_CELLDB_NEIGHBOR_INFO_V02) ;
 
     }
-#ifdef QCOM_FEATURE_DELEXT
     if(f & GPS_DELETE_ALMANAC_CORR )
     {
       delete_req.deleteGnssDataMask_valid = 1;
@@ -705,7 +699,6 @@ enum loc_api_adapter_err LocApiV02Adapter ::  deleteAidingData(GpsAidingData f)
       delete_req.deleteGnssDataMask_valid = 1;
       delete_req.deleteGnssDataMask |= QMI_LOC_MASK_DELETE_GLO_TIME_V02;
     }
-#endif
   }
 
   req_union.pDeleteAssistDataReq = &delete_req;
@@ -1002,7 +995,7 @@ enum loc_api_adapter_err LocApiV02Adapter :: setXtraData(
 
   return LOC_API_ADAPTER_ERR_SUCCESS;
 }
-#ifdef QCOM_FEATURE_IPV6
+
 enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
   int handle, int is_succ, char* apn, AGpsBearerType bear,
   AGpsType agpsType)
@@ -1082,68 +1075,7 @@ enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
   return LOC_API_ADAPTER_ERR_SUCCESS;
 
 }
-#else
-enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
-  int handle, int is_succ, char* apn, AGpsType agpsType)
-{
-  locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
-  locClientReqUnionType req_union;
-  qmiLocInformLocationServerConnStatusReqMsgT_v02 conn_status_req;
-  qmiLocInformLocationServerConnStatusIndMsgT_v02 conn_status_ind;
 
-  LOC_LOGD("%s:%d]: ATL open handle = %d, is_succ = %d, "
-                "APN = [%s] \n",  __func__, __LINE__,
-                handle, is_succ, apn);
-
-  memset(&conn_status_req, 0, sizeof(conn_status_req));
-  memset(&conn_status_ind, 0, sizeof(conn_status_ind));
-
-        // Fill in data
-  conn_status_req.connHandle = handle;
-
-  conn_status_req.requestType = eQMI_LOC_SERVER_REQUEST_OPEN_V02;
-
-  if(is_succ)
-  {
-    conn_status_req.statusType = eQMI_LOC_SERVER_REQ_STATUS_SUCCESS_V02;
-
-    strlcpy(conn_status_req.apnProfile.apnName, apn,
-            sizeof(conn_status_req.apnProfile.apnName) );
-
-
-    conn_status_req.apnProfile.pdnType =
-      eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4_V02;
-
-    conn_status_req.apnProfile_valid = 1;
-  }
-  else
-  {
-    conn_status_req.statusType = eQMI_LOC_SERVER_REQ_STATUS_FAILURE_V02;
-  }
-
-  req_union.pInformLocationServerConnStatusReq = &conn_status_req;
-
-  result = loc_sync_send_req(clientHandle,
-                             QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02,
-                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
-                             QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_IND_V02,
-                             &conn_status_ind);
-
-  if(result != eLOC_CLIENT_SUCCESS ||
-     eQMI_LOC_SUCCESS_V02 != conn_status_ind.status)
-  {
-    LOC_LOGE ("%s:%d]: Error status = %s, ind..status = %s ",
-              __func__, __LINE__,
-              loc_get_v02_client_status_name(result),
-              loc_get_v02_qmi_status_name(conn_status_ind.status));
-
-    return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
-  }
-
-  return LOC_API_ADAPTER_ERR_SUCCESS;
-
-}
-#endif
 /* close atl connection */
 enum loc_api_adapter_err LocApiV02Adapter :: atlCloseStatus(
   int handle, int is_succ)
@@ -1239,6 +1171,67 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSUPLVersion(uint32_t version)
   return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
+/* set the configuration for LTE positioning profile (LPP) */
+enum loc_api_adapter_err LocApiV02Adapter :: setLPPConfig(uint32_t profile)
+{
+  locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
+  locClientReqUnionType req_union;
+  qmiLocSetProtocolConfigParametersReqMsgT_v02 lpp_config_req;
+  qmiLocSetProtocolConfigParametersIndMsgT_v02 lpp_config_ind;
+
+  LOC_LOGD("%s:%d]: lpp profile = %d\n",  __func__, __LINE__, profile);
+
+  memset(&lpp_config_req, 0, sizeof(lpp_config_req));
+  memset(&lpp_config_ind, 0, sizeof(lpp_config_ind));
+
+  lpp_config_req.lppConfig_valid = 1;
+  //  Default RRLP or User or Control plane configuration
+  switch(profile)
+  {
+    /* RRLP */
+    case 0:
+      lpp_config_req.lppConfig = profile;
+      break;
+
+    /* User plane */
+    case 1:
+      lpp_config_req.lppConfig = QMI_LOC_LPP_CONFIG_ENABLE_USER_PLANE_V02;
+      break;
+
+    case 2:
+      lpp_config_req.lppConfig = QMI_LOC_LPP_CONFIG_ENABLE_CONTROL_PLANE_V02;
+      break;
+
+    default:
+      LOC_LOGE("%s:%d]: Invalid LPP Profile Config Setting Provided in gps.conf = %d!",
+                    __FUNCTION__,
+                    __LINE__,
+                    profile);
+      return LOC_API_ADAPTER_ERR_INVALID_PARAMETER;
+      break;
+  }
+
+  req_union.pSetProtocolConfigParametersReq = &lpp_config_req;
+
+  result = loc_sync_send_req(clientHandle,
+                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                             &lpp_config_ind);
+
+  if(result != eLOC_CLIENT_SUCCESS ||
+     eQMI_LOC_SUCCESS_V02 != lpp_config_ind.status)
+  {
+    LOC_LOGE ("%s:%d]: Error status = %s, ind..status = %s ",
+              __func__, __LINE__,
+              loc_get_v02_client_status_name(result),
+              loc_get_v02_qmi_status_name(lpp_config_ind.status));
+
+    return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+  }
+  return LOC_API_ADAPTER_ERR_SUCCESS;
+}
+
 /* set the Sensor Configuration */
 enum loc_api_adapter_err LocApiV02Adapter :: setSensorControlConfig(int sensorsDisabled)
 {
@@ -1280,7 +1273,11 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorControlConfig(int sensorsD
 }
 
 /* set the Sensor Properties */
-enum loc_api_adapter_err LocApiV02Adapter :: setSensorProperties(float gyroBiasVarianceRandomWalk)
+enum loc_api_adapter_err LocApiV02Adapter :: setSensorProperties(bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
+                            bool accelBiasVarianceRandomWalk_valid, float accelBiasVarianceRandomWalk,
+                            bool angleBiasVarianceRandomWalk_valid, float angleBiasVarianceRandomWalk,
+                            bool rateBiasVarianceRandomWalk_valid, float rateBiasVarianceRandomWalk,
+                            bool velocityBiasVarianceRandomWalk_valid, float velocityBiasVarianceRandomWalk)
 {
   locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
   locClientReqUnionType req_union;
@@ -1288,14 +1285,29 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorProperties(float gyroBiasV
   qmiLocSetSensorPropertiesReqMsgT_v02 sensor_prop_req;
   qmiLocSetSensorPropertiesIndMsgT_v02 sensor_prop_ind;
 
-  LOC_LOGI("%s:%d]: sensors prop gyroBiasRandomWalk = %f\n",
-                 __func__, __LINE__, gyroBiasVarianceRandomWalk);
+  LOC_LOGI("%s:%d]: sensors prop: gyroBiasRandomWalk = %f, accelRandomWalk = %f, "
+           "angleRandomWalk = %f, rateRandomWalk = %f, velocityRandomWalk = %f\n",
+                 __func__, __LINE__, gyroBiasVarianceRandomWalk, accelBiasVarianceRandomWalk,
+           angleBiasVarianceRandomWalk, rateBiasVarianceRandomWalk, velocityBiasVarianceRandomWalk);
 
   memset(&sensor_prop_req, 0, sizeof(sensor_prop_req));
   memset(&sensor_prop_ind, 0, sizeof(sensor_prop_ind));
 
-  sensor_prop_req.gyroBiasVarianceRandomWalk_valid = 1;
+  /* Set the validity bit and value for each sensor property */
+  sensor_prop_req.gyroBiasVarianceRandomWalk_valid = gyroBiasVarianceRandomWalk_valid;
   sensor_prop_req.gyroBiasVarianceRandomWalk = gyroBiasVarianceRandomWalk;
+
+  sensor_prop_req.accelerationRandomWalkSpectralDensity_valid = accelBiasVarianceRandomWalk_valid;
+  sensor_prop_req.accelerationRandomWalkSpectralDensity = accelBiasVarianceRandomWalk;
+
+  sensor_prop_req.angleRandomWalkSpectralDensity_valid = angleBiasVarianceRandomWalk_valid;
+  sensor_prop_req.angleRandomWalkSpectralDensity = angleBiasVarianceRandomWalk;
+
+  sensor_prop_req.rateRandomWalkSpectralDensity_valid = rateBiasVarianceRandomWalk_valid;
+  sensor_prop_req.rateRandomWalkSpectralDensity = rateBiasVarianceRandomWalk;
+
+  sensor_prop_req.velocityRandomWalkSpectralDensity_valid = velocityBiasVarianceRandomWalk_valid;
+  sensor_prop_req.velocityRandomWalkSpectralDensity = velocityBiasVarianceRandomWalk;
 
   req_union.pSetSensorPropertiesReq = &sensor_prop_req;
 
@@ -1322,7 +1334,8 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorProperties(float gyroBiasV
 /* set the Sensor Performance Config */
 enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int controlMode,
                                                                         int accelSamplesPerBatch, int accelBatchesPerSec,
-                                                                        int gyroSamplesPerBatch, int gyroBatchesPerSec)
+                                                                        int gyroSamplesPerBatch, int gyroBatchesPerSec,
+                                                                        int algorithmConfig)
 {
   locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
   locClientReqUnionType req_union;
@@ -1331,14 +1344,16 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int cont
   qmiLocSetSensorPerformanceControlConfigIndMsgT_v02 sensor_perf_config_ind;
 
   LOC_LOGD("%s:%d]: Sensor Perf Control Config (performanceControlMode)(%u) "
-                "accel(#smp,#batches) (%u,%u) gyro(#smp,#batches) (%u,%u)\n",
+                "accel(#smp,#batches) (%u,%u) gyro(#smp,#batches) (%u,%u) "
+                "algorithmConfig(%u)\n",
                 __FUNCTION__,
                 __LINE__,
                 controlMode,
                 accelSamplesPerBatch,
                 accelBatchesPerSec,
                 gyroSamplesPerBatch,
-                gyroBatchesPerSec
+                gyroBatchesPerSec,
+                algorithmConfig
                 );
 
   memset(&sensor_perf_config_req, 0, sizeof(sensor_perf_config_req));
@@ -1352,6 +1367,8 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int cont
   sensor_perf_config_req.gyroSamplingSpec_valid = 1;
   sensor_perf_config_req.gyroSamplingSpec.batchesPerSecond = gyroBatchesPerSec;
   sensor_perf_config_req.gyroSamplingSpec.samplesPerBatch = gyroSamplesPerBatch;
+  sensor_perf_config_req.algorithmConfig_valid = 1;
+  sensor_perf_config_req.algorithmConfig = algorithmConfig;
 
   req_union.pSetSensorPerformanceControlConfigReq = &sensor_perf_config_req;
 
@@ -1368,6 +1385,65 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int cont
               __func__, __LINE__,
               loc_get_v02_client_status_name(result),
               loc_get_v02_qmi_status_name(sensor_perf_config_ind.status));
+
+    return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+  }
+
+  return LOC_API_ADAPTER_ERR_SUCCESS;
+}
+
+/* set the External Power Config */
+enum loc_api_adapter_err LocApiV02Adapter :: setExtPowerConfig(int isBatteryCharging)
+{
+  locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
+  locClientReqUnionType req_union;
+
+  qmiLocSetExternalPowerConfigReqMsgT_v02 ext_pwr_req;
+  qmiLocGetExternalPowerConfigIndMsgT_v02 ext_pwr_ind;
+
+  LOC_LOGI("%s:%d]: Ext Pwr Config (isBatteryCharging)(%u)",
+                __FUNCTION__,
+                __LINE__,
+                isBatteryCharging
+                );
+
+  memset(&ext_pwr_req, 0, sizeof(ext_pwr_req));
+  memset(&ext_pwr_ind, 0, sizeof(ext_pwr_ind));
+
+  switch(isBatteryCharging)
+  {
+    /* Charging */
+    case 1:
+      ext_pwr_req.externalPowerState = eQMI_LOC_EXTERNAL_POWER_CONNECTED_V02;
+      break;
+
+    /* Not charging */
+    case 0:
+      ext_pwr_req.externalPowerState = eQMI_LOC_EXTERNAL_POWER_NOT_CONNECTED_V02;
+      break;
+
+    default:
+      LOC_LOGE("%s:%d]: Invalid ext power state = %d!",
+                    __FUNCTION__,
+                    __LINE__,
+                    isBatteryCharging);
+      return LOC_API_ADAPTER_ERR_INVALID_PARAMETER;
+      break;
+  }
+
+  req_union.pSetExternalPowerConfigReq = &ext_pwr_req;
+
+  result = loc_sync_send_req(clientHandle,
+                             QMI_LOC_SET_EXTERNAL_POWER_CONFIG_REQ_V02,
+                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                             QMI_LOC_SET_EXTERNAL_POWER_CONFIG_IND_V02,
+                             &ext_pwr_ind);
+
+  if(result != eLOC_CLIENT_SUCCESS ||
+     eQMI_LOC_SUCCESS_V02 != ext_pwr_ind.status)
+  {
+    LOC_LOGE ("%s:%d]: Error status = %d, ind..status = %d ",
+                    __func__, __LINE__, result, ext_pwr_ind.status);
 
     return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
   }
@@ -1461,7 +1537,7 @@ void LocApiV02Adapter :: reportPosition (
   const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr)
 {
     GpsLocation location;
-
+    LOC_LOGD("Reporting postion from V2 Adapter\n");
     memset(&location, 0, sizeof (GpsLocation));
     location.size = sizeof(location);
     // Process the position from final and intermediate reports
@@ -1518,7 +1594,9 @@ void LocApiV02Adapter :: reportPosition (
                 location.flags  |= GPS_LOCATION_HAS_ACCURACY;
                 location.accuracy = location_report_ptr->horUncCircular;
             }
-
+            //Mark the location source as from GNSS
+            location.flags |= LOCATION_HAS_SOURCE_INFO;
+            location.position_source = ULP_LOCATION_IS_FROM_GNSS;
             LocApiAdapter::reportPosition( location,
                                            locEngHandle.extPosInfo((void*)location_report_ptr),
                                            (location_report_ptr->sessionStatus
@@ -1639,7 +1717,7 @@ void  LocApiV02Adapter :: reportSv (
     }
   }
 
-  if (SvStatus.num_svs != 0)
+  if (SvStatus.num_svs >= 0)
   {
     LOC_LOGV ("%s:%d]: firing SV callback\n", __func__, __LINE__);
     LocApiAdapter::reportSv(SvStatus,
@@ -1713,8 +1791,7 @@ void LocApiV02Adapter :: reportAtlRequest(
   // service ATL open request; copy the WWAN type
   if(server_request_ptr->requestType == eQMI_LOC_SERVER_REQUEST_OPEN_V02 )
   {
-    AGpsType agpsType;
-#ifdef QCOM_FEATURE_IPV6
+    AGpsType agpsType = AGPS_TYPE_WWAN_ANY;
     switch(server_request_ptr->wwanType)
     {
       case eQMI_LOC_WWAN_TYPE_INTERNET_V02:
@@ -1729,9 +1806,6 @@ void LocApiV02Adapter :: reportAtlRequest(
         agpsType = AGPS_TYPE_WWAN_ANY;
         break;
     }
-#else
-    agpsType = AGPS_TYPE_SUPL;
-#endif
     LocApiAdapter::requestATL(connHandle, agpsType);
   }
 

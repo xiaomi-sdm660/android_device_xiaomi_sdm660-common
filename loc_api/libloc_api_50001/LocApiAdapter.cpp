@@ -44,11 +44,12 @@ LocEng::LocEng(void* caller,
                gps_acquire_wakelock acqwl,
                gps_release_wakelock relwl,
                loc_msg_sender msgSender,
+               loc_msg_sender msgUlpSender,
                loc_ext_parser posParser,
                loc_ext_parser svParser) :
         owner(caller),
         eventMask(emask), acquireWakelock(acqwl),
-        releaseWakeLock(relwl), sendMsge(msgSender),
+        releaseWakeLock(relwl), sendMsge(msgSender), sendUlpMsg(msgUlpSender),
         extPosInfo(NULL == posParser ? noProc : posParser),
         extSvInfo(NULL == svParser ? noProc : svParser)
 {
@@ -56,7 +57,7 @@ LocEng::LocEng(void* caller,
 }
 
 LocApiAdapter::LocApiAdapter(LocEng &locEng) :
-    locEngHandle(locEng)
+    locEngHandle(locEng), fixCriteria(), navigating(false)
 {
     LOC_LOGD("LocApiAdapter created");
 }
@@ -119,13 +120,24 @@ void LocApiAdapter::reportPosition(GpsLocation &location,
                                                                      location,
                                                                      locationExt,
                                                                      status));
-    locEngHandle.sendMsge(locEngHandle.owner, msg);
+    if (locEngHandle.sendUlpMsg) {
+        locEngHandle.sendUlpMsg(locEngHandle.owner, msg);
+    } else {
+        locEngHandle.sendMsge(locEngHandle.owner, msg);
+    }
 }
 
 void LocApiAdapter::reportSv(GpsSvStatus &svStatus, void* svExt)
 {
     loc_eng_msg_report_sv *msg(new loc_eng_msg_report_sv(locEngHandle.owner, svStatus, svExt));
-    locEngHandle.sendMsge(locEngHandle.owner, msg);
+
+    //We want to send SV info to ULP to help it in determining GNSS signal strength
+    //ULP will forward the SV reports to HAL without any modifications
+    if (locEngHandle.sendUlpMsg) {
+        locEngHandle.sendUlpMsg(locEngHandle.owner, msg);
+    } else {
+        locEngHandle.sendMsge(locEngHandle.owner, msg);
+    }
 }
 
 void LocApiAdapter::reportStatus(GpsStatusValue status)

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011,2012, Code Aurora Forum. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,6 +37,7 @@
 #include <hardware/gps.h>
 #include <linked_list.h>
 #include <LocApiAdapter.h>
+#include "loc_eng_msg.h"
 
 // forward declaration
 class AgpsStateMachine;
@@ -149,23 +150,20 @@ class AgpsStateMachine {
     char* mAPN;
     // for convenience, we don't do strlen each time.
     unsigned int mAPNLen;
-#ifdef QCOM_FEATURE_IPV6
     // bear
     AGpsBearerType mBearer;
-#endif
     // ipv4 address for routing
+    bool mEnforceSingleSubscriber;
 
 public:
-    AgpsStateMachine(void (*servicer)(AGpsStatus* status), AGpsType type);
+    AgpsStateMachine(void (*servicer)(AGpsStatus* status), AGpsType type, bool enforceSingleSubscriber);
     virtual ~AgpsStateMachine();
 
     // self explanatory methods below
     void setAPN(const char* apn, unsigned int len);
     inline const char* getAPN() const { return (const char*)mAPN; }
-#ifdef QCOM_FEATURE_IPV6
     inline void setBearer(AGpsBearerType bearer) { mBearer = bearer; }
     inline AGpsBearerType getBearer() const { return mBearer; }
-#endif
     inline AGpsType getType() const { return (AGpsType)mType; }
 
     // someone, a ATL client or BIT, is asking for NIF
@@ -206,6 +204,7 @@ struct Subscriber {
     inline virtual ~Subscriber() {}
 
     virtual void setIPAddresses(int &v4, char* v6) = 0;
+    inline virtual void setWifiInfo(char* ssid, char* password) {}
 
     inline virtual bool equals(const Subscriber *s) const
     { return ID == s->ID; }
@@ -256,10 +255,13 @@ private:
 // ATLSubscriber, created with requests from ATL
 struct ATLSubscriber : public Subscriber {
     const LocApiAdapter* mLocAdapter;
+    const bool mBackwardCompatibleMode;
     inline ATLSubscriber(const int id,
                          const AgpsStateMachine* stateMachine,
-                         const LocApiAdapter* adapter) :
-        Subscriber(id, stateMachine), mLocAdapter(adapter) {}
+                         const LocApiAdapter* adapter,
+                         const bool compatibleMode) :
+        Subscriber(id, stateMachine), mLocAdapter(adapter),
+        mBackwardCompatibleMode(compatibleMode){}
     virtual bool notifyRsrcStatus(Notification &notification);
 
     inline virtual void setIPAddresses(int &v4, char* v6)
@@ -267,7 +269,55 @@ struct ATLSubscriber : public Subscriber {
 
     inline virtual Subscriber* clone()
     {
-        return new ATLSubscriber(ID, mStateMachine, mLocAdapter);
+        return new ATLSubscriber(ID, mStateMachine, mLocAdapter,
+                                 mBackwardCompatibleMode);
+    }
+};
+
+// WIFISubscriber, created with requests from MSAPM or QuIPC
+struct WIFISubscriber : public Subscriber {
+    char * mSSID;
+    char * mPassword;
+    loc_if_req_sender_id_e_type senderId;
+    bool mIsInactive;
+    inline WIFISubscriber(const AgpsStateMachine* stateMachine,
+                         char * ssid, char * password, loc_if_req_sender_id_e_type sender_id) :
+        Subscriber(sender_id, stateMachine),
+        mSSID(NULL == ssid ? NULL : new char[SSID_BUF_SIZE]),
+        mPassword(NULL == password ? NULL : new char[SSID_BUF_SIZE]),
+        senderId(sender_id)
+    {
+      if (NULL != mSSID)
+          strlcpy(mSSID, ssid, SSID_BUF_SIZE);
+      if (NULL != mPassword)
+          strlcpy(mPassword, password, SSID_BUF_SIZE);
+      mIsInactive = false;
+    }
+
+    virtual bool notifyRsrcStatus(Notification &notification);
+
+    inline virtual void setIPAddresses(int &v4, char* v6) {}
+
+    inline virtual void setWifiInfo(char* ssid, char* password)
+    {
+      if (NULL != mSSID)
+          strlcpy(ssid, mSSID, SSID_BUF_SIZE);
+      else
+          ssid[0] = '\0';
+      if (NULL != mPassword)
+          strlcpy(password, mPassword, SSID_BUF_SIZE);
+      else
+          password[0] = '\0';
+    }
+
+    inline virtual bool waitForCloseComplete() { return true; }
+
+    inline virtual void setInactive() { mIsInactive = true; }
+    inline virtual bool isInactive() { return mIsInactive; }
+
+    virtual Subscriber* clone()
+    {
+        return new WIFISubscriber(mStateMachine, mSSID, mPassword, senderId);
     }
 };
 
