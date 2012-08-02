@@ -82,11 +82,11 @@ extern "C" {
 /** Major Version Number of the IDL used to generate this file */
 #define LOC_V02_IDL_MAJOR_VERS 0x02
 /** Revision Number of the IDL used to generate this file */
-#define LOC_V02_IDL_MINOR_VERS 0x0B
+#define LOC_V02_IDL_MINOR_VERS 0x0D
 /** Major Version Number of the qmi_idl_compiler used to generate this file */
 #define LOC_V02_IDL_TOOL_VERS 0x05
 /** Maximum Defined Message ID */
-#define LOC_V02_MAX_MESSAGE_ID 0x0067;
+#define LOC_V02_MAX_MESSAGE_ID 0x0069;
 /**
     @}
   */
@@ -180,6 +180,10 @@ extern "C" {
 
 /**  Maximum length of the SUPL certificate. */
 #define QMI_LOC_MAX_SUPL_CERT_LENGTH_V02 2000
+
+/**  Maximum length of the Network Initiated Geofence ID
+     list  */
+#define QMI_LOC_MAX_NI_GEOFENCE_ID_LIST_LENGTH_V02 16
 /**
     @}
   */
@@ -476,6 +480,8 @@ typedef uint32_t qmiLocPosTechMaskT_v02;
 #define QMI_LOC_POS_TECH_MASK_WIFI_V02 ((qmiLocPosTechMaskT_v02)0x00000004) /**<  WiFi access points were used to generate the fix.  */
 #define QMI_LOC_POS_TECH_MASK_SENSORS_V02 ((qmiLocPosTechMaskT_v02)0x00000008) /**<  Sensors were used to generate the fix.  */
 #define QMI_LOC_POS_TECH_MASK_REFERENCE_LOCATION_V02 ((qmiLocPosTechMaskT_v02)0x00000010) /**<  Reference Location was used to generate the fix.  */
+#define QMI_LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION_V02 ((qmiLocPosTechMaskT_v02)0x00000020) /**<  Coarse position injected into the location engine was used to
+        generate the fix.   */
 /** @addtogroup loc_qmi_enums
     @{
   */
@@ -836,7 +842,8 @@ typedef struct {
          - 0x00000002 -- CELLID \n
          - 0x00000004 -- WIFI \n
          - 0x00000008 -- SENSORS \n
-         - 0x00000010 -- REFERENCE_LOCATION   */
+         - 0x00000010 -- REFERENCE_LOCATION \n
+         - 0x00000020 -- INJECTED_COARSE_POSITION  */
 
   /* Optional */
   /*  Dilution of Precision */
@@ -2671,7 +2678,7 @@ typedef struct {
        Valid values:
        \begin{itemize1}
        \item    0x00000001 -- GEOFENCE_BREACH_TYPE_ENTERING
-       \item    0x00000001 -- GEOFENCE_BREACH_TYPE_LEAVING
+       \item    0x00000002 -- GEOFENCE_BREACH_TYPE_LEAVING
        \vspace{-0.18in} \end{itemize1}
    */
 
@@ -4766,10 +4773,12 @@ typedef enum {
   eQMI_LOC_OPER_MODE_DEFAULT_V02 = 1, /**<  Use the default engine mode.  */
   eQMI_LOC_OPER_MODE_MSB_V02 = 2, /**<  Use the MS-based mode.  */
   eQMI_LOC_OPER_MODE_MSA_V02 = 3, /**<  Use the MS-assisted mode.  */
-  eQMI_LOC_OPER_MODE_STANDALONE_V02 = 4, /**<  Use Standalone mode.
- Use cell ID. For 1x, this mode corresponds to
-       AFLT.  */
-  eQMI_LOC_OPER_MODE_CELL_ID_V02 = 5,
+  eQMI_LOC_OPER_MODE_STANDALONE_V02 = 4, /**<  Use Standalone mode.  */
+  eQMI_LOC_OPER_MODE_CELL_ID_V02 = 5, /**<  Use cell ID. This mode is valid only for GSM/UMTS network
+ Use WWAN measurements to calculate position. If this mode is
+       set then for 1x network AFLT will used and for LTE network
+       OTDOA will used.                  */
+  eQMI_LOC_OPER_MODE_WWAN_V02 = 6,
   QMILOCOPERATIONMODEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
 }qmiLocOperationModeEnumT_v02;
 /**
@@ -4796,6 +4805,7 @@ typedef struct {
        \item    0x00000003 -- OPER_MODE_MSA
        \item    0x00000004 -- OPER_MODE_STANDALONE
        \item    0x00000005 -- OPER_MODE_CELL_ID
+       \item    0x00000006 -- OPER_MODE_WWAN
        \vspace{-0.18in} \end{itemize1}
    */
 }qmiLocSetOperationModeReqMsgT_v02;  /* Message */
@@ -4874,6 +4884,7 @@ typedef struct {
        \item    0x00000003 -- OPER_MODE_MSA
        \item    0x00000004 -- OPER_MODE_STANDALONE
        \item    0x00000005 -- OPER_MODE_CELL_ID
+       \item    0x00000006 -- OPER_MODE_WWAN
        \vspace{-0.18in} \end{itemize1}
    */
 }qmiLocGetOperationModeIndMsgT_v02;  /* Message */
@@ -5550,6 +5561,9 @@ typedef enum {
 typedef uint32_t qmiLocLppConfigMaskT_v02;
 #define QMI_LOC_LPP_CONFIG_ENABLE_USER_PLANE_V02 ((qmiLocLppConfigMaskT_v02)0x00000001) /**<  Enable user plane configuration for LTE Positioning Profile (LPP).  */
 #define QMI_LOC_LPP_CONFIG_ENABLE_CONTROL_PLANE_V02 ((qmiLocLppConfigMaskT_v02)0x00000002) /**<  Enable control plane configuration for LPP.      */
+typedef uint32_t qmiLocAssistedGlonassProtocolMaskT_v02;
+#define QMI_LOC_ASSISTED_GLONASS_PROTOCOL_MASK_RRC_CP_V02 ((qmiLocAssistedGlonassProtocolMaskT_v02)0x00000001) /**<  Assisted GLONASS is supported over RRC in Control Plane  */
+#define QMI_LOC_ASSISTED_GLONASS_PROTOCOL_MASK_RRLP_UP_V02 ((qmiLocAssistedGlonassProtocolMaskT_v02)0x00000002) /**<  Assisted GLONASS is supported over RRLP in User Plane  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5603,6 +5617,20 @@ typedef struct {
       \item    0x00000002 -- LPP_CONFIG_ENABLE_CONTROL_PLANE
       \vspace{-0.18in} \end{itemize1}
    */
+
+  /* Optional */
+  /*  Assisted GLONASS Protocol Mask */
+  uint8_t assistedGlonassProtocolMask_valid;  /**< Must be set to true if assistedGlonassProtocolMask is being passed */
+  qmiLocAssistedGlonassProtocolMaskT_v02 assistedGlonassProtocolMask;
+  /**<   Configures the protocols that the location service can indicate it supports,
+       for Assisted Glonass.
+
+      Valid bitmasks:
+      \begin{itemize1}
+      \item    0x00000001 -- ASSISTED_GLONASS_PROTOCOL_MASK_RRC_CP
+      \item    0x00000002 -- ASSISTED_GLONASS_PROTOCOL_MASK_RRLP_UP
+      \vspace{-0.18in} \end{itemize1}
+   */
 }qmiLocSetProtocolConfigParametersReqMsgT_v02;  /* Message */
 /**
     @}
@@ -5613,6 +5641,7 @@ typedef uint64_t qmiLocProtocolConfigParamMaskT_v02;
 #define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_VX_VERSION_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000002ull) /**<  Mask for the VX version configuration parameter.  */
 #define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_SUPL_VERSION_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000004ull) /**<  Mask for the SUPL version configuration parameter.       */
 #define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_LPP_CONFIG_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000008ull) /**<  Mask for the LPP configuration parameter.  */
+#define QMI_LOC_PROTOCOL_CONFIG_PARAM_MASK_ASSISTED_GLONASS_PROTOCOL_V02 ((qmiLocProtocolConfigParamMaskT_v02)0x0000000000000010ull) /**<  Mask for the LPP configuration parameter.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -5651,6 +5680,7 @@ typedef struct {
        \item    0x0000000000000002 -- CONFIG_PARAM_MASK_VX_VERSION
        \item    0x0000000000000004 -- CONFIG_PARAM_MASK_SUPL_VERSION
        \item    0x0000000000000008 -- CONFIG_PARAM_MASK_LPP_CONFIG
+       \item    0x0000000000000010 -- CONFIG_PARAM_MASK_ASSISTED_GLONASS_PROTOCOL
        \vspace{-0.18in} \end{itemize1}
    */
 }qmiLocSetProtocolConfigParametersIndMsgT_v02;  /* Message */
@@ -5676,6 +5706,7 @@ typedef struct {
        \item    0x0000000000000002 -- CONFIG_PARAM_MASK_VX_VERSION
        \item    0x0000000000000004 -- CONFIG_PARAM_MASK_SUPL_VERSION
        \item    0x0000000000000008 -- CONFIG_PARAM_MASK_LPP_CONFIG
+       \item    0x0000000000000010 -- CONFIG_PARAM_MASK_ASSISTED_GLONASS_PROTOCOL
        \vspace{-0.18in} \end{itemize1}
    */
 }qmiLocGetProtocolConfigParametersReqMsgT_v02;  /* Message */
@@ -5751,6 +5782,19 @@ typedef struct {
       \begin{itemize1}
       \item    0x00000001 -- LPP_CONFIG_ENABLE_USER_PLANE
       \item    0x00000002 -- LPP_CONFIG_ENABLE_CONTROL_PLANE
+      \vspace{-0.18in} \end{itemize1}
+   */
+
+  /* Optional */
+  /*  Assisted GLONASS Protocol Mask */
+  uint8_t assistedGlonassProtocolMask_valid;  /**< Must be set to true if assistedGlonassProtocolMask is being passed */
+  qmiLocAssistedGlonassProtocolMaskT_v02 assistedGlonassProtocolMask;
+  /**<   Assisted GLONASS Protocol Mask.
+
+       Valid bitmasks:
+      \begin{itemize1}
+      \item    0x00000001 -- ASSISTED_GLONASS_PROTOCOL_MASK_RRC_CP
+      \item    0x00000002 -- ASSISTED_GLONASS_PROTOCOL_MASK_RRLP_UP
       \vspace{-0.18in} \end{itemize1}
    */
 }qmiLocGetProtocolConfigParametersIndMsgT_v02;  /* Message */
@@ -6181,10 +6225,12 @@ typedef struct {
   uint8_t accelSamplingSpec_valid;  /**< Must be set to true if accelSamplingSpec is being passed */
   qmiLocSensorControlConfigSamplingSpecStructT_v02 accelSamplingSpec;
   /**<   \n Sets the nominal rate at which the GNSS location engine is to request
-       acceleration data. The sensor data rate is specified in terms of the nominal
-       number of samples per batch and the number of batches per second.
+       acceleration data to be used by the low data rate filter. The sensor
+       data rate is specified in terms of the nominal number of samples per
+       batch and the number of batches per second.
        However, the final control of the actual requested rate resides with
        the Sensors Manager Module/GNSS location engine.
+       The default specification is 10Hz sampling rate and 2Hz batching rate.
    */
 
   /* Optional */
@@ -6192,10 +6238,12 @@ typedef struct {
   uint8_t gyroSamplingSpec_valid;  /**< Must be set to true if gyroSamplingSpec is being passed */
   qmiLocSensorControlConfigSamplingSpecStructT_v02 gyroSamplingSpec;
   /**<   \n Sets the nominal rate at which the GNSS location engine is to request
-       gyro data. The sensor data rate is specified in terms of the nominal number of
-       samples per batch and the number of batches per second.
+       gyro data to be used by the high data rate filter. The sensor data
+       rate is specified in terms of the nominal number of samples per batch
+       and the number of batches per second.
        However, the final control of the actual requested rate resides with
        the Sensors Manager Module/GNSS location engine.
+       The default specification is 10Hz sampling rate and 2Hz batching rate.
    */
 
   /* Optional */
@@ -6209,6 +6257,32 @@ typedef struct {
        \item    0x00000001 -- DISABLE_INS_POSITIONING_FILTER
        \vspace{-0.18in} \end{itemize1}
    */
+
+  /* Optional */
+  /*  High Data Rate Filter Accelerometer Sampling Specification */
+  uint8_t accelSamplingSpecHigh_valid;  /**< Must be set to true if accelSamplingSpecHigh is being passed */
+  qmiLocSensorControlConfigSamplingSpecStructT_v02 accelSamplingSpecHigh;
+  /**<   \n Sets the nominal rate at which the GNSS location engine is to request
+       acceleration data to be used by the high data rate filter. The sensor
+       data rate is    specified in terms of the nominal number of samples per
+       batch and the number of batches per second.
+       However, the final control of the actual requested rate resides with
+       the Sensors Manager Module/GNSS location engine.
+       The default specification is 100Hz sampling rate and 4Hz batching rate.
+   */
+
+  /* Optional */
+  /*  High Data Rate Filter Gyroscope Sampling Specification */
+  uint8_t gyroSamplingSpecHigh_valid;  /**< Must be set to true if gyroSamplingSpecHigh is being passed */
+  qmiLocSensorControlConfigSamplingSpecStructT_v02 gyroSamplingSpecHigh;
+  /**<   \n Sets the nominal rate at which the GNSS location engine is to request
+       gyro data to be used by the high data rate filter. The sensor data rate
+       is specified in terms of the nominal number of samples per batch and the
+       number of batches per second.
+       However, the final control of the actual requested rate resides with
+       the Sensors Manager Module/GNSS location engine.
+       The default specification is 100Hz sampling rate and 4Hz batching rate.
+   */
 }qmiLocSetSensorPerformanceControlConfigReqMsgT_v02;  /* Message */
 /**
     @}
@@ -6219,6 +6293,8 @@ typedef uint32_t qmiLocSensorPerformanceControlConfigFailureMaskT_v02;
 #define QMI_LOC_SENSOR_PERFORMANCE_CONTROL_CONFIG_PARAM_MASK_ACCEL_SAMPLING_SPEC_V02 ((qmiLocSensorPerformanceControlConfigFailureMaskT_v02)0x00000002) /**<  Failed to set the accelerometer sampling specification.  */
 #define QMI_LOC_SENSOR_PERFORMANCE_CONTROL_CONFIG_PARAM_MASK_GYRO_SAMPLING_SPEC_V02 ((qmiLocSensorPerformanceControlConfigFailureMaskT_v02)0x00000004) /**<  Failed to set the gyroscope sampling specification.  */
 #define QMI_LOC_SENSOR_PERFORMANCE_CONTROL_CONFIG_PARAM_MASK_ALGORITHM_CONFIG_V02 ((qmiLocSensorPerformanceControlConfigFailureMaskT_v02)0x00000008) /**<  Failed to set the algorithm configuration  */
+#define QMI_LOC_SENSOR_PERFORMANCE_CONTROL_CONFIG_PARAM_MASK_ACCEL_SAMPLING_SPEC_HIGH_V02 ((qmiLocSensorPerformanceControlConfigFailureMaskT_v02)0x00000010) /**<  Failed to set the accelerometer sampling specification.  */
+#define QMI_LOC_SENSOR_PERFORMANCE_CONTROL_CONFIG_PARAM_MASK_GYRO_SAMPLING_SPEC_HIGH_V02 ((qmiLocSensorPerformanceControlConfigFailureMaskT_v02)0x00000020) /**<  Failed to set the gyroscope sampling specification.  */
 /** @addtogroup loc_qmi_messages
     @{
   */
@@ -6256,6 +6332,8 @@ typedef struct {
        \item    0x00000002 -- ACCEL_SAMPLING_SPEC
        \item    0x00000004 -- GYRO_SAMPLING_SPEC
        \item    0x00000008 -- ALGORITHM_CONFIG
+       \item    0x00000010 -- ACCEL_SAMPLING_SPEC_HIGH
+       \item    0x00000020 -- GYRO_SAMPLING_SPEC_HIGH
        \vspace{-0.18in} \end{itemize1}
    */
 }qmiLocSetSensorPerformanceControlConfigIndMsgT_v02;  /* Message */
@@ -6317,10 +6395,12 @@ typedef struct {
   uint8_t accelSamplingSpec_valid;  /**< Must be set to true if accelSamplingSpec is being passed */
   qmiLocSensorControlConfigSamplingSpecStructT_v02 accelSamplingSpec;
   /**<   \n Sets the nominal rate at which the GNSS location engine is to request
-       acceleration data. The sensor data rate is specified in terms of the nominal number of
-       samples per batch and the number of batches per second.
+       acceleration data to be used by the high data rate filter. The sensor
+       data rate is specified in terms of the nominal number of samples per
+       batch and the number of batches per second.
        However, the final control of the actual requested rate resides with
        the Sensors Manager Module/GNSS location engine.
+       The default specification is 10Hz sampling rate and 2Hz batching rate.
    */
 
   /* Optional */
@@ -6328,10 +6408,12 @@ typedef struct {
   uint8_t gyroSamplingSpec_valid;  /**< Must be set to true if gyroSamplingSpec is being passed */
   qmiLocSensorControlConfigSamplingSpecStructT_v02 gyroSamplingSpec;
   /**<   \n Sets the nominal rate at which the GNSS location engine is to request
-       gyro data. The sensor data rate is specified in terms of the nominal number of
-       samples per batch and the number of batches per second.
+       gyro data to be used by the high data rate filter. The sensor data
+       rate is specified in terms of the nominal number of samples per batch
+       and the number of batches per second.
        However, the final control of the actual requested rate resides with
        the Sensors Manager Module/GNSS location engine.
+       The default specification is 10Hz sampling rate and 2Hz batching rate.
    */
 
   /* Optional */
@@ -6344,6 +6426,32 @@ typedef struct {
        \begin{itemize1}
        \item    0x00000001 -- DISABLE_INS_POSITIONING_FILTER
        \vspace{-0.18in} \end{itemize1}
+   */
+
+  /* Optional */
+  /*  High Data Rate Filter Accelerometer Sampling Specification */
+  uint8_t accelSamplingSpecHigh_valid;  /**< Must be set to true if accelSamplingSpecHigh is being passed */
+  qmiLocSensorControlConfigSamplingSpecStructT_v02 accelSamplingSpecHigh;
+  /**<   \n Sets the nominal rate at which the GNSS location engine is to request
+       acceleration data to be used by the high data rate filter. The sensor
+       data rate is    specified in terms of the nominal number of samples per
+       batch and the number of batches per second.
+       However, the final control of the actual requested rate resides with
+       the Sensors Manager Module/GNSS location engine.
+       The default specification is 100Hz sampling rate and 4Hz batching rate.
+   */
+
+  /* Optional */
+  /*  High Data Rate Filter Gyroscope Sampling Specification */
+  uint8_t gyroSamplingSpecHigh_valid;  /**< Must be set to true if gyroSamplingSpecHigh is being passed */
+  qmiLocSensorControlConfigSamplingSpecStructT_v02 gyroSamplingSpecHigh;
+  /**<   \n Sets the nominal rate at which the GNSS location engine is to request
+       gyro data to be used by the high data rate filter. The sensor data rate
+       is specified in terms of the nominal number of samples per batch and the
+       number of batches per second.
+       However, the final control of the actual requested rate resides with
+       the Sensors Manager Module/GNSS location engine.
+       The default specification is 100Hz sampling rate and 4Hz batching rate.
    */
 }qmiLocGetSensorPerformanceControlConfigIndMsgT_v02;  /* Message */
 /**
@@ -7409,6 +7517,7 @@ typedef struct {
        \item    0x00000004 -- WIFI
        \item    0x00000008 -- SENSORS
        \item    0x00000010 -- REFERENCE_LOCATION
+       \item    0x00000020 -- INJECTED_COARSE_POSITION
        \vspace{-0.18in} \end{itemize1}  */
 
   /* Optional */
@@ -7461,6 +7570,193 @@ typedef struct {
          \item    For QZSS:    193 to 197
        \vspace{-0.18in} \end{itemize1} \end{itemize1}  */
 }qmiLocGetBestAvailablePositionIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCMOTIONSTATEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_MOTION_STATE_UNKNOWN_V02 = 0, /**<  Device state is not known  */
+  eQMI_LOC_MOTION_STATE_STATIONARY_V02 = 1, /**<  Device state is stationary
+ Device state is in motion  */
+  eQMI_LOC_MOTION_STATE_IN_MOTION_V02 = 2,
+  QMILOCMOTIONSTATEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocMotionStateEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_enums
+    @{
+  */
+typedef enum {
+  QMILOCMOTIONMODEENUMT_MIN_ENUM_VAL_V02 = -2147483647, /**< To force a 32 bit signed enum.  Do not change or use*/
+  eQMI_LOC_MOTION_MODE_UNKNOWN_V02 = 0, /**<  Device movement is not known  */
+  eQMI_LOC_MOTION_MODE_STATIONARY_V02 = 1, /**<  Device is not moving  */
+  eQMI_LOC_MOTION_MODE_PEDESTRIAN_UNKNOWN_V02 = 200, /**<  Device movement is in pedestrian mode, nothing else is known about the movement  */
+  eQMI_LOC_MOTION_MODE_PEDESTRIAN_WALKING_V02 = 201, /**<  Device movement is in pedestrian walking mode  */
+  eQMI_LOC_MOTION_MODE_PEDESTRIAN_RUNNING_V02 = 202, /**<  Device movement is in pedestrian running mode
+ Device movement is in vehicular mode, nothing else is known about the movement  */
+  eQMI_LOC_MOTION_MODE_VEHICLE_UNKNOWN_V02 = 300,
+  QMILOCMOTIONMODEENUMT_MAX_ENUM_VAL_V02 = 2147483647 /**< To force a 32 bit signed enum.  Do not change or use*/
+}qmiLocMotionModeEnumT_v02;
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_aggregates
+    @{
+  */
+typedef struct {
+
+  qmiLocMotionStateEnumT_v02 motion_state;
+  /**<   Current motion state of the user. States of user motion: \n
+ Options are: */
+
+  qmiLocMotionModeEnumT_v02 motion_mode;
+  /**<   Modes of user motion.\n
+ Options are: */
+
+  float probability_of_state;
+  /**<   Probability that the device is actually undergoing the motion state
+       specified by the combination of the values of motion_state, motion_mode,
+       and motion_sub_mode.  \vspace{0.06in}
+
+       This value is a floating point number in the range of 0 to 100, in
+       units of percent probability. Any value greater than 99.9999 is
+       applied as 99.9999. \vspace{0.06in}
+
+       It is recommended that if a particular combination of motion_state and
+       motion_mode cannot be determined with more than 50 percent confidence,
+       that a more general statement of user motion be made.
+       For example, if the mode of In-Motion + Pedestrian-Running can only be
+       determined with 50 percent probability, and the simpler statement of In-Motion
+       can be determined with 90 percent probability, it is recommended that this field
+       be used to simply state In-Motion with 90 percent probability.  \vspace{0.06in}
+
+       If the motion_state is not known, the value in this field is not used.
+   */
+
+  uint16_t age;
+  /**<   Age of the motion data in milliseconds at the time of injection.
+   */
+
+  uint16_t timeout;
+  /**<   If the age of the motion data input exceeds the timeout value, it
+       will no longer be used. The timeout value is in units of milliseconds.
+       Values in the range of 0 to 10000 are accepted. If 65535 is provided,
+       the motion data input is applied indefinitely until the next input is
+       received. \vspace{0.06in}
+
+       If the determination of motion data is an instantaneous observation,
+       and no notice is guaranteed to be given via QMI on a change in the
+       state of motion data, it is recommended that this field be set to 0.  \vspace{0.06in}
+
+       If the determination of motion data is continuously monitored
+       external to QMI, and an update is always applied to QMI upon any
+       change in state, a value of 65535 is used for this field.
+       Note that in this case, if a certain mode is set and is not later
+       unset (e.g., by sending in the request message with a user motion
+       state of Unknown), the value is applied indefinitely.
+   */
+}qmiLocMotionDataStructT_v02;  /* Type */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Injects motion data for MSM GPS service use. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Motion Data */
+  qmiLocMotionDataStructT_v02 motion_data;
+}qmiLocInjectMotionDataReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Injects motion data for MSM GPS service use. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Inject motion data request status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the Inject Motion Data request.
+
+       Valid values: \n
+         - 0x00000000 -- SUCCESS \n
+         - 0x00000001 -- GENERAL_FAILURE \n
+         - 0x00000002 -- UNSUPPORTED \n
+         - 0x00000003 -- INVALID_PARAMETER \n
+         - 0x00000004 -- ENGINE_BUSY \n
+   */
+}qmiLocInjectMotionDataIndMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Request Message; Used by the control point to retrieve the list of network
+                    initiated geofence ID's. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Transaction Id */
+  uint32_t transactionId;
+  /**<   Identifies the transaction, the same transaction Id
+       will be returned in the Get NI Geofence ID List indication.
+        - Type -- Unsigned Integer.  */
+}qmiLocGetNiGeofenceIdListReqMsgT_v02;  /* Message */
+/**
+    @}
+  */
+
+/** @addtogroup loc_qmi_messages
+    @{
+  */
+/** Indication Message; Used by the control point to retrieve the list of network
+                    initiated geofence ID's. */
+typedef struct {
+
+  /* Mandatory */
+  /*  Get NI Geofence ID List status */
+  qmiLocStatusEnumT_v02 status;
+  /**<   Status of the Get NI Geofence ID List request.
+       Valid values: \n
+         - 0x00000000 -- SUCCESS \n
+         - 0x00000001 -- GENERAL_FAILURE \n
+         - 0x00000002 -- UNSUPPORTED \n
+         - 0x00000004 -- ENGINE_BUSY \n
+         - 0x00000006 -- TIMEOUT  */
+
+  /* Optional */
+  /*  Transaction Id */
+  uint8_t transactionId_valid;  /**< Must be set to true if transactionId is being passed */
+  uint32_t transactionId;
+  /**<   Transaction Id which was specified in the Get NI
+       Geofence ID List request.
+        - Type -- Unsigned Integer.  */
+
+  /* Optional */
+  /*  NI Geofence ID List */
+  uint8_t niGeofenceIdList_valid;  /**< Must be set to true if niGeofenceIdList is being passed */
+  uint32_t niGeofenceIdList_len;  /**< Must be set to # of elements in niGeofenceIdList */
+  uint32_t niGeofenceIdList[QMI_LOC_MAX_NI_GEOFENCE_ID_LIST_LENGTH_V02];
+  /**<   List containing the NI Geofence Id's.
+       - Type: Array of unsigned 32 bit integers. \n
+       - Maximum NI Geofence ID List length : 16  */
+}qmiLocGetNiGeofenceIdListIndMsgT_v02;  /* Message */
 /**
     @}
   */
@@ -7647,6 +7943,12 @@ typedef struct {
 #define QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02 0x0067
 #define QMI_LOC_GET_BEST_AVAILABLE_POSITION_RESP_V02 0x0067
 #define QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02 0x0067
+#define QMI_LOC_INJECT_MOTION_DATA_REQ_V02 0x0068
+#define QMI_LOC_INJECT_MOTION_DATA_RESP_V02 0x0068
+#define QMI_LOC_INJECT_MOTION_DATA_IND_V02 0x0068
+#define QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02 0x0069
+#define QMI_LOC_GET_NI_GEOFENCE_ID_LIST_RESP_V02 0x0069
+#define QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02 0x0069
 /**
     @}
   */
