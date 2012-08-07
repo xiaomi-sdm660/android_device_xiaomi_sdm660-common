@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1554,6 +1554,9 @@ void LocApiV02Adapter :: reportPosition (
     LOC_LOGD("Reporting postion from V2 Adapter\n");
     memset(&location, 0, sizeof (GpsLocation));
     location.size = sizeof(location);
+    GpsLocationExtended locationExtended;
+    memset(&locationExtended, 0, sizeof (GpsLocationExtended));
+    locationExtended.size = sizeof(locationExtended);
     // Process the position from final and intermediate reports
 
     if( (location_report_ptr->sessionStatus == eQMI_LOC_SESS_STATUS_SUCCESS_V02) ||
@@ -1615,7 +1618,29 @@ void LocApiV02Adapter :: reportPosition (
             //Mark the location source as from GNSS
             location.flags |= LOCATION_HAS_SOURCE_INFO;
             location.position_source = ULP_LOCATION_IS_FROM_GNSS;
+
+            if (location_report_ptr->magneticDeviation_valid)
+            {
+                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;
+                locationExtended.magneticDeviation = location_report_ptr->magneticDeviation;
+            }
+
+            if (location_report_ptr->DOP_valid)
+            {
+                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_DOP;
+                locationExtended.pdop = location_report_ptr->DOP.PDOP;
+                locationExtended.hdop = location_report_ptr->DOP.HDOP;
+                locationExtended.vdop = location_report_ptr->DOP.VDOP;
+            }
+
+            if (location_report_ptr->altitudeWrtMeanSeaLevel_valid)
+            {
+                locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL;
+                locationExtended.altitudeMeanSeaLevel = location_report_ptr->altitudeWrtMeanSeaLevel;
+            }
+
             LocApiAdapter::reportPosition( location,
+                                           locationExtended,
                                            locEngHandle.extPosInfo((void*)location_report_ptr),
                                            (location_report_ptr->sessionStatus
                                             == eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02 ?
@@ -1626,6 +1651,7 @@ void LocApiV02Adapter :: reportPosition (
     else
     {
         LocApiAdapter::reportPosition(location,
+                                      locationExtended,
                                       NULL,
                                       LOC_SESS_FAILURE);
 
@@ -1642,6 +1668,7 @@ void  LocApiV02Adapter :: reportSv (
   const qmiLocEventGnssSvInfoIndMsgT_v02 *gnss_report_ptr)
 {
   GpsSvStatus      SvStatus;
+  GpsLocationExtended locationExtended;
   int              num_svs_max, i;
   const qmiLocSvInfoStructT_v02 *sv_info_ptr;
 
@@ -1650,6 +1677,8 @@ void  LocApiV02Adapter :: reportSv (
 
   num_svs_max = 0;
   memset (&SvStatus, 0, sizeof (GpsSvStatus));
+  memset(&locationExtended, 0, sizeof (GpsLocationExtended));
+  locationExtended.size = sizeof(locationExtended);
   if(gnss_report_ptr->svList_valid == 1)
   {
     num_svs_max = gnss_report_ptr->svList_len;
@@ -1740,6 +1769,7 @@ void  LocApiV02Adapter :: reportSv (
   {
     LOC_LOGV ("%s:%d]: firing SV callback\n", __func__, __LINE__);
     LocApiAdapter::reportSv(SvStatus,
+                            locationExtended,
                             locEngHandle.extSvInfo((void*)gnss_report_ptr));
   }
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -121,10 +121,13 @@ public:
                              const char *data, int data_size);
 
     void reportPosition(GpsLocation &location,
+                        GpsLocationExtended &locationExtended,
                         void* locationExt,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask = LOC_POS_TECH_MASK_DEFAULT);
-    void reportSv(GpsSvStatus &svStatus, void* svExt);
+    void reportSv(GpsSvStatus &svStatus,
+                  GpsLocationExtended &locationExtended,
+                  void* svExt);
     void reportStatus(GpsStatusValue status);
     void reportNmea(const char* nmea, int length);
     void reportAgpsStatus(AGpsStatus &agpsStatus);

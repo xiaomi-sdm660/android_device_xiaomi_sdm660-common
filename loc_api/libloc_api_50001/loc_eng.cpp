@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -57,6 +57,7 @@
 #include <loc_eng_dmn_conn_handler.h>
 #include <loc_eng_msg.h>
 #include <loc_eng_msg_id.h>
+#include <loc_eng_nmea.h>
 #include <msg_q.h>
 #include <loc.h>
 
@@ -83,6 +84,7 @@ static loc_param_s_type loc_parameter_table[] =
   {"INTERMEDIATE_POS",               &gps_conf.INTERMEDIATE_POS,               NULL, 'n'},
   {"ACCURACY_THRES",                 &gps_conf.ACCURACY_THRES,                 NULL, 'n'},
   {"ENABLE_WIPER",                   &gps_conf.ENABLE_WIPER,                   NULL, 'n'},
+  {"NMEA_PROVIDER",                  &gps_conf.NMEA_PROVIDER,                  NULL, 'n'},
   {"SUPL_VER",                       &gps_conf.SUPL_VER,                       NULL, 'n'},
   {"CAPABILITIES",                   &gps_conf.CAPABILITIES,                   NULL, 'n'},
   {"GYRO_BIAS_RANDOM_WALK",          &gps_conf.GYRO_BIAS_RANDOM_WALK,          &gps_conf.GYRO_BIAS_RANDOM_WALK_VALID, 'f'},
@@ -111,6 +113,7 @@ static void loc_default_parameters(void)
    gps_conf.INTERMEDIATE_POS = 0;
    gps_conf.ACCURACY_THRES = 0;
    gps_conf.ENABLE_WIPER = 0;
+   gps_conf.NMEA_PROVIDER = 0;
    gps_conf.SUPL_VER = 0x10000;
    gps_conf.CAPABILITIES = 0x7;
 
@@ -302,6 +305,16 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     // loc_eng_data.engine_status -- GPS_STATUS_NONE;
     // loc_eng_data.fix_session_status -- GPS_STATUS_NONE;
     // loc_eng_data.mute_session_state -- LOC_MUTE_SESS_NONE;
+
+    if ((event & LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT) && (gps_conf.NMEA_PROVIDER == NMEA_PROVIDER_AP))
+    {
+        event = event ^ LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT; // unregister for modem NMEA report
+        loc_eng_data.generateNmea = true;
+    }
+    else
+    {
+        loc_eng_data.generateNmea = false;
+    }
 
     LocEng locEngHandle(&loc_eng_data, event, loc_eng_data.acquire_wakelock_cb,
                         loc_eng_data.release_wakelock_cb, loc_eng_msg_sender, loc_external_msg_sender,
@@ -1523,6 +1536,11 @@ static void loc_eng_deferred_action_thread(void* arg)
                     loc_eng_data_p->client_handle->setInSession(false);
                 }
 
+                if (loc_eng_data_p->generateNmea && rpMsg->location.position_source == ULP_LOCATION_IS_FROM_GNSS)
+                {
+                    loc_eng_nmea_generate_pos(loc_eng_data_p, rpMsg->location, rpMsg->locationExtended);
+                }
+
                 // Free the allocated memory for rawData
                 GpsLocation* gp = (GpsLocation*)&(rpMsg->location);
                 if (gp != NULL && gp->rawData != NULL)
@@ -1543,6 +1561,12 @@ static void loc_eng_deferred_action_thread(void* arg)
                     loc_eng_data_p->sv_status_cb((GpsSvStatus*)&(rsMsg->svStatus),
                                                  (void*)rsMsg->svExt);
                 }
+
+                if (loc_eng_data_p->generateNmea)
+                {
+                    loc_eng_nmea_generate_sv(loc_eng_data_p, rsMsg->svStatus, rsMsg->locationExtended);
+                }
+
             }
             break;
 

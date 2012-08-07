@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -68,6 +68,11 @@ typedef unsigned char boolean;
 #define FAILURE                 FALSE
 #define INVALID_ATL_CONNECTION_HANDLE -1
 
+enum loc_nmea_provider_e_type {
+    NMEA_PROVIDER_AP = 0, // Application Processor Provider of NMEA
+    NMEA_PROVIDER_MP // Modem Processor Provider of NMEA
+};
+
 enum loc_mute_session_e_type {
    LOC_MUTE_SESS_NONE = 0,
    LOC_MUTE_SESS_WAIT,
@@ -128,6 +133,13 @@ typedef struct
     // For muting session broadcast
     loc_mute_session_e_type        mute_session_state;
 
+    // For nmea generation
+    boolean generateNmea;
+    uint32_t sv_used_mask;
+    float hdop;
+    float pdop;
+    float vdop;
+
     // Address buffers, for addressing setting before init
     int    supl_host_set;
     char   supl_host_buf[101];
@@ -149,6 +161,7 @@ typedef struct loc_gps_cfg_s
   unsigned long  INTERMEDIATE_POS;
   unsigned long  ACCURACY_THRES;
   unsigned long  ENABLE_WIPER;
+  uint8_t        NMEA_PROVIDER;
   unsigned long  SUPL_VER;
   unsigned long  CAPABILITIES;
   uint8_t        GYRO_BIAS_RANDOM_WALK_VALID;
