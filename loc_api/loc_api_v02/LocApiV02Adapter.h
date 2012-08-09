@@ -157,7 +157,9 @@ public:
 
   virtual enum loc_api_adapter_err
     setSensorPerfControlConfig(int controlMode, int accelSamplesPerBatch, int accelBatchesPerSec,
-                               int gyroSamplesPerBatch, int gyroBatchesPerSec, int algorithmConfig);
+                               int gyroSamplesPerBatch, int gyroBatchesPerSec,
+                               int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+                               int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig);
   virtual enum loc_api_adapter_err setExtPowerConfig(int isBatteryCharging);
 };
 

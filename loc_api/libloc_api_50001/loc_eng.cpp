@@ -94,8 +94,13 @@ static loc_param_s_type loc_parameter_table[] =
   {"SENSOR_ACCEL_SAMPLES_PER_BATCH", &gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH, NULL, 'n'},
   {"SENSOR_GYRO_BATCHES_PER_SEC",    &gps_conf.SENSOR_GYRO_BATCHES_PER_SEC,    NULL, 'n'},
   {"SENSOR_GYRO_SAMPLES_PER_BATCH",  &gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,  NULL, 'n'},
+  {"SENSOR_ACCEL_BATCHES_PER_SEC_HIGH",   &gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,   NULL, 'n'},
+  {"SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH", &gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH, NULL, 'n'},
+  {"SENSOR_GYRO_BATCHES_PER_SEC_HIGH",    &gps_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,    NULL, 'n'},
+  {"SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH",  &gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,  NULL, 'n'},
   {"SENSOR_CONTROL_MODE",            &gps_conf.SENSOR_CONTROL_MODE,            NULL, 'n'},
   {"SENSOR_USAGE",                   &gps_conf.SENSOR_USAGE,                   NULL, 'n'},
+  {"SENSOR_ALGORITHM_CONFIG_MASK",   &gps_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'},
   {"QUIPC_ENABLED",                  &gps_conf.QUIPC_ENABLED,                  NULL, 'n'},
   {"LPP_PROFILE",                    &gps_conf.LPP_PROFILE,                    NULL, 'n'},
 };
@@ -114,6 +119,10 @@ static void loc_default_parameters(void)
    gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH = 5;
    gps_conf.SENSOR_GYRO_BATCHES_PER_SEC = 2;
    gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH = 5;
+   gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH = 4;
+   gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH = 25;
+   gps_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH = 4;
+   gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH = 25;
    gps_conf.SENSOR_CONTROL_MODE = 0; /* AUTO */
    gps_conf.SENSOR_USAGE = 0; /* Enabled */
    gps_conf.SENSOR_ALGORITHM_CONFIG_MASK = 0; /* INS Disabled = FALSE*/
@@ -374,6 +383,10 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
                                                        gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC,
                                                        gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,
                                                        gps_conf.SENSOR_GYRO_BATCHES_PER_SEC,
+                                                       gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH,
+                                                       gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,
+                                                       gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,
+                                                       gps_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,
                                                        gps_conf.SENSOR_ALGORITHM_CONFIG_MASK));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                   sensor_perf_control_conf_msg, loc_eng_free_msg);
@@ -1444,7 +1457,10 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_sensor_perf_control_config *spccMsg = (loc_eng_msg_sensor_perf_control_config*)msg;
             loc_eng_data_p->client_handle->setSensorPerfControlConfig(spccMsg->controlMode, spccMsg->accelSamplesPerBatch, spccMsg->accelBatchesPerSec,
-                                                                      spccMsg->gyroSamplesPerBatch, spccMsg->gyroBatchesPerSec, spccMsg->algorithmConfig);
+                                                                      spccMsg->gyroSamplesPerBatch, spccMsg->gyroBatchesPerSec,
+                                                                      spccMsg->accelSamplesPerBatchHigh, spccMsg->accelBatchesPerSecHigh,
+                                                                      spccMsg->gyroSamplesPerBatchHigh, spccMsg->gyroBatchesPerSecHigh,
+                                                                      spccMsg->algorithmConfig);
         }
         break;
 
@@ -1497,6 +1513,15 @@ static void loc_eng_deferred_action_thread(void* arg)
                     }
                     // turn off the session flag.
                     loc_eng_data_p->client_handle->setInSession(false);
+                }
+
+                // Free the allocated memory for rawData
+                GpsLocation* gp = (GpsLocation*)&(rpMsg->location);
+                if (gp != NULL && gp->rawData != NULL)
+                {
+                    delete (char*)gp->rawData;
+                    gp->rawData = NULL;
+                    gp->rawDataSize = 0;
                 }
             }
 
@@ -1851,6 +1876,19 @@ bool loc_eng_inject_raw_command(loc_eng_data_s_type &loc_eng_data,
     boolean ret_val;
     LOC_LOGD("loc_eng_send_extra_command: %s\n", command);
     ret_val = TRUE;
+
+    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+    {
+        ulp_msg_inject_raw_command *msg(
+            new ulp_msg_inject_raw_command(&loc_eng_data,command, length));
+        msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q
+                   , msg, loc_eng_free_msg);
+        ret_val = 0;
+    }else
+    {
+        ret_val = -1;
+    }
+
 
     EXIT_LOG(%s, loc_logger_boolStr[ret_val!=0]);
     return ret_val;

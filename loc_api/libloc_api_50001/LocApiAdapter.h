@@ -203,7 +203,9 @@ public:
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
         setSensorPerfControlConfig(int controlMode, int accelSamplesPerBatch, int accelBatchesPerSec,
-                            int gyroSamplesPerBatch, int gyroBatchesPerSec, int algorithmConfig)
+                            int gyroSamplesPerBatch, int gyroBatchesPerSec,
+                            int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+                            int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
         setExtPowerConfig(int isBatteryCharging)

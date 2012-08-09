@@ -117,7 +117,11 @@ enum loc_eng_msg_ids_t {
 
     /* Message is sent by HAL to LOC API to configure LTE Positioning
        Profile in modem */
-    LOC_ENG_MSG_LPP_CONFIG
+    LOC_ENG_MSG_LPP_CONFIG,
+
+    // Message is sent by Android framework (GpsLocationProvider)
+    // to inject the raw command
+    ULP_MSG_INJECT_RAW_COMMAND,
 };
 
 #ifdef __cplusplus

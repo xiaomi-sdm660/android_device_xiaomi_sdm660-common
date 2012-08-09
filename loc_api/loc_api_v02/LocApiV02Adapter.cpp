@@ -1335,6 +1335,8 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorProperties(bool gyroBiasVa
 enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int controlMode,
                                                                         int accelSamplesPerBatch, int accelBatchesPerSec,
                                                                         int gyroSamplesPerBatch, int gyroBatchesPerSec,
+                                                                        int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+                                                                        int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh,
                                                                         int algorithmConfig)
 {
   locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
@@ -1345,6 +1347,7 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int cont
 
   LOC_LOGD("%s:%d]: Sensor Perf Control Config (performanceControlMode)(%u) "
                 "accel(#smp,#batches) (%u,%u) gyro(#smp,#batches) (%u,%u) "
+                "accel_high(#smp,#batches) (%u,%u) gyro_high(#smp,#batches) (%u,%u) "
                 "algorithmConfig(%u)\n",
                 __FUNCTION__,
                 __LINE__,
@@ -1353,6 +1356,10 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int cont
                 accelBatchesPerSec,
                 gyroSamplesPerBatch,
                 gyroBatchesPerSec,
+                accelSamplesPerBatchHigh,
+                accelBatchesPerSecHigh,
+                gyroSamplesPerBatchHigh,
+                gyroBatchesPerSecHigh,
                 algorithmConfig
                 );
 
@@ -1367,6 +1374,12 @@ enum loc_api_adapter_err LocApiV02Adapter :: setSensorPerfControlConfig(int cont
   sensor_perf_config_req.gyroSamplingSpec_valid = 1;
   sensor_perf_config_req.gyroSamplingSpec.batchesPerSecond = gyroBatchesPerSec;
   sensor_perf_config_req.gyroSamplingSpec.samplesPerBatch = gyroSamplesPerBatch;
+  sensor_perf_config_req.accelSamplingSpecHigh_valid = 1;
+  sensor_perf_config_req.accelSamplingSpecHigh.batchesPerSecond = accelBatchesPerSecHigh;
+  sensor_perf_config_req.accelSamplingSpecHigh.samplesPerBatch = accelSamplesPerBatchHigh;
+  sensor_perf_config_req.gyroSamplingSpecHigh_valid = 1;
+  sensor_perf_config_req.gyroSamplingSpecHigh.batchesPerSecond = gyroBatchesPerSecHigh;
+  sensor_perf_config_req.gyroSamplingSpecHigh.samplesPerBatch = gyroSamplesPerBatchHigh;
   sensor_perf_config_req.algorithmConfig_valid = 1;
   sensor_perf_config_req.algorithmConfig = algorithmConfig;
 

@@ -223,10 +223,16 @@ struct loc_eng_msg_sensor_perf_control_config : public loc_eng_msg {
     const int accelBatchesPerSec;
     const int gyroSamplesPerBatch;
     const int gyroBatchesPerSec;
+    const int accelSamplesPerBatchHigh;
+    const int accelBatchesPerSecHigh;
+    const int gyroSamplesPerBatchHigh;
+    const int gyroBatchesPerSecHigh;
     const int algorithmConfig;
     inline loc_eng_msg_sensor_perf_control_config(void* instance, int controlMode,
                                                   int accelSamplesPerBatch, int accelBatchesPerSec,
                                                   int gyroSamplesPerBatch, int gyroBatchesPerSec,
+                                                  int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+                                                  int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh,
                                                   int algorithmConfig) :
             loc_eng_msg(instance, LOC_ENG_MSG_SET_SENSOR_PERF_CONTROL_CONFIG),
             controlMode(controlMode),
@@ -234,15 +240,25 @@ struct loc_eng_msg_sensor_perf_control_config : public loc_eng_msg {
             accelBatchesPerSec(accelBatchesPerSec),
             gyroSamplesPerBatch(gyroSamplesPerBatch),
             gyroBatchesPerSec(gyroBatchesPerSec),
+            accelSamplesPerBatchHigh(accelSamplesPerBatchHigh),
+            accelBatchesPerSecHigh(accelBatchesPerSecHigh),
+            gyroSamplesPerBatchHigh(gyroSamplesPerBatchHigh),
+            gyroBatchesPerSecHigh(gyroBatchesPerSecHigh),
             algorithmConfig(algorithmConfig)
         {
             LOC_LOGV("Sensor Perf Control Config (performanceControlMode)(%u) "
-                "accel(#smp,#batches) (%u,%u) gyro(#smp,#batches) (%u,%u), algorithmConfig(%u)\n",
+                "accel(#smp,#batches) (%u,%u) gyro(#smp,#batches) (%u,%u), "
+                "accel_high(#smp,#batches) (%u,%u) gyro_high(#smp,#batches) (%u,%u), "
+                "algorithmConfig(%u)\n",
                 controlMode,
                 accelSamplesPerBatch,
                 accelBatchesPerSec,
                 gyroSamplesPerBatch,
                 gyroBatchesPerSec,
+                accelSamplesPerBatchHigh,
+                accelBatchesPerSecHigh,
+                gyroSamplesPerBatchHigh,
+                gyroBatchesPerSecHigh,
                 algorithmConfig
                 );
         }
@@ -746,6 +762,26 @@ struct ulp_msg_update_criteria : public loc_eng_msg {
              locationCriteria.min_interval,
              locationCriteria.preferred_power_consumption,
              locationCriteria.intermediate_pos_report_enabled);
+    }
+};
+
+struct ulp_msg_inject_raw_command : public loc_eng_msg {
+    const char* rawCommand;
+    const int rawCommandLength;
+    inline ulp_msg_inject_raw_command (void* instance, char* command, int length) :
+        loc_eng_msg(instance, ULP_MSG_INJECT_RAW_COMMAND),
+        rawCommand(new char[length]),
+        rawCommandLength(length)
+    {
+      memcpy((void*)rawCommand, (void*)command, length);
+      LOC_LOGV("inject raw command: command %s\n  command length: %d\n ",
+             rawCommand,
+             rawCommandLength);
+    }
+
+    inline ~ulp_msg_inject_raw_command()
+    {
+        delete[] rawCommand;
     }
 };
 
