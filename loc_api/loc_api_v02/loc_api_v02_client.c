@@ -1543,6 +1543,8 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
     uint32_t num_services = 0, num_entries = 0;
     qmi_client_error_type rc = QMI_NO_ERR;
     bool nosignal = false;
+    qmi_client_os_params os_params;
+    int timeout = 0;
 
     // Get the service object for the qmiLoc Service
     qmi_idl_service_object_type locClientServiceObject =
@@ -1557,46 +1559,34 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
        break;
     }
 
-    // get the service addressing information
-    rc = qmi_client_get_service_list( locClientServiceObject, NULL, NULL,
-                                      &num_services);
-    LOC_LOGV("%s:%d]: qmi_client_get_service_list() first try rc %d, "
-             "num_services %d", __func__, __LINE__, rc, num_services);
+    // register for service notification
+    rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
+    notifierInitFlag = (NULL != notifier);
 
     if (rc != QMI_NO_ERR) {
-        // bummer, service list is not up.
-        // We need to try again after a timed wait
-        qmi_client_os_params os_params;
-        int timeout = 0;
+        LOC_LOGE("%s:%d]: qmi_client_notifier_init failed %d\n",
+                 __func__, __LINE__, rc);
+        status = eLOC_CLIENT_FAILURE_INTERNAL;
+        break;
+    }
 
-        // register for service notification
-        rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
-        notifierInitFlag = (NULL != notifier);
-
+    do {
+        QMI_CCI_OS_SIGNAL_CLEAR(&os_params);
+        // get the service addressing information
+        rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
+                                         &num_services);
+        /* If service is not up wait on a signal until the service is up
+         * or a timeout occurs. */
         if (rc != QMI_NO_ERR) {
-            LOC_LOGE("%s:%d]: qmi_client_notifier_init failed %d\n",
-                     __func__, __LINE__, rc);
-            status = eLOC_CLIENT_FAILURE_INTERNAL;
-            break;
-        }
-
-        do {
-            QMI_CCI_OS_SIGNAL_CLEAR(&os_params);
-            /* If service is not up wait on a signal until the service is up
-             * or a timeout occurs. */
             QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT_UNIT);
             nosignal = QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params);
+        }
 
-            // get the service addressing information
-            rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
-                                             &num_services);
+        timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
 
-            timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
-
-            LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc %d, nosignal %d, "
-                     "total timeout %d", __func__, __LINE__, rc, nosignal, timeout);
-        } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL && nosignal && rc != QMI_NO_ERR);
-    }
+        LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc %d, nosignal %d, "
+                 "total timeout %d", __func__, __LINE__, rc, nosignal, timeout);
+    } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL && nosignal && rc != QMI_NO_ERR);
 
     if (0 == num_services || rc != QMI_NO_ERR) {
         if (!nosignal) {
