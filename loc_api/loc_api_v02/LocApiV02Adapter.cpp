@@ -1550,6 +1550,7 @@ void LocApiV02Adapter :: reportPosition (
   const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr)
 {
     GpsLocation location;
+    LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
     LOC_LOGD("Reporting postion from V2 Adapter\n");
     memset(&location, 0, sizeof (GpsLocation));
     location.size = sizeof(location);
@@ -1607,6 +1608,10 @@ void LocApiV02Adapter :: reportPosition (
                 location.flags  |= GPS_LOCATION_HAS_ACCURACY;
                 location.accuracy = location_report_ptr->horUncCircular;
             }
+
+            // Technology Mask
+            tech_Mask  |= location_report_ptr->technologyMask;
+
             //Mark the location source as from GNSS
             location.flags |= LOCATION_HAS_SOURCE_INFO;
             location.position_source = ULP_LOCATION_IS_FROM_GNSS;
@@ -1614,7 +1619,8 @@ void LocApiV02Adapter :: reportPosition (
                                            locEngHandle.extPosInfo((void*)location_report_ptr),
                                            (location_report_ptr->sessionStatus
                                             == eQMI_LOC_SESS_STATUS_IN_PROGRESS_V02 ?
-                                            LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS));
+                                            LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
+                                           tech_Mask);
         }
     }
     else

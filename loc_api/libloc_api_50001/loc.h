@@ -80,6 +80,15 @@ enum loc_sess_status {
     LOC_SESS_FAILURE
 };
 
+typedef uint32_t LocPosTechMask;
+#define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
+#define LOC_POS_TECH_MASK_SATELLITE ((LocPosTechMask)0x00000001)
+#define LOC_POS_TECH_MASK_CELLID ((LocPosTechMask)0x00000002)
+#define LOC_POS_TECH_MASK_WIFI ((LocPosTechMask)0x00000004)
+#define LOC_POS_TECH_MASK_SENSORS ((LocPosTechMask)0x00000008)
+#define LOC_POS_TECH_MASK_REFERENCE_LOCATION ((LocPosTechMask)0x00000010)
+#define LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION ((LocPosTechMask)0x00000020)
+
 void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
 
 #ifdef __cplusplus

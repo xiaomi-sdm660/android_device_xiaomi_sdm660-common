@@ -115,6 +115,12 @@ enum loc_eng_msg_ids_t {
     // Message is sent by QUIPC module in order to request some info from ULP
     ULP_MSG_REQUEST_COARSE_POSITION,
 
+    // Message is sent to ULP module to re-evaluate its subsystems
+    ULP_MSG_MONITOR,
+
+    // Last ULP MSG
+    ULP_MSG_LAST = 0x700,
+
     /* Message is sent by HAL to LOC API to configure LTE Positioning
        Profile in modem */
     LOC_ENG_MSG_LPP_CONFIG,
