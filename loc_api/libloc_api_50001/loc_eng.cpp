@@ -1495,7 +1495,7 @@ static void loc_eng_deferred_action_thread(void* arg)
                     //   2.2.2 we care about inaccuracy; and
                     //   2.2.3 the inaccuracy exceeds our tolerance
                     else if ((LOC_SESS_SUCCESS == rpMsg->status &&
-                              ((LOCATION_HAS_SOURCE_INFO == rpMsg->location.flags &&
+                              (((LOCATION_HAS_SOURCE_INFO & rpMsg->location.flags) &&
                                 ULP_LOCATION_IS_FROM_HYBRID == rpMsg->location.position_source) ||
                                ((LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask) ||
                                 (LOC_POS_TECH_MASK_SENSORS & rpMsg->technology_mask)))) ||
