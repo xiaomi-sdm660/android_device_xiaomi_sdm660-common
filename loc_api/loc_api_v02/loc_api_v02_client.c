@@ -1580,6 +1580,9 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
         if (rc != QMI_NO_ERR) {
             QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT_UNIT);
             nosignal = QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params);
+            if (!nosignal)
+                rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
+                                                 &num_services);
         }
 
         timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
