@@ -624,6 +624,8 @@ LocApiRpcAdapter::deleteAidingData(GpsAidingData bits)
 
 void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *location_report_ptr)
 {
+    LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
+
     GpsLocation location = {0};
 
     location.size = sizeof(location);
@@ -678,6 +680,10 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                     location.flags    |= GPS_LOCATION_HAS_ACCURACY;
                     location.accuracy = location_report_ptr->hor_unc_circular;
                 }
+
+		// Technology Mask
+
+                tech_Mask  |= location_report_ptr->technology_mask;
                 //Mark the location source as from GNSS
                 location.flags |= LOCATION_HAS_SOURCE_INFO;
                 location.position_source = ULP_LOCATION_IS_FROM_GNSS;
@@ -685,7 +691,8 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                 LocApiAdapter::reportPosition(location,
                                               locEngHandle.extPosInfo((void*)location_report_ptr),
                                               (location_report_ptr->session_status == RPC_LOC_SESS_STATUS_IN_PROGESS ?
-                                               LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS));
+                                               LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
+					       tech_Mask);
             }
         }
         else
