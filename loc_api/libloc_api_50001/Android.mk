@@ -19,7 +19,8 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
-    libgps.utils
+    libgps.utils \
+    libdl
 
 LOCAL_SRC_FILES += \
     loc_eng_log.cpp \
@@ -78,17 +79,6 @@ LOCAL_SRC_FILES += \
     loc_eng_dmn_conn_thread_helper.c \
     loc_eng_dmn_conn_glue_msg.c \
     loc_eng_dmn_conn_glue_pipe.c
-
-# if QMI is supported then link to loc_api_v02
-ifeq ($(call is-board-platform-in-list,$(QMI_BOARD_PLATFORM_LIST)),true)
-LOCAL_SHARED_LIBRARIES += libloc_api_v02
-else
-## Check if RPC is not unsupported
-ifneq ($(TARGET_NO_RPC),true)
-LOCAL_SHARED_LIBRARIES += libloc_api-rpc-qc
-endif #TARGET_NO_RPC
-
-endif #is-board-platform-in-list
 
 LOCAL_CFLAGS += \
      -fno-short-enums \
