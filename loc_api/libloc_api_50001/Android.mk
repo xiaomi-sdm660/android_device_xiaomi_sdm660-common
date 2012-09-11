@@ -18,7 +18,8 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
-    libgps.utils
+    libgps.utils \
+    libdl
 
 LOCAL_SRC_FILES += \
     loc_eng_log.cpp \
@@ -77,13 +78,6 @@ LOCAL_SRC_FILES += \
     loc_eng_dmn_conn_thread_helper.c \
     loc_eng_dmn_conn_glue_msg.c \
     loc_eng_dmn_conn_glue_pipe.c
-
-## Check if RPC is not unsupported
-ifneq ($(TARGET_NO_RPC),true)
-LOCAL_SHARED_LIBRARIES += libloc_api-rpc-qc
-else
-LOCAL_SHARED_LIBRARIES += libloc_api_v02
-endif #TARGET_NO_RPC
 
 LOCAL_CFLAGS += \
      -fno-short-enums \

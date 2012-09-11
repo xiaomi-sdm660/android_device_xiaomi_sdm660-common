@@ -98,7 +98,7 @@ static void loc_rpc_global_cb(void* user, CLIENT* clnt, enum rpc_reset_event eve
 }
 
 
-LocApiAdapter* getLocApiAdapter(LocEng &locEng)
+extern "C" LocApiAdapter* getLocApiAdapter(LocEng &locEng)
 {
     return new LocApiRpcAdapter(locEng);
 }

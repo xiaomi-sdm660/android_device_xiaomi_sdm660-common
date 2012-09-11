@@ -12,6 +12,8 @@ LOCAL_PATH := $(call my-dir)
 
 GPS_DIR_LIST :=
 
+ifeq (exists, $(shell test -d $(TOP)/vendor/qcom/proprietary/qmi-frameworks && echo exists))
+
 # add RPC dirs if RPC is available
 ifneq ($(TARGET_NO_RPC),true)
 
@@ -24,6 +26,8 @@ else
 GPS_DIR_LIST += $(LOCAL_PATH)/loc_api_v02/
 
 endif #TARGET_NO_RPC
+
+endif
 
 GPS_DIR_LIST += $(LOCAL_PATH)/libloc_api_50001/
 

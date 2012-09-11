@@ -29,6 +29,7 @@
 #define LOG_NDDEBUG 0
 #define LOG_TAG "LocSvc_adapter"
 
+#include <dlfcn.h>
 #include <LocApiAdapter.h>
 #include "loc_eng_msg.h"
 #include "loc_log.h"
@@ -64,6 +65,35 @@ LocApiAdapter::LocApiAdapter(LocEng &locEng) :
 LocApiAdapter::~LocApiAdapter()
 {
     LOC_LOGV("LocApiAdapter deleted");
+}
+
+LocApiAdapter* LocApiAdapter::getLocApiAdapter(LocEng &locEng)
+{
+    void* handle;
+    LocApiAdapter* adapter = NULL;
+
+    handle = dlopen ("libloc_api_v02.so", RTLD_NOW);
+
+    if (!handle) {
+        LOC_LOGI("%s: dlopen(libloc_api_v02.so) failed, trying to load libloc_api-rpc-qc.so", __FUNCTION__);
+        handle = dlopen ("libloc_api-rpc-qc.so", RTLD_NOW);
+    }
+    else
+        LOC_LOGE("%s: dlopen(libloc_api_v02.so) succeeded.", __FUNCTION__);
+
+    if (!handle) {
+        LOC_LOGI("%s: dlopen(libloc_api-rpc-qc.so) failed, constructing LocApiAdapter", __FUNCTION__);
+        adapter = new LocApiAdapter(locEng);
+    } else {
+        getLocApiAdapter_t* getHandle = (getLocApiAdapter_t*)dlsym(handle, "getLocApiAdapter");
+        if (!getHandle) {
+            LOC_LOGE("%s: dlsym(getLocApiAdapter) failed", __FUNCTION__);
+            return NULL;
+        }
+        adapter = (*getHandle)(locEng);
+    }
+
+    return adapter;
 }
 
 int LocApiAdapter::hexcode(char *hexstring, int string_size,

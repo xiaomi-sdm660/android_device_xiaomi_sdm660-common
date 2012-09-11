@@ -2053,7 +2053,7 @@ void LocApiV02Adapter :: errorCb(locClientHandleType handle,
 }
 
 /* return a Loc API adapter */
-LocApiAdapter* getLocApiAdapter(LocEng &locEng)
+extern "C" LocApiAdapter* getLocApiAdapter(LocEng &locEng)
 {
  return(new LocApiV02Adapter(locEng));
 }

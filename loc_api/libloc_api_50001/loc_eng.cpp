@@ -265,7 +265,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     LocEng locEngHandle(&loc_eng_data, event, loc_eng_data.acquire_wakelock_cb,
                         loc_eng_data.release_wakelock_cb, loc_eng_msg_sender,
                         callbacks->location_ext_parser, callbacks->sv_ext_parser);
-    loc_eng_data.client_handle = getLocApiAdapter(locEngHandle);
+    loc_eng_data.client_handle = LocApiAdapter::getLocApiAdapter(locEngHandle);
 
     int ret_val =-1;
     if (NULL == loc_eng_data.client_handle) {
