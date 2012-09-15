@@ -1495,8 +1495,7 @@ locClientEventMaskType LocApiV02Adapter :: convertMask(
 
   if(mask & LOC_API_ADAPTER_BIT_STATUS_REPORT)
   {
-    eventMask |= (QMI_LOC_EVENT_MASK_ENGINE_STATE_V02 |
-                  QMI_LOC_EVENT_MASK_FIX_SESSION_STATE_V02);
+    eventMask |= (QMI_LOC_EVENT_MASK_ENGINE_STATE_V02);
   }
 
   if(mask & LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST)
@@ -1749,21 +1748,25 @@ void  LocApiV02Adapter :: reportSv (
 void LocApiV02Adapter :: reportEngineState (
     const qmiLocEventEngineStateIndMsgT_v02 *engine_state_ptr)
 {
-  GpsStatusValue status;
 
   LOC_LOGV("%s:%d]: state = %d\n", __func__, __LINE__,
                  engine_state_ptr->engineState);
 
-  status = GPS_STATUS_NONE;
   if (engine_state_ptr->engineState == eQMI_LOC_ENGINE_STATE_ON_V02)
   {
-    status = GPS_STATUS_ENGINE_ON;
+    LocApiAdapter::reportStatus(GPS_STATUS_ENGINE_ON);
+    LocApiAdapter::reportStatus(GPS_STATUS_SESSION_BEGIN);
   }
   else if (engine_state_ptr->engineState == eQMI_LOC_ENGINE_STATE_OFF_V02)
   {
-    status = GPS_STATUS_ENGINE_OFF;
+    LocApiAdapter::reportStatus(GPS_STATUS_SESSION_END);
+    LocApiAdapter::reportStatus(GPS_STATUS_ENGINE_OFF);
   }
-  LocApiAdapter::reportStatus(status);
+  else
+  {
+      LocApiAdapter::reportStatus(GPS_STATUS_NONE);
+  }
+
 }
 
 /* convert fix session state report to loc eng format and send the converted
