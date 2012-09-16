@@ -12,7 +12,7 @@ LOCAL_PATH := $(call my-dir)
 
 GPS_DIR_LIST :=
 
-ifeq (exists, $(shell test -d $(TOP)/vendor/qcom/proprietary/qmi-frameworks && echo exists))
+ifeq (exists, $(shell test -d $(TOP)/vendor/qcom/proprietary/qmi-framework && echo exists))
 
 # add RPC dirs if RPC is available
 ifneq ($(TARGET_NO_RPC),true)
