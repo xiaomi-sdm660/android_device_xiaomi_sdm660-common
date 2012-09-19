@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -627,8 +627,10 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
     LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
 
     GpsLocation location = {0};
+    GpsLocationExtended locationExtended = {0};
 
     location.size = sizeof(location);
+    locationExtended.size = sizeof(locationExtended);
     if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SESSION_STATUS)
     {
         // Process the position from final and intermediate reports
@@ -687,8 +689,22 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                 //Mark the location source as from GNSS
                 location.flags |= LOCATION_HAS_SOURCE_INFO;
                 location.position_source = ULP_LOCATION_IS_FROM_GNSS;
+
+                if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_ALTITUDE_WRT_MEAN_SEA_LEVEL)
+                {
+                    locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;
+                    locationExtended.magneticDeviation = location_report_ptr->altitude_wrt_mean_sea_level;
+                }
+
+                if (location_report_ptr->valid_mask &  RPC_LOC_POS_VALID_MAGNETIC_VARIATION )
+                {
+                    locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;
+                    locationExtended.magneticDeviation = location_report_ptr->magnetic_deviation;
+                }
+
                 LOC_LOGV("reportPosition: fire callback\n");
                 LocApiAdapter::reportPosition(location,
+                                              locationExtended,
                                               locEngHandle.extPosInfo((void*)location_report_ptr),
                                               (location_report_ptr->session_status == RPC_LOC_SESS_STATUS_IN_PROGESS ?
                                                LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
@@ -698,6 +714,7 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
         else
         {
             LocApiAdapter::reportPosition(location,
+                                          locationExtended,
                                           NULL,
                                           LOC_SESS_FAILURE);
             LOC_LOGV("loc_eng_report_position: ignore position report when session status = %d\n", location_report_ptr->session_status);
@@ -712,6 +729,8 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
 void LocApiRpcAdapter::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
 {
     GpsSvStatus     SvStatus = {0};
+    GpsLocationExtended locationExtended = {0};
+    locationExtended.size = sizeof(locationExtended);
     int             num_svs_max = 0;
     const rpc_loc_sv_info_s_type *sv_info_ptr;
 
@@ -795,9 +814,20 @@ void LocApiRpcAdapter::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
         }
     }
 
+    if ((gnss_report_ptr->valid_mask & RPC_LOC_GNSS_INFO_VALID_POS_DOP) &&
+        (gnss_report_ptr->valid_mask & RPC_LOC_GNSS_INFO_VALID_HOR_DOP) &&
+        (gnss_report_ptr->valid_mask & RPC_LOC_GNSS_INFO_VALID_VERT_DOP))
+    {
+        locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_DOP;
+        locationExtended.pdop = gnss_report_ptr->position_dop;
+        locationExtended.hdop = gnss_report_ptr->horizontal_dop;
+        locationExtended.vdop = gnss_report_ptr->vertical_dop;
+    }
+
     if (SvStatus.num_svs >= 0)
     {
         LocApiAdapter::reportSv(SvStatus,
+                                locationExtended,
                                 locEngHandle.extSvInfo((void*)gnss_report_ptr));
     }
 }

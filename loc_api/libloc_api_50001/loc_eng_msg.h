@@ -1,4 +1,4 @@
-/* Copyright (c) 2011,2012 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -97,6 +97,35 @@ struct LocPosMode
                   provider);
     }
 };
+
+/** Flags to indicate which values are valid in a GpsLocationExtended. */
+typedef uint16_t GpsLocationExtendedFlags;
+/** GpsLocationExtended has valid pdop, hdop, vdop. */
+#define GPS_LOCATION_EXTENDED_HAS_DOP 0x0001
+/** GpsLocationExtended has valid altitude mean sea level. */
+#define GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL 0x0002
+/** GpsLocation has valid magnetic deviation. */
+#define GPS_LOCATION_EXTENDED_HAS_MAG_DEV 0x0004
+/** GpsLocation has valid mode indicator. */
+#define GPS_LOCATION_EXTENDED_HAS_MODE_IND 0x0008
+
+/** Represents gps location extended. */
+typedef struct {
+    /** set to sizeof(GpsLocationExtended) */
+    size_t          size;
+    /** Contains GpsLocationExtendedFlags bits. */
+    uint16_t        flags;
+    /** Contains the Altitude wrt mean sea level */
+    float           altitudeMeanSeaLevel;
+    /** Contains Position Dilusion of Precision. */
+    float           pdop;
+    /** Contains Horizontal Dilusion of Precision. */
+    float           hdop;
+    /** Contains Vertical Dilusion of Precision. */
+    float           vdop;
+    /** Contains Magnetic Deviation. */
+    float           magneticDeviation;
+} GpsLocationExtended;
 
 typedef enum {
   LOC_ENG_IF_REQUEST_TYPE_SUPL = 0,
@@ -317,23 +346,24 @@ struct loc_eng_msg_delete_aiding_data : public loc_eng_msg {
 
 struct loc_eng_msg_report_position : public loc_eng_msg {
     const GpsLocation location;
+    const GpsLocationExtended locationExtended;
     const void* locationExt;
     const enum loc_sess_status status;
     const LocPosTechMask technology_mask;
-    inline loc_eng_msg_report_position(void* instance, GpsLocation &loc, void* locExt,
+    inline loc_eng_msg_report_position(void* instance, GpsLocation &loc, GpsLocationExtended &locExtended, void* locExt,
                                        enum loc_sess_status st) :
         loc_eng_msg(instance, LOC_ENG_MSG_REPORT_POSITION),
-        location(loc), locationExt(locExt), status(st), technology_mask(LOC_POS_TECH_MASK_DEFAULT)
+        location(loc), locationExtended(locExtended), locationExt(locExt), status(st), technology_mask(LOC_POS_TECH_MASK_DEFAULT)
     {
         LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Session status: %d\n Technology mask: %u",
                  location.flags, location.position_source, location.latitude, location.longitude,
                  location.altitude, location.speed, location.bearing, location.accuracy,
                  location.timestamp, location.rawDataSize, location.rawData,status,technology_mask);
     }
-    inline loc_eng_msg_report_position(void* instance, GpsLocation &loc, void* locExt,
+    inline loc_eng_msg_report_position(void* instance, GpsLocation &loc, GpsLocationExtended &locExtended, void* locExt,
                                        enum loc_sess_status st, LocPosTechMask technology) :
         loc_eng_msg(instance, LOC_ENG_MSG_REPORT_POSITION),
-        location(loc), locationExt(locExt), status(st), technology_mask(technology)
+        location(loc), locationExtended(locExtended), locationExt(locExt), status(st), technology_mask(technology)
     {
         LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Session status: %d\n Technology mask: %u",
                  location.flags, location.position_source, location.latitude, location.longitude,
@@ -344,9 +374,10 @@ struct loc_eng_msg_report_position : public loc_eng_msg {
 
 struct loc_eng_msg_report_sv : public loc_eng_msg {
     const GpsSvStatus svStatus;
+    const GpsLocationExtended locationExtended;
     const void* svExt;
-    inline loc_eng_msg_report_sv(void* instance, GpsSvStatus &sv, void* ext) :
-        loc_eng_msg(instance, LOC_ENG_MSG_REPORT_SV), svStatus(sv), svExt(ext)
+    inline loc_eng_msg_report_sv(void* instance, GpsSvStatus &sv, GpsLocationExtended &locExtended, void* ext) :
+        loc_eng_msg(instance, LOC_ENG_MSG_REPORT_SV), svStatus(sv), locationExtended(locExtended), svExt(ext)
     {
         LOC_LOGV("num sv: %d\n  ephemeris mask: %dxn  almanac mask: %x\n  used in fix mask: %x\n      sv: prn         snr       elevation      azimuth",
                  svStatus.num_svs, svStatus.ephemeris_mask, svStatus.almanac_mask, svStatus.used_in_fix_mask);
