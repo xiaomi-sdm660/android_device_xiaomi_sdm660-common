@@ -270,6 +270,17 @@ extern "C" const GpsInterface* get_gps_interface()
     if(gps_conf.CAPABILITIES & ULP_CAPABILITY) {
        loc_eng_ulp_inf = loc_eng_get_ulp_inf();
     }
+
+    if (get_target_name() == TARGET_NAME_APQ8064_STANDALONE)
+    {
+        gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
+        gss_fd = open("/dev/gss", O_RDONLY);
+        if (gss_fd < 0) {
+            LOC_LOGE("GSS open failed: %s\n", strerror(errno));
+        }
+        LOC_LOGD("GSS open success! CAPABILITIES %0x\n", gps_conf.CAPABILITIES);
+    }
+
     return &sLocEngInterface;
 }
 
@@ -326,17 +337,6 @@ static int loc_init(GpsCallbacks* callbacks)
                                     NULL  /* sv_ext_parser */};
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
-
-    if (get_target_name() == TARGET_NAME_APQ8064_STANDALONE)
-    {
-        gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
-        gss_fd = open("/dev/gss", O_RDONLY);
-        if (gss_fd < 0) {
-            LOC_LOGE("GSS open failed: %s\n", strerror(errno));
-            return NULL;
-        }
-        LOC_LOGD("GSS open success! CAPABILITIES %0x\n", gps_conf.CAPABILITIES);
-    }
 
     int retVal = -1;
     if (loc_eng_ulp_inf == NULL)
