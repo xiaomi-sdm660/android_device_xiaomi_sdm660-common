@@ -32,6 +32,7 @@
 #ifndef LOC_API_V02_CLIENT_H
 #define LOC_API_V02_CLIENT_H
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,37 +43,34 @@ extern "C" {
  *                             DATA DECLARATION
  *
  *============================================================================*/
-
-#include <stdint.h>
-#include "location_service_v02.h"  //QMI LOC Service data types definitions
 #include <stdbool.h>
+#include <stdint.h>
+
+#include "location_service_v02.h"  //QMI LOC Service data types definitions
+
 #include <stddef.h>
 
 /******************************************************************************
  *  Constants and configuration
  *****************************************************************************/
 
-/** @addtogroup constants_macros
-@{ */
-
-/** Specific value of #locClientHandleType, indicating an invalid handle. */
+/** @ingroup constants_macros
+  Specific value of #locClientHandleType, indicating an invalid handle. */
 #define LOC_CLIENT_INVALID_HANDLE_VALUE (NULL)
 
-/** @} */ /* end_addtogroup constants_macros */
 
 /** @addtogroup data_types
 @{ */
 
 /** Location client handle used to represent a specific client. Negative values
-    are invalid handles. */
+    are invalid handles.
+*/
 typedef void* locClientHandleType;
 
-/** Data type for events and event masks.
-    @newpage */
+/** Data type for events and event masks. */
 typedef uint64_t locClientEventMaskType;
 
 /** Location client status values.
-    @vertspace
 */
 typedef enum
 {
@@ -116,29 +114,22 @@ typedef enum
   /**< Failed because the service has not been initialized. */
 
   eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY             = 13
-  /**< Failed because not rnough memory to do the operation.*/
+  /**< Failed because there is not enough memory to do the operation. */
 
 }locClientStatusEnumType;
 
-/** Loc Client error values
+/** Location client error values
 */
-
 typedef enum
 {
   eLOC_CLIENT_ERROR_SERVICE_UNAVAILABLE            = 1
-  /**< Service is no longer available, the client should
-       close the existing connection and reopen the connection
-       upon getting this error.
-       */
+  /**< Service is no longer available. Upon getting this error, the client
+       must close the existing connection and reopen the connection. */
+
 }locClientErrorEnumType;
 
 
-/** @} */ /* end_addtogroup data_types */
-
-/** @addtogroup send_request
-@{ */
-
-/** @brief Request messages the client can send to the location engine.
+/** Request messages the client can send to the location engine.
 
   The following requests do not have any data associated, so they do not have a
   payload structure defined:
@@ -159,6 +150,7 @@ typedef enum
   - GetExternalPowerConfig
   - GetSensorControlConfig
   - GetSensorPerformanceControlConfiguration
+  - WWANOutOfServiceNotification
 */
 typedef union
 {
@@ -310,9 +302,11 @@ typedef union
         QMI_LOC_DELETE_ASSIST_DATA_REQ_V02. */
 
    const qmiLocSetXtraTSessionControlReqMsgT_v02* pSetXtraTSessionControlReq;
-   /**< Sets XTRA-T session control in the engine. If the request is accepted by
-        the service, the client receives the following indication containing a
-        response: QMI_LOC_SET_XTRA_T_SESSION_CONTROL_IND_V02.
+   /**< Sets XTRA-T session control in the engine.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_SET_XTRA_T_SESSION_CONTROL_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
         QMI_LOC_SET_XTRA_T_SESSION_CONTROL_REQ_V02. */
@@ -407,7 +401,7 @@ typedef union
         response indication for this request.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02.*/
+        QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02. */
 
    const qmiLocSetProtocolConfigParametersReqMsgT_v02*
      pSetProtocolConfigParametersReq;
@@ -429,10 +423,9 @@ typedef union
         QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02.
-        @newpage */
+        QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02. */
 
-      const qmiLocSetSensorControlConfigReqMsgT_v02*
+   const qmiLocSetSensorControlConfigReqMsgT_v02*
      pSetSensorControlConfigReq;
    /**< Sets the sensor control configuration parameters in the engine.
 
@@ -441,8 +434,7 @@ typedef union
         QMI_LOC_SET_SENSOR_CONTROL_CONFIG_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02.
-        @newpage */
+        QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02. */
 
    const qmiLocSetSensorPerformanceControlConfigReqMsgT_v02*
       pSetSensorPerformanceControlConfigReq;
@@ -453,8 +445,7 @@ typedef union
         QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02.
-        @newpage */
+        QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02. */
 
    const qmiLocGetSensorPropertiesReqMsgT_v02* pGetSensorPropertiesReq;
    /**< Retrieves the sensor properties from the engine.
@@ -464,8 +455,7 @@ typedef union
         QMI_LOC_GET_SENSOR_PROPERTIES_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02.
-        @newpage */
+        QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02. */
 
    const qmiLocSetSensorPropertiesReqMsgT_v02* pSetSensorPropertiesReq;
    /**< Sets the sensor properties in the engine.
@@ -475,8 +465,7 @@ typedef union
         QMI_LOC_SET_SENSOR_PROPERTIES_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02.
-        @newpage */
+        QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02. */
 
    const qmiLocInjectSuplCertificateReqMsgT_v02* pInjectSuplCertificateReq;
    /**< Injects a SUPL certificate into the engine.
@@ -486,8 +475,7 @@ typedef union
         QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02.
-        @newpage */
+        QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02. */
 
    const qmiLocDeleteSuplCertificateReqMsgT_v02* pDeleteSuplCertificateReq;
    /**< Deletes a SUPL certificate from the engine.
@@ -497,78 +485,69 @@ typedef union
         QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_DELETE_SUPL_CERTIFICATE_REQ_V02.
-        @newpage */
+        QMI_LOC_DELETE_SUPL_CERTIFICATE_REQ_V02. */
 
    const qmiLocSetPositionEngineConfigParametersReqMsgT_v02*
      pSetPositionEngineConfigParametersReq;
-   /**< Sets Position Engine configuration.
+   /**< Sets position engine configuration.
 
         If the request is accepted by the service, the client receives the
         following indication containing a response:
         QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_IND _V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02.
-        @newpage */
+        QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02. */
 
    const qmiLocGetPositionEngineConfigParametersReqMsgT_v02*
      pGetPositionEngineConfigParametersReq;
-   /**< Gets Position Engine configuration.
+   /**< Gets position engine configuration.
 
          If the request is accepted by the service, the client receives the
          following indication containing a response:
          QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02.
 
          To send this request, set the reqId field in locClientSendReq() to
-         QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02.
-         @newpage */
+         QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02. */
 
    const qmiLocAddCircularGeofenceReqMsgT_v02* pAddCircularGeofenceReq;
-   /**< Adds a Circular Geofence.
+   /**< Adds a circular geofence.
 
         If the request is accepted by the service, the client receives the
         following indication containing a response:
         QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02
-        @newpage */
+        QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02 */
 
    const qmiLocDeleteGeofenceReqMsgT_v02* pDeleteGeofenceReq;
-   /**< Deletes a Geofence.
+   /**< Deletes a geofence.
 
         If the request is accepted by the service, the client receives the
         following indication containing a response:
         QMI_LOC_DELETE_GEOFENCE_IND_V02.
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_DELETE_GEOFENCE_REQ_V02
-        @newpage */
+        QMI_LOC_DELETE_GEOFENCE_REQ_V02 */
 
    const qmiLocQueryGeofenceReqMsgT_v02* pQueryGeofenceReq;
-   /**< Queries a Geofence.
+   /**< Queries a geofence.
 
         If the request is accepted by the service, the client receives the
         following indication containing a response:
         QMI_LOC_QUERY_GEOFENCE_IND_V02
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_QUERY_GEOFENCE_REQ_V02
-
-        @newpage */
+        QMI_LOC_QUERY_GEOFENCE_REQ_V02. */
 
     const qmiLocEditGeofenceReqMsgT_v02* pEditGeofenceReq;
-    /**< Edits Geofence Parameters.
+    /**< Edits geofence parameters.
 
         If the request is accepted by the service, the client receives the
         following indication containing a response:
         QMI_LOC_EDIT_GEOFENCE_IND_V02
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_EDIT_GEOFENCE_REQ_V02
-
-        @newpage */
+        QMI_LOC_EDIT_GEOFENCE_REQ_V02. */
 
     const qmiLocGetBestAvailablePositionReqMsgT_v02*
       pGetBestAvailablePositionReq;
@@ -579,14 +558,52 @@ typedef union
         QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02
 
         To send this request, set the reqId field in locClientSendReq() to
-        QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02
+        QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02. @newpagetable */
 
-        @newpage */
+    const qmiLocInjectMotionDataReqMsgT_v02* pInjectMotionDataReq;
+    /**< Inject motion data in the location engine
 
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_INJECT_MOTION_DATA_IND_V02
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_INJECT_MOTION_DATA_REQ_V02 */
+
+    const qmiLocGetNiGeofenceIdListReqMsgT_v02* pGetNiGeofenceIdListReq;
+    /**< Get the list of Network Initiated Geofences from the location engine.
+
+        If the request is accepted by the service, the client receives the
+        following indication containing a response:
+        QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02
+
+        To send this request, set the reqId field in locClientSendReq() to
+        QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02 */
+
+    const qmiLocInjectGSMCellInfoReqMsgT_v02 *pInjectGSMCellInfoReq;
+    /**< Inject GSM Cell Information into the location engine.
+         If the request is accepted by the service, the client receives the
+         following indication containing a response:
+         QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02
+
+         To send this request, set the reqId field in locClientSendReq() to
+         QMI_LOC_INJECT_GSM_CELL_INFO_REQ_V02 */
+
+    const qmiLocInjectNetworkInitiatedMessageReqMsgT_v02
+      *pInjectNetworkInitiatedMessageReq;
+    /**< Inject Network Initiated Message into the location engine.
+         If the request is accepted by the service, the client receives the
+         following indication containing a response:
+         QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02
+
+         To send this request, set the reqId field in locClientSendReq() to
+         QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02 */
+
+    const void *pWWANOutOfServiceNotificationReq;
 }locClientReqUnionType;
 
 
-/** @brief Event indications that are sent by the service.
+/** Event indications that are sent by the service.
 */
 typedef union
 {
@@ -612,21 +629,22 @@ typedef union
         QMI_LOC_EVENT_GNSS_INFO_IND_V02. */
 
    const qmiLocEventNmeaIndMsgT_v02* pNmeaReportEvent;
-   /**< Contains an NMEA report sentence. The entire NMEA report consisting
-        of multiple sentences is sent at a 1Hz rate.
-        This event is generated after QMI_LOC_START_REQ_V02 is sent.
+   /**< Contains an NMEA report sentence.
+
+        The entire NMEA report consisting of multiple sentences is sent at a
+        1 Hz rate. This event is generated after QMI_LOC_START_REQ_V02 is sent.
 
         The eventIndId field in the event indication callback is set to
         QMI_LOC_EVENT_NMEA_IND_V02. */
 
    const qmiLocEventNiNotifyVerifyReqIndMsgT_v02* pNiNotifyVerifyReqEvent;
-   /**< Notifies a location client when the network triggers a positioning request
-        to the mobile.
+   /**< Notifies a location client when the network triggers a positioning
+        request to the mobile.
 
         Upon getting this event, the location client displays the
-        network-initiated fix request in a dialog and prompts the user to accept
-        or deny the request. The client responds to this request with the message
-        QMI_LOC_NI_USER_RESPONSE_REQ_V02.
+        network-initiated fix request in a dialog and prompts the user to
+        accept or deny the request. The client responds to this request with
+        the message QMI_LOC_NI_USER_RESPONSE_REQ_V02.
 
         The eventIndId field in the event indication callback is set to
         QMI_LOC_EVENT_NI_NOTIFY_VERIFY_REQ_IND_V02. */
@@ -708,54 +726,51 @@ typedef union
         QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02 message.
 
         The eventIndId field in the event indication callback is set to
-        QMI_LOC_EVENT_LOCATION_SERVER_CONNECTION_REQ_IND_V02.
-        @newpage */
+        QMI_LOC_EVENT_LOCATION_SERVER_CONNECTION_REQ_IND_V02. */
 
    const qmiLocEventNiGeofenceNotificationIndMsgT_v02*
      pNiGeofenceNotificationEvent;
    /**< Sent by the engine to notify the client about changes to a
-        Network Initiated Geofence.
+        network-initiated geofence.
 
         The eventIndId field in the event indication callback is set to
-        QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02.
-        @newpage */
+        QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02. */
 
    const qmiLocEventGeofenceGenAlertIndMsgT_v02* pGeofenceGenAlertEvent;
    /**< Sent by the engine to notify the client about updates that may
-        affect a Geofence operation.
+        affect a geofence operation.
 
         The eventIndId field in the event indication callback is set to
-        QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02.
-        @newpage */
+        QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02. */
 
    const qmiLocEventGeofenceBreachIndMsgT_v02* pGeofenceBreachEvent;
-   /**< Sent by the engine to notify the client about a Geofence Breach
-        Event.
+   /**< Sent by the engine to notify the client about a geofence breach
+        event.
 
         The eventIndId field in the event indication callback is set to
-        QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02.
-        @newpage */
+        QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02. @newpagetable */
 
 }locClientEventIndUnionType;
 
 
-/** @brief Response indications that are sent by the service. */
+/** Response indications that are sent by the service.
+*/
 typedef union
 {
    const qmiLocGetServiceRevisionIndMsgT_v02* pGetServiceRevisionInd;
-   /**< Response to the request, QMI_LOC_GET_SERVICE_REVISION_REQ_V02.
+   /**< Response to the QMI_LOC_GET_SERVICE_REVISION_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_SERVICE_REVISION_IND_V02. */
 
    const qmiLocGetFixCriteriaIndMsgT_v02* pGetFixCriteriaInd;
-   /**< Response to the request, QMI_LOC_GET_FIX_CRITERIA_REQ_V02.
+   /**< Response to the QMI_LOC_GET_FIX_CRITERIA_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_FIX_CRITERIA_IND_V02. */
 
    const qmiLocNiUserRespIndMsgT_v02* pNiUserRespInd;
-   /**< Response to the request, QMI_LOC_NI_USER_RESPONSE_REQ_V02.
+   /**< Response to the QMI_LOC_NI_USER_RESPONSE_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_NI_USER_RESPONSE_IND_V02. */
@@ -773,332 +788,351 @@ typedef union
 
    const qmiLocGetPredictedOrbitsDataSourceIndMsgT_v02*
       pGetPredictedOrbitsDataSourceInd;
-   /**< Response to the request,
-        QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_REQ_V02.
+   /**< Response to the QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_REQ_V02
+        request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_IND_V02. */
 
    const qmiLocGetPredictedOrbitsDataValidityIndMsgT_v02*
      pGetPredictedOrbitsDataValidityInd;
-   /**< Response to the request,
-        QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_REQ_V02.
+   /**< Response to the QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_REQ_V02
+        request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_IND_V02. */
 
    const qmiLocInjectUtcTimeIndMsgT_v02* pInjectUtcTimeInd;
-   /**< Response to the request, QMI_LOC_INJECT_UTC_TIME_REQ_V02.
+   /**< Response to the QMI_LOC_INJECT_UTC_TIME_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_INJECT_UTC_TIME_IND_V02. */
 
    const qmiLocInjectPositionIndMsgT_v02* pInjectPositionInd;
-   /**< Response to the request, QMI_LOC_INJECT_POSITION_REQ_V02.
+   /**< Response to the QMI_LOC_INJECT_POSITION_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_INJECT_POSITION_IND_V02. */
 
    const qmiLocSetEngineLockIndMsgT_v02* pSetEngineLockInd;
-   /**< Response to the request, QMI_LOC_SET_ENGINE_LOCK_REQ_V02.
+   /**< Response to the QMI_LOC_SET_ENGINE_LOCK_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_ENGINE_LOCK_IND_V02. */
 
    const qmiLocGetEngineLockIndMsgT_v02* pGetEngineLockInd;
-   /**< Response to the request, QMI_LOC_GET_ENGINE_LOCK_REQ_V02.
+   /**< Response to the QMI_LOC_GET_ENGINE_LOCK_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_ENGINE_LOCK_IND_V02. */
 
    const qmiLocSetSbasConfigIndMsgT_v02* pSetSbasConfigInd;
-   /**< Response to the request, QMI_LOC_SET_SBAS_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_SET_SBAS_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_SBAS_CONFIG_IND_V02. */
 
    const qmiLocGetSbasConfigIndMsgT_v02* pGetSbasConfigInd;
-   /**< Response to the request, QMI_LOC_GET_SBAS_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_GET_SBAS_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_SBAS_CONFIG_IND_V02. */
 
    const qmiLocSetNmeaTypesIndMsgT_v02* pSetNmeaTypesInd;
-   /**< Response to the request, QMI_LOC_SET_NMEA_TYPES_REQ_V02.
+   /**< Response to the QMI_LOC_SET_NMEA_TYPES_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_NMEA_TYPES_IND_V02. */
 
    const qmiLocGetNmeaTypesIndMsgT_v02* pGetNmeaTypesInd;
-   /**< Response to the request, QMI_LOC_GET_NMEA_TYPES_REQ_V02.
+   /**< Response to the QMI_LOC_GET_NMEA_TYPES_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_NMEA_TYPES_IND_V02. */
 
    const qmiLocSetLowPowerModeIndMsgT_v02* pSetLowPowerModeInd;
-   /**< Response to the request, QMI_LOC_SET_LOW_POWER_MODE_REQ_V02.
+   /**< Response to the QMI_LOC_SET_LOW_POWER_MODE_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_LOW_POWER_MODE_IND_V02. */
 
    const qmiLocGetLowPowerModeIndMsgT_v02* pGetLowPowerModeInd;
-   /**< Response to the request, QMI_LOC_GET_LOW_POWER_MODE_REQ_V02.
+   /**< Response to the QMI_LOC_GET_LOW_POWER_MODE_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_LOW_POWER_MODE_IND_V02. */
 
    const qmiLocSetServerIndMsgT_v02* pSetServerInd;
-   /**< Response to the request, QMI_LOC_SET_SERVER_REQ_V02.
+   /**< Response to the QMI_LOC_SET_SERVER_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_SERVER_IND_V02. */
 
    const qmiLocGetServerIndMsgT_v02* pGetServerInd;
-   /**< Response to the request, QMI_LOC_GET_SERVER_REQ_V02.
+   /**< Response to the QMI_LOC_GET_SERVER_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_SERVER_IND_V02. */
 
    const qmiLocDeleteAssistDataIndMsgT_v02* pDeleteAssistDataInd;
-   /**< Response to the request, QMI_LOC_DELETE_ASSIST_DATA_REQ_V02.
+   /**< Response to the QMI_LOC_DELETE_ASSIST_DATA_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_DELETE_ASSIST_DATA_IND_V02. */
 
    const qmiLocSetXtraTSessionControlIndMsgT_v02* pSetXtraTSessionControlInd;
-   /**< Response to the request, QMI_LOC_SET_XTRA_T_SESSION_CONTROL_REQ_V02.
+   /**< Response to the QMI_LOC_SET_XTRA_T_SESSION_CONTROL_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_XTRA_T_SESSION_CONTROL_IND_V02. */
 
    const qmiLocGetXtraTSessionControlIndMsgT_v02* pGetXtraTSessionControlInd;
-   /**< Response to the request, QMI_LOC_GET_XTRA_T_SESSION_CONTROL_REQ_V02.
+   /**< Response to the QMI_LOC_GET_XTRA_T_SESSION_CONTROL_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_XTRA_T_SESSION_CONTROL_IND_V02. */
 
    const qmiLocInjectWifiPositionIndMsgT_v02* pInjectWifiPositionInd;
-   /**< Response to the request, QMI_LOC_INJECT_WIFI_POSITION_REQ_V02.
+   /**< Response to the QMI_LOC_INJECT_WIFI_POSITION_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_INJECT_WIFI_POSITION_IND_V02. */
 
    const qmiLocNotifyWifiStatusIndMsgT_v02* pNotifyWifiStatusInd;
-   /**< Response to the request, QMI_LOC_NOTIFY_WIFI_STATUS_REQ_V02.
+   /**< Response to the QMI_LOC_NOTIFY_WIFI_STATUS_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_NOTIFY_WIFI_STATUS_IND_V02. */
 
    const qmiLocGetRegisteredEventsIndMsgT_v02* pGetRegisteredEventsInd;
-   /**< Response to the request, QMI_LOC_GET_REGISTERED_EVENTS_REQ_V02.
+   /**< Response to the QMI_LOC_GET_REGISTERED_EVENTS_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_REGISTERED_EVENTS_IND_V02. */
 
    const qmiLocSetOperationModeIndMsgT_v02* pSetOperationModeInd;
-   /**< Response to the request, QMI_LOC_SET_OPERATION_MODE_REQ_V02.
+   /**< Response to the QMI_LOC_SET_OPERATION_MODE_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_OPERATION_MODE_IND_V02. */
 
    const qmiLocGetOperationModeIndMsgT_v02* pGetOperationModeInd;
-   /**< Response to the request, QMI_LOC_GET_OPERATION_MODE_REQ_V02.
+   /**< Response to the QMI_LOC_GET_OPERATION_MODE_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_OPERATION_MODE_IND_V02. */
 
    const qmiLocSetSpiStatusIndMsgT_v02* pSetSpiStatusInd;
-   /**< Response to the request, QMI_LOC_SET_SPI_STATUS_REQ_V02.
+   /**< Response to the QMI_LOC_SET_SPI_STATUS_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_SPI_STATUS_IND_V02. */
 
    const qmiLocInjectSensorDataIndMsgT_v02* pInjectSensorDataInd;
-   /**< Response to the request, QMI_LOC_INJECT_SENSOR_DATA_REQ_V02.
+   /**< Response to the QMI_LOC_INJECT_SENSOR_DATA_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_INJECT_SENSOR_DATA_IND_V02. */
 
    const qmiLocInjectTimeSyncDataIndMsgT_v02* pInjectTimeSyncDataInd;
-   /**< Response to the request,  QMI_LOC_INJECT_TIME_SYNC_DATA_REQ_V02.
+   /**< Response to the QMI_LOC_INJECT_TIME_SYNC_DATA_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_INJECT_TIME_SYNC_DATA_IND_V02. */
 
    const qmiLocSetCradleMountConfigIndMsgT_v02* pSetCradleMountConfigInd;
-   /**< Response to the request, QMI_LOC_SET_CRADLE_MOUNT_CONFIG_IND_V02.
+   /**< Response to the QMI_LOC_SET_CRADLE_MOUNT_CONFIG_IND_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_CRADLE_MOUNT_CONFIG_REQ_V02. */
 
    const qmiLocGetCradleMountConfigIndMsgT_v02* pGetCradleMountConfigInd;
-   /**< Response to the request, QMI_LOC_GET_CRADLE_MOUNT_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_GET_CRADLE_MOUNT_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_CRADLE_MOUNT_CONFIG_IND_V02. */
 
    const qmiLocSetExternalPowerConfigIndMsgT_v02* pSetExternalPowerConfigInd;
-   /**< Response to the request, QMI_LOC_SET_EXTERNAL_POWER_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_SET_EXTERNAL_POWER_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_EXTERNAL_POWER_CONFIG_IND_V02. */
 
    const qmiLocGetExternalPowerConfigIndMsgT_v02* pGetExternalPowerConfigInd;
-   /**< Response to the request, QMI_LOC_GET_EXTERNAL_POWER_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_GET_EXTERNAL_POWER_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_EXTERNAL_POWER_CONFIG_IND_V02. */
 
    const qmiLocInformLocationServerConnStatusIndMsgT_v02*
      pInformLocationServerConnStatusInd;
-   /**< Response to the request,
-        QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02.
+   /**< Response to the QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_REQ_V02
+        request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_INFORM_LOCATION_SERVER_CONN_STATUS_IND_V02.*/
 
    const qmiLocSetProtocolConfigParametersIndMsgT_v02*
      pSetProtocolConfigParametersInd;
-   /**< Response to the request,
-        QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02.
+   /**< Response to the QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02. */
 
    const qmiLocGetProtocolConfigParametersIndMsgT_v02*
      pGetProtocolConfigParametersInd;
-   /**< Response to the request,
-        QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02.
+   /**< Response to the QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
-        QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_IND_V02.
-        @newpage */
+        QMI_LOC_GET_PROTOCOL_CONFIG_PARAMETERS_IND_V02. */
 
    const qmiLocSetSensorControlConfigIndMsgT_v02* pSetSensorControlConfigInd;
-   /**< Response to the request,
-        QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_SET_SENSOR_CONTROL_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_SENSOR_CONTROL_CONFIG_IND_V02.
-        @newpage */
+         */
 
    const qmiLocGetSensorControlConfigIndMsgT_v02* pGetSensorControlConfigInd;
-   /**< Response to the request,
-        QMI_LOC_GET_SENSOR_CONTROL_CONFIG_REQ_V02.
+   /**< Response to the QMI_LOC_GET_SENSOR_CONTROL_CONFIG_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_SENSOR_CONTROL_CONFIG_IND_V02.
-        @newpage */
+         */
 
    const qmiLocSetSensorPropertiesIndMsgT_v02* pSetSensorPropertiesInd;
-   /**< Response to the request,
-        QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02.
+   /**< Response to the QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_SET_SENSOR_PROPERTIES_IND_V02.
-        @newpage */
+         */
 
    const qmiLocGetSensorPropertiesIndMsgT_v02* pGetSensorPropertiesInd;
-   /**< Response to the request,
-        QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02.
+   /**< Response to the QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
         QMI_LOC_GET_SENSOR_PROPERTIES_IND_V02.
-        @newpage */
+         */
 
    const qmiLocSetSensorPerformanceControlConfigIndMsgT_v02*
      pSetSensorPerformanceControlConfigInd;
-   /**< Response to the request,
-        QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02.
+   /**< Response to the
+        QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
-        QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02.
-        @newpage */
+        QMI_LOC_SET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02. */
 
    const qmiLocGetSensorPerformanceControlConfigIndMsgT_v02*
      pGetSensorPerformanceControlConfigInd;
-   /**< Response to the request,
-        QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02.
+   /**< Response to the
+        QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02 request.
 
         The respIndId field in the response indication callback is set to
-        QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02.
-        @newpage */
+        QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_IND_V02. */
 
    const qmiLocInjectSuplCertificateIndMsgT_v02* pInjectSuplCertificateInd;
-   /**< Response to the request,
-        QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02
+   /**< Response to the QMI_LOC_INJECT_SUPL_CERTIFICATE_REQ_V02 request.
+
         The respIndId field in the response indication callback is set to
-        QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02.
-        @newpage */
+        QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02. */
 
    const qmiLocDeleteSuplCertificateIndMsgT_v02* pDeleteSuplCertificateInd;
-   /**< Response to the request,
-        QMI_LOC_DELETE_SUPL_CERTIFICATE_REQ_V02.
+   /**< Response to the QMI_LOC_DELETE_SUPL_CERTIFICATE_REQ_V02 request.
+
         The respIndId field in the response indication callback is set to
-        QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02.
-        @newpage */
+        QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02. */
 
    const qmiLocSetPositionEngineConfigParametersIndMsgT_v02*
      pSetPositionEngineConfigParametersInd;
-   /**< Response to the request,
-        QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02
+   /**< Response to the QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02
+        request.
+
         The respIndId field in the response indication callback is set to
-        QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02.
-        @newpage */
+        QMI_LOC_SET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02. */
 
    const qmiLocGetPositionEngineConfigParametersIndMsgT_v02*
      pGetPositionEngineConfigParametersInd;
-    /**< Response to the request,
-        QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02
-        The respIndId field in the response indication callback is set to
-        QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02.
-        @newpage */
+    /**< Response to the QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02
+         request.
+
+         The respIndId field in the response indication callback is set to
+         QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02. */
 
    const qmiLocAddCircularGeofenceIndMsgT_v02* pAddCircularGeofenceInd;
-   /**< Response to the request,
-        QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02
+   /**< Response to the QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02 request.
+
         The respIndId field in the response indication callback is set to
-        QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02
-        @newpage */
+        QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02. */
 
    const qmiLocDeleteGeofenceIndMsgT_v02* pDeleteGeofenceInd;
-   /**< Response to the request,
-        QMI_LOC_DELETE_GEOFENCE_REQ_V02
+   /**< Response to the QMI_LOC_DELETE_GEOFENCE_REQ_V02 request.
+
         The respIndId field in the response indication callback is set to
-        QMI_LOC_DELETE_GEOFENCE_IND_V02
-        @newpage */
+        QMI_LOC_DELETE_GEOFENCE_IND_V02. */
 
    const qmiLocQueryGeofenceIndMsgT_v02* pQueryGeofenceInd;
-    /**< Response to the request,
-        QMI_LOC_QUERY_GEOFENCE_REQ_V02
-        The respIndId field in the response indication callback is set to
-        QMI_LOC_QUERY_GEOFENCE_IND_V02
-        @newpage */
+    /**< Response to the QMI_LOC_QUERY_GEOFENCE_REQ_V02 request.
 
-    const qmiLocEditGeofenceIndMsgT_v02* pEditGeofenceInd;
-    /**< Response to the request,
-        QMI_LOC_EDIT_GEOFENCE_REQ_V02
-        The respIndId field in the response indication callback is set to
-        QMI_LOC_EDIT_GEOFENCE_IND_V02
-        @newpage */
+         The respIndId field in the response indication callback is set to
+         QMI_LOC_QUERY_GEOFENCE_IND_V02. */
 
-    const qmiLocGetBestAvailablePositionIndMsgT_v02*
+   const qmiLocEditGeofenceIndMsgT_v02* pEditGeofenceInd;
+   /**< Response to the QMI_LOC_EDIT_GEOFENCE_REQ_V02 request.
+
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_EDIT_GEOFENCE_IND_V02. */
+
+   const qmiLocGetBestAvailablePositionIndMsgT_v02*
       pGetBestAvailablePositionInd;
-    /**< Response to the request,
-        QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02
+   /**< Response to the QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02 request.
+
         The respIndId field in the response indication callback is set to
-        QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02
-        @newpage */
+        QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02. */
+
+   const qmiLocInjectMotionDataIndMsgT_v02* pInjectMotionDataInd;
+   /**< Response to the QMI_LOC_INJECT_MOTION_DATA_REQ_V02 request.
+
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_INJECT_MOTION_DATA_IND_V02. */
+
+   const qmiLocGetNiGeofenceIdListIndMsgT_v02* pGetNiGeofenceIdListInd;
+   /**< Response to the QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02 request.
+
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02. */
+
+   const qmiLocInjectGSMCellInfoIndMsgT_v02* pInjectGSMCellInfoInd;
+    /**< Response to the QMI_LOC_INJECT_GSM_CELL_INFO_REQ_V02 request.
+
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02. */
+
+   const qmiLocInjectNetworkInitiatedMessageIndMsgT_v02*
+     pInjectNetworkInitiatedMessageInd;
+
+   /**< Response to the QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02
+        request.
+
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02. */
+
+   const qmiLocWWANOutOfServiceNotificationIndMsgT_v02*
+     pWWANOutOfServiceNotificationInd;
+
+   /**< Response to the QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_REQ_V02
+        request.
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02. */
 
 }locClientRespIndUnionType;
 
-/** @} */ /* end_addtogroup send_request */
+/** @} */ /* end_addtogroup data_types */
 
-/** @addtogroup data_types
+/** @addtogroup callback_functions
 @{ */
-
-/** Location event indication callback function type. The Location service can
-    generate two types of indications:
+/**
+  Location event indication callback function type. The Location service can
+  generate two types of indications:
 
   - Asynchronous events indications, such as time injection request and satellite
     reports. The client specifies the asynchronous events it is interested in
@@ -1109,7 +1143,10 @@ typedef union
 
   This callback handles the asynchronous event indications.
 
-  @vertspace
+  @datatypes
+  #locClientHandleType \n
+  #locClientEventIndUnionType
+
   @param handle            Location client for this event. Only the client who
                            registered for the corresponding event receives
                            this callback.
@@ -1117,6 +1154,12 @@ typedef union
   @param eventIndPayload   Event indication payload.
   @param pClientCookie     Pointer to the cookie the client specified during
                            registration.
+
+  @return
+  None.
+
+  @dependencies
+  None. @newpage
 */
 typedef void (*locClientEventIndCbType)(
       locClientHandleType handle,
@@ -1125,8 +1168,9 @@ typedef void (*locClientEventIndCbType)(
       void *pClientCookie
 );
 
-/** Location response indication callback function type. The Location service can
-    generate two types of indications:
+/**
+  Location response indication callback function type. The Location service can
+  generate two types of indications:
 
   - Asynchronous events indications, such as time injection request and satellite
     reports. The client specifies the asynchronous events it is interested in
@@ -1137,7 +1181,10 @@ typedef void (*locClientEventIndCbType)(
 
   This callback handles the response indications.
 
-  @vertspace
+  @datatypes
+  #locClientHandleType \n
+  #locClientRespIndUnionType
+
   @param handle           Location client who sent the request for which this
                           response indication is generated.
   @param respIndId        ID of the response. It is the same value as the ID
@@ -1146,7 +1193,11 @@ typedef void (*locClientEventIndCbType)(
   @param pClientCookie    Pointer to the cookie the client specified during
                           registration.
 
-  @newpage
+  @return
+  None.
+
+  @dependencies
+  None. @newpage
 */
 typedef void  (*locClientRespIndCbType)(
       locClientHandleType handle,
@@ -1155,84 +1206,84 @@ typedef void  (*locClientRespIndCbType)(
       void *pClientCookie
 );
 
-/** Location error callback function type. This function will be
-    called to inform the client that the service is no longer
-    available. When the client receives this callback it must
-    close the existing connection  and reopen the client connection.
+/**
+  Location error callback function type. This function is called to inform
+  the client that the service is no longer available. When the client
+  receives this callback, it must close the existing connection and reopen
+  the client connection.
 
+  @datatypes
+  #locClientHandleType \n
+  #locClientErrorEnumType
 
-  @vertspace
   @param handle           Location client who sent the request for which this
                           error indication is generated.
   @param errorId          Error ID.
-  @param errorCbdata      Payload associated with the error indication.
+  @param pClientCookie    Payload associated with the error indication.
 
-  @newpage
+  @return
+  None.
+
+  @dependencies
+  None.
 */
 typedef void  (*locClientErrorCbType)(
       locClientHandleType handle,
       locClientErrorEnumType errorId,
       void* pClientCookie
  );
+/** @} */ /* end_addtogroup callback_functions */
 
 
-/** Callback functions to be registered during locClientOpen
+/** @ingroup data_types
+  Callback functions to be registered during locClientOpen().
 */
-
 typedef struct
 {
-    uint32_t size;
-    /**< Size of the structure */
-    locClientEventIndCbType eventIndCb;
-    /**< Event Indication callback */
-    locClientRespIndCbType respIndCb;
-    /**< Response Indication callback */
-    locClientErrorCbType errorCb;
-    /**< Error Indication callback */
+    uint32_t size;                       /**< Size of the structure. */
+    locClientEventIndCbType eventIndCb;  /**< Event indication callback. */
+    locClientRespIndCbType respIndCb;    /**< Response indication callback. */
+    locClientErrorCbType errorCb;        /**< Error indication callback.
+                                              @newpagetable */
 }locClientCallbacksType;
 
-/** @} */ /* end_addtogroup data_types */
 
 /*===========================================================================
  *
  *                          FUNCTION DECLARATION
  *
  *==========================================================================*/
-
-/** @addtogroup open_client
+/** @addtogroup operation_functions
 @{ */
 /*==========================================================================
     locClientOpen */
-/**
-  @latexonly\label{hdr:locClientOpenFunction}@endlatexonly Connects a location
-  client to the location engine. If the connection is successful, this function
-  returns a handle that the location client uses for future location operations.
+/** @xreflabel{hdr:locClientOpenFunction}
+  Connects a location client to the location engine. If the connection is
+  successful, this function returns a handle that the location client uses for
+  future location operations.
 
-  @datatype
-  #locClientStatusEnumType\n
-  #locClientEventMaskType\n
-  #locClientCallbacksType *\n
-  #locClientHandleType *\n
-  #void *
+  @datatypes
+  #locClientStatusEnumType \n
+  #locClientEventMaskType \n
+  #locClientCallbacksType \n
+  #locClientHandleType
 
-  @vertspace
   @param[in]  eventRegMask          Mask of asynchronous events the client is
                                     interested in receiving.
   @param[in]  pLocClientCallbacks   Pointer to structure containing the
                                     callbacks.
   @param[out] pLocClientHandle      Pointer to the handle to be used by the
                                     client for any subsequent requests.
-  @param[in]  pLocClientCookie      Pointer to a "cookie" to be returned to the
+  @param[in]  pLocClientCookie      Pointer to a cookie to be returned to the
                                     client along with the callbacks.
 
   @return
   One of the following error codes:
   - eLOC_CLIENT_SUCCESS -- If the connection is opened.
-  - Non-zero error code (see \ref locClientStatusEnumType) -- On failure.
+  - Non-zero error code (see #locClientStatusEnumType) -- On failure.
 
   @dependencies
-  None.
-  @newpage
+  None. @newpage
 */
 extern locClientStatusEnumType locClientOpen (
       locClientEventMaskType            eventRegMask,
@@ -1241,22 +1292,17 @@ extern locClientStatusEnumType locClientOpen (
       const void*                       pLocClientCookie
 );
 
-/** @} */ /* end_addtogroup open_client */
 
-/** @addtogroup close_client
-@{ */
 /*==========================================================================
     locClientClose */
-/**
-  @latexonly\label{hdr:locClientCloseFunction}@endlatexonly Disconnects a client
-  from the location engine and sets the handle to
+/** @xreflabel{hdr:locClientCloseFunction}
+  Disconnects a client from the location engine and sets the handle to
   LOC_CLIENT_INVALID_HANDLE_VALUE.
 
-  @datatype
-  #locClientStatusEnumType\n
+  @datatypes
+  #locClientStatusEnumType \n
   #locClientHandleType
 
-  @vertspace
   @param[in] pLocClientHandle  Pointer to the handle returned by the
                                locClientOpen() function.
 
@@ -1266,38 +1312,32 @@ extern locClientStatusEnumType locClientOpen (
   - Non-zero error code (see \ref locClientStatusEnumType) -- On failure.
 
   @dependencies
-  None.
-  @newpage
+  None. @newpage
 */
 extern locClientStatusEnumType locClientClose (
       locClientHandleType* pLocClientHandle
 );
 
-/** @} */ /* end_addtogroup close_client */
-
-/** @addtogroup send_request
-@{ */
 /*=============================================================================
     locClientSendReq */
-/**
-  @latexonly\label{hdr:locClientSendReqFunction}@endlatexonly Sends a message to
-  the location engine. If this function is successful, the client expects an
-  indication (except start, stop, event registration, and sensor injection
-  messages) through the registered callback in the locClientOpen() function.
+/** @xreflabel{hdr:locClientSendReqFunction}
+  Sends a message to the location engine. If this function is successful, the
+  client expects an indication (except start, stop, event registration, and
+  sensor injection messages) through the registered callback in the
+  locClientOpen() function.
 
   The indication contains the status of the request. If the status is a success,
   the indication also contains the payload associated with response.
 
-  @datatype
-  #locClientStatusEnumType\n
-  #locClientHandleType\n
+  @datatypes
+  #locClientStatusEnumType \n
+  #locClientHandleType \n
   #locClientReqUnionType
 
-  @vertspace
   @param[in] handle        Handle returned by the locClientOpen() function.
   @param[in] reqId         QMI_LOC service message ID of the request.
-  @param[in] pReqPayload   Payload of the request. This can be NULL if the request
-                           has no payload.
+  @param[in] reqPayload    Payload of the request. This can be NULL if the
+                           request has no payload.
 
   @return
   One of the following error codes:
@@ -1305,11 +1345,7 @@ extern locClientStatusEnumType locClientClose (
   - Non-zero error code (see \ref locClientStatusEnumType) -- On failure.
 
   @dependencies
-  None.
-
-  @structure
-  locClientReqUnionType
-  @newpage
+  None. @newpage
 */
 extern locClientStatusEnumType locClientSendReq(
      locClientHandleType       handle,
@@ -1317,72 +1353,46 @@ extern locClientStatusEnumType locClientSendReq(
      locClientReqUnionType     reqPayload
 );
 
-/** @} */ /* end_addtogroup send_request */
 
-/** @addtogroup get_size_event
-@{ */
 /*=============================================================================
     locClientGetSizeByEventIndId */
-/**
-  Gets the size of the event indication structure from a specified ID.
+/** Gets the size of the event indication structure from a specified ID.
 
-  @datatype
-  #locClientGetSizeByEventIndId
-
-  @vertspace
   @param[in]  eventIndId      Event indicator ID.
   @param[out] pEventIndSize   Pointer to the size of the structure.
 
   @return
-  true -- The event ID was found.\n
-  false -- Otherwise.
+  TRUE -- The event ID was found. \n
+  FALSE -- Otherwise.
 
   @dependencies
-  None.
-
-  @structure
-  locClientEventIndUnionType
-  @newpage
+  None. @newpage
 */
 extern bool locClientGetSizeByEventIndId(
   uint32_t eventIndId,
   size_t *pEventIndSize);
 
-/** @} */ /* end_addtogroup get_size_event */
 
-/** @addtogroup get_size_response
-@{ */
 /*=============================================================================
     locClientGetSizeByRespIndId */
+/** Gets the size of the response indication structure from a specified ID.
 
-/**
-  Gets the size of the response indication structure from a specified ID.
-
-  @datatype
-  #locClientGetSizeByRespIndId
-
-  @vertspace
   @param[in]  respIndId      Response indicator ID.
   @param[out] pRespIndSize   Pointer to the size of the structure.
 
   @return
-  true -- The response ID was found.\n
-  false -- Otherwise.
+  TRUE -- The response ID was found. \n
+  FALSE -- Otherwise.
 
   @dependencies
   None.
-
-  @structure
-  locClientRespIndUnionType
-  @newpage
 */
 extern bool locClientGetSizeByRespIndId(
   uint32_t respIndId,
   size_t *pRespIndSize);
 
 /*=============================================================================*/
-
-/** @} */ /* end_addtogroup get_size_response */
+/** @} */ /* end_addtogroup operation_functions */
 
 #ifdef __cplusplus
 }
