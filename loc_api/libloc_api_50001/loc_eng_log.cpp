@@ -124,7 +124,8 @@ static loc_name_val_s_type loc_eng_position_modes[] =
     NAME_VAL( LOC_POSITION_MODE_RESERVED_1 ),
     NAME_VAL( LOC_POSITION_MODE_RESERVED_2 ),
     NAME_VAL( LOC_POSITION_MODE_RESERVED_3 ),
-    NAME_VAL( LOC_POSITION_MODE_RESERVED_4 )
+    NAME_VAL( LOC_POSITION_MODE_RESERVED_4 ),
+    NAME_VAL( LOC_POSITION_MODE_RESERVED_5 )
 };
 static int loc_eng_position_mode_num = sizeof(loc_eng_position_modes) / sizeof(loc_name_val_s_type);
 

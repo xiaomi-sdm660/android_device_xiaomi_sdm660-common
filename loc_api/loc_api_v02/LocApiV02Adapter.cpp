@@ -250,6 +250,10 @@ enum loc_api_adapter_err LocApiV02Adapter :: startFix()
       set_mode_msg.operationMode = eQMI_LOC_OPER_MODE_CELL_ID_V02;
         break;
 
+    case LOC_POSITION_MODE_RESERVED_5:
+      set_mode_msg.operationMode = eQMI_LOC_OPER_MODE_WWAN_V02;
+        break;
+
     default:
       set_mode_msg.operationMode = eQMI_LOC_OPER_MODE_STANDALONE_V02;
       break;
