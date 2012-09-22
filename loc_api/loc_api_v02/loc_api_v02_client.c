@@ -27,6 +27,12 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "qmi_client.h"
 #include "qmi_idl_lib.h"
 #include "qmi_cci_target_ext.h"
@@ -38,10 +44,7 @@
 #define LOG_TAG "LocSvc_api_v02"
 #endif //_ANDROID_
 
-#include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
+
 #include "loc_api_v02_client.h"
 #include "loc_util_log.h"
 
@@ -50,21 +53,16 @@
 // timeout in ms before send_msg_sync should return
 #define LOC_CLIENT_ACK_TIMEOUT (5000)
 
-// timeout in ms before a sync request should return
-#define LOC_CLIENT_SYNC_REQ_TIMEOUT (5000)
-
 #else
 
 // timeout in ms before send_msg_sync should return
 #define LOC_CLIENT_ACK_TIMEOUT (1000)
 
-// timeout in ms before a sync request should return
-#define LOC_CLIENT_SYNC_REQ_TIMEOUT (1000)
-
 #endif //LOC_UTIL_TARGET_OFF_TARGET
 
-//timeout in ms to wait for the service to come up
+//timeout in ms that the service waits for qmi-fw notification
 #define LOC_CLIENT_SERVICE_TIMEOUT_UNIT  (4000)
+// total timeout for the service to come up
 #define LOC_CLIENT_SERVICE_TIMEOUT_TOTAL  (40000)
 
 /* Table to relate eventId, size and mask value used to enable the event*/
@@ -374,7 +372,27 @@ static locClientRespIndTableStructT locClientRespIndTable[]= {
 
    //Get best available position
    { QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02,
-     sizeof(qmiLocGetBestAvailablePositionIndMsgT_v02)}
+     sizeof(qmiLocGetBestAvailablePositionIndMsgT_v02)},
+
+   //Inject motion data
+   { QMI_LOC_INJECT_MOTION_DATA_IND_V02,
+     sizeof(qmiLocInjectMotionDataIndMsgT_v02)},
+
+   //Get NI Geofence list
+   { QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02,
+     sizeof(qmiLocGetNiGeofenceIdListIndMsgT_v02)},
+
+   //Inject GSM Cell Info
+   { QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02,
+     sizeof(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02)},
+
+   //Inject Network Initiated Message
+   { QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02,
+     sizeof(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02)},
+
+   //WWAN Out of Service Notification
+   { QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02,
+     sizeof(qmiLocWWANOutOfServiceNotificationIndMsgT_v02)}
 };
 
 
@@ -385,7 +403,9 @@ typedef enum { eventIndType =0, respIndType = 1 } locClientIndEnumT;
 /** @struct locClientInternalState
  */
 
-typedef struct
+typedef struct locClientCbDataStructT locClientCallbackDataType;
+
+struct locClientCbDataStructT
 {
  // client cookie
   void *pClientCookie;
@@ -400,7 +420,10 @@ typedef struct
   // the event mask the client has registered for
   locClientEventMaskType eventRegMask;
 
-}locClientCallbackDataType;
+  //pointer to itself for checking consistency data
+   locClientCallbackDataType *pMe;
+};
+
 
 /*===========================================================================
  *
@@ -466,10 +489,12 @@ static bool isClientRegisteredForEvent(
   {
     if(eventIndId == locClientEventIndTable[idx].eventId)
     {
-      LOC_LOGV("%s:%d]: eventId %d registered mask = %llu, "
-                    "eventMask = %llu\n", __func__, __LINE__,
-                     eventIndId, eventRegMask,
-                     locClientEventIndTable[idx].eventMask);
+      LOC_LOGV("%s:%d]: eventId %d registered mask = 0x%04x%04x, "
+               "eventMask = 0x%04x%04x\n", __func__, __LINE__,
+               eventIndId,(uint32_t)(eventRegMask>>32),
+               (uint32_t)(eventRegMask & 0xFFFFFFFF),
+               (uint32_t)(locClientEventIndTable[idx].eventMask >> 32),
+               (uint32_t)(locClientEventIndTable[idx].eventMask & 0xFFFFFFFF));
 
       return((
           eventRegMask & locClientEventIndTable[idx].eventMask)?
@@ -826,6 +851,22 @@ static bool locClientHandleIndication(
       break;
     }
 
+    // get predicted orbits source response indication
+    case QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_IND_V02:
+    {
+      //locClientHandleGetPredictedOrbitsSourceInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    // get predicted orbits validity response indication
+    case QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_IND_V02:
+    {
+      //locClientHandleGetPredictedOrbitsDataValidityInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
     case QMI_LOC_INJECT_SENSOR_DATA_IND_V02 :
     {
       //locClientHandleInjectSensorDataInd(user_handle, msg_id, ind_buf, ind_buf_len);
@@ -948,6 +989,12 @@ static bool locClientHandleIndication(
       break;
     }
 
+    case QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02:
+    {
+      status = true;
+      break;
+    }
+
     // for indications that only have a "status" field
     case QMI_LOC_NI_USER_RESPONSE_IND_V02:
     case QMI_LOC_INJECT_UTC_TIME_IND_V02:
@@ -971,6 +1018,10 @@ static bool locClientHandleIndication(
     case QMI_LOC_SET_SENSOR_PROPERTIES_IND_V02:
     case QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02:
     case QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02:
+    case QMI_LOC_INJECT_MOTION_DATA_IND_V02:
+    case QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02:
+    case QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02:
+    case QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02:
     {
       status = true;
       break;
@@ -1003,13 +1054,16 @@ static void locClientErrorCb
 {
   locClientCallbackDataType* pCallbackData =
         (locClientCallbackDataType *)err_cb_data;
+  locClientErrorCbType localErrorCallback = NULL;
 
   /* copy the errorCallback function pointer from the callback
    * data to local variable. This is to protect against the race
    * condition between open/close and error callback.
    */
-  locClientErrorCbType localErrorCallback =
-      pCallbackData->errorCallback;
+  if(NULL != pCallbackData)
+  {
+    localErrorCallback = pCallbackData->errorCallback;
+  }
 
   LOC_LOGD("%s:%d]: Service Error %d received, pCallbackData = %p\n",
       __func__, __LINE__, error, err_cb_data);
@@ -1021,7 +1075,8 @@ static void locClientErrorCb
 
   if( (NULL != pCallbackData) &&
       (NULL != localErrorCallback) &&
-      (NULL != pCallbackData->errorCallback) )
+      (NULL != pCallbackData->errorCallback) &&
+      (pCallbackData == pCallbackData->pMe)  )
   {
     //invoke the error callback for the corresponding client
     localErrorCallback(
@@ -1063,7 +1118,7 @@ static void locClientIndCb
                 pCallbackData);
 
   // check callback data
-  if(NULL == pCallbackData)
+  if(NULL == pCallbackData ||(pCallbackData != pCallbackData->pMe))
   {
     LOC_LOGE("%s:%d]: invalid callback data", __func__, __LINE__);
     return;
@@ -1479,6 +1534,30 @@ static bool validateRequest(
       *pOutLen = sizeof(qmiLocGetBestAvailablePositionReqMsgT_v02);
       break;
     }
+    case QMI_LOC_INJECT_MOTION_DATA_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectMotionDataReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocGetNiGeofenceIdListReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_GSM_CELL_INFO_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectGSMCellInfoReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02);
+      break;
+    }
+
 
     // ALL requests with no payload
     case QMI_LOC_GET_SERVICE_REVISION_REQ_V02:
@@ -1497,6 +1576,7 @@ static bool validateRequest(
     case QMI_LOC_GET_EXTERNAL_POWER_CONFIG_REQ_V02:
     case QMI_LOC_GET_SENSOR_CONTROL_CONFIG_REQ_V02:
     case QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02:
+    case QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_REQ_V02:
     {
       noPayloadFlag = true;
       break;
@@ -1726,21 +1806,18 @@ locClientStatusEnumType locClientOpen (
   locClientStatusEnumType status = eLOC_CLIENT_SUCCESS;
   locClientCallbackDataType *pCallbackData = NULL;
 
-  LOC_LOGV("%s:%d] \n", __func__, __LINE__);
+  // check input parameters
+  if( (NULL == pLocClientCallbacks) || (NULL == pLocClientHandle)
+      || (NULL == pLocClientCallbacks->respIndCb) ||
+      (pLocClientCallbacks->size != sizeof(locClientCallbacksType)))
+  {
+    LOC_LOGE("%s:%d]: Invalid parameters in locClientOpen\n",
+             __func__, __LINE__);
+    return eLOC_CLIENT_FAILURE_INVALID_PARAMETER;
+  }
 
   do
   {
-    // check input parameters
-    if( (NULL == pLocClientCallbacks) || (NULL == pLocClientHandle)
-        || (NULL == pLocClientCallbacks->respIndCb) ||
-        (pLocClientCallbacks->size != sizeof(locClientCallbacksType)))
-    {
-      LOC_LOGE("%s:%d]: Invalid parameters in locClientOpen\n",
-                              __func__, __LINE__);
-      status = eLOC_CLIENT_FAILURE_INVALID_PARAMETER;
-      break;
-    }
-
     // Allocate memory for the callback data
     pCallbackData =
         ( locClientCallbackDataType*)calloc(
@@ -1775,7 +1852,8 @@ locClientStatusEnumType locClientOpen (
                     __func__, __LINE__, status);
       break;
     }
-
+     // set the self pointer
+    pCallbackData->pMe = pCallbackData;
      // set the handle to the callback data
     *pLocClientHandle = (locClientHandleType)pCallbackData;
 
@@ -1810,16 +1888,19 @@ locClientStatusEnumType locClientOpen (
      // set the client cookie
      pCallbackData->pClientCookie = (void *)pClientCookie;
 
-     LOC_LOGD("%s:%d]: returning handle = 0x%x, user_handle=0x%x, status = %d\n",
-              __func__, __LINE__, *pLocClientHandle,
-              pCallbackData->userHandle, status);
-
   }while(0);
 
   if(eLOC_CLIENT_SUCCESS != status)
   {
     *pLocClientHandle = LOC_CLIENT_INVALID_HANDLE_VALUE;
     LOC_LOGE("%s:%d]: Error! status = %d\n", __func__, __LINE__,status);
+  }
+
+  else
+  {
+    LOC_LOGD("%s:%d]: returning handle = %p, user_handle=%p, status = %d\n",
+                __func__, __LINE__, *pLocClientHandle,
+                pCallbackData->userHandle, status);
   }
 
   return(status);
@@ -1838,6 +1919,8 @@ locClientStatusEnumType locClientOpen (
 locClientStatusEnumType locClientClose(
   locClientHandleType* pLocClientHandle)
 {
+  // convert handle to callback data
+  locClientCallbackDataType *pCallbackData;
   qmi_client_error_type rc = QMI_NO_ERR; //No error
 
   if(NULL == pLocClientHandle)
@@ -1849,15 +1932,12 @@ locClientStatusEnumType locClientClose(
     return(eLOC_CLIENT_FAILURE_INVALID_PARAMETER);
   }
 
-  // convert handle to callback data
-  locClientCallbackDataType *pCallbackData =
-      (locClientCallbackDataType *)(*pLocClientHandle);
-
-  LOC_LOGV("%s:%d]:\n", __func__, __LINE__ );
+  pCallbackData = (locClientCallbackDataType *)(*pLocClientHandle);
 
   // check the input handle for sanity
   if(NULL == pCallbackData ||
-     NULL == pCallbackData->userHandle)
+     NULL == pCallbackData->userHandle ||
+     pCallbackData != pCallbackData->pMe )
   {
     // invalid handle
     LOC_LOGE("%s:%d]: invalid handle \n",
@@ -1934,7 +2014,8 @@ locClientStatusEnumType locClientSendReq(
 
   // check the input handle for sanity
    if(NULL == pCallbackData ||
-      NULL == pCallbackData->userHandle )
+      NULL == pCallbackData->userHandle ||
+      pCallbackData != pCallbackData->pMe )
    {
      // did not find the handle in the client List
      LOC_LOGE("%s:%d]: invalid handle \n",

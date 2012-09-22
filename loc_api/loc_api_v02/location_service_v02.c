@@ -33,7 +33,14 @@
 GENERAL DESCRIPTION
   This is the file which defines the loc service Data structures.
 
-*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
+ *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
+ *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
+ *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
+
+/* This file was generated with Tool version 5.5
+   It was generated on: Thu Sep 20 2012
+   From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
 #include "qmi_idl_lib_internal.h"
@@ -320,6 +327,19 @@ static const uint8_t qmiLocNiVxServiceInteractionStructT_data_v02[] = {
   QMI_IDL_FLAG_END_VALUE
 };
 
+static const uint8_t qmiLocNiSuplVer2ExtStructT_data_v02[] = {
+  QMI_IDL_GENERIC_2_BYTE,
+  QMI_IDL_OFFSET8(qmiLocNiSuplVer2ExtStructT_v02, supportedNetworksMask),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocNiSuplVer2ExtStructT_v02, triggerType),
+
+  QMI_IDL_GENERIC_2_BYTE,
+  QMI_IDL_OFFSET8(qmiLocNiSuplVer2ExtStructT_v02, gnssType),
+
+  QMI_IDL_FLAG_END_VALUE
+};
+
 static const uint8_t qmiLocAssistanceServerUrlStructT_data_v02[] = {
   QMI_IDL_FLAGS_IS_ARRAY | QMI_IDL_FLAGS_IS_VARIABLE_LEN |QMI_IDL_STRING,
   QMI_IDL_OFFSET8(qmiLocAssistanceServerUrlStructT_v02, serverUrl),
@@ -336,7 +356,7 @@ static const uint8_t qmiLocTimeServerListStructT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocTimeServerListStructT_v02, timeServerList),
   QMI_LOC_MAX_NTP_SERVERS_V02,
   QMI_IDL_OFFSET8(qmiLocTimeServerListStructT_v02, timeServerList) - QMI_IDL_OFFSET8(qmiLocTimeServerListStructT_v02, timeServerList_len),
- 15, 0,
+ 16, 0,
   QMI_IDL_FLAG_END_VALUE
 };
 
@@ -355,7 +375,7 @@ static const uint8_t qmiLocPredictedOrbitsServerListStructT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocPredictedOrbitsServerListStructT_v02, serverList),
   QMI_LOC_MAX_PREDICTED_ORBITS_SERVERS_V02,
   QMI_IDL_OFFSET8(qmiLocPredictedOrbitsServerListStructT_v02, serverList) - QMI_IDL_OFFSET8(qmiLocPredictedOrbitsServerListStructT_v02, serverList_len),
- 15, 0,
+ 16, 0,
   QMI_IDL_FLAG_END_VALUE
 };
 
@@ -375,7 +395,7 @@ static const uint8_t qmiLocSensorReadyStatusStructT_data_v02[] = {
 
    QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocSensorReadyStatusStructT_v02, dataFrequency),
- 19, 0,
+ 20, 0,
   QMI_IDL_FLAG_END_VALUE
 };
 
@@ -537,7 +557,7 @@ static const uint8_t qmiLoc3AxisSensorSampleListStructT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLoc3AxisSensorSampleListStructT_v02, sensorData),
   QMI_LOC_SENSOR_DATA_MAX_SAMPLES_V02,
   QMI_IDL_OFFSET8(qmiLoc3AxisSensorSampleListStructT_v02, sensorData) - QMI_IDL_OFFSET8(qmiLoc3AxisSensorSampleListStructT_v02, sensorData_len),
- 28, 0,
+ 29, 0,
   QMI_IDL_FLAG_END_VALUE
 };
 
@@ -565,19 +585,6 @@ static const uint8_t qmiLocCircularGeofenceArgsStructT_data_v02[] = {
   QMI_IDL_FLAG_END_VALUE
 };
 
-static const uint8_t qmiLocNiSuplVer2ExtStructT_data_v02[] = {
-  QMI_IDL_GENERIC_2_BYTE,
-  QMI_IDL_OFFSET8(qmiLocNiSuplVer2ExtStructT_v02, supportedNetworksMask),
-
-  QMI_IDL_GENERIC_4_BYTE,
-  QMI_IDL_OFFSET8(qmiLocNiSuplVer2ExtStructT_v02, triggerType),
-
-  QMI_IDL_GENERIC_2_BYTE,
-  QMI_IDL_OFFSET8(qmiLocNiSuplVer2ExtStructT_v02, gnssType),
-
-  QMI_IDL_FLAG_END_VALUE
-};
-
 static const uint8_t qmiLocMotionDataStructT_data_v02[] = {
   QMI_IDL_GENERIC_4_BYTE,
   QMI_IDL_OFFSET8(qmiLocMotionDataStructT_v02, motion_state),
@@ -593,6 +600,22 @@ static const uint8_t qmiLocMotionDataStructT_data_v02[] = {
 
   QMI_IDL_GENERIC_2_BYTE,
   QMI_IDL_OFFSET8(qmiLocMotionDataStructT_v02, timeout),
+
+  QMI_IDL_FLAG_END_VALUE
+};
+
+static const uint8_t qmiLocGSMCellIdStructT_data_v02[] = {
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGSMCellIdStructT_v02, MCC),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGSMCellIdStructT_v02, MNC),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGSMCellIdStructT_v02, LAC),
+
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocGSMCellIdStructT_v02, CID),
 
   QMI_IDL_FLAG_END_VALUE
 };
@@ -869,7 +892,7 @@ static const uint8_t qmiLocEventNiNotifyVerifyReqIndMsgT_data_v02[] = {
   0x14,
   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET16ARRAY(qmiLocEventNiNotifyVerifyReqIndMsgT_v02, NiSuplVer2ExtInd),
-  32, 0
+  15, 0
 };
 
 static const uint8_t qmiLocEventInjectTimeReqIndMsgT_data_v02[] = {
@@ -877,20 +900,20 @@ static const uint8_t qmiLocEventInjectTimeReqIndMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventInjectTimeReqIndMsgT_v02, timeServerInfo),
-  16, 0
+  17, 0
 };
 
 static const uint8_t qmiLocEventInjectPredictedOrbitsReqIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventInjectPredictedOrbitsReqIndMsgT_v02, allowedSizes),
-  17, 0,
+  18, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocEventInjectPredictedOrbitsReqIndMsgT_v02, serverList) - QMI_IDL_OFFSET8(qmiLocEventInjectPredictedOrbitsReqIndMsgT_v02, serverList_valid)),
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventInjectPredictedOrbitsReqIndMsgT_v02, serverList),
-  18, 0
+  19, 0
 };
 
 static const uint8_t qmiLocEventInjectPositionReqIndMsgT_data_v02[] = {
@@ -944,13 +967,13 @@ static const uint8_t qmiLocEventSensorStreamingReadyStatusIndMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventSensorStreamingReadyStatusIndMsgT_v02, accelReady),
-  20, 0,
+  21, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocEventSensorStreamingReadyStatusIndMsgT_v02, gyroReady) - QMI_IDL_OFFSET8(qmiLocEventSensorStreamingReadyStatusIndMsgT_v02, gyroReady_valid)),
   0x11,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventSensorStreamingReadyStatusIndMsgT_v02, gyroReady),
-  20, 0
+  21, 0
 };
 
 static const uint8_t qmiLocEventTimeSyncReqIndMsgT_data_v02[] = {
@@ -1008,7 +1031,7 @@ static const uint8_t qmiLocEventGeofenceBreachIndMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocEventGeofenceBreachIndMsgT_v02, geofencePosition),
-  21, 0
+  22, 0
 };
 
 /*
@@ -1115,7 +1138,7 @@ static const uint8_t qmiLocNiUserRespReqMsgT_data_v02[] = {
   0x14,
   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET16ARRAY(qmiLocNiUserRespReqMsgT_v02, NiSuplVer2ExtPayload),
-  32, 0
+  15, 0
 };
 
 static const uint8_t qmiLocNiUserRespIndMsgT_data_v02[] = {
@@ -1175,13 +1198,13 @@ static const uint8_t qmiLocGetPredictedOrbitsDataSourceIndMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetPredictedOrbitsDataSourceIndMsgT_v02, allowedSizes),
-  17, 0,
+  18, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetPredictedOrbitsDataSourceIndMsgT_v02, serverList) - QMI_IDL_OFFSET8(qmiLocGetPredictedOrbitsDataSourceIndMsgT_v02, serverList_valid)),
   0x11,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetPredictedOrbitsDataSourceIndMsgT_v02, serverList),
-  18, 0
+  19, 0
 };
 
 /*
@@ -1199,7 +1222,7 @@ static const uint8_t qmiLocGetPredictedOrbitsDataValidityIndMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetPredictedOrbitsDataValidityIndMsgT_v02, validityInfo),
-  22, 0
+  23, 0
 };
 
 static const uint8_t qmiLocInjectUtcTimeReqMsgT_data_v02[] = {
@@ -1273,7 +1296,7 @@ static const uint8_t qmiLocInjectPositionReqMsgT_data_v02[] = {
   0x1A,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, altSourceInfo),
-  23, 0,
+  24, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, timestampUtc) - QMI_IDL_OFFSET8(qmiLocInjectPositionReqMsgT_v02, timestampUtc_valid)),
   0x1B,
@@ -1493,7 +1516,7 @@ static const uint8_t qmiLocDeleteAssistDataReqMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocDeleteAssistDataReqMsgT_v02, deleteSvInfoList),
   QMI_LOC_DELETE_MAX_SV_INFO_LENGTH_V02,
   QMI_IDL_OFFSET8(qmiLocDeleteAssistDataReqMsgT_v02, deleteSvInfoList) - QMI_IDL_OFFSET8(qmiLocDeleteAssistDataReqMsgT_v02, deleteSvInfoList_len),
-  24, 0,
+  25, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET16RELATIVE(qmiLocDeleteAssistDataReqMsgT_v02, deleteGnssDataMask) - QMI_IDL_OFFSET16RELATIVE(qmiLocDeleteAssistDataReqMsgT_v02, deleteGnssDataMask_valid)),
   0x11,
@@ -1551,13 +1574,13 @@ static const uint8_t qmiLocInjectWifiPositionReqMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, wifiFixTime),
-  25, 0,
+  26, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, wifiFixPosition) - QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, wifiFixPosition_valid)),
   0x11,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, wifiFixPosition),
-  26, 0,
+  27, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, apInfo) - QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, apInfo_valid)),
   0x12,
@@ -1565,7 +1588,7 @@ static const uint8_t qmiLocInjectWifiPositionReqMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, apInfo),
   QMI_LOC_WIFI_MAX_REPORTED_APS_PER_MSG_V02,
   QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, apInfo) - QMI_IDL_OFFSET8(qmiLocInjectWifiPositionReqMsgT_v02, apInfo_len),
-  27, 0,
+  28, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET16RELATIVE(qmiLocInjectWifiPositionReqMsgT_v02, horizontalReliability) - QMI_IDL_OFFSET16RELATIVE(qmiLocInjectWifiPositionReqMsgT_v02, horizontalReliability_valid)),
   0x13,
@@ -1664,13 +1687,13 @@ static const uint8_t qmiLocInjectSensorDataReqMsgT_data_v02[] = {
   0x11,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocInjectSensorDataReqMsgT_v02, threeAxisAccelData),
-  29, 0,
+  30, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET16RELATIVE(qmiLocInjectSensorDataReqMsgT_v02, threeAxisGyroData) - QMI_IDL_OFFSET16RELATIVE(qmiLocInjectSensorDataReqMsgT_v02, threeAxisGyroData_valid)),
   0x12,
   QMI_IDL_FLAGS_OFFSET_IS_16 | QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET16ARRAY(qmiLocInjectSensorDataReqMsgT_v02, threeAxisGyroData),
-  29, 0
+  30, 0
 };
 
 static const uint8_t qmiLocInjectSensorDataIndMsgT_data_v02[] = {
@@ -1799,7 +1822,7 @@ static const uint8_t qmiLocInformLocationServerConnStatusReqMsgT_data_v02[] = {
   0x10,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocInformLocationServerConnStatusReqMsgT_v02, apnProfile),
-  30, 0
+  31, 0
 };
 
 static const uint8_t qmiLocInformLocationServerConnStatusIndMsgT_data_v02[] = {
@@ -1998,13 +2021,13 @@ static const uint8_t qmiLocSetSensorPerformanceControlConfigReqMsgT_data_v02[] =
   0x11,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, accelSamplingSpec),
-  19, 0,
+  20, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, gyroSamplingSpec) - QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, gyroSamplingSpec_valid)),
   0x12,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, gyroSamplingSpec),
-  19, 0,
+  20, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, algorithmConfig) - QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, algorithmConfig_valid)),
   0x13,
@@ -2015,13 +2038,13 @@ static const uint8_t qmiLocSetSensorPerformanceControlConfigReqMsgT_data_v02[] =
   0x14,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, accelSamplingSpecHigh),
-  19, 0,
+  20, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, gyroSamplingSpecHigh) - QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, gyroSamplingSpecHigh_valid)),
   0x15,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigReqMsgT_v02, gyroSamplingSpecHigh),
-  19, 0
+  20, 0
 };
 
 static const uint8_t qmiLocSetSensorPerformanceControlConfigIndMsgT_data_v02[] = {
@@ -2055,13 +2078,13 @@ static const uint8_t qmiLocGetSensorPerformanceControlConfigIndMsgT_data_v02[] =
   0x11,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, accelSamplingSpec),
-  19, 0,
+  20, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, gyroSamplingSpec) - QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, gyroSamplingSpec_valid)),
   0x12,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, gyroSamplingSpec),
-  19, 0,
+  20, 0,
 
   QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, algorithmConfig) - QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, algorithmConfig_valid)),
   0x13,
@@ -2072,13 +2095,13 @@ static const uint8_t qmiLocGetSensorPerformanceControlConfigIndMsgT_data_v02[] =
   0x14,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, accelSamplingSpecHigh),
-  19, 0,
+  20, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, gyroSamplingSpecHigh) - QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, gyroSamplingSpecHigh_valid)),
   0x15,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocGetSensorPerformanceControlConfigIndMsgT_v02, gyroSamplingSpecHigh),
-  19, 0
+  20, 0
 };
 
 static const uint8_t qmiLocInjectSuplCertificateReqMsgT_data_v02[] = {
@@ -2175,7 +2198,7 @@ static const uint8_t qmiLocAddCircularGeofenceReqMsgT_data_v02[] = {
   0x02,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocAddCircularGeofenceReqMsgT_v02, circularGeofenceArgs),
-  31, 0,
+  32, 0,
 
   0x03,
   QMI_IDL_GENERIC_1_BYTE,
@@ -2277,7 +2300,7 @@ static const uint8_t qmiLocQueryGeofenceIndMsgT_data_v02[] = {
   0x14,
   QMI_IDL_AGGREGATE,
   QMI_IDL_OFFSET8(qmiLocQueryGeofenceIndMsgT_v02, circularGeofenceArgs),
-  31, 0,
+  32, 0,
 
   QMI_IDL_TLV_FLAGS_LAST_TLV | QMI_IDL_TLV_FLAGS_OPTIONAL | (QMI_IDL_OFFSET8(qmiLocQueryGeofenceIndMsgT_v02, geofenceState) - QMI_IDL_OFFSET8(qmiLocQueryGeofenceIndMsgT_v02, geofenceState_valid)),
   0x15,
@@ -2530,6 +2553,53 @@ static const uint8_t qmiLocGetNiGeofenceIdListIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocGetNiGeofenceIdListIndMsgT_v02, niGeofenceIdList) - QMI_IDL_OFFSET8(qmiLocGetNiGeofenceIdListIndMsgT_v02, niGeofenceIdList_len)
 };
 
+static const uint8_t qmiLocInjectGSMCellInfoReqMsgT_data_v02[] = {
+  0x01,
+  QMI_IDL_AGGREGATE,
+  QMI_IDL_OFFSET8(qmiLocInjectGSMCellInfoReqMsgT_v02, gsmCellId),
+  34, 0,
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x02,
+  QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectGSMCellInfoReqMsgT_v02, roamingStatus)
+};
+
+static const uint8_t qmiLocInjectGSMCellInfoIndMsgT_data_v02[] = {
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x01,
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectGSMCellInfoIndMsgT_v02, status)
+};
+
+static const uint8_t qmiLocInjectNetworkInitiatedMessageReqMsgT_data_v02[] = {
+  0x01,
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02, injectedNIMessageType),
+
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x02,
+  QMI_IDL_FLAGS_IS_ARRAY | QMI_IDL_FLAGS_IS_VARIABLE_LEN | QMI_IDL_FLAGS_SZ_IS_16 |   QMI_IDL_GENERIC_1_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02, injectedNIMessage),
+  ((QMI_LOC_MAX_INJECTED_NETWORK_INITIATED_MESSAGE_LENGTH_V02) & 0xFF), ((QMI_LOC_MAX_INJECTED_NETWORK_INITIATED_MESSAGE_LENGTH_V02) >> 8),
+  QMI_IDL_OFFSET8(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02, injectedNIMessage) - QMI_IDL_OFFSET8(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02, injectedNIMessage_len)
+};
+
+static const uint8_t qmiLocInjectNetworkInitiatedMessageIndMsgT_data_v02[] = {
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x01,
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02, status)
+};
+
+/*
+ * qmiLocWWANOutOfServiceNotificationReqMsgT is empty
+ * static const uint8_t qmiLocWWANOutOfServiceNotificationReqMsgT_data_v02[] = {
+ * };
+ */
+
+static const uint8_t qmiLocWWANOutOfServiceNotificationIndMsgT_data_v02[] = {
+  QMI_IDL_TLV_FLAGS_LAST_TLV | 0x01,
+  QMI_IDL_GENERIC_4_BYTE,
+  QMI_IDL_OFFSET8(qmiLocWWANOutOfServiceNotificationIndMsgT_v02, status)
+};
+
 /* Type Table */
 static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLocApplicationIdStructT_v02), qmiLocApplicationIdStructT_data_v02},
@@ -2547,6 +2617,7 @@ static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLocNiUmtsCpCodedStringStructT_v02), qmiLocNiUmtsCpCodedStringStructT_data_v02},
   {sizeof(qmiLocNiUmtsCpNotifyVerifyStructT_v02), qmiLocNiUmtsCpNotifyVerifyStructT_data_v02},
   {sizeof(qmiLocNiVxServiceInteractionStructT_v02), qmiLocNiVxServiceInteractionStructT_data_v02},
+  {sizeof(qmiLocNiSuplVer2ExtStructT_v02), qmiLocNiSuplVer2ExtStructT_data_v02},
   {sizeof(qmiLocAssistanceServerUrlStructT_v02), qmiLocAssistanceServerUrlStructT_data_v02},
   {sizeof(qmiLocTimeServerListStructT_v02), qmiLocTimeServerListStructT_data_v02},
   {sizeof(qmiLocPredictedOrbitsAllowedSizesStructT_v02), qmiLocPredictedOrbitsAllowedSizesStructT_data_v02},
@@ -2564,8 +2635,8 @@ static const qmi_idl_type_table_entry  loc_type_table_v02[] = {
   {sizeof(qmiLoc3AxisSensorSampleListStructT_v02), qmiLoc3AxisSensorSampleListStructT_data_v02},
   {sizeof(qmiLocApnProfilesStructT_v02), qmiLocApnProfilesStructT_data_v02},
   {sizeof(qmiLocCircularGeofenceArgsStructT_v02), qmiLocCircularGeofenceArgsStructT_data_v02},
-  {sizeof(qmiLocNiSuplVer2ExtStructT_v02), qmiLocNiSuplVer2ExtStructT_data_v02},
-  {sizeof(qmiLocMotionDataStructT_v02), qmiLocMotionDataStructT_data_v02}
+  {sizeof(qmiLocMotionDataStructT_v02), qmiLocMotionDataStructT_data_v02},
+  {sizeof(qmiLocGSMCellIdStructT_v02), qmiLocGSMCellIdStructT_data_v02}
 };
 
 /* Message Table */
@@ -2697,7 +2768,13 @@ static const qmi_idl_message_table_entry loc_message_table_v02[] = {
   {sizeof(qmiLocInjectMotionDataReqMsgT_v02), qmiLocInjectMotionDataReqMsgT_data_v02},
   {sizeof(qmiLocInjectMotionDataIndMsgT_v02), qmiLocInjectMotionDataIndMsgT_data_v02},
   {sizeof(qmiLocGetNiGeofenceIdListReqMsgT_v02), qmiLocGetNiGeofenceIdListReqMsgT_data_v02},
-  {sizeof(qmiLocGetNiGeofenceIdListIndMsgT_v02), qmiLocGetNiGeofenceIdListIndMsgT_data_v02}
+  {sizeof(qmiLocGetNiGeofenceIdListIndMsgT_v02), qmiLocGetNiGeofenceIdListIndMsgT_data_v02},
+  {sizeof(qmiLocInjectGSMCellInfoReqMsgT_v02), qmiLocInjectGSMCellInfoReqMsgT_data_v02},
+  {sizeof(qmiLocInjectGSMCellInfoIndMsgT_v02), qmiLocInjectGSMCellInfoIndMsgT_data_v02},
+  {sizeof(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02), qmiLocInjectNetworkInitiatedMessageReqMsgT_data_v02},
+  {sizeof(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02), qmiLocInjectNetworkInitiatedMessageIndMsgT_data_v02},
+  {0, 0},
+  {sizeof(qmiLocWWANOutOfServiceNotificationIndMsgT_v02), qmiLocWWANOutOfServiceNotificationIndMsgT_data_v02}
 };
 
 /* Predefine the Type Table Object */
@@ -2775,7 +2852,10 @@ static const qmi_idl_service_message_table_entry loc_service_command_messages_v0
   {QMI_LOC_EDIT_GEOFENCE_REQ_V02, TYPE16(0, 120), 25},
   {QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02, TYPE16(0, 122), 7},
   {QMI_LOC_INJECT_MOTION_DATA_REQ_V02, TYPE16(0, 124), 19},
-  {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02, TYPE16(0, 126), 7}
+  {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02, TYPE16(0, 126), 7},
+  {QMI_LOC_INJECT_GSM_CELL_INFO_REQ_V02, TYPE16(0, 128), 23},
+  {QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02, TYPE16(0, 130), 1036},
+  {QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_REQ_V02, TYPE16(0, 132), 0}
 };
 
 static const qmi_idl_service_message_table_entry loc_service_response_messages_v02[] = {
@@ -2835,7 +2915,10 @@ static const qmi_idl_service_message_table_entry loc_service_response_messages_v
   {QMI_LOC_EDIT_GEOFENCE_RESP_V02, TYPE16(0, 0), 7},
   {QMI_LOC_GET_BEST_AVAILABLE_POSITION_RESP_V02, TYPE16(0, 0), 7},
   {QMI_LOC_INJECT_MOTION_DATA_RESP_V02, TYPE16(0, 0), 7},
-  {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_RESP_V02, TYPE16(0, 0), 7}
+  {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_RESP_V02, TYPE16(0, 0), 7},
+  {QMI_LOC_INJECT_GSM_CELL_INFO_RESP_V02, TYPE16(0, 0), 7},
+  {QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_RESP_V02, TYPE16(0, 0), 7},
+  {QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_RESP_V02, TYPE16(0, 0), 7}
 };
 
 static const qmi_idl_service_message_table_entry loc_service_indication_messages_v02[] = {
@@ -2908,7 +2991,10 @@ static const qmi_idl_service_message_table_entry loc_service_indication_messages
   {QMI_LOC_EDIT_GEOFENCE_IND_V02, TYPE16(0, 121), 28},
   {QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02, TYPE16(0, 123), 391},
   {QMI_LOC_INJECT_MOTION_DATA_IND_V02, TYPE16(0, 125), 7},
-  {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02, TYPE16(0, 127), 82}
+  {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02, TYPE16(0, 127), 82},
+  {QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02, TYPE16(0, 129), 7},
+  {QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02, TYPE16(0, 131), 7},
+  {QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02, TYPE16(0, 132), 0}
 };
 
 /*Service Object*/
@@ -2922,7 +3008,7 @@ struct qmi_idl_service_object loc_qmi_idl_service_object_v02 = {
     sizeof(loc_service_indication_messages_v02)/sizeof(qmi_idl_service_message_table_entry) },
   { loc_service_command_messages_v02, loc_service_response_messages_v02, loc_service_indication_messages_v02},
   &loc_qmi_idl_type_table_object_v02,
-  0x0D,
+  0x0F,
   NULL
 };
 
