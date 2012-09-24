@@ -64,11 +64,19 @@ int loc_eng_dmn_conn_glue_pipeget(const char * pipe_name, int mode)
     int result;
 
     LOC_LOGD("%s, mode = %d\n", pipe_name, mode);
-    result = mkfifo(pipe_name, 0666);
+    result = mkfifo(pipe_name, 0660);
 
     if ((result == -1) && (errno != EEXIST)) {
         LOC_LOGE("failed: %s\n", strerror(errno));
         return result;
+    }
+
+    // The mode in mkfifo is not honoured and does not provide the
+    // group permissions. Doing chmod to add group permissions.
+    result = chmod (pipe_name, 0660);
+    if (result != 0){
+        LOC_LOGE ("%s failed to change mode for %s, error = %s\n", __func__,
+              pipe_name, strerror(errno));
     }
 
     fd = open(pipe_name, mode);
