@@ -37,6 +37,7 @@
 #define GPSONE_LOC_API_RESP_Q_PATH "/data/misc/gpsone_d/gpsone_loc_api_resp_q"
 #define QUIPC_CTRL_Q_PATH "/data/misc/gpsone_d/quipc_ctrl_q"
 #define MSAPM_CTRL_Q_PATH "/data/misc/gpsone_d/msapm_ctrl_q"
+#define MSAPU_CTRL_Q_PATH "/data/misc/gpsone_d/msapu_ctrl_q"
 
 #else
 
@@ -44,6 +45,7 @@
 #define GPSONE_LOC_API_RESP_Q_PATH "/tmp/gpsone_loc_api_resp_q"
 #define QUIPC_CTRL_Q_PATH "/tmp/quipc_ctrl_q"
 #define MSAPM_CTRL_Q_PATH "/tmp/msapm_ctrl_q"
+#define MSAPU_CTRL_Q_PATH "/tmp/msapu_ctrl_q"
 
 #endif
 

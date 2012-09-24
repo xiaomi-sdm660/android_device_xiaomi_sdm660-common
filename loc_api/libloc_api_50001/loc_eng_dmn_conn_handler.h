@@ -67,6 +67,7 @@ typedef enum {
 typedef enum {
   IF_REQUEST_SENDER_ID_QUIPC = 0,
   IF_REQUEST_SENDER_ID_MSAPM,
+  IF_REQUEST_SENDER_ID_MSAPU,
   IF_REQUEST_SENDER_ID_GPSONE_DAEMON,
   IF_REQUEST_SENDER_ID_MODEM
 } ctrl_if_req_sender_id_e_type;
