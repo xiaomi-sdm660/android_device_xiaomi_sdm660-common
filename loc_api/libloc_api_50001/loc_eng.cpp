@@ -1661,7 +1661,8 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_request_wifi *wrqMsg = (loc_eng_msg_request_wifi *)msg;
             if (wrqMsg->senderId == LOC_ENG_IF_REQUEST_SENDER_ID_QUIPC ||
-                wrqMsg->senderId == LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM) {
+                wrqMsg->senderId == LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM ||
+                wrqMsg->senderId == LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU) {
               AgpsStateMachine* stateMachine = loc_eng_data_p->wifi_nif;
               WIFISubscriber subscriber(stateMachine, wrqMsg->ssid, wrqMsg->password, wrqMsg->senderId);
               stateMachine->subscribeRsrc((Subscriber*)&subscriber);

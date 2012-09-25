@@ -99,6 +99,18 @@ int loc_eng_dmn_conn_loc_api_server_if_request_handler(struct ctrl_msgbuf *pmsg,
             loc_eng_msg_sender(loc_api_handle, msg);
             break;
           }
+          case IF_REQUEST_SENDER_ID_MSAPU:
+          {
+            LOC_LOGD("IF_REQUEST_SENDER_ID_MSAPU");
+            loc_eng_msg_request_wifi *msg(
+                new loc_eng_msg_request_wifi(loc_api_handle,
+                                            type,
+                                            LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU,
+                                            (char*)pmsg->cmsg.cmsg_if_request.ssid,
+                                            (char*)pmsg->cmsg.cmsg_if_request.password));
+            loc_eng_msg_sender(loc_api_handle, msg);
+            break;
+          }
           case IF_REQUEST_SENDER_ID_GPSONE_DAEMON:
           {
             LOC_LOGD("IF_REQUEST_SENDER_ID_GPSONE_DAEMON");
@@ -174,6 +186,18 @@ int loc_eng_dmn_conn_loc_api_server_if_release_handler(struct ctrl_msgbuf *pmsg,
             new loc_eng_msg_release_wifi(loc_api_handle,
                                         type,
                                         LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM,
+                                        (char*)pmsg->cmsg.cmsg_if_request.ssid,
+                                        (char*)pmsg->cmsg.cmsg_if_request.password));
+        loc_eng_msg_sender(loc_api_handle, msg);
+        break;
+      }
+      case IF_REQUEST_SENDER_ID_MSAPU:
+      {
+        LOC_LOGD("IF_REQUEST_SENDER_ID_MSAPU");
+        loc_eng_msg_release_wifi *msg(
+            new loc_eng_msg_release_wifi(loc_api_handle,
+                                        type,
+                                        LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU,
                                         (char*)pmsg->cmsg.cmsg_if_request.ssid,
                                         (char*)pmsg->cmsg.cmsg_if_request.password));
         loc_eng_msg_sender(loc_api_handle, msg);

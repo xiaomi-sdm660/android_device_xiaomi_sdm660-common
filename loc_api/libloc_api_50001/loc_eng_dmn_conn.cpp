@@ -48,11 +48,13 @@ static int loc_api_server_msgqid;
 static int loc_api_resp_msgqid;
 static int quipc_msgqid;
 static int msapm_msgqid;
+static int msapu_msgqid;
 
 static const char * global_loc_api_q_path = GPSONE_LOC_API_Q_PATH;
 static const char * global_loc_api_resp_q_path = GPSONE_LOC_API_RESP_Q_PATH;
 static const char * global_quipc_ctrl_q_path = QUIPC_CTRL_Q_PATH;
 static const char * global_msapm_ctrl_q_path = MSAPM_CTRL_Q_PATH;
+static const char * global_msapu_ctrl_q_path = MSAPU_CTRL_Q_PATH;
 
 static int loc_api_server_proc_init(void *context)
 {
@@ -81,6 +83,7 @@ static int loc_api_server_proc_init(void *context)
     loc_api_resp_msgqid = loc_eng_dmn_conn_glue_msgget(global_loc_api_resp_q_path, O_RDWR);
     quipc_msgqid = loc_eng_dmn_conn_glue_msgget(global_quipc_ctrl_q_path, O_RDWR);
     msapm_msgqid = loc_eng_dmn_conn_glue_msgget(global_msapm_ctrl_q_path , O_RDWR);
+    msapu_msgqid = loc_eng_dmn_conn_glue_msgget(global_msapu_ctrl_q_path , O_RDWR);
 
     LOC_LOGD("%s:%d] loc_api_server_msgqid = %d\n", __func__, __LINE__, loc_api_server_msgqid);
     return 0;
@@ -148,6 +151,7 @@ static int loc_api_server_proc_post(void *context)
     loc_eng_dmn_conn_glue_msgremove( global_loc_api_resp_q_path, loc_api_resp_msgqid);
     loc_eng_dmn_conn_glue_msgremove( global_quipc_ctrl_q_path, quipc_msgqid);
     loc_eng_dmn_conn_glue_msgremove( global_msapm_ctrl_q_path, msapm_msgqid);
+    loc_eng_dmn_conn_glue_msgremove( global_msapu_ctrl_q_path, msapu_msgqid);
     return 0;
 }
 
@@ -216,6 +220,14 @@ int loc_eng_dmn_conn_loc_api_server_data_conn(int sender_id, int status) {
     case LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM: {
       LOC_LOGD("%s:%d] sender_id = LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM", __func__, __LINE__);
       if (loc_eng_dmn_conn_glue_msgsnd(msapm_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
+        LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
+        return -1;
+      }
+      break;
+    }
+    case LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU: {
+      LOC_LOGD("%s:%d] sender_id = LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU", __func__, __LINE__);
+      if (loc_eng_dmn_conn_glue_msgsnd(msapu_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
         LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
         return -1;
       }
