@@ -456,6 +456,7 @@ static int loc_eng_start_handler(loc_eng_data_s_type &loc_eng_data)
        if (ret_val == LOC_API_ADAPTER_ERR_SUCCESS ||
            ret_val == LOC_API_ADAPTER_ERR_ENGINE_DOWN)
        {
+           loc_inform_gps_status(loc_eng_data, GPS_STATUS_SESSION_BEGIN);
            loc_eng_data.navigating = TRUE;
        }
    }
@@ -508,8 +509,7 @@ static int loc_eng_stop_handler(loc_eng_data_s_type &loc_eng_data)
 #endif
 
        ret_val = loc_eng_data.client_handle->stopFix();
-       if (ret_val == LOC_API_ADAPTER_ERR_SUCCESS &&
-           loc_eng_data.fix_session_status != GPS_STATUS_SESSION_BEGIN)
+       if (ret_val == LOC_API_ADAPTER_ERR_SUCCESS)
        {
            loc_inform_gps_status(loc_eng_data, GPS_STATUS_SESSION_END);
        }
@@ -711,14 +711,6 @@ static void loc_inform_gps_status(loc_eng_data_s_type &loc_eng_data, GpsStatusVa
     {
         CALLBACK_LOG_CALLFLOW("status_cb", %s, loc_get_gps_status_name(gs.status));
         loc_eng_data.status_cb(&gs);
-
-        // Restore session begin if needed
-        if (status == GPS_STATUS_ENGINE_ON && last_status == GPS_STATUS_SESSION_BEGIN)
-        {
-            GpsStatus gs_sess_begin = { sizeof(gs_sess_begin),GPS_STATUS_SESSION_BEGIN };
-            CALLBACK_LOG_CALLFLOW("status_cb", %s, loc_get_gps_status_name(gs_sess_begin.status));
-            loc_eng_data.status_cb(&gs_sess_begin);
-        }
     }
 
     last_status = status;
