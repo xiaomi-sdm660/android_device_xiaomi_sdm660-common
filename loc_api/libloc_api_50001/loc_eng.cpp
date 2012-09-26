@@ -355,7 +355,7 @@ void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data)
     // XTRA has no state, so we are fine with it.
 
     // we need to check and clear NI
-
+#if 0
     // we need to check and clear ATL
     if (NULL != loc_eng_data.agnss_nif) {
         delete loc_eng_data.agnss_nif;
@@ -365,7 +365,7 @@ void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data)
         delete loc_eng_data.internet_nif;
         loc_eng_data.internet_nif = NULL;
     }
-
+#endif
     if (loc_eng_data.navigating)
     {
         LOC_LOGD("loc_eng_cleanup: fix not stopped. stop it now.");
