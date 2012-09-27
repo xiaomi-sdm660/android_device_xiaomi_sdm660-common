@@ -34,12 +34,12 @@ GENERAL DESCRIPTION
   This is the file which defines the loc service Data structures.
 
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
- *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY
+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====* 
+ *THIS IS AN AUTO GENERATED FILE. DO NOT ALTER IN ANY WAY 
  *====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
 
-/* This file was generated with Tool version 5.5
-   It was generated on: Thu Sep 20 2012
+/* This file was generated with Tool version 5.5 
+   It was generated on: Thu Sep 27 2012
    From IDL File: location_service_v02.idl */
 
 #include "stdint.h"
@@ -1034,12 +1034,12 @@ static const uint8_t qmiLocEventGeofenceBreachIndMsgT_data_v02[] = {
   22, 0
 };
 
-/*
+/* 
  * qmiLocGetServiceRevisionReqMsgT is empty
  * static const uint8_t qmiLocGetServiceRevisionReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetServiceRevisionIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1068,12 +1068,12 @@ static const uint8_t qmiLocGetServiceRevisionIndMsgT_data_v02[] = {
   QMI_LOC_GNSS_SW_VERSION_STRING_MAX_LENGTH_V02
 };
 
-/*
+/* 
  * qmiLocGetFixCriteriaReqMsgT is empty
  * static const uint8_t qmiLocGetFixCriteriaReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetFixCriteriaIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1183,12 +1183,12 @@ static const uint8_t qmiLocInjectPredictedOrbitsDataIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocInjectPredictedOrbitsDataIndMsgT_v02, partNum)
 };
 
-/*
+/* 
  * qmiLocGetPredictedOrbitsDataSourceReqMsgT is empty
  * static const uint8_t qmiLocGetPredictedOrbitsDataSourceReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetPredictedOrbitsDataSourceIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1207,12 +1207,12 @@ static const uint8_t qmiLocGetPredictedOrbitsDataSourceIndMsgT_data_v02[] = {
   19, 0
 };
 
-/*
+/* 
  * qmiLocGetPredictedOrbitsDataValidityReqMsgT is empty
  * static const uint8_t qmiLocGetPredictedOrbitsDataValidityReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetPredictedOrbitsDataValidityIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1332,12 +1332,12 @@ static const uint8_t qmiLocSetEngineLockIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetEngineLockIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetEngineLockReqMsgT is empty
  * static const uint8_t qmiLocGetEngineLockReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetEngineLockIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1361,12 +1361,12 @@ static const uint8_t qmiLocSetSbasConfigIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetSbasConfigIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetSbasConfigReqMsgT is empty
  * static const uint8_t qmiLocGetSbasConfigReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetSbasConfigIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1390,12 +1390,12 @@ static const uint8_t qmiLocSetNmeaTypesIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetNmeaTypesIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetNmeaTypesReqMsgT is empty
  * static const uint8_t qmiLocGetNmeaTypesReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetNmeaTypesIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1419,12 +1419,12 @@ static const uint8_t qmiLocSetLowPowerModeIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetLowPowerModeIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetLowPowerModeReqMsgT is empty
  * static const uint8_t qmiLocGetLowPowerModeReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetLowPowerModeIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1552,12 +1552,12 @@ static const uint8_t qmiLocSetXtraTSessionControlIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetXtraTSessionControlIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetXtraTSessionControlReqMsgT is empty
  * static const uint8_t qmiLocGetXtraTSessionControlReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetXtraTSessionControlIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1614,12 +1614,12 @@ static const uint8_t qmiLocNotifyWifiStatusIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocNotifyWifiStatusIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetRegisteredEventsReqMsgT is empty
  * static const uint8_t qmiLocGetRegisteredEventsReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetRegisteredEventsIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1643,12 +1643,12 @@ static const uint8_t qmiLocSetOperationModeIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetOperationModeIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetOperationModeReqMsgT is empty
  * static const uint8_t qmiLocGetOperationModeReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetOperationModeIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1737,12 +1737,12 @@ static const uint8_t qmiLocInjectTimeSyncDataIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocInjectTimeSyncDataIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetCradleMountConfigReqMsgT is empty
  * static const uint8_t qmiLocGetCradleMountConfigReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetCradleMountConfigIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1776,12 +1776,12 @@ static const uint8_t qmiLocSetCradleMountConfigIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetCradleMountConfigIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetExternalPowerConfigReqMsgT is empty
  * static const uint8_t qmiLocGetExternalPowerConfigReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetExternalPowerConfigIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -1919,12 +1919,12 @@ static const uint8_t qmiLocSetSensorControlConfigIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocSetSensorControlConfigIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocGetSensorControlConfigReqMsgT is empty
  * static const uint8_t qmiLocGetSensorControlConfigReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetSensorControlConfigIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -2058,12 +2058,12 @@ static const uint8_t qmiLocSetSensorPerformanceControlConfigIndMsgT_data_v02[] =
   QMI_IDL_OFFSET8(qmiLocSetSensorPerformanceControlConfigIndMsgT_v02, failedConfiguration)
 };
 
-/*
+/* 
  * qmiLocGetSensorPerformanceControlConfigReqMsgT is empty
  * static const uint8_t qmiLocGetSensorPerformanceControlConfigReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocGetSensorPerformanceControlConfigIndMsgT_data_v02[] = {
   0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -2588,12 +2588,12 @@ static const uint8_t qmiLocInjectNetworkInitiatedMessageIndMsgT_data_v02[] = {
   QMI_IDL_OFFSET8(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02, status)
 };
 
-/*
+/* 
  * qmiLocWWANOutOfServiceNotificationReqMsgT is empty
  * static const uint8_t qmiLocWWANOutOfServiceNotificationReqMsgT_data_v02[] = {
  * };
  */
-
+  
 static const uint8_t qmiLocWWANOutOfServiceNotificationIndMsgT_data_v02[] = {
   QMI_IDL_TLV_FLAGS_LAST_TLV | 0x01,
   QMI_IDL_GENERIC_4_BYTE,
@@ -2994,7 +2994,7 @@ static const qmi_idl_service_message_table_entry loc_service_indication_messages
   {QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02, TYPE16(0, 127), 82},
   {QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02, TYPE16(0, 129), 7},
   {QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02, TYPE16(0, 131), 7},
-  {QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02, TYPE16(0, 132), 0}
+  {QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02, TYPE16(0, 133), 7}
 };
 
 /*Service Object*/
@@ -3008,18 +3008,18 @@ struct qmi_idl_service_object loc_qmi_idl_service_object_v02 = {
     sizeof(loc_service_indication_messages_v02)/sizeof(qmi_idl_service_message_table_entry) },
   { loc_service_command_messages_v02, loc_service_response_messages_v02, loc_service_indication_messages_v02},
   &loc_qmi_idl_type_table_object_v02,
-  0x0F,
+  0x10,
   NULL
 };
 
 /* Service Object Accessor */
 qmi_idl_service_object_type loc_get_service_object_internal_v02
  ( int32_t idl_maj_version, int32_t idl_min_version, int32_t library_version ){
-  if ( LOC_V02_IDL_MAJOR_VERS != idl_maj_version || LOC_V02_IDL_MINOR_VERS != idl_min_version
-       || LOC_V02_IDL_TOOL_VERS != library_version)
+  if ( LOC_V02_IDL_MAJOR_VERS != idl_maj_version || LOC_V02_IDL_MINOR_VERS != idl_min_version 
+       || LOC_V02_IDL_TOOL_VERS != library_version) 
   {
     return NULL;
-  }
+  } 
   return (qmi_idl_service_object_type)&loc_qmi_idl_service_object_v02;
 }
 
