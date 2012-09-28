@@ -216,7 +216,7 @@ static int get_target_name(void)
             target_name = TARGET_NAME_APQ8064_FUSION3;
         } else {
             read_a_line( id, line, LINE_LEN);
-            if(!strncmp(line, "109", strlen("109"))) {
+            if(!strncmp(line, "109", strlen("109")) || !strncmp(line, "153", strlen("153"))) {
                 target_name = TARGET_NAME_APQ8064_STANDALONE;
             }
         }
