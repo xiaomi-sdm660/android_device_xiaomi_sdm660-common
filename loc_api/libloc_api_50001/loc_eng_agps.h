@@ -204,7 +204,8 @@ struct Subscriber {
     inline virtual ~Subscriber() {}
 
     virtual void setIPAddresses(int &v4, char* v6) = 0;
-    inline virtual void setWifiInfo(char* ssid, char* password) {}
+    inline virtual void setWifiInfo(char* ssid, char* password)
+    { ssid[0] = 0; password[0] = 0; }
 
     inline virtual bool equals(const Subscriber *s) const
     { return ID == s->ID; }
