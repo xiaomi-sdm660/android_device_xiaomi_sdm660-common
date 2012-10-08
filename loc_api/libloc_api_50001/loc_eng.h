@@ -106,6 +106,7 @@ typedef struct
     gps_ni_notify_callback         ni_notify_cb;
     gps_acquire_wakelock           acquire_wakelock_cb;
     gps_release_wakelock           release_wakelock_cb;
+    gps_request_utc_time           request_utc_time_cb;
     ulp_network_location_request   ulp_network_callback;
     ulp_request_phone_context      ulp_phone_context_req_cb;
     boolean                        intermediateFix;
