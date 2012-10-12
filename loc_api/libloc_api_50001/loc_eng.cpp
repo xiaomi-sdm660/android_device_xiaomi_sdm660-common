@@ -870,10 +870,14 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsCallbacks* callbac
         char baseband[PROPERTY_VALUE_MAX];
         property_get("ro.baseband", baseband, "msm");
         if ((strcmp(baseband,"svlte2a") == 0) ||
+            (strcmp(baseband,"sglte") == 0) ||
             (strcmp(baseband,"msm") == 0))
         {
             loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
                                                    NULL, NULL, &loc_eng_data);
+        } else {
+            LOC_LOGD("%s:%d] loc_eng_dmn_conn_loc_api_server was not initialized.baseband = %s\n",
+            __func__, __LINE__, baseband);
         }
     }
 #endif /* FEATURE_GNSS_BIT_API */
