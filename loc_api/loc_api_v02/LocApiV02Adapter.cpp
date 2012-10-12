@@ -1185,31 +1185,8 @@ enum loc_api_adapter_err LocApiV02Adapter :: setLPPConfig(uint32_t profile)
   memset(&lpp_config_ind, 0, sizeof(lpp_config_ind));
 
   lpp_config_req.lppConfig_valid = 1;
-  //  Default RRLP or User or Control plane configuration
-  switch(profile)
-  {
-    /* RRLP */
-    case 0:
-      lpp_config_req.lppConfig = profile;
-      break;
 
-    /* User plane */
-    case 1:
-      lpp_config_req.lppConfig = QMI_LOC_LPP_CONFIG_ENABLE_USER_PLANE_V02;
-      break;
-
-    case 2:
-      lpp_config_req.lppConfig = QMI_LOC_LPP_CONFIG_ENABLE_CONTROL_PLANE_V02;
-      break;
-
-    default:
-      LOC_LOGE("%s:%d]: Invalid LPP Profile Config Setting Provided in gps.conf = %d!",
-                    __FUNCTION__,
-                    __LINE__,
-                    profile);
-      return LOC_API_ADAPTER_ERR_INVALID_PARAMETER;
-      break;
-  }
+  lpp_config_req.lppConfig = profile;
 
   req_union.pSetProtocolConfigParametersReq = &lpp_config_req;
 
