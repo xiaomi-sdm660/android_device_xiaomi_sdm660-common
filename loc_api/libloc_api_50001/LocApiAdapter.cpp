@@ -201,9 +201,9 @@ void LocApiAdapter::requestXtraData()
 
 void LocApiAdapter::requestTime()
 {
-    LOC_LOGD("loc_event_cb: XTRA time download request... not supported");
-    // loc_eng_msg *msg(new loc_eng_msg(locEngHandle.owner, LOC_ENG_MSG_REQUEST_TIME));
-    // locEngHandle.sendMsge(locEngHandle.owner, msg);
+    LOC_LOGD("loc_event_cb: XTRA time download request");
+    loc_eng_msg *msg(new loc_eng_msg(locEngHandle.owner, LOC_ENG_MSG_REQUEST_TIME));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
 }
 
 void LocApiAdapter::requestLocation()

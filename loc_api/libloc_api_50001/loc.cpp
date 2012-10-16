@@ -334,7 +334,8 @@ static int loc_init(GpsCallbacks* callbacks)
                                     callbacks->release_wakelock_cb, /* release_wakelock_cb */
                                     callbacks->create_thread_cb, /* create_thread_cb */
                                     NULL, /* location_ext_parser */
-                                    NULL  /* sv_ext_parser */};
+                                    NULL, /* sv_ext_parser */
+                                    callbacks->request_utc_time_cb /* request_utc_time_cb */};
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
 
@@ -499,7 +500,6 @@ static int loc_inject_time(GpsUtcTime time, int64_t timeReference, int uncertain
 {
     ENTRY_LOG();
     int ret_val = loc_eng_inject_time(loc_afw_data, time, timeReference, uncertainty);
-
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }

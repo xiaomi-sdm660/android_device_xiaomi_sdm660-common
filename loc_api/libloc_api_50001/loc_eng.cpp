@@ -298,7 +298,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     loc_eng_data.nmea_cb      = callbacks->nmea_cb;
     loc_eng_data.acquire_wakelock_cb = callbacks->acquire_wakelock_cb;
     loc_eng_data.release_wakelock_cb = callbacks->release_wakelock_cb;
-
+    loc_eng_data.request_utc_time_cb = callbacks->request_utc_time_cb;
     loc_eng_data.intermediateFix = gps_conf.INTERMEDIATE_POS;
 
     // initial states taken care of by the memset above
@@ -683,7 +683,6 @@ int loc_eng_inject_time(loc_eng_data_s_type &loc_eng_data, GpsUtcTime time,
                                  uncertainty));
     msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
               msg, loc_eng_free_msg);
-
     EXIT_LOG(%d, 0);
     return 0;
 }
@@ -1686,6 +1685,14 @@ static void loc_eng_deferred_action_thread(void* arg)
             break;
 
         case LOC_ENG_MSG_REQUEST_TIME:
+            if (loc_eng_data_p->request_utc_time_cb != NULL)
+            {
+                loc_eng_data_p->request_utc_time_cb();
+            }
+            else
+            {
+                LOC_LOGE("%s] ERROR: Callback function for request_time is NULL", __func__);
+            }
             break;
 
         case LOC_ENG_MSG_REQUEST_POSITION:

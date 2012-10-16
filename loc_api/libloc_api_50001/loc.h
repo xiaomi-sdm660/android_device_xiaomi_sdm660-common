@@ -72,6 +72,7 @@ typedef struct {
     gps_create_thread create_thread_cb;
     loc_ext_parser location_ext_parser;
     loc_ext_parser sv_ext_parser;
+    gps_request_utc_time request_utc_time_cb;
 } LocCallbacks;
 
 enum loc_sess_status {
