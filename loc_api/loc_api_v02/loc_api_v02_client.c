@@ -71,7 +71,8 @@
 #endif //LOC_UTIL_TARGET_OFF_TARGET
 
 //timeout in ms to wait for the service to come up
-#define LOC_CLIENT_SERVICE_TIMEOUT  (20000)
+#define LOC_CLIENT_SERVICE_TIMEOUT_UNIT  (4000)
+#define LOC_CLIENT_SERVICE_TIMEOUT_TOTAL  (60000)
 
 /* Table to relate eventId, size and mask value used to enable the event*/
 typedef struct
@@ -1401,14 +1402,17 @@ static bool validateRequest(
 static locClientStatusEnumType locClientQmiCtrlPointInit(
     locClientCallbackDataType *pLocClientCbData)
 {
-  uint32_t num_services, num_entries = 10;
   qmi_client_type clnt, notifier;
-  qmi_client_os_params os_params;
+  bool notifierInitFlag = false;
+  locClientStatusEnumType status = eLOC_CLIENT_SUCCESS;
+  // instances of this service
+  qmi_service_info *pServiceInfo = NULL;
 
-  // num instances of this service
-  qmi_service_info serviceInfo[5];
-
+  do
+  {
+  uint32_t num_services = 0, num_entries = 0;
   qmi_client_error_type rc = QMI_NO_ERR;
+  bool nosignal = false;
 
   // Get the service object for the qmiLoc Service
   qmi_idl_service_object_type locClientServiceObject =
@@ -1419,73 +1423,107 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
   {
       LOC_LOGE("%s:%d]: qmiLoc_get_service_object_v02 failed\n" ,
                   __func__, __LINE__ );
-    return(eLOC_CLIENT_FAILURE_INTERNAL);
+       status = eLOC_CLIENT_FAILURE_INTERNAL;
+       break;
   }
 
-
-  // register for service notification
-  rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
-
-  if(rc != QMI_NO_ERR)
-  {
-    LOC_LOGE("%s:%d]: qmi_client_notifier_init failed\n",
-                  __func__, __LINE__ );
-    return(eLOC_CLIENT_FAILURE_INTERNAL);
-  }
-
-  /* If service is not up wait on a signal until the service is up
-   * or a timeout occurs. */
-
-  QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT);
-
-  if(QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params))
-  {
-    // timed out, return with error
-    LOC_LOGE("%s:%d]: timed out waiting for service\n",
-                    __func__, __LINE__);
-
-    return(eLOC_CLIENT_FAILURE_TIMEOUT);
-  }
-  else
-  {
     // get the service addressing information
     rc = qmi_client_get_service_list( locClientServiceObject, NULL, NULL,
                                       &num_services);
-    LOC_LOGV("%s:%d]: qmi_client_get_service_list() returned %d "
-                  "num_services = %d\n", __func__, __LINE__, rc,
-                  num_services);
+    LOC_LOGV("%s:%d]: qmi_client_get_service_list() first try rc %d, "
+             "num_services %d", __func__, __LINE__, rc, num_services);
+
+    if (rc != QMI_NO_ERR) {
+        // bummer, service list is not up.
+        // We need to try again after a timed wait
+        qmi_client_os_params os_params;
+        int timeout = 0;
+
+        // register for service notification
+        rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
+        notifierInitFlag = (NULL != notifier);
+
+        if (rc != QMI_NO_ERR) {
+            LOC_LOGE("%s:%d]: qmi_client_notifier_init failed %d\n",
+                     __func__, __LINE__, rc);
+            status = eLOC_CLIENT_FAILURE_INTERNAL;
+            break;
+        }
+
+        do {
+            QMI_CCI_OS_SIGNAL_CLEAR(&os_params);
+            /* If service is not up wait on a signal until the service is up
+             * or a timeout occurs. */
+            QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT_UNIT);
+            nosignal = QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params);
+
+            // get the service addressing information
+            rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
+                                             &num_services);
+
+            timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
+
+            LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc %d, nosignal %d, "
+                     "total timeout %d", __func__, __LINE__, rc, nosignal, timeout);
+        } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL && nosignal && rc != QMI_NO_ERR);
+    }
+
+    if (0 == num_services || rc != QMI_NO_ERR) {
+        if (!nosignal) {
+            LOC_LOGE("%s:%d]: qmi_client_get_service_list failed even though"
+                     "service is up !!!  Error %d \n", __func__, __LINE__, rc);
+            status = eLOC_CLIENT_FAILURE_INTERNAL;
+        } else {
+            LOC_LOGE("%s:%d]: qmi_client_get_service_list failed after retries,"
+                     " final Err %d", __func__, __LINE__, rc);
+            status = eLOC_CLIENT_FAILURE_TIMEOUT;
+        }
+        break;
+    }
+
+    pServiceInfo =
+      (qmi_service_info *)malloc(num_services * sizeof(qmi_service_info));
+
+    if(NULL == pServiceInfo)
+    {
+      LOC_LOGE("%s:%d]: could not allocate memory for serviceInfo !!\n",
+               __func__, __LINE__);
+
+      status = eLOC_CLIENT_FAILURE_INTERNAL;
+      break;
+    }
+
+    //set the number of entries to get equal to the total number of
+    //services.
+    num_entries = num_services;
+    //populate the serviceInfo
+    rc = qmi_client_get_service_list( locClientServiceObject, pServiceInfo,
+                                      &num_entries, &num_services);
+
+
+    LOC_LOGV("%s:%d]: qmi_client_get_service_list()"
+                  " returned %d num_entries = %d num_services = %d\n",
+                  __func__, __LINE__,
+                   rc, num_entries, num_services);
 
     if(rc != QMI_NO_ERR)
     {
-      LOC_LOGE("%s:%d]: qmi_client_get_service_list failed even though"
-                    "service is up !!!\n", __func__, __LINE__);
+      LOC_LOGE("%s:%d]: qmi_client_get_service_list Error %d \n",
+                    __func__, __LINE__, rc);
 
-      return(eLOC_CLIENT_FAILURE_INTERNAL);
+      status = eLOC_CLIENT_FAILURE_INTERNAL;
+      break;
     }
-
-  }
-
-  //get service info to be used in qmi_client_init
-  rc = qmi_client_get_service_list( locClientServiceObject, serviceInfo,
-                                    &num_entries, &num_services);
-
-  LOC_LOGV("%s:%d]: qmi_client_get_service_list()"
-                " returned %d num_entries = %d num_services = %d\n",
-                __func__, __LINE__,
-                 rc, num_entries, num_services);
-
-  if(rc != QMI_NO_ERR)
-  {
-    LOC_LOGE("%s:%d]: qmi_client_get_service_list Error %d \n",
-                  __func__, __LINE__, rc);
-
-    return(eLOC_CLIENT_FAILURE_INTERNAL);
-  }
 
   LOC_LOGV("%s:%d]: passing the pointer %p to qmi_client_init \n",
                     __func__, __LINE__, pLocClientCbData);
+
   // initialize the client
-  rc = qmi_client_init(&serviceInfo[0], locClientServiceObject,
+    //sent the address of the first service found
+    // if IPC router is present, this will go to the service instance
+    // enumerated over IPC router, else it will go over the next transport where
+    // the service was enumerated.
+    rc = qmi_client_init(&pServiceInfo[0], locClientServiceObject,
                        locClientIndCb, (void *) pLocClientCbData,
                        NULL, &clnt);
 
@@ -1493,7 +1531,9 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
   {
     LOC_LOGE("%s:%d]: qmi_client_init error %d\n",
                   __func__, __LINE__, rc);
-    return(eLOC_CLIENT_FAILURE_INTERNAL);
+
+      status = eLOC_CLIENT_FAILURE_INTERNAL;
+      break;
   }
 
   LOC_LOGV("%s:%d]: passing the pointer %p to"
@@ -1508,14 +1548,30 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
   {
     LOC_LOGE("%s:%d]: could not register QCCI error callback error:%d\n",
                   __func__, __LINE__, rc);
-    return (eLOC_CLIENT_FAILURE_INTERNAL);
+
+      status = eLOC_CLIENT_FAILURE_INTERNAL;
+      break;
   }
 
   // copy the clnt handle returned in qmi_client_init
   memcpy(&(pLocClientCbData->userHandle), &clnt, sizeof(qmi_client_type));
 
-  return(eLOC_CLIENT_SUCCESS);
+    status = eLOC_CLIENT_SUCCESS;
 
+  } while(0);
+
+  /* release the notifier handle */
+  if(true == notifierInitFlag)
+  {
+    qmi_client_release(notifier);
+  }
+
+  if(NULL != pServiceInfo)
+  {
+    free((void *)pServiceInfo);
+  }
+
+  return status;
 }
 //----------------------- END INTERNAL FUNCTIONS ----------------------------------------
 
