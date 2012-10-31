@@ -249,7 +249,9 @@ void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data, GpsNiCallbacks *callback
 {
     ENTRY_LOG_CALLFLOW();
 
-    if (NULL == callbacks->notify_cb) {
+    if(callbacks == NULL)
+        EXIT_LOG(%s, "loc_eng_ni_init: failed, cb is NULL");
+    else if (NULL == callbacks->notify_cb) {
         EXIT_LOG(%s, "loc_eng_ni_init: failed, no cb.");
     } else if (NULL != loc_eng_data.ni_notify_cb) {
         EXIT_LOG(%s, "loc_eng_ni_init: already inited.");

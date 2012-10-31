@@ -272,11 +272,13 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
                   void (*loc_external_msg_sender) (void*, void*))
 
 {
+    int ret_val =-1;
+
     ENTRY_LOG_CALLFLOW();
     if (NULL == callbacks || 0 == event) {
         LOC_LOGE("loc_eng_init: bad parameters cb %p eMask %d", callbacks, event);
-        EXIT_LOG(%d, 0);
-        return NULL;
+        EXIT_LOG(%d, ret_val);
+        return ret_val;
     }
 
     STATE_CHECK((NULL == loc_eng_data.context),
@@ -321,7 +323,6 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
                         callbacks->location_ext_parser, callbacks->sv_ext_parser);
     loc_eng_data.client_handle = LocApiAdapter::getLocApiAdapter(locEngHandle);
 
-    int ret_val =-1;
     if (NULL == loc_eng_data.client_handle) {
         // drop the context and declare failure
         ((LocEngContext*)(loc_eng_data.context))->drop();
@@ -852,6 +853,11 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsCallbacks* callbac
     STATE_CHECK((NULL == loc_eng_data.agps_status_cb),
                 "agps instance already initialized",
                 return);
+    if(callbacks == NULL) {
+        LOC_LOGE("loc_eng_agps_init: bad parameters cb %p", callbacks);
+        EXIT_LOG(%s, VOID_RET);
+        return;
+    }
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 
     loc_eng_data.agnss_nif = new AgpsStateMachine(loc_eng_data.agps_status_cb,
@@ -1875,15 +1881,15 @@ int loc_eng_ulp_init(loc_eng_data_s_type &loc_eng_data, const ulpInterface * loc
 {
     ENTRY_LOG();
     int ret_val=-1;
-
-    if(loc_eng_ulpInf != NULL)
+    if((loc_eng_ulpInf != NULL) && (((ulpInterface *)loc_eng_ulpInf)->init != NULL))
     {
         // Initialize the ULP interface
         ((ulpInterface *)loc_eng_ulpInf)->init(loc_eng_data);
         loc_eng_data.ulp_initialized = TRUE;
+        ret_val = 0;
     }
-    ret_val = 0;
-exit:
+    else
+        LOC_LOGE("ulp not initialized. NULL parameter");
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
@@ -2037,9 +2043,14 @@ SIDE EFFECTS
 ===========================================================================*/
 int loc_eng_ulp_phone_context_init(loc_eng_data_s_type &loc_eng_data,UlpPhoneContextCallbacks *callback)
 {
+    int ret_val = -1;
     ENTRY_LOG();
-    loc_eng_data.ulp_phone_context_req_cb = callback->ulp_request_phone_context_cb ;
-    int ret_val =0;
+    if(callback != NULL) {
+        loc_eng_data.ulp_phone_context_req_cb = callback->ulp_request_phone_context_cb ;
+        ret_val = 0;
+    }
+    else
+        LOC_LOGE("loc_eng_ulp_phone_context_init: bad parameters cb %p", callback);
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
@@ -2063,11 +2074,16 @@ SIDE EFFECTS
 int loc_eng_ulp_network_init(loc_eng_data_s_type &loc_eng_data,
                              UlpNetworkLocationCallbacks *callbacks)
 {
-   ENTRY_LOG_CALLFLOW();
-   loc_eng_data.ulp_network_callback = callbacks->ulp_network_location_request_cb;
-   int ret_val =0;
-   EXIT_LOG(%d, ret_val);
-   return ret_val;
+    int ret_val = -1;
+    ENTRY_LOG_CALLFLOW();
+    if(callbacks != NULL) {
+        loc_eng_data.ulp_network_callback = callbacks->ulp_network_location_request_cb;
+        ret_val = 0;
+    }
+    else
+        LOC_LOGE("loc_eng_ulp_network_init: bad parameters cb %p", callbacks);
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
 }
 
 
