@@ -159,7 +159,17 @@ static locClientEventIndTableStructT locClientEventIndTable[]= {
   //Geofence Breach event
   { QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02,
     sizeof(qmiLocEventGeofenceBreachIndMsgT_v02),
-    QMI_LOC_EVENT_MASK_GEOFENCE_BREACH_NOTIFICATION_V02}
+    QMI_LOC_EVENT_MASK_GEOFENCE_BREACH_NOTIFICATION_V02},
+
+  //Pedometer Control event
+  { QMI_LOC_EVENT_PEDOMETER_CONTROL_IND_V02,
+    sizeof(qmiLocEventPedometerControlIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_PEDOMETER_CONTROL_V02 },
+
+  //Motion Data Control event
+  { QMI_LOC_EVENT_MOTION_DATA_CONTROL_IND_V02,
+    sizeof(qmiLocEventMotionDataControlIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_MOTION_DATA_CONTROL_V02 }
 };
 
 /* table to relate the respInd Id with its size */
@@ -384,7 +394,7 @@ static locClientRespIndTableStructT locClientRespIndTable[]= {
 
    //Inject GSM Cell Info
    { QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02,
-     sizeof(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02)},
+     sizeof(qmiLocInjectGSMCellInfoIndMsgT_v02)},
 
    //Inject Network Initiated Message
    { QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02,
@@ -392,7 +402,11 @@ static locClientRespIndTableStructT locClientRespIndTable[]= {
 
    //WWAN Out of Service Notification
    { QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02,
-     sizeof(qmiLocWWANOutOfServiceNotificationIndMsgT_v02)}
+     sizeof(qmiLocWWANOutOfServiceNotificationIndMsgT_v02)},
+
+   //Pedomete Report
+   { QMI_LOC_PEDOMETER_REPORT_IND_V02,
+     sizeof(qmiLocPedometerReportIndMsgT_v02)}
 };
 
 
@@ -824,6 +838,20 @@ static bool locClientHandleIndication(
       break;
     }
 
+    case QMI_LOC_EVENT_PEDOMETER_CONTROL_IND_V02 :
+    {
+      //locClientHandlePedometerControlInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_EVENT_MOTION_DATA_CONTROL_IND_V02:
+    {
+      //locClientHandleMotionDataControlInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
     //-------------------------------------------------------------------------
 
     // handle the response indications
@@ -990,6 +1018,12 @@ static bool locClientHandleIndication(
     }
 
     case QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02:
+    {
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_PEDOMETER_REPORT_IND_V02:
     {
       status = true;
       break;
@@ -1534,6 +1568,7 @@ static bool validateRequest(
       *pOutLen = sizeof(qmiLocGetBestAvailablePositionReqMsgT_v02);
       break;
     }
+
     case QMI_LOC_INJECT_MOTION_DATA_REQ_V02:
     {
       *pOutLen = sizeof(qmiLocInjectMotionDataReqMsgT_v02);
@@ -1558,6 +1593,11 @@ static bool validateRequest(
       break;
     }
 
+    case QMI_LOC_PEDOMETER_REPORT_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocPedometerReportReqMsgT_v02);
+      break;
+    }
 
     // ALL requests with no payload
     case QMI_LOC_GET_SERVICE_REVISION_REQ_V02:

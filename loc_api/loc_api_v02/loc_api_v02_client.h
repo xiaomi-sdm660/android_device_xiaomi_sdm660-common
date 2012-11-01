@@ -600,6 +600,16 @@ typedef union
          QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02 */
 
     const void *pWWANOutOfServiceNotificationReq;
+
+    const qmiLocPedometerReportReqMsgT_v02 *pPedometerReportReq;
+    /**< Send pedometer data to the location engine. If the request is
+         accepted by the service, the client receives the following
+         indication containing a response:
+         QMI_LOC_PEDOMETER_REPORT_IND_V02
+
+         To send this request, set the reqId field in locClientSendReq() to
+         QMI_LOC_PEDOMETER_REPORT_REQ_V02 */
+
 }locClientReqUnionType;
 
 
@@ -749,6 +759,18 @@ typedef union
 
         The eventIndId field in the event indication callback is set to
         QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02. @newpagetable */
+
+   const qmiLocEventPedometerControlIndMsgT_v02* pPedometerControlEvent;
+   /**< Sent by the engine to recommend how pedometer data is sent to the
+        location engine.
+        The eventIndId field in the event indication callback is set to
+        QMI_LOC_EVENT_PEDOMETER_CONTROL_IND_V02. @newpagetable */
+
+   const qmiLocEventMotionDataControlIndMsgT_v02* pMotionDataControlEvent;
+   /**< Sent by the engine to recommend how motion data is sent to the
+        location engine.
+        The eventIndId field in the event indication callback is set to
+        QMI_LOC_EVENT_MOTION_DATA_CONTROL_IND_V02. @newpagetable */
 
 }locClientEventIndUnionType;
 
@@ -1123,6 +1145,12 @@ typedef union
         request.
         The respIndId field in the response indication callback is set to
         QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02. */
+
+   const qmiLocPedometerReportIndMsgT_v02* pPedometerReportInd;
+
+   /**< Response to the QMI_LOC_PEDOMETER_REPORT_REQ_V02 request.
+        The respIndId field in the response indication callback is set to
+        QMI_LOC_PEDOMETER_REPORT_IND_V02. */
 
 }locClientRespIndUnionType;
 
