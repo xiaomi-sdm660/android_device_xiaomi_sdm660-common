@@ -317,7 +317,13 @@ SIDE EFFECTS
 ===========================================================================*/
 static int loc_init(GpsCallbacks* callbacks)
 {
+    int retVal = -1;
     ENTRY_LOG();
+    if(callbacks == NULL) {
+        LOC_LOGE("loc_init failed. cb = NULL\n");
+        EXIT_LOG(%d, retVal);
+        return retVal;
+    }
     LOC_API_ADAPTER_EVENT_MASK_T event =
         LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT |
         LOC_API_ADAPTER_BIT_SATELLITE_REPORT |
@@ -341,7 +347,6 @@ static int loc_init(GpsCallbacks* callbacks)
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
 
-    int retVal = -1;
     if (loc_eng_ulp_inf == NULL)
         retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event,
                               NULL);

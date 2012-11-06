@@ -54,12 +54,17 @@ SIDE EFFECTS
 int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
                        GpsXtraCallbacks* callbacks)
 {
-   loc_eng_xtra_data_s_type *xtra_module_data_ptr;
+    int ret_val = -1;
+    loc_eng_xtra_data_s_type *xtra_module_data_ptr;
 
-   xtra_module_data_ptr = &loc_eng_data.xtra_module_data;
-   xtra_module_data_ptr->download_request_cb = callbacks->download_request_cb;
-
-   return 0;
+    if(callbacks == NULL)
+        LOC_LOGE("loc_eng_xtra_init: failed, cb is NULL");
+    else {
+        xtra_module_data_ptr = &loc_eng_data.xtra_module_data;
+        xtra_module_data_ptr->download_request_cb = callbacks->download_request_cb;
+        ret_val = 0;
+    }
+    return ret_val;
 }
 
 /*===========================================================================
