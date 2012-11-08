@@ -34,7 +34,6 @@
 #include <sys/time.h>
 #include "loc_log.h"
 #include "msg_q.h"
-
 #include "log_util.h"
 
 // Logging Improvements
@@ -100,6 +99,35 @@ const char* log_succ_fail_string(int is_succ)
    return is_succ? "successful" : "failed";
 }
 
+//Target names
+loc_name_val_s_type target_name[] =
+{
+    NAME_VAL(TARGET_OTHER),
+    NAME_VAL(TARGET_APQ8064_STANDALONE),
+    NAME_VAL(TARGET_APQ8064_FUSION3),
+    NAME_VAL(TARGET_MPQ8064),
+    NAME_VAL(TARGET_MSM8930)
+};
+
+static int target_name_num = sizeof(target_name)/sizeof(loc_name_val_s_type);
+
+/*===========================================================================
+
+FUNCTION loc_get_target_name
+
+DESCRIPTION
+   Returns pointer to a string that contains name of the target
+
+   XX:XX:XX.000\0
+
+RETURN VALUE
+   The target name string
+
+===========================================================================*/
+const char *loc_get_target_name(targetEnumType target)
+{
+    return loc_get_name_from_val(target_name, target_name_num, (long)target);
+}
 
 /*===========================================================================
 
