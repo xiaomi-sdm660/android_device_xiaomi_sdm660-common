@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -259,8 +259,6 @@ static int loc_lock_a_slot()
       if (!slot->in_use && !slot->not_available)
       {
          select_id = i;
-         slot->in_use = 1;
-         slot->signal_sent = 0;
          /* Return from here and leave the mutex locked.
           * will unlock it in loc_unlock_slot()
           */
@@ -278,7 +276,7 @@ static int loc_lock_a_slot()
 FUNCTION    loc_unlock_slot
 
 DESCRIPTION
-   Frees a buffer slot after the synchronous API call
+   Unlocks a buffer slot
 
 DEPENDENCIES
    N/A
@@ -292,9 +290,54 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_unlock_slot(int select_id)
 {
-   loc_sync_data.slots[select_id].in_use = 0;
-
    pthread_mutex_unlock(&loc_sync_data.slots[select_id].lock);
+}
+
+/*===========================================================================
+
+FUNCTION    loc_lock_slot
+
+DESCRIPTION
+   Locks a specific slot that was previously locked from loc_lock_a_slot
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_lock_slot(int select_id)
+{
+    pthread_mutex_lock(&loc_sync_data.slots[select_id].lock);
+}
+
+/*===========================================================================
+
+FUNCTION    loc_set_slot_in_use
+
+DESCRIPTION
+   Sets the in_use flag of slot to true or false.
+   Should be called only after the slot is locked
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_set_slot_in_use(int select_id, boolean in_use)
+{
+    loc_sync_data.slots[select_id].in_use = in_use;
+    if (in_use == 1)
+        loc_sync_data.slots[select_id].signal_sent = 0;
 }
 
 /*===========================================================================
@@ -399,7 +442,7 @@ static int loc_api_wait_callback(
 )
 {
    int ret_val = RPC_LOC_API_SUCCESS;  /* the return value of this function: 0 = no error */
-   int rc;                             /* return code from pthread calls */
+   int rc = 0;                         /* return code from pthread calls */
 
    struct timespec expire_time;
 
@@ -467,10 +510,19 @@ int loc_api_sync_ioctl
       return rc;
    }
 
+   loc_set_slot_in_use(select_id, 1); // set slot in use to true
+
    // Select the callback we are waiting for
    loc_api_save_callback(select_id, handle, 0, ioctl_type);
 
+   loc_unlock_slot(select_id); // slot is unlocked, but in_use is still true
+
+   // we want to avoid keeping the slot locked during the loc_ioctl because the rpc
+   // framework will also lock a different mutex during this call, and typically
+   // locking two different mutexes at the same time can lead to deadlock.
    rc =  loc_ioctl(handle, ioctl_type, ioctl_data_ptr);
+
+   loc_lock_slot(select_id);
 
    if (rc != RPC_LOC_API_SUCCESS)
    {
@@ -502,6 +554,7 @@ int loc_api_sync_ioctl
       } /* wait callback */
    } /* loc_ioctl */
 
+   loc_set_slot_in_use(select_id, 0); // set slot in use to false
    loc_unlock_slot(select_id);
 
    return rc;
