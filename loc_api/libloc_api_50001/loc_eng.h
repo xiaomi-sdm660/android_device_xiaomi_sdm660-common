@@ -180,6 +180,7 @@ typedef struct loc_gps_cfg_s
   unsigned long  QUIPC_ENABLED;
   unsigned long  LPP_PROFILE;
   unsigned long  SENSOR_ALGORITHM_CONFIG_MASK;
+  unsigned long  A_GLONASS_POS_PROTOCOL_SELECT;
   uint8_t        ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
   double         ACCEL_RANDOM_WALK_SPECTRAL_DENSITY;
   uint8_t        ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
