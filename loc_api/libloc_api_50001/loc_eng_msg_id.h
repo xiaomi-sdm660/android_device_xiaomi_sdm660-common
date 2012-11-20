@@ -128,6 +128,9 @@ enum loc_eng_msg_ids_t {
     // Message is sent by Android framework (GpsLocationProvider)
     // to inject the raw command
     ULP_MSG_INJECT_RAW_COMMAND,
+
+    /* Message is sent by HAL to LOC API to select A-GLONASS protocol */
+    LOC_ENG_MSG_A_GLONASS_PROTOCOL,
 };
 
 #ifdef __cplusplus

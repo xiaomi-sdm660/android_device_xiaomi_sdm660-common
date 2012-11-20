@@ -158,6 +158,16 @@ struct loc_eng_msg {
     }
 };
 
+struct loc_eng_msg_a_glonass_protocol : public loc_eng_msg {
+    const unsigned long a_glonass_protocol;
+    inline loc_eng_msg_a_glonass_protocol(void* instance, unsigned long protocol) :
+        loc_eng_msg(instance, LOC_ENG_MSG_A_GLONASS_PROTOCOL),
+        a_glonass_protocol(protocol)
+        {
+            LOC_LOGV("A-GLONASS protocol: 0x%lx", protocol);
+        }
+};
+
 struct loc_eng_msg_suple_version : public loc_eng_msg {
     const int supl_version;
     inline loc_eng_msg_suple_version(void* instance, int version) :

@@ -105,6 +105,7 @@ static loc_param_s_type loc_parameter_table[] =
   {"SENSOR_ALGORITHM_CONFIG_MASK",   &gps_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'},
   {"QUIPC_ENABLED",                  &gps_conf.QUIPC_ENABLED,                  NULL, 'n'},
   {"LPP_PROFILE",                    &gps_conf.LPP_PROFILE,                    NULL, 'n'},
+  {"A_GLONASS_POS_PROTOCOL_SELECT",  &gps_conf.A_GLONASS_POS_PROTOCOL_SELECT,  NULL, 'n'},
 };
 
 static void loc_default_parameters(void)
@@ -145,6 +146,9 @@ static void loc_default_parameters(void)
 
       /* LTE Positioning Profile configuration is disable by default*/
    gps_conf.LPP_PROFILE = 0;
+
+   /*By default no positioning protocol is selected on A-GLONASS system*/
+   gps_conf.A_GLONASS_POS_PROTOCOL_SELECT = 0;
 }
 
 LocEngContext::LocEngContext(gps_create_thread threadCreator) :
@@ -366,6 +370,11 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
             new loc_eng_msg_sensor_control_config(&loc_eng_data, gps_conf.SENSOR_USAGE));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                   sensor_control_config_msg, loc_eng_free_msg);
+
+        loc_eng_msg_a_glonass_protocol *a_glonass_protocol_msg(new loc_eng_msg_a_glonass_protocol(&loc_eng_data,
+                                                                          gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
+        msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
+                  a_glonass_protocol_msg, loc_eng_free_msg);
 
         /* Make sure at least one of the sensor property is specified by the user in the gps.conf file. */
         if( gps_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
@@ -1427,6 +1436,13 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_set_server_url *ssuMsg = (loc_eng_msg_set_server_url*)msg;
             loc_eng_data_p->client_handle->setServer(ssuMsg->url, ssuMsg->len);
+        }
+        break;
+
+        case LOC_ENG_MSG_A_GLONASS_PROTOCOL:
+        {
+            loc_eng_msg_a_glonass_protocol *svMsg = (loc_eng_msg_a_glonass_protocol*)msg;
+            loc_eng_data_p->client_handle->setAGLONASSProtocol(svMsg->a_glonass_protocol);
         }
         break;
 

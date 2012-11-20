@@ -216,6 +216,9 @@ public:
     inline virtual enum loc_api_adapter_err
         setExtPowerConfig(int isBatteryCharging)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
+    inline virtual enum loc_api_adapter_err
+        setAGLONASSProtocol(unsigned long aGlonassProtocol)
+    {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
 
     inline const LocPosMode& getPositionMode() const {return fixCriteria;}
 

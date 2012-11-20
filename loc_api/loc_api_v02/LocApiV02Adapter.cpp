@@ -1441,6 +1441,45 @@ enum loc_api_adapter_err LocApiV02Adapter :: setExtPowerConfig(int isBatteryChar
   return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
+/* set the Positioning Protocol on A-GLONASS system */
+enum loc_api_adapter_err LocApiV02Adapter :: setAGLONASSProtocol(unsigned long aGlonassProtocol)
+{
+  locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
+  locClientReqUnionType req_union;
+  qmiLocSetProtocolConfigParametersReqMsgT_v02 aGlonassProtocol_req;
+  qmiLocSetProtocolConfigParametersIndMsgT_v02 aGlonassProtocol_ind;
+
+  memset(&aGlonassProtocol_req, 0, sizeof(aGlonassProtocol_req));
+  memset(&aGlonassProtocol_ind, 0, sizeof(aGlonassProtocol_ind));
+
+  aGlonassProtocol_req.assistedGlonassProtocolMask_valid = 1;
+  aGlonassProtocol_req.assistedGlonassProtocolMask = aGlonassProtocol;
+
+  req_union.pSetProtocolConfigParametersReq = &aGlonassProtocol_req;
+
+  LOC_LOGD("%s:%d]: aGlonassProtocolMask = 0x%lx\n",  __func__, __LINE__,
+                             aGlonassProtocol_req.assistedGlonassProtocolMask);
+
+  result = loc_sync_send_req(clientHandle,
+                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_REQ_V02,
+                             req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                             QMI_LOC_SET_PROTOCOL_CONFIG_PARAMETERS_IND_V02,
+                             &aGlonassProtocol_ind);
+
+  if(result != eLOC_CLIENT_SUCCESS ||
+     eQMI_LOC_SUCCESS_V02 != aGlonassProtocol_ind.status)
+  {
+    LOC_LOGE ("%s:%d]: Error status = %s, ind..status = %s ",
+              __func__, __LINE__,
+              loc_get_v02_client_status_name(result),
+              loc_get_v02_qmi_status_name(aGlonassProtocol_ind.status));
+
+    return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+  }
+  return LOC_API_ADAPTER_ERR_SUCCESS;
+}
+
+
 /* Convert event mask from loc eng to loc_api_v02 format */
 locClientEventMaskType LocApiV02Adapter :: convertMask(
   LOC_API_ADAPTER_EVENT_MASK_T mask)

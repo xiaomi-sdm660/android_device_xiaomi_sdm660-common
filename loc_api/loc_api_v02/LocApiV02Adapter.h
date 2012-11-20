@@ -161,6 +161,7 @@ public:
                                int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
                                int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig);
   virtual enum loc_api_adapter_err setExtPowerConfig(int isBatteryCharging);
+  virtual enum loc_api_adapter_err setAGLONASSProtocol(unsigned long aGlonassProtocol);
 };
 
 #endif //LOC_API_V_0_2_ADAPTER_H
