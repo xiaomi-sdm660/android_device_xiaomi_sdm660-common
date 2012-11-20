@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,43 +26,26 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#ifndef LOC_LOG_H
-#define LOC_LOG_H
+#ifndef LOC_TARGET_H
+#define LOC_TARGET_H
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include <ctype.h>
-#include "loc_target.h"
+typedef enum {
+    TARGET_OTHER = 0,
+    TARGET_APQ8064_STANDALONE,
+    TARGET_APQ8064_FUSION3,
+    TARGET_MPQ8064,
+    TARGET_MSM8930
+}targetEnumType;
 
-typedef struct
-{
-   char                 name[128];
-   long                 val;
-} loc_name_val_s_type;
-
-#define NAME_VAL(x) {"" #x "", x }
-
-#define UNKNOWN_STR "UNKNOWN"
-
-#define CHECK_MASK(type, value, mask_var, mask) \
-   ((mask_var & mask) ? (type) value : (type) (-1))
-
-/* Get names from value */
-const char* loc_get_name_from_mask(loc_name_val_s_type table[], int table_size, long mask);
-const char* loc_get_name_from_val(loc_name_val_s_type table[], int table_size, long value);
-const char* loc_get_msg_q_status(int status);
-const char* loc_get_target_name(targetEnumType target);
-
-extern const char* log_succ_fail_string(int is_succ);
-
-extern char *loc_get_time(char *time_string, unsigned long buf_size);
+targetEnumType get_target(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LOC_LOG_H */
+#endif /*LOC_TARGET_H*/

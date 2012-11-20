@@ -32,10 +32,10 @@
 
 #include <hardware/gps.h>
 #include <loc_eng.h>
+#include <loc_target.h>
 #include <loc_log.h>
 #include <msg_q.h>
 #include <dlfcn.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -167,65 +167,6 @@ static const UlpPhoneContextInterface sLocEngUlpPhoneContextInterface =
 static loc_eng_data_s_type loc_afw_data;
 static int gss_fd = 0;
 
-#define TARGET_NAME_OTHER              0
-#define TARGET_NAME_APQ8064_STANDALONE 1
-#define TARGET_NAME_APQ8064_FUSION3    2
-
-static int read_a_line(const char * file_path, char * line, int line_size)
-{
-    FILE *fp;
-    int result = 0;
-
-    * line = '\0';
-    fp = fopen(file_path, "r" );
-    if( fp == NULL ) {
-        LOC_LOGE("open failed: %s: %s\n", file_path, strerror(errno));
-        result = -1;
-    } else {
-        int len;
-        fgets(line, line_size, fp);
-        len = strlen(line);
-        len = len < line_size - 1? len : line_size - 1;
-        line[len] = '\0';
-        LOC_LOGD("cat %s: %s", file_path, line);
-        fclose(fp);
-    }
-    return result;
-}
-
-#define LINE_LEN 100
-#define STR_LIQUID    "Liquid"
-#define STR_SURF      "Surf"
-#define STRLEN_LIQUID (sizeof(STR_LIQUID) - 1)
-#define STRLEN_SURF   (sizeof(STR_SURF) - 1)
-#define IS_STR_END(c) ((c) == '\0' || (c) == '\n' || (c) == '\r')
-
-static int get_target_name(void)
-{
-    int target_name = TARGET_NAME_OTHER;
-
-    char hw_platform[]      = "/sys/devices/system/soc/soc0/hw_platform"; // "Liquid" or "Surf"
-    char id[]               = "/sys/devices/system/soc/soc0/id"; //109
-    char mdm[]              = "/dev/mdm"; // No such file or directory
-
-    char line[LINE_LEN];
-
-    read_a_line( hw_platform, line, LINE_LEN);
-    if(( !memcmp(line, STR_LIQUID, STRLEN_LIQUID) && IS_STR_END(line[STRLEN_LIQUID]) ) ||
-       ( !memcmp(line, STR_SURF,   STRLEN_SURF)   && IS_STR_END(line[STRLEN_SURF])   )
-      ) {
-        if (!read_a_line( mdm, line, LINE_LEN)) {
-            target_name = TARGET_NAME_APQ8064_FUSION3;
-        } else {
-            read_a_line( id, line, LINE_LEN);
-            if(!strncmp(line, "109", strlen("109")) || !strncmp(line, "153", strlen("153"))) {
-                target_name = TARGET_NAME_APQ8064_STANDALONE;
-            }
-        }
-    }
-    return target_name;
-}
-
 /*===========================================================================
 FUNCTION    gps_get_hardware_interface
 
@@ -267,22 +208,30 @@ const GpsInterface* gps_get_hardware_interface ()
 // for gps.c
 extern "C" const GpsInterface* get_gps_interface()
 {
+    targetEnumType target = TARGET_OTHER;
     loc_eng_read_config();
     //We load up libulp module at this point itself if ULP configured to be On
     if(gps_conf.CAPABILITIES & ULP_CAPABILITY) {
        loc_eng_ulp_inf = loc_eng_get_ulp_inf();
     }
 
-    if (get_target_name() == TARGET_NAME_APQ8064_STANDALONE)
-    {
+    target = get_target();
+    LOC_LOGD("Target name check returned %s", loc_get_target_name(target));
+    //APQ8064
+    if(target == TARGET_APQ8064_STANDALONE) {
         gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
         gss_fd = open("/dev/gss", O_RDONLY);
-        if (gss_fd < 0) {
+        if (gss_fd < 0)
             LOC_LOGE("GSS open failed: %s\n", strerror(errno));
+        else {
+            LOC_LOGD("GSS open success! CAPABILITIES %0lx\n", gps_conf.CAPABILITIES);
         }
-        LOC_LOGD("GSS open success! CAPABILITIES %0x\n", gps_conf.CAPABILITIES);
     }
-
+    //MPQ8064
+    else if(target == TARGET_MPQ8064) {
+        LOC_LOGE("No GPS HW on this target (MPQ8064). Not returning interface");
+        return NULL;
+    }
     return &sLocEngInterface;
 }
 
@@ -383,7 +332,7 @@ static void loc_cleanup()
     gps_sv_cb = NULL;
 
     /*
-     * if (get_target_name() == TARGET_NAME_APQ8064_STANDALONE)
+     * if (get_target() == TARGET_NAME_APQ8064_STANDALONE)
      * {
      *     close(gss_fd);
      *     LOC_LOGD("GSS shutdown.\n");
