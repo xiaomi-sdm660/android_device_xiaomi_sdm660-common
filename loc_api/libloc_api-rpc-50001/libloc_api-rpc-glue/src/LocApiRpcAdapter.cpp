@@ -332,6 +332,7 @@ LocApiRpcAdapter::setPositionMode(const LocPosMode *posMode)
         op_mode = RPC_LOC_OPER_MODE_DATA_OPTIMAL;
         break;
     case LOC_POSITION_MODE_RESERVED_4:
+    case LOC_POSITION_MODE_RESERVED_5:
         op_mode = RPC_LOC_OPER_MODE_MSA;
         fix_criteria_ptr->preferred_response_time  = 0;
         break;
