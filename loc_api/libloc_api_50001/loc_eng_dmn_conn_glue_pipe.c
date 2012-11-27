@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -64,11 +64,19 @@ int loc_eng_dmn_conn_glue_pipeget(const char * pipe_name, int mode)
     int result;
 
     LOC_LOGD("%s, mode = %d\n", pipe_name, mode);
-    result = mkfifo(pipe_name, 0666);
+    result = mkfifo(pipe_name, 0660);
 
     if ((result == -1) && (errno != EEXIST)) {
         LOC_LOGE("failed: %s\n", strerror(errno));
         return result;
+    }
+
+    // The mode in mkfifo is not honoured and does not provide the
+    // group permissions. Doing chmod to add group permissions.
+    result = chmod (pipe_name, 0660);
+    if (result != 0){
+        LOC_LOGE ("%s failed to change mode for %s, error = %s\n", __func__,
+              pipe_name, strerror(errno));
     }
 
     fd = open(pipe_name, mode);

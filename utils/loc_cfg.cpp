@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -47,28 +47,14 @@
  *============================================================================*/
 
 /* Parameter data */
-loc_gps_cfg_s_type gps_conf;
+static uint8_t DEBUG_LEVEL = 3;
+static uint8_t TIMESTAMP = 0;
 
 /* Parameter spec table */
-
-loc_param_s_type loc_parameter_table[] =
+static loc_param_s_type loc_parameter_table[] =
 {
-  {"INTERMEDIATE_POS",               &gps_conf.INTERMEDIATE_POS,               'n'},
-  {"ACCURACY_THRES",                 &gps_conf.ACCURACY_THRES,                 'n'},
-  {"ENABLE_WIPER",                   &gps_conf.ENABLE_WIPER,                   'n'},
-  /* DEBUG LEVELS: 0 - none, 1 - Error, 2 - Warning, 3 - Info
-                   4 - Debug, 5 - Verbose  */
-  {"DEBUG_LEVEL",                    &gps_conf.DEBUG_LEVEL,                    'n'},
-  {"SUPL_VER",                       &gps_conf.SUPL_VER,                       'n'},
-  {"CAPABILITIES",                   &gps_conf.CAPABILITIES,                   'n'},
-  {"TIMESTAMP",                      &gps_conf.TIMESTAMP,                      'n'},
-  {"GYRO_BIAS_RANDOM_WALK",          &gps_conf.GYRO_BIAS_RANDOM_WALK,          'f'},
-  {"SENSOR_ACCEL_BATCHES_PER_SEC",   &gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC,   'n'},
-  {"SENSOR_ACCEL_SAMPLES_PER_BATCH", &gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH, 'n'},
-  {"SENSOR_GYRO_BATCHES_PER_SEC",    &gps_conf.SENSOR_GYRO_BATCHES_PER_SEC,    'n'},
-  {"SENSOR_GYRO_SAMPLES_PER_BATCH",  &gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,  'n'},
-  {"SENSOR_CONTROL_MODE",            &gps_conf.SENSOR_CONTROL_MODE,            'n'},
-  {"SENSOR_USAGE",                   &gps_conf.SENSOR_USAGE,                   'n'},
+  {"DEBUG_LEVEL",                    &DEBUG_LEVEL, NULL,                   'n'},
+  {"TIMESTAMP",                      &TIMESTAMP,   NULL,                   'n'},
 };
 
 int loc_param_num = sizeof(loc_parameter_table) / sizeof(loc_param_s_type);
@@ -92,29 +78,11 @@ SIDE EFFECTS
 static void loc_default_parameters()
 {
    /* defaults */
-   gps_conf.INTERMEDIATE_POS = 0;
-   gps_conf.ACCURACY_THRES = 0;
-   gps_conf.ENABLE_WIPER = 0;
-   gps_conf.DEBUG_LEVEL = 3; /* debug level */
-   gps_conf.SUPL_VER = 0x10000;
-   gps_conf.CAPABILITIES = 0x7;
-   gps_conf.TIMESTAMP = 0;
-
-   gps_conf.GYRO_BIAS_RANDOM_WALK = 0;
-
-   gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC = 2;
-   gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH = 5;
-   gps_conf.SENSOR_GYRO_BATCHES_PER_SEC = 2;
-   gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH = 5;
-   gps_conf.SENSOR_CONTROL_MODE = 0; /* AUTO */
-   gps_conf.SENSOR_USAGE = 0; /* Enabled */
-
-   /* Value MUST be set by OEMs in configuration for sensor-assisted
-      navigation to work. There is NO default value */
-   gps_conf.GYRO_BIAS_RANDOM_WALK_VALID = 0;
+   DEBUG_LEVEL = 3; /* debug level */
+   TIMESTAMP = 0;
 
    /* reset logging mechanism */
-   loc_logger_init(gps_conf.DEBUG_LEVEL, 0);
+   loc_logger_init(DEBUG_LEVEL, TIMESTAMP);
 }
 
 /*===========================================================================
@@ -161,11 +129,26 @@ void trim_space(char *org_string)
    if (last_nonspace) { *last_nonspace = '\0'; }
 }
 
+typedef struct loc_param_v_type
+{
+   char* param_name;
+
+   char* param_str_value;
+   int param_int_value;
+   double param_double_value;
+}loc_param_v_type;
+
 /*===========================================================================
-FUNCTION loc_read_gps_conf
+FUNCTION loc_set_config_entry
 
 DESCRIPTION
-   Reads the gps.conf file and sets global parameter data
+   Potentially sets a given configuration table entry based on the passed in
+   configuration value. This is done by using a string comparison of the
+   parameter names and those found in the configuration file.
+
+PARAMETERS:
+   config_entry: configuration entry in the table to possibly set
+   config_value: value to store in the entry if the parameter names match
 
 DEPENDENCIES
    N/A
@@ -176,97 +159,152 @@ RETURN VALUE
 SIDE EFFECTS
    N/A
 ===========================================================================*/
-void loc_read_gps_conf(void)
+void loc_set_config_entry(loc_param_s_type* config_entry, loc_param_v_type* config_value)
+{
+   if(NULL == config_entry || NULL == config_value)
+   {
+      LOC_LOGE("%s: INVALID config entry or parameter", __FUNCTION__);
+      return;
+   }
+
+   if (strcmp(config_entry->param_name, config_value->param_name) == 0 &&
+               config_entry->param_ptr)
+   {
+      switch (config_entry->param_type)
+      {
+      case 's':
+         if (strcmp(config_value->param_str_value, "NULL") == 0)
+         {
+            *((char*)config_entry->param_ptr) = '\0';
+         }
+         else {
+            strlcpy((char*) config_entry->param_ptr,
+                  config_value->param_str_value,
+                  LOC_MAX_PARAM_STRING + 1);
+         }
+         /* Log INI values */
+         LOC_LOGD("%s: PARAM %s = %s", __FUNCTION__, config_entry->param_name, (char*)config_entry->param_ptr);
+
+         if(NULL != config_entry->param_set)
+         {
+            *(config_entry->param_set) = 1;
+         }
+         break;
+      case 'n':
+         *((int *)config_entry->param_ptr) = config_value->param_int_value;
+         /* Log INI values */
+         LOC_LOGD("%s: PARAM %s = %d", __FUNCTION__, config_entry->param_name, config_value->param_int_value);
+
+         if(NULL != config_entry->param_set)
+         {
+            *(config_entry->param_set) = 1;
+         }
+         break;
+      case 'f':
+         *((double *)config_entry->param_ptr) = config_value->param_double_value;
+         /* Log INI values */
+         LOC_LOGD("%s: PARAM %s = %f", __FUNCTION__, config_entry->param_name, config_value->param_double_value);
+
+         if(NULL != config_entry->param_set)
+         {
+            *(config_entry->param_set) = 1;
+         }
+         break;
+      default:
+         LOC_LOGE("%s: PARAM %s parameter type must be n, f, or s", __FUNCTION__, config_entry->param_name);
+      }
+   }
+}
+
+/*===========================================================================
+FUNCTION loc_read_conf
+
+DESCRIPTION
+   Reads the specified configuration file and sets defined values based on
+   the passed in configuration table. This table maps strings to values to
+   set along with the type of each of these values.
+
+PARAMETERS:
+   conf_file_name: configuration file to read
+   config_table: table definition of strings to places to store information
+   table_length: length of the configuration table
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+void loc_read_conf(const char* conf_file_name, loc_param_s_type* config_table, uint32_t table_length)
 {
    FILE *gps_conf_fp = NULL;
    char input_buf[LOC_MAX_PARAM_LINE];  /* declare a char array */
    char *lasts;
-   char *param_name, *param_str_value;
-   int     param_int_value = 0;
-   double  param_double_value = 0;
-   int i;
+   loc_param_v_type config_value;
+   uint32_t i;
 
    loc_default_parameters();
 
-   if((gps_conf_fp = fopen(GPS_CONF_FILE, "r")) != NULL)
+   if((gps_conf_fp = fopen(conf_file_name, "r")) != NULL)
    {
       LOC_LOGD("%s: using %s", __FUNCTION__, GPS_CONF_FILE);
    }
    else
    {
-      LOC_LOGW("%s: no %s file, using defaults", __FUNCTION__, GPS_CONF_FILE);
+      LOC_LOGW("%s: no %s file found", __FUNCTION__, GPS_CONF_FILE);
       return; /* no parameter file */
+   }
+
+   /* Clear all validity bits */
+   for(i = 0; NULL != config_table && i < table_length; i++)
+   {
+      if(NULL != config_table[i].param_set)
+      {
+         *(config_table[i].param_set) = 0;
+      }
    }
 
    while(fgets(input_buf, LOC_MAX_PARAM_LINE, gps_conf_fp) != NULL)
    {
+      memset(&config_value, 0, sizeof(config_value));
+
       /* Separate variable and value */
-      param_name = strtok_r(input_buf, "=", &lasts);
-      if (param_name == NULL) continue;       /* skip lines that do not contain "=" */
-      param_str_value = strtok_r(NULL, "=", &lasts);
-      if (param_str_value == NULL) continue;  /* skip lines that do not contain two operands */
+      config_value.param_name = strtok_r(input_buf, "=", &lasts);
+      if (config_value.param_name == NULL) continue;       /* skip lines that do not contain "=" */
+      config_value.param_str_value = strtok_r(NULL, "=", &lasts);
+      if (config_value.param_str_value == NULL) continue;  /* skip lines that do not contain two operands */
 
       /* Trim leading and trailing spaces */
-      trim_space(param_name);
-      trim_space(param_str_value);
-
-      // printf("*(%s) = (%s)\n", param_name, param_str_value);
+      trim_space(config_value.param_name);
+      trim_space(config_value.param_str_value);
 
       /* Parse numerical value */
-      if (param_str_value[0] == '0' && tolower(param_str_value[1]) == 'x')
+      if (config_value.param_str_value[0] == '0' && tolower(config_value.param_str_value[1]) == 'x')
       {
          /* hex */
-         param_int_value = (int) strtol(&param_str_value[2], (char**) NULL, 16);
+         config_value.param_int_value = (int) strtol(&config_value.param_str_value[2], (char**) NULL, 16);
       }
       else {
-         param_double_value = (double) atof(param_str_value); /* float */
-         param_int_value = atoi(param_str_value); /* dec */
+         config_value.param_double_value = (double) atof(config_value.param_str_value); /* float */
+         config_value.param_int_value = atoi(config_value.param_str_value); /* dec */
       }
 
-      if (strcmp("GYRO_BIAS_RANDOM_WALK", param_name) == 0)
+      for(i = 0; NULL != config_table && i < table_length; i++)
       {
-         gps_conf.GYRO_BIAS_RANDOM_WALK_VALID = 1;
+         loc_set_config_entry(&config_table[i], &config_value);
       }
 
       for(i = 0; i < loc_param_num; i++)
       {
-         if (strcmp(loc_parameter_table[i].param_name, param_name) == 0 &&
-               loc_parameter_table[i].param_ptr)
-         {
-            switch (loc_parameter_table[i].param_type)
-            {
-            case 's':
-               if (strcmp(param_str_value, "NULL") == 0)
-               {
-                  *((char*)loc_parameter_table[i].param_ptr) = '\0';
-               }
-               else {
-                  strlcpy((char*) loc_parameter_table[i].param_ptr,
-                        param_str_value,
-                        LOC_MAX_PARAM_STRING + 1);
-               }
-               /* Log INI values */
-               LOC_LOGD("%s: PARAM %s = %s", __FUNCTION__, param_name, (char*)loc_parameter_table[i].param_ptr);
-               break;
-            case 'n':
-               *((int *)loc_parameter_table[i].param_ptr) = param_int_value;
-               /* Log INI values */
-               LOC_LOGD("%s: PARAM %s = %d", __FUNCTION__, param_name, param_int_value);
-               break;
-            case 'f':
-               *((double *)loc_parameter_table[i].param_ptr) = param_double_value;
-               /* Log INI values */
-               LOC_LOGD("%s: PARAM %s = %f", __FUNCTION__, param_name, param_double_value);
-               break;
-            default:
-               LOC_LOGE("%s: PARAM %s parameter type must be n or n", __FUNCTION__, param_name);
-            }
-         }
+         loc_set_config_entry(&loc_parameter_table[i], &config_value);
       }
    }
 
    fclose(gps_conf_fp);
 
    /* Initialize logging mechanism with parsed data */
-   loc_logger_init(gps_conf.DEBUG_LEVEL, gps_conf.TIMESTAMP);
+   loc_logger_init(DEBUG_LEVEL, TIMESTAMP);
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -38,6 +38,8 @@ extern "C" {
 #include <cutils/properties.h>
 #include <hardware/gps.h>
 
+#define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+
 typedef enum loc_server_type {
     LOC_AGPS_CDMA_PDE_SERVER,
     LOC_AGPS_CUSTOM_PDE_SERVER,
@@ -52,7 +54,8 @@ typedef enum loc_position_mode_type {
     LOC_POSITION_MODE_RESERVED_1,
     LOC_POSITION_MODE_RESERVED_2,
     LOC_POSITION_MODE_RESERVED_3,
-    LOC_POSITION_MODE_RESERVED_4
+    LOC_POSITION_MODE_RESERVED_4,
+    LOC_POSITION_MODE_RESERVED_5
 } LocPositionMode;
 
 typedef void (*loc_location_cb_ext) (GpsLocation* location, void* locExt);
@@ -70,6 +73,7 @@ typedef struct {
     gps_create_thread create_thread_cb;
     loc_ext_parser location_ext_parser;
     loc_ext_parser sv_ext_parser;
+    gps_request_utc_time request_utc_time_cb;
 } LocCallbacks;
 
 enum loc_sess_status {
@@ -78,6 +82,18 @@ enum loc_sess_status {
     LOC_SESS_FAILURE
 };
 
+typedef uint32_t LocPosTechMask;
+#define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
+#define LOC_POS_TECH_MASK_SATELLITE ((LocPosTechMask)0x00000001)
+#define LOC_POS_TECH_MASK_CELLID ((LocPosTechMask)0x00000002)
+#define LOC_POS_TECH_MASK_WIFI ((LocPosTechMask)0x00000004)
+#define LOC_POS_TECH_MASK_SENSORS ((LocPosTechMask)0x00000008)
+#define LOC_POS_TECH_MASK_REFERENCE_LOCATION ((LocPosTechMask)0x00000010)
+#define LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION ((LocPosTechMask)0x00000020)
+
+#ifdef FEATURE_ULP
+void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
+#endif
 
 #ifdef __cplusplus
 }

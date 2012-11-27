@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -30,7 +30,9 @@
 #ifndef LOC_CFG_H
 #define LOC_CFG_H
 
-#define LOC_MAX_PARAM_NAME                 36
+#include <stdint.h>
+
+#define LOC_MAX_PARAM_NAME                 48
 #define LOC_MAX_PARAM_STRING               80
 #define LOC_MAX_PARAM_LINE                 80
 
@@ -38,6 +40,12 @@
 #ifndef GPS_CONF_FILE
 #define GPS_CONF_FILE            "/etc/gps.conf"   //??? platform independent
 #endif
+
+#define UTIL_READ_CONF_DEFAULT(filename) \
+    loc_read_conf((filename), NULL, 0);
+
+#define UTIL_READ_CONF(filename, config_table) \
+            loc_read_conf((filename), (config_table), sizeof(config_table) / sizeof(config_table[0]))
 
 /*=============================================================================
  *
@@ -48,29 +56,11 @@ typedef struct
 {
   char                           param_name[LOC_MAX_PARAM_NAME];
   void                          *param_ptr;
-  char                           param_type;  /* 'n' for number; 's' for string */
+  uint8_t                       *param_set;   /* was this value set by config file? */
+  char                           param_type;  /* 'n' for number,
+                                                 's' for string,
+                                                 'f' for float */
 } loc_param_s_type;
-
-/* GPS.conf support */
-typedef struct loc_gps_cfg_s
-{
-  unsigned long  INTERMEDIATE_POS;
-  unsigned long  ACCURACY_THRES;
-  unsigned long  ENABLE_WIPER;
-  unsigned long  DEBUG_LEVEL;
-  unsigned long  SUPL_VER;
-  unsigned long  CAPABILITIES;
-  unsigned long  TIMESTAMP;
-  unsigned long  GYRO_BIAS_RANDOM_WALK_VALID;
-  double         GYRO_BIAS_RANDOM_WALK;
-  unsigned long  SENSOR_ACCEL_BATCHES_PER_SEC;
-  unsigned long  SENSOR_ACCEL_SAMPLES_PER_BATCH;
-  unsigned long  SENSOR_GYRO_BATCHES_PER_SEC;
-  unsigned long  SENSOR_GYRO_SAMPLES_PER_BATCH;
-  unsigned long  SENSOR_CONTROL_MODE;
-  unsigned long  SENSOR_USAGE;
-  // char           string_val[LOC_MAX_PARAM_STRING + 1]; /* An example string value */
-} loc_gps_cfg_s_type;
 
 /*=============================================================================
  *
@@ -82,14 +72,14 @@ typedef struct loc_gps_cfg_s
 extern "C" {
 #endif
 
-extern loc_gps_cfg_s_type gps_conf;
-
 /*=============================================================================
  *
  *                       MODULE EXPORTED FUNCTIONS
  *
  *============================================================================*/
-extern void loc_read_gps_conf(void);
+extern void loc_read_conf(const char* conf_file_name,
+                          loc_param_s_type* config_table,
+                          uint32_t table_length);
 
 #ifdef __cplusplus
 }

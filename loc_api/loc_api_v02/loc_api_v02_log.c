@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -191,6 +191,44 @@ static loc_name_val_s_type loc_v02_event_name[] =
     NAME_VAL(QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_REQ_V02),
     NAME_VAL(QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_RESP_V02),
     NAME_VAL(QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02),
+    NAME_VAL(QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_ADD_CIRCULAR_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_DELETE_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_DELETE_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_DELETE_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_QUERY_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_QUERY_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_QUERY_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_EDIT_GEOFENCE_REQ_V02),
+    NAME_VAL(QMI_LOC_EDIT_GEOFENCE_RESP_V02),
+    NAME_VAL(QMI_LOC_EDIT_GEOFENCE_IND_V02),
+    NAME_VAL(QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02),
+    NAME_VAL(QMI_LOC_GET_BEST_AVAILABLE_POSITION_RESP_V02),
+    NAME_VAL(QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02),
+    NAME_VAL(QMI_LOC_INJECT_MOTION_DATA_REQ_V02),
+    NAME_VAL(QMI_LOC_INJECT_MOTION_DATA_RESP_V02),
+    NAME_VAL(QMI_LOC_INJECT_MOTION_DATA_IND_V02),
+    NAME_VAL(QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02),
+    NAME_VAL(QMI_LOC_GET_NI_GEOFENCE_ID_LIST_RESP_V02),
+    NAME_VAL(QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02),
+    NAME_VAL(QMI_LOC_INJECT_GSM_CELL_INFO_REQ_V02),
+    NAME_VAL(QMI_LOC_INJECT_GSM_CELL_INFO_RESP_V02),
+    NAME_VAL(QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02),
+    NAME_VAL(QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02),
+    NAME_VAL(QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_RESP_V02),
+    NAME_VAL(QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02),
+    NAME_VAL(QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_REQ_V02),
+    NAME_VAL(QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_RESP_V02),
+    NAME_VAL(QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_PEDOMETER_CONTROL_IND_V02),
+    NAME_VAL(QMI_LOC_EVENT_MOTION_DATA_CONTROL_IND_V02),
+    NAME_VAL(QMI_LOC_PEDOMETER_REPORT_REQ_V02),
+    NAME_VAL(QMI_LOC_PEDOMETER_REPORT_RESP_V02),
+    NAME_VAL(QMI_LOC_PEDOMETER_REPORT_IND_V02)
 };
 static int loc_v02_event_num = sizeof(loc_v02_event_name) / sizeof(loc_name_val_s_type);
 
@@ -214,6 +252,7 @@ static loc_name_val_s_type loc_v02_client_status_name[] =
     NAME_VAL(eLOC_CLIENT_FAILURE_INVALID_HANDLE),
     NAME_VAL(eLOC_CLIENT_FAILURE_INTERNAL),
     NAME_VAL(eLOC_CLIENT_FAILURE_NOT_INITIALIZED),
+    NAME_VAL(eLOC_CLIENT_FAILURE_NOT_ENOUGH_MEMORY),
 };
 static int loc_v02_client_status_num = sizeof(loc_v02_client_status_name) / sizeof(loc_name_val_s_type);
 
@@ -233,6 +272,8 @@ static loc_name_val_s_type loc_v02_qmi_status_name[] =
     eQMI_LOC_ENGINE_BUSY_V02,
     eQMI_LOC_PHONE_OFFLINE_V02,
     eQMI_LOC_TIMEOUT_V02,
+    eQMI_LOC_CONFIG_NOT_SUPPORTED_V02,
+    eQMI_LOC_INSUFFICIENT_MEMORY_V02,
     QMILOCSTATUSENUMT_MAX_ENUM_VAL_V02
 };
 static int loc_v02_qmi_status_num = sizeof(loc_v02_qmi_status_name) / sizeof(loc_name_val_s_type);

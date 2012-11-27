@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -26,6 +26,13 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "qmi_client.h"
 #include "qmi_idl_lib.h"
 #include "qmi_cci_target_ext.h"
@@ -33,23 +40,12 @@
 #if defined( _ANDROID_)
 #include "qmi_cci_target.h"
 #include "qmi_cci_common.h"
-#elif defined(LOC_UTIL_TARGET_OFF_TARGET)
-#include <stdlib.h>
-#include <sys/time.h>
-#include <errno.h>
-#endif //_ANDROID_
-
-#include <string.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include "loc_api_v02_client.h"
-#include "loc_api_v02_log.h"
-
 #define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_api_v02"
+#endif //_ANDROID_
 
+
+#include "loc_api_v02_client.h"
 #include "loc_util_log.h"
 
 #ifdef LOC_UTIL_TARGET_OFF_TARGET
@@ -57,22 +53,17 @@
 // timeout in ms before send_msg_sync should return
 #define LOC_CLIENT_ACK_TIMEOUT (5000)
 
-// timeout in ms before a sync request should return
-#define LOC_CLIENT_SYNC_REQ_TIMEOUT (5000)
-
 #else
 
 // timeout in ms before send_msg_sync should return
 #define LOC_CLIENT_ACK_TIMEOUT (1000)
 
-// timeout in ms before a sync request should return
-#define LOC_CLIENT_SYNC_REQ_TIMEOUT (1000)
-
 #endif //LOC_UTIL_TARGET_OFF_TARGET
 
-//timeout in ms to wait for the service to come up
+//timeout in ms that the service waits for qmi-fw notification
 #define LOC_CLIENT_SERVICE_TIMEOUT_UNIT  (4000)
-#define LOC_CLIENT_SERVICE_TIMEOUT_TOTAL  (60000)
+// total timeout for the service to come up
+#define LOC_CLIENT_SERVICE_TIMEOUT_TOTAL  (40000)
 
 /* Table to relate eventId, size and mask value used to enable the event*/
 typedef struct
@@ -153,7 +144,32 @@ static locClientEventIndTableStructT locClientEventIndTable[]= {
   //Location Server Connection Request event
   { QMI_LOC_EVENT_LOCATION_SERVER_CONNECTION_REQ_IND_V02,
     sizeof(qmiLocEventLocationServerConnectionReqIndMsgT_v02),
-    QMI_LOC_EVENT_MASK_LOCATION_SERVER_CONNECTION_REQ_V02 }
+    QMI_LOC_EVENT_MASK_LOCATION_SERVER_CONNECTION_REQ_V02 },
+
+  // NI Geofence Event
+  { QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02,
+    sizeof(qmiLocEventNiGeofenceNotificationIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_NI_GEOFENCE_NOTIFICATION_V02},
+
+  // Geofence General Alert Event
+  { QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02,
+    sizeof(qmiLocEventGeofenceGenAlertIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_GEOFENCE_GEN_ALERT_V02},
+
+  //Geofence Breach event
+  { QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02,
+    sizeof(qmiLocEventGeofenceBreachIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_GEOFENCE_BREACH_NOTIFICATION_V02},
+
+  //Pedometer Control event
+  { QMI_LOC_EVENT_PEDOMETER_CONTROL_IND_V02,
+    sizeof(qmiLocEventPedometerControlIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_PEDOMETER_CONTROL_V02 },
+
+  //Motion Data Control event
+  { QMI_LOC_EVENT_MOTION_DATA_CONTROL_IND_V02,
+    sizeof(qmiLocEventMotionDataControlIndMsgT_v02),
+    QMI_LOC_EVENT_MASK_MOTION_DATA_CONTROL_V02 }
 };
 
 /* table to relate the respInd Id with its size */
@@ -346,8 +362,51 @@ static locClientRespIndTableStructT locClientRespIndTable[]= {
 
    // Get Position Engine Config
    { QMI_LOC_GET_POSITION_ENGINE_CONFIG_PARAMETERS_IND_V02,
-     sizeof(qmiLocGetPositionEngineConfigParametersIndMsgT_v02)}
+     sizeof(qmiLocGetPositionEngineConfigParametersIndMsgT_v02)},
 
+   //Add a Circular Geofence
+   { QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02,
+     sizeof(qmiLocAddCircularGeofenceIndMsgT_v02)},
+
+   //Delete a Geofence
+   { QMI_LOC_DELETE_GEOFENCE_IND_V02,
+     sizeof(qmiLocDeleteGeofenceIndMsgT_v02)} ,
+
+   //Query a Geofence
+   { QMI_LOC_QUERY_GEOFENCE_IND_V02,
+     sizeof(qmiLocQueryGeofenceIndMsgT_v02)},
+
+   //Edit a Geofence
+   { QMI_LOC_EDIT_GEOFENCE_IND_V02,
+     sizeof(qmiLocEditGeofenceIndMsgT_v02)},
+
+   //Get best available position
+   { QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02,
+     sizeof(qmiLocGetBestAvailablePositionIndMsgT_v02)},
+
+   //Inject motion data
+   { QMI_LOC_INJECT_MOTION_DATA_IND_V02,
+     sizeof(qmiLocInjectMotionDataIndMsgT_v02)},
+
+   //Get NI Geofence list
+   { QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02,
+     sizeof(qmiLocGetNiGeofenceIdListIndMsgT_v02)},
+
+   //Inject GSM Cell Info
+   { QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02,
+     sizeof(qmiLocInjectGSMCellInfoIndMsgT_v02)},
+
+   //Inject Network Initiated Message
+   { QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02,
+     sizeof(qmiLocInjectNetworkInitiatedMessageIndMsgT_v02)},
+
+   //WWAN Out of Service Notification
+   { QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02,
+     sizeof(qmiLocWWANOutOfServiceNotificationIndMsgT_v02)},
+
+   //Pedomete Report
+   { QMI_LOC_PEDOMETER_REPORT_IND_V02,
+     sizeof(qmiLocPedometerReportIndMsgT_v02)}
 };
 
 
@@ -358,7 +417,9 @@ typedef enum { eventIndType =0, respIndType = 1 } locClientIndEnumT;
 /** @struct locClientInternalState
  */
 
-typedef struct
+typedef struct locClientCbDataStructT locClientCallbackDataType;
+
+struct locClientCbDataStructT
 {
  // client cookie
   void *pClientCookie;
@@ -373,7 +434,10 @@ typedef struct
   // the event mask the client has registered for
   locClientEventMaskType eventRegMask;
 
-}locClientCallbackDataType;
+  //pointer to itself for checking consistency data
+   locClientCallbackDataType *pMe;
+};
+
 
 /*===========================================================================
  *
@@ -439,10 +503,12 @@ static bool isClientRegisteredForEvent(
   {
     if(eventIndId == locClientEventIndTable[idx].eventId)
     {
-      LOC_LOGV("%s:%d]: eventId %d registered mask = %llu, "
-                    "eventMask = %llu\n", __func__, __LINE__,
-                     eventIndId, eventRegMask,
-                     locClientEventIndTable[idx].eventMask);
+      LOC_LOGV("%s:%d]: eventId %d registered mask = 0x%04x%04x, "
+               "eventMask = 0x%04x%04x\n", __func__, __LINE__,
+               eventIndId,(uint32_t)(eventRegMask>>32),
+               (uint32_t)(eventRegMask & 0xFFFFFFFF),
+               (uint32_t)(locClientEventIndTable[idx].eventMask >> 32),
+               (uint32_t)(locClientEventIndTable[idx].eventMask & 0xFFFFFFFF));
 
       return((
           eventRegMask & locClientEventIndTable[idx].eventMask)?
@@ -468,7 +534,7 @@ static locClientStatusEnumType convertQmiResponseToLocStatus(
   locClientStatusEnumType status =  eLOC_CLIENT_FAILURE_INTERNAL;
 
   // if result == SUCCESS don't look at error code
-  if(pResponse->resp.result == QMI_RESULT_SUCCESS )
+  if(pResponse->resp.result == QMI_RESULT_SUCCESS_V01 )
   {
     status  = eLOC_CLIENT_SUCCESS;
   }
@@ -477,6 +543,7 @@ static locClientStatusEnumType convertQmiResponseToLocStatus(
     switch(pResponse->resp.error)
     {
       case QMI_ERR_MALFORMED_MSG_V01:
+      case QMI_ERR_INVALID_ARG_V01:
         status = eLOC_CLIENT_FAILURE_INVALID_PARAMETER;
         break;
 
@@ -750,6 +817,41 @@ static bool locClientHandleIndication(
       break;
     }
 
+    case QMI_LOC_EVENT_NI_GEOFENCE_NOTIFICATION_IND_V02:
+    {
+      //locClientHandleNiGeofenceNotificationInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_EVENT_GEOFENCE_GEN_ALERT_IND_V02:
+    {
+      //locClientHandleGeofenceGenAlertInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_EVENT_GEOFENCE_BREACH_NOTIFICATION_IND_V02:
+    {
+      //locClientHandleGeofenceBreachInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_EVENT_PEDOMETER_CONTROL_IND_V02 :
+    {
+      //locClientHandlePedometerControlInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_EVENT_MOTION_DATA_CONTROL_IND_V02:
+    {
+      //locClientHandleMotionDataControlInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
     //-------------------------------------------------------------------------
 
     // handle the response indications
@@ -762,10 +864,33 @@ static bool locClientHandleIndication(
                                                         indBuffer, indSize);
       break;
     }
+
+    case QMI_LOC_GET_FIX_CRITERIA_IND_V02:
+    {
+      status = true;
+      break;
+    }
+
     // predicted orbits data response indication
     case QMI_LOC_INJECT_PREDICTED_ORBITS_DATA_IND_V02:
     {
       //locClientHandleInjectPredictedOrbitsDataInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    // get predicted orbits source response indication
+    case QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_IND_V02:
+    {
+      //locClientHandleGetPredictedOrbitsSourceInd(user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    // get predicted orbits validity response indication
+    case QMI_LOC_GET_PREDICTED_ORBITS_DATA_VALIDITY_IND_V02:
+    {
+      //locClientHandleGetPredictedOrbitsDataValidityInd(user_handle, msg_id, ind_buf, ind_buf_len);
       status = true;
       break;
     }
@@ -848,6 +973,62 @@ static bool locClientHandleIndication(
       status = true;
       break;
     }
+
+    case QMI_LOC_ADD_CIRCULAR_GEOFENCE_IND_V02:
+    {
+      // locClientHandleAddCircularGeofenceInd(
+      //     user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_DELETE_GEOFENCE_IND_V02:
+    {
+      // locClientHandleDeleteGeofenceInd(
+      //     user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_EDIT_GEOFENCE_IND_V02:
+    {
+      // locClientHandleEditGeofenceInd(
+      //     user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_QUERY_GEOFENCE_IND_V02:
+    {
+      // locClientHandleQueryGeofenceInd(
+      //     user_handle, msg_id, ind_buf, ind_buf_len);
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_GET_BEST_AVAILABLE_POSITION_IND_V02:
+    {
+      status = true;
+      break;
+    }
+    case QMI_LOC_GET_ENGINE_LOCK_IND_V02:
+    {
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_GET_NI_GEOFENCE_ID_LIST_IND_V02:
+    {
+      status = true;
+      break;
+    }
+
+    case QMI_LOC_PEDOMETER_REPORT_IND_V02:
+    {
+      status = true;
+      break;
+    }
+
     // for indications that only have a "status" field
     case QMI_LOC_NI_USER_RESPONSE_IND_V02:
     case QMI_LOC_INJECT_UTC_TIME_IND_V02:
@@ -871,6 +1052,10 @@ static bool locClientHandleIndication(
     case QMI_LOC_SET_SENSOR_PROPERTIES_IND_V02:
     case QMI_LOC_INJECT_SUPL_CERTIFICATE_IND_V02:
     case QMI_LOC_DELETE_SUPL_CERTIFICATE_IND_V02:
+    case QMI_LOC_INJECT_MOTION_DATA_IND_V02:
+    case QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02:
+    case QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02:
+    case QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02:
     {
       status = true;
       break;
@@ -903,13 +1088,16 @@ static void locClientErrorCb
 {
   locClientCallbackDataType* pCallbackData =
         (locClientCallbackDataType *)err_cb_data;
+  locClientErrorCbType localErrorCallback = NULL;
 
   /* copy the errorCallback function pointer from the callback
    * data to local variable. This is to protect against the race
    * condition between open/close and error callback.
    */
-  locClientErrorCbType localErrorCallback =
-      pCallbackData->errorCallback;
+  if(NULL != pCallbackData)
+  {
+    localErrorCallback = pCallbackData->errorCallback;
+  }
 
   LOC_LOGD("%s:%d]: Service Error %d received, pCallbackData = %p\n",
       __func__, __LINE__, error, err_cb_data);
@@ -921,7 +1109,8 @@ static void locClientErrorCb
 
   if( (NULL != pCallbackData) &&
       (NULL != localErrorCallback) &&
-      (NULL != pCallbackData->errorCallback) )
+      (NULL != pCallbackData->errorCallback) &&
+      (pCallbackData == pCallbackData->pMe)  )
   {
     //invoke the error callback for the corresponding client
     localErrorCallback(
@@ -963,7 +1152,7 @@ static void locClientIndCb
                 pCallbackData);
 
   // check callback data
-  if(NULL == pCallbackData)
+  if(NULL == pCallbackData ||(pCallbackData != pCallbackData->pMe))
   {
     LOC_LOGE("%s:%d]: invalid callback data", __func__, __LINE__);
     return;
@@ -972,7 +1161,7 @@ static void locClientIndCb
   // check user handle
   if(memcmp(&pCallbackData->userHandle, &user_handle, sizeof(user_handle)))
   {
-    LOC_LOGE("%s:%d]: invalid user_handle got 0x%x expected 0x%x\n",
+    LOC_LOGE("%s:%d]: invalid user_handle got %p expected %p\n",
         __func__, __LINE__,
         user_handle, pCallbackData->userHandle);
     return;
@@ -1316,6 +1505,12 @@ static bool validateRequest(
       break;
     }
 
+    case QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocGetSensorPropertiesReqMsgT_v02);
+      break;
+    }
+
     case QMI_LOC_SET_SENSOR_PROPERTIES_REQ_V02:
     {
       *pOutLen = sizeof(qmiLocSetSensorPropertiesReqMsgT_v02);
@@ -1348,6 +1543,61 @@ static bool validateRequest(
       *pOutLen = sizeof(qmiLocGetPositionEngineConfigParametersReqMsgT_v02);
       break;
     }
+    case QMI_LOC_ADD_CIRCULAR_GEOFENCE_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocAddCircularGeofenceReqMsgT_v02);
+      break;
+    }
+    case QMI_LOC_DELETE_GEOFENCE_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocDeleteGeofenceReqMsgT_v02);
+      break;
+    }
+    case QMI_LOC_QUERY_GEOFENCE_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocQueryGeofenceReqMsgT_v02);
+      break;
+    }
+    case QMI_LOC_EDIT_GEOFENCE_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocEditGeofenceReqMsgT_v02);
+      break;
+    }
+    case QMI_LOC_GET_BEST_AVAILABLE_POSITION_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocGetBestAvailablePositionReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_MOTION_DATA_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectMotionDataReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_GET_NI_GEOFENCE_ID_LIST_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocGetNiGeofenceIdListReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_GSM_CELL_INFO_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectGSMCellInfoReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectNetworkInitiatedMessageReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_PEDOMETER_REPORT_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocPedometerReportReqMsgT_v02);
+      break;
+    }
 
     // ALL requests with no payload
     case QMI_LOC_GET_SERVICE_REVISION_REQ_V02:
@@ -1365,8 +1615,8 @@ static bool validateRequest(
     case QMI_LOC_GET_CRADLE_MOUNT_CONFIG_REQ_V02:
     case QMI_LOC_GET_EXTERNAL_POWER_CONFIG_REQ_V02:
     case QMI_LOC_GET_SENSOR_CONTROL_CONFIG_REQ_V02:
-    case QMI_LOC_GET_SENSOR_PROPERTIES_REQ_V02:
     case QMI_LOC_GET_SENSOR_PERFORMANCE_CONTROL_CONFIGURATION_REQ_V02:
+    case QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_REQ_V02:
     {
       noPayloadFlag = true;
       break;
@@ -1410,63 +1660,56 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
 
   do
   {
-  uint32_t num_services = 0, num_entries = 0;
-  qmi_client_error_type rc = QMI_NO_ERR;
-  bool nosignal = false;
+    uint32_t num_services = 0, num_entries = 0;
+    qmi_client_error_type rc = QMI_NO_ERR;
+    bool nosignal = false;
+    qmi_client_os_params os_params;
+    int timeout = 0;
 
-  // Get the service object for the qmiLoc Service
-  qmi_idl_service_object_type locClientServiceObject =
-    loc_get_service_object_v02();
+    // Get the service object for the qmiLoc Service
+    qmi_idl_service_object_type locClientServiceObject =
+      loc_get_service_object_v02();
 
-  // Verify that qmiLoc_get_service_object did not return NULL
-  if (NULL == locClientServiceObject)
-  {
-      LOC_LOGE("%s:%d]: qmiLoc_get_service_object_v02 failed\n" ,
-                  __func__, __LINE__ );
+    // Verify that qmiLoc_get_service_object did not return NULL
+    if (NULL == locClientServiceObject)
+    {
+        LOC_LOGE("%s:%d]: qmiLoc_get_service_object_v02 failed\n" ,
+                    __func__, __LINE__ );
        status = eLOC_CLIENT_FAILURE_INTERNAL;
        break;
-  }
+    }
 
-    // get the service addressing information
-    rc = qmi_client_get_service_list( locClientServiceObject, NULL, NULL,
-                                      &num_services);
-    LOC_LOGV("%s:%d]: qmi_client_get_service_list() first try rc %d, "
-             "num_services %d", __func__, __LINE__, rc, num_services);
+    // register for service notification
+    rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
+    notifierInitFlag = (NULL != notifier);
 
     if (rc != QMI_NO_ERR) {
-        // bummer, service list is not up.
-        // We need to try again after a timed wait
-        qmi_client_os_params os_params;
-        int timeout = 0;
+        LOC_LOGE("%s:%d]: qmi_client_notifier_init failed %d\n",
+                 __func__, __LINE__, rc);
+        status = eLOC_CLIENT_FAILURE_INTERNAL;
+        break;
+    }
 
-        // register for service notification
-        rc = qmi_client_notifier_init(locClientServiceObject, &os_params, &notifier);
-        notifierInitFlag = (NULL != notifier);
-
+    do {
+        QMI_CCI_OS_SIGNAL_CLEAR(&os_params);
+        // get the service addressing information
+        rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
+                                         &num_services);
+        /* If service is not up wait on a signal until the service is up
+         * or a timeout occurs. */
         if (rc != QMI_NO_ERR) {
-            LOC_LOGE("%s:%d]: qmi_client_notifier_init failed %d\n",
-                     __func__, __LINE__, rc);
-            status = eLOC_CLIENT_FAILURE_INTERNAL;
-            break;
-        }
-
-        do {
-            QMI_CCI_OS_SIGNAL_CLEAR(&os_params);
-            /* If service is not up wait on a signal until the service is up
-             * or a timeout occurs. */
             QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT_UNIT);
             nosignal = QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params);
+            if (!nosignal)
+                rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
+                                                 &num_services);
+        }
 
-            // get the service addressing information
-            rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
-                                             &num_services);
+        timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
 
-            timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
-
-            LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc %d, nosignal %d, "
-                     "total timeout %d", __func__, __LINE__, rc, nosignal, timeout);
-        } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL && nosignal && rc != QMI_NO_ERR);
-    }
+        LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc %d, nosignal %d, "
+                 "total timeout %d", __func__, __LINE__, rc, nosignal, timeout);
+    } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL && nosignal && rc != QMI_NO_ERR);
 
     if (0 == num_services || rc != QMI_NO_ERR) {
         if (!nosignal) {
@@ -1515,46 +1758,46 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
       break;
     }
 
-  LOC_LOGV("%s:%d]: passing the pointer %p to qmi_client_init \n",
-                    __func__, __LINE__, pLocClientCbData);
+    LOC_LOGV("%s:%d]: passing the pointer %p to qmi_client_init \n",
+                      __func__, __LINE__, pLocClientCbData);
 
-  // initialize the client
+    // initialize the client
     //sent the address of the first service found
     // if IPC router is present, this will go to the service instance
     // enumerated over IPC router, else it will go over the next transport where
     // the service was enumerated.
     rc = qmi_client_init(&pServiceInfo[0], locClientServiceObject,
-                       locClientIndCb, (void *) pLocClientCbData,
-                       NULL, &clnt);
+                         locClientIndCb, (void *) pLocClientCbData,
+                         NULL, &clnt);
 
-  if(rc != QMI_NO_ERR)
-  {
-    LOC_LOGE("%s:%d]: qmi_client_init error %d\n",
-                  __func__, __LINE__, rc);
-
-      status = eLOC_CLIENT_FAILURE_INTERNAL;
-      break;
-  }
-
-  LOC_LOGV("%s:%d]: passing the pointer %p to"
-                "qmi_client_register_error_cb \n",
-                 __func__, __LINE__, pLocClientCbData);
-
-  // register error callback
-  rc  = qmi_client_register_error_cb(clnt,
-      locClientErrorCb, (void *) pLocClientCbData);
-
-  if( QMI_NO_ERR != rc)
-  {
-    LOC_LOGE("%s:%d]: could not register QCCI error callback error:%d\n",
-                  __func__, __LINE__, rc);
+    if(rc != QMI_NO_ERR)
+    {
+      LOC_LOGE("%s:%d]: qmi_client_init error %d\n",
+                    __func__, __LINE__, rc);
 
       status = eLOC_CLIENT_FAILURE_INTERNAL;
       break;
-  }
+    }
 
-  // copy the clnt handle returned in qmi_client_init
-  memcpy(&(pLocClientCbData->userHandle), &clnt, sizeof(qmi_client_type));
+    LOC_LOGV("%s:%d]: passing the pointer %p to"
+                  "qmi_client_register_error_cb \n",
+                   __func__, __LINE__, pLocClientCbData);
+
+    // register error callback
+    rc  = qmi_client_register_error_cb(clnt,
+        locClientErrorCb, (void *) pLocClientCbData);
+
+    if( QMI_NO_ERR != rc)
+    {
+      LOC_LOGE("%s:%d]: could not register QCCI error callback error:%d\n",
+                    __func__, __LINE__, rc);
+
+      status = eLOC_CLIENT_FAILURE_INTERNAL;
+      break;
+    }
+
+    // copy the clnt handle returned in qmi_client_init
+    memcpy(&(pLocClientCbData->userHandle), &clnt, sizeof(qmi_client_type));
 
     status = eLOC_CLIENT_SUCCESS;
 
@@ -1603,21 +1846,18 @@ locClientStatusEnumType locClientOpen (
   locClientStatusEnumType status = eLOC_CLIENT_SUCCESS;
   locClientCallbackDataType *pCallbackData = NULL;
 
-  LOC_LOGV("%s:%d] \n", __func__, __LINE__);
+  // check input parameters
+  if( (NULL == pLocClientCallbacks) || (NULL == pLocClientHandle)
+      || (NULL == pLocClientCallbacks->respIndCb) ||
+      (pLocClientCallbacks->size != sizeof(locClientCallbacksType)))
+  {
+    LOC_LOGE("%s:%d]: Invalid parameters in locClientOpen\n",
+             __func__, __LINE__);
+    return eLOC_CLIENT_FAILURE_INVALID_PARAMETER;
+  }
 
   do
   {
-    // check input parameters
-    if( (NULL == pLocClientCallbacks) || (NULL == pLocClientHandle)
-        || (NULL == pLocClientCallbacks->respIndCb) ||
-        (pLocClientCallbacks->size != sizeof(locClientCallbacksType)))
-    {
-      LOC_LOGE("%s:%d]: Invalid parameters in locClientOpen\n",
-                              __func__, __LINE__);
-      status = eLOC_CLIENT_FAILURE_INVALID_PARAMETER;
-      break;
-    }
-
     // Allocate memory for the callback data
     pCallbackData =
         ( locClientCallbackDataType*)calloc(
@@ -1648,9 +1888,12 @@ locClientStatusEnumType locClientOpen (
     {
       free(pCallbackData);
       pCallbackData = NULL;
+      LOC_LOGE ("%s:%d] locClientQmiCtrlPointInit returned %d\n",
+                    __func__, __LINE__, status);
       break;
     }
-
+     // set the self pointer
+    pCallbackData->pMe = pCallbackData;
      // set the handle to the callback data
     *pLocClientHandle = (locClientHandleType)pCallbackData;
 
@@ -1685,15 +1928,19 @@ locClientStatusEnumType locClientOpen (
      // set the client cookie
      pCallbackData->pClientCookie = (void *)pClientCookie;
 
-     LOC_LOGD("%s:%d]: returning handle = 0x%x, user_handle=0x%x, status = %d\n",
-              __func__, __LINE__, *pLocClientHandle,
-              pCallbackData->userHandle, status);
-
   }while(0);
 
   if(eLOC_CLIENT_SUCCESS != status)
   {
     *pLocClientHandle = LOC_CLIENT_INVALID_HANDLE_VALUE;
+    LOC_LOGE("%s:%d]: Error! status = %d\n", __func__, __LINE__,status);
+  }
+
+  else
+  {
+    LOC_LOGD("%s:%d]: returning handle = %p, user_handle=%p, status = %d\n",
+                __func__, __LINE__, *pLocClientHandle,
+                pCallbackData->userHandle, status);
   }
 
   return(status);
@@ -1712,6 +1959,8 @@ locClientStatusEnumType locClientOpen (
 locClientStatusEnumType locClientClose(
   locClientHandleType* pLocClientHandle)
 {
+  // convert handle to callback data
+  locClientCallbackDataType *pCallbackData;
   qmi_client_error_type rc = QMI_NO_ERR; //No error
 
   if(NULL == pLocClientHandle)
@@ -1723,15 +1972,12 @@ locClientStatusEnumType locClientClose(
     return(eLOC_CLIENT_FAILURE_INVALID_PARAMETER);
   }
 
-  // convert handle to callback data
-  locClientCallbackDataType *pCallbackData =
-      (locClientCallbackDataType *)(*pLocClientHandle);
-
-  LOC_LOGV("%s:%d]:\n", __func__, __LINE__ );
+  pCallbackData = (locClientCallbackDataType *)(*pLocClientHandle);
 
   // check the input handle for sanity
   if(NULL == pCallbackData ||
-     NULL == pCallbackData->userHandle)
+     NULL == pCallbackData->userHandle ||
+     pCallbackData != pCallbackData->pMe )
   {
     // invalid handle
     LOC_LOGE("%s:%d]: invalid handle \n",
@@ -1740,7 +1986,7 @@ locClientStatusEnumType locClientClose(
     return(eLOC_CLIENT_FAILURE_INVALID_HANDLE);
   }
 
-  LOC_LOGV("locClientClose releasing handle 0x%x, user handle 0x%x\n",
+  LOC_LOGV("locClientClose releasing handle %p, user handle %p\n",
       *pLocClientHandle, pCallbackData->userHandle );
 
   // NEXT call goes out to modem. We log the callflow before it
@@ -1748,6 +1994,7 @@ locClientStatusEnumType locClientClose(
   // back from the modem, to avoid confusing log order. We trust
   // that the QMI framework is robust.
   EXIT_LOG_CALLFLOW(%s, "loc client close");
+
   // release the handle
   rc = qmi_client_release(pCallbackData->userHandle);
   if(QMI_NO_ERR != rc )
@@ -1769,7 +2016,6 @@ locClientStatusEnumType locClientClose(
 
   // set the handle to invalid value
   *pLocClientHandle = LOC_CLIENT_INVALID_HANDLE_VALUE;
-
   return eLOC_CLIENT_SUCCESS;
 }
 
@@ -1808,7 +2054,8 @@ locClientStatusEnumType locClientSendReq(
 
   // check the input handle for sanity
    if(NULL == pCallbackData ||
-      NULL == pCallbackData->userHandle )
+      NULL == pCallbackData->userHandle ||
+      pCallbackData != pCallbackData->pMe )
    {
      // did not find the handle in the client List
      LOC_LOGE("%s:%d]: invalid handle \n",
@@ -1835,7 +2082,6 @@ locClientStatusEnumType locClientSendReq(
   // back from the modem, to avoid confusing log order. We trust
   // that the QMI framework is robust.
   EXIT_LOG_CALLFLOW(%s, loc_get_v02_event_name(reqId));
-
   rc = qmi_client_send_msg_sync(
       pCallbackData->userHandle,
       reqId,
@@ -1857,6 +2103,17 @@ locClientStatusEnumType locClientSendReq(
   // map the QCCI response to Loc API v02 status
   status = convertQmiResponseToLocStatus(&resp);
 
+  // if the request is to change registered events, update the
+  // loc api copy of that
+  if(eLOC_CLIENT_SUCCESS == status &&
+      QMI_LOC_REG_EVENTS_REQ_V02 == reqId)
+  {
+    if(NULL != reqPayload.pRegEventsReq )
+    {
+      pCallbackData->eventRegMask =
+        (locClientEventMaskType)(reqPayload.pRegEventsReq->eventRegMask);
+    }
+  }
   return(status);
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -45,11 +45,17 @@ LocEng::LocEng(void* caller,
                gps_acquire_wakelock acqwl,
                gps_release_wakelock relwl,
                loc_msg_sender msgSender,
+#ifdef FEATURE_ULP
+               loc_msg_sender msgUlpSender,
+#endif
                loc_ext_parser posParser,
                loc_ext_parser svParser) :
         owner(caller),
         eventMask(emask), acquireWakelock(acqwl),
         releaseWakeLock(relwl), sendMsge(msgSender),
+#ifdef FEATURE_ULP
+        sendUlpMsg(msgUlpSender),
+#endif
         extPosInfo(NULL == posParser ? noProc : posParser),
         extSvInfo(NULL == svParser ? noProc : svParser)
 {
@@ -57,7 +63,7 @@ LocEng::LocEng(void* caller,
 }
 
 LocApiAdapter::LocApiAdapter(LocEng &locEng) :
-    locEngHandle(locEng)
+    locEngHandle(locEng), fixCriteria(), navigating(false)
 {
     LOC_LOGD("LocApiAdapter created");
 }
@@ -75,21 +81,14 @@ LocApiAdapter* LocApiAdapter::getLocApiAdapter(LocEng &locEng)
     handle = dlopen ("libloc_api_v02.so", RTLD_NOW);
 
     if (!handle) {
-        LOC_LOGI("%s: dlopen(libloc_api_v02.so) failed, trying to load libloc_api-rpc-qc.so", __FUNCTION__);
         handle = dlopen ("libloc_api-rpc-qc.so", RTLD_NOW);
     }
-    else
-        LOC_LOGE("%s: dlopen(libloc_api_v02.so) succeeded.", __FUNCTION__);
 
     if (!handle) {
-        LOC_LOGI("%s: dlopen(libloc_api-rpc-qc.so) failed, constructing LocApiAdapter", __FUNCTION__);
         adapter = new LocApiAdapter(locEng);
     } else {
         getLocApiAdapter_t* getHandle = (getLocApiAdapter_t*)dlsym(handle, "getLocApiAdapter");
-        if (!getHandle) {
-            LOC_LOGE("%s: dlsym(getLocApiAdapter) failed", __FUNCTION__);
-            return NULL;
-        }
+
         adapter = (*getHandle)(locEng);
     }
 
@@ -142,20 +141,43 @@ int LocApiAdapter::decodeAddress(char *addr_string, int string_size,
 }
 
 void LocApiAdapter::reportPosition(GpsLocation &location,
+                                   GpsLocationExtended &locationExtended,
                                    void* locationExt,
-                                   enum loc_sess_status status)
+                                   enum loc_sess_status status,
+                                   LocPosTechMask loc_technology_mask )
 {
     loc_eng_msg_report_position *msg(new loc_eng_msg_report_position(locEngHandle.owner,
                                                                      location,
+                                                                     locationExtended,
                                                                      locationExt,
-                                                                     status));
+                                                                     status,
+                                                                     loc_technology_mask));
+#ifdef FEATURE_ULP
+    if (locEngHandle.sendUlpMsg) {
+        locEngHandle.sendUlpMsg(locEngHandle.owner, msg);
+    } else {
+        locEngHandle.sendMsge(locEngHandle.owner, msg);
+    }
+#else
     locEngHandle.sendMsge(locEngHandle.owner, msg);
+#endif
 }
 
-void LocApiAdapter::reportSv(GpsSvStatus &svStatus, void* svExt)
+void LocApiAdapter::reportSv(GpsSvStatus &svStatus, GpsLocationExtended &locationExtended, void* svExt)
 {
-    loc_eng_msg_report_sv *msg(new loc_eng_msg_report_sv(locEngHandle.owner, svStatus, svExt));
+    loc_eng_msg_report_sv *msg(new loc_eng_msg_report_sv(locEngHandle.owner, svStatus, locationExtended, svExt));
+
+#ifdef FEATURE_ULP
+    //We want to send SV info to ULP to help it in determining GNSS signal strength
+    //ULP will forward the SV reports to HAL without any modifications
+    if (locEngHandle.sendUlpMsg) {
+        locEngHandle.sendUlpMsg(locEngHandle.owner, msg);
+    } else {
+        locEngHandle.sendMsge(locEngHandle.owner, msg);
+    }
+#else
     locEngHandle.sendMsge(locEngHandle.owner, msg);
+#endif
 }
 
 void LocApiAdapter::reportStatus(GpsStatusValue status)
@@ -192,9 +214,9 @@ void LocApiAdapter::requestXtraData()
 
 void LocApiAdapter::requestTime()
 {
-    LOC_LOGD("loc_event_cb: XTRA time download request... not supported");
-    // loc_eng_msg *msg(new loc_eng_msg(locEngHandle.owner, LOC_ENG_MSG_REQUEST_TIME));
-    // locEngHandle.sendMsge(locEngHandle.owner, msg);
+    LOC_LOGD("loc_event_cb: XTRA time download request");
+    loc_eng_msg *msg(new loc_eng_msg(locEngHandle.owner, LOC_ENG_MSG_REQUEST_TIME));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
 }
 
 void LocApiAdapter::requestLocation()

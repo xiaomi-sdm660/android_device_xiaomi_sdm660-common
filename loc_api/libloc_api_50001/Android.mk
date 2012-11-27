@@ -3,6 +3,7 @@ ifneq ($(BUILD_TINY_ANDROID),true)
 
 BIT_ENABLED_BOARD_PLATFORM_LIST := msm7630_fusion
 BIT_ENABLED_BOARD_PLATFORM_LIST += msm8660
+BIT_ENABLED_BOARD_PLATFORM_LIST += msm8960
 ifeq ($(call is-board-platform-in-list,$(BIT_ENABLED_BOARD_PLATFORM_LIST)),true)
 FEATURE_GNSS_BIT_API := true
 endif # is-board-platform-in-list
@@ -28,6 +29,18 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
+
+ifeq ($(FEATURE_IPV6), true)
+LOCAL_CFLAGS += -DFEATURE_IPV6
+endif #FEATURE_IPV6
+
+ifeq ($(FEATURE_DELEXT), true)
+LOCAL_CFLAGS += -DFEATURE_DELEXT
+endif #FEATURE_DELEXT
+
+ifeq ($(FEATURE_ULP), true)
+LOCAL_CFLAGS += -DFEATURE_ULP
+endif #FEATURE_ULP
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils
@@ -58,15 +71,15 @@ LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
     libloc_adapter \
-    libgps.utils \
-    libdl
+    libgps.utils
 
 LOCAL_SRC_FILES += \
     loc_eng.cpp \
     loc_eng_agps.cpp \
     loc_eng_xtra.cpp \
     loc_eng_ni.cpp \
-    loc_eng_log.cpp
+    loc_eng_log.cpp \
+    loc_eng_nmea.cpp
 
 ifeq ($(FEATURE_GNSS_BIT_API), true)
 LOCAL_CFLAGS += -DFEATURE_GNSS_BIT_API
@@ -82,6 +95,14 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
+
+ifeq ($(FEATURE_IPV6), true)
+LOCAL_CFLAGS += -DFEATURE_IPV6
+endif #FEATURE_IPV6
+
+ifeq ($(FEATURE_ULP), true)
+LOCAL_CFLAGS += -DFEATURE_ULP
+endif #FEATURE_ULP
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
@@ -103,7 +124,8 @@ LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
     libloc_eng \
-    libgps.utils
+    libgps.utils \
+    libdl
 
 LOCAL_SRC_FILES += \
     loc.cpp \
@@ -113,9 +135,14 @@ LOCAL_CFLAGS += \
     -fno-short-enums \
     -D_ANDROID_ \
 
+ifeq ($(FEATURE_IPV6), true)
+LOCAL_CFLAGS += -DFEATURE_IPV6
+endif #FEATURE_IPV6
+
 ## Includes
 LOCAL_C_INCLUDES:= \
-    $(TARGET_OUT_HEADERS)/gps.utils
+    $(TARGET_OUT_HEADERS)/gps.utils \
+    hardware/qcom/gps/loc_api/ulp/inc
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw

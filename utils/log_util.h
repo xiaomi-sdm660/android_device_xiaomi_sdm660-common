@@ -135,7 +135,6 @@ else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGV("W/"__VA_ARGS__); }
 #define EXIT_LOG(SPEC, VAL) LOG_V(EXIT_TAG, __func__, SPEC, VAL)
 
 
-#ifdef DEBUG_TRACE_CALLFLOW
 // Used for logging callflow from Android Framework
 #define ENTRY_LOG_CALLFLOW() LOG_I(FROM_AFW, __func__, %s, "")
 // Used for logging callflow to Modem
@@ -144,12 +143,6 @@ else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGV("W/"__VA_ARGS__); }
 #define MODEM_LOG_CALLFLOW(SPEC, VAL) LOG_I(FROM_MODEM, __func__, SPEC, VAL)
 // Used for logging callflow to Android Framework
 #define CALLBACK_LOG_CALLFLOW(CB, SPEC, VAL) LOG_I(TO_AFW, CB, SPEC, VAL)
-#else
-#define ENTRY_LOG_CALLFLOW()
-#define EXIT_LOG_CALLFLOW(SPEC, VAL)
-#define MODEM_LOG_CALLFLOW(SPEC, VAL)
-#define CALLBACK_LOG_CALLFLOW(CB, SPEC, VAL)
-#endif
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,46 +24,19 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef LOC_ENG_NMEA_H
+#define LOC_ENG_NMEA_H
 
-#include <stdio.h>
+#include <hardware/gps.h>
 
-#define LOG_TAG "LocSvc_rpc"
-#include <utils/Log.h>
+#define NMEA_SENTENCE_MAX_LENGTH 200
 
-#define PRINT(x...) do {                                    \
-        fprintf(stdout, "%s(%d) ", __FUNCTION__, __LINE__); \
-        fprintf(stdout, ##x);                               \
-        ALOGD(x);                               \
-    } while(0)
+void loc_eng_nmea_send(char *pNmea, int length, loc_eng_data_s_type *loc_eng_data_p);
+int loc_eng_nmea_put_checksum(char *pNmea, int maxSize);
+void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p, const GpsSvStatus &svStatus, const GpsLocationExtended &locationExtended);
+void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p, const GpsLocation &location, const GpsLocationExtended &locationExtended);
 
-#ifdef DEBUG
-#define D PRINT
-#else
-#define D(x...) do { } while(0)
-#endif
-
-#ifdef VERBOSE
-#define V PRINT
-#else
-#define V(x...) do { } while(0)
-#endif
-
-#define E(x...) do {                                        \
-        fprintf(stderr, "%s(%d) ", __FUNCTION__, __LINE__); \
-        fprintf(stderr, ##x);                               \
-        ALOGE(x);                                            \
-    } while(0)
-
-#define FAILIF(cond, msg...) do {                                              \
-        if (__builtin_expect (cond, 0)) {                                      \
-            fprintf(stderr, "%s:%s:(%d): ", __FILE__, __FUNCTION__, __LINE__); \
-            fprintf(stderr, ##msg);                                            \
-            ALOGE(##msg);                                                       \
-        }                                                                      \
-    } while(0)
-
-#endif/*DEBUG_H*/
+#endif // LOC_ENG_NMEA_H

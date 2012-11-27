@@ -1,4 +1,4 @@
-/* Copyright (c) 2009,2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -24,13 +24,18 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
-
 #ifndef LOC_UTIL_LOG_H
 #define LOC_UTIL_LOG_H
 
-#ifdef FEATURE_LOC_API_V02_QNX_MOD
+#if defined(_ANDROID_)
+#include "loc_api_v02_log.h"
+#include <log_util.h>
+
+#else // no _ANDROID_
+
+// common for QNX and Griffon
+
 //error logs
 #define LOC_LOGE(...) printf(__VA_ARGS__)
 //warning logs
@@ -45,22 +50,17 @@
 #define MODEM_LOG_CALLFLOW(SPEC, VAL)
 #define EXIT_LOG_CALLFLOW(SPEC, VAL)
 
-#endif //FEATURE_LOC_API_V02_QNX_MOD
+#define loc_get_v02_event_name(X) #X
+#define loc_get_v02_client_status_name(X) #X
 
+#define loc_get_v02_qmi_status_name(X)  #X
+
+//specific to OFF TARGET
 #ifdef LOC_UTIL_TARGET_OFF_TARGET
 
 #include <stdio.h>
-
-//error logs
-#define LOC_LOGE(...) printf(__VA_ARGS__)
-//warning logs
-#define LOC_LOGW(...) printf(__VA_ARGS__)
-// debug logs
-#define LOC_LOGD(...) printf(__VA_ARGS__)
-//info logs
-#define LOC_LOGI(...) printf(__VA_ARGS__)
-//verbose logs
-#define LOC_LOGV(...) printf(__VA_ARGS__)
+# include <asm/errno.h>
+# include <sys/time.h>
 
 // get around strl*: not found in glibc
 // TBD:look for presence of eglibc other libraries
@@ -68,14 +68,8 @@
 #define strlcpy(X,Y,Z) strcpy(X,Y)
 #define strlcat(X,Y,Z) strcat(X,Y)
 
-#define MODEM_LOG_CALLFLOW(SPEC, VAL)
-#define EXIT_LOG_CALLFLOW(SPEC, VAL)
-
-#elif defined(_ANDROID_)
-
-#include <log_util.h>
-
 #endif //LOC_UTIL_TARGET_OFF_TARGET
 
+#endif //_ANDROID_
 
 #endif //LOC_UTIL_LOG_H

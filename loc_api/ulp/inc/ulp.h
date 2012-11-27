@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -36,14 +36,7 @@ extern "C"
 #endif
 
 #include <hardware/gps.h>
-
-typedef int (ulp_report_position_cb)
-(
-      void* owner,
-      const GpsLocation* location_report_ptr,
-      unsigned int ext_data_length,
-      unsigned char* ext_data
-);
+#include "loc_eng.h"
 
 /** Represents the standard ulp module interface. */
 typedef struct {
@@ -51,23 +44,13 @@ typedef struct {
     size_t   size;
 
     /**
-     * Starts the ulp module. 0: success
+     * Starts the libulp module. 0: success
      */
-    int   (*init)( void* owner, ulp_report_position_cb* cb);
+    int   (*init)(loc_eng_data_s_type &loc_eng_data);
 
-    /** Starts the ulp engine. 0: success      */
-    int   (*start_fix)( void );
-
-    /** Stops the ulp engine. 0: success */
-    int   (*stop_fix)( void );
-
-    /** Closes the interface */
-    int   (*destroy)( void );
-
-} ulpInterface;
+}ulpInterface;
 
 typedef const ulpInterface* (get_ulp_interface) (void);
-
 
 #ifdef __cplusplus
 }

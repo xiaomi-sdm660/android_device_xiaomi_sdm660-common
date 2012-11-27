@@ -38,6 +38,8 @@ class LocApiRpcAdapter : public LocApiAdapter {
     // RPC communication establishment
     rpc_loc_client_handle_type client_handle;
     rpc_loc_event_mask_type eMask;
+    int dataEnableLastSet;
+    char apnLastSet[MAX_APN_LEN];
 
     static const rpc_loc_event_mask_type locBits[];
     static rpc_loc_event_mask_type convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
@@ -71,10 +73,11 @@ public:
     virtual enum loc_api_adapter_err
         stopFix();
     virtual enum loc_api_adapter_err
-        setPositionMode(LocPositionMode mode, GpsPositionRecurrence recurrence,
-            uint32_t min_interval, uint32_t preferred_accuracy, uint32_t preferred_time);
+        setPositionMode(const LocPosMode *mode);
+    inline virtual enum loc_api_adapter_err
+        enableData(int enable) { return enableData(enable, false); }
     virtual enum loc_api_adapter_err
-        enableData(int enable);
+        enableData(int enable, boolean force);
     virtual enum loc_api_adapter_err
         setTime(GpsUtcTime time, int64_t timeReference, int uncertainty);
     virtual enum loc_api_adapter_err
@@ -83,20 +86,30 @@ public:
         deleteAidingData(GpsAidingData f);
     virtual enum loc_api_adapter_err
         informNiResponse(GpsUserResponseType userResponse, const void* passThroughData);
+    inline virtual enum loc_api_adapter_err
+        setAPN(char* apn, int len) { return setAPN(apn, len, false); }
     virtual enum loc_api_adapter_err
-        setAPN(char* apn, int len);
+        setAPN(char* apn, int len, boolean force);
     virtual enum loc_api_adapter_err
         setServer(const char* url, int len);
     virtual enum loc_api_adapter_err
         setServer(unsigned int ip, int port, LocServerType type);
     virtual enum loc_api_adapter_err
         setXtraData(char* data, int length);
+#ifdef FEATURE_IPV6
     virtual enum loc_api_adapter_err
         atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType);
+#else
+  virtual enum loc_api_adapter_err
+    atlOpenStatus(int handle, int is_succ, char* apn,
+                   AGpsType agpsType);
+#endif
     virtual enum loc_api_adapter_err
         atlCloseStatus(int handle, int is_succ);
     virtual enum loc_api_adapter_err
         setSUPLVersion(uint32_t version);
+
+    virtual void setInSession(bool inSession);
 };
 
 #endif //LOC_API_RPC_ADAPTER_H
