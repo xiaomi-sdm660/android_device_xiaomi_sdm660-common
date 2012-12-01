@@ -4,8 +4,8 @@ LOCAL_PATH := $(call my-dir)
 
 GPS_DIR_LIST :=
 
-FEATURE_IPV6 := false
-FEATURE_DELEXT := false
+FEATURE_IPV6 := true
+FEATURE_DELEXT := true
 FEATURE_ULP := false
 
 # add RPC dirs if RPC is available
