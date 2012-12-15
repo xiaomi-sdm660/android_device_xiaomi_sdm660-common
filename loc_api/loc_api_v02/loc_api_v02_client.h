@@ -610,6 +610,10 @@ typedef union
          To send this request, set the reqId field in locClientSendReq() to
          QMI_LOC_PEDOMETER_REPORT_REQ_V02 */
 
+    const qmiLocInjectWCDMACellInfoReqMsgT_v02 *pInjectWCDMACellInfoReq;
+    const qmiLocInjectTDSCDMACellInfoReqMsgT_v02 *pInjectTDSCDMACellInfoReq;
+    const qmiLocInjectSubscriberIDReqMsgT_v02 *pInjectSubscriberIDReq;
+
 }locClientReqUnionType;
 
 
@@ -1151,6 +1155,10 @@ typedef union
    /**< Response to the QMI_LOC_PEDOMETER_REPORT_REQ_V02 request.
         The respIndId field in the response indication callback is set to
         QMI_LOC_PEDOMETER_REPORT_IND_V02. */
+
+    const qmiLocInjectWCDMACellInfoIndMsgT_v02 *pInjectWCDMACellInfoInd;
+    const qmiLocInjectTDSCDMACellInfoIndMsgT_v02 *pInjectTDSCDMACellInfoInd;
+    const qmiLocInjectSubscriberIDIndMsgT_v02 *pInjectSubscriberIDInd;
 
 }locClientRespIndUnionType;
 
