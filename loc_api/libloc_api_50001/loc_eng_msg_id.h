@@ -85,7 +85,6 @@ enum loc_eng_msg_ids_t {
     LOC_ENG_MSG_REQUEST_POSITION,
     LOC_ENG_MSG_EXT_POWER_CONFIG,
 
-#ifdef FEATURE_ULP
     // The following messages are added for ulp
     LOC_ENG_MSG_REQUEST_PHONE_CONTEXT,
     LOC_ENG_MSG_REQUEST_NETWORK_POSIITON,
@@ -121,16 +120,14 @@ enum loc_eng_msg_ids_t {
 
     // Last ULP MSG
     ULP_MSG_LAST = 0x700,
-#endif
+
     /* Message is sent by HAL to LOC API to configure LTE Positioning
        Profile in modem */
     LOC_ENG_MSG_LPP_CONFIG,
 
-#ifdef FEATURE_ULP
     // Message is sent by Android framework (GpsLocationProvider)
     // to inject the raw command
     ULP_MSG_INJECT_RAW_COMMAND,
-#endif
 
     /* Message is sent by HAL to LOC API to select A-GLONASS protocol */
     LOC_ENG_MSG_A_GLONASS_PROTOCOL,

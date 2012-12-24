@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -627,7 +627,7 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
 {
     LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
 
-    GpsLocation location = {0};
+    UlpLocation location = {0};
     GpsLocationExtended locationExtended = {0};
 
     location.size = sizeof(location);
@@ -644,54 +644,52 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                 (location_report_ptr->latitude != 0 ||
                  location_report_ptr->longitude != 0))
             {
-                location.flags    |= GPS_LOCATION_HAS_LAT_LONG;
-                location.latitude  = location_report_ptr->latitude;
-                location.longitude = location_report_ptr->longitude;
+                location.gpsLocation.flags    |= GPS_LOCATION_HAS_LAT_LONG;
+                location.gpsLocation.latitude  = location_report_ptr->latitude;
+                location.gpsLocation.longitude = location_report_ptr->longitude;
 
                 // Time stamp (UTC)
                 if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_TIMESTAMP_UTC)
                 {
-                    location.timestamp = location_report_ptr->timestamp_utc;
+                    location.gpsLocation.timestamp = location_report_ptr->timestamp_utc;
                 }
 
                 // Altitude
                 if (location_report_ptr->valid_mask &  RPC_LOC_POS_VALID_ALTITUDE_WRT_ELLIPSOID )
                 {
-                    location.flags    |= GPS_LOCATION_HAS_ALTITUDE;
-                    location.altitude = location_report_ptr->altitude_wrt_ellipsoid;
+                    location.gpsLocation.flags    |= GPS_LOCATION_HAS_ALTITUDE;
+                    location.gpsLocation.altitude = location_report_ptr->altitude_wrt_ellipsoid;
                 }
 
                 // Speed
                 if ((location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SPEED_HORIZONTAL) &&
                     (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SPEED_VERTICAL))
                 {
-                    location.flags    |= GPS_LOCATION_HAS_SPEED;
-                    location.speed = sqrt(location_report_ptr->speed_horizontal * location_report_ptr->speed_horizontal +
+                    location.gpsLocation.flags    |= GPS_LOCATION_HAS_SPEED;
+                    location.gpsLocation.speed = sqrt(location_report_ptr->speed_horizontal * location_report_ptr->speed_horizontal +
                                           location_report_ptr->speed_vertical * location_report_ptr->speed_vertical);
                 }
 
                 // Heading
                 if (location_report_ptr->valid_mask &  RPC_LOC_POS_VALID_HEADING)
                 {
-                    location.flags    |= GPS_LOCATION_HAS_BEARING;
-                    location.bearing = location_report_ptr->heading;
+                    location.gpsLocation.flags    |= GPS_LOCATION_HAS_BEARING;
+                    location.gpsLocation.bearing = location_report_ptr->heading;
                 }
 
                 // Uncertainty (circular)
                 if ( (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_HOR_UNC_CIRCULAR) )
                 {
-                    location.flags    |= GPS_LOCATION_HAS_ACCURACY;
-                    location.accuracy = location_report_ptr->hor_unc_circular;
+                    location.gpsLocation.flags    |= GPS_LOCATION_HAS_ACCURACY;
+                    location.gpsLocation.accuracy = location_report_ptr->hor_unc_circular;
                 }
 
-		// Technology Mask
+                // Technology Mask
 
                 tech_Mask  |= location_report_ptr->technology_mask;
-#ifdef FEATURE_ULP
                 //Mark the location source as from GNSS
-                location.flags |= LOCATION_HAS_SOURCE_INFO;
+                location.gpsLocation.flags |= LOCATION_HAS_SOURCE_INFO;
                 location.position_source = ULP_LOCATION_IS_FROM_GNSS;
-#endif
                 if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_ALTITUDE_WRT_MEAN_SEA_LEVEL)
                 {
                     locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;
@@ -710,7 +708,7 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                                               locEngHandle.extPosInfo((void*)location_report_ptr),
                                               (location_report_ptr->session_status == RPC_LOC_SESS_STATUS_IN_PROGESS ?
                                                LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
-					       tech_Mask);
+                                               tech_Mask);
             }
         }
         else

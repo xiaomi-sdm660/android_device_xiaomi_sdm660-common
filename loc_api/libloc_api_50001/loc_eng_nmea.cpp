@@ -110,7 +110,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
-                               const GpsLocation &location, const GpsLocationExtended &locationExtended)
+                               const UlpLocation &location, const GpsLocationExtended &locationExtended)
 {
     ENTRY_LOG();
 
@@ -119,7 +119,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     int lengthRemaining = sizeof(sentence);
     int length = 0;
 
-    time_t utcTime(location.timestamp/1000);
+    time_t utcTime(location.gpsLocation.timestamp/1000);
     tm * pTm = gmtime(&utcTime);
     int utcYear = pTm->tm_year % 100; // 2 digit year
     int utcMonth = pTm->tm_mon + 1; // tm_mon starts at zero
@@ -207,19 +207,19 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker = sentence;
     lengthRemaining = sizeof(sentence);
 
-    if (location.flags & GPS_LOCATION_HAS_BEARING)
+    if (location.gpsLocation.flags & GPS_LOCATION_HAS_BEARING)
     {
-        float magTrack = location.bearing;
+        float magTrack = location.gpsLocation.bearing;
         if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_MAG_DEV)
         {
-            float magTrack = location.bearing - locationExtended.magneticDeviation;
+            float magTrack = location.gpsLocation.bearing - locationExtended.magneticDeviation;
             if (magTrack < 0.0)
                 magTrack += 360.0;
             else if (magTrack > 360.0)
                 magTrack -= 360.0;
         }
 
-        length = snprintf(pMarker, lengthRemaining, "$GPVTG,%.1lf,T,%.1lf,M,", location.bearing, magTrack);
+        length = snprintf(pMarker, lengthRemaining, "$GPVTG,%.1lf,T,%.1lf,M,", location.gpsLocation.bearing, magTrack);
     }
     else
     {
@@ -234,10 +234,10 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (location.flags & GPS_LOCATION_HAS_SPEED)
+    if (location.gpsLocation.flags & GPS_LOCATION_HAS_SPEED)
     {
-        float speedKnots = location.speed * (3600.0/1852.0);
-        float speedKmPerHour = location.speed * 3.6;
+        float speedKnots = location.gpsLocation.speed * (3600.0/1852.0);
+        float speedKmPerHour = location.gpsLocation.speed * 3.6;
 
         length = snprintf(pMarker, lengthRemaining, "%.1lf,N,%.1lf,K,", speedKnots, speedKmPerHour);
     }
@@ -254,7 +254,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (!(location.flags & GPS_LOCATION_HAS_LAT_LONG))
+    if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
         length = snprintf(pMarker, lengthRemaining, "%c", 'N'); // N means no fix
     else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->client_handle->getPositionMode().mode)
         length = snprintf(pMarker, lengthRemaining, "%c", 'A'); // A means autonomous
@@ -282,10 +282,10 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (location.flags & GPS_LOCATION_HAS_LAT_LONG)
+    if (location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG)
     {
-        double latitude = location.latitude;
-        double longitude = location.longitude;
+        double latitude = location.gpsLocation.latitude;
+        double longitude = location.gpsLocation.longitude;
         char latHemisphere;
         char lonHemisphere;
         double latMinutes;
@@ -331,9 +331,9 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (location.flags & GPS_LOCATION_HAS_SPEED)
+    if (location.gpsLocation.flags & GPS_LOCATION_HAS_SPEED)
     {
-        float speedKnots = location.speed * (3600.0/1852.0);
+        float speedKnots = location.gpsLocation.speed * (3600.0/1852.0);
         length = snprintf(pMarker, lengthRemaining, "%.1lf,", speedKnots);
     }
     else
@@ -349,9 +349,9 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (location.flags & GPS_LOCATION_HAS_BEARING)
+    if (location.gpsLocation.flags & GPS_LOCATION_HAS_BEARING)
     {
-        length = snprintf(pMarker, lengthRemaining, "%.1lf,", location.bearing);
+        length = snprintf(pMarker, lengthRemaining, "%.1lf,", location.gpsLocation.bearing);
     }
     else
     {
@@ -407,7 +407,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (!(location.flags & GPS_LOCATION_HAS_LAT_LONG))
+    if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
         length = snprintf(pMarker, lengthRemaining, "%c", 'N'); // N means no fix
     else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->client_handle->getPositionMode().mode)
         length = snprintf(pMarker, lengthRemaining, "%c", 'A'); // A means autonomous
@@ -435,10 +435,10 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if (location.flags & GPS_LOCATION_HAS_LAT_LONG)
+    if (location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG)
     {
-        double latitude = location.latitude;
-        double longitude = location.longitude;
+        double latitude = location.gpsLocation.latitude;
+        double longitude = location.gpsLocation.longitude;
         char latHemisphere;
         char lonHemisphere;
         double latMinutes;
@@ -485,7 +485,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     lengthRemaining -= length;
 
     char gpsQuality;
-    if (!(location.flags & GPS_LOCATION_HAS_LAT_LONG))
+    if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
         gpsQuality = '0'; // 0 means no fix
     else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->client_handle->getPositionMode().mode)
         gpsQuality = '1'; // 1 means GPS fix
@@ -534,11 +534,11 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     pMarker += length;
     lengthRemaining -= length;
 
-    if ((location.flags & GPS_LOCATION_HAS_ALTITUDE) &&
+    if ((location.gpsLocation.flags & GPS_LOCATION_HAS_ALTITUDE) &&
         (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL))
     {
         length = snprintf(pMarker, lengthRemaining, "%.1lf,M,,",
-                          location.altitude - locationExtended.altitudeMeanSeaLevel);
+                          location.gpsLocation.altitude - locationExtended.altitudeMeanSeaLevel);
     }
     else
     {

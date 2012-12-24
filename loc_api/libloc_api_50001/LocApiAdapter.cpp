@@ -45,17 +45,13 @@ LocEng::LocEng(void* caller,
                gps_acquire_wakelock acqwl,
                gps_release_wakelock relwl,
                loc_msg_sender msgSender,
-#ifdef FEATURE_ULP
                loc_msg_sender msgUlpSender,
-#endif
                loc_ext_parser posParser,
                loc_ext_parser svParser) :
         owner(caller),
         eventMask(emask), acquireWakelock(acqwl),
         releaseWakeLock(relwl), sendMsge(msgSender),
-#ifdef FEATURE_ULP
         sendUlpMsg(msgUlpSender),
-#endif
         extPosInfo(NULL == posParser ? noProc : posParser),
         extSvInfo(NULL == svParser ? noProc : svParser)
 {
@@ -140,7 +136,7 @@ int LocApiAdapter::decodeAddress(char *addr_string, int string_size,
     return idxOutput;
 }
 
-void LocApiAdapter::reportPosition(GpsLocation &location,
+void LocApiAdapter::reportPosition(UlpLocation &location,
                                    GpsLocationExtended &locationExtended,
                                    void* locationExt,
                                    enum loc_sess_status status,
@@ -152,22 +148,17 @@ void LocApiAdapter::reportPosition(GpsLocation &location,
                                                                      locationExt,
                                                                      status,
                                                                      loc_technology_mask));
-#ifdef FEATURE_ULP
     if (locEngHandle.sendUlpMsg) {
         locEngHandle.sendUlpMsg(locEngHandle.owner, msg);
     } else {
         locEngHandle.sendMsge(locEngHandle.owner, msg);
     }
-#else
-    locEngHandle.sendMsge(locEngHandle.owner, msg);
-#endif
 }
 
 void LocApiAdapter::reportSv(GpsSvStatus &svStatus, GpsLocationExtended &locationExtended, void* svExt)
 {
     loc_eng_msg_report_sv *msg(new loc_eng_msg_report_sv(locEngHandle.owner, svStatus, locationExtended, svExt));
 
-#ifdef FEATURE_ULP
     //We want to send SV info to ULP to help it in determining GNSS signal strength
     //ULP will forward the SV reports to HAL without any modifications
     if (locEngHandle.sendUlpMsg) {
@@ -175,9 +166,6 @@ void LocApiAdapter::reportSv(GpsSvStatus &svStatus, GpsLocationExtended &locatio
     } else {
         locEngHandle.sendMsge(locEngHandle.owner, msg);
     }
-#else
-    locEngHandle.sendMsge(locEngHandle.owner, msg);
-#endif
 }
 
 void LocApiAdapter::reportStatus(GpsStatusValue status)

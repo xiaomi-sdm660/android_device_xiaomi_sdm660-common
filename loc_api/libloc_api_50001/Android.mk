@@ -31,10 +31,6 @@ ifeq ($(FEATURE_DELEXT), true)
 LOCAL_CFLAGS += -DFEATURE_DELEXT
 endif #FEATURE_DELEXT
 
-ifeq ($(FEATURE_ULP), true)
-LOCAL_CFLAGS += -DFEATURE_ULP
-endif #FEATURE_ULP
-
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils
 
@@ -48,7 +44,8 @@ LOCAL_COPY_HEADERS:= \
    loc_eng_agps.h \
    loc_eng_msg.h \
    loc_eng_msg_id.h \
-   loc_eng_log.h
+   loc_eng_log.h \
+   loc_ulp.h
 
 LOCAL_PRELINK_MODULE := false
 
@@ -88,10 +85,6 @@ LOCAL_CFLAGS += \
 ifeq ($(FEATURE_IPV6), true)
 LOCAL_CFLAGS += -DFEATURE_IPV6
 endif #FEATURE_IPV6
-
-ifeq ($(FEATURE_ULP), true)
-LOCAL_CFLAGS += -DFEATURE_ULP
-endif #FEATURE_ULP
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \

@@ -6,7 +6,7 @@ GPS_DIR_LIST :=
 
 FEATURE_IPV6 := true
 FEATURE_DELEXT := true
-FEATURE_ULP := false
+FEATURE_ULP := true
 
 # add RPC dirs if RPC is available
 ifneq ($(TARGET_NO_RPC),true)

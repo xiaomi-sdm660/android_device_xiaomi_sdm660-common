@@ -24,10 +24,6 @@ ifeq ($(FEATURE_IPV6), true)
 LOCAL_CFLAGS += -DFEATURE_IPV6
 endif #FEATURE_IPV6
 
-ifeq ($(FEATURE_ULP), true)
-LOCAL_CFLAGS += -DFEATURE_ULP
-endif #FEATURE_ULP
-
 LOCAL_SHARED_LIBRARIES:= \
     librpc \
     libutils \

@@ -89,9 +89,7 @@ struct LocEng {
     const gps_acquire_wakelock acquireWakelock;
     const gps_release_wakelock releaseWakeLock;
     const loc_msg_sender       sendMsge;
-#ifdef FEATURE_ULP
     const loc_msg_sender       sendUlpMsg;
-#endif
     const loc_ext_parser       extPosInfo;
     const loc_ext_parser       extSvInfo;
 
@@ -100,9 +98,7 @@ struct LocEng {
            gps_acquire_wakelock acqwl,
            gps_release_wakelock relwl,
            loc_msg_sender msgSender,
-#ifdef FEATURE_ULP
            loc_msg_sender msgUlpSender,
-#endif
            loc_ext_parser posParser,
            loc_ext_parser svParser);
 };
@@ -126,7 +122,7 @@ public:
     static int decodeAddress(char *addr_string, int string_size,
                              const char *data, int data_size);
 
-    void reportPosition(GpsLocation &location,
+    void reportPosition(UlpLocation &location,
                         GpsLocationExtended &locationExtended,
                         void* locationExt,
                         enum loc_sess_status status,

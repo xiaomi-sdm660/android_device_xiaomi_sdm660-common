@@ -31,6 +31,7 @@
 
 
 #include <hardware/gps.h>
+#include <loc_ulp.h>
 #include <stdlib.h>
 #include <string.h>
 #include "log_util.h"
@@ -108,9 +109,9 @@ typedef uint16_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_DOP 0x0001
 /** GpsLocationExtended has valid altitude mean sea level. */
 #define GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL 0x0002
-/** GpsLocation has valid magnetic deviation. */
+/** UlpLocation has valid magnetic deviation. */
 #define GPS_LOCATION_EXTENDED_HAS_MAG_DEV 0x0004
-/** GpsLocation has valid mode indicator. */
+/** UlpLocation has valid mode indicator. */
 #define GPS_LOCATION_EXTENDED_HAS_MODE_IND 0x0008
 
 /** Represents gps location extended. */
@@ -157,8 +158,7 @@ struct loc_eng_msg {
     }
     virtual ~loc_eng_msg()
     {
-        LOC_LOGV("deleting msg %s", loc_get_msg_name(msgid));
-        LOC_LOGV("deleting msg ox%x", msgid);
+        LOC_LOGV("deleting msg %s (0x%x)", loc_get_msg_name(msgid), msgid);
     }
 };
 
@@ -360,44 +360,36 @@ struct loc_eng_msg_delete_aiding_data : public loc_eng_msg {
 };
 
 struct loc_eng_msg_report_position : public loc_eng_msg {
-    const GpsLocation location;
+    const UlpLocation location;
     const GpsLocationExtended locationExtended;
     const void* locationExt;
     const enum loc_sess_status status;
     const LocPosTechMask technology_mask;
-    inline loc_eng_msg_report_position(void* instance, GpsLocation &loc, GpsLocationExtended &locExtended, void* locExt,
+    inline loc_eng_msg_report_position(void* instance, UlpLocation &loc, GpsLocationExtended &locExtended, void* locExt,
                                        enum loc_sess_status st) :
         loc_eng_msg(instance, LOC_ENG_MSG_REPORT_POSITION),
         location(loc), locationExtended(locExtended), locationExt(locExt), status(st), technology_mask(LOC_POS_TECH_MASK_DEFAULT)
     {
-#ifdef FEATURE_ULP
         LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Session status: %d\n Technology mask: %u",
-                 location.flags, location.position_source, location.latitude, location.longitude,
-                 location.altitude, location.speed, location.bearing, location.accuracy,
-                 location.timestamp, location.rawDataSize, location.rawData,status,technology_mask);
-#else
-        LOC_LOGV("flags: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  Session status: %d\n Technology mask: %u",
-                 location.flags, location.latitude, location.longitude,
-                 location.altitude, location.speed, location.bearing, location.accuracy,
-                 location.timestamp, status,technology_mask);
-#endif
+                 location.gpsLocation.flags, location.position_source,
+                 location.gpsLocation.latitude, location.gpsLocation.longitude,
+                 location.gpsLocation.altitude, location.gpsLocation.speed,
+                 location.gpsLocation.bearing, location.gpsLocation.accuracy,
+                 location.gpsLocation.timestamp, location.rawDataSize,
+                 location.rawData,status,technology_mask);
     }
-    inline loc_eng_msg_report_position(void* instance, GpsLocation &loc, GpsLocationExtended &locExtended, void* locExt,
+    inline loc_eng_msg_report_position(void* instance, UlpLocation &loc, GpsLocationExtended &locExtended, void* locExt,
                                        enum loc_sess_status st, LocPosTechMask technology) :
         loc_eng_msg(instance, LOC_ENG_MSG_REPORT_POSITION),
         location(loc), locationExtended(locExtended), locationExt(locExt), status(st), technology_mask(technology)
     {
-#ifdef FEATURE_ULP
         LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Session status: %d\n Technology mask: %u",
-                 location.flags, location.position_source, location.latitude, location.longitude,
-                 location.altitude, location.speed, location.bearing, location.accuracy,
-                 location.timestamp, location.rawDataSize, location.rawData,status,technology_mask);
-#else
-        LOC_LOGV("flags: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  Session status: %d\n Technology mask: %u",
-                 location.flags, location.latitude, location.longitude,
-                 location.altitude, location.speed, location.bearing, location.accuracy,
-                 location.timestamp, status,technology_mask);
-#endif
+                 location.gpsLocation.flags, location.position_source,
+                 location.gpsLocation.latitude, location.gpsLocation.longitude,
+                 location.gpsLocation.altitude, location.gpsLocation.speed,
+                 location.gpsLocation.bearing, location.gpsLocation.accuracy,
+                 location.gpsLocation.timestamp, location.rawDataSize,
+                 location.rawData,status,technology_mask);
     }
 };
 
@@ -835,7 +827,6 @@ struct loc_eng_msg_set_data_enable : public loc_eng_msg {
     }
 };
 
-#ifdef FEATURE_ULP
 struct loc_eng_msg_request_network_position : public loc_eng_msg {
     const UlpNetworkRequestPos networkPosRequest;
     inline loc_eng_msg_request_network_position (void* instance, UlpNetworkRequestPos networkPosReq) :
@@ -933,21 +924,20 @@ struct ulp_msg_inject_network_position : public loc_eng_msg {
 };
 
 struct ulp_msg_report_quipc_position : public loc_eng_msg {
-    const GpsLocation location;
+    const UlpLocation location;
     const int  quipc_error_code;
-    inline ulp_msg_report_quipc_position(void* instance, GpsLocation &loc,
+    inline ulp_msg_report_quipc_position(void* instance, UlpLocation &loc,
                                          int  quipc_err) :
         loc_eng_msg(instance, ULP_MSG_REPORT_QUIPC_POSITION),
         location(loc), quipc_error_code(quipc_err)
     {
         LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Quipc error: %d",
-                 location.flags, location.position_source, location.latitude, location.longitude,
-                 location.altitude, location.speed, location.bearing, location.accuracy,
-                 location.timestamp, location.rawDataSize, location.rawData,
+                 location.gpsLocation.flags, location.position_source, location.gpsLocation.latitude, location.gpsLocation.longitude,
+                 location.gpsLocation.altitude, location.gpsLocation.speed, location.gpsLocation.bearing, location.gpsLocation.accuracy,
+                 location.gpsLocation.timestamp, location.rawDataSize, location.rawData,
                  quipc_error_code);
     }
 };
-#endif
 
 void loc_eng_msg_sender(void* loc_eng_data_p, void* msg);
 int loc_eng_msgget(int * p_req_msgq);
