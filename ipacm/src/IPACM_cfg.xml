@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ipacm_cfg.xsd">
+	<IPACM>
+		<IPACMIface>
+			<Iface>
+			   <Name>rmnet0</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
+			   <Name>rmnet1</Name>
+			   <Category>LAN</Category>
+			</Iface>			
+			<Iface>
+			   <Name>wlan0</Name>
+			   <Category>WLAN</Category>
+			</Iface>			
+			<Iface>
+			   <Name>bridge0</Name>
+			   <Category>VIRTUAL</Category>
+		    </Iface>
+		</IPACMIface>
+		<IPACMPrivateSubnet>
+			<Subnet>
+  			   <SubnetAddress>192.168.1.0</SubnetAddress>
+  			   <SubnetMask>255.255.255.0</SubnetMask>
+		    </Subnet>		
+		</IPACMPrivateSubnet>
+		<IPACMALG>
+			<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>23</Port>
+		    </ALG>		
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>250</Port>
+		    </ALG>		
+		</IPACMALG>
+		<IPACMNAT>		
+ 	        <MaxNatEntries>100</MaxNatEntries>
+		</IPACMNAT>
+	</IPACM>
+</system>	
