@@ -1,13 +1,6 @@
 ifneq ($(BUILD_TINY_ANDROID),true)
 #Compile this library only for builds with the latest modem image
 
-BIT_ENABLED_BOARD_PLATFORM_LIST := msm7630_fusion
-BIT_ENABLED_BOARD_PLATFORM_LIST += msm8660
-BIT_ENABLED_BOARD_PLATFORM_LIST += msm8960
-ifeq ($(call is-board-platform-in-list,$(BIT_ENABLED_BOARD_PLATFORM_LIST)),true)
-FEATURE_GNSS_BIT_API := true
-endif # is-board-platform-in-list
-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -80,10 +73,6 @@ LOCAL_SRC_FILES += \
     loc_eng_ni.cpp \
     loc_eng_log.cpp \
     loc_eng_nmea.cpp
-
-ifeq ($(FEATURE_GNSS_BIT_API), true)
-LOCAL_CFLAGS += -DFEATURE_GNSS_BIT_API
-endif # FEATURE_GNSS_BIT_API
 
 LOCAL_SRC_FILES += \
     loc_eng_dmn_conn.cpp \
