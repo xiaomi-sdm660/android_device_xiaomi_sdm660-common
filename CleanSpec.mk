@@ -48,3 +48,9 @@
 # NEWER CLEAN STEPS MUST BE AT THE END OF THE LIST
 # ************************************************
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/obj/SHARED_LIBRARIES/libloc_api*)
+
+$(call add-clean-step, rm -rf $(PRODUCT_OUT)/obj/SHARED_LIBRARIES/libloc* \
+			      $(PRODUCT_OUT)/symbols/system/lib/libloc*   \
+			      $(PRODUCT_OUT)/system/lib/libloc*           \
+			      $(PRODUCT_OUT)/obj/lib/libloc*              \
+			      $(PRODUCT_OUT)/obj/include/libloc_eng)
