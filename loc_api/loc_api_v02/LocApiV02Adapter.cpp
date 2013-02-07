@@ -282,7 +282,7 @@ enum loc_api_adapter_err LocApiV02Adapter :: startFix()
   start_msg.minInterval_valid = 1;
   start_msg.minInterval = fixCriteria.min_interval;
 
-  if (fixCriteria.preferred_accuracy > 0) {
+  if (fixCriteria.preferred_accuracy >= 0) {
       start_msg.horizontalAccuracyLevel_valid = 1;
 
       if (fixCriteria.preferred_accuracy <= 100)
