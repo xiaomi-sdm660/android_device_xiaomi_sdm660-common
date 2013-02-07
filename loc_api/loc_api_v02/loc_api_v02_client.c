@@ -406,7 +406,16 @@ static locClientRespIndTableStructT locClientRespIndTable[]= {
 
    //Pedomete Report
    { QMI_LOC_PEDOMETER_REPORT_IND_V02,
-     sizeof(qmiLocPedometerReportIndMsgT_v02)}
+     sizeof(qmiLocPedometerReportIndMsgT_v02)},
+
+   { QMI_LOC_INJECT_WCDMA_CELL_INFO_IND_V02,
+     sizeof(qmiLocInjectWCDMACellInfoIndMsgT_v02)},
+
+   { QMI_LOC_INJECT_TDSCDMA_CELL_INFO_IND_V02,
+     sizeof(qmiLocInjectTDSCDMACellInfoIndMsgT_v02)},
+
+   { QMI_LOC_INJECT_SUBSCRIBER_ID_IND_V02,
+     sizeof(qmiLocInjectSubscriberIDIndMsgT_v02)}
 };
 
 
@@ -1056,6 +1065,9 @@ static bool locClientHandleIndication(
     case QMI_LOC_INJECT_GSM_CELL_INFO_IND_V02:
     case QMI_LOC_INJECT_NETWORK_INITIATED_MESSAGE_IND_V02:
     case QMI_LOC_WWAN_OUT_OF_SERVICE_NOTIFICATION_IND_V02:
+    case QMI_LOC_INJECT_WCDMA_CELL_INFO_IND_V02:
+    case QMI_LOC_INJECT_TDSCDMA_CELL_INFO_IND_V02:
+    case QMI_LOC_INJECT_SUBSCRIBER_ID_IND_V02:
     {
       status = true;
       break;
@@ -1596,6 +1608,24 @@ static bool validateRequest(
     case QMI_LOC_PEDOMETER_REPORT_REQ_V02:
     {
       *pOutLen = sizeof(qmiLocPedometerReportReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_WCDMA_CELL_INFO_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectWCDMACellInfoReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_TDSCDMA_CELL_INFO_REQ_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectTDSCDMACellInfoReqMsgT_v02);
+      break;
+    }
+
+    case QMI_LOC_INJECT_SUBSCRIBER_ID_IND_V02:
+    {
+      *pOutLen = sizeof(qmiLocInjectSubscriberIDReqMsgT_v02);
       break;
     }
 
