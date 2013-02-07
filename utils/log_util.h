@@ -86,15 +86,15 @@ else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGW("W/"__VA_ARGS__); }
 
 #define LOC_LOGI(...) \
 if (loc_logger.DEBUG_LEVEL >= 3) { ALOGE("I/"__VA_ARGS__); } \
-else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGI("W/"__VA_ARGS__); }
+else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGI("I/"__VA_ARGS__); }
 
 #define LOC_LOGD(...) \
 if (loc_logger.DEBUG_LEVEL >= 4) { ALOGE("D/"__VA_ARGS__); } \
-else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGD("W/"__VA_ARGS__); }
+else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGD("D/"__VA_ARGS__); }
 
 #define LOC_LOGV(...) \
 if (loc_logger.DEBUG_LEVEL >= 5) { ALOGE("V/"__VA_ARGS__); } \
-else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGV("W/"__VA_ARGS__); }
+else if (loc_logger.DEBUG_LEVEL <= 0) { ALOGV("V/"__VA_ARGS__); }
 
 #else /* DEBUG_DMN_LOC_API */
 
