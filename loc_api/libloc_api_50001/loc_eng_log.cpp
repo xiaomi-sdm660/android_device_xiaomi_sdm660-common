@@ -95,7 +95,6 @@ static loc_name_val_s_type loc_eng_msgs[] =
     NAME_VAL( LOC_ENG_MSG_REQUEST_TIME ),
     NAME_VAL( LOC_ENG_MSG_EXT_POWER_CONFIG ),
     NAME_VAL( LOC_ENG_MSG_REQUEST_POSITION ),
-#ifdef FEATURE_ULP
     NAME_VAL( LOC_ENG_MSG_REQUEST_PHONE_CONTEXT ),
     NAME_VAL( LOC_ENG_MSG_REQUEST_NETWORK_POSIITON ),
     NAME_VAL( ULP_MSG_UPDATE_CRITERIA ),
@@ -105,8 +104,9 @@ static loc_name_val_s_type loc_eng_msgs[] =
     NAME_VAL( ULP_MSG_INJECT_NETWORK_POSITION ),
     NAME_VAL( ULP_MSG_REPORT_QUIPC_POSITION ),
     NAME_VAL( ULP_MSG_REQUEST_COARSE_POSITION ),
-#endif
+    NAME_VAL( ULP_MSG_MONITOR ),
     NAME_VAL( LOC_ENG_MSG_LPP_CONFIG ),
+    NAME_VAL( ULP_MSG_INJECT_RAW_COMMAND ),
     NAME_VAL( LOC_ENG_MSG_A_GLONASS_PROTOCOL )
 };
 static int loc_eng_msgs_num = sizeof(loc_eng_msgs) / sizeof(loc_name_val_s_type);

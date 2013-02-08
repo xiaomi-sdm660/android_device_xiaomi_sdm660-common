@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1590,10 +1590,10 @@ enum loc_api_adapter_err LocApiV02Adapter :: convertErr(
 void LocApiV02Adapter :: reportPosition (
   const qmiLocEventPositionReportIndMsgT_v02 *location_report_ptr)
 {
-    GpsLocation location;
+    UlpLocation location;
     LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
     LOC_LOGD("Reporting postion from V2 Adapter\n");
-    memset(&location, 0, sizeof (GpsLocation));
+    memset(&location, 0, sizeof (UlpLocation));
     location.size = sizeof(location);
     GpsLocationExtended locationExtended;
     memset(&locationExtended, 0, sizeof (GpsLocationExtended));
@@ -1610,29 +1610,29 @@ void LocApiV02Adapter :: reportPosition (
             (location_report_ptr->latitude != 0 ||
              location_report_ptr->longitude!= 0))
         {
-            location.flags  |= GPS_LOCATION_HAS_LAT_LONG;
-            location.latitude  = location_report_ptr->latitude;
-            location.longitude = location_report_ptr->longitude;
+            location.gpsLocation.flags  |= GPS_LOCATION_HAS_LAT_LONG;
+            location.gpsLocation.latitude  = location_report_ptr->latitude;
+            location.gpsLocation.longitude = location_report_ptr->longitude;
 
             // Time stamp (UTC)
             if(location_report_ptr->timestampUtc_valid == 1)
             {
-                location.timestamp = location_report_ptr->timestampUtc;
+                location.gpsLocation.timestamp = location_report_ptr->timestampUtc;
             }
 
             // Altitude
             if(location_report_ptr->altitudeWrtEllipsoid_valid == 1  )
             {
-                location.flags  |= GPS_LOCATION_HAS_ALTITUDE;
-                location.altitude = location_report_ptr->altitudeWrtEllipsoid;
+                location.gpsLocation.flags  |= GPS_LOCATION_HAS_ALTITUDE;
+                location.gpsLocation.altitude = location_report_ptr->altitudeWrtEllipsoid;
             }
 
             // Speed
             if((location_report_ptr->speedHorizontal_valid == 1) &&
                (location_report_ptr->speedVertical_valid ==1 ) )
             {
-                location.flags  |= GPS_LOCATION_HAS_SPEED;
-                location.speed = sqrt(
+                location.gpsLocation.flags  |= GPS_LOCATION_HAS_SPEED;
+                location.gpsLocation.speed = sqrt(
                     (location_report_ptr->speedHorizontal *
                      location_report_ptr->speedHorizontal) +
                     (location_report_ptr->speedVertical *
@@ -1642,25 +1642,23 @@ void LocApiV02Adapter :: reportPosition (
             // Heading
             if(location_report_ptr->heading_valid == 1)
             {
-                location.flags  |= GPS_LOCATION_HAS_BEARING;
-                location.bearing = location_report_ptr->heading;
+                location.gpsLocation.flags  |= GPS_LOCATION_HAS_BEARING;
+                location.gpsLocation.bearing = location_report_ptr->heading;
             }
 
             // Uncertainty (circular)
             if( (location_report_ptr->horUncCircular_valid ) )
             {
-                location.flags  |= GPS_LOCATION_HAS_ACCURACY;
-                location.accuracy = location_report_ptr->horUncCircular;
+                location.gpsLocation.flags  |= GPS_LOCATION_HAS_ACCURACY;
+                location.gpsLocation.accuracy = location_report_ptr->horUncCircular;
             }
 
             // Technology Mask
             tech_Mask  |= location_report_ptr->technologyMask;
 
-#ifdef FEATURE_ULP
             //Mark the location source as from GNSS
-            location.flags |= LOCATION_HAS_SOURCE_INFO;
+            location.gpsLocation.flags |= LOCATION_HAS_SOURCE_INFO;
             location.position_source = ULP_LOCATION_IS_FROM_GNSS;
-#endif
             if (location_report_ptr->magneticDeviation_valid)
             {
                 locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;

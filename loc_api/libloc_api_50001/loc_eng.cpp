@@ -153,10 +153,10 @@ static void loc_default_parameters(void)
 
 LocEngContext::LocEngContext(gps_create_thread threadCreator) :
     deferred_q((const void*)loc_eng_create_msg_q()),
-#ifdef FEATURE_ULP
+
     //TODO: should we conditionally create ulp msg q?
     ulp_q((const void*)loc_eng_create_msg_q()),
-#endif
+
     deferred_action_thread(threadCreator("loc_eng",loc_eng_deferred_action_thread, this)),
     counter(0)
 {
@@ -193,9 +193,9 @@ void LocEngContext::drop()
             pthread_cond_wait(&cond, &lock);
 
             msg_q_destroy((void**)&deferred_q);
-#ifdef FEATURE_ULP
+
             msg_q_destroy((void**)&ulp_q);
-#endif
+
             delete me;
             me = NULL;
         }
@@ -326,15 +326,9 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
         loc_eng_data.generateNmea = false;
     }
 
-#ifdef FEATURE_ULP
     LocEng locEngHandle(&loc_eng_data, event, loc_eng_data.acquire_wakelock_cb,
                         loc_eng_data.release_wakelock_cb, loc_eng_msg_sender, loc_external_msg_sender,
                         callbacks->location_ext_parser, callbacks->sv_ext_parser);
-#else
-    LocEng locEngHandle(&loc_eng_data, event, loc_eng_data.acquire_wakelock_cb,
-                        loc_eng_data.release_wakelock_cb, loc_eng_msg_sender,
-                        callbacks->location_ext_parser, callbacks->sv_ext_parser);
-#endif
     loc_eng_data.client_handle = LocApiAdapter::getLocApiAdapter(locEngHandle);
 
     if (NULL == loc_eng_data.client_handle) {
@@ -475,14 +469,12 @@ void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data)
     ((LocEngContext*)(loc_eng_data.context))->drop();
     loc_eng_data.context = NULL;
 
-#ifdef FEATURE_ULP
     // De-initialize ulp
     if (locEngUlpInf != NULL)
     {
         locEngUlpInf = NULL;
         msg_q_destroy( &loc_eng_data.ulp_q);
     }
-#endif
 
     if (loc_eng_data.client_handle != NULL)
     {
@@ -521,7 +513,6 @@ int loc_eng_start(loc_eng_data_s_type &loc_eng_data)
    ENTRY_LOG_CALLFLOW();
    INIT_CHECK(loc_eng_data.context, return -1);
 
-#ifdef FEATURE_ULP
    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
    {
        //Pass the start messgage to ULP if present & activated
@@ -530,7 +521,6 @@ int loc_eng_start(loc_eng_data_s_type &loc_eng_data)
                   msg, loc_eng_free_msg);
    }
    else
-#endif
    {
        loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_START_FIX));
        msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
@@ -581,7 +571,6 @@ int loc_eng_stop(loc_eng_data_s_type &loc_eng_data)
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.context, return -1);
 
-#ifdef FEATURE_ULP
     if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
     {
         //Pass the start messgage to ULP if present & activated
@@ -590,7 +579,6 @@ int loc_eng_stop(loc_eng_data_s_type &loc_eng_data)
                    msg, loc_eng_free_msg);
     }
     else
-#endif
     {
         loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_STOP_FIX));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
@@ -1584,17 +1572,15 @@ static void loc_eng_deferred_action_thread(void* arg)
                     //   2.2.2 we care about inaccuracy; and
                     //   2.2.3 the inaccuracy exceeds our tolerance
                     else if ((LOC_SESS_SUCCESS == rpMsg->status && (
-#ifdef FEATURE_ULP
-                               ((LOCATION_HAS_SOURCE_INFO & rpMsg->location.flags) &&
+                               ((LOCATION_HAS_SOURCE_INFO & rpMsg->location.gpsLocation.flags) &&
                                 ULP_LOCATION_IS_FROM_HYBRID == rpMsg->location.position_source) ||
-#endif
                                ((LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask) ||
                                 (LOC_POS_TECH_MASK_SENSORS & rpMsg->technology_mask)))) ||
                              (LOC_SESS_INTERMEDIATE == loc_eng_data_p->intermediateFix &&
-                              !((rpMsg->location.flags & GPS_LOCATION_HAS_ACCURACY) &&
+                              !((rpMsg->location.gpsLocation.flags & GPS_LOCATION_HAS_ACCURACY) &&
                                 (gps_conf.ACCURACY_THRES != 0) &&
-                                (rpMsg->location.accuracy > gps_conf.ACCURACY_THRES)))) {
-                        loc_eng_data_p->location_cb((GpsLocation*)&(rpMsg->location),
+                                (rpMsg->location.gpsLocation.accuracy > gps_conf.ACCURACY_THRES)))) {
+                        loc_eng_data_p->location_cb((UlpLocation*)&(rpMsg->location),
                                                     (void*)rpMsg->locationExt);
                         reported = true;
                     }
@@ -1614,28 +1600,19 @@ static void loc_eng_deferred_action_thread(void* arg)
                     loc_eng_data_p->client_handle->setInSession(false);
                 }
 
-#ifdef FEATURE_ULP
                 if (loc_eng_data_p->generateNmea && rpMsg->location.position_source == ULP_LOCATION_IS_FROM_GNSS)
                 {
                     loc_eng_nmea_generate_pos(loc_eng_data_p, rpMsg->location, rpMsg->locationExtended);
                 }
-#else
-                if (loc_eng_data_p->generateNmea && (LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask))
-                {
-                    loc_eng_nmea_generate_pos(loc_eng_data_p, rpMsg->location, rpMsg->locationExtended);
-                }
-#endif
 
-#ifdef FEATURE_ULP
                 // Free the allocated memory for rawData
-                GpsLocation* gp = (GpsLocation*)&(rpMsg->location);
+                UlpLocation* gp = (UlpLocation*)&(rpMsg->location);
                 if (gp != NULL && gp->rawData != NULL)
                 {
                     delete (char*)gp->rawData;
                     gp->rawData = NULL;
                     gp->rawDataSize = 0;
                 }
-#endif
             }
 
             break;
@@ -1908,7 +1885,6 @@ static void loc_eng_deferred_action_thread(void* arg)
             loc_eng_handle_engine_up(*loc_eng_data_p);
             break;
 
-#ifdef FEATURE_ULP
         case LOC_ENG_MSG_REQUEST_NETWORK_POSIITON:
         {
             loc_eng_msg_request_network_position *nlprequestmsg = (loc_eng_msg_request_network_position*)msg;
@@ -1938,7 +1914,7 @@ static void loc_eng_deferred_action_thread(void* arg)
                 LOC_LOGE("Ulp Phone context request call back not initialized");
             }
         break;
-#endif
+
         default:
             LOC_LOGE("unsupported msgid = %d\n", msg->msgid);
             break;
@@ -1968,7 +1944,7 @@ static void loc_eng_deferred_action_thread(void* arg)
 
     EXIT_LOG(%s, VOID_RET);
 }
-#ifdef FEATURE_ULP
+
 /*===========================================================================
 FUNCTION loc_eng_ulp_init
 
@@ -2232,7 +2208,7 @@ int loc_eng_ulp_send_network_position(loc_eng_data_s_type &loc_eng_data,
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
-#endif
+
 /*===========================================================================
 FUNCTION    loc_eng_read_config
 
