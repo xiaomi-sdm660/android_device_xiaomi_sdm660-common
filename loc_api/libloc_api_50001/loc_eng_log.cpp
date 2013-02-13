@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -189,15 +189,11 @@ const char* loc_get_aiding_data_mask_names(GpsAidingData data)
 
 static loc_name_val_s_type loc_eng_agps_types[] =
 {
-#ifdef FEATURE_IPV6
     NAME_VAL( AGPS_TYPE_INVALID ),
     NAME_VAL( AGPS_TYPE_ANY ),
-#endif
     NAME_VAL( AGPS_TYPE_SUPL ),
-    NAME_VAL( AGPS_TYPE_C2K )
-#ifdef FEATURE_IPV6
-    ,NAME_VAL( AGPS_TYPE_WWAN_ANY )
-#endif
+    NAME_VAL( AGPS_TYPE_C2K ),
+    NAME_VAL( AGPS_TYPE_WWAN_ANY )
 };
 static int loc_eng_agps_type_num = sizeof(loc_eng_agps_types) / sizeof(loc_name_val_s_type);
 
@@ -250,7 +246,6 @@ const char* loc_get_ni_encoding_name(GpsNiEncodingType encoding)
     return loc_get_name_from_val(loc_eng_ni_encodings, loc_eng_ni_encoding_num, (long) encoding);
 }
 
-#ifdef FEATURE_IPV6
 static loc_name_val_s_type loc_eng_agps_bears[] =
 {
     NAME_VAL( AGPS_APN_BEARER_INVALID ),
@@ -264,7 +259,6 @@ const char* loc_get_agps_bear_name(AGpsBearerType bearer)
 {
     return loc_get_name_from_val(loc_eng_agps_bears, loc_eng_agps_bears_num, (long) bearer);
 }
-#endif
 
 static loc_name_val_s_type loc_eng_server_types[] =
 {

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -137,9 +137,9 @@ class AgpsStateMachine {
     friend class AgpsState;
 
     // handle to whoever provides the service
-    void (* const mServicer)(AGpsStatus* status);
+    void (* const mServicer)(AGpsExtStatus* status);
     // NIF type: AGNSS or INTERNET.
-    const AGpsType mType;
+    const AGpsExtType mType;
     // pointer to the current state.
     AgpsState* mStatePtr;
     // a linked list of subscribers.
@@ -150,25 +150,21 @@ class AgpsStateMachine {
     char* mAPN;
     // for convenience, we don't do strlen each time.
     unsigned int mAPNLen;
-#ifdef FEATURE_IPV6
     // bear
     AGpsBearerType mBearer;
-#endif
     // ipv4 address for routing
     bool mEnforceSingleSubscriber;
 
 public:
-    AgpsStateMachine(void (*servicer)(AGpsStatus* status), AGpsType type, bool enforceSingleSubscriber);
+    AgpsStateMachine(void (*servicer)(AGpsExtStatus* status), AGpsExtType type, bool enforceSingleSubscriber);
     virtual ~AgpsStateMachine();
 
     // self explanatory methods below
     void setAPN(const char* apn, unsigned int len);
     inline const char* getAPN() const { return (const char*)mAPN; }
-#ifdef FEATURE_IPV6
     inline void setBearer(AGpsBearerType bearer) { mBearer = bearer; }
     inline AGpsBearerType getBearer() const { return mBearer; }
-#endif
-    inline AGpsType getType() const { return (AGpsType)mType; }
+    inline AGpsExtType getType() const { return (AGpsExtType)mType; }
 
     // someone, a ATL client or BIT, is asking for NIF
     void subscribeRsrc(Subscriber *subscriber);
@@ -279,7 +275,6 @@ struct ATLSubscriber : public Subscriber {
     }
 };
 
-#ifdef FEATURE_IPV6
 // WIFISubscriber, created with requests from MSAPM or QuIPC
 struct WIFISubscriber : public Subscriber {
     char * mSSID;
@@ -326,6 +321,5 @@ struct WIFISubscriber : public Subscriber {
         return new WIFISubscriber(mStateMachine, mSSID, mPassword, senderId);
     }
 };
-#endif
 
 #endif //__LOC_ENG_AGPS_H__

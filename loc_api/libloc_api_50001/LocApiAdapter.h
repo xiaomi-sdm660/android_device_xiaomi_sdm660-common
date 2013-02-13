@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -132,7 +132,7 @@ public:
                   void* svExt);
     void reportStatus(GpsStatusValue status);
     void reportNmea(const char* nmea, int length);
-    void reportAgpsStatus(AGpsStatus &agpsStatus);
+    void reportAgpsStatus(AGpsExtStatus &agpsStatus);
     void requestXtraData();
     void requestTime();
     void requestLocation();
@@ -171,15 +171,9 @@ public:
     inline virtual enum loc_api_adapter_err
         setXtraData(char* data, int length)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
-#ifdef FEATURE_IPV6
     inline virtual enum loc_api_adapter_err
         atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
-#else
-    inline virtual enum loc_api_adapter_err
-        atlOpenStatus(int handle, int is_succ, char* apn, AGpsType agpsType)
-    {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
-#endif
     inline virtual enum loc_api_adapter_err
         atlCloseStatus(int handle, int is_succ)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}

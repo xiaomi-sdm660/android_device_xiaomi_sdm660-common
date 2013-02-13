@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,10 +38,6 @@
 #include "loc.h"
 #include <loc_eng_log.h>
 #include "loc_eng_msg_id.h"
-
-#ifndef SSID_BUF_SIZE
-    #define SSID_BUF_SIZE (32+1)
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -720,7 +716,6 @@ struct loc_eng_msg_inject_xtra_data : public loc_eng_msg {
     }
 };
 
-#ifdef FEATURE_IPV6
 struct loc_eng_msg_atl_open_success : public loc_eng_msg {
     const AGpsStatusValue agpsType;
     const int length;
@@ -747,30 +742,8 @@ struct loc_eng_msg_atl_open_success : public loc_eng_msg {
         delete[] apn;
     }
 };
-#else
-struct loc_eng_msg_atl_open_success : public loc_eng_msg {
-    const int length;
-    char* const apn;
-    inline loc_eng_msg_atl_open_success(void* instance,
-                                        const char* name,
-                                        int len) :
-        loc_eng_msg(instance, LOC_ENG_MSG_ATL_OPEN_SUCCESS),
-        length(len),
-        apn(new char[len+1])
-    {
-        memcpy((void*)apn, (void*)name, len);
-        apn[len] = 0;
-        LOC_LOGV("apn: %s\n",
-                 apn);
-    }
-    inline ~loc_eng_msg_atl_open_success()
-    {
-        delete[] apn;
-    }
-};
-#endif
 
-#ifdef FEATURE_IPV6
+
 struct loc_eng_msg_atl_open_failed : public loc_eng_msg {
     const AGpsStatusValue agpsType;
     inline loc_eng_msg_atl_open_failed(void* instance,
@@ -782,17 +755,8 @@ struct loc_eng_msg_atl_open_failed : public loc_eng_msg {
                  loc_get_agps_type_name(agpsType));
     }
 };
-#else
-struct loc_eng_msg_atl_open_failed : public loc_eng_msg {
-    inline loc_eng_msg_atl_open_failed(void* instance) :
-        loc_eng_msg(instance, LOC_ENG_MSG_ATL_OPEN_FAILED)
-    {
-        LOC_LOGV("");
-    }
-};
-#endif
 
-#ifdef FEATURE_IPV6
+
 struct loc_eng_msg_atl_closed : public loc_eng_msg {
     const AGpsStatusValue agpsType;
     inline loc_eng_msg_atl_closed(void* instance,
@@ -804,15 +768,6 @@ struct loc_eng_msg_atl_closed : public loc_eng_msg {
                  loc_get_agps_type_name(agpsType));
     }
 };
-#else
-struct loc_eng_msg_atl_closed : public loc_eng_msg {
-    inline loc_eng_msg_atl_closed(void* instance) :
-        loc_eng_msg(instance, LOC_ENG_MSG_ATL_CLOSED)
-    {
-        LOC_LOGV("");
-    }
-};
-#endif
 
 struct loc_eng_msg_set_data_enable : public loc_eng_msg {
     const int enable;

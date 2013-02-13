@@ -25,10 +25,6 @@ LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
 
-ifeq ($(FEATURE_IPV6), true)
-LOCAL_CFLAGS += -DFEATURE_IPV6
-endif #FEATURE_IPV6
-
 ifeq ($(FEATURE_DELEXT), true)
 LOCAL_CFLAGS += -DFEATURE_DELEXT
 endif #FEATURE_DELEXT
@@ -40,6 +36,7 @@ LOCAL_COPY_HEADERS_TO:= libloc_eng/
 LOCAL_COPY_HEADERS:= \
    LocApiAdapter.h \
    loc.h \
+   gps_extended.h \
    loc_eng.h \
    loc_eng_xtra.h \
    loc_eng_ni.h \
@@ -85,10 +82,6 @@ LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
 
-ifeq ($(FEATURE_IPV6), true)
-LOCAL_CFLAGS += -DFEATURE_IPV6
-endif #FEATURE_IPV6
-
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
     hardware/qcom/gps/loc_api/ulp/inc
@@ -120,10 +113,6 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += \
     -fno-short-enums \
     -D_ANDROID_ \
-
-ifeq ($(FEATURE_IPV6), true)
-LOCAL_CFLAGS += -DFEATURE_IPV6
-endif #FEATURE_IPV6
 
 ## Includes
 LOCAL_C_INCLUDES:= \

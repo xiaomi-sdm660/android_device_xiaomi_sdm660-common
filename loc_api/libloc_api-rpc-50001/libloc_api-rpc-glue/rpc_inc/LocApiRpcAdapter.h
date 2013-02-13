@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011,2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -96,14 +96,8 @@ public:
         setServer(unsigned int ip, int port, LocServerType type);
     virtual enum loc_api_adapter_err
         setXtraData(char* data, int length);
-#ifdef FEATURE_IPV6
     virtual enum loc_api_adapter_err
         atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType);
-#else
-  virtual enum loc_api_adapter_err
-    atlOpenStatus(int handle, int is_succ, char* apn,
-                   AGpsType agpsType);
-#endif
     virtual enum loc_api_adapter_err
         atlCloseStatus(int handle, int is_succ);
     virtual enum loc_api_adapter_err

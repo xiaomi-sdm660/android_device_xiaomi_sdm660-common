@@ -1022,30 +1022,19 @@ enum loc_api_adapter_err LocApiV02Adapter :: setXtraData(
   return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
-#ifdef FEATURE_IPV6
 enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
   int handle, int is_succ, char* apn, AGpsBearerType bear,
   AGpsType agpsType)
-#else
-enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
-  int handle, int is_succ, char* apn,
-  AGpsType agpsType)
-#endif
 {
   locClientStatusEnumType result = eLOC_CLIENT_SUCCESS;
   locClientReqUnionType req_union;
   qmiLocInformLocationServerConnStatusReqMsgT_v02 conn_status_req;
   qmiLocInformLocationServerConnStatusIndMsgT_v02 conn_status_ind;
 
-#ifdef FEATURE_IPV6
+
   LOC_LOGD("%s:%d]: ATL open handle = %d, is_succ = %d, "
                 "APN = [%s], bearer = %d \n",  __func__, __LINE__,
                 handle, is_succ, apn, bear);
-#else
-  LOC_LOGD("%s:%d]: ATL open handle = %d, is_succ = %d, "
-                "APN = [%s] \n",  __func__, __LINE__,
-                handle, is_succ, apn);
-#endif
 
   memset(&conn_status_req, 0, sizeof(conn_status_req));
   memset(&conn_status_ind, 0, sizeof(conn_status_ind));
@@ -1062,7 +1051,6 @@ enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
     strlcpy(conn_status_req.apnProfile.apnName, apn,
             sizeof(conn_status_req.apnProfile.apnName) );
 
-#ifdef FEATURE_IPV6
     switch(bear)
     {
       case AGPS_APN_BEARER_IPV4:
@@ -1084,10 +1072,6 @@ enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
         LOC_LOGE("%s:%d]:invalid bearer type\n",__func__,__LINE__);
         return LOC_API_ADAPTER_ERR_INVALID_HANDLE;
     }
-#else
-    conn_status_req.apnProfile.pdnType =
-      eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4_V02;
-#endif
 
     conn_status_req.apnProfile_valid = 1;
   }
@@ -1915,7 +1899,7 @@ void LocApiV02Adapter :: reportAtlRequest(
   if(server_request_ptr->requestType == eQMI_LOC_SERVER_REQUEST_OPEN_V02 )
   {
     AGpsType agpsType;
-#ifdef FEATURE_IPV6
+
     switch(server_request_ptr->wwanType)
     {
       case eQMI_LOC_WWAN_TYPE_INTERNET_V02:
@@ -1930,9 +1914,7 @@ void LocApiV02Adapter :: reportAtlRequest(
         agpsType = AGPS_TYPE_WWAN_ANY;
         break;
     }
-#else
-    agpsType = AGPS_TYPE_SUPL;
-#endif
+
     LocApiAdapter::requestATL(connHandle, agpsType);
   }
 

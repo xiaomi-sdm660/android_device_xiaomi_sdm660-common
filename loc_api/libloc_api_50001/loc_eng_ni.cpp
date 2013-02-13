@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -245,7 +245,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data, GpsNiCallbacks *callbacks)
+void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data, GpsNiExtCallbacks *callbacks)
 {
     ENTRY_LOG_CALLFLOW();
 

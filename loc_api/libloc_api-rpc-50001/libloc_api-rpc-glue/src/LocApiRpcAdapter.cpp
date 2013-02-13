@@ -958,22 +958,13 @@ LocApiRpcAdapter::setXtraData(char* data, int length)
     return convertErr(rpc_ret_val);
 }
 
-#ifdef FEATURE_IPV6
 enum loc_api_adapter_err
 LocApiRpcAdapter::atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bearer, AGpsType agpsType)
-#else
-enum loc_api_adapter_err
-LocApiRpcAdapter::atlOpenStatus(int handle, int is_succ, char* apn, AGpsType agpsType)
-#endif
 {
     rpc_loc_server_open_status_e_type open_status = is_succ ? RPC_LOC_SERVER_OPEN_SUCCESS : RPC_LOC_SERVER_OPEN_FAIL;
    rpc_loc_ioctl_data_u_type           ioctl_data;
 
-#ifdef FEATURE_IPV6
     if (AGPS_TYPE_INVALID == agpsType) {
-#else
-    if (false) {
-#endif
         rpc_loc_server_open_status_s_type  *conn_open_status_ptr =
             &ioctl_data.rpc_loc_ioctl_data_u_type_u.conn_open_status;
 
@@ -1010,7 +1001,6 @@ LocApiRpcAdapter::atlOpenStatus(int handle, int is_succ, char* apn, AGpsType agp
             conn_multi_open_status_ptr->apn_name[0] = 0;
         }
 
-#ifdef FEATURE_IPV6
         switch(bearer)
         {
         case AGPS_APN_BEARER_IPV4:
@@ -1025,9 +1015,7 @@ LocApiRpcAdapter::atlOpenStatus(int handle, int is_succ, char* apn, AGpsType agp
         default:
             conn_multi_open_status_ptr->pdp_type = RPC_LOC_SERVER_PDP_PPP;
         }
-#else
-        conn_multi_open_status_ptr->pdp_type = RPC_LOC_SERVER_PDP_IP;
-#endif
+
         LOC_LOGD("ATL RPC_LOC_IOCTL_INFORM_SERVER_MULTI_OPEN_STATUS open %s, APN name = [%s], pdp_type = %d\n",
                  log_succ_fail_string(is_succ),
                  apn,
@@ -1081,22 +1069,16 @@ void LocApiRpcAdapter::ATLEvent(const rpc_loc_server_request_s_type *server_requ
             agps_type = AGPS_TYPE_SUPL;
             LOC_LOGV("ATLEvent: event - RPC_LOC_SERVER_REQUEST_MULTI_OPEN\n            type - AGPS_TYPE_SUPL\n            handle - %d", connHandle);
         } else {
-#ifdef FEATURE_IPV6
             agps_type = AGPS_TYPE_WWAN_ANY;
             LOC_LOGV("ATLEvent: event - RPC_LOC_SERVER_REQUEST_MULTI_OPEN\n            type - AGPS_TYPE_WWAN_ANY\n            handle - %d", connHandle);
-#else
-            break;
-#endif
         }
         requestATL(connHandle, agps_type);
         break;
-#ifdef FEATURE_IPV6
     case RPC_LOC_SERVER_REQUEST_OPEN:
         connHandle = server_request_ptr->payload.rpc_loc_server_request_u_type_u.open_req.conn_handle;
         LOC_LOGV("ATLEvent: event - RPC_LOC_SERVER_REQUEST_OPEN\n            handle - %d", connHandle);
         requestATL(connHandle, AGPS_TYPE_INVALID);
         break;
-#endif
     case RPC_LOC_SERVER_REQUEST_CLOSE:
         connHandle = server_request_ptr->payload.rpc_loc_server_request_u_type_u.close_req.conn_handle;
         LOC_LOGV("ATLEvent: event - RPC_LOC_SERVER_REQUEST_CLOSE\n            handle - %d", connHandle);

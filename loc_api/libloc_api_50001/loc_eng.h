@@ -101,7 +101,7 @@ typedef struct
     loc_location_cb_ext            location_cb;
     gps_status_callback            status_cb;
     loc_sv_status_cb_ext           sv_status_cb;
-    agps_status_callback           agps_status_cb;
+    agps_status_extended           agps_status_cb;
     gps_nmea_callback              nmea_cb;
     gps_ni_notify_callback         ni_notify_cb;
     gps_acquire_wakelock           acquire_wakelock_cb;
@@ -224,17 +224,11 @@ int  loc_eng_update_criteria(loc_eng_data_s_type &loc_eng_data,
                              UlpLocationCriteria criteria);
 
 void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data,
-                       AGpsCallbacks* callbacks);
-#ifdef FEATURE_IPV6
-int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType,
+                       AGpsExtCallbacks* callbacks);
+int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
                       const char* apn, AGpsBearerType bearerType);
-int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType);
-int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType);
-#else
-int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, const char* apn);
-int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data);
-int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data);
-#endif
+int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType);
+int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType);
 
 int  loc_eng_set_server_proxy(loc_eng_data_s_type &loc_eng_data,
                               LocServerType type, const char *hostname, int port);
@@ -251,13 +245,13 @@ bool loc_eng_inject_raw_command(loc_eng_data_s_type &loc_eng_data,
 void loc_eng_mute_one_session(loc_eng_data_s_type &loc_eng_data);
 
 int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
-                       GpsXtraCallbacks* callbacks);
+                       GpsXtraExtCallbacks* callbacks);
 
 int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
                              char* data, int length);
 
 extern void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data,
-                            GpsNiCallbacks *callbacks);
+                            GpsNiExtCallbacks *callbacks);
 extern void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,
                                int notif_id, GpsUserResponseType user_response);
 extern void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
