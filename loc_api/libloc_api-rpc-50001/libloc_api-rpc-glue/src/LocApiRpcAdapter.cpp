@@ -692,8 +692,8 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                 location.position_source = ULP_LOCATION_IS_FROM_GNSS;
                 if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_ALTITUDE_WRT_MEAN_SEA_LEVEL)
                 {
-                    locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_MAG_DEV;
-                    locationExtended.magneticDeviation = location_report_ptr->altitude_wrt_mean_sea_level;
+                    locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL;
+                    locationExtended.altitudeMeanSeaLevel = location_report_ptr->altitude_wrt_mean_sea_level;
                 }
 
                 if (location_report_ptr->valid_mask &  RPC_LOC_POS_VALID_MAGNETIC_VARIATION )
