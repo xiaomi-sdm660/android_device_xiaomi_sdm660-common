@@ -27,6 +27,7 @@ endif
 
 ifeq ($(call is-board-platform-in-list,$(QMI_BOARD_PLATFORM_LIST)),true)
 GPS_DIR_LIST += $(LOCAL_PATH)/loc_api_v02/
+GPS_DIR_LIST += $(LOCAL_PATH)/ds_api/
 endif #is-board-platform-in-list
 
 GPS_DIR_LIST += $(LOCAL_PATH)/libloc_api_50001/

@@ -141,7 +141,10 @@ public:
     void requestNiNotify(GpsNiNotification &notify, const void* data);
     void handleEngineDownEvent();
     void handleEngineUpEvent();
-
+    void requestSuplES(int connHandle);
+    void releaseDataHandle(void);
+    void reportDataCallOpened(void);
+    void reportDataCallClosed(void);
     // All below functions are to be defined by adapter specific modules:
     // RPC, QMI, etc.  The default implementation is empty.
     inline virtual enum loc_api_adapter_err
@@ -230,6 +233,15 @@ public:
 
     inline bool isInSession() { return navigating; }
     inline virtual void setInSession(bool inSession) { navigating = inSession; }
+    inline virtual int openAndStartDataCall()
+    {LOC_LOGW("%s: default implementation invoked", __func__); return -1;}
+    inline virtual void stopDataCall()
+    {LOC_LOGW("%s: default implementation invoked", __func__);}
+    inline virtual void closeDataCall()
+    {LOC_LOGW("%s: default implementation invoked", __func__);}
+    inline virtual int initDataServiceClient()
+    {LOC_LOGW("%s: default implementation invoked", __func__); return -1;}
+
 };
 
 extern "C" LocApiAdapter* getLocApiAdapter(LocEng &locEng);
