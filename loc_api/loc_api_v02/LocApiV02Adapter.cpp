@@ -804,6 +804,24 @@ enum loc_api_adapter_err LocApiV02Adapter ::
             sizeof(qmiLocNiVxServiceInteractionStructT_v02));
   }
 
+  // copy Network Initiated SUPL Version 2 Extension
+  if (request_pass_back->NiSuplVer2ExtInd_valid == 1)
+  {
+     ni_resp.NiSuplVer2ExtPayload_valid = 1;
+     memcpy(&(ni_resp.NiSuplVer2ExtPayload),
+            &(request_pass_back->NiSuplVer2ExtInd),
+            sizeof(qmiLocNiSuplVer2ExtStructT_v02));
+  }
+
+  // copy SUPL Emergency Notification
+  if(request_pass_back->suplEmergencyNotification_valid)
+  {
+     ni_resp.suplEmergencyNotification_valid = 1;
+     memcpy(&(ni_resp.suplEmergencyNotification),
+            &(request_pass_back->suplEmergencyNotification),
+            sizeof(qmiLocEmergencyNotificationStructT_v02));
+  }
+
   req_union.pNiUserRespReq = &ni_resp;
 
   status = loc_sync_send_req (
