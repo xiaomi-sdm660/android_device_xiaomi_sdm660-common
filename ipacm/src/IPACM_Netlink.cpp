@@ -92,7 +92,7 @@ static int ipa_nl_open_socket
 					(struct sockaddr *)p_sk_addr_loc,
 					sizeof(struct sockaddr_nl)) < 0)
 	{
-		IPACMDBG("Socket bind failed\n");
+		IPACMERR("Socket bind failed\n");
 		return IPACM_FAILURE;
 	}
 
@@ -163,7 +163,7 @@ static int ipa_nl_sock_listener_start
 					}
 					else
 					{
-						IPACMDBG("No read function\n");
+						IPACMERR("No read function\n");
 					}
 				}
 
@@ -341,14 +341,13 @@ static int ipa_nl_decode_rtm_link
 	 ipa_nl_link_info_t      *link_info
 )
 {
-	struct rtattr *rtah = NULL;
+	struct rtattr;
 	/* NL message header */
 	struct nlmsghdr *nlh = (struct nlmsghdr *)buffer;
 
 	/* Extract the header data */
 	link_info->metainfo = *(struct ifinfomsg *)NLMSG_DATA(nlh);
 	buflen -= sizeof(struct nlmsghdr);
-	rtah = IFA_RTA(NLMSG_DATA(nlh));
 
 	return IPACM_SUCCESS;
 }
@@ -586,6 +585,15 @@ static int ipa_nl_decode_nlmsg
 				{
 					IPACMDBG("\n GOT useful newlink event\n");
 					ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+					
+					data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+					if(data_fid == NULL)
+					{
+						IPACMERR("unable to allocate memory for event data_fid\n");
+						return IPACM_FAILURE;
+					}
+					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
+					
 					if(msg_ptr->nl_link_info.metainfo.ifi_flags & IFF_UP)
 					{
 						IPACMDBG("Interface %s bring up with IP-family: %d \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_family);
@@ -602,15 +610,6 @@ static int ipa_nl_decode_nlmsg
 						IPACMDBG("Posting IPA_LINK_DOWN_EVENT with if index: %d\n",
 										 data_fid->if_index);
 					}
-
-					data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
-					if(data_fid == NULL)
-					{
-						IPACMDBG("unable to allocate memory for event data_fid\n");
-						return IPACM_FAILURE;
-					}
-					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
-
 
 					evt_data.evt_data = data_fid;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -643,7 +642,7 @@ static int ipa_nl_decode_nlmsg
 				data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 				if(data_fid == NULL)
 				{
-					IPACMDBG("unable to allocate memory for event data_fid\n");
+					IPACMERR("unable to allocate memory for event data_fid\n");
 					return IPACM_FAILURE;
 				}
 
@@ -676,7 +675,7 @@ static int ipa_nl_decode_nlmsg
 				data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
 				if(data_addr == NULL)
 				{
-					IPACMDBG("unable to allocate memory for event data_addr\n");
+					IPACMERR("unable to allocate memory for event data_addr\n");
 					return IPACM_FAILURE;
 				}
 
@@ -696,6 +695,11 @@ static int ipa_nl_decode_nlmsg
 					memcpy(data_addr->ipv6_addr,
 								 msg_ptr->nl_addr_info.attr_info.prefix_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr));
+
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);								 
 				}
 				else
 				{
@@ -870,7 +874,7 @@ static int ipa_nl_decode_nlmsg
 					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
 					if(data_addr == NULL)
 					{
-						IPACMDBG("unable to allocate memory for event data_addr\n");
+						IPACMERR("unable to allocate memory for event data_addr\n");
 						return IPACM_FAILURE;
 					}
 
@@ -921,9 +925,19 @@ static int ipa_nl_decode_nlmsg
 									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 									 sizeof(data_addr->ipv6_addr));
 
-						memcpy(data_addr->ipv6_addr_mask,
+						data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+						data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+						data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+						data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
+
+						memcpy(data_addr->ipv6_addr_mask, 
 									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 									 sizeof(data_addr->ipv6_addr_mask));
+
+						data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
+						data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
+						data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
+						data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);		
 
 						evt_data.event = IPA_ROUTE_ADD_EVENT;
 						data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
@@ -1013,13 +1027,18 @@ static int ipa_nl_decode_nlmsg
 					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
 					if(data_addr == NULL)
 					{
-						IPACMDBG("unable to allocate memory for event data_addr\n");
+						IPACMERR("unable to allocate memory for event data_addr\n");
 						return IPACM_FAILURE;
 					}
 
 					memcpy(data_addr->ipv6_addr, 
 								 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr));
+
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);								 
 
 					mask_value_v6 = msg_ptr->nl_route_info.metainfo.rtm_dst_len;
 					for(mask_index = 0; mask_index < 4; mask_index++)
@@ -1043,6 +1062,11 @@ static int ipa_nl_decode_nlmsg
 									 data_addr->ipv6_addr_mask[2],
 									 data_addr->ipv6_addr_mask[3]);
 
+					data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
+					data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
+					data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
+					data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);		
+									 
 					evt_data.event = IPA_ROUTE_ADD_EVENT;
 					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
 					data_addr->iptype = IPA_IP_v6;
@@ -1078,8 +1102,19 @@ static int ipa_nl_decode_nlmsg
 
 					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr));
+
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);								 
+
 					memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr_mask));
+
+					data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
+					data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
+					data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
+					data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);		
 
 					evt_data.event = IPA_ROUTE_ADD_EVENT;
 					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
@@ -1098,7 +1133,7 @@ static int ipa_nl_decode_nlmsg
 		case RTM_DELROUTE:
 			if(IPACM_SUCCESS != ipa_nl_decode_rtm_route(buffer, buflen, &(msg_ptr->nl_route_info)))
 			{
-				IPACMDBG("Failed to decode rtm route message\n");
+				IPACMERR("Failed to decode rtm route message\n");
 				return IPACM_FAILURE;
 			}
 
@@ -1255,8 +1290,19 @@ static int ipa_nl_decode_nlmsg
 						}
 						memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 									 sizeof(data_addr->ipv6_addr));
+
+						data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+						data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+						data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+						data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);								 
+
 						memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 									 sizeof(data_addr->ipv6_addr_mask));
+
+						data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
+						data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
+						data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
+						data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);								
 						data_addr->iptype = IPA_IP_v6;
 					}
 					else
@@ -1331,6 +1377,11 @@ static int ipa_nl_decode_nlmsg
 					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr));
 
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);	
+
 					mask_value_v6 = msg_ptr->nl_route_info.metainfo.rtm_dst_len;
 					for(mask_index = 0; mask_index < 4; mask_index++)
 					{
@@ -1364,6 +1415,11 @@ static int ipa_nl_decode_nlmsg
 					IPACMDBG("3st: %08x \n",
 									 data_addr->ipv6_addr_mask[3]);
 
+					data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
+					data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
+					data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
+					data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]); 
+						
 					evt_data.event = IPA_ROUTE_DEL_EVENT;
 					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
 					data_addr->iptype = IPA_IP_v6;
@@ -1398,8 +1454,20 @@ static int ipa_nl_decode_nlmsg
 					}
 					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr));
+
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);						
+																						 
+
 					memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
 								 sizeof(data_addr->ipv6_addr_mask));
+
+					data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
+					data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
+					data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
+					data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]); 
 
 					evt_data.event = IPA_ROUTE_DEL_EVENT;
 					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
@@ -1449,6 +1517,11 @@ static int ipa_nl_decode_nlmsg
 					memcpy(data_all->ipv6_addr, 
 								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
 								 sizeof(data_all->ipv6_addr));
+
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);	
 					data_all->iptype = IPA_IP_v6;
 				}
 				else
@@ -1531,6 +1604,11 @@ static int ipa_nl_decode_nlmsg
 
 					memcpy(data_all->ipv6_addr, msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
 								 sizeof(data_all->ipv6_addr));
+
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);	
 					data_all->iptype = IPA_IP_v6;
 				}
 				else
@@ -1686,7 +1764,7 @@ int ipa_nl_listener_init
 	 ipa_sock_thrd_fd_read_f read_f
 	 )
 {
-	ipa_nl_sk_info_t sk_info, sk_info2;
+	ipa_nl_sk_info_t sk_info;
 	int ret_val;
 
 	memset(&sk_info, 0, sizeof(ipa_nl_sk_info_t));

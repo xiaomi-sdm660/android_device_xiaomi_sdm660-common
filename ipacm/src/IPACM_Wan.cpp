@@ -78,9 +78,6 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	const int NUM_RULES = 1;
 	int res = IPACM_SUCCESS;
 
-	/* initial multicast/broadcast/fragment filter rule */
-	init_fl_rule(data->iptype);
-
 	rt_rule = (struct ipa_ioc_add_rt_rule *)
 		 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
 						NUM_RULES * sizeof(struct ipa_rt_rule_add));
@@ -105,7 +102,7 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	}
 
 	rt_rule_entry = &rt_rule->rules[0];
-	rt_rule_entry->at_rear = 1;
+	rt_rule_entry->at_rear = false;
 	rt_rule_entry->rule.dst = IPA_CLIENT_A5_LAN_WAN_CONS;  //go to A5
 	rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
 
@@ -149,12 +146,21 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	if (data->iptype == IPA_IP_v4)
 	{
 		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
-		IPACMDBG("ipv4 wan rt rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);
+		IPACMDBG("ipv4 wan iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);
+		
+		/* initial multicast/broadcast/fragment filter rule */
+		init_fl_rule(data->iptype); 
 	}
 	else
 	{
-		dft_rt_rule_hdl[1 + num_dft_rt] = rt_rule_entry->rt_rule_hdl;
-		IPACMDBG("ipv6 wan rt rule hdl1=0x%x\n", dft_rt_rule_hdl[1 + num_dft_rt]);
+		if (num_dft_rt == 0)
+		{
+			/* initial multicast/broadcast/fragment filter rule */
+			init_fl_rule(data->iptype);
+		}
+
+		dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + num_dft_rt] = rt_rule_entry->rt_rule_hdl;
+		IPACMDBG("ipv6 wan iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + num_dft_rt]);
 		num_dft_rt++;
 	}
 
@@ -193,9 +199,11 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
 			if (ipa_interface_index == ipa_if_num)
 			{
-				if ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) // check not setup before
+				/* check v4 not setup before, v6 can have 2 iface ip */
+				if( ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) 
+				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt!=MAX_DEFAULT_v6_ROUTE_RULES))) 
 				{
-					IPACMDBG("Received IPA_ADDR_ADD_EVENT\n");
+				        IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt);
 					handle_addr_evt(data);
 				}
 			}
@@ -266,7 +274,6 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT\n");
-				IPACMDBG("I'm in the WAN\n");
 				handle_header_add_evt(data->mac_addr);
 			}
 		}
@@ -346,12 +353,14 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 
 	IPACMDBG(" WAN table created %s \n", rt_rule->rt_tbl_name);
 	rt_rule_entry = &rt_rule->rules[0];
-	rt_rule_entry->at_rear = 1;
+	rt_rule_entry->at_rear = true;
 
 	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 	{
 		if (data->iptype != tx_prop->tx[tx_index].ip)
 		{
+			IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n", 
+							    tx_index, tx_prop->tx[tx_index].ip,data->iptype);		
 			continue;
 		}
 
@@ -447,6 +456,7 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 	return IPACM_SUCCESS;
 }
 
+
 /* wan default route/filter rule delete */
 int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 {
@@ -461,6 +471,14 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
+		
+		    if(iptype != tx_prop->tx[tx_index].ip)
+		    {
+		    	IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d, no RT-rule deleted\n", 
+		    					    tx_index, tx_prop->tx[tx_index].ip,iptype);		
+		    	continue;
+		    }		
+		
 			if (iptype == IPA_IP_v4)
 			{
 
@@ -477,7 +495,7 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 				if (m_routing.DeleteRoutingHdl(wan_route_rule_v6_hdl[tx_index], IPA_IP_v6)
 						== false)
 				{
-					IPACMERR("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n", IPA_IP_v6, wan_route_rule_v6_hdl[tx_index], tx_index);
+					IPACMDBG("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n", IPA_IP_v6, wan_route_rule_v6_hdl[tx_index], tx_index);
 					return IPACM_FAILURE;
 				}
 			}
@@ -500,12 +518,14 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
 			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv4 \n");
 			IPACM_EvtDispatcher::PostEvt(&evt_data);
+			IPACMDBG("setup wan_up/active_v4= false \n"); 
 			IPACM_Wan::wan_up = false;
 			active_v4 = false;
 		}
 		else
 		{
-			active_v6 = false;
+			IPACMDBG("setup active_v6= false \n");
+			active_v6 = false; 
 		}
 	}
 	else
@@ -743,7 +763,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 				{
 					memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
-					flt_rule_entry.at_rear = true;
+					flt_rule_entry.at_rear = false;
 					flt_rule_entry.flt_rule_hdl = -1;
 					flt_rule_entry.status = -1;
 					flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION; //Matched the firewall rule, go exception
@@ -946,7 +966,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 
 			if (!m_pFilteringTable)
 			{
-				IPACMDBG("Error Locate ipa_flt_rule_add memory...\n");
+				IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 				return IPACM_FAILURE;
 			}
 			m_pFilteringTable->commit = 1;
@@ -969,11 +989,11 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 				{
 					memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
-					flt_rule_entry.at_rear = true;
+					flt_rule_entry.at_rear = false;
 					flt_rule_entry.flt_rule_hdl = -1;
 					flt_rule_entry.status = -1;
 
-					flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+					flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
 					flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_v6.hdl;
 					memcpy(&flt_rule_entry.rule.attrib,
 								 &firewall_config.extd_firewall_entries[i].attrib,
@@ -1049,7 +1069,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			flt_rule_entry.at_rear = true;
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
-			flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
 						 sizeof(struct ipa_rule_attrib));
@@ -1119,7 +1139,7 @@ int IPACM_Wan::handle_down_evt()
 		if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[0], IPA_IP_v4)
 				== false)
 		{
-			IPACMDBG("Routing rule deletion failed!\n");
+		   IPACMERR("Routing rule deletion failed!\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -1132,7 +1152,7 @@ int IPACM_Wan::handle_down_evt()
 		/* May have multiple ipv6 iface-routing rules*/
 		for (i = 0; i < num_dft_rt; i++)
 		{
-			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[1 + i], IPA_IP_v6)
+			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+i], IPA_IP_v6)
 					== false)
 			{
 				IPACMERR("Routing rule deletion failed!\n");
@@ -1147,7 +1167,6 @@ int IPACM_Wan::handle_down_evt()
 	/* check software routing fl rule hdl */
 	if (softwarerouting_act == true)
 	{
-		IPACM_Iface::handle_software_routing_disable();
 		handle_software_routing_disable();
 	}
 

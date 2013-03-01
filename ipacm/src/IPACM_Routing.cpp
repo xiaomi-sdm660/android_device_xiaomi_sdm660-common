@@ -53,7 +53,7 @@ IPACM_Routing::IPACM_Routing()
 	m_fd = open(DEVICE_NAME, O_RDWR);
 	if (0 == m_fd)
 	{
-		IPACMDBG("Failed opening %s.\n", DEVICE_NAME);
+		IPACMERR("Failed opening %s.\n", DEVICE_NAME);
 	}
 }
 
@@ -77,7 +77,7 @@ bool IPACM_Routing::AddRoutingRule(struct ipa_ioc_add_rt_rule *ruleTable)
 
 	if (!DeviceNodeIsOpened())
 	{
-		IPACMDBG("Device is not opened\n");
+		IPACMERR("Device is not opened\n");
 		return false;
 	}
 

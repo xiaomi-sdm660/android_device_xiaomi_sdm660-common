@@ -240,7 +240,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 				}
 				else
 				{
-					IPACMDBG("error:  neighbor client oversize!");
+					IPACMERR("error:  neighbor client oversize!");
 					return;
 				}
 			};

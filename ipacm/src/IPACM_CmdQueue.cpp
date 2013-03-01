@@ -108,7 +108,7 @@ void* MessageQueue::Process(void *param)
 	MsgQueue = MessageQueue::getInstance();
 	if(MsgQueue == NULL)
 	{
-		IPACMDBG("unable to start cmd queue process\n");
+		IPACMERR("unable to start cmd queue process\n");
 		return NULL;
 	}
 
@@ -154,7 +154,7 @@ void* MessageQueue::Process(void *param)
 				return NULL;
 			}
 
-			IPACMDBG("Processing item %p\n",item);
+			IPACMDBG("Processing item %p event ID: %d\n",item,item->evt.data.event);
 			item->evt.callback_ptr(&item->evt.data);
 			delete item;
 			item = NULL;

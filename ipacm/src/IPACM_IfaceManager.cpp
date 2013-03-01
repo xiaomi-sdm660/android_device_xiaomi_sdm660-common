@@ -60,7 +60,6 @@ IPACM_IfaceManager::IPACM_IfaceManager()
 void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param) //skylar rename:event_callback
 {
 	ipacm_event_data_fid *evt_data = (ipacm_event_data_fid *)param;
-	IPACMDBG("\n");
 	switch(event)
 	{
 
@@ -98,9 +97,9 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, lan);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, lan);
-				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, lan);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, lan);
+				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
 				IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", lan->dev_name, lan->ipa_if_num);
 				registr(ipa_interface_index, lan);
 			}
@@ -119,9 +118,9 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, wl);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, wl);
-				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, wl);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, wl);
+				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, wl);
 				IPACMDBG("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
 				registr(ipa_interface_index, wl);
 			}

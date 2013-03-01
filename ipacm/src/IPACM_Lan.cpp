@@ -103,10 +103,14 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG("Received IPA_ADDR_ADD_EVENT\n");
 
-				if ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) // check not setup before
+				/* check v4 not setup before, v6 can have 2 iface ip */
+				if( ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) 
+				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt!=MAX_DEFAULT_v6_ROUTE_RULES))) 
 				{
+				  IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt);
 					handle_addr_evt(data);
 					handle_private_subnet(data->iptype);
+				  
 					if (IPACM_Wan::isWanUP() && (data->iptype == IPA_IP_v4))
 					{
 						handle_wan_up();
@@ -320,7 +324,7 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 
 				if (false == m_header.GetHeaderHandle(&sRetHeader))
 				{
-					IPACMDBG(" ioctl failed\n");
+					IPACMERR(" ioctl failed\n");
 				}
 
 				rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
@@ -396,7 +400,7 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 					if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
 																				 IPA_IP_v4) == false)
 					{
-						IPACMDBG("Routing rule deletion failed!\n");
+						IPACMERR("Routing rule deletion failed!\n");
 						return IPACM_FAILURE;
 					}
 				}
@@ -514,8 +518,7 @@ int IPACM_Lan::handle_wan_up(void)
 	memcpy(&m_pFilteringTable->rules[0], &flt_rule_entry, sizeof(flt_rule_entry));
 	if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
 	{
-		IPACMDBG("Error Adding RuleTable(0) to Filtering, aborting...\n");
-		perror("Lan: Unable to add filter rule");
+		IPACMERR("Error Adding RuleTable(0) to Filtering, aborting...\n");
 		free(m_pFilteringTable);
 		return IPACM_FAILURE;
 	}
@@ -542,7 +545,7 @@ int IPACM_Lan::handle_wan_down(void)
 	if (m_filtering.DeleteFilteringHdls(&lan_wan_fl_rule_hdl[0],
 																			IPA_IP_v4, 1) == false)
 	{
-		IPACMDBG("Error Adding RuleTable(1) to Filtering, aborting...\n");
+		IPACMERR("Error Adding RuleTable(1) to Filtering, aborting...\n");
 		return IPACM_FAILURE;
 	}
 
@@ -558,7 +561,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	const int NUM_RULES = 1;
 	int res = IPACM_SUCCESS;
 
-	/* construct ipa_ioc_add_flt_rule with 1 rules */
+	/* construct ipa_ioc_add_flt_rule with v6 rules */
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
 
 	IPACMDBG("set route/filter rule ip-type: %d \n", data->iptype);
@@ -652,7 +655,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 
 			if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6))
 			{
-				IPACMDBG("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_v6);
+				IPACMERR("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_v6);
 				free(m_pFilteringTable);
 				res = IPACM_FAILURE;
 				goto fail;
@@ -698,7 +701,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 			free(m_pFilteringTable);
 		}
 
-		dft_rt_rule_hdl[1 + num_dft_rt] = rt_rule_entry->rt_rule_hdl;
+		dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + num_dft_rt] = rt_rule_entry->rt_rule_hdl;
 		num_dft_rt++;
 	}
 
@@ -766,7 +769,7 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
 		{
-			IPACMDBG("Error Adding RuleTable(0) to Filtering, aborting...\n");
+			IPACMERR("Error Adding RuleTable(0) to Filtering, aborting...\n");
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
@@ -816,7 +819,7 @@ int IPACM_Lan::handle_down_evt()
 		/* may have multiple ipv6 iface-RT rules*/
 		for (i = 0; i < num_dft_rt; i++)
 		{
-			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[1 + i], IPA_IP_v6)
+			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + i], IPA_IP_v6)
 					== false)
 			{
 				IPACMERR("Routing rule deletion failed!\n");
@@ -846,7 +849,7 @@ int IPACM_Lan::handle_down_evt()
 	/* check software routing fl rule hdl */
 	if (softwarerouting_act == true)
 	{
-		IPACM_Iface::handle_software_routing_disable();
+		handle_software_routing_disable();
 	}
 
 
