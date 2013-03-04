@@ -127,6 +127,7 @@ void IPACM_EvtDispatcher::ProcessEvt(ipacm_cmd_q_data *data)
 
 	if(data->evt_data != NULL)
 	{
+		IPACMDBG("free the event:%d data: %p\n", data->event, data->evt_data);
 		free(data->evt_data);
 	}
 	return;

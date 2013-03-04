@@ -1518,10 +1518,10 @@ static int ipa_nl_decode_nlmsg
 								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
 								 sizeof(data_all->ipv6_addr));
 
-					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
-					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
-					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
-					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);	
+					data_all->ipv6_addr[0] = ntohl(data_all->ipv6_addr[0]);
+					data_all->ipv6_addr[1] = ntohl(data_all->ipv6_addr[1]);
+					data_all->ipv6_addr[2] = ntohl(data_all->ipv6_addr[2]);
+					data_all->ipv6_addr[3] = ntohl(data_all->ipv6_addr[3]);	
 					data_all->iptype = IPA_IP_v6;
 				}
 				else
@@ -1602,13 +1602,14 @@ static int ipa_nl_decode_nlmsg
 									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 32)),
 									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 48)));
 
-					memcpy(data_all->ipv6_addr, msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
+					memcpy(data_all->ipv6_addr, 
+								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
 								 sizeof(data_all->ipv6_addr));
 
-					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
-					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
-					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
-					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);	
+					data_all->ipv6_addr[0] = ntohl(data_all->ipv6_addr[0]);
+					data_all->ipv6_addr[1] = ntohl(data_all->ipv6_addr[1]);
+					data_all->ipv6_addr[2] = ntohl(data_all->ipv6_addr[2]);
+					data_all->ipv6_addr[3] = ntohl(data_all->ipv6_addr[3]);	
 					data_all->iptype = IPA_IP_v6;
 				}
 				else
@@ -1620,7 +1621,8 @@ static int ipa_nl_decode_nlmsg
 									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 24));
 
 
-					memcpy(&data_all->ipv4_addr, msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
+					memcpy(&data_all->ipv4_addr, 
+								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
 								 sizeof(data_all->ipv4_addr));
 					data_all->iptype = IPA_IP_v4;
 				}

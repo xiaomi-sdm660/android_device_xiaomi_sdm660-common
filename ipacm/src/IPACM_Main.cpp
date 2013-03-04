@@ -173,7 +173,7 @@ void* ipa_driver_wlan_notifier(void *param)
 	struct ipa_wlan_msg *event = NULL;
 
 	ipacm_cmd_q_data evt_data;
-	ipacm_event_data_mac *data;
+	ipacm_event_data_mac *data = NULL;
 
 	fd = open(IPA_DRIVER, O_RDWR);
 	if (fd == 0)
@@ -185,6 +185,8 @@ void* ipa_driver_wlan_notifier(void *param)
 	{
 		IPACMDBG("Waiting for nofications from IPA driver \n");
 		memset(buffer, 0, sizeof(buffer));
+		memset(&evt_data, 0, sizeof(evt_data));
+		data = NULL;
 
 		length = read(fd, buffer, IPA_DRIVER_WLAN_BUF_LEN);
 		if (length < 0)

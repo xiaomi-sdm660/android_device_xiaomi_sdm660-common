@@ -125,6 +125,7 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 if(0 != ret)
 				 {
 						IPACMERR("unable to create TCP conntrack event listner thread\n");
+						PERROR("unable to create TCP conntrack");
 						return -1;
 				 }
 
@@ -137,6 +138,7 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 if(0 != ret)
 				 {
 						IPACMERR("unable to create UDP conntrack event listner thread\n");
+						PERROR("unable to create UDP conntrack");
 						goto error;
 				 }
 
@@ -149,6 +151,7 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 if(0 != ret)
 				 {
 						IPACMERR("unable to create udp conn timeout thread\n");
+						PERROR("unable to create udp conn timeout");
 						goto error;
 				 }
 
