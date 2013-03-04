@@ -54,6 +54,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Defs.h"
 
 /* current support 2 ipv6-address*/
+#define MAX_DEFAULT_v4_ROUTE_RULES  1
 #define MAX_DEFAULT_v6_ROUTE_RULES  2
 #define IPV4_DEFAULT_FILTERTING_RULES 3
 #define IPV6_DEFAULT_FILTERTING_RULES 1
@@ -87,7 +88,7 @@ public:
 
 		uint32_t dft_v4fl_rule_hdl[IPV4_DEFAULT_FILTERTING_RULES];
 		uint32_t dft_v6fl_rule_hdl[IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES];
-		uint32_t dft_rt_rule_hdl[1+MAX_DEFAULT_v6_ROUTE_RULES]; /* 1 for ipv4 */
+		uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+MAX_DEFAULT_v6_ROUTE_RULES];
 
 		ipa_ioc_query_intf *iface_query;
 		ipa_ioc_query_intf_tx_props *tx_prop;

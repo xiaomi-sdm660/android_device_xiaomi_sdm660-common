@@ -121,8 +121,12 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 
 			if (ipa_interface_index == ipa_if_num)
 			{
-				if ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) // check not setup before
+				/* check v4 not setup before, v6 can have 2 iface ip */
+				if (((data->iptype != ip_type) && (ip_type != IPA_IP_MAX))
+						|| ((data->iptype == IPA_IP_v6) && (num_dft_rt != MAX_DEFAULT_v6_ROUTE_RULES)))
 				{
+
+					IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n", data->iptype, num_dft_rt);
 					/* Post event to NAT */
 					if (data->iptype == IPA_IP_v4)
 					{
@@ -253,18 +257,18 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
-		/* handle software routing enable event*/
+		/* handle software routing enable event, iface will update softwarerouting_act to true*/
 	case IPA_SW_ROUTING_ENABLE:
 		IPACMDBG("Received IPA_SW_ROUTING_ENABLE\n");
-		IPACM_Iface::handle_software_routing_enable();
 		handle_software_routing_enable();
+		IPACM_Iface::handle_software_routing_enable();
 		break;
 
-		/* handle software routing disable event*/
+		/* handle software routing disable event, iface will update softwarerouting_act to false*/
 	case IPA_SW_ROUTING_DISABLE:
 		IPACMDBG("Received IPA_SW_ROUTING_DISABLE\n");
-		IPACM_Iface::handle_software_routing_disable();
 		handle_software_routing_disable();
+		IPACM_Iface::handle_software_routing_disable();
 		break;
 
 	default:
@@ -424,7 +428,7 @@ int IPACM_Wlan::handle_wlan_client_ipaddr(ipacm_event_data_all *data)
 	{
 		if (clnt_indx == IPACM_INVALID_INDEX)
 		{
-			IPACMDBG("wlan client not found/attached \n");
+			IPACMERR("wlan client not found/attached \n");
 			return IPACM_FAILURE;
 		}
 	}
@@ -649,7 +653,7 @@ int IPACM_Wlan::handle_wlan_client_down_evt(uint8_t *mac_addr)
 
 	if (delete_default_qos_rtrules(clt_indx))
 	{
-		IPACMDBG("unbale to delete default qos route rules\n");
+		IPACMERR("unbale to delete default qos route rules\n");
 		return IPACM_FAILURE;
 	}
 
@@ -729,7 +733,7 @@ int IPACM_Wlan::handle_wan_up(void)
 
 	if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v4))
 	{
-		IPACMDBG("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v4=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_wan_v4);
+		IPACMERR("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v4=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_wan_v4);
 		return IPACM_FAILURE;
 	}
 
@@ -751,8 +755,7 @@ int IPACM_Wlan::handle_wan_up(void)
 	memcpy(&m_pFilteringTable->rules[0], &flt_rule_entry, sizeof(flt_rule_entry));
 	if (m_filtering.AddFilteringRule(m_pFilteringTable) == false)
 	{
-		IPACMDBG("Error Adding Filtering Rule, aborting...\n");
-		perror("Wlan: Unable to add filtering table");
+		IPACMERR("Error Adding Filtering Rule, aborting...\n");
 		free(m_pFilteringTable);
 		return IPACM_FAILURE;
 	}
@@ -792,7 +795,12 @@ int IPACM_Wlan::handle_software_routing_enable(void)
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
 	int res = IPACM_SUCCESS;
 
-	IPACMDBG("\n");
+	if (softwarerouting_act == true)
+	{
+		IPACMDBG("already setup AMPDU software_routing rule for (%s)iface ip-family %d\n", 
+						      IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
+		return IPACM_SUCCESS;
+	}
 
 	m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
 		 calloc(1,
@@ -839,7 +847,7 @@ int IPACM_Wlan::handle_software_routing_enable(void)
 		}
 		else if (m_pFilteringTable->rules[0].status)
 		{
-			IPACMDBG("adding flt rule failed status=0x%x\n", m_pFilteringTable->rules[0].status);
+			IPACMERR("adding flt rule failed status=0x%x\n", m_pFilteringTable->rules[0].status);
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -860,7 +868,7 @@ int IPACM_Wlan::handle_software_routing_enable(void)
 		}
 		else if (m_pFilteringTable->rules[0].status)
 		{
-			IPACMDBG("adding flt rule failed status=0x%x\n", m_pFilteringTable->rules[0].status);
+			IPACMERR("adding flt rule failed status=0x%x\n", m_pFilteringTable->rules[0].status);
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -883,7 +891,7 @@ int IPACM_Wlan::handle_software_routing_enable(void)
 		}
 		else if (m_pFilteringTable->rules[0].status)
 		{
-			IPACMDBG("adding flt rule failed status=0x%x\n", m_pFilteringTable->rules[0].status);
+			IPACMERR("adding flt rule failed status=0x%x\n", m_pFilteringTable->rules[0].status);
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -904,6 +912,14 @@ fail:
 /*delete ampdu filter rules for disabling software_routing event*/
 int IPACM_Wlan::handle_software_routing_disable(void)
 {
+	
+	if (softwarerouting_act == false)
+	{
+		IPACMDBG("already delete AMPDU software_routing rule for (%s)iface ip-family %d\n", 
+						      IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
+		return IPACM_SUCCESS;
+	}
+
 
 	if (ip_type == IPA_IP_MAX)
 	{
@@ -1260,7 +1276,7 @@ int IPACM_Wlan::handle_down_evt()
 	if (ip_type == IPACM_IP_NULL)
 	{
 		IPACMERR("Invalid iptype: 0x%x\n", ip_type);
-		return IPACM_FAILURE;
+		goto fail;
 	}
 
 	/* Delete v6 filtering rules */
@@ -1337,7 +1353,7 @@ int IPACM_Wlan::handle_down_evt()
 		/* May have multiple ipv6 iface-RT rules */
 		for (i = 0; i < num_dft_rt; i++)
 		{
-			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[i + 1], IPA_IP_v6)
+			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+i], IPA_IP_v6)
 					== false)
 			{
 				IPACMERR("Routing rule deletion failed!\n");

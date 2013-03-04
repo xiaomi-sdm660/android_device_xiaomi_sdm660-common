@@ -47,7 +47,7 @@ IPACM_Header::IPACM_Header()
 	m_fd = open(DEVICE_NAME, O_RDWR);
 	if (-1 == m_fd)
 	{
-		IPACMDBG("Failed to open %s in IPACM_Header test application constructor.\n", DEVICE_NAME);
+		IPACMERR("Failed to open %s in IPACM_Header test application constructor.\n", DEVICE_NAME);
 	}
 }
 

@@ -97,10 +97,10 @@ private:
 	int handle_header_add_evt(uint8_t mac_addr[6]);
 
 	/* configure the initial firewall filter rules */
-	int config_dft_firewall_rules(ipa_ip_type ip_type);
+	int config_dft_firewall_rules(ipa_ip_type iptype);
 
 	/*clean firewall filter rules */
-	int del_dft_firewall_rules(ipa_ip_type ip_type);
+	int del_dft_firewall_rules(ipa_ip_type iptype);
 
 	/*handle wan-iface down event */
 	int handle_down_evt();

@@ -28,11 +28,11 @@
 		<IPACMALG>
 			<ALG>
   			   <Protocol>TCP</Protocol>
-  			   <Port>23</Port>
+  			   <Port>21</Port>
 		    </ALG>		
 			<ALG>
-  			   <Protocol>UDP</Protocol>
-  			   <Port>250</Port>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>554</Port>
 		    </ALG>		
 		</IPACMALG>
 		<IPACMNAT>		
