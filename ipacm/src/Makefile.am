@@ -1,6 +1,6 @@
 EXTRA_CPPFLAGS	= -DDEBUG
 
-AM_CPPFLAGS = -I./../inc -I$(WORKSPACE)/data-ipa/ipanat/inc -I$(WORKSPACE)/kernel/include -I/usr/include/libxml2
+AM_CPPFLAGS = -I./../inc -I$(WORKSPACE)/data-ipa-cfg-mgr/ipanat/inc -I$(WORKSPACE)/kernel/include -I/usr/include/libxml2
 AM_CPPFLAGS += -Wall -Wundef -Wno-trigraphs
 
 ipacm_SOURCES =	IPACM_Main.cpp \
