@@ -29,16 +29,31 @@
 #ifndef __PLATFORM_LIB_MACROS_H__
 #define __PLATFORM_LIB_MACROS_H__
 
+#include <sys/time.h>
+
+#define TS_PRINTF(format, x...)                                \
+{                                                              \
+  struct timeval tv;                                           \
+  struct timezone tz;                                          \
+  int hh, mm, ss;                                              \
+  gettimeofday(&tv, &tz);                                      \
+  hh = tv.tv_sec/3600%24;                                      \
+  mm = (tv.tv_sec%3600)/60;                                    \
+  ss = tv.tv_sec%60;                                           \
+  fprintf(stdout,"%02d:%02d:%02d.%06ld]" format "\n", hh, mm, ss, tv.tv_usec,##x);    \
+}
+
+
 #ifdef USE_GLIB
 
 #define strlcat g_strlcat
 #define strlcpy g_strlcpy
 
-#define ALOGE(format, x...) printf("E/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
-#define ALOGW(format, x...) printf("W/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
-#define ALOGI(format, x...) printf("I/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
-#define ALOGD(format, x...) printf("D/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
-#define ALOGV(format, x...) printf("V/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
+#define ALOGE(format, x...) TS_PRINTF("E/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGW(format, x...) TS_PRINTF("W/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGI(format, x...) TS_PRINTF("I/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGD(format, x...) TS_PRINTF("D/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGV(format, x...) TS_PRINTF("V/%s (%d): " format , LOG_TAG, getpid(), ##x)
 
 #define GETTID_PLATFORM_LIB_ABSTRACTION (syscall(SYS_gettid))
 
