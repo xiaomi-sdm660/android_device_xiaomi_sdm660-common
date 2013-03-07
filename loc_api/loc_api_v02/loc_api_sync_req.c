@@ -33,7 +33,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
-
+#include <loc_cfg.h>
 #include "loc_api_v02_client.h"
 #include "loc_api_sync_req.h"
 
@@ -47,7 +47,7 @@
 #include "loc_util_log.h"
 
 #define LOC_SYNC_REQ_BUFFER_SIZE 8
-
+#define GPS_CONF_FILE "/etc/gps.conf"
 pthread_mutex_t  loc_sync_call_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static bool loc_sync_call_initialized = false;
@@ -102,6 +102,7 @@ SIDE EFFECTS
 void loc_sync_req_init()
 {
    LOC_LOGV(" %s:%d]:\n", __func__, __LINE__);
+   UTIL_READ_CONF_DEFAULT(GPS_CONF_FILE);
    pthread_mutex_lock(&loc_sync_call_mutex);
    if(true == loc_sync_call_initialized)
    {
