@@ -223,6 +223,8 @@ const GpsInterface* gps_get_hardware_interface ()
 
     char propBuf[PROPERTY_VALUE_MAX];
 
+    loc_eng_read_config();
+
     // check to see if GPS should be disabled
     property_get("gps.disable", propBuf, "");
     if (propBuf[0] == '1')
