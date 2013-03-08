@@ -65,13 +65,19 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 
 	 case IPA_HANDLE_WAN_UP:
 			IPACMDBG("Received IPA_HANDLE_WAN_UP event\n");
-			TriggerWANUp(data);
+			if(isWanUp == false)
+			{
+				TriggerWANUp(data);
+			}
 			break;
 
 	 case IPA_HANDLE_WAN_DOWN:
 			IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
 			pub_addr = (uint32_t *)data;
-			TriggerWANDown(*pub_addr);
+			if(isWanUp == true)
+			{
+				TriggerWANDown(*pub_addr);
+			}
 			break;
 
 	/* if wlan or lan comes up after wan interface, modify
@@ -100,6 +106,12 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 	 IPACMDBG("if_name:%s, ipv4_address:0x%x\n",
 						wanup_data->ifname, wanup_data->ipv4_addr);
 
+	 if(wanup_data->ipv4_addr == 0)
+	 {
+		 IPACMERR("Invalid ipv4 address,ignoring IPA_HANDLE_WAN_UP event\n");
+		 return;
+	 }
+
 	 isWanUp = true;
 	 wan_ipaddr = wanup_data->ipv4_addr;
 	 IPACM_ConntrackClient::iptodot("public ip address", wanup_data->ipv4_addr);
@@ -125,7 +137,7 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 if(0 != ret)
 				 {
 						IPACMERR("unable to create TCP conntrack event listner thread\n");
-						PERROR("unable to create TCP conntrack");
+						PERROR("unable to create TCP conntrack\n");
 						return -1;
 				 }
 
@@ -138,7 +150,7 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 if(0 != ret)
 				 {
 						IPACMERR("unable to create UDP conntrack event listner thread\n");
-						PERROR("unable to create UDP conntrack");
+						PERROR("unable to create UDP conntrack\n");
 						goto error;
 				 }
 
@@ -151,7 +163,7 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 if(0 != ret)
 				 {
 						IPACMERR("unable to create udp conn timeout thread\n");
-						PERROR("unable to create udp conn timeout");
+						PERROR("unable to create udp conn timeout\n");
 						goto error;
 				 }
 

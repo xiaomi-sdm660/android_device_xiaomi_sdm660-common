@@ -399,7 +399,7 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	if(pClient == NULL)
 	{
 		IPACMERR("unable to get conntrack client instance\n");
-		return -1;
+		return NULL;
 	}
 
 	pClient->tcp_hdl = nfct_open(CONNTRACK, NF_NETLINK_CONNTRACK_UPDATE);

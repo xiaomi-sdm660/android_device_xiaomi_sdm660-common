@@ -466,9 +466,8 @@ void ipa_nati_del_dead_ipv4_head_nodes(uint8_t tbl_indx);
    ========================================================*/
 #ifdef NAT_DUMP
 void ipa_nati_print_rule(struct ipa_nat_rule *rule, uint32_t rule_id);
-void ipa_nati_dump_rule_buf(void *param1, uint8_t size, uint32_t rule_id);
 void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl);
-void ipa_nati_dump_index_rule_buf(void *param1, uint8_t size, uint32_t rule_id);
+void ipa_nati_print_index_rule(struct ipa_nat_indx_tbl_rule *param, uint32_t rule_id);
 #endif
 
 #endif /* #ifndef IPA_NAT_DRVI_H */

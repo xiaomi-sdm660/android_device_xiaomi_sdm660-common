@@ -8,11 +8,15 @@
 			</Iface>
 			<Iface>
 			   <Name>rmnet1</Name>
-			   <Category>LAN</Category>
+			   <Category>WAN</Category>
 			</Iface>			
 			<Iface>
 			   <Name>wlan0</Name>
-			   <Category>WLAN</Category>
+			   <Category>UNKNOWN</Category>
+			</Iface>			
+			<Iface>
+			   <Name>wlan1</Name>
+			   <Category>UNKNOWN</Category>
 			</Iface>			
 			<Iface>
 			   <Name>bridge0</Name>
@@ -21,7 +25,7 @@
 		</IPACMIface>
 		<IPACMPrivateSubnet>
 			<Subnet>
-  			   <SubnetAddress>192.168.1.0</SubnetAddress>
+  			   <SubnetAddress>192.168.225.0</SubnetAddress>
   			   <SubnetMask>255.255.255.0</SubnetMask>
 		    </Subnet>		
 		</IPACMPrivateSubnet>

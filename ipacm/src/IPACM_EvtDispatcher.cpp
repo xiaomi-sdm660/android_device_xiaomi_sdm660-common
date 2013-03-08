@@ -121,10 +121,13 @@ void IPACM_EvtDispatcher::ProcessEvt(ipacm_cmd_q_data *data)
 		if(data->event == tmp->event)
 		{
 			tmp->obj->event_callback(data->event, data->evt_data);
+			IPACMDBG(" Find matched registered events\n");
 		}
 		tmp = tmp->next;
 	}
 
+	IPACMDBG(" Finished process events\n");
+			
 	if(data->evt_data != NULL)
 	{
 		IPACMDBG("free the event:%d data: %p\n", data->event, data->evt_data);

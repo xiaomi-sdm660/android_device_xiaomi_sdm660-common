@@ -250,6 +250,11 @@ static int ipacm_cfg_xml_parse_tree
 							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat = VIRTUAL_IF;
 							IPACMDBG("Category %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat);
 						}
+			      else  if (0 == strncasecmp(content_buf, UNKNOWNIF_TAG, str_size))
+						{
+							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat = UNKNOWN_IF;
+							IPACMDBG("Category %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat);
+						}
 					}
 				}
 				else if (IPACM_util_icmp_string((char*)xml_node->name,

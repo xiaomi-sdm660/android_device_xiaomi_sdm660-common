@@ -99,6 +99,17 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_addr *data = (ipacm_event_data_addr *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
+
+			if ( (data->iptype == IPA_IP_v4 && data->ipv4_addr == 0) ||
+					 (data->iptype == IPA_IP_v6 && 
+						data->ipv6_addr[0] == 0 && data->ipv6_addr[1] == 0 && 
+					  data->ipv6_addr[2] == 0 && data->ipv6_addr[3] == 0) )
+			{
+				IPACMDBG("Invalid address, ignore IPA_ADDR_ADD_EVENT event\n");
+				return;
+			}
+
+
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG("Received IPA_ADDR_ADD_EVENT\n");

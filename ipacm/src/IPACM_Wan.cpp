@@ -58,7 +58,10 @@ IPACM_Wan::IPACM_Wan(int iface_index) : IPACM_Iface(iface_index)
 
 	active_v4 = false;
 	active_v6 = false;
-
+  header_set = false;
+  header_partial_default_wan_v4 = false;
+	header_partial_default_wan_v6 = false;
+	
 	IPACMDBG(" IPACM->IPACM_Wan(%d) constructor: Tx:%d\n", ipa_if_num, iface_query->num_tx_props);
 	return;
 }
@@ -197,6 +200,16 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_addr *data = (ipacm_event_data_addr *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
+
+			if ( (data->iptype == IPA_IP_v4 && data->ipv4_addr == 0) ||
+					 (data->iptype == IPA_IP_v6 && 
+						data->ipv6_addr[0] == 0 && data->ipv6_addr[1] == 0 && 
+					  data->ipv6_addr[2] == 0 && data->ipv6_addr[3] == 0) )
+			{
+				IPACMDBG("Invalid address, ignore IPA_ADDR_ADD_EVENT event\n");
+				return;
+			}
+
 			if (ipa_interface_index == ipa_if_num)
 			{
 				/* check v4 not setup before, v6 can have 2 iface ip */
@@ -224,7 +237,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask))
 				{
 					IPACMDBG("adding routing table\n");
-					handle_route_add_evt(data);
+				  handle_route_add_evt(data->iptype);
 					IPACM_Wan::wan_up = true;
 					active_v4 = true;
 					config_dft_firewall_rules(IPA_IP_v4);
@@ -235,7 +248,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 					IPACMDBG("\n get default v6 route (dst:00.00.00.00)\n");
 					IPACMDBG(" IPV6 value: %08x:%08x:%08x:%08x \n",
 									 data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
-					handle_route_add_evt(data);
+				  	handle_route_add_evt(data->iptype);
 					active_v6 = true;
 					config_dft_firewall_rules(IPA_IP_v6);
 				}
@@ -273,7 +286,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
 			if (ipa_interface_index == ipa_if_num)
 			{
-				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT\n");
+				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT in STA mode\n");
 				handle_header_add_evt(data->mac_addr);
 			}
 		}
@@ -315,7 +328,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 }
 
 /* wan default route/filter rule configuration */
-int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
+int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 {
 
 	/* add default WAN route */
@@ -325,8 +338,52 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 	uint32_t tx_index;
 	const int NUM = 1;
 	ipacm_cmd_q_data evt_data;
+	struct ipa_ioc_copy_hdr sCopyHeader; /* checking if partial header*/
 
-	IPACMDBG(" ip-type:%d\n", data->iptype);
+	IPACMDBG(" ip-type:%d\n", iptype);
+
+	/* copy header from tx-property, see if partial or not */
+	/* assume all tx-property uses the same header name */
+
+	if(tx_prop->tx[0].hdr_name != NULL)
+	{
+	    memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+	    memcpy(sCopyHeader.name,
+	    			 tx_prop->tx[0].hdr_name,
+	    			 sizeof(sCopyHeader.name));
+        
+	    IPACMDBG("header name: %s\n", sCopyHeader.name);
+	    if (m_header.CopyHeader(&sCopyHeader) == false)
+	    {
+	    	IPACMERR("ioctl copy header failed");
+	    	return IPACM_FAILURE;
+	    }        
+	    IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+		if(sCopyHeader.is_partial)
+		{
+ 	       IPACMDBG("Not setup default WAN routing rules cuz the header is not complete\n");
+           if(iptype==IPA_IP_v4)
+		   {
+		      header_partial_default_wan_v4 = true;
+           }
+		   else		   
+		   {
+		      header_partial_default_wan_v6 = true;
+		   }
+		   return IPACM_SUCCESS;
+		}
+		{
+           if(iptype==IPA_IP_v4)
+		   {
+		      header_partial_default_wan_v4 = false;
+           }
+		   else		   
+		   {
+		      header_partial_default_wan_v6 = false;
+		   }
+		   
+		}
+    }
 
 	rt_rule = (struct ipa_ioc_add_rt_rule *)
 		 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
@@ -340,9 +397,9 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 
 	rt_rule->commit = 1;
 	rt_rule->num_rules = (uint8_t)NUM;
-	rt_rule->ip = data->iptype;
+	rt_rule->ip = iptype;
 
-	if (data->iptype == IPA_IP_v4) 
+	if (iptype == IPA_IP_v4) 
 	{
 		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.name);
 	}
@@ -357,10 +414,10 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 
 	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 	{
-		if (data->iptype != tx_prop->tx[tx_index].ip)
+		if(iptype != tx_prop->tx[tx_index].ip)
 		{
 			IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n", 
-							    tx_index, tx_prop->tx[tx_index].ip,data->iptype);		
+							    tx_index, tx_prop->tx[tx_index].ip,iptype);		
 			continue;
 		}
 
@@ -387,21 +444,21 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 					 sizeof(rt_rule_entry->rule.attrib));
 
 		rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		if (data->iptype == IPA_IP_v4)
+		if (iptype == IPA_IP_v4)
 		{
-			rt_rule_entry->rule.attrib.u.v4.dst_addr      = data->ipv4_addr;
-			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = data->ipv4_addr_mask;
+			rt_rule_entry->rule.attrib.u.v4.dst_addr      = 0;
+			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0;
 		}
 		else
 		{
-			rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = data->ipv6_addr[0];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = data->ipv6_addr[1];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = data->ipv6_addr[2];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = data->ipv6_addr[3];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = data->ipv6_addr_mask[0];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = data->ipv6_addr_mask[1];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = data->ipv6_addr_mask[2];
-			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = data->ipv6_addr_mask[3];
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
 		}
 
 		if (false == m_routing.AddRoutingRule(rt_rule))
@@ -411,13 +468,13 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 			return IPACM_FAILURE;
 		}
 
-		if (data->iptype == IPA_IP_v4)
+		if (iptype == IPA_IP_v4)
 		{
 			wan_route_rule_v4_hdl[tx_index] = rt_rule_entry->rt_rule_hdl;
 			IPACMDBG("Got ipv4 wan-route rule hdl:0x%x,tx:%d,ip-type: %d \n",
 							 wan_route_rule_v4_hdl[tx_index],
 							 tx_index,
-							 data->iptype);
+						 iptype);
 		}
 		else
 		{
@@ -425,12 +482,12 @@ int IPACM_Wan::handle_route_add_evt(ipacm_event_data_addr *data)
 			IPACMDBG("Got ipv6 wan-route rule hdl:0x%x,tx:%d,ip-type: %d \n",
 							 wan_route_rule_v6_hdl[tx_index],
 							 tx_index,
-							 data->iptype);
+		                 iptype);
 		}
 	}
 	free(rt_rule);
 
-	if (data->iptype == IPA_IP_v4)
+	if (iptype == IPA_IP_v4)
 	{
 		ipacm_event_iface_up *wanup_data;
 
@@ -539,85 +596,124 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 /* construct complete ethernet header */
 int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 {
-	char index[2];
+  #define WAN_IFACE_INDEX_LEN 2
+    
+	uint32_t tx_index;
+	int res = IPACM_SUCCESS, len = 0;
+	char index[WAN_IFACE_INDEX_LEN];
 	struct ipa_ioc_copy_hdr sCopyHeader;
 	struct ipa_ioc_add_hdr *pHeaderDescriptor = NULL;
-	uint32_t tx_index;
-	int len = 0;
 
-	IPACMDBG("construct header\n");
+	/* start of adding header */
+	
+	IPACMDBG("Received Client MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+					 mac_addr[0], mac_addr[1], mac_addr[2],
+					 mac_addr[3], mac_addr[4], mac_addr[5]);
 
-	/* start of add header */
+    if(header_set == true)
+    {
+	   IPACMDBG("Already add STA full header\n");
+       return IPACM_SUCCESS;
+	}					 
+					 
+	/* add header to IPA */
+	len = sizeof(struct ipa_ioc_add_hdr) + (1 * sizeof(struct ipa_hdr_add));
+	pHeaderDescriptor = (struct ipa_ioc_add_hdr *)calloc(1, len);
+	if (pHeaderDescriptor == NULL)
+	{
+		IPACMERR("calloc failed to allocate pHeaderDescriptor\n");
+		return IPACM_FAILURE;
+	}
+
+	/* copy partial header */
+	memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+	memcpy(sCopyHeader.name,
+				 tx_prop->tx[0].hdr_name,
+				 sizeof(sCopyHeader.name));
+
+	IPACMDBG("header name: %s\n", sCopyHeader.name);
+	if (m_header.CopyHeader(&sCopyHeader) == false)
+	{
+		PERROR("ioctl copy header failed");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+	IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+	if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
+	{
+		IPACMERR("header oversize\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	else
+	{
+		memcpy(pHeaderDescriptor->hdr[0].hdr,
+					 sCopyHeader.hdr, 
+					 sCopyHeader.hdr_len);
+	}
+
+
+	/* copy client mac_addr to partial header */
+	memcpy(&pHeaderDescriptor->hdr[0].hdr[IPA_WLAN_PARTIAL_HDR_OFFSET], mac_addr,
+					 IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */				 
+				 
+	pHeaderDescriptor->commit = true;
+	pHeaderDescriptor->num_hdrs = 1;
+
+	memset(pHeaderDescriptor->hdr[0].name, 0,
+				 sizeof(pHeaderDescriptor->hdr[0].name));
+
+	sprintf(index, "%d", ipa_if_num);
+	strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+
+	strncat(pHeaderDescriptor->hdr[0].name,
+					IPA_WAN_PARTIAL_HDR_NAME,
+					sizeof(IPA_WAN_PARTIAL_HDR_NAME));
+
+	pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
+	pHeaderDescriptor->hdr[0].hdr_hdl = -1;
+	pHeaderDescriptor->hdr[0].is_partial = 0;
+	pHeaderDescriptor->hdr[0].status = -1;
+
+	if (m_header.AddHeader(pHeaderDescriptor) == false ||
+			pHeaderDescriptor->hdr[0].status != 0)
+	{
+		IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", pHeaderDescriptor->hdr[0].status);
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	else
+	{
+	  IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
+		}
+
+	/* copy full header to each TX endpoint property*/ 
 	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 	{
-		/* add header to IPA */
-		len = sizeof(struct ipa_ioc_add_hdr) + (1 * sizeof(struct ipa_hdr_add));
-		pHeaderDescriptor = (struct ipa_ioc_add_hdr *)calloc(1, len);
-		if (!pHeaderDescriptor)
-		{
-			IPACMERR("calloc failed to allocate pHeaderDescriptor\n");
-			return IPACM_FAILURE;
-		}
-
-		/* copy partial header */
-		memset(&sCopyHeader, 0, sizeof(sCopyHeader));
-		memcpy(sCopyHeader.name, tx_prop->tx[tx_index].hdr_name,
-					 sizeof(tx_prop->tx[tx_index].hdr_name));
-
-		IPACMDBG("header name: %s\n", sCopyHeader.name);
-		if (false == m_header.CopyHeader(&sCopyHeader))
-		{
-			IPACMERR("ioctl copy header failed\n");
-			free(pHeaderDescriptor);
-			return IPACM_FAILURE;
-		};
-
-		if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
-		{
-			IPACMERR("header oversize\n");
-			free(pHeaderDescriptor);
-			return IPACM_FAILURE;
-		}
-		else
-		{
-			memcpy(pHeaderDescriptor->hdr[0].hdr, sCopyHeader.hdr,
-						 sCopyHeader.hdr_len);
-		}
-
-		/* copy client mac_addr to partial header */
-		memcpy(&pHeaderDescriptor->hdr[0].hdr[IPA_WLAN_PARTIAL_HDR_OFFSET], mac_addr,
-					 IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */
-
-		pHeaderDescriptor->commit = true;
-		pHeaderDescriptor->num_hdrs = 1;
-		sprintf(index, "%d", ipa_if_num);
-		strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
-		strncat(pHeaderDescriptor->hdr[0].name, IPA_WLAN_PARTIAL_HDR_NAME, sizeof(IPA_WLAN_PARTIAL_HDR_NAME));
-		strncat(pHeaderDescriptor->hdr[0].name, "tx", sizeof("tx"));
-		sprintf(index, "%d", tx_index);
-		strncat(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
-
-		pHeaderDescriptor->hdr[0].hdr_len = sizeof(sCopyHeader.hdr_len);
-		pHeaderDescriptor->hdr[0].hdr_hdl = -1;
-		pHeaderDescriptor->hdr[0].is_partial = false;
-		pHeaderDescriptor->hdr[0].status = -1;
-
-		if (false == m_header.AddHeader(pHeaderDescriptor))
-		{
-			IPACMERR("ioctl add header failed\n");
-			free(pHeaderDescriptor);
-			return IPACM_FAILURE;
-		}
-
+		
 		memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
 					 sizeof(tx_prop->tx[tx_index].hdr_name));
 		IPACMDBG("add full header name: %s (%x)\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl);
+   }	
 
+    /* see if default routes are setup before constructing full header */
+    if( (header_partial_default_wan_v4== true) && (header_set == false))
+	  { 
+	    handle_route_add_evt(IPA_IP_v4);	
+	  }
 
-		free(pHeaderDescriptor);
-	}
+    if( (header_partial_default_wan_v6== true) && (header_set == false))
+	  { 
+	    handle_route_add_evt(IPA_IP_v6);	
+	  }
+	
+     header_set = true;
+ 	 
+fail:
+	free(pHeaderDescriptor);
 
-	return IPACM_SUCCESS;
+	return res;
 }
 
 /* configure the initial firewall filter rules */

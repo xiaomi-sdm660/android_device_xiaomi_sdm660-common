@@ -53,6 +53,7 @@ NatApp::NatApp()
 int NatApp::Init(void)
 {
 	IPACM_Config *pConfig;
+	int size = 0;
 
 	pConfig = IPACM_Config::GetInstance();
 	if(pConfig == NULL)
@@ -63,13 +64,15 @@ int NatApp::Init(void)
 
 	max_entries = pConfig->GetNatMaxEntries();
 
-	cache = (nat_table_entry *)malloc(sizeof(nat_table_entry) * max_entries);
+	size = (sizeof(nat_table_entry) * max_entries);
+	cache = (nat_table_entry *)malloc(size);
 	if(cache == NULL)
 	{
 		IPACMERR("Unable to allocate memory for cache\n");
 		goto fail;
 	}
-	memset(cache, 0, sizeof(nat_table_entry) * max_entries);
+	IPACMDBG("Allocated %d bytes for config manager nat cache\n", size);
+	memset(cache, 0, size);
 
 	nALGPort = pConfig->GetAlgPortCnt();
 	pALGPorts = (ipacm_alg *)malloc(sizeof(ipacm_alg) * nALGPort);
