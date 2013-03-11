@@ -57,6 +57,7 @@ extern "C"
 #define IPA_WLAN_PARTIAL_HDR_OFFSET  12 // dst mac first then src mac
 #define IPA_VIRTUAL_IFACE_NAME "bridge0"
 #define IPA_WLAN_PARTIAL_HDR_NAME  "IEEE802_3"
+#define IPA_WAN_PARTIAL_HDR_NAME  "IEEE802_3STA"
 #define IPA_MAX_IFACE_ENTRIES 15
 #define IPA_MAX_PRIVATE_SUBNET_ENTRIES 3
 #define IPA_MAX_ALG_ENTRIES 10
@@ -86,28 +87,30 @@ extern "C"
 ===========================================================================*/
 typedef enum
 {
-	IPA_LINK_UP_EVENT = 1,                    /* ipacm_event_data_fid */
+	IPA_LINK_UP_EVENT = 1,                    /* 1 ipacm_event_data_fid */
 	IPA_LINK_DOWN_EVENT,                      /* 2 ipacm_event_data_fid */
 	IPA_ADDR_ADD_EVENT,                       /* 3 ipacm_event_data_addr */
 	IPA_ADDR_DEL_EVENT,                       /* 4 no use */
 	IPA_ROUTE_ADD_EVENT,                      /* 5 ipacm_event_data_addr */
 	IPA_ROUTE_DEL_EVENT,                      /* 6 ipacm_event_data_addr */
 	IPA_FIREWALL_CHANGE_EVENT,                /* 7 NULL */
-	IPA_WLAN_CLIENT_ADD_EVENT,                /* 8 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_DEL_EVENT,                /* 9 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_POWER_SAVE_EVENT,         /* 10 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_RECOVER_EVENT,            /* 11 ipacm_event_data_mac */
-	IPA_NEW_NEIGH_EVENT,                      /* 12 ipacm_event_data_all */
-	IPA_DEL_NEIGH_EVENT,                      /* 13 ipacm_event_data_all */
-	IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT,       /* 14 ipacm_event_data_all */
-	IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT,       /* 15 ipacm_event_data_all */
-	IPA_SW_ROUTING_ENABLE,                    /* 16 NULL */
-	IPA_SW_ROUTING_DISABLE,                   /* 17 NULL */
-	IPA_PROCESS_CT_MESSAGE,                   /* 18 ipacm_ct_evt_data */
-	IPA_HANDLE_WAN_UP,                        /* 19 unsigned long  */
-	IPA_HANDLE_WAN_DOWN,                      /* 20 unsigned long  */
-	IPA_HANDLE_WLAN_UP,                       /* 21 unsigned long  */
-	IPA_HANDLE_LAN_UP                         /* 22 unsigned long  */
+	IPA_WLAN_AP_LINK_UP_EVENT,                /* 8 ipacm_event_data_mac */
+	IPA_WLAN_STA_LINK_UP_EVENT,               /* 9 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_ADD_EVENT,                /* 10 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_DEL_EVENT,                /* 11 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_POWER_SAVE_EVENT,         /* 12 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_RECOVER_EVENT,            /* 13 ipacm_event_data_mac */
+	IPA_NEW_NEIGH_EVENT,                      /* 14 ipacm_event_data_all */
+	IPA_DEL_NEIGH_EVENT,                      /* 15 ipacm_event_data_all */
+	IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT,       /* 16 ipacm_event_data_all */
+	IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT,       /* 17 ipacm_event_data_all */
+	IPA_SW_ROUTING_ENABLE,                    /* 18 NULL */
+	IPA_SW_ROUTING_DISABLE,                   /* 19 NULL */
+	IPA_PROCESS_CT_MESSAGE,                   /* 20 ipacm_ct_evt_data */
+	IPA_HANDLE_WAN_UP,                        /* 21 unsigned long  */
+	IPA_HANDLE_WAN_DOWN,                      /* 22 unsigned long  */
+	IPA_HANDLE_WLAN_UP,                       /* 23 unsigned long  */
+	IPA_HANDLE_LAN_UP                         /* 24 unsigned long  */
 } ipa_cm_event_id;
 
 typedef enum
@@ -115,7 +118,8 @@ typedef enum
 	LAN_IF = 0,
 	WLAN_IF,
 	WAN_IF,
-	VIRTUAL_IF
+	VIRTUAL_IF,
+	UNKNOWN_IF
 } ipacm_iface_type;
 
 typedef struct

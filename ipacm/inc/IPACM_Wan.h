@@ -77,9 +77,12 @@ private:
 	uint32_t firewall_hdl_v6[IPACM_MAX_FIREWALL_ENTRIES];
 	uint32_t dft_wan_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];
 	int num_firewall_v4,num_firewall_v6;
+	uint32_t wan_v4_addr;
 	bool active_v4;
 	bool active_v6;
-	uint32_t wan_v4_addr;
+	bool header_set;
+	bool header_partial_default_wan_v4;
+	bool header_partial_default_wan_v6;
 
 	/* IPACM firewall Configuration file*/
 	IPACM_firewall_conf_t firewall_config;
@@ -88,7 +91,7 @@ private:
 	int handle_addr_evt(ipacm_event_data_addr *data);
 
 	/* wan default route/filter rule configuration */
-	int handle_route_add_evt(ipacm_event_data_addr *data);
+	int handle_route_add_evt(ipa_ip_type iptype);
 
 	/* wan default route/filter rule delete */	
 	int handle_route_del_evt(ipa_ip_type iptype);

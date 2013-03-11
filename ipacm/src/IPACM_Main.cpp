@@ -12,7 +12,7 @@ met:
 			with the distribution.
 		* Neither the name of The Linux Foundation nor the names of its
 			contributors may be used to endorse or promote products derived
-			from this software without specific prior written permission.																								from this software without specific prior written permission.
+			from this software without specific prior written permission.																								
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -130,7 +130,7 @@ void* firewall_monitor(void *param)
 
 		if (length < 0)
 		{
-			IPACMDBG("inotify read() error return length: %d and mask: 0x%x 0x%x\n", length, event->mask, mask);
+			IPACMERR("inotify read() error return length: %d and mask: 0x%x 0x%x\n", length, event->mask, mask);
 			return NULL;
 		}
 
@@ -218,21 +218,46 @@ void* ipa_driver_wlan_notifier(void *param)
 		case SW_ROUTING_ENABLE:
 			IPACMDBG("Received SW_ROUTING_ENABLE\n");
 			evt_data.event = IPA_SW_ROUTING_ENABLE;
-			evt_data.evt_data = NULL;
 			break;
 
 		case SW_ROUTING_DISABLE:
 			IPACMDBG("Received SW_ROUTING_DISABLE\n");
 			evt_data.event = IPA_SW_ROUTING_DISABLE;
-			evt_data.evt_data = NULL;
 			break;
 
+		case WLAN_AP_CONNECT:
+			IPACMDBG("Received WLAN_AP_CONNECT name: %s\n",event->name);
+			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
+							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
+
+			memcpy(data->mac_addr,
+						 event->mac_addr,
+						 sizeof(event->mac_addr));
+			ipa_get_if_index(event->name, &(data->if_index));
+			evt_data.event = IPA_WLAN_AP_LINK_UP_EVENT;
+			evt_data.evt_data = data;
+			break;
+
+		case WLAN_STA_CONNECT:
+			IPACMDBG("Received WLAN_STA_CONNECT name: %s\n",event->name);
+			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
+							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
+			memcpy(data->mac_addr,
+						 event->mac_addr,
+						 sizeof(event->mac_addr));
+			ipa_get_if_index(event->name, &(data->if_index));
+
+			evt_data.event = IPA_WLAN_STA_LINK_UP_EVENT;
+			evt_data.evt_data = data;
+			break;
+						
 		case WLAN_CLIENT_CONNECT:
 			IPACMDBG("Received WLAN_CLIENT_CONNECT\n");
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-
 		  evt_data.event = IPA_WLAN_CLIENT_ADD_EVENT;
 			evt_data.evt_data = data;
 			ipa_get_if_index(event->name, &(data->if_index));
@@ -246,20 +271,19 @@ void* ipa_driver_wlan_notifier(void *param)
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-
 			memcpy(data->mac_addr,
 						 event->mac_addr,
 						 sizeof(event->mac_addr));
 			ipa_get_if_index(event->name, &(data->if_index));
 
 			evt_data.event = IPA_WLAN_CLIENT_DEL_EVENT;
-			evt_data.evt_data = data;
-			
+			evt_data.evt_data = data;			
 			break;
 
 		case WLAN_CLIENT_POWER_SAVE_MODE:
+#if 0
 			IPACMDBG("Received WLAN_CLIENT_POWER_SAVE_MODE\n");
-			IPACMDBG("Mac Address [0]:%2d [1]:%2d [2]:%2d [3]:%2d [4]:%2d [5]%2d\n",
+			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
 
@@ -269,13 +293,14 @@ void* ipa_driver_wlan_notifier(void *param)
 			evt_data.evt_data = data;
 			memcpy(data->mac_addr,
 						 event->mac_addr,
-						 sizeof(event->mac_addr));
-			
+						 sizeof(event->mac_addr));			
+#endif
 			break;
 
 		case WLAN_CLIENT_NORMAL_MODE:
+#if 0
 			IPACMDBG("Received WLAN_CLIENT_NORMAL_MODE\n");
-			IPACMDBG("Mac Address [0]:%2d [1]:%2d [2]:%2d [3]:%2d [4]:%2d [5]%2d\n",
+			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
 
@@ -285,18 +310,27 @@ void* ipa_driver_wlan_notifier(void *param)
 			ipa_get_if_index(event->name, &(data->if_index));
 			evt_data.evt_data = data;
 			evt_data.event = IPA_WLAN_CLIENT_RECOVER_EVENT;
+#endif
+			break;
+
+		case WLAN_AP_DISCONNECT:
+			IPACMDBG("Ignoring WLAN_AP_DISCONNECT\n");
+			break;
+
+		case WLAN_STA_DISCONNECT:
+			IPACMDBG("Ignoring WLAN_STA_DISCONNET\n");
 			break;
 
 		default:
-			IPACMDBG("Invalid message\n");
-			free(data);
-			continue;
+			IPACMERR("Unhandled message type: %d\n", event_hdr->msg_type);
+			break;
 
 		}
 
 		/* finish command queue */
 		if (evt_data.evt_data == NULL)
 		{
+			IPACMDBG("free the event data memory as there is no data\n");
 			free(data);
 		}
 
@@ -416,6 +450,7 @@ int ipa_get_if_index
 	if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0)
 	{
 		PERROR("call_ioctl_on_dev: ioctl failed:");
+    *if_index = -1;
 		close(fd);
 		return IPACM_FAILURE;
 	}

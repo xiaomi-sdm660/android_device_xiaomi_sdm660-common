@@ -69,6 +69,12 @@ extern "C"
                              log_nat_message(nat_log_buf);\
 				  		             }
 
+#define IPADUMP(fmt, ...) {\
+                             int n =0; \
+                             snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-1), fmt, ##__VA_ARGS__);\
+                             log_nat_message(nat_log_buf);\
+				  		             }
+
 extern void log_nat_message(char *msg);
 extern char nat_log_buf[NAT_LOG_SIZE];
 

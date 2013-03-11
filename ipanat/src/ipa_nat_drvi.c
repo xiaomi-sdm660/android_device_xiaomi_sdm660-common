@@ -797,7 +797,9 @@ int ipa_nati_alloc_table(uint16_t number_of_entries,
 
   /* Calclate the memory size for both table and index table entries */
   mem->size = (IPA_NAT_TABLE_ENTRY_SIZE * total_entries);
+	IPADBG("Nat Table size: %d\n", mem->size);
   mem->size += (IPA_NAT_INDEX_TABLE_ENTRY_SIZE * total_entries);
+	IPADBG("Nat Base and Index Table size: %d\n", mem->size);
   
   if (!ipv4_nat_cache.ipa_fd)
   {
@@ -2220,9 +2222,6 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     {
       atl_one = 1;
 			ipa_nati_print_rule(&tbl_ptr[cnt], cnt);
-      ipa_nati_dump_rule_buf(&tbl_ptr[cnt], 
-                             sizeof(struct ipa_nat_rule),
-                             cnt);
     }
   }
   if(!atl_one)
@@ -2243,9 +2242,6 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
 														ENABLE_FIELD))
     {
 			ipa_nati_print_rule(&tbl_ptr[cnt], cnt);
-      ipa_nati_dump_rule_buf(&tbl_ptr[cnt], 
-                             sizeof(struct ipa_nat_rule),
-                             cnt);
     }
   }
   if(!atl_one)
@@ -2265,9 +2261,8 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     if (Read16BitFieldValue(indx_tbl_ptr[cnt].tbl_entry_nxt_indx,
 														INDX_TBL_TBL_ENTRY_FIELD))
     {
-      ipa_nati_dump_index_rule_buf(&indx_tbl_ptr[cnt], 
-                                   sizeof(struct ipa_nat_indx_tbl_rule),
-                                   cnt);
+			ipa_nati_print_index_rule(&indx_tbl_ptr[cnt], cnt);
+      //ipa_nati_dump_index_rule_buf(&indx_tbl_ptr[cnt], sizeof(struct ipa_nat_indx_tbl_rule), cnt);
     }
   }
   if(!atl_one)
@@ -2288,9 +2283,8 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     if (Read16BitFieldValue(indx_tbl_ptr[cnt].tbl_entry_nxt_indx,
 														INDX_TBL_TBL_ENTRY_FIELD))
     {
-      ipa_nati_dump_index_rule_buf(&indx_tbl_ptr[cnt], 
-                                   sizeof(struct ipa_nat_indx_tbl_rule),
-                                   cnt);
+			ipa_nati_print_index_rule(&indx_tbl_ptr[cnt], cnt);
+      //ipa_nati_dump_index_rule_buf(&indx_tbl_ptr[cnt], sizeof(struct ipa_nat_indx_tbl_rule), cnt);
     }
   }
   if(!atl_one)
@@ -2301,87 +2295,29 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
 
 }
 
-
-void ipa_nati_dump_rule_buf(void *param1, uint8_t size, uint32_t rule_id)
-{
-  int cnt = 0;
-	uint8_t temp[IPA_NAT_TABLE_ENTRY_SIZE];
-  uint64_t *rule = NULL;
-
-	memcpy(&temp, param1, sizeof(temp));
-	rule = (uint64_t *)temp;
-
-  IPADBG("Address :%p, rule id: %d size: %d\n", 
-          rule, rule_id, size);
-  for(; cnt<size; )
-  {
-    uint8_t *byte = (uint8_t *)rule;
-
-    IPADBG("uint64[%d]: 0x%x:\n", cnt, (unsigned int)rule);
-    IPADBG("%02x\t%02x\t%02x\t%02x\n", byte[0], byte[1], byte[2], byte[3]);
-    IPADBG("%02x\t%02x\t%02x\t%02x\n", byte[4], byte[5], byte[6], byte[7]);
-
-    cnt += 8;
-    rule++;
-  }
-
-  return;
-}
-
-void ipa_nati_dump_index_rule_buf(void *param1, uint8_t size, uint32_t rule_id)
-{
-  int cnt = 0;
-	uint8_t temp[IPA_NAT_INDEX_TABLE_ENTRY_SIZE];
-  uint16_t *rule = NULL;
-
-	memcpy(&temp, param1, sizeof(temp));
-	rule = (uint16_t *)temp;
-
-  IPADBG("Address :%p, rule id: %d size: %d\n", 
-          rule, rule_id, size);
-
-  for(; cnt<size; )
-  {
-    uint8_t *byte = (uint8_t *)rule;
-
-    IPADBG("uint64[%d]: 0x%x:\n", cnt, (unsigned int)rule);
-    IPADBG("%02x\t%02x\n", byte[0], byte[1]);
-    IPADBG("\n");
-
-    cnt += 2;
-    rule++;
-  }
-
-  return;
-}
-
 void ipa_nati_print_rule(struct ipa_nat_rule *param, uint32_t rule_id)
 {
 	struct ipa_nat_sw_rule sw_rule;
 	memcpy(&sw_rule, param, sizeof(sw_rule));
 
-  IPADBG("Printing NAT Rule:%d at memory location:%p\n", rule_id, param);
+  IPADUMP("rule-id:%d  Trgt-IP:0x%x  Trgt-Port:0x%x  ",rule_id, sw_rule.target_ip, sw_rule.target_port);
+  IPADUMP("Priv-IP:0x%x Priv-Port:0x%x  ", sw_rule.private_ip, sw_rule.private_port);
+  IPADUMP("Pub-Port:0x%x  Nxt-indx:0x%x  ", sw_rule.public_port, sw_rule.next_index);
+  IPADUMP("IP-cksm:0x%x  En-bit:0x%x  ", sw_rule.ip_chksum, sw_rule.enable);
+  IPADUMP("TS:0x%x  Proto:0x%x  ", sw_rule.time_stamp, sw_rule.protocol);
+  IPADUMP("Prv-indx:0x%x  nxt-indx:0x%x  Tcp-udp-cksum:0x%x", sw_rule.prev_index, sw_rule.next_index, sw_rule.tcp_udp_chksum);
+  IPADUMP("\n");
+  return;
+}
 
-  IPADBG("Target IP: 0x%x Target Port: 0x%x\n", 
-         sw_rule.target_ip, sw_rule.target_port);
+void ipa_nati_print_index_rule(struct ipa_nat_indx_tbl_rule *param, uint32_t rule_id)
+{
+	struct ipa_nat_sw_indx_tbl_rule sw_rule;
+	memcpy(&sw_rule, param, sizeof(sw_rule));
 
-  IPADBG("Private IP: 0x%x Private Port: 0x%x\n", 
-         sw_rule.private_ip, sw_rule.private_port);
-
-  IPADBG("Public Port: 0x%x Next index: 0x%x\n", 
-         sw_rule.public_port, sw_rule.next_index);
-
-  IPADBG("IP ChkSum: 0x%x Enable bit: 0x%x\n", 
-         sw_rule.ip_chksum, sw_rule.enable);
-
-  IPADBG("Time Stamp: 0x%x Protocol: 0x%x\n", 
-         sw_rule.time_stamp, sw_rule.protocol);
-
-  IPADBG("Prev Index: 0x%x Next Index: 0x%x\n", 
-         sw_rule.prev_index, sw_rule.next_index);
-
-  IPADBG("TCP UDP Chksum: 0x%x\n", sw_rule.tcp_udp_chksum);
-
+  IPADUMP("rule-id:%d  Table_entry:0x%x  Next_index:0x%x",
+					        rule_id, sw_rule.tbl_entry, sw_rule.next_index);
+  IPADUMP("\n");
   return;
 }
 #endif

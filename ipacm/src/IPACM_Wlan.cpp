@@ -94,6 +94,7 @@ IPACM_Wlan::~IPACM_Wlan()
 void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 {
 	int ipa_interface_index;
+	int wlan_index;
 
 	switch (event)
 	{
@@ -108,6 +109,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				handle_down_evt();
 				IPACMDBG("ipa_WLAN (%s):ipa_index (%d) instance close \n",
 								 IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+				/* reset the iface category to unknown*/				 
+				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat=UNKNOWN_IF;
 				delete this;
 				return;
 			}
@@ -119,14 +122,22 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			ipacm_event_data_addr *data = (ipacm_event_data_addr *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
 
+			if ( (data->iptype == IPA_IP_v4 && data->ipv4_addr == 0) ||
+					 (data->iptype == IPA_IP_v6 && 
+						data->ipv6_addr[0] == 0 && data->ipv6_addr[1] == 0 && 
+					  data->ipv6_addr[2] == 0 && data->ipv6_addr[3] == 0) )
+			{
+				IPACMDBG("Invalid address, ignore IPA_ADDR_ADD_EVENT event\n");
+				return;
+			}
+			
 			if (ipa_interface_index == ipa_if_num)
 			{
 				/* check v4 not setup before, v6 can have 2 iface ip */
-				if (((data->iptype != ip_type) && (ip_type != IPA_IP_MAX))
-						|| ((data->iptype == IPA_IP_v6) && (num_dft_rt != MAX_DEFAULT_v6_ROUTE_RULES)))
+				if( ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) 
+				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt!=MAX_DEFAULT_v6_ROUTE_RULES))) 
 				{
-
-					IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n", data->iptype, num_dft_rt);
+				  IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt);
 					/* Post event to NAT */
 					if (data->iptype == IPA_IP_v4)
 					{
@@ -228,6 +239,14 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG("Received IPA_WLAN_CLIENT_RECOVER_EVENT\n");
+			  wlan_index = get_wlan_client_index(data->mac_addr);
+
+	      if ((wlan_index != IPACM_INVALID_INDEX) && (get_client_memptr(wlan_client, wlan_index)->power_save_set == true))
+	      {
+	        IPACMDBG("change wlan client out of  power safe mode \n");
+			    	get_client_memptr(wlan_client, wlan_index)->power_save_set = false;
+	       }
+				
 				if (ip_type != IPA_IP_v6) /* for ipv4 */
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v4);
@@ -395,7 +414,7 @@ int IPACM_Wlan::handle_wlan_client_init(uint8_t *mac_addr)
 	get_client_memptr(wlan_client, num_wifi_client)->route_rule_set_v6 = false;
 	get_client_memptr(wlan_client, num_wifi_client)->ipv4_set = false;
 	get_client_memptr(wlan_client, num_wifi_client)->ipv6_set = false;
-
+  get_client_memptr(wlan_client, num_wifi_client)->power_save_set=false;
 	num_wifi_client++;
 	header_name_count++; //keep increasing header_name_count
 	IPACM_Wlan::total_num_wifi_clients++;
@@ -489,6 +508,12 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 	if (wlan_index == IPACM_INVALID_INDEX)
 	{
 		IPACMDBG("wlan client not found/attached \n");
+		return IPACM_SUCCESS;
+	}
+
+	if (get_client_memptr(wlan_client, wlan_index)->power_save_set == true)
+	{
+		IPACMDBG("wlan client is in power safe mode \n");
 		return IPACM_SUCCESS;
 	}
 
@@ -622,17 +647,16 @@ int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 		return IPACM_SUCCESS;
 	}
 
-	/*check if got duplicate power-save mode*/
-	if ((ip_type != IPA_IP_v6 && get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4 == true)
-			|| (ip_type != IPA_IP_v4 && get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6 == true))
+  if (get_client_memptr(wlan_client, clt_indx)->power_save_set == false)
 	{
-		return delete_default_qos_rtrules(clt_indx);
+ 	  delete_default_qos_rtrules(clt_indx);
+    get_client_memptr(wlan_client, clt_indx)->power_save_set = true;
 	}
 	else
 	{
 		IPACMDBG("wlan client already in power-save mode\n");
-		return IPACM_SUCCESS;
 	}
+    return IPACM_SUCCESS;
 }
 
 /*handle wifi client del mode*/
