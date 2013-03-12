@@ -20,6 +20,11 @@ AC_SUBST([LIBXML_LIBS])
 
 # Checks for libraries.
 
+AC_ARG_WITH(sanitized-headers,
+      AS_HELP_STRING([--with-sanitized-headers=DIR],
+         [Specify the location of the sanitized Linux headers]),
+      [CPPFLAGS="$CPPFLAGS -idirafter $withval"])
+	  
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h netinet/in.h sys/ioctl.h unistd.h])
 

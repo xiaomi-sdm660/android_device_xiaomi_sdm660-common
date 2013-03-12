@@ -1,5 +1,5 @@
 AM_CFLAGS = -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
-AM_CFLAGS += -I./../inc -I$(WORKSPACE)/kernel/include
+AM_CFLAGS += -I./../inc
 
 c_sources   = ipa_nat_drv.c \
               ipa_nat_drvi.c \
