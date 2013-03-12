@@ -281,7 +281,6 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case WLAN_CLIENT_POWER_SAVE_MODE:
-#if 0
 			IPACMDBG("Received WLAN_CLIENT_POWER_SAVE_MODE\n");
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
@@ -294,11 +293,9 @@ void* ipa_driver_wlan_notifier(void *param)
 			memcpy(data->mac_addr,
 						 event->mac_addr,
 						 sizeof(event->mac_addr));			
-#endif
 			break;
 
 		case WLAN_CLIENT_NORMAL_MODE:
-#if 0
 			IPACMDBG("Received WLAN_CLIENT_NORMAL_MODE\n");
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
@@ -310,27 +307,18 @@ void* ipa_driver_wlan_notifier(void *param)
 			ipa_get_if_index(event->name, &(data->if_index));
 			evt_data.evt_data = data;
 			evt_data.event = IPA_WLAN_CLIENT_RECOVER_EVENT;
-#endif
-			break;
-
-		case WLAN_AP_DISCONNECT:
-			IPACMDBG("Ignoring WLAN_AP_DISCONNECT\n");
-			break;
-
-		case WLAN_STA_DISCONNECT:
-			IPACMDBG("Ignoring WLAN_STA_DISCONNET\n");
 			break;
 
 		default:
 			IPACMERR("Unhandled message type: %d\n", event_hdr->msg_type);
-			break;
+      free(data);
+			continue;
 
 		}
 
 		/* finish command queue */
 		if (evt_data.evt_data == NULL)
 		{
-			IPACMDBG("free the event data memory as there is no data\n");
 			free(data);
 		}
 
@@ -449,8 +437,8 @@ int ipa_get_if_index
 
 	if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0)
 	{
-		PERROR("call_ioctl_on_dev: ioctl failed:");
-    *if_index = -1;
+		IPACMERR("call_ioctl_on_dev: ioctl failed: can't find device %s",if_name);
+		*if_index = -1;
 		close(fd);
 		return IPACM_FAILURE;
 	}

@@ -317,15 +317,28 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 		rt_rule->num_rules = (uint8_t)1;
 		rt_rule->ip = data->iptype;
 
-		if (data->iptype == IPA_IP_v4) strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
-		else strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
-
+		if (data->iptype == IPA_IP_v4) 
+		{  
+		   strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
+		}
+		else 
+		{
+		   strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
+     }
 
 		rt_rule_entry = &rt_rule->rules[0];
 		rt_rule_entry->at_rear = 1;
 
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
+		
+		    if(data->iptype != tx_prop->tx[tx_index].ip)
+		    {
+		    	IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
+		    					    tx_index, tx_prop->tx[tx_index].ip,data->iptype);		
+		    	continue;
+		    }		
+		
 			if (tx_prop->tx[tx_index].hdr_name)
 			{
 				memset(&sRetHeader, 0, sizeof(sRetHeader));
@@ -336,6 +349,8 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 				if (false == m_header.GetHeaderHandle(&sRetHeader))
 				{
 					IPACMERR(" ioctl failed\n");
+				        free(rt_rule);
+				        return IPACM_FAILURE;
 				}
 
 				rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
@@ -361,7 +376,6 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = data->ipv6_addr_mask[2];
 				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = data->ipv6_addr_mask[3];
 			}
-			IPACMDBG("m_routing = %p\n", &m_routing);
 
 			if (false == m_routing.AddRoutingRule(rt_rule))
 			{
@@ -370,7 +384,7 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 				return IPACM_FAILURE;
 			}
 
-			IPACMDBG("rt rule hdl1=%x\n", rt_rule_entry->rt_rule_hdl);
+			IPACMDBG("rt rule hdl1=0x%x\n", rt_rule_entry->rt_rule_hdl);
 			get_rt_ruleptr(route_rule, num_uni_rt)->rt_rule_hdl[tx_index]
 				 = rt_rule_entry->rt_rule_hdl;
 		}
@@ -408,6 +422,13 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 			{
 				for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 				{
+		            if(data->iptype != tx_prop->tx[tx_index].ip)
+		            {
+		            	IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
+		            					    tx_index, tx_prop->tx[tx_index].ip,data->iptype);		
+		            	continue;
+		            }		
+
 					if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
 																				 IPA_IP_v4) == false)
 					{
@@ -446,6 +467,13 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 
 				for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 				{
+		                        if(data->iptype != tx_prop->tx[tx_index].ip)
+		                        {
+		            	               IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
+		            					    tx_index, tx_prop->tx[tx_index].ip,data->iptype);		
+		            	               continue;
+		                        }		
+
 					if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
 																				 IPA_IP_v6) == false)
 					{
@@ -846,6 +874,14 @@ int IPACM_Lan::handle_down_evt()
 	{
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
+
+		        if(get_rt_ruleptr(route_rule, i)->ip != tx_prop->tx[tx_index].ip)
+ 		        {
+		    	        IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
+		    					    tx_index, tx_prop->tx[tx_index].ip,get_rt_ruleptr(route_rule, i)->ip);		
+		    	        continue;
+		        }		
+
 			if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
 																		 get_rt_ruleptr(route_rule, i)->ip) == false)
 			{

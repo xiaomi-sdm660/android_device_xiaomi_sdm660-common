@@ -59,7 +59,8 @@ typedef struct _ipa_wlan_client
 	uint8_t mac[IPA_MAC_ADDR_SIZE];
 	uint32_t v4_addr;
 	uint32_t v6_addr[4];
-	uint32_t hdr_hdl;
+	uint32_t hdr_hdl_v4;
+	uint32_t hdr_hdl_v6;
 	bool route_rule_set_v4;
 	bool route_rule_set_v6;
 	bool ipv4_set;
@@ -142,9 +143,9 @@ private:
 
 		for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
-			if((ip_type != IPA_IP_v6) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
+		        if((tx_prop->tx[tx_index].ip == IPA_IP_v4) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
 			{
-			  IPACMDBG("Delete client index %d ipv4 Qos rules \n", clt_indx);
+			       IPACMDBG("Delete client index %d ipv4 Qos rules for tx:%d \n", clt_indx,tx_index);
 				rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4;
 
 				if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v4) == false)
@@ -153,7 +154,7 @@ private:
 				}
 			}
 
-			if((ip_type != IPA_IP_v4) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6==true)) /* for ipv6 */
+		        if((tx_prop->tx[tx_index].ip == IPA_IP_v6) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6==true)) /* for ipv6 */
 			{
 			  IPACMDBG("Delete client index %d ipv6 Qos rules \n", clt_indx);
 				rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6;

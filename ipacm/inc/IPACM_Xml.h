@@ -99,6 +99,9 @@ if (!(a)) {                                             \
 /* FIREWALL Config Entries */
 #define Firewall_TAG                         "Firewall"
 #define MobileAPFirewallCfg_TAG              "MobileAPFirewallCfg"
+#define FirewallEnabled_TAG                  "FirewallEnabled"
+#define FirewallPktsAllowed_TAG              "FirewallPktsAllowed"
+
 #define IPFamily_TAG                         "IPFamily"
 #define IPV4SourceAddress_TAG                "IPV4SourceAddress"
 #define IPV4SourceIPAddress_TAG              "IPV4SourceIPAddress"
@@ -219,6 +222,8 @@ typedef struct
   char     firewall_config_file[IPA_MAX_FILE_LEN];
   uint8_t    num_extd_firewall_entries;
   IPACM_extd_firewall_entry_conf_t extd_firewall_entries[IPACM_MAX_FIREWALL_ENTRIES];
+	bool     rule_action_accept;
+	bool     firewall_enable;	
 } IPACM_firewall_conf_t;
   
 

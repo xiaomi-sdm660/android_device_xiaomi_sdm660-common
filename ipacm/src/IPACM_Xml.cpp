@@ -409,8 +409,15 @@ static int IPACM_firewall_xml_parse_tree
 						0 == IPACM_util_icmp_string((char*)xml_node->name,
 																				MobileAPFirewallCfg_TAG) ||
 						0 == IPACM_util_icmp_string((char*)xml_node->name,
-																				Firewall_TAG)
-						)
+																				Firewall_TAG) ||
+
+						0 == IPACM_util_icmp_string((char*)xml_node->name,
+																				FirewallEnabled_TAG)  ||
+						0 == IPACM_util_icmp_string((char*)xml_node->name,
+																				FirewallPktsAllowed_TAG)
+
+
+																				)
 				{
 					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
 																					Firewall_TAG))
@@ -418,6 +425,54 @@ static int IPACM_firewall_xml_parse_tree
 						/* increase firewall entry num */
 						config->num_extd_firewall_entries++;
 					}
+
+
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
+																					FirewallPktsAllowed_TAG))
+					{
+						/* setup action of matched rules */
+					    content = IPACM_read_content_element(xml_node);
+					    if (content)
+					    {
+						        str_size = strlen(content);
+						        memset(content_buf, 0, sizeof(content_buf));
+						        memcpy(content_buf, (void *)content, str_size);
+							if (atoi(content_buf)==1)
+							{
+					    	            config->rule_action_accept = true;							
+							}
+							else
+							{
+					    	            config->rule_action_accept = false;														
+							}							
+				    	                IPACMDBG(" Allow traffic which matches rules ?:%d\n",config->rule_action_accept);	
+					    }
+				        }
+							
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
+																					FirewallEnabled_TAG))
+					{
+						/* setup if firewall enable or not */
+					    content = IPACM_read_content_element(xml_node);
+					    if (content)
+					    {
+						        str_size = strlen(content);
+						        memset(content_buf, 0, sizeof(content_buf));
+						        memcpy(content_buf, (void *)content, str_size);
+							if (atoi(content_buf)==1)
+							{
+					    	            config->firewall_enable = true;							
+							}
+						        else
+							{
+					    	            config->firewall_enable = false;														
+							}							
+				    	                IPACMDBG(" Firewall Enable?:%d\n", config->firewall_enable);	
+				            }							
+					}		
+
+
+
 					/* go to child */
 					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
 																									config);

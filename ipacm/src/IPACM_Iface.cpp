@@ -345,6 +345,7 @@ int IPACM_Iface::iface_ipa_index_query
 int IPACM_Iface::query_iface_property(void)
 {
 	int res = IPACM_SUCCESS, fd = 0;
+	uint32_t cnt=0;
 
 	fd = open(DEVICE_NAME, O_RDWR);
 	IPACMDBG("iface query-property \n");
@@ -398,12 +399,12 @@ int IPACM_Iface::query_iface_property(void)
 
 	if (res != IPACM_FAILURE)
 	{
-		for (uint32_t cnt=0; cnt<rx_prop->num_rx_props; cnt++)
+		for (cnt=0; cnt<rx_prop->num_rx_props; cnt++)
 		{
 			IPACMDBG("Rx(%d):attrib-mask:0x%x, ip-type: %d, src_pipe: %d\n",
 							 cnt, rx_prop->rx[cnt].attrib.attrib_mask, rx_prop->rx[cnt].ip, rx_prop->rx[cnt].src_pipe);
 		}
-		for (uint32_t cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+		for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
 		{
 			IPACMDBG("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, header: %s\n",
 							 cnt, tx_prop->tx[cnt].attrib.attrib_mask, tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe, tx_prop->tx[cnt].hdr_name);
