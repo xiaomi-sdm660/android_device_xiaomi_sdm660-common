@@ -1,6 +1,8 @@
 EXTRA_CPPFLAGS	= -DDEBUG
-
-AM_CPPFLAGS = -I./../inc -I$(WORKSPACE)/data-ipa-cfg-mgr/ipanat/inc -I$(WORKSPACE)/kernel/include -I/usr/include/libxml2
+AM_CPPFLAGS = -I./../inc \
+	      -I$(WORKSPACE)/data-ipa-cfg-mgr/ipanat/inc \
+	      -I$(WORKSPACE)/kernel/include \
+	      ${LIBXML_CFLAGS}
 AM_CPPFLAGS += -Wall -Wundef -Wno-trigraphs
 
 ipacm_SOURCES =	IPACM_Main.cpp \
@@ -25,7 +27,7 @@ ipacm_SOURCES =	IPACM_Main.cpp \
 		
 bin_PROGRAMS  =  ipacm
 
-requiredlibs =  -lxml2 -lpthread -lnetfilter_conntrack -lnfnetlink\
+requiredlibs =  ${LIBXML_LIB} -lxml2 -lpthread -lnetfilter_conntrack -lnfnetlink\
                ../../ipanat/src/libipanat.la
 			   
 ipacm_LDADD =  $(requiredlibs)

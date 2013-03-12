@@ -51,8 +51,8 @@ extern "C" {
 #include <string.h>
 #include <arpa/inet.h>
 #include <stdint.h>
-#include "libxml/parser.h"
-#include "libxml/tree.h"
+#include <libxml/parser.h>
+#include <libxml/tree.h>
   
 #define IPACM_ASSERT(a)                                            \
 if (!(a)) {                                             \
