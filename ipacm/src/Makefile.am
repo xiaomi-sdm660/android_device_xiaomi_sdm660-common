@@ -1,7 +1,6 @@
 EXTRA_CPPFLAGS	= -DDEBUG
 AM_CPPFLAGS = -I./../inc \
-	      -I$(WORKSPACE)/data-ipa-cfg-mgr/ipanat/inc \
-	      -I$(WORKSPACE)/kernel/include \
+	      -I$(top_srcdir)/ipanat/inc \
 	      ${LIBXML_CFLAGS}
 AM_CPPFLAGS += -Wall -Wundef -Wno-trigraphs
 
