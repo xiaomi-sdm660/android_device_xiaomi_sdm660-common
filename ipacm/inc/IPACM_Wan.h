@@ -82,7 +82,8 @@ private:
 	uint32_t wan_v4_addr;
 	bool active_v4;
 	bool active_v6;
-	bool header_set;
+	bool header_set_v4;
+	bool header_set_v6;
 	bool header_partial_default_wan_v4;
 	bool header_partial_default_wan_v6;
 

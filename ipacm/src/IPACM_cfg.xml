@@ -3,6 +3,10 @@
 	<IPACM>
 		<IPACMIface>
 			<Iface>
+			   <Name>ecm0</Name>
+			   <Category>LAN</Category>
+			</Iface>
+			<Iface>
 			   <Name>rmnet0</Name>
 			   <Category>WAN</Category>
 			</Iface>
@@ -37,6 +41,22 @@
 			<ALG>
   			   <Protocol>TCP</Protocol>
   			   <Port>554</Port>
+		    </ALG>		
+		<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>5060</Port>
+		    </ALG>		
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>5060</Port>
+		    </ALG>		
+			<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>1723</Port>
+		    </ALG>		
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>69</Port>
 		    </ALG>		
 		</IPACMALG>
 		<IPACMNAT>		

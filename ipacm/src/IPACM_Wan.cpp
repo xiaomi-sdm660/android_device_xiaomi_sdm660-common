@@ -58,8 +58,9 @@ IPACM_Wan::IPACM_Wan(int iface_index) : IPACM_Iface(iface_index)
 
 	active_v4 = false;
 	active_v6 = false;
-  header_set = false;
-  header_partial_default_wan_v4 = false;
+  header_set_v4 = false;
+  header_set_v6 = false;
+	header_partial_default_wan_v4 = false;
 	header_partial_default_wan_v6 = false;
 	hdr_hdl_sta_v4 = 0;
 	hdr_hdl_sta_v6 = 0;
@@ -193,7 +194,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				handle_down_evt();
 				IPACMDBG("ipa_WAN (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
 	                        /* reset the STA-iface category to unknown */
-                                if(header_set == true)
+                                if((header_set_v4 == true) || (header_set_v6 == true))
                                 {
 	            	             IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat=UNKNOWN_IF;
                                 }
@@ -623,8 +624,8 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 					 mac_addr[0], mac_addr[1], mac_addr[2],
 					 mac_addr[3], mac_addr[4], mac_addr[5]);
 
-    if(header_set == true)
-    {
+        if((header_set_v4 == true) || (header_set_v6 == true))
+        {
 	   IPACMDBG("Already add STA full header\n");
        return IPACM_SUCCESS;
 	}					 
@@ -642,11 +643,9 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
         for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
 	{
 		   if(tx_prop->tx[cnt].ip==IPA_IP_v4)
-		   break; 
-	}	
-
-	memset(&sCopyHeader, 0, sizeof(sCopyHeader));
-	memcpy(sCopyHeader.name,
+		   {		   
+	               memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+	               memcpy(sCopyHeader.name,
 				 tx_prop->tx[cnt].hdr_name,
 				 sizeof(sCopyHeader.name));
 
@@ -715,22 +714,25 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
            {	  
 		  memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
 					 sizeof(tx_prop->tx[tx_index].hdr_name));
-		  IPACMDBG("replace full header name: %s (%x) in tx:%d\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl,tx_index);
-           }
+		                 IPACMDBG("replace full header name: %s (%x) in tx:%d\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl,tx_index);
+                           }
+	               }	
+		        break; 
+		   }
 	}	
+
+	  
 
 	/* copy partial header for v6 */
         for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
 	{
 		   if(tx_prop->tx[cnt].ip == IPA_IP_v6)
-		   break;
-	}	
-
-	IPACMDBG("Got partial v6-header name from %d tx props\n", cnt);
-	memset(&sCopyHeader, 0, sizeof(sCopyHeader));
-	memcpy(sCopyHeader.name,
-				 tx_prop->tx[cnt].hdr_name,
-				 sizeof(sCopyHeader.name));
+		   {
+	                 IPACMDBG("Got partial v6-header name from %d tx props\n", cnt);
+	                 memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+	                 memcpy(sCopyHeader.name,
+				           tx_prop->tx[cnt].hdr_name,
+				                   sizeof(sCopyHeader.name));
 
 	IPACMDBG("header name: %s from tx: %d\n", sCopyHeader.name,cnt);
 	if (m_header.CopyHeader(&sCopyHeader) == false)
@@ -740,80 +742,83 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 		goto fail;
 	}
 
-	IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
-	if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
-	{
-		IPACMERR("header oversize\n");
-		res = IPACM_FAILURE;
-		goto fail;
-	}
-	else
-	{
-		memcpy(pHeaderDescriptor->hdr[0].hdr,
-					 sCopyHeader.hdr, 
-					 sCopyHeader.hdr_len);
-	}
-
-
-	/* copy client mac_addr to partial header */
-	memcpy(&pHeaderDescriptor->hdr[0].hdr[IPA_WLAN_PARTIAL_HDR_OFFSET], mac_addr,
-					 IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */				 
-				 
-	pHeaderDescriptor->commit = true;
-	pHeaderDescriptor->num_hdrs = 1;
-
-	memset(pHeaderDescriptor->hdr[0].name, 0,
-				 sizeof(pHeaderDescriptor->hdr[0].name));
-
-	sprintf(index, "%d", ipa_if_num);
-	strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
-		
-	strncat(pHeaderDescriptor->hdr[0].name,
-					IPA_WAN_PARTIAL_HDR_NAME_v6,
-					sizeof(IPA_WAN_PARTIAL_HDR_NAME_v6));
-
-	pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
-	pHeaderDescriptor->hdr[0].hdr_hdl = -1;
-	pHeaderDescriptor->hdr[0].is_partial = 0;
-	pHeaderDescriptor->hdr[0].status = -1;
-
-	if (m_header.AddHeader(pHeaderDescriptor) == false ||
-			pHeaderDescriptor->hdr[0].status != 0)
-	{
-		IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", pHeaderDescriptor->hdr[0].status);
-		res = IPACM_FAILURE;
-		goto fail;
-	}
-	else
-	{
-	  hdr_hdl_sta_v6 = pHeaderDescriptor->hdr[0].hdr_hdl;
-	  IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
-	}
-	  
-	/* copy ipv6 full header to each TX endpoint property*/ 
-	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
-	{
-	   if(tx_prop->tx[tx_index].ip==IPA_IP_v6)
-           {	  
-		  memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
-					 sizeof(tx_prop->tx[tx_index].hdr_name));
-		  IPACMDBG("replace full header name: %s (%x) in tx:%d\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl,tx_index);
-           }
-        }	
-
+                     IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+                     if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
+                     {
+                     	IPACMERR("header oversize\n");
+                     	res = IPACM_FAILURE;
+                     	goto fail;
+                     }
+                     else
+                     {
+                     	memcpy(pHeaderDescriptor->hdr[0].hdr,
+                     				 sCopyHeader.hdr, 
+                     				 sCopyHeader.hdr_len);
+                     }
+					 
+	                 /* copy client mac_addr to partial header */
+	                 memcpy(&pHeaderDescriptor->hdr[0].hdr[IPA_WLAN_PARTIAL_HDR_OFFSET], mac_addr,
+	                 				 IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */				 
+	                 			 
+	                 pHeaderDescriptor->commit = true;
+	                 pHeaderDescriptor->num_hdrs = 1;
+                     
+	                 memset(pHeaderDescriptor->hdr[0].name, 0,
+	                 			 sizeof(pHeaderDescriptor->hdr[0].name));
+                     
+	                 sprintf(index, "%d", ipa_if_num);
+	                 strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+	                 	
+	                 strncat(pHeaderDescriptor->hdr[0].name,
+	                 				IPA_WAN_PARTIAL_HDR_NAME_v6,
+	                 				sizeof(IPA_WAN_PARTIAL_HDR_NAME_v6));
+                     
+	                 pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
+	                 pHeaderDescriptor->hdr[0].hdr_hdl = -1;
+	                 pHeaderDescriptor->hdr[0].is_partial = 0;
+	                 pHeaderDescriptor->hdr[0].status = -1;
+                     
+	                 if (m_header.AddHeader(pHeaderDescriptor) == false ||
+	                 		pHeaderDescriptor->hdr[0].status != 0)
+	                 {
+	                 	IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", pHeaderDescriptor->hdr[0].status);
+	                 	res = IPACM_FAILURE;
+	                 	goto fail;
+	                 }
+	                 else
+	                 {
+	                   hdr_hdl_sta_v6 = pHeaderDescriptor->hdr[0].hdr_hdl;
+	                   IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
+	                 }
+	                   
+	                 /* copy ipv6 full header to each TX endpoint property*/ 
+	                 for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+	                 {
+	                    if(tx_prop->tx[tx_index].ip==IPA_IP_v6)
+                        {	  
+	                 	  memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
+	                 				 sizeof(tx_prop->tx[tx_index].hdr_name));
+	                 	  IPACMDBG("replace full header name: %s (%x) in tx:%d\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl,tx_index);
+                        }
+                     }	
+	                 break;		   
+	        }
+	}	
+                     
+                     
     /* see if default routes are setup before constructing full header */
-    if( (header_partial_default_wan_v4== true) && (header_set == false))
-	  { 
-	    handle_route_add_evt(IPA_IP_v4);	
-	  }
-
-    if( (header_partial_default_wan_v6== true) && (header_set == false))
-	  { 
-	    handle_route_add_evt(IPA_IP_v6);	
-	  }
+        if( (header_partial_default_wan_v4== true) && (header_set_v4 == false))
+	{ 
+	   handle_route_add_evt(IPA_IP_v4);	
+           header_set_v4 = true;
+	}
+    
+        if( (header_partial_default_wan_v6== true) && (header_set_v6 == false))
+	{ 
+	   handle_route_add_evt(IPA_IP_v6);	
+           header_set_v6 = true;
+	}
 	
-     header_set = true;
- 	 
 fail:
 	free(pHeaderDescriptor);
 
@@ -1499,14 +1504,17 @@ int IPACM_Wan::handle_down_evt()
 
 	
 	/* delete the complete header for STA mode*/
-        if(header_set == true)
+        if(header_set_v4 == true)
         {
                 if (m_header.DeleteHeaderHdl(hdr_hdl_sta_v4) == false)
 		{
 			res = IPACM_FAILURE;
 			goto fail;
 		}
+	}
 
+        if(header_set_v6 == true)
+        {
 		if (m_header.DeleteHeaderHdl(hdr_hdl_sta_v6) == false)
 		{
 			res = IPACM_FAILURE;
