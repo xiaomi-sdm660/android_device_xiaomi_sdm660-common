@@ -208,7 +208,7 @@ void* ipa_driver_wlan_notifier(void *param)
 		data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
 		if (data == NULL)
 		{
-			PERROR("unable to allocate memory for event data\n");
+			IPACMERR("unable to allocate memory for event data\n");
 			return NULL;
 		}
 		
@@ -310,7 +310,7 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		default:
-			IPACMERR("Unhandled message type: %d\n", event_hdr->msg_type);
+			IPACMDBG("Unhandled message type: %d\n", event_hdr->msg_type);
       free(data);
 			continue;
 

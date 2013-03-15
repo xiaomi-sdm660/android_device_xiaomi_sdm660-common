@@ -65,6 +65,8 @@ typedef struct _ipa_wlan_client
 	bool route_rule_set_v6;
 	bool ipv4_set;
 	bool ipv6_set;
+	bool ipv4_header_set;
+	bool ipv6_header_set;
 	bool power_save_set;
 	wlan_client_rt_hdl wifi_rt_hdl[0]; /* depends on number of tx properties */
 }ipa_wlan_client;

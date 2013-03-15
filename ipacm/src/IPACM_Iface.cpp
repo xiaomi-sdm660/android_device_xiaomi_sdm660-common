@@ -98,7 +98,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 						);
 	if (!m_pFilteringTable)
 	{
-		PERROR("Error Locate ipa_flt_rule_add memory...\n");
+		IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 		return IPACM_FAILURE;
 	}
 
@@ -128,7 +128,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 		m_pFilteringTable->ip = IPA_IP_v4;
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -148,7 +148,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 		m_pFilteringTable->ip = IPA_IP_v6;
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -177,7 +177,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -226,7 +226,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 		if (m_filtering.DeleteFilteringHdls(&software_routing_fl_rule_hdl[0],
 																				IPA_IP_v4, 1) == false)
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -235,7 +235,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 		if (m_filtering.DeleteFilteringHdls(&software_routing_fl_rule_hdl[1],
 																				IPA_IP_v6, 1) == false)
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -264,7 +264,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 
 		if (m_filtering.DeleteFilteringHdls(&flt_hdl, ip, 1) == false)
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -282,7 +282,7 @@ int IPACM_Iface::iface_ipa_index_query
 )
 {
 	int fd;
-	int link = -1;
+	int link = INVALID_IFACE;
 	int i = 0;
 	struct ifreq ifr;
 
@@ -475,7 +475,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
 		if (!m_pFilteringTable)
 		{
-			PERROR("Error Locate ipa_flt_rule_add memory...\n");
+			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 			return IPACM_FAILURE;
 		}
 
@@ -516,7 +516,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -545,7 +545,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
 		if (!m_pFilteringTable)
 		{
-			PERROR("Error Locate ipa_flt_rule_add memory...\n");
+			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 			return IPACM_FAILURE;
 		}
 
@@ -580,7 +580,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 
 		if (m_filtering.AddFilteringRule(m_pFilteringTable) == false)
 		{
-			PERROR("Error Adding Filtering rule, aborting...\n");
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}

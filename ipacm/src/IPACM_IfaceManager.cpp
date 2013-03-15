@@ -112,6 +112,12 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 	int ipa_interface_index;
 	ipa_interface_index = IPACM_Iface::iface_ipa_index_query(if_index);
 
+	if(ipa_interface_index == INVALID_IFACE)
+	{
+			IPACMDBG("Unhandled interface received, fid: %d\n",if_index);
+			return IPACM_SUCCESS;
+	}
+	
 	/* check if duplicate instance*/
 	if(SearchInstance(ipa_interface_index) == IPA_INSTANCE_NOT_FOUND)
 	{
@@ -177,7 +183,9 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 			break;
 
 		default:
-			IPACMERR("Unhandled interface received\n");
+			IPACMDBG("Unhandled interface category received iface name: %s, category: %d\n",
+			            IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,
+						       IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);
 			return IPACM_SUCCESS;
 		}
 	}

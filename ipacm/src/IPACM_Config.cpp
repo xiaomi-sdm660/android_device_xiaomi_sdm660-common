@@ -54,6 +54,7 @@ IPACM_Config::IPACM_Config()
 	ipa_num_alg_ports = 0;
 	ipa_nat_max_entries = 0;
 
+	memset(&rt_tbl_default_v4, 0, sizeof(rt_tbl_default_v4));
 	memset(&rt_tbl_lan_v4, 0, sizeof(rt_tbl_lan_v4));
 	memset(&rt_tbl_wan_v4, 0, sizeof(rt_tbl_wan_v4));
 	memset(&rt_tbl_v6, 0, sizeof(rt_tbl_v6));
@@ -138,6 +139,9 @@ int IPACM_Config::Init(void)
 	IPACMDBG("Nat Maximum Entries %d\n", ipa_nat_max_entries);
 
 	/* Construct the routing table ictol name in iface static member*/
+	rt_tbl_default_v4.ip = IPA_IP_v4;
+	strncpy(rt_tbl_default_v4.name, V4_DEFAULT_ROUTE_TABLE_NAME, sizeof(rt_tbl_default_v4.name));
+
 	rt_tbl_lan_v4.ip = IPA_IP_v4;
 	strncpy(rt_tbl_lan_v4.name, V4_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan_v4.name));
 
