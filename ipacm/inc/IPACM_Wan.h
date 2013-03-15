@@ -73,6 +73,8 @@ public:
 private:
 	uint32_t *wan_route_rule_v4_hdl;
 	uint32_t *wan_route_rule_v6_hdl;
+	uint32_t hdr_hdl_sta_v4;
+	uint32_t hdr_hdl_sta_v6;
 	uint32_t firewall_hdl_v4[IPACM_MAX_FIREWALL_ENTRIES];
 	uint32_t firewall_hdl_v6[IPACM_MAX_FIREWALL_ENTRIES];
 	uint32_t dft_wan_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];

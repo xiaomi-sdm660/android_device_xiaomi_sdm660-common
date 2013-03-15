@@ -61,7 +61,9 @@ IPACM_Wan::IPACM_Wan(int iface_index) : IPACM_Iface(iface_index)
   header_set = false;
   header_partial_default_wan_v4 = false;
 	header_partial_default_wan_v6 = false;
-	
+	hdr_hdl_sta_v4 = 0;
+	hdr_hdl_sta_v6 = 0;
+
 	IPACMDBG(" IPACM->IPACM_Wan(%d) constructor: Tx:%d\n", ipa_if_num, iface_query->num_tx_props);
 	return;
 }
@@ -190,6 +192,11 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG("Received IPA_LINK_DOWN_EVENT\n");
 				handle_down_evt();
 				IPACMDBG("ipa_WAN (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+	                        /* reset the STA-iface category to unknown */
+                                if(header_set == true)
+                                {
+	            	             IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat=UNKNOWN_IF;
+                                }
 				delete this;
 				return;
 			}
@@ -216,7 +223,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				if( ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) 
 				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt!=MAX_DEFAULT_v6_ROUTE_RULES))) 
 				{
-				        IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt);
+					IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n", data->iptype, num_dft_rt);
 					handle_addr_evt(data);
 				}
 			}
@@ -335,7 +342,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	struct ipa_ioc_add_rt_rule *rt_rule;
 	struct ipa_rt_rule_add *rt_rule_entry;
 	struct ipa_ioc_get_hdr sRetHeader;
-	uint32_t tx_index;
+	uint32_t tx_index,cnt;
 	const int NUM = 1;
 	ipacm_cmd_q_data evt_data;
 	struct ipa_ioc_copy_hdr sCopyHeader; /* checking if partial header*/
@@ -343,13 +350,19 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	IPACMDBG(" ip-type:%d\n", iptype);
 
 	/* copy header from tx-property, see if partial or not */
-	/* assume all tx-property uses the same header name */
+	/* assume all tx-property uses the same header name for v4 or v6*/
 
-	if(tx_prop->tx[0].hdr_name != NULL)
+        for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+	{
+		   if(tx_prop->tx[cnt].ip==iptype)
+		   break;  	
+	}	
+
+	if(tx_prop->tx[cnt].hdr_name != NULL)
 	{
 	    memset(&sCopyHeader, 0, sizeof(sCopyHeader));
 	    memcpy(sCopyHeader.name,
-	    			 tx_prop->tx[0].hdr_name,
+	    			 tx_prop->tx[cnt].hdr_name,
 	    			 sizeof(sCopyHeader.name));
         
 	    IPACMDBG("header name: %s\n", sCopyHeader.name);
@@ -598,7 +611,7 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 {
   #define WAN_IFACE_INDEX_LEN 2
     
-	uint32_t tx_index;
+	uint32_t tx_index,cnt;
 	int res = IPACM_SUCCESS, len = 0;
 	char index[WAN_IFACE_INDEX_LEN];
 	struct ipa_ioc_copy_hdr sCopyHeader;
@@ -625,16 +638,22 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 		return IPACM_FAILURE;
 	}
 
-	/* copy partial header */
+	/* copy partial header for v4 */
+        for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+	{
+		   if(tx_prop->tx[cnt].ip==IPA_IP_v4)
+		   break; 
+	}	
+
 	memset(&sCopyHeader, 0, sizeof(sCopyHeader));
 	memcpy(sCopyHeader.name,
-				 tx_prop->tx[0].hdr_name,
+				 tx_prop->tx[cnt].hdr_name,
 				 sizeof(sCopyHeader.name));
 
-	IPACMDBG("header name: %s\n", sCopyHeader.name);
+	IPACMDBG("header name: %s from tx: %d\n", sCopyHeader.name,cnt);
 	if (m_header.CopyHeader(&sCopyHeader) == false)
 	{
-		PERROR("ioctl copy header failed");
+		IPACMERR("ioctl copy header failed");
 		res = IPACM_FAILURE;
 		goto fail;
 	}
@@ -668,8 +687,8 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 	strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
 
 	strncat(pHeaderDescriptor->hdr[0].name,
-					IPA_WAN_PARTIAL_HDR_NAME,
-					sizeof(IPA_WAN_PARTIAL_HDR_NAME));
+					IPA_WAN_PARTIAL_HDR_NAME_v4,
+					sizeof(IPA_WAN_PARTIAL_HDR_NAME_v4));
 
 	pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 	pHeaderDescriptor->hdr[0].hdr_hdl = -1;
@@ -685,17 +704,102 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 	}
 	else
 	{
-	  IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
-		}
+	        hdr_hdl_sta_v4 = pHeaderDescriptor->hdr[0].hdr_hdl;
+	        IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
+	}
 
-	/* copy full header to each TX endpoint property*/ 
+	/* copy ipv4 full header to each TX endpoint property*/ 
 	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 	{
-		
-		memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
+	   if(tx_prop->tx[tx_index].ip==IPA_IP_v4)
+           {	  
+		  memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
 					 sizeof(tx_prop->tx[tx_index].hdr_name));
-		IPACMDBG("add full header name: %s (%x)\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl);
-   }	
+		  IPACMDBG("replace full header name: %s (%x) in tx:%d\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl,tx_index);
+           }
+	}	
+
+	/* copy partial header for v6 */
+        for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+	{
+		   if(tx_prop->tx[cnt].ip == IPA_IP_v6)
+		   break;
+	}	
+
+	IPACMDBG("Got partial v6-header name from %d tx props\n", cnt);
+	memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+	memcpy(sCopyHeader.name,
+				 tx_prop->tx[cnt].hdr_name,
+				 sizeof(sCopyHeader.name));
+
+	IPACMDBG("header name: %s from tx: %d\n", sCopyHeader.name,cnt);
+	if (m_header.CopyHeader(&sCopyHeader) == false)
+	{
+		IPACMERR("ioctl copy header failed");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+	IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+	if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
+	{
+		IPACMERR("header oversize\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	else
+	{
+		memcpy(pHeaderDescriptor->hdr[0].hdr,
+					 sCopyHeader.hdr, 
+					 sCopyHeader.hdr_len);
+	}
+
+
+	/* copy client mac_addr to partial header */
+	memcpy(&pHeaderDescriptor->hdr[0].hdr[IPA_WLAN_PARTIAL_HDR_OFFSET], mac_addr,
+					 IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */				 
+				 
+	pHeaderDescriptor->commit = true;
+	pHeaderDescriptor->num_hdrs = 1;
+
+	memset(pHeaderDescriptor->hdr[0].name, 0,
+				 sizeof(pHeaderDescriptor->hdr[0].name));
+
+	sprintf(index, "%d", ipa_if_num);
+	strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+		
+	strncat(pHeaderDescriptor->hdr[0].name,
+					IPA_WAN_PARTIAL_HDR_NAME_v6,
+					sizeof(IPA_WAN_PARTIAL_HDR_NAME_v6));
+
+	pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
+	pHeaderDescriptor->hdr[0].hdr_hdl = -1;
+	pHeaderDescriptor->hdr[0].is_partial = 0;
+	pHeaderDescriptor->hdr[0].status = -1;
+
+	if (m_header.AddHeader(pHeaderDescriptor) == false ||
+			pHeaderDescriptor->hdr[0].status != 0)
+	{
+		IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", pHeaderDescriptor->hdr[0].status);
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	else
+	{
+	  hdr_hdl_sta_v6 = pHeaderDescriptor->hdr[0].hdr_hdl;
+	  IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
+	}
+	  
+	/* copy ipv6 full header to each TX endpoint property*/ 
+	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+	{
+	   if(tx_prop->tx[tx_index].ip==IPA_IP_v6)
+           {	  
+		  memcpy(tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].name,
+					 sizeof(tx_prop->tx[tx_index].hdr_name));
+		  IPACMDBG("replace full header name: %s (%x) in tx:%d\n", tx_prop->tx[tx_index].hdr_name, pHeaderDescriptor->hdr[0].hdr_hdl,tx_index);
+           }
+        }	
 
     /* see if default routes are setup before constructing full header */
     if( (header_partial_default_wan_v4== true) && (header_set == false))
@@ -723,6 +827,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 	int i, rule_v4 = 0, rule_v6 = 0;
 
 	IPACMDBG("ip-family: %d; \n", iptype);
+	/* default firewall is disable and the rule action is drop */
 	memset(&firewall_config, 0, sizeof(firewall_config));
 	strncpy(firewall_config.firewall_config_file, "/etc/mobileap_firewall.xml", sizeof(firewall_config.firewall_config_file));
 
@@ -792,11 +897,30 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 				return IPACM_FAILURE;
 			}
 
-			flt_rule_entry.at_rear = true;
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
 
+			/* firewall disable, all traffic are allowed */
+                        if(firewall_config.firewall_enable == true)
+			{
+			    flt_rule_entry.at_rear = true;			
+
+			     /* default action for v4 is go DST_NAT unless user set to exception*/
+                             if(firewall_config.rule_action_accept == true)
+			    {
+			        flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;			
+			    }
+			    else
+			    {
+			        flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+                            } 
+		        }
+			else
+			{
+			  flt_rule_entry.at_rear = false;
 			flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+                        } 								
+
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
@@ -862,9 +986,18 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 					flt_rule_entry.at_rear = false;
 					flt_rule_entry.flt_rule_hdl = -1;
 					flt_rule_entry.status = -1;
-					flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION; //Matched the firewall rule, go exception
 					flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 
+					/* Accept v4 matched rules*/
+                                        if(firewall_config.rule_action_accept == true)
+			                {
+			                     flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;			
+			                }
+			                else
+			                {
+			                     flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+                                        } 
+					
 					memcpy(&flt_rule_entry.rule.attrib,
 								 &firewall_config.extd_firewall_entries[i].attrib,
 								 sizeof(struct ipa_rule_attrib));
@@ -953,11 +1086,30 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			/* configure default filter rule */
 			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
-			flt_rule_entry.at_rear = true;
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
 
+			/* firewall disable, all traffic are allowed */
+                        if(firewall_config.firewall_enable == true)
+			{
+			     flt_rule_entry.at_rear = true;			
+
+			     /* default action for v4 is go DST_NAT unless user set to exception*/
+                             if(firewall_config.rule_action_accept == true)
+			     {
+			        flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;			
+			     }
+			     else
+			     {
+			       flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+                             } 
+		        }
+			else
+			{
+			    flt_rule_entry.at_rear = false;
 			flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+                        } 
+			
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
@@ -1017,11 +1169,31 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 				return IPACM_FAILURE;
 			}
 
-			flt_rule_entry.at_rear = true;
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
-			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_v6.hdl;
+
+			/* firewall disable, all traffic are allowed */
+                        if(firewall_config.firewall_enable == true)
+			{
+			   flt_rule_entry.at_rear = true;			
+
+			   /* default action for v6 is PASS_TO_ROUTE unless user set to exception*/
+                           if(firewall_config.rule_action_accept == true)
+			   {
+			       flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;			
+			   }
+			   else
+			   {
+			       flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+                           } 
+		        }
+			else
+			{
+			  flt_rule_entry.at_rear = false;
+			  flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+                        } 			
+
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
 						 sizeof(struct ipa_rule_attrib));
@@ -1089,7 +1261,16 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 					flt_rule_entry.flt_rule_hdl = -1;
 					flt_rule_entry.status = -1;
 
+				    /* matched rules for v6 go PASS_TO_ROUTE */
+                                    if(firewall_config.rule_action_accept == true)
+			            {
+			                flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+			            }
+			            else
+			            {
 					flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+                                    } 										
+					
 					flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_v6.hdl;
 					memcpy(&flt_rule_entry.rule.attrib,
 								 &firewall_config.extd_firewall_entries[i].attrib,
@@ -1162,10 +1343,30 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			/* setup default wan filter rule */
 			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
-			flt_rule_entry.at_rear = true;
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
+
+			/* firewall disable, all traffic are allowed */
+                        if(firewall_config.firewall_enable == true)
+			{
+			   flt_rule_entry.at_rear = true;			
+
+			   /* default action for v6 is PASS_TO_ROUTE unless user set to exception*/
+               if(firewall_config.rule_action_accept == true)
+			   {
+			        flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;			
+			   }
+			   else
+			   {
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+                           } 
+		        }
+			else
+			{
+			  flt_rule_entry.at_rear = false;
+			  flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+                        } 			
+
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
 						 sizeof(struct ipa_rule_attrib));
@@ -1296,6 +1497,23 @@ int IPACM_Wan::handle_down_evt()
 		IPACMDBG("finished delete default v6 filtering rules\n ");
 	}
 
+	
+	/* delete the complete header for STA mode*/
+        if(header_set == true)
+        {
+                if (m_header.DeleteHeaderHdl(hdr_hdl_sta_v4) == false)
+		{
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
+		if (m_header.DeleteHeaderHdl(hdr_hdl_sta_v6) == false)
+		{
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+        }	
+	
 fail:
 	free(tx_prop);
 	free(rx_prop);

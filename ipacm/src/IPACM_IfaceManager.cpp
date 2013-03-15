@@ -77,15 +77,12 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 		if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == UNKNOWN_IF)
 		{  
 		  IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WLAN_IF; 
-		  IPACMDBG("WLAN AP (%s) link up, iface: %d: \n", 
-							     IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);		
+		  IPACMDBG("WLAN AP (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);		
 		  create_iface_instance(evt_data->if_index);
 		}
 		else
 		{
-		  IPACMDBG("iface %s already up and act as %d mode: \n",
-							 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,
-							 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);		
+		  IPACMDBG("iface %s already up and act as %d mode: \n",IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);		
 		}
 		break;
 
@@ -95,7 +92,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 		if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat==UNKNOWN_IF)
 		{  
 		  IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WAN_IF; 
-		  IPACMDBG("WLAN STA (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);		
+		  IPACMDBG("WLAN STA (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);		
 		  create_iface_instance(evt_data->if_index);
 		}
 		else
