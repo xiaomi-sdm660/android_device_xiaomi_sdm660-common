@@ -57,9 +57,13 @@ IPACM_Config *IPACM_Iface::ipacmcfg = IPACM_Config::GetInstance();
 IPACM_Iface::IPACM_Iface(int iface_index)
 {
 	ip_type = IPACM_IP_NULL; /* initially set invalid */
-	num_dft_rt = 0;
+	num_dft_rt_v6 = 0;
 	softwarerouting_act = false;
 	ipa_if_num = iface_index;
+
+	iface_query = NULL;
+	tx_prop = NULL;
+	rx_prop = NULL;
 
 	memcpy(dev_name,
 				 IPACM_Iface::ipacmcfg->iface_table[iface_index].iface_name,
@@ -70,6 +74,7 @@ IPACM_Iface::IPACM_Iface(int iface_index)
 
 	memset(dft_rt_rule_hdl, 0, sizeof(dft_rt_rule_hdl));
 	memset(software_routing_fl_rule_hdl, 0, sizeof(software_routing_fl_rule_hdl));
+	memset(ipv6_addr, 0, sizeof(ipv6_addr));
 
 	query_iface_property();
 	IPACMDBG(" create iface-index(%d) constructor\n", ipa_if_num);
@@ -87,7 +92,14 @@ int IPACM_Iface::handle_software_routing_enable(void)
 	IPACMDBG("\n");
 	if (softwarerouting_act == true)
 	{
-		IPACMDBG("already setup software_routing rule for (%s)iface ip-family %d\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
+		IPACMDBG("already setup software_routing rule for (%s)iface ip-family %d\n", 
+						     IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
+		return IPACM_SUCCESS;
+	}
+
+	if(rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
 		return IPACM_SUCCESS;
 	}
 
@@ -368,9 +380,11 @@ int IPACM_Iface::query_iface_property(void)
 		res = IPACM_FAILURE;
 	}
 
-	tx_prop = (struct ipa_ioc_query_intf_tx_props *)
-		 calloc(1, sizeof(struct ipa_ioc_query_intf_tx_props) +
-						iface_query->num_tx_props * sizeof(struct ipa_ioc_tx_intf_prop));
+	if(iface_query->num_tx_props > 0)
+	{
+		tx_prop = (struct ipa_ioc_query_intf_tx_props *)
+			 calloc(1, sizeof(struct ipa_ioc_query_intf_tx_props) +
+							iface_query->num_tx_props * sizeof(struct ipa_ioc_tx_intf_prop));
 
 	memcpy(tx_prop->name, dev_name, sizeof(tx_prop->name));
 	tx_prop->num_tx_props = iface_query->num_tx_props;
@@ -382,9 +396,22 @@ int IPACM_Iface::query_iface_property(void)
 		res = IPACM_FAILURE;
 	}
 
-	rx_prop = (struct ipa_ioc_query_intf_rx_props *)
-		 calloc(1, sizeof(struct ipa_ioc_query_intf_rx_props) +
-						iface_query->num_rx_props * sizeof(struct ipa_ioc_rx_intf_prop));
+		if (res != IPACM_FAILURE)
+		{
+			for (cnt = 0; cnt < tx_prop->num_tx_props; cnt++)
+			{
+				IPACMDBG("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, header: %s\n",
+								 cnt, tx_prop->tx[cnt].attrib.attrib_mask, tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe, tx_prop->tx[cnt].hdr_name);
+			}
+		}
+
+	}
+
+	if (iface_query->num_rx_props > 0)
+	{
+		rx_prop = (struct ipa_ioc_query_intf_rx_props *)
+			 calloc(1, sizeof(struct ipa_ioc_query_intf_rx_props) +
+							iface_query->num_rx_props * sizeof(struct ipa_ioc_rx_intf_prop));
 
 	memcpy(rx_prop->name, dev_name,
 				 sizeof(rx_prop->name));
@@ -397,17 +424,13 @@ int IPACM_Iface::query_iface_property(void)
 		res = IPACM_FAILURE;
 	}
 
-	if (res != IPACM_FAILURE)
-	{
-		for (cnt=0; cnt<rx_prop->num_rx_props; cnt++)
+		if (res != IPACM_FAILURE)
 		{
-			IPACMDBG("Rx(%d):attrib-mask:0x%x, ip-type: %d, src_pipe: %d\n",
-							 cnt, rx_prop->rx[cnt].attrib.attrib_mask, rx_prop->rx[cnt].ip, rx_prop->rx[cnt].src_pipe);
-		}
-		for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
-		{
-			IPACMDBG("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, header: %s\n",
-							 cnt, tx_prop->tx[cnt].attrib.attrib_mask, tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe, tx_prop->tx[cnt].hdr_name);
+			for (cnt = 0; cnt < rx_prop->num_rx_props; cnt++)
+			{
+				IPACMDBG("Rx(%d):attrib-mask:0x%x, ip-type: %d, src_pipe: %d\n",
+								 cnt, rx_prop->rx[cnt].attrib.attrib_mask, rx_prop->rx[cnt].ip, rx_prop->rx[cnt].src_pipe);
+			}
 		}
 	}
 
@@ -422,6 +445,12 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	int res = IPACM_SUCCESS, len = 0;
 	struct ipa_flt_rule_add flt_rule_entry;
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
 
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)

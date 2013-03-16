@@ -49,7 +49,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 {
 	num_uni_rt = 0;
-	num_dft_rt = 0;
 
 	rt_rule_len = sizeof(struct ipa_lan_rt_rule) + (iface_query->num_tx_props * sizeof(uint32_t));
 	route_rule = (struct ipa_lan_rt_rule *)calloc(IPA_MAX_NUM_UNICAST_ROUTE_RULES, rt_rule_len);
@@ -116,9 +115,9 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 
 				/* check v4 not setup before, v6 can have 2 iface ip */
 				if( ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX)) 
-				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt!=MAX_DEFAULT_v6_ROUTE_RULES))) 
+				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt_v6!=MAX_DEFAULT_v6_ROUTE_RULES))) 
 				{
-				  IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt);
+				  IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt_v6);
 					handle_addr_evt(data);
 					handle_private_subnet(data->iptype);
 				  
@@ -301,6 +300,12 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 
 	IPACMDBG("LAN callback: unicast IPA_ROUTE_ADD_EVENT\n");
 
+	if (tx_prop == NULL)
+	{
+		IPACMDBG("No Tx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+
 	if (num_uni_rt < IPA_MAX_NUM_UNICAST_ROUTE_RULES)
 	{
 		/* unicast RT rule add start */
@@ -324,7 +329,7 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 		else 
 		{
 		   strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
-     }
+        }
 
 		rt_rule_entry = &rt_rule->rules[0];
 		rt_rule_entry->at_rear = 1;
@@ -410,6 +415,12 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 {
 	int i;
 	uint32_t tx_index;
+
+	if (tx_prop == NULL)
+	{
+		IPACMDBG("No Tx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
 
 	/* delete 1 unicast RT rule */
 	for (i = 0; i <= num_uni_rt; i++)
@@ -514,6 +525,12 @@ int IPACM_Lan::handle_wan_up(void)
 
 	IPACMDBG("set WAN interface as default filter rule\n");
 
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+
 	len = sizeof(struct ipa_ioc_add_flt_rule) + (1 * sizeof(struct ipa_flt_rule_add));
 	m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
 	if (m_pFilteringTable == NULL)
@@ -598,6 +615,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	struct ipa_rt_rule_add *rt_rule_entry;
 	struct ipa_flt_rule_add flt_rule_entry;
 	const int NUM_RULES = 1;
+	int num_ipv6_addr;
 	int res = IPACM_SUCCESS;
 
 	/* construct ipa_ioc_add_flt_rule with v6 rules */
@@ -605,35 +623,78 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 
 	IPACMDBG("set route/filter rule ip-type: %d \n", data->iptype);
 
+	for(num_ipv6_addr=0;num_ipv6_addr<num_dft_rt_v6;num_ipv6_addr++)
+	{
+        if((ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
+	       (ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
+	        (ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
+	            (ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]))
+       {
+	       return IPACM_SUCCESS;
+	       break; 
+	   }
+	}
+	
+	if (data->iptype == IPA_IP_v4)
+	{
 	rt_rule = (struct ipa_ioc_add_rt_rule *)
 		 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
 						NUM_RULES * sizeof(struct ipa_rt_rule_add));
 
-	if (rt_rule == NULL)
+		if (!rt_rule)
 	{
-		IPACMERR("fail to allocate ipa_ioc_add_rt_rule \n");
+		IPACMERR("Error Locate ipa_ioc_add_rt_rule memory...\n");
 		return IPACM_FAILURE;
 	}
 
 	rt_rule->commit = 1;
 	rt_rule->num_rules = NUM_RULES;
 	rt_rule->ip = data->iptype;
-
-	if (data->iptype == IPA_IP_v4) strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
-	else strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
-
 	rt_rule_entry = &rt_rule->rules[0];
-	rt_rule_entry->at_rear = 1;
+	rt_rule_entry->at_rear = false;
 	rt_rule_entry->rule.dst = IPA_CLIENT_A5_LAN_WAN_CONS;  //go to A5
 	rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
-
-	if (data->iptype == IPA_IP_v4)
-	{
+   		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
 		rt_rule_entry->rule.attrib.u.v4.dst_addr      = data->ipv4_addr;
 		rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+	    if (false == m_routing.AddRoutingRule(rt_rule))
+	    {
+	    	IPACMERR("Routing rule addition failed!\n");
+	    	res = IPACM_FAILURE;
+	    	goto fail;
+	    }
+	    else if (rt_rule_entry->status)
+	    {
+	    	IPACMERR("rt rule adding failed. Result=%d\n", rt_rule_entry->status);
+	    	res = rt_rule_entry->status;
+	    	goto fail;
+	    }
+		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
+        IPACMDBG("ipv4 iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);		
+		/* initial multicast/broadcast/fragment filter rule */
+		IPACM_Iface::init_fl_rule(data->iptype);
 	}
 	else
 	{
+		rt_rule = (struct ipa_ioc_add_rt_rule *)
+			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
+							NUM_RULES * sizeof(struct ipa_rt_rule_add));
+
+		if (!rt_rule)
+		{
+		IPACMERR("Error Locate ipa_ioc_add_rt_rule memory...\n");
+			return IPACM_FAILURE;
+		}
+
+		rt_rule->commit = 1;
+		rt_rule->num_rules = NUM_RULES;
+		rt_rule->ip = data->iptype;
+		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
+
+	    rt_rule_entry = &rt_rule->rules[0];
+	    rt_rule_entry->at_rear = false;
+	    rt_rule_entry->rule.dst = IPA_CLIENT_A5_LAN_WAN_CONS;  //go to A5
+	    rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;	
 		rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = data->ipv6_addr[0];
 		rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = data->ipv6_addr[1];
 		rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = data->ipv6_addr[2];
@@ -642,8 +703,10 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
 		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
 		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
-	}
-
+		ipv6_addr[num_dft_rt_v6][0] = data->ipv6_addr[0];
+		ipv6_addr[num_dft_rt_v6][1] = data->ipv6_addr[1];
+		ipv6_addr[num_dft_rt_v6][2] = data->ipv6_addr[2];
+		ipv6_addr[num_dft_rt_v6][3] = data->ipv6_addr[3];
 	if (false == m_routing.AddRoutingRule(rt_rule))
 	{
 		IPACMERR("Routing rule addition failed!\n");
@@ -656,95 +719,113 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		res = rt_rule_entry->status;
 		goto fail;
 	}
-	IPACMDBG("rt rule hdl=%x with ip-type: %d\n", rt_rule_entry->rt_rule_hdl, data->iptype);
+		dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6] = rt_rule_entry->rt_rule_hdl;
 
-	if (data->iptype == IPA_IP_v4)
+        /* setup same rule for v6_wan table*/		
+		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
+	    if (false == m_routing.AddRoutingRule(rt_rule))
 	{
-		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
-
-		/* initial multicast/broadcast/fragment filter rule */
-		IPACM_Iface::init_fl_rule(data->iptype);
+	    	IPACMERR("Routing rule addition failed!\n");
+	    	res = IPACM_FAILURE;
+	    	goto fail;
 	}
-	else
+	    else if (rt_rule_entry->status)
 	{
-		if (num_dft_rt == 0)
+	    	IPACMERR("rt rule adding failed. Result=%d\n", rt_rule_entry->status);
+	    	res = rt_rule_entry->status;
+	    	goto fail;
+	    }		
+		dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6+1] = rt_rule_entry->rt_rule_hdl;
+		IPACMDBG("ipv6 wan iface rt-rule hdl=0x%x hdl=0x%x, num_dft_rt_v6: %d \n", 
+		          dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6],
+		          dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6+1],num_dft_rt_v6);
+
+		if (num_dft_rt_v6 == 0)
 		{
 			/* initial multicast/broadcast/fragment filter rule */
 			IPACM_Iface::init_fl_rule(data->iptype);
 
-			/* add default v6 filter rule */
-			m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
-				 calloc(1,
-								sizeof(struct ipa_ioc_add_flt_rule) +
-								1 * sizeof(struct ipa_flt_rule_add)
-								);
-
-			if (!m_pFilteringTable)
+			if (rx_prop != NULL)
 			{
-				PERROR("Error Locate ipa_flt_rule_add memory...\n");
-				return IPACM_FAILURE;
-			}
+				/* add default v6 filter rule */
+				m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
+					 calloc(1,
+									sizeof(struct ipa_ioc_add_flt_rule) +
+									1 * sizeof(struct ipa_flt_rule_add)
+									);
 
-			m_pFilteringTable->commit = 1;
-			m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
-			m_pFilteringTable->global = false;
-			m_pFilteringTable->ip = IPA_IP_v6;
-			m_pFilteringTable->num_rules = (uint8_t)1;
+				if (!m_pFilteringTable)
+				{
+					PERROR("Error Locate ipa_flt_rule_add memory...\n");
+					return IPACM_FAILURE;
+				}
 
+				m_pFilteringTable->commit = 1;
+				m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
+				m_pFilteringTable->global = false;
+				m_pFilteringTable->ip = IPA_IP_v6;
+				m_pFilteringTable->num_rules = (uint8_t)1;
 
-			if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6))
-			{
-				IPACMERR("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_v6);
+	#if 0
+				if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6))
+				{
+					IPACMERR("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_v6=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_v6);
+					free(m_pFilteringTable);
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+	#endif
+				if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v6))
+				{
+					IPACMERR("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v6=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_wan_v6);
+					free(m_pFilteringTable);
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+
+				memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+
+				flt_rule_entry.at_rear = true;
+				flt_rule_entry.flt_rule_hdl = -1;
+				flt_rule_entry.status = -1;
+				flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+				flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.hdl;
+				memcpy(&flt_rule_entry.rule.attrib,
+							 &rx_prop->rx[0].attrib,
+							 sizeof(flt_rule_entry.rule.attrib));
+
+				flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0x00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0x00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0x00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr[0] = 0X00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
+
+				memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+				if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
+				{
+					IPACMERR("Error Adding Filtering rule, aborting...\n");
+					free(m_pFilteringTable);
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+				else
+				{
+					IPACMDBG("flt rule hdl0=0x%x, status=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl, m_pFilteringTable->rules[0].status);
+				}
+
+				/* copy filter hdls */
+				dft_v6fl_rule_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
 				free(m_pFilteringTable);
-				res = IPACM_FAILURE;
-				goto fail;
 			}
-
-
-			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
-
-			flt_rule_entry.at_rear = true;
-			flt_rule_entry.flt_rule_hdl = -1;
-			flt_rule_entry.status = -1;
-			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
-			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_v6.hdl;
-			memcpy(&flt_rule_entry.rule.attrib,
-						 &rx_prop->rx[0].attrib,
-						 sizeof(flt_rule_entry.rule.attrib));
-
-			flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0x00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0x00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0x00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr[0] = 0X00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
-			flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
-
-			memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
-			if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
-			{
-				IPACMERR("Error Adding Filtering rule, aborting...\n");
-				free(m_pFilteringTable);
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-			else
-			{
-				IPACMDBG("flt rule hdl0=0x%x, status=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl, m_pFilteringTable->rules[0].status);
-			}
-
-			/* copy filter hdls */
-			dft_v6fl_rule_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
-			free(m_pFilteringTable);
 		}
-
-		dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + num_dft_rt] = rt_rule_entry->rt_rule_hdl;
-		num_dft_rt++;
+		num_dft_rt_v6++;
 	}
 
-	IPACMDBG("number of default route rules %d\n", num_dft_rt);
+	IPACMDBG("number of default route rules %d\n", num_dft_rt_v6);
 
 fail:
 	free(rt_rule);
@@ -761,6 +842,12 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
 
 	IPACMDBG("lan->handle_private_subnet(); set route/filter rule \n");
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
 
 	if (iptype == IPA_IP_v4)
 	{
@@ -867,7 +954,7 @@ int IPACM_Lan::handle_down_evt()
 	if (ip_type != IPA_IP_v4)
 	{
 		/* may have multiple ipv6 iface-RT rules*/
-		for (i = 0; i < num_dft_rt; i++)
+		for (i = 0; i < 2*num_dft_rt_v6; i++)
 		{
 			if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + i], IPA_IP_v6)
 					== false)
@@ -881,27 +968,30 @@ int IPACM_Lan::handle_down_evt()
 
 
 	/* free unicast routing rule	*/
-	for (i = 0; i < num_uni_rt; i++)
+	if (tx_prop != NULL)
 	{
-		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+		for (i = 0; i < num_uni_rt; i++)
 		{
-
-		        if(get_rt_ruleptr(route_rule, i)->ip != tx_prop->tx[tx_index].ip)
- 		        {
-		    	        IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
-		    					    tx_index, tx_prop->tx[tx_index].ip,get_rt_ruleptr(route_rule, i)->ip);		
-		    	        continue;
-		        }		
-
-			if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
-																		 get_rt_ruleptr(route_rule, i)->ip) == false)
+			for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 			{
-				IPACMERR("Routing rule deletion failed!\n");
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-		}
 
+							if(get_rt_ruleptr(route_rule, i)->ip != tx_prop->tx[tx_index].ip)
+							{
+										IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
+												tx_index, tx_prop->tx[tx_index].ip,get_rt_ruleptr(route_rule, i)->ip);		
+										continue;
+							}		
+
+				if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
+																			 get_rt_ruleptr(route_rule, i)->ip) == false)
+				{
+					IPACMERR("Routing rule deletion failed!\n");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+			}
+
+		}
 	}
 
 	/* check software routing fl rule hdl */
@@ -955,9 +1045,18 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 fail:
-	free(tx_prop);
-	free(rx_prop);
-	free(iface_query);
+	if (tx_prop != NULL)
+	{
+		free(tx_prop); 
+	}
+	if (rx_prop != NULL)
+	{
+		free(rx_prop);
+	}
+	if (iface_query != NULL)
+	{
+		free(iface_query);
+	}
 
 	return res;
 }

@@ -79,17 +79,21 @@ public:
 		/* IPACM interface iptype v4, v6 or both */
 		ipa_ip_type ip_type;
 
+		/* IPACM interface v6 ip-address*/
+		uint32_t ipv6_addr[MAX_DEFAULT_v6_ROUTE_RULES][4];
+		
 		uint32_t header_hdl;
 
 		uint32_t software_routing_fl_rule_hdl[MAX_SOFTWAREROUTING_FILTERTING_RULES];
 
 		bool softwarerouting_act;
 
-		int num_dft_rt;
+		/* IPACM number of default route rules for ipv6*/
+		int num_dft_rt_v6;
 
 		uint32_t dft_v4fl_rule_hdl[IPV4_DEFAULT_FILTERTING_RULES];
 		uint32_t dft_v6fl_rule_hdl[IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES];
-		uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+MAX_DEFAULT_v6_ROUTE_RULES];
+		uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+2*MAX_DEFAULT_v6_ROUTE_RULES]; // create additional one set of v6 RT-rules
 
 		ipa_ioc_query_intf *iface_query;
 		ipa_ioc_query_intf_tx_props *tx_prop;
