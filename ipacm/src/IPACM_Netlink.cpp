@@ -1077,7 +1077,7 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					/* finish command queue */
 				}
-				
+#if 0				
 				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_GATEWAY)
 				{
 					IPACMDBG("Route ADD ::/0  Next Hop: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x, metric %d, dev %s\n",
@@ -1126,7 +1126,7 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					/* finish command queue */
 				}
-
+#endif
 			}
 			break;
 
@@ -1431,6 +1431,7 @@ static int ipa_nl_decode_nlmsg
 					/* finish command queue */
 				}
 
+#if 0
 				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_GATEWAY)
 				{
 					IPACMDBG("DEL ::/0  Next Hop: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x, metric %d, dev %s\n",
@@ -1479,7 +1480,7 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					/* finish command queue */
 				}
-
+#endif		
 			}
 			break;
 

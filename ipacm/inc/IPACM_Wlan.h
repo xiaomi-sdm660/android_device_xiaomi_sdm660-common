@@ -166,7 +166,6 @@ private:
 					return IPACM_FAILURE;
 				}
 			}
-
 		} /* end of for loop */
 		
 		/* clean the 4 Qos ipv4 RT rules for client:clt_indx */
