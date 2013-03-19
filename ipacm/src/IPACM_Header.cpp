@@ -184,7 +184,7 @@ bool IPACM_Header::DeleteHeaderHdl(uint32_t hdr_hdl)
 	if ((false == DeleteHeader(pHeaderDescriptor)) ||
 			(hd_rule_entry->status))
 	{
-	    IPACMERR("Header deletion failed!  status: %d\n", hd_rule_entry->hdl,hd_rule_entry->status);
+	    IPACMERR("Header hdl:(%x) deletion failed!  status: %d\n", hd_rule_entry->hdl,hd_rule_entry->status);
 		res = false;
 		goto fail;
 	}
