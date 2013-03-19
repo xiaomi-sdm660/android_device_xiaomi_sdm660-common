@@ -41,12 +41,13 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, this);
 	 IPACM_EvtDispatcher::registr(IPA_PROCESS_CT_MESSAGE, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WLAN_UP, this);
+	 IPACM_EvtDispatcher::registr(IPA_HANDLE_POWER_SAVE, this);
+	 IPACM_EvtDispatcher::registr(IPA_HANDLE_RESET_POWER_SAVE, this);
 }
 
 void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 																						 void *data)
 {
-	 ipacm_ct_evt_data *evt_data = NULL;
 	 uint32_t *pub_addr = NULL;
 
 	 if(data == NULL)
@@ -59,8 +60,7 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 	 {
 	 case IPA_PROCESS_CT_MESSAGE:
 			IPACMDBG("Received IPA_PROCESS_CT_MESSAGE event\n");
-			evt_data = (ipacm_ct_evt_data *)data;
-			ProcessCTMessage(evt_data);
+			ProcessCTMessage(data);
 			break;
 
 	 case IPA_HANDLE_WAN_UP:
@@ -92,10 +92,38 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			}
 			break; 
 
+	 case IPA_HANDLE_POWER_SAVE:
+		 IPACMDBG("Received IPA_HANDLE_POWER_SAVE event\n");
+		 HandlePowerSave(data);
+		 break;
+
+	 case IPA_HANDLE_RESET_POWER_SAVE:
+		 IPACMDBG("Received IPA_HANDLE_RESET_POWER_SAVE event\n");
+		 HandleResetPower(data);
+		 break;
+
 	 default:
 			IPACMDBG("Ignore cmd %d\n", evt);
 			break;
 	 }
+}
+
+void IPACM_ConntrackListener::HandlePowerSave(void *in_param)
+{
+	ipacm_event_iface_up *pwrsv_data = (ipacm_event_iface_up *)in_param;
+
+	IPACM_ConntrackClient::iptodot("power save ip address",
+																 pwrsv_data->ipv4_addr);
+	NatApp::GetInstance()->UpdatePwrSaveIf(pwrsv_data->ipv4_addr);
+}
+
+void IPACM_ConntrackListener::HandleResetPower(void *in_param)
+{
+	ipacm_event_iface_up *pwrsv_data = (ipacm_event_iface_up *)in_param;
+
+	IPACM_ConntrackClient::iptodot("Reset power save ip address", 
+																 pwrsv_data->ipv4_addr);
+	NatApp::GetInstance()->ResetPwrSaveIf(pwrsv_data->ipv4_addr);
 }
 
 void IPACM_ConntrackListener::TriggerWANUp(void *in_param)

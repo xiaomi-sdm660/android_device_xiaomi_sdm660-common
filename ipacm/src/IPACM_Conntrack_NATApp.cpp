@@ -4,15 +4,15 @@ Copyright (c) 2013, The Linux Foundation. All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
-				* Redistributions of source code must retain the above copyright
-						notice, this list of conditions and the following disclaimer.
-				* Redistributions in binary form must reproduce the above
-						copyright notice, this list of conditions and the following
-						disclaimer in the documentation and/or other materials provided
-						with the distribution.
-				* Neither the name of The Linux Foundation nor the names of its
-						contributors may be used to endorse or promote products derived
-						from this software without specific prior written permission.
+		* Redistributions of source code must retain the above copyright
+			notice, this list of conditions and the following disclaimer.
+		* Redistributions in binary form must reproduce the above
+			copyright notice, this list of conditions and the following
+			disclaimer in the documentation and/or other materials provided
+			with the distribution.
+		* Neither the name of The Linux Foundation nor the names of its
+			contributors may be used to endorse or promote products derived
+			from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -217,10 +217,13 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 			 cache[cnt].protocol == rule->protocol)
 		{
 
-			if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
+			if(cache[cnt].enabled == true)
 			{
-				IPACMERR("%s() %d\n", __FUNCTION__, __LINE__);
-				return -1;
+				if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
+				{
+					IPACMERR("%s() %d\n", __FUNCTION__, __LINE__);
+					return -1;
+				}
 			}
 
 			memset(&cache[cnt], 0, sizeof(cache[cnt]));
@@ -297,6 +300,7 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 			cache[cnt].timestamp = 0;
 			cache[cnt].public_port = rule->public_port;
 			cache[cnt].dst_nat = rule->dst_nat;
+			cache[cnt].enabled = true;
 			curCnt++;
 		}
 
@@ -403,7 +407,8 @@ void NatApp::UpdateUDPTimeStamp()
 	for(cnt = 0; cnt < curCnt; cnt++)
 	{
 		ts = 0;
-		if(IPPROTO_UDP == cache[cnt].protocol)
+		if(IPPROTO_UDP == cache[cnt].protocol &&
+			 cache[cnt].enabled == true)
 		{
 			IPACMDBG("\n");
 			if(ipa_nat_query_timestamp(nat_table_hdl, cache[cnt].rule_hdl, &ts) < 0)
@@ -412,7 +417,7 @@ void NatApp::UpdateUDPTimeStamp()
 				continue;
 			}
 
-			if(ts == cache[cnt].timestamp)
+			if(cache[cnt].timestamp == ts)
 			{
 				continue;
 			}
@@ -458,6 +463,7 @@ bool NatApp::isPwrSaveIf(uint32_t ip_addr)
 int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 {
 	int cnt;
+	IPACMDBG("\n");
 
 	CHK_TBL_HDL();
 
@@ -479,8 +485,8 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 				continue;
 			}
 
-			memset(&cache[cnt], 0, sizeof(cache[cnt]));
-			curCnt--;
+			cache[cnt].enabled = false;
+			cache[cnt].rule_hdl = 0;
 		}
 	}
 
@@ -490,6 +496,9 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 {
 	int cnt;
+	ipa_nat_ipv4_rule nat_rule;
+
+	IPACMDBG("\n");
 
 	for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
 	{
@@ -497,6 +506,30 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 		{
 			PwrSaveIfs[cnt] = 0;
 			return 0;
+		}
+	}
+
+	for(cnt = 0; cnt < curCnt; cnt++)
+	{
+		if(cache[cnt].private_ip == client_lan_ip &&
+			 cache[cnt].enabled == false)
+		{
+			memset(&nat_rule, 0 , sizeof(nat_rule));
+			nat_rule.private_ip = cache[cnt].private_ip;
+			nat_rule.target_ip = cache[cnt].target_ip;
+			nat_rule.target_port = cache[cnt].target_port;
+			nat_rule.private_port = cache[cnt].private_port;
+			nat_rule.public_port = cache[cnt].public_port;
+			nat_rule.protocol = cache[cnt].protocol;
+
+			if(ipa_nat_add_ipv4_rule(nat_table_hdl, &nat_rule, &cache[cnt].rule_hdl) < 0)
+			{
+				IPACMERR("unable to add the rule\n");
+				memset(&cache[cnt], 0, sizeof(cache[cnt]));
+				curCnt--;
+				continue;
+			}
+			cache[cnt].enabled = true;
 		}
 	}
 

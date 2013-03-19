@@ -58,6 +58,7 @@ typedef struct _nat_table_entry
 	uint32_t timestamp;
 
 	bool dst_nat;
+	bool enabled;
 	uint32_t rule_hdl;
 
 }nat_table_entry;

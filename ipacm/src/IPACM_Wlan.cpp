@@ -241,17 +241,34 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG("Received IPA_WLAN_CLIENT_RECOVER_EVENT\n");
 			  wlan_index = get_wlan_client_index(data->mac_addr);
 
-	      if ((wlan_index != IPACM_INVALID_INDEX) && (get_client_memptr(wlan_client, wlan_index)->power_save_set == true))
-	      {
-	        IPACMDBG("change wlan client out of  power safe mode \n");
-			    	get_client_memptr(wlan_client, wlan_index)->power_save_set = false;
-	       }
+				if ((wlan_index != IPACM_INVALID_INDEX) &&
+						(get_client_memptr(wlan_client, wlan_index)->power_save_set == true))
+				{
+					ipacm_cmd_q_data evt_data;
+					ipacm_event_iface_up *data = NULL;
+
+					data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
+					if (data == NULL)
+					{
+						IPACMERR("unable to allocate memory\n");
+						return;
+					}
+
+					data->ipv4_addr = get_client_memptr(wlan_client, wlan_index)->v4_addr;
+					evt_data.event = IPA_HANDLE_RESET_POWER_SAVE;
+					evt_data.evt_data = (void *)data;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+
+					IPACMDBG("change wlan client out of  power safe mode \n");
+					get_client_memptr(wlan_client, wlan_index)->power_save_set = false;
+				}
+				
 				
 				if (ip_type != IPA_IP_v6) /* for ipv4 */
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v4);
-				}
-
+				}				
+				
 				if (ip_type != IPA_IP_v4) /* for ipv6 */
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v6);
@@ -747,6 +764,8 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 {
 	int clt_indx;
+	ipacm_cmd_q_data evt_data;
+	ipacm_event_iface_up *data;
 	IPACMDBG("wlan->handle_wlan_client_pwrsave();\n");
 
 	clt_indx = get_wlan_client_index(mac_addr);
@@ -758,7 +777,19 @@ int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 
   if (get_client_memptr(wlan_client, clt_indx)->power_save_set == false)
 	{
- 	  delete_default_qos_rtrules(clt_indx);
+		data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
+		if (data == NULL)
+		{
+			IPACMERR("unable to allocate memory\n");
+			return IPACM_FAILURE;
+		}
+
+		data->ipv4_addr = get_client_memptr(wlan_client, clt_indx)->v4_addr ;
+		evt_data.event = IPA_HANDLE_POWER_SAVE;
+		evt_data.evt_data = (void *)data;
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+ 	  
+		delete_default_qos_rtrules(clt_indx);
     get_client_memptr(wlan_client, clt_indx)->power_save_set = true;
 	}
 	else
