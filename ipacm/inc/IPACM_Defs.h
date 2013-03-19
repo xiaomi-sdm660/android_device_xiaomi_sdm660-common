@@ -111,10 +111,12 @@ typedef enum
 	IPA_SW_ROUTING_ENABLE,                    /* 18 NULL */
 	IPA_SW_ROUTING_DISABLE,                   /* 19 NULL */
 	IPA_PROCESS_CT_MESSAGE,                   /* 20 ipacm_ct_evt_data */
-	IPA_HANDLE_WAN_UP,                        /* 21 unsigned long  */
+	IPA_HANDLE_WAN_UP,                        /* 21 ipacm_event_iface_up  */
 	IPA_HANDLE_WAN_DOWN,                      /* 22 unsigned long  */
-	IPA_HANDLE_WLAN_UP,                       /* 23 unsigned long  */
-	IPA_HANDLE_LAN_UP                         /* 24 unsigned long  */
+	IPA_HANDLE_WLAN_UP,                       /* 23 ipacm_event_iface_up */
+	IPA_HANDLE_LAN_UP,                        /* 24 ipacm_event_iface_up */
+	IPA_HANDLE_POWER_SAVE,                    /* 25 ipacm_event_iface_up */
+	IPA_HANDLE_RESET_POWER_SAVE               /* 26 ipacm_event_iface_up */
 } ipa_cm_event_id;
 
 typedef enum

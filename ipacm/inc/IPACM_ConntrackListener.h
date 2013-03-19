@@ -58,6 +58,9 @@ private:
 	 void TriggerWANDown(uint32_t wan_addr);
 	 int  CreateNatThreads(void);
 
+	 void HandlePowerSave(void *data);
+	 void HandleResetPower(void *data);
+
 public:
 	 char wan_ifname[IPA_IFACE_NAME_LEN];
 	 uint32_t wan_ipaddr;
