@@ -297,6 +297,7 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 	struct ipa_rt_rule_add *rt_rule_entry;
 	struct ipa_ioc_get_hdr sRetHeader;
 	uint32_t tx_index;
+	int i;
 
 	IPACMDBG("LAN callback: unicast IPA_ROUTE_ADD_EVENT\n");
 
@@ -306,8 +307,37 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 		return IPACM_SUCCESS;
 	}
 
+
 	if (num_uni_rt < IPA_MAX_NUM_UNICAST_ROUTE_RULES)
 	{
+        /* check the unicast RT rule is set or not*/
+	    for (i = 0; i <= num_uni_rt; i++)
+	    {
+
+		   if ( data->iptype == IPA_IP_v4 && 
+		         (data->ipv4_addr == get_rt_ruleptr(route_rule, i)->rule.u.v4.dst_addr) &&
+					(data->ipv4_addr_mask == get_rt_ruleptr(route_rule, i)->rule.u.v4.dst_addr_mask) )
+		   {
+ 		       IPACMDBG("find previous-added ipv4 unicast RT entry as index: %d, ignore adding\n",i);		       
+		       return IPACM_SUCCESS;
+			   break;
+           }
+           else if ( data->iptype == IPA_IP_v6 &&
+		            (data->ipv6_addr[0] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[0]) &&
+					(data->ipv6_addr[1] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[1]) &&
+					(data->ipv6_addr[2] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[2]) &&
+					(data->ipv6_addr[3] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[3]) &&
+					(data->ipv6_addr_mask[0] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr_mask[0]) &&
+					(data->ipv6_addr_mask[1] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr_mask[1]) &&
+					(data->ipv6_addr_mask[2] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr_mask[2]) &&
+					(data->ipv6_addr_mask[3] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr_mask[3]))
+           {
+ 		       IPACMDBG("find previous-added ipv6 unicast RT entry as index: %d, ignore adding\n",i);		       		   
+               return IPACM_SUCCESS;
+			   break;
+		   }		   
+	    }
+
 		/* unicast RT rule add start */
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
 			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
@@ -623,18 +653,6 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 
 	IPACMDBG("set route/filter rule ip-type: %d \n", data->iptype);
 
-	for(num_ipv6_addr=0;num_ipv6_addr<num_dft_rt_v6;num_ipv6_addr++)
-	{
-        if((ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
-	       (ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
-	        (ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
-	            (ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]))
-       {
-	       return IPACM_SUCCESS;
-	       break; 
-	   }
-	}
-	
 	if (data->iptype == IPA_IP_v4)
 	{
 	rt_rule = (struct ipa_ioc_add_rt_rule *)
@@ -676,6 +694,19 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	}
 	else
 	{
+	    /* check if see that v6-addr already or not*/
+	    for(num_ipv6_addr=0;num_ipv6_addr<num_dft_rt_v6;num_ipv6_addr++)
+	    {
+                if((ipv6_addr[num_ipv6_addr][0] == data->ipv6_addr[0]) &&	
+	           (ipv6_addr[num_ipv6_addr][1] == data->ipv6_addr[1]) &&	
+	            (ipv6_addr[num_ipv6_addr][2] == data->ipv6_addr[2]) &&	
+	                (ipv6_addr[num_ipv6_addr][3] == data->ipv6_addr[3]))
+                {
+	           return IPACM_SUCCESS;
+	           break; 
+	        }
+	    }
+
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
 			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
 							NUM_RULES * sizeof(struct ipa_rt_rule_add));
