@@ -138,13 +138,15 @@ private:
 		return IPACM_INVALID_INDEX;
 	}
 
-	inline int delete_default_qos_rtrules(int clt_indx)
+	inline int delete_default_qos_rtrules(int clt_indx, ipa_ip_type iptype)
 	{
 		uint32_t tx_index;
 		uint32_t rt_hdl;
 
-		for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+		if(iptype == IPA_IP_v4)
 		{
+		     for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+		     {
 		        if((tx_prop->tx[tx_index].ip == IPA_IP_v4) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
 			{
 			       IPACMDBG("Delete client index %d ipv4 Qos rules for tx:%d \n", clt_indx,tx_index);
@@ -155,7 +157,19 @@ private:
 					return IPACM_FAILURE;
 				}
 			}
+		     } /* end of for loop */
 
+		     /* clean the 4 Qos ipv4 RT rules for client:clt_indx */
+		     if(ip_type != IPA_IP_v6) /* for ipv4 */
+		     {
+				get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4 = false;
+		     }
+		}
+
+		if(iptype == IPA_IP_v6)
+		{
+		    for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+		    {
 		        if((tx_prop->tx[tx_index].ip == IPA_IP_v6) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6==true)) /* for ipv6 */
 			{
 			  IPACMDBG("Delete client index %d ipv6 Qos rules \n", clt_indx);
@@ -166,19 +180,14 @@ private:
 					return IPACM_FAILURE;
 				}
 			}
-		} /* end of for loop */
+		    } /* end of for loop */
 		
-		/* clean the 4 Qos ipv4 RT rules for client:clt_indx */
-		if(ip_type != IPA_IP_v6) /* for ipv4 */
-		{
-		  get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4=false;
-        }
-
-		/* clean the 4 Qos ipv6 RT rules for client:clt_indx */
-		if(ip_type != IPA_IP_v4) /* for ipv6 */
-		{
-		  get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6=false;
-        }
+		    /* clean the 4 Qos ipv6 RT rules for client:clt_indx */
+		    if(ip_type != IPA_IP_v4) /* for ipv6 */
+		    {
+		                 get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6=false;
+                    }
+		}
 		
 		return IPACM_SUCCESS;
 	}

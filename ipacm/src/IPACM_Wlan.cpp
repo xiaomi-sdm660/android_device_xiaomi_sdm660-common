@@ -268,11 +268,12 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v4);
 				}				
-				
+#if 0
 				if (ip_type != IPA_IP_v4) /* for ipv6 */
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v6);
 				}
+#endif				
 			}
 		}
 		break;
@@ -281,7 +282,9 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_all *data = (ipacm_event_data_all *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
-			if (ipa_interface_index == ipa_if_num)
+			//if (ipa_interface_index == ipa_if_num)
+			/* currently only add v4 RT rules for each WIFI client*/
+			if (ipa_interface_index == ipa_if_num && data->iptype== IPA_IP_v4)
 			{
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT\n");
 				if (handle_wlan_client_ipaddr(data) == IPACM_FAILURE)
@@ -574,8 +577,25 @@ int IPACM_Wlan::handle_wlan_client_ipaddr(ipacm_event_data_all *data)
 			}
 			else
 			{
-				IPACMDBG("Already setup ipv4 addr for client:%d\n", clnt_indx);
+			   /* check if client got new IPv4 address*/
+			   if(data->ipv4_addr == get_client_memptr(wlan_client, clnt_indx)->v4_addr)
+			   {
+			     IPACMDBG("Already setup ipv4 addr for client:%d, ipv4 address didn't change\n", clnt_indx);
+				 return IPACM_FAILURE;
+			   }
+			   else
+			   {
+			     IPACMDBG("ipv4 addr for client:%d is changed \n", clnt_indx);
+			     delete_default_qos_rtrules(clnt_indx,IPA_IP_v4);
+		         get_client_memptr(wlan_client, clnt_indx)->route_rule_set_v4 = false;
+			     get_client_memptr(wlan_client, clnt_indx)->v4_addr = data->ipv4_addr;
 			}
+		}
+	}
+	else
+	{
+		    IPACMDBG("Invalid client IPv4 address \n");
+		    return IPACM_FAILURE;
 		}
 	}
 	else
@@ -595,6 +615,7 @@ int IPACM_Wlan::handle_wlan_client_ipaddr(ipacm_event_data_all *data)
 			else
 			{
 				IPACMDBG("Already setup ipv6 addr for client:%d\n", clnt_indx);
+			 return IPACM_FAILURE;
 			}
 		}
 	}
@@ -635,9 +656,20 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 		return IPACM_SUCCESS;
 	}
 
+        if (iptype==IPA_IP_v4)
+	{
 	IPACMDBG("wlan client index: %d, ip-type: %d, ipv4_set:%d, ipv4_rule_set:%d \n", wlan_index, iptype,
 					 get_client_memptr(wlan_client, wlan_index)->ipv4_set,
 					 get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4);
+	}
+        else
+	{
+	     IPACMDBG("wlan client index: %d, ip-type: %d, ipv6_set:%d, ipv6_rule_set:%d \n", wlan_index, iptype,
+					 get_client_memptr(wlan_client, wlan_index)->ipv6_set,
+					 get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6);
+	}
+
+	
 	/* Add default 4 Qos routing rules if not set yet */
 	if ((iptype == IPA_IP_v4
 			 && get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4 == false
@@ -775,7 +807,7 @@ int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 		return IPACM_SUCCESS;
 	}
 
-  if (get_client_memptr(wlan_client, clt_indx)->power_save_set == false)
+        if (get_client_memptr(wlan_client, clt_indx)->power_save_set == false)
 	{
 		data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
 		if (data == NULL)
@@ -789,8 +821,12 @@ int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 		evt_data.evt_data = (void *)data;
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
  	  
-		delete_default_qos_rtrules(clt_indx);
-    get_client_memptr(wlan_client, clt_indx)->power_save_set = true;
+		delete_default_qos_rtrules(clt_indx, IPA_IP_v4);
+		delete_default_qos_rtrules(clt_indx, IPA_IP_v6);
+                get_client_memptr(wlan_client, clt_indx)->power_save_set = true;
+		/* clean the ipv4*/
+		get_client_memptr(wlan_client, clt_indx)->ipv4_set=false;
+		get_client_memptr(wlan_client, clt_indx)->ipv6_set=false;
 	}
 	else
 	{
@@ -815,9 +851,15 @@ int IPACM_Wlan::handle_wlan_client_down_evt(uint8_t *mac_addr)
 		return IPACM_SUCCESS;
 	}
 
-	if (delete_default_qos_rtrules(clt_indx))
+	if (delete_default_qos_rtrules(clt_indx, IPA_IP_v4))
 	{
-		IPACMERR("unbale to delete default qos route rules\n");
+		IPACMERR("unbale to delete v4 default qos route rules\n");
+		return IPACM_FAILURE;
+	}
+
+	if (delete_default_qos_rtrules(clt_indx, IPA_IP_v6))
+	{
+		IPACMERR("unbale to delete v6 default qos route rules\n");
 		return IPACM_FAILURE;
 	}
 
@@ -1624,7 +1666,8 @@ int IPACM_Wlan::handle_down_evt()
 	IPACMDBG("left %d wifi clients need to be deleted \n ", num_wifi_client);
 	for (i = 0; i < num_wifi_client; i++)
 	{
-		delete_default_qos_rtrules(i);
+		delete_default_qos_rtrules(i, IPA_IP_v4);
+		delete_default_qos_rtrules(i, IPA_IP_v6);
 
 		IPACMDBG("Delete %d client header\n", num_wifi_client);
 
