@@ -62,5 +62,8 @@
 		<IPACMNAT>		
  	        <MaxNatEntries>100</MaxNatEntries>
 		</IPACMNAT>
+		<IPACMNONNATIFACES>
+		    <IfaceName>rndis0</IfaceName>
+		</IPACMNONNATIFACES>
 	</IPACM>
 </system>	

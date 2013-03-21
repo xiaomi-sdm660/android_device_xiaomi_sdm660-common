@@ -53,7 +53,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 struct ipa_neighbor_client
 {
 	uint8_t mac_addr[6];
-	uint32_t v6_addr[4];
 	int iface_index;
 };
 

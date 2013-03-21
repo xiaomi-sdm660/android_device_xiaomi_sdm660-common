@@ -57,8 +57,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_DEFAULT_v4_ROUTE_RULES  1
 #define MAX_DEFAULT_v6_ROUTE_RULES  2
 #define IPV4_DEFAULT_FILTERTING_RULES 3
-#define IPV6_DEFAULT_FILTERTING_RULES 1
+#define IPV6_DEFAULT_FILTERTING_RULES 3
 #define IPV6_DEFAULT_LAN_FILTERTING_RULES 1
+#define IPV6_NUM_ADDR 3
 #define MAX_SOFTWAREROUTING_FILTERTING_RULES 2
 #define INVALID_IFACE -1
 
@@ -93,7 +94,8 @@ public:
 
 		uint32_t dft_v4fl_rule_hdl[IPV4_DEFAULT_FILTERTING_RULES];
 		uint32_t dft_v6fl_rule_hdl[IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES];
-		uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+2*MAX_DEFAULT_v6_ROUTE_RULES]; // create additional one set of v6 RT-rules
+		/* create additional set of v6 RT-rules in Wanv6RT table*/
+		uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+2*MAX_DEFAULT_v6_ROUTE_RULES];
 
 		ipa_ioc_query_intf *iface_query;
 		ipa_ioc_query_intf_tx_props *tx_prop;

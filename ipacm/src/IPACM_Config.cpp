@@ -130,7 +130,6 @@ int IPACM_Config::Init(void)
 
 	for (i = 0; i < cfg->alg_config.num_alg_entries; i++)
 	{
-		//strncpy(alg_table[i].protocol, cfg->alg_config.alg_entries[i].protocol, sizeof(alg_table[i].protocol));
 		alg_table[i].protocol = cfg->alg_config.alg_entries[i].protocol;
 		alg_table[i].port = cfg->alg_config.alg_entries[i].port;
 		IPACMDBG("IPACM_Config::ipacm_alg[%d] = %d, port=%d\n", i, alg_table[i].protocol, alg_table[i].port);
@@ -138,6 +137,22 @@ int IPACM_Config::Init(void)
 
 	ipa_nat_max_entries = cfg->nat_max_entries;
 	IPACMDBG("Nat Maximum Entries %d\n", ipa_nat_max_entries);
+
+	ipa_non_nat_iface_entries = cfg->non_nat_ifaces.num_iface_entries;
+	IPACMDBG("Number of Non Nat Iface Entries %d\n", ipa_non_nat_iface_entries);
+
+	pNonNatIfaces = (NonNatIfaces *)calloc(ipa_non_nat_iface_entries,
+																					sizeof(NonNatIfaces));
+	if (pNonNatIfaces != NULL)
+	{
+		for (i=0; i<cfg->non_nat_ifaces.num_iface_entries; i++)
+		{
+			memcpy(pNonNatIfaces[i].iface_name, 
+						 cfg->non_nat_ifaces.iface_entries[i].iface_name, 
+						 sizeof(pNonNatIfaces[i].iface_name));
+			IPACMDBG("IPACM_Config::pNonNatIfaces[%d] = %s\n", i, pNonNatIfaces[i].iface_name);
+		}
+	}
 
 	/* Construct the routing table ictol name in iface static member*/
 	rt_tbl_default_v4.ip = IPA_IP_v4;
@@ -192,6 +207,24 @@ int IPACM_Config::GetAlgPorts(int nPorts, ipacm_alg *pAlgPorts)
 	{
 		pAlgPorts[cnt].protocol = alg_table[cnt].protocol;
 		pAlgPorts[cnt].port = alg_table[cnt].port;
+	}
+
+	return 0;
+}
+
+int IPACM_Config::GetNonNatIfaces(int nIfaces, NonNatIfaces *pIfaces)
+{
+	if (nIfaces <= 0 || pIfaces == NULL)
+	{
+		IPACMERR("Invalid input\n");
+		return -1;
+	}
+
+	for (int cnt=0; cnt<nIfaces; cnt++)
+	{
+		memcpy(pIfaces[cnt].iface_name, 
+					 pNonNatIfaces[cnt].iface_name, 
+					 sizeof(pIfaces[cnt].iface_name));
 	}
 
 	return 0;

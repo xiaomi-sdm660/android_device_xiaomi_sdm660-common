@@ -4,15 +4,15 @@ Copyright (c) 2013, The Linux Foundation. All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
-				* Redistributions of source code must retain the above copyright
-								notice, this list of conditions and the following disclaimer.
-				* Redistributions in binary form must reproduce the above
-								copyright notice, this list of conditions and the following
-								disclaimer in the documentation and/or other materials provided
-								with the distribution.
-				* Neither the name of The Linux Foundation nor the names of its
-								contributors may be used to endorse or promote products derived
-								from this software without specific prior written permission.
+		* Redistributions of source code must retain the above copyright
+			notice, this list of conditions and the following disclaimer.
+		* Redistributions in binary form must reproduce the above
+			copyright notice, this list of conditions and the following
+			disclaimer in the documentation and/or other materials provided
+			with the distribution.
+		* Neither the name of The Linux Foundation nor the names of its
+			contributors may be used to endorse or promote products derived
+			from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -26,16 +26,24 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+#include <sys/ioctl.h>
+#include <net/if.h>
+
 #include "IPACM_ConntrackListener.h"
 #include "IPACM_ConntrackClient.h"
 #include "IPACM_EvtDispatcher.h"
 
 IPACM_ConntrackListener::IPACM_ConntrackListener()
 {
-	 IPACMDBG("%d %s()\n", __LINE__, __FUNCTION__);
+	 IPACMDBG("\n");
 
 	 isCTReg = false;
 	 isWanUp = false;
+
+	 NonNatIfaceCnt = 0;
+	 pNonNatIfaces = NULL;
+	 pConfig = NULL;
 
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, this);
@@ -43,6 +51,7 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WLAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_POWER_SAVE, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_RESET_POWER_SAVE, this);
+	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, this);
 }
 
 void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
@@ -52,8 +61,8 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 
 	 if(data == NULL)
 	 {
-			IPACMERR("Invalid Data\n");
-			return;
+		 IPACMERR("Invalid Data\n");
+		 return;
 	 }
 
 	 switch(evt)
@@ -92,6 +101,13 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			}
 			break; 
 
+	 case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
+		 {
+			 IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT event\n");
+			 HandleNeighIpAddrEvt(data);
+		 }
+		 break;
+
 	 case IPA_HANDLE_POWER_SAVE:
 		 IPACMDBG("Received IPA_HANDLE_POWER_SAVE event\n");
 		 HandlePowerSave(data);
@@ -106,6 +122,97 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			IPACMDBG("Ignore cmd %d\n", evt);
 			break;
 	 }
+}
+
+void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param)
+{
+	ipacm_event_data_all *data = (ipacm_event_data_all *)in_param;
+	int fd=0, len=0;
+	struct ifreq ifr;
+	ipacm_event_iface_up NonNatdata;
+
+	if(data->ipv4_addr == 0)
+	{
+		IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT\n");
+		return;
+	}
+
+	IPACMDBG("Received interface index %d\n", data->if_index);
+
+	if(pConfig == NULL)
+	{
+		pConfig = IPACM_Config::GetInstance();
+		if(pConfig == NULL)
+		{
+			IPACMERR("Unable to get Config instance\n");
+			return;
+		}
+
+		NonNatIfaceCnt = pConfig->GetNonNatIfacesCnt();
+		if(NonNatIfaceCnt != 0)
+		{
+			len = (sizeof(NonNatIfaces) * NonNatIfaceCnt);
+			pNonNatIfaces = (NonNatIfaces *)malloc(len);
+			if(pNonNatIfaces == NULL)
+			{
+				IPACMERR("Unable to allocate memory for non nat ifaces\n");
+				return;
+			}
+			memset(pNonNatIfaces, 0, len); 
+
+			if(pConfig->GetNonNatIfaces(NonNatIfaceCnt, pNonNatIfaces) != 0)
+			{
+				IPACMERR("Unable to retrieve non nat ifaces\n");
+				return;
+			}
+		}
+	}
+
+	/* Search/Configure linux interface-index and map it to IPA interface-index */
+	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	{
+		PERROR("get interface name socket create failed");
+		return;
+	}
+
+	memset(&ifr, 0, sizeof(struct ifreq));
+	ifr.ifr_ifindex = data->if_index;
+
+	if (ioctl(fd, SIOCGIFNAME, &ifr) < 0)
+	{
+		PERROR("call_ioctl_on_dev: ioctl failed:");
+		close(fd);
+		return;
+	}
+
+	for (int i = 0; i <NonNatIfaceCnt; i++)
+	{
+		if (strncmp(ifr.ifr_name, 
+								pNonNatIfaces[i].iface_name,
+								sizeof(pNonNatIfaces[i].iface_name)) == 0)
+		{
+			/* copy the ipv4 address to filter out downlink connections
+			   ignore downlink after listening connection event from
+			   conntrack as it is not destinated to private ip address */
+			pNonNatIfaces[i].ipv4_addr = data->ipv4_addr;
+
+			IPACMDBG("Interface (%s) is non nat\n", ifr.ifr_name);
+			IPACMDBG("Ignoring connections of Interface (%s)\n", pNonNatIfaces[i].iface_name);
+
+			memset(&NonNatdata, 0, sizeof(NonNatdata));
+			memcpy(NonNatdata.ifname, 
+						 pNonNatIfaces[i].iface_name,
+						 sizeof(NonNatdata.ifname));
+			NonNatdata.ipv4_addr = pNonNatIfaces[i].ipv4_addr;
+			NonNatdata.addr_mask = pConfig->private_subnet_table[0].subnet_mask;
+
+			IPACM_ConntrackClient::UpdateUDPFilters(&NonNatdata);
+			IPACM_ConntrackClient::UpdateTCPFilters(&NonNatdata);
+			
+			break;
+		}
+	}
+	
 }
 
 void IPACM_ConntrackListener::HandlePowerSave(void *in_param)
@@ -424,6 +531,19 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 IPACMDBG("private port or src port: 0x%x, Decimal:%d\n", rule.private_port, rule.private_port);
 	 IPACMDBG("public port or reply dst port: 0x%x, Decimal:%d\n", rule.public_port, rule.public_port);
 	 IPACMDBG("Protocol: %d, destination nat flag: %d\n", rule.protocol, rule.dst_nat);
+
+	 if(IPS_DST_NAT & status)
+	 {
+		 for(int cnt=0; cnt<NonNatIfaceCnt; cnt++)
+		 {
+			 if(rule.private_ip == pNonNatIfaces[cnt].ipv4_addr)
+			 {
+				 IPACMDBG("Non Nat iface %s match, Ignoring above Nat entry\n",
+									pNonNatIfaces[cnt].iface_name);
+				 return;
+			 }
+		 }
+	 }
 
 	 if(IPPROTO_TCP == rule.protocol)
 	 {

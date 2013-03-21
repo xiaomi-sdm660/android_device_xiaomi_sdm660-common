@@ -51,6 +51,10 @@ class IPACM_ConntrackListener : public IPACM_Listener
 private:
 	 bool isCTReg;
 	 bool isWanUp;
+
+	 int NonNatIfaceCnt;
+	 NonNatIfaces *pNonNatIfaces;
+	 IPACM_Config *pConfig;
 	 
 	 void ProcessCTMessage(void *data);
 	 void ProcessTCPorUDPMsg(struct nf_conntrack *ct, enum nf_conntrack_msg_type, u_int8_t);
@@ -60,10 +64,12 @@ private:
 
 	 void HandlePowerSave(void *data);
 	 void HandleResetPower(void *data);
+	 void HandleNeighIpAddrEvt(void *data);
 
 public:
 	 char wan_ifname[IPA_IFACE_NAME_LEN];
 	 uint32_t wan_ipaddr;
+
 	 IPACM_ConntrackListener();
 	 void event_callback(ipa_cm_event_id, void *data);
 };
