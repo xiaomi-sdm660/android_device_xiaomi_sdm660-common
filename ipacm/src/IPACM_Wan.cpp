@@ -99,7 +99,6 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	           break; 
 	       }
 	    }		
-
 	    rt_rule = (struct ipa_ioc_add_rt_rule *)
 	    	 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
 	    					NUM_RULES * sizeof(struct ipa_rt_rule_add));
@@ -172,7 +171,6 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	    	init_fl_rule(data->iptype); 
 	    }
 	    	
-	    	//dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + num_dft_rt_v6] = rt_rule_entry->rt_rule_hdl;
 	    	num_dft_rt_v6++;	
     }
 	else
@@ -1258,7 +1256,6 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			m_pFilteringTable->num_rules = (uint8_t)1;
 
 			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
-
 			if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v6)) //rt_tbl_wan_v6 rt_tbl_v6
 			{
 				IPACMERR("m_routing.GetRoutingTable(rt_tbl_wan_v6) Failed.\n");

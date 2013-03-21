@@ -584,7 +584,6 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		m_pFilteringTable->ip = iptype;
 		m_pFilteringTable->num_rules = (uint8_t)IPV6_DEFAULT_FILTERTING_RULES;
 
-		/* Configuring Fragment Filtering Rule */
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
 		flt_rule_entry.at_rear = true;
@@ -607,6 +606,29 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
 		memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
 
+		/* Configuring fe80::/10 Link-Scoped Unicast Filtering Rule */
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0XFFC00000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[0] = 0xFE800000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
+		memcpy(&(m_pFilteringTable->rules[1]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+		
+		/* Configuring fec0::/10 Reserved by IETF Filtering Rule */		
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0XFFC00000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[0] = 0xFEC00000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
+		memcpy(&(m_pFilteringTable->rules[2]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+		
+		
 		if (m_filtering.AddFilteringRule(m_pFilteringTable) == false)
 		{
 			IPACMERR("Error Adding Filtering rule, aborting...\n");

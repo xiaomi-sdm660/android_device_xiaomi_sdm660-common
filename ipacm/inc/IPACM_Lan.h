@@ -94,7 +94,12 @@ private:
 
 	/* dynamically allocate lan iface's unicast routing rule structure */
 	int rt_rule_len;
+
 	ipa_lan_rt_rule *route_rule;
+
+	uint32_t v6_addr[IPV6_NUM_ADDR][4];
+
+        int ipv6_set;
 
 	/* store the number of lan-iface's unicast routing rule */
 	int num_uni_rt;
@@ -104,11 +109,17 @@ private:
 		return (param + (rt_rule_len * cnt));
 	}
 
-	/* handle unicast routing rule add event */
+	/* handle unicast routing rule add event for ipv4 */
 	int handle_route_add_evt(ipacm_event_data_addr *data);
 
-	/* handle unicast routing rule del event */
+	/* handle unicast routing rule add event for ipv6 */
+	int handle_route_add_evt_v6(ipacm_event_data_all *data);
+
+	/* handle unicast routing rule del event for ipv4 */
 	int handle_route_del_evt(ipacm_event_data_addr *data);
+
+	/* handle unicast routing rule del event for ipv6 */
+	int handle_route_del_evt_v6(ipacm_event_data_all *data);
 
 	/*handle wlan iface down event*/
 	int handle_down_evt();

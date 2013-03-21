@@ -76,7 +76,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPA_DRIVER_WLAN_META_MSG    (sizeof(struct ipa_msg_meta))
 #define IPA_DRIVER_WLAN_BUF_LEN     (IPA_DRIVER_WLAN_EVENT_SIZE + IPA_DRIVER_WLAN_META_MSG)
 
-//char *log_buf = (char *)malloc(LOG_SIZE);
 int ipa_get_if_index(char *if_name, int *if_index);
 
 /* start netlink socket monitor*/

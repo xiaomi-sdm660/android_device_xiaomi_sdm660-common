@@ -164,6 +164,9 @@ if (!(a)) {                                             \
 #define IPACMNat_TAG                         "IPACMNAT"
 #define NAT_MaxEntries_TAG                   "MaxNatEntries"
 
+#define IPACMNonNatIfaces_TAG                "IPACMNONNATIFACES"
+#define IfaceName_TAG                        "IfaceName"
+
 
 /*---------------------------------------------------------------------------
       IP protocol numbers - use in dss_socket() to identify protocols.
@@ -259,6 +262,7 @@ typedef struct  _IPACM_conf_t
   ipacm_private_subnet_conf_t private_subnet_config;
   ipacm_alg_conf_t alg_config;
 	int nat_max_entries;
+	ipacm_iface_conf_t non_nat_ifaces;
 } IPACM_conf_t;  
 
 /* This function read IPACM XML configuration*/

@@ -5,14 +5,14 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
 		* Redistributions of source code must retain the above copyright
-				notice, this list of conditions and the following disclaimer.
+			notice, this list of conditions and the following disclaimer.
 		* Redistributions in binary form must reproduce the above
-				copyright notice, this list of conditions and the following
-				disclaimer in the documentation and/or other materials provided
-				with the distribution.
+			copyright notice, this list of conditions and the following
+			disclaimer in the documentation and/or other materials provided
+			with the distribution.
 		* Neither the name of The Linux Foundation nor the names of its
-				contributors may be used to endorse or promote products derived
-				from this software without specific prior written permission.
+			contributors may be used to endorse or promote products derived
+			from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -71,7 +71,7 @@ void IPACM_ConntrackClient::iptodot(const char *type, uint32_t ipAddr)
 
 IPACM_ConntrackClient::IPACM_ConntrackClient()
 {
-	IPACMDBG("%s %d", __FUNCTION__, __LINE__);
+	IPACMDBG("\n");
 
 	tcp_hdl = NULL;
 	udp_hdl = NULL;
@@ -84,6 +84,24 @@ IPACM_ConntrackClient* IPACM_ConntrackClient::GetInstance()
 	if(pInstance == NULL)
 	{
 		pInstance = new IPACM_ConntrackClient();
+
+		pInstance->udp_filter = nfct_filter_create();
+		if(pInstance->udp_filter == NULL)
+		{
+			IPACMERR("unable to create UDP filter\n");
+			delete pInstance;
+			return NULL;
+		}
+		IPACMDBG("Created UDP filter\n");
+
+		pInstance->tcp_filter = nfct_filter_create();
+		if(pInstance->tcp_filter == NULL)
+		{
+			IPACMERR("unable to create TCP filter\n");
+			delete pInstance;
+			return NULL;
+		}
+		IPACMDBG("Created TCP filter\n");
 	}
 
 	return pInstance;
@@ -410,12 +428,14 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	}
 
 	/* Allocate new filter */
+	#if 0
 	pClient->tcp_filter = nfct_filter_create();
 	if(pClient->tcp_filter == NULL)
 	{
 		IPACMERR("unable to create TCP filter\n");
 		return NULL;
 	}
+	#endif
 
 	/* Initialize the filter */
 	ret = IPA_Conntrack_TCP_Filter_Init();
@@ -493,12 +513,14 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 	//struct nfct_filter *udp_filter = NULL;
 
 	/* Allocate new filter */
+	#if 0
 	pClient->udp_filter = nfct_filter_create();
 	if(pClient->udp_filter == NULL)
 	{
 		IPACMERR("unable to create UDP filter\n");
 		return NULL;
 	}
+	#endif
 
 	/* Initialize Filter */
 	ret = IPA_Conntrack_UDP_Filter_Init();

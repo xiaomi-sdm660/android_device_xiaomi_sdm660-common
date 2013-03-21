@@ -1077,56 +1077,6 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					/* finish command queue */
 				}
-#if 0				
-				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_GATEWAY)
-				{
-					IPACMDBG("Route ADD ::/0  Next Hop: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x, metric %d, dev %s\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 48)),
-									 msg_ptr->nl_route_info.attr_info.priority,
-									 dev_name);
-
-					/* insert to command queue */
-					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
-					if(data_addr == NULL)
-					{
-						IPACMERR("unable to allocate memory for event data_addr\n");
-						return IPACM_FAILURE;
-					}
-
-					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr));
-
-					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
-					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
-					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
-					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);								 
-
-					memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr_mask));
-
-					data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
-					data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
-					data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
-					data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);		
-
-					evt_data.event = IPA_ROUTE_ADD_EVENT;
-					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
-					data_addr->iptype = IPA_IP_v6;
-
-					IPACMDBG("posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv6 address\n",
-									 data_addr->if_index);
-					evt_data.evt_data = data_addr;
-					IPACM_EvtDispatcher::PostEvt(&evt_data);
-					/* finish command queue */
-				}
-#endif
 			}
 			break;
 
@@ -1430,57 +1380,6 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					/* finish command queue */
 				}
-
-#if 0
-				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_GATEWAY)
-				{
-					IPACMDBG("DEL ::/0  Next Hop: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x, metric %d, dev %s\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 48)),
-									 msg_ptr->nl_route_info.attr_info.priority,
-									 dev_name);
-
-					/* insert to command queue */
-					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
-					if(data_addr == NULL)
-					{
-						IPACMERR("unable to allocate memory for event data_addr\n");
-						return IPACM_FAILURE;
-					}
-					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr));
-
-					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
-					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
-					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
-					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);						
-																						 
-
-					memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr_mask));
-
-					data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
-					data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
-					data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
-					data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]); 
-
-					evt_data.event = IPA_ROUTE_DEL_EVENT;
-					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
-					data_addr->iptype = IPA_IP_v6;
-
-					IPACMDBG("Posting IPA_ROUTE_DEL_EVENT with if index: %d, ipv6 addr\n",
-									 data_addr->if_index)
-					evt_data.evt_data = data_addr;
-					IPACM_EvtDispatcher::PostEvt(&evt_data);
-					/* finish command queue */
-				}
-#endif		
 			}
 			break;
 
@@ -1491,10 +1390,110 @@ static int ipa_nl_decode_nlmsg
 				return IPACM_FAILURE;
 			}
 
-			IPACMDBG("RTM_NEWNEIGH, ndm_state:0x%x", msg_ptr->nl_neigh_info.metainfo.ndm_state)
-			if((NUD_PERMANENT | NUD_STALE) & (msg_ptr->nl_neigh_info.metainfo.ndm_state))
+			ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_neigh_info.metainfo.ndm_ifindex);
+			if(ret_val != IPACM_SUCCESS)
 			{
-				IPACMDBG("\n GOT RTM_NEWNEIGH event\n");
+				IPACMERR("Error while getting interface index\n");
+				return IPACM_FAILURE;
+			}
+			else
+				{
+				IPACMDBG("\n GOT RTM_NEWNEIGH event (%s) ip %d\n",dev_name,msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family);
+			}
+
+					/* insert to command queue */
+		    data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+		    if(data_all == NULL)
+					{
+		    	IPACMERR("unable to allocate memory for event data_all\n");
+						return IPACM_FAILURE;
+					}
+
+		    memset(data_all, 0, sizeof(ipacm_event_data_all));				
+		    if(msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET6)
+		    {
+		    	IPACMDBG("IPV6 %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n",
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0])),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 16)),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 32)),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 48)),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1])),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 16)),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 32)),
+		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 48)));									 
+		    					 
+		    	memcpy(data_all->ipv6_addr, 
+		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
+		    				 sizeof(data_all->ipv6_addr));
+                  
+                      data_all->ipv6_addr[0]=ntohl(data_all->ipv6_addr[0]);								 
+                      data_all->ipv6_addr[1]=ntohl(data_all->ipv6_addr[1]);								 
+                      data_all->ipv6_addr[2]=ntohl(data_all->ipv6_addr[2]);								 
+                      data_all->ipv6_addr[3]=ntohl(data_all->ipv6_addr[3]);	
+		    	data_all->iptype = IPA_IP_v6;
+		    }
+		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET)
+		    {
+		    	IPACMDBG("IPV4 %d.%d.%d.%d\n",
+		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding),
+		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 8),
+		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 16),
+		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 24));
+                  
+																						 
+		    	memcpy(&data_all->ipv4_addr, 
+		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
+		    				 sizeof(data_all->ipv4_addr));
+		    	data_all->ipv4_addr = ntohl(data_all->ipv4_addr);
+		    	data_all->iptype = IPA_IP_v4;
+		    }
+		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == 0)
+		    {
+		        data_all->iptype = IPA_IP_v6;
+		    }
+
+		    IPACMDBG("NDA_LLADDR:MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[0],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[1],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[2],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[3],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[4],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[5]);
+
+
+		    memcpy(data_all->mac_addr,
+		    			 msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr.sa_data,
+		    			 sizeof(data_all->mac_addr));
+		    evt_data.event = IPA_NEW_NEIGH_EVENT;
+		    data_all->if_index = msg_ptr->nl_neigh_info.metainfo.ndm_ifindex;
+
+		    IPACMDBG("posting IPA_NEW_NEIGH_EVENT (%s):index:%d ip-family: %d\n",
+                                 dev_name,
+ 		                    data_all->if_index,
+		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family);
+		    evt_data.evt_data = data_all;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+					/* finish command queue */
+			break;
+
+		case RTM_DELNEIGH:
+			if(IPACM_SUCCESS != ipa_nl_decode_rtm_neigh(buffer, buflen, &(msg_ptr->nl_neigh_info)))
+			{
+				IPACMERR("Failed to decode rtm neighbor message\n");
+				return IPACM_FAILURE;
+			}
+
+			ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_neigh_info.metainfo.ndm_ifindex);
+			if(ret_val != IPACM_SUCCESS)
+			{
+				IPACMERR("Error while getting interface index\n");
+				return IPACM_FAILURE;
+			}
+			else
+			{
+				IPACMDBG("\n GOT RTM_DELNEIGH event (%s) ip %d\n",dev_name,msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family);
+			}
+				
 				/* insert to command queue */
 				data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
 				if(data_all == NULL)
@@ -1503,7 +1502,8 @@ static int ipa_nl_decode_nlmsg
 					return IPACM_FAILURE;
 				}
 
-				if(AF_INET6 == msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family)
+		    memset(data_all, 0, sizeof(ipacm_event_data_all));				
+		    if(msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET6)
 				{
 					IPACMDBG("IPV6 %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n",
 									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0])),
@@ -1525,7 +1525,7 @@ static int ipa_nl_decode_nlmsg
 					data_all->ipv6_addr[3] = ntohl(data_all->ipv6_addr[3]);	
 					data_all->iptype = IPA_IP_v6;
 				}
-				else
+		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET)
 				{
 					IPACMDBG("IPV4 %d.%d.%d.%d\n",
 									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding),
@@ -1540,40 +1540,36 @@ static int ipa_nl_decode_nlmsg
 					data_all->ipv4_addr = ntohl(data_all->ipv4_addr);
 					data_all->iptype = IPA_IP_v4;
 				}
+		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == 0)
+		    {
+		        data_all->iptype = IPA_IP_v6;
+		    }
+                  
+		    IPACMDBG("NDA_LLADDR:MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[0],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[1],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[2],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[3],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[4],
+		     (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[5]);
+                  
 
 				memcpy(data_all->mac_addr,
 							 msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr.sa_data,
 							 sizeof(data_all->mac_addr));
-				evt_data.event = IPA_NEW_NEIGH_EVENT;
+		    evt_data.event = IPA_DEL_NEIGH_EVENT;
 				data_all->if_index = msg_ptr->nl_neigh_info.metainfo.ndm_ifindex;
 
-				IPACMDBG("posting IPA_NEW_NEIGH_EVENT with if index:%d\n",
-								 data_all->if_index);
+		    IPACMDBG("posting IPA_DEL_NEIGH_EVENT (%s):index:%d ip-family: %d\n",
+                                 dev_name,
+ 		                    data_all->if_index,
+		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family);
 				evt_data.evt_data = data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
 				/* finish command queue */
-
-				IPACMDBG("NDA_LLADDR:MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[0],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[1],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[2],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[3],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[4],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[5]);
-
-				ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_neigh_info.metainfo.ndm_ifindex);
-				if(ret_val != IPACM_SUCCESS)
-				{
-					IPACMERR("Error while getting interface index\n");
-				}
-				else
-				{
-					IPACMDBG("Interface %s \n", dev_name);
-				}
-			}
 			break;
 
-		case RTM_DELNEIGH:
+#if 0
 			if(IPACM_SUCCESS != ipa_nl_decode_rtm_neigh(buffer, buflen, &(msg_ptr->nl_neigh_info)))
 			{
 				IPACMERR("Failed to decode rtm neighbor message\n");
@@ -1659,7 +1655,7 @@ static int ipa_nl_decode_nlmsg
 				}
 			}
 			break;
-
+#endif
 		default:
 			IPACMDBG(" ignore NL event %d!!!\n ", nlh->nlmsg_type);
 			break;
@@ -1676,7 +1672,6 @@ static int ipa_nl_decode_nlmsg
 int ipa_nl_recv_msg(int fd)
 {
 	struct msghdr *msghdr = NULL;
-	//struct sockaddr_nl *nladdr = NULL;
 	struct iovec *iov = NULL;
 	unsigned int msglen = 0;
 	ipa_nl_msg_t *nlmsg = NULL;
@@ -1695,7 +1690,6 @@ int ipa_nl_recv_msg(int fd)
 			goto error;
 		}
 
-		//nladdr = (struct sockaddr_nl *)msghdr->msg_name;
 		iov = msghdr->msg_iov;
 
 		memset(nlmsg, 0, sizeof(ipa_nl_msg_t));

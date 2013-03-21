@@ -66,9 +66,12 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 	memcpy(data, param, sizeof(ipacm_event_data_all));
 
 	ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
+	
+#if 0
 	/*No that interface existed in ipa list*/
-	if(ipa_interface_index==-1)
+	if(ipa_interface_index== INVALID_IFACE)
 	  return;
+#endif
 	
 	if (data->iptype == IPA_IP_v4)
 	{
@@ -85,9 +88,11 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 	}
 	else
 	{
+	
 		if ((data->ipv6_addr[0]) || (data->ipv6_addr[1]) || (data->ipv6_addr[2]) || (data->ipv6_addr[3]))
 		{
-			/* check if iface is not bridge0*/
+		    IPACMDBG(" Got New_Neighbor event with ipv6 address \n");
+			/* check if iface is bridge0*/
 			if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
 			{
 				/* searh if seen this client or not*/
@@ -99,64 +104,19 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 						/* construct IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT command and insert to command-queue */
 						if (event == IPA_NEW_NEIGH_EVENT) evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
 						else evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
-						//evt_data.evt_data=data;
+						
 						memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
+						
 						/* ask for replaced iface name*/
 						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
-						/*No that interface existed in ipa list*/
-	          if(ipa_interface_index==-1)
-	            return;
-						
-						IPACMDBG("Posted event %d, with %s\n",
+						IPACMDBG("Posted event %d, with %s for ipv6\n",
 										 evt_data.event,
 										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 
-						/* delete that entry*/
-						for (; i < num_neighbor_client_temp - 1; i++)
-						{
-							memcpy(neighbor_client[i].mac_addr, neighbor_client[i + 1].mac_addr, sizeof(neighbor_client[i].mac_addr));
-							neighbor_client[i].v6_addr[0] = neighbor_client[i + 1].v6_addr[0];
-							neighbor_client[i].v6_addr[1] = neighbor_client[i + 1].v6_addr[1];
-							neighbor_client[i].v6_addr[2] = neighbor_client[i + 1].v6_addr[2];
-							neighbor_client[i].v6_addr[3] = neighbor_client[i + 1].v6_addr[3];
-							neighbor_client[i].iface_index = neighbor_client[i + 1].iface_index;
-						}
-						num_neighbor_client -= 1;
 						break;
 
 					};
-				}
-
-				/* cannot find neighbor client*/
-				if (i == num_neighbor_client_temp)
-				{
-					IPACMDBG("ipv6 with bridge0 with mac, not seen before\n");
-					if (num_neighbor_client_temp < IPA_MAX_NUM_NEIGHBOR_CLIENTS)
-					{
-						memcpy(neighbor_client[num_neighbor_client_temp].mac_addr,
-									 data->mac_addr,
-									 sizeof(data->mac_addr));
-						neighbor_client[num_neighbor_client_temp].v6_addr[0] = data->ipv6_addr[0];
-						neighbor_client[num_neighbor_client_temp].v6_addr[1] = data->ipv6_addr[1];
-						neighbor_client[num_neighbor_client_temp].v6_addr[2] = data->ipv6_addr[2];
-						neighbor_client[num_neighbor_client_temp].v6_addr[3] = data->ipv6_addr[3];
-						IPACMDBG("Copy bridge0 MAC %02x:%02x:%02x:%02x:%02x:%02x\n, total client: %d\n",
-										 neighbor_client[num_neighbor_client_temp].mac_addr[0],
-										 neighbor_client[num_neighbor_client_temp].mac_addr[1],
-										 neighbor_client[num_neighbor_client_temp].mac_addr[2],
-										 neighbor_client[num_neighbor_client_temp].mac_addr[3],
-										 neighbor_client[num_neighbor_client_temp].mac_addr[4],
-										 neighbor_client[num_neighbor_client_temp].mac_addr[5],
-										 num_neighbor_client_temp);
-						num_neighbor_client++;
-						return;
-					}
-					else
-					{
-						IPACMERR("error:  neighbor client oversize!");
-						return;
-					}
 				}
 			}
 			else
@@ -168,59 +128,36 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 
 				memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
-				//evt_data.evt_data=data;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
-				IPACMDBG("Posted event %d with %s\n",
+				IPACMDBG("Posted event %d with %s for ipv6\n",
 								 evt_data.event,
 								 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
-
-
 			}
 		}
 		else
 		{
+		    IPACMDBG(" Got New_Neighbor event with no ipv6 address \n");
 			/*no ipv6 in data searh if seen this client or not*/
 			for (i = 0; i < num_neighbor_client_temp; i++)
 			{
+			    /* find the client */
 				if (memcmp(neighbor_client[i].mac_addr, data->mac_addr, sizeof(neighbor_client[i].mac_addr)) == 0)
 				{
-					data->ipv6_addr[0] = neighbor_client[i].v6_addr[0];
-					data->ipv6_addr[1] = neighbor_client[i].v6_addr[1];
-					data->ipv6_addr[2] = neighbor_client[i].v6_addr[2];
-					data->ipv6_addr[3] = neighbor_client[i].v6_addr[3];
-
 					/* check if iface is not bridge0*/
 					if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) != 0)
 					{
-						/* construct IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT command and insert to command-queue */
-						if (event == IPA_NEW_NEIGH_EVENT) evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
-						else evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
-						memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
-						IPACM_EvtDispatcher::PostEvt(&evt_data);
-						IPACMDBG("Posted event %d with %s\n",
-										 evt_data.event,
-										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
-
-
-						/* delete that entry*/
-						for (; i <= num_neighbor_client_temp; i++)
-						{
-							memcpy(neighbor_client[i].mac_addr, neighbor_client[i + 1].mac_addr, sizeof(neighbor_client[i].mac_addr));
-							neighbor_client[i].v6_addr[0] = neighbor_client[i + 1].v6_addr[0];
-							neighbor_client[i].v6_addr[1] = neighbor_client[i + 1].v6_addr[1];
-							neighbor_client[i].v6_addr[2] = neighbor_client[i + 1].v6_addr[2];
-							neighbor_client[i].v6_addr[3] = neighbor_client[i + 1].v6_addr[3];
-							neighbor_client[i].iface_index = neighbor_client[i + 1].iface_index;
+                       neighbor_client[i].iface_index = data->if_index;
 						}
-						num_neighbor_client -= 1;
-					};
 					break;
-				};
+				}
 			}
 			/* not find client */
 			if (i == num_neighbor_client_temp)
 			{
-				IPACMDBG("ipv6 with bridge0 with mac, not seen before\n");
+				/* check if iface is not bridge0*/
+				if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) != 0)
+				{
+					  
 				if (num_neighbor_client_temp < IPA_MAX_NUM_NEIGHBOR_CLIENTS)
 				{
 					memcpy(neighbor_client[num_neighbor_client_temp].mac_addr,
@@ -243,7 +180,9 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 					IPACMERR("error:  neighbor client oversize!");
 					return;
 				}
-			};
+				}
+				
+			}
 		}
 	}
 

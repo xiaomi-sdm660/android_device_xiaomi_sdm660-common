@@ -182,7 +182,9 @@ static int ipacm_cfg_xml_parse_tree
 						IPACM_util_icmp_string((char*)xml_node->name,
 																	 ALG_TAG) == 0 ||
 						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IPACMNat_TAG) == 0)
+																	 IPACMNat_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name,
+																	 IPACMNonNatIfaces_TAG) == 0)
 				{
 					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
 																					IFACE_TAG))
@@ -250,7 +252,7 @@ static int ipacm_cfg_xml_parse_tree
 							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat = VIRTUAL_IF;
 							IPACMDBG("Category %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat);
 						}
-			      else  if (0 == strncasecmp(content_buf, UNKNOWNIF_TAG, str_size))
+						else  if (0 == strncasecmp(content_buf, UNKNOWNIF_TAG, str_size))
 						{
 							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat = UNKNOWN_IF;
 							IPACMDBG("Category %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat);
@@ -332,6 +334,24 @@ static int ipacm_cfg_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						config->nat_max_entries = atoi(content_buf);
 						IPACMDBG("Nat Table Max Entries %d\n", config->nat_max_entries);
+					}
+				}
+				else if (IPACM_util_icmp_string((char*)xml_node->name,
+																				IfaceName_TAG) == 0)
+				{
+					config->non_nat_ifaces.num_iface_entries++;
+					content = IPACM_read_content_element(xml_node);
+					if (content)
+					{
+						str_size = strlen(content);
+						memset(content_buf, 0, sizeof(content_buf));
+
+						memcpy(content_buf, (void *)content, str_size);
+						strncpy(config->non_nat_ifaces.iface_entries[config->non_nat_ifaces.num_iface_entries - 1].iface_name, 
+										content_buf, str_size);
+
+						IPACMDBG("Non Nat IfaceName %s\n", 
+										   config->non_nat_ifaces.iface_entries[config->non_nat_ifaces.num_iface_entries - 1].iface_name);
 					}
 				}
 			}
