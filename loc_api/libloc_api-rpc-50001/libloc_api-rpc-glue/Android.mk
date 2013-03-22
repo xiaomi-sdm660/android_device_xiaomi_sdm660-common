@@ -53,6 +53,7 @@ LOCAL_COPY_HEADERS:= \
     $(RPC_INC)/loc_apicb_appinit.h
 
 LOCAL_MODULE:= libloc_api-rpc-qc
+LOCAL_MODULE_OWNER := qcom
 
 LOCAL_MODULE_TAGS := optional
 

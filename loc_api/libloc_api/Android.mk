@@ -4,6 +4,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gps.$(BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE)
+LOCAL_MODULE_OWNER := qcom
 
 LOCAL_MODULE_TAGS := optional
 
