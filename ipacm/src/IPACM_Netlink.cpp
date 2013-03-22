@@ -1077,6 +1077,56 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					/* finish command queue */
 				}
+#if 1				
+				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_GATEWAY)
+				{
+					IPACMDBG("Route ADD ::/0  Next Hop: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x, metric %d, dev %s\n",
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0])),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 16)),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 32)),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 48)),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1])),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 16)),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 32)),
+									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 48)),
+									 msg_ptr->nl_route_info.attr_info.priority,
+									 dev_name);
+
+					/* insert to command queue */
+					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
+					if(data_addr == NULL)
+					{
+						IPACMERR("unable to allocate memory for event data_addr\n");
+						return IPACM_FAILURE;
+					}
+
+					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
+								 sizeof(data_addr->ipv6_addr));
+
+                    data_addr->ipv6_addr[0]=ntohl(data_addr->ipv6_addr[0]);								 
+                    data_addr->ipv6_addr[1]=ntohl(data_addr->ipv6_addr[1]);								 
+                    data_addr->ipv6_addr[2]=ntohl(data_addr->ipv6_addr[2]);								 
+                    data_addr->ipv6_addr[3]=ntohl(data_addr->ipv6_addr[3]);								 
+
+					memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
+								 sizeof(data_addr->ipv6_addr_mask));
+
+					data_addr->ipv6_addr_mask[0]=ntohl(data_addr->ipv6_addr_mask[0]);								 
+                    data_addr->ipv6_addr_mask[1]=ntohl(data_addr->ipv6_addr_mask[1]);								 
+                    data_addr->ipv6_addr_mask[2]=ntohl(data_addr->ipv6_addr_mask[2]);								 
+                    data_addr->ipv6_addr_mask[3]=ntohl(data_addr->ipv6_addr_mask[3]);		
+
+					evt_data.event = IPA_ROUTE_ADD_EVENT;
+					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
+					data_addr->iptype = IPA_IP_v6;
+
+					IPACMDBG("posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv6 address\n",
+									 data_addr->if_index);
+					evt_data.evt_data = data_addr;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+					/* finish command queue */
+				}
+#endif
 			}
 			break;
 
