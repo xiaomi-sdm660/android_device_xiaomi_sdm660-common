@@ -33,6 +33,8 @@
 #include <hardware/gps.h>
 #include <loc_eng.h>
 #include <loc_log.h>
+#include <fcntl.h>
+#include <errno.h>
 
 static gps_location_callback gps_loc_cb = NULL;
 static gps_sv_status_callback gps_sv_cb = NULL;
@@ -147,6 +149,7 @@ static const InjectRawCmdInterface sLocEngInjectRawCmdInterface =
 #endif
 
 static loc_eng_data_s_type loc_afw_data;
+static int gss_fd = 0;
 
 /*===========================================================================
 FUNCTION    gps_get_hardware_interface
@@ -189,6 +192,18 @@ const GpsInterface* gps_get_hardware_interface ()
 // for gps.c
 extern "C" const GpsInterface* get_gps_interface()
 {
+    char baseband[PROPERTY_VALUE_MAX];
+    property_get("ro.baseband", baseband, "msm");
+    if (strcmp(baseband,"apq") == 0)
+    {
+        gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
+        gss_fd = open("/dev/gss", O_RDONLY);
+        if (gss_fd < 0) {
+            LOC_LOGE("GSS open failed: %s\n", strerror(errno));
+        }
+        LOC_LOGD("GSS open success! CAPABILITIES %0x\n", gps_conf.CAPABILITIES);
+    }
+
     return &sLocEngInterface;
 }
 /*===========================================================================
