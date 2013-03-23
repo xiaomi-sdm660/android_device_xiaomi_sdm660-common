@@ -30,6 +30,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_ConntrackClient.h"
 
 #define UDP_TIMEOUT_VALUE 30
+#define INVALID_IP_ADDR 0x0
 
 /* NatApp class Implementation */
 NatApp *NatApp::pInstance = NULL;
@@ -251,13 +252,6 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 		return -1;
 	}
 
-	if(isPwrSaveIf(rule->private_ip) ||
-		 isPwrSaveIf(rule->target_ip))
-	{
-		IPACMERR("Device is Power Save mode: Dont insert into nat table\n");
-		return -1;
-	}
-
 	if(!ChkForDup(rule))
 	{
 		for(; cnt < max_entries; cnt++)
@@ -286,10 +280,21 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 			nat_rule.public_port = rule->public_port;
 			nat_rule.protocol = rule->protocol;
 
-			if(ipa_nat_add_ipv4_rule(nat_table_hdl, &nat_rule, &cache[cnt].rule_hdl) < 0)
+			if(isPwrSaveIf(rule->private_ip) ||
+				 isPwrSaveIf(rule->target_ip))
 			{
-				IPACMERR("unable to add the rule\n");
-				return -1;
+				IPACMDBG("Device is Power Save mode: Dont insert into nat table but cache\n");
+				cache[cnt].enabled = false;
+				cache[cnt].rule_hdl = 0;
+			}
+			else
+			{
+
+				if(ipa_nat_add_ipv4_rule(nat_table_hdl, &nat_rule, &cache[cnt].rule_hdl) < 0)
+				{
+					IPACMERR("unable to add the rule\n");
+					cache[cnt].enabled = true;
+				}
 			}
 
 			cache[cnt].private_ip = rule->private_ip;
@@ -300,7 +305,6 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 			cache[cnt].timestamp = 0;
 			cache[cnt].public_port = rule->public_port;
 			cache[cnt].dst_nat = rule->dst_nat;
-			cache[cnt].enabled = true;
 			curCnt++;
 		}
 
@@ -313,12 +317,15 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 
 
 #ifdef IPACM_DEBUG
-	IPACMDBG("Added below rule successfully\n");
-	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
-	IPACMDBG("Private Port:%d \t Target Port: %d\t", rule->private_port, rule->target_port);
-	IPACMDBG("Public Port:%d\n", rule->public_port);
-	IPACMDBG("protocol: %d\n", rule->protocol);
+	if(cache[cnt].enabled == true)
+	{
+		IPACMDBG("Added below rule successfully\n");
+		IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
+		IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+		IPACMDBG("Private Port:%d \t Target Port: %d\t", rule->private_port, rule->target_port);
+		IPACMDBG("Public Port:%d\n", rule->public_port);
+		IPACMDBG("protocol: %d\n", rule->protocol);
+	}
 #endif
 
 	return 0;
@@ -465,6 +472,22 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 	int cnt;
 	IPACMDBG("\n");
 
+	if(client_lan_ip == INVALID_IP_ADDR)
+	{
+		IPACMERR("Invalid ip address received\n");
+		return -1;
+	}
+
+	/* check for duplicate events */
+	for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
+	{
+		if(PwrSaveIfs[cnt] == client_lan_ip)
+		{
+			IPACMDBG("The client 0x%x is already in power save\n", client_lan_ip);
+			return 0;
+		}
+	}
+
 	CHK_TBL_HDL();
 
 	for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
@@ -472,12 +495,14 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 		if(PwrSaveIfs[cnt] == 0)
 		{
 			PwrSaveIfs[cnt] = client_lan_ip;
+			break;
 		}
 	}
 
 	for(cnt = 0; cnt < curCnt; cnt++)
 	{
-		if(cache[cnt].private_ip == client_lan_ip)
+		if(cache[cnt].private_ip == client_lan_ip &&
+			 cache[cnt].enabled == true)
 		{
 			if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
 			{
@@ -500,12 +525,18 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 
 	IPACMDBG("\n");
 
+	if(client_lan_ip == INVALID_IP_ADDR)
+	{
+		IPACMERR("Invalid ip address received\n");
+		return -1;
+	}
+
 	for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
 	{
 		if(PwrSaveIfs[cnt] == client_lan_ip)
 		{
 			PwrSaveIfs[cnt] = 0;
-			return 0;
+			break;
 		}
 	}
 
@@ -521,15 +552,25 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 			nat_rule.private_port = cache[cnt].private_port;
 			nat_rule.public_port = cache[cnt].public_port;
 			nat_rule.protocol = cache[cnt].protocol;
-
+			
 			if(ipa_nat_add_ipv4_rule(nat_table_hdl, &nat_rule, &cache[cnt].rule_hdl) < 0)
 			{
-				IPACMERR("unable to add the rule\n");
+				IPACMERR("unable to add the rule delete from cache\n");
 				memset(&cache[cnt], 0, sizeof(cache[cnt]));
 				curCnt--;
 				continue;
 			}
 			cache[cnt].enabled = true;
+
+#ifdef IPACM_DEBUG
+			IPACMDBG("On power reset added below rule successfully\n");
+			IPACM_ConntrackClient::iptodot("Private IP", nat_rule.private_ip);
+			IPACM_ConntrackClient::iptodot("Target IP", nat_rule.target_ip);
+			IPACMDBG("Private Port:%d \t Target Port: %d\t", nat_rule.private_port, nat_rule.target_port);
+			IPACMDBG("Public Port:%d\n", nat_rule.public_port);
+			IPACMDBG("protocol: %d\n", nat_rule.protocol);
+#endif
+
 		}
 	}
 
