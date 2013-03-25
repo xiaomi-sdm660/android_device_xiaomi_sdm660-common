@@ -21,10 +21,6 @@ GPS_DIR_LIST += $(LOCAL_PATH)/libloc_api-rpc-50001/
 GPS_DIR_LIST += $(LOCAL_PATH)/libloc_api-rpc/
 GPS_DIR_LIST += $(LOCAL_PATH)/libloc_api/
 
-else
-
-GPS_DIR_LIST += $(LOCAL_PATH)/loc_api_v02/
-
 endif #TARGET_NO_RPC
 
 endif
