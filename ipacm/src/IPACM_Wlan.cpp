@@ -1057,6 +1057,12 @@ int IPACM_Wlan::handle_wan_down(void)
 {
 	IPACMDBG("\n");
 
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+	
 	if (m_filtering.DeleteFilteringHdls(&wlan_ampdu_flt_rule.hdl[0],
 																			IPA_IP_v4, 1) == false)
 	{
@@ -1209,6 +1215,11 @@ int IPACM_Wlan::handle_software_routing_disable(void)
 		return IPACM_SUCCESS;
 	}
 
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}	
 
 	if (ip_type == IPA_IP_MAX)
 	{
@@ -1633,7 +1644,7 @@ int IPACM_Wlan::handle_down_evt()
 	}
 
 	/* Delete v6 filtering rules */
-	if (ip_type != IPA_IP_v6)
+	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
 		IPACMDBG("Delete default v4 filter rules\n");
 		/* delete default filter rules */
@@ -1658,7 +1669,7 @@ int IPACM_Wlan::handle_down_evt()
 	}
 
 	/* Delete v4 filtering rules */
-	if (ip_type != IPA_IP_v4)
+	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
 	{
 		IPACMDBG("Delete default %d v6 filter rules\n", IPV6_DEFAULT_FILTERTING_RULES);
 		/* delete default filter rules */
@@ -1673,19 +1684,21 @@ int IPACM_Wlan::handle_down_evt()
 	}
 	IPACMDBG("finished delte default filtering rules\n ");
 
-	/* delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules*/
-	for (i = 3; i < wlan_ampdu_flt_rule.num_rules; i++)
+	if (rx_prop != NULL)
 	{
-		IPACMDBG("Delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules\n");
-		if (m_filtering.DeleteFilteringHdls(&wlan_ampdu_flt_rule.hdl[i],
-																				wlan_ampdu_flt_rule.ip[i], 1) == false)
-		{
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-	}
-	IPACMDBG("finished delte AMPDU filtering rules\n ");
-
+	    /* delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules*/
+	    for (i = 3; i < wlan_ampdu_flt_rule.num_rules; i++)
+	    {
+	    	IPACMDBG("Delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules\n");
+	    	if (m_filtering.DeleteFilteringHdls(&wlan_ampdu_flt_rule.hdl[i],
+	    																			wlan_ampdu_flt_rule.ip[i], 1) == false)
+	    	{
+	    		res = IPACM_FAILURE;
+	    		goto fail;
+	    	}
+	    }
+	    IPACMDBG("finished delte AMPDU filtering rules\n ");
+    }
 
 	/* Delete default v4 RT rule */
 	if (ip_type != IPA_IP_v6)
@@ -1720,7 +1733,7 @@ int IPACM_Wlan::handle_down_evt()
 
 
 	/* delete wan filter rule */
-	if (IPACM_Wan::isWanUP())
+	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
 	{
 		IPACMDBG("Delete wan filtering rules\n");
 
@@ -1731,7 +1744,7 @@ int IPACM_Wlan::handle_down_evt()
 
 
 	/* check software routing fl rule hdl */
-	if (softwarerouting_act == true)
+	if (softwarerouting_act == true && rx_prop != NULL )
 	{
 		IPACMDBG("Delete sw routing filtering rules\n");
 		IPACM_Iface::handle_software_routing_disable();
