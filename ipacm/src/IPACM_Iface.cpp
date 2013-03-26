@@ -226,6 +226,12 @@ int IPACM_Iface::handle_software_routing_disable(void)
 	ipa_ip_type ip;
 	uint32_t flt_hdl;
 
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+	
 	if (softwarerouting_act == false)
 	{
 		IPACMDBG("already delete AMPDU software_routing rule for (%s)iface ip-family %d\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
@@ -446,12 +452,6 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	struct ipa_flt_rule_add flt_rule_entry;
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
 
-	if (rx_prop == NULL)
-	{
-		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
-		return IPACM_SUCCESS;
-	}
-
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)
 	{
@@ -493,7 +493,12 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 
 		IPACMDBG(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
 	}
-
+	
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
 
 	/* construct ipa_ioc_add_flt_rule with default filter rules */
 	if (iptype == IPA_IP_v4)

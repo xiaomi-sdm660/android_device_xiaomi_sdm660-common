@@ -1160,14 +1160,14 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 	/* check software routing fl rule hdl */
-	if (softwarerouting_act == true)
+	if (softwarerouting_act == true && rx_prop != NULL)
 	{
 		handle_software_routing_disable();
 	}
 
 
 	/* delete default filter rules */
-	if (ip_type != IPA_IP_v6)
+	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
 		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl,
 																				IPA_IP_v4,
@@ -1191,7 +1191,7 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 
-	if (ip_type != IPA_IP_v4)
+	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
 	{
 		if (m_filtering.DeleteFilteringHdls(dft_v6fl_rule_hdl,
 																				IPA_IP_v6,
@@ -1204,7 +1204,7 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 	/* delete wan filter rule */
-	if (IPACM_Wan::isWanUP())
+	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
 	{
 		handle_wan_down();
 	}
