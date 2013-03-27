@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -67,6 +67,14 @@
 #define SUCCESS TRUE
 #define FAILURE FALSE
 
+#ifndef GPS_CONF_FILE
+#define GPS_CONF_FILE            "/etc/gps.conf"   //??? platform independent
+#endif
+
+#ifndef SAP_CONF_FILE
+#define SAP_CONF_FILE            "/etc/sap.conf"
+#endif
+
 static void loc_eng_deferred_action_thread(void* context);
 static void* loc_eng_create_msg_q();
 static void loc_eng_free_msg(void* msg);
@@ -74,9 +82,10 @@ static void loc_eng_free_msg(void* msg);
 pthread_mutex_t LocEngContext::lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t LocEngContext::cond = PTHREAD_COND_INITIALIZER;
 LocEngContext* LocEngContext::me = NULL;
-boolean gpsConfigAlreadyRead = false;
+boolean configAlreadyRead = false;
 
 loc_gps_cfg_s_type gps_conf;
+loc_sap_cfg_s_type sap_conf;
 
 /* Parameter spec table */
 static loc_param_s_type loc_parameter_table[] =
@@ -87,22 +96,22 @@ static loc_param_s_type loc_parameter_table[] =
   {"NMEA_PROVIDER",                  &gps_conf.NMEA_PROVIDER,                  NULL, 'n'},
   {"SUPL_VER",                       &gps_conf.SUPL_VER,                       NULL, 'n'},
   {"CAPABILITIES",                   &gps_conf.CAPABILITIES,                   NULL, 'n'},
-  {"GYRO_BIAS_RANDOM_WALK",          &gps_conf.GYRO_BIAS_RANDOM_WALK,          &gps_conf.GYRO_BIAS_RANDOM_WALK_VALID, 'f'},
-  {"ACCEL_RANDOM_WALK_SPECTRAL_DENSITY",     &gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,    &gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
-  {"ANGLE_RANDOM_WALK_SPECTRAL_DENSITY",     &gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,    &gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
-  {"RATE_RANDOM_WALK_SPECTRAL_DENSITY",      &gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY,     &gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
-  {"VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY",  &gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY, &gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
-  {"SENSOR_ACCEL_BATCHES_PER_SEC",   &gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC,   NULL, 'n'},
-  {"SENSOR_ACCEL_SAMPLES_PER_BATCH", &gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH, NULL, 'n'},
-  {"SENSOR_GYRO_BATCHES_PER_SEC",    &gps_conf.SENSOR_GYRO_BATCHES_PER_SEC,    NULL, 'n'},
-  {"SENSOR_GYRO_SAMPLES_PER_BATCH",  &gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,  NULL, 'n'},
-  {"SENSOR_ACCEL_BATCHES_PER_SEC_HIGH",   &gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,   NULL, 'n'},
-  {"SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH", &gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH, NULL, 'n'},
-  {"SENSOR_GYRO_BATCHES_PER_SEC_HIGH",    &gps_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,    NULL, 'n'},
-  {"SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH",  &gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,  NULL, 'n'},
-  {"SENSOR_CONTROL_MODE",            &gps_conf.SENSOR_CONTROL_MODE,            NULL, 'n'},
-  {"SENSOR_USAGE",                   &gps_conf.SENSOR_USAGE,                   NULL, 'n'},
-  {"SENSOR_ALGORITHM_CONFIG_MASK",   &gps_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'},
+  {"GYRO_BIAS_RANDOM_WALK",          &sap_conf.GYRO_BIAS_RANDOM_WALK,          &sap_conf.GYRO_BIAS_RANDOM_WALK_VALID, 'f'},
+  {"ACCEL_RANDOM_WALK_SPECTRAL_DENSITY",     &sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,    &sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
+  {"ANGLE_RANDOM_WALK_SPECTRAL_DENSITY",     &sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,    &sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
+  {"RATE_RANDOM_WALK_SPECTRAL_DENSITY",      &sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY,     &sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
+  {"VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY",  &sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY, &sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
+  {"SENSOR_ACCEL_BATCHES_PER_SEC",   &sap_conf.SENSOR_ACCEL_BATCHES_PER_SEC,   NULL, 'n'},
+  {"SENSOR_ACCEL_SAMPLES_PER_BATCH", &sap_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH, NULL, 'n'},
+  {"SENSOR_GYRO_BATCHES_PER_SEC",    &sap_conf.SENSOR_GYRO_BATCHES_PER_SEC,    NULL, 'n'},
+  {"SENSOR_GYRO_SAMPLES_PER_BATCH",  &sap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,  NULL, 'n'},
+  {"SENSOR_ACCEL_BATCHES_PER_SEC_HIGH",   &sap_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,   NULL, 'n'},
+  {"SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH", &sap_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH, NULL, 'n'},
+  {"SENSOR_GYRO_BATCHES_PER_SEC_HIGH",    &sap_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,    NULL, 'n'},
+  {"SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH",  &sap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,  NULL, 'n'},
+  {"SENSOR_CONTROL_MODE",            &sap_conf.SENSOR_CONTROL_MODE,            NULL, 'n'},
+  {"SENSOR_USAGE",                   &sap_conf.SENSOR_USAGE,                   NULL, 'n'},
+  {"SENSOR_ALGORITHM_CONFIG_MASK",   &sap_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'},
   {"QUIPC_ENABLED",                  &gps_conf.QUIPC_ENABLED,                  NULL, 'n'},
   {"LPP_PROFILE",                    &gps_conf.LPP_PROFILE,                    NULL, 'n'},
   {"A_GLONASS_POS_PROTOCOL_SELECT",  &gps_conf.A_GLONASS_POS_PROTOCOL_SELECT,  NULL, 'n'},
@@ -118,31 +127,31 @@ static void loc_default_parameters(void)
    gps_conf.SUPL_VER = 0x10000;
    gps_conf.CAPABILITIES = 0x7;
 
-   gps_conf.GYRO_BIAS_RANDOM_WALK = 0;
-   gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC = 2;
-   gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH = 5;
-   gps_conf.SENSOR_GYRO_BATCHES_PER_SEC = 2;
-   gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH = 5;
-   gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH = 4;
-   gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH = 25;
-   gps_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH = 4;
-   gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH = 25;
-   gps_conf.SENSOR_CONTROL_MODE = 0; /* AUTO */
-   gps_conf.SENSOR_USAGE = 0; /* Enabled */
-   gps_conf.SENSOR_ALGORITHM_CONFIG_MASK = 0; /* INS Disabled = FALSE*/
+   sap_conf.GYRO_BIAS_RANDOM_WALK = 0;
+   sap_conf.SENSOR_ACCEL_BATCHES_PER_SEC = 2;
+   sap_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH = 5;
+   sap_conf.SENSOR_GYRO_BATCHES_PER_SEC = 2;
+   sap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH = 5;
+   sap_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH = 4;
+   sap_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH = 25;
+   sap_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH = 4;
+   sap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH = 25;
+   sap_conf.SENSOR_CONTROL_MODE = 0; /* AUTO */
+   sap_conf.SENSOR_USAGE = 0; /* Enabled */
+   sap_conf.SENSOR_ALGORITHM_CONFIG_MASK = 0; /* INS Disabled = FALSE*/
 
    /* Values MUST be set by OEMs in configuration for sensor-assisted
       navigation to work. There are NO default values */
-   gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY = 0;
-   gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY = 0;
-   gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY = 0;
-   gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY = 0;
+   sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY = 0;
+   sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY = 0;
+   sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY = 0;
+   sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY = 0;
 
-   gps_conf.GYRO_BIAS_RANDOM_WALK_VALID = 0;
-   gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
-   gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
-   gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
-   gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
+   sap_conf.GYRO_BIAS_RANDOM_WALK_VALID = 0;
+   sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
+   sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
+   sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
+   sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
 
       /* LTE Positioning Profile configuration is disable by default*/
    gps_conf.LPP_PROFILE = 0;
@@ -371,7 +380,7 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
                   lpp_msg, loc_eng_free_msg);
 
         loc_eng_msg_sensor_control_config *sensor_control_config_msg(
-            new loc_eng_msg_sensor_control_config(&loc_eng_data, gps_conf.SENSOR_USAGE));
+            new loc_eng_msg_sensor_control_config(&loc_eng_data, sap_conf.SENSOR_USAGE));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                   sensor_control_config_msg, loc_eng_free_msg);
 
@@ -381,40 +390,40 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
                   a_glonass_protocol_msg, loc_eng_free_msg);
 
         /* Make sure at least one of the sensor property is specified by the user in the gps.conf file. */
-        if( gps_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
-            gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
-            gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
-            gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
-            gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID )
+        if( sap_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
+            sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
+            sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
+            sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
+            sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID )
         {
             loc_eng_msg_sensor_properties *sensor_properties_msg(
                 new loc_eng_msg_sensor_properties(&loc_eng_data,
-                                                   gps_conf.GYRO_BIAS_RANDOM_WALK_VALID,
-                                                   gps_conf.GYRO_BIAS_RANDOM_WALK,
-                                                   gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                                                   gps_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,
-                                                   gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                                                   gps_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,
-                                                   gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                                                   gps_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY,
-                                                   gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                                                   gps_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY));
+                                                   sap_conf.GYRO_BIAS_RANDOM_WALK_VALID,
+                                                   sap_conf.GYRO_BIAS_RANDOM_WALK,
+                                                   sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                                                   sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,
+                                                   sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                                                   sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,
+                                                   sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                                                   sap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY,
+                                                   sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                                                   sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY));
             msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                       sensor_properties_msg, loc_eng_free_msg);
         }
 
         loc_eng_msg_sensor_perf_control_config *sensor_perf_control_conf_msg(
             new loc_eng_msg_sensor_perf_control_config(&loc_eng_data,
-                                                       gps_conf.SENSOR_CONTROL_MODE,
-                                                       gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH,
-                                                       gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC,
-                                                       gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,
-                                                       gps_conf.SENSOR_GYRO_BATCHES_PER_SEC,
-                                                       gps_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH,
-                                                       gps_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,
-                                                       gps_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,
-                                                       gps_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,
-                                                       gps_conf.SENSOR_ALGORITHM_CONFIG_MASK));
+                                                       sap_conf.SENSOR_CONTROL_MODE,
+                                                       sap_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH,
+                                                       sap_conf.SENSOR_ACCEL_BATCHES_PER_SEC,
+                                                       sap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH,
+                                                       sap_conf.SENSOR_GYRO_BATCHES_PER_SEC,
+                                                       sap_conf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH,
+                                                       sap_conf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,
+                                                       sap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,
+                                                       sap_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,
+                                                       sap_conf.SENSOR_ALGORITHM_CONFIG_MASK));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                   sensor_perf_control_conf_msg, loc_eng_free_msg);
     }
@@ -2228,14 +2237,15 @@ SIDE EFFECTS
 int loc_eng_read_config(void)
 {
     ENTRY_LOG_CALLFLOW();
-    if(gpsConfigAlreadyRead == false)
+    if(configAlreadyRead == false)
     {
       // Initialize our defaults before reading of configuration file overwrites them.
       loc_default_parameters();
-      // Ee only want to parse the conf file once. This is a good place to ensure that.
+      // We only want to parse the conf file once. This is a good place to ensure that.
       // In fact one day the conf file should go into context.
       UTIL_READ_CONF(GPS_CONF_FILE, loc_parameter_table);
-      gpsConfigAlreadyRead = true;
+      UTIL_READ_CONF(SAP_CONF_FILE, loc_parameter_table);
+      configAlreadyRead = true;
     } else {
       LOC_LOGV("GPS Config file has already been read\n");
     }
