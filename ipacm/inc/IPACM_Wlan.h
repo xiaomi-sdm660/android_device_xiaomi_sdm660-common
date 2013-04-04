@@ -162,7 +162,7 @@ private:
 		     } /* end of for loop */
 
 		     /* clean the 4 Qos ipv4 RT rules for client:clt_indx */
-		     if(ip_type != IPA_IP_v6) /* for ipv4 */
+		     if(get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4==true) /* for ipv4 */
 		     {
 				get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4 = false;
 		     }
@@ -177,7 +177,7 @@ private:
 		            {
 		    	        for(num_v6 =0;num_v6 < get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6;num_v6++)	
 		    	        {	
- 		    	            IPACMDBG("Delete client index %d ipv6 Qos rules for %d-st ipv6 \n", clt_indx,num_v6);
+ 		    	            IPACMDBG("Delete client index %d ipv6 Qos rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
 		    	        	rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[num_v6];                        
 		    	        	if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
 			{
@@ -195,9 +195,9 @@ private:
 		    } /* end of for loop */
 		
 		    /* clean the 4 Qos ipv6 RT rules for client:clt_indx */
-		    if(ip_type != IPA_IP_v4) /* for ipv6 */
+		    if(get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6 != 0) /* for ipv6 */
 		    {
-		                 get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6=false;
+		                 get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6 = 0;
                     }
 		}
 		
