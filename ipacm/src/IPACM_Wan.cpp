@@ -1620,19 +1620,18 @@ int IPACM_Wan::handle_down_evt()
 
 	
 	/* delete the complete header for STA mode*/
-        if(header_set_v4 == true)
+        if((header_set_v4 == true) || (header_set_v6 == true))
         {
                 if (m_header.DeleteHeaderHdl(hdr_hdl_sta_v4) == false)
 		{
+		      IPACMERR("ErrorDeleting STA header for v4, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
-	}
 
-        if(header_set_v6 == true)
-        {
 		if (m_header.DeleteHeaderHdl(hdr_hdl_sta_v6) == false)
 		{
+		     IPACMERR("ErrorDeleting STA header for v6, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}

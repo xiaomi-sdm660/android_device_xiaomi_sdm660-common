@@ -719,10 +719,21 @@ static int ipa_nl_decode_nlmsg
 
 				evt_data.event = IPA_ADDR_ADD_EVENT;
 				data_addr->if_index = msg_ptr->nl_addr_info.metainfo.ifa_index;
-
+				if(AF_INET6 == msg_ptr->nl_addr_info.attr_info.prefix_addr.ss_family)
+				{
+				    IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv6 addr:0x%x:%x:%x:%x\n",
+								 data_addr->if_index,
+								 data_addr->ipv6_addr[0],
+								 data_addr->ipv6_addr[1],
+								 data_addr->ipv6_addr[2],
+								 data_addr->ipv6_addr[3]);				
+                }
+				else
+				{
 				IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
 								 data_addr->if_index,
 								 data_addr->ipv4_addr);
+				}
 				evt_data.evt_data = data_addr;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
 			}
