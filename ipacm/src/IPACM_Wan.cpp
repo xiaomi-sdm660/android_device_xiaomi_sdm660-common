@@ -1350,7 +1350,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			m_pFilteringTable->commit = 1;
 			m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
 			m_pFilteringTable->global = false;
-			m_pFilteringTable->ip = IPA_IP_v4;
+			m_pFilteringTable->ip = IPA_IP_v6;
 			m_pFilteringTable->num_rules = (uint8_t)1;
 
 			if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v6))
@@ -1458,6 +1458,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
+			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.hdl;
 
 			/* firewall disable, all traffic are allowed */
                         if(firewall_config.firewall_enable == true)
