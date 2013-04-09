@@ -64,7 +64,7 @@ private:
 
 	 void HandlePowerSave(void *data);
 	 void HandleResetPower(void *data);
-	 void HandleNeighIpAddrEvt(void *data);
+	 void HandleNeighIpAddrEvt(void *data, bool);
 
 public:
 	 char wan_ifname[IPA_IFACE_NAME_LEN];

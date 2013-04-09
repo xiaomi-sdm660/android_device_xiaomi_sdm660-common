@@ -52,6 +52,7 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_POWER_SAVE, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_RESET_POWER_SAVE, this);
 	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, this);
+	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, this);
 }
 
 void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
@@ -104,9 +105,17 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 	 case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
 		 {
 			 IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT event\n");
-			 HandleNeighIpAddrEvt(data);
+			 HandleNeighIpAddrEvt(data, false);
 		 }
 		 break;
+
+	 case IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT:
+		 {
+			 IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT event\n");
+			 HandleNeighIpAddrEvt(data, true);
+		 }
+		 break;
+
 
 	 case IPA_HANDLE_POWER_SAVE:
 		 IPACMDBG("Received IPA_HANDLE_POWER_SAVE event\n");
@@ -124,21 +133,24 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 	 }
 }
 
-void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param)
+void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 {
 	ipacm_event_data_all *data = (ipacm_event_data_all *)in_param;
 	int fd=0, len=0;
 	struct ifreq ifr;
-	ipacm_event_iface_up NonNatdata;
 
-	if(data->ipv4_addr == 0)
+	if(del == false)
 	{
-		IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT\n");
-		return;
+		if(data->ipv4_addr == 0 || data->iptype != IPA_IP_v4)
+		{
+			IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT EVENT\n");
+			return;
+		}
+
+		IPACMDBG("Received interface index %d with ip type:%d", data->if_index, data->iptype);
+		IPACM_ConntrackClient::iptodot("and received ipv4 address", data->ipv4_addr);
 	}
-
-	IPACMDBG("Received interface index %d\n", data->if_index);
-
+	
 	if(pConfig == NULL)
 	{
 		pConfig = IPACM_Config::GetInstance();
@@ -194,25 +206,30 @@ void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param)
 			/* copy the ipv4 address to filter out downlink connections
 			   ignore downlink after listening connection event from
 			   conntrack as it is not destinated to private ip address */
-			pNonNatIfaces[i].ipv4_addr = data->ipv4_addr;
 
 			IPACMDBG("Interface (%s) is non nat\n", ifr.ifr_name);
-			IPACMDBG("Ignoring connections of Interface (%s)\n", pNonNatIfaces[i].iface_name);
+			if(del == false)
+			{
+				pNonNatIfaces[i].ipv4_addr = data->ipv4_addr;
+				IPACMDBG("Ignore connections of Interface (%s)\n", pNonNatIfaces[i].iface_name);
+				IPACM_ConntrackClient::iptodot("and ipv4 address", pNonNatIfaces[i].ipv4_addr);
+			}
+			else
+			{
+				if(pNonNatIfaces[i].ipv4_addr == 0)
+				{
+					IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, redudancy\n");
+					return;
+				}
 
-			memset(&NonNatdata, 0, sizeof(NonNatdata));
-			memcpy(NonNatdata.ifname, 
-						 pNonNatIfaces[i].iface_name,
-						 sizeof(NonNatdata.ifname));
-			NonNatdata.ipv4_addr = pNonNatIfaces[i].ipv4_addr;
-			NonNatdata.addr_mask = pConfig->private_subnet_table[0].subnet_mask;
-
-			IPACM_ConntrackClient::UpdateUDPFilters(&NonNatdata);
-			IPACM_ConntrackClient::UpdateTCPFilters(&NonNatdata);
-			
+				/* Reset it to avoid redudancy */
+				pNonNatIfaces[i].ipv4_addr = 0;
+				IPACMDBG("Reseting ct filters of Interface (%s)\n", pNonNatIfaces[i].iface_name);
+			}
 			break;
 		}
 	}
-	
+
 }
 
 void IPACM_ConntrackListener::HandlePowerSave(void *in_param)
@@ -523,20 +540,12 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 /* Retrieve Protocol */
 	 rule.protocol = nfct_get_attr_u8(ct, ATTR_REPL_L4PROTO);
 
-
-	 IPACMDBG("Nat Entry with below information will be added\n");
-	 IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
-	 IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
-	 IPACM_ConntrackClient::iptodot("private ip or src ip", rule.private_ip);
-	 IPACMDBG("private port or src port: 0x%x, Decimal:%d\n", rule.private_port, rule.private_port);
-	 IPACMDBG("public port or reply dst port: 0x%x, Decimal:%d\n", rule.public_port, rule.public_port);
-	 IPACMDBG("Protocol: %d, destination nat flag: %d\n", rule.protocol, rule.dst_nat);
-
-	 if(IPS_DST_NAT & status)
+	 for(int cnt = 0; cnt < NonNatIfaceCnt; cnt++)
 	 {
-		 for(int cnt=0; cnt<NonNatIfaceCnt; cnt++)
+		 if(pNonNatIfaces[cnt].ipv4_addr != 0)
 		 {
-			 if(rule.private_ip == pNonNatIfaces[cnt].ipv4_addr)
+			 if(rule.private_ip == pNonNatIfaces[cnt].ipv4_addr ||
+					rule.target_ip == pNonNatIfaces[cnt].ipv4_addr)
 			 {
 				 IPACMDBG("Non Nat iface %s match, Ignoring above Nat entry\n",
 									pNonNatIfaces[cnt].iface_name);
@@ -544,6 +553,14 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 			 }
 		 }
 	 }
+	 
+	 IPACMDBG("Nat Entry with below information will be added\n");
+	 IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
+	 IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
+	 IPACM_ConntrackClient::iptodot("private ip or src ip", rule.private_ip);
+	 IPACMDBG("private port or src port: 0x%x, Decimal:%d\n", rule.private_port, rule.private_port);
+	 IPACMDBG("public port or reply dst port: 0x%x, Decimal:%d\n", rule.public_port, rule.public_port);
+	 IPACMDBG("Protocol: %d, destination nat flag: %d\n", rule.protocol, rule.dst_nat);
 
 	 if(IPPROTO_TCP == rule.protocol)
 	 {
