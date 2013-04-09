@@ -63,9 +63,6 @@ extern "C" {
 /** Position source is GNSS only */
 #define ULP_LOCATION_IS_FROM_GNSS   0x0002
 
-/* Hybrid support, the Android Framework will query to see if this capability is set before using the ulp functionalities in HAL */
-#define ULP_CAPABILITY                  0x0000020
-
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
 /** Represents recurrence of location */

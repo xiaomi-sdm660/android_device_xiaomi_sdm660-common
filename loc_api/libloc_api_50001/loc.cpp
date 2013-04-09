@@ -234,10 +234,8 @@ extern "C" const GpsInterface* get_gps_interface()
     targetEnumType target = TARGET_OTHER;
     loc_eng_read_config();
 
-    //We load up libulp module at this point itself if ULP configured to be On
-    if(gps_conf.CAPABILITIES & ULP_CAPABILITY) {
-       loc_eng_ulp_inf = loc_eng_get_ulp_inf();
-    }
+    //We load up libulp module at this point itself
+    loc_eng_ulp_inf = loc_eng_get_ulp_inf();
 
     target = get_target();
     LOC_LOGD("Target name check returned %s", loc_get_target_name(target));
@@ -686,10 +684,7 @@ const void* loc_get_extension(const char* name)
    }
    else if(strcmp(name, ULP_NETWORK_INTERFACE) == 0)
    {
-     //Return a valid value for ULP Network Interface only if ULP
-     //turned on in gps.conf
-     if(gps_conf.CAPABILITIES & ULP_CAPABILITY)
-         ret_val = &sUlpNetworkInterface;
+     ret_val = &sUlpNetworkInterface;
    }
 
    else
@@ -1077,10 +1072,6 @@ const ulpInterface * loc_eng_get_ulp_inf(void)
     get_ulp_interface* get_ulp_inf;
     const ulpInterface* loc_eng_ulpInf = NULL;
 
-    if (!(gps_conf.CAPABILITIES & ULP_CAPABILITY)) {
-       LOC_LOGD ("%s, ULP is not configured to be On in gps.conf\n", __func__);
-       goto exit;
-    }
     dlerror();    /* Clear any existing error */
 
     handle = dlopen ("libulp2.so", RTLD_NOW);

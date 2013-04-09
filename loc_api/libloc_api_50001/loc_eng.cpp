@@ -522,7 +522,7 @@ int loc_eng_start(loc_eng_data_s_type &loc_eng_data)
    ENTRY_LOG_CALLFLOW();
    INIT_CHECK(loc_eng_data.context, return -1);
 
-   if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+   if(loc_eng_data.ulp_initialized == true)
    {
        //Pass the start messgage to ULP if present & activated
        loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, ULP_MSG_START_FIX));
@@ -580,7 +580,7 @@ int loc_eng_stop(loc_eng_data_s_type &loc_eng_data)
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.context, return -1);
 
-    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+    if(loc_eng_data.ulp_initialized == true)
     {
         //Pass the start messgage to ULP if present & activated
         loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, ULP_MSG_STOP_FIX));
@@ -2014,7 +2014,7 @@ bool loc_eng_inject_raw_command(loc_eng_data_s_type &loc_eng_data,
     LOC_LOGD("loc_eng_send_extra_command: %s\n", command);
     ret_val = TRUE;
 
-    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+    if(loc_eng_data.ulp_initialized == true)
     {
         ulp_msg_inject_raw_command *msg(
             new ulp_msg_inject_raw_command(&loc_eng_data,command, length));
@@ -2053,7 +2053,7 @@ int loc_eng_update_criteria(loc_eng_data_s_type &loc_eng_data,
     INIT_CHECK(loc_eng_data.context, return -1);
     int ret_val;
 
-    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+    if(loc_eng_data.ulp_initialized == true)
     {
        LOC_LOGD("SJ:loc_eng_update_criteria: valid 0x%x action:%d, minTime:%ld, minDistance:%f, singleShot:%d, horizontalAccuracy:%d, powerRequirement:%d \n",
          criteria.valid_mask, criteria.action, criteria.min_interval, criteria.min_distance,  criteria.recurrence_type,  criteria.preferred_horizontal_accuracy,
@@ -2102,7 +2102,7 @@ int loc_eng_ulp_phone_context_settings_update(loc_eng_data_s_type &loc_eng_data,
              settings->is_wifi_setting_enabled, settings->is_agps_enabled,
              settings->is_enh_location_services_enabled );
 
-    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+    if(loc_eng_data.ulp_initialized == true)
     {
         ulp_msg_inject_phone_context_settings *msg
          (new ulp_msg_inject_phone_context_settings(&loc_eng_data, *settings));
@@ -2203,7 +2203,7 @@ int loc_eng_ulp_send_network_position(loc_eng_data_s_type &loc_eng_data,
 {
     ENTRY_LOG();
     int ret_val = 0;
-    if((loc_eng_data.ulp_initialized == true) && (gps_conf.CAPABILITIES & ULP_CAPABILITY))
+    if(loc_eng_data.ulp_initialized == true)
     {
      ulp_msg_inject_network_position *msg
          (new ulp_msg_inject_network_position(&loc_eng_data, *position_report));
