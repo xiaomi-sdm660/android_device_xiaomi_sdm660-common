@@ -203,6 +203,7 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 	CHK_TBL_HDL();
 
 #ifdef IPACM_DEBUG
+  IPACMDBG("Received below nat entry for deletion\n");
 	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
 	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
@@ -225,10 +226,23 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 					IPACMERR("%s() %d\n", __FUNCTION__, __LINE__);
 					return -1;
 				}
-			}
 
+				IPACMDBG("Deleted below Nat entry Successfully\n");
+			}
+			else
+			{
+				IPACMDBG("Deleted below Nat entry only from cache\n");
+			}
+			
 			memset(&cache[cnt], 0, sizeof(cache[cnt]));
 			curCnt--;
+			
+			IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
+			IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+			IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
+			IPACMDBG("protocolcol: %d\n", rule->protocol);
+			
+			break; 
 		}
 	}
 
@@ -250,6 +264,21 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 	{
 		IPACMERR("connection using ALG Port. Dont insert into nat table\n");
 		return -1;
+	}
+
+	if(rule->private_ip == 0 ||
+		 rule->target_ip == 0 ||
+		 rule->private_port == 0  ||
+		 rule->target_port == 0 ||
+		 rule->protocol == 0)
+	{
+		IPACMERR("Invalid Connection, ignoring it\n");
+		IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
+		IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+		IPACMDBG("Private Port:%d \t Target Port: %d\t", rule->private_port, rule->target_port);
+		IPACMDBG("Public Port:%d\n", rule->public_port);
+		IPACMDBG("protocol: %d\n", rule->protocol);
+		return 0;
 	}
 
 	if(!ChkForDup(rule))
@@ -279,7 +308,7 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 			nat_rule.private_port = rule->private_port;
 			nat_rule.public_port = rule->public_port;
 			nat_rule.protocol = rule->protocol;
-
+			
 			if(isPwrSaveIf(rule->private_ip) ||
 				 isPwrSaveIf(rule->target_ip))
 			{
@@ -293,8 +322,10 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 				if(ipa_nat_add_ipv4_rule(nat_table_hdl, &nat_rule, &cache[cnt].rule_hdl) < 0)
 				{
 					IPACMERR("unable to add the rule\n");
-					cache[cnt].enabled = true;
+					return -1;
 				}
+
+				cache[cnt].enabled = true;
 			}
 
 			cache[cnt].private_ip = rule->private_ip;
