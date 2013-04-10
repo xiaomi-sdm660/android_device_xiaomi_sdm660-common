@@ -31,6 +31,7 @@
 #define LOG_TAG "LocSvc_afw"
 
 #include <hardware/gps.h>
+#include <dlfcn.h>
 #include <loc_eng.h>
 #include <loc_log.h>
 #include <fcntl.h>
@@ -41,6 +42,8 @@ static gps_sv_status_callback gps_sv_cb = NULL;
 
 static void loc_cb(GpsLocation* location, void* locExt);
 static void sv_cb(GpsSvStatus* sv_status, void* svExt);
+
+static const GpsGeofencingInterface* get_geofence_interface(void);
 
 // Function declarations for sLocEngInterface
 static int  loc_init(GpsCallbacks* callbacks);
@@ -479,6 +482,40 @@ static int loc_update_criteria(UlpLocationCriteria criteria)
 }
 #endif
 
+const GpsGeofencingInterface* get_geofence_interface(void)
+{
+    ENTRY_LOG();
+    void *handle;
+    const char *error;
+    typedef const GpsGeofencingInterface* (*get_gps_geofence_interface_function) (void);
+    get_gps_geofence_interface_function get_gps_geofence_interface;
+    static const GpsGeofencingInterface* geofence_interface = NULL;
+
+    dlerror();    /* Clear any existing error */
+
+    handle = dlopen ("libgeofence.so", RTLD_NOW);
+
+    if (!handle)
+    {
+        if ((error = dlerror()) != NULL)  {
+            LOC_LOGE ("%s, dlopen for libgeofence.so failed, error = %s\n", __func__, error);
+           }
+        goto exit;
+    }
+    dlerror();    /* Clear any existing error */
+    get_gps_geofence_interface = (get_gps_geofence_interface_function)dlsym(handle, "gps_geofence_get_interface");
+    if ((error = dlerror()) != NULL)  {
+        LOC_LOGE ("%s, dlsym for ulpInterface failed, error = %s\n", __func__, error);
+        goto exit;
+     }
+
+    geofence_interface = get_gps_geofence_interface();
+
+exit:
+    EXIT_LOG(%d, geofence_interface == NULL);
+    return geofence_interface;
+}
+
 /*===========================================================================
 FUNCTION    loc_get_extension
 
@@ -518,6 +555,11 @@ static const void* loc_get_extension(const char* name)
    else if (strcmp(name, AGPS_RIL_INTERFACE) == 0)
    {
       ret_val = &sLocEngAGpsRilInterface;
+   }
+
+   else if (strcmp(name, GPS_GEOFENCING_INTERFACE) == 0)
+   {
+       ret_val = get_geofence_interface();
    }
 #ifdef QCOM_FEATURE_ULP
    else if (strcmp(name, ULP_RAW_CMD_INTERFACE) == 0)

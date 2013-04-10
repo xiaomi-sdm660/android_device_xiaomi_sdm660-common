@@ -107,7 +107,9 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     liblog \
     libloc_eng \
-    libgps.utils
+    libgps.utils \
+    libgeofence \
+    libdl
 
 LOCAL_SRC_FILES += \
     loc.cpp \
