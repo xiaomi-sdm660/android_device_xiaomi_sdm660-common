@@ -19,6 +19,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
+    liblog \
     libgps.utils \
     libdl
 
@@ -58,6 +59,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
+    liblog \
     libloc_adapter \
     libgps.utils \
     libdl
@@ -103,6 +105,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
+    liblog \
     libloc_eng \
     libgps.utils
 
