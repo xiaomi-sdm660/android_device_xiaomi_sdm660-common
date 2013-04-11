@@ -288,6 +288,9 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 			  	  }  
 			   }	   
 		   
+	               /* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
+	               IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+		   
 		       /* not see this ipv6 before for LAN client*/
 			   v6_addr[ipv6_set][0] = data->ipv6_addr[0];
 			   v6_addr[ipv6_set][1] = data->ipv6_addr[1];
@@ -442,6 +445,9 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
                     }
 	    }
 
+                /* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV4 RT-rule set */
+	        IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+
 		/* unicast RT rule add start */
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
 			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
@@ -586,6 +592,14 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 				}
 
 				num_uni_rt -= 1;
+				
+		                /* Del v4 RM dependency */
+	                        if(num_uni_rt == 0)
+				{
+				   /* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule*/ 
+				   IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+				}
+				
 				return IPACM_SUCCESS;
 			}
 		}
@@ -678,6 +692,13 @@ int IPACM_Lan::handle_route_del_evt_v6(ipacm_event_data_all *data)
 			  		    break;
 			  	    }  
 			    }	
+
+		            /* Del v6 RM dependency */
+	                    if(num_uni_rt == 0)
+				{
+				   /* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule */ 
+				   IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+				}				
 				return IPACM_SUCCESS;
 			}
 		}
@@ -1159,6 +1180,9 @@ int IPACM_Lan::handle_down_evt()
 		}
 	}
 
+        /* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule */ 
+        IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);				
+
 	/* check software routing fl rule hdl */
 	if (softwarerouting_act == true && rx_prop != NULL)
 	{
@@ -1208,6 +1232,9 @@ int IPACM_Lan::handle_down_evt()
 	{
 		handle_wan_down();
 	}
+
+	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);	
 
 fail:
 	if (tx_prop != NULL)

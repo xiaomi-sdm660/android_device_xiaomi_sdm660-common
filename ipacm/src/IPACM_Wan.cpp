@@ -316,14 +316,14 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG("Received IPA_ROUTE_DEL_EVENT\n");
-				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask))
+				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask) && (active_v4 == true))
 				{
 					IPACMDBG("get del default v4 route (dst:0.0.0.0)\n");
 					del_dft_firewall_rules(IPA_IP_v4);
 					handle_route_del_evt(data->iptype);
 					IPACM_Wan::wan_up = false;
 				}
-				else if ((data->iptype == IPA_IP_v6) && (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]))
+				else if ((data->iptype == IPA_IP_v6) && (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == true))
 				{
 					IPACMDBG("get del default v6 route (dst:00.00.00.00)\n");
 					del_dft_firewall_rules(IPA_IP_v6);
@@ -608,6 +608,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		config_dft_firewall_rules(IPA_IP_v6);
 	}
 
+	/* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
+    IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+	
 	return IPACM_SUCCESS;
 }
 
@@ -624,6 +627,9 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			((iptype == IPA_IP_v6) && (active_v6 == true)))
 	{
 
+		/* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete IPV4/V6 RT-rule */
+	    IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);	
+	
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
 		
@@ -693,7 +699,7 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 		}
 		else
 		{
-			IPACMDBG("setup active_v6= false \n");
+			IPACMDBG("setup wan_up_v6/active_v6= false \n");
 			active_v6 = false; 
 		}
 	}

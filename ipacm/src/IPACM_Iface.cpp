@@ -451,7 +451,9 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	int res = IPACM_SUCCESS, len = 0;
 	struct ipa_flt_rule_add flt_rule_entry;
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
-
+#if 1
+	char *dev2="wlan0";
+#endif
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)
 	{
@@ -493,6 +495,20 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 
 		IPACMDBG(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
 	}
+	
+        /* Add corresponding ipa_rm_resource_name of RX-endpoint before adding all IPV4V6 FT-rules */
+#if 1
+	if(strcmp(dev_name,dev2))
+	{
+	  IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);		
+	}
+	else
+	{
+	  /* dev_name ==  dev2 (wlan0)*/
+	  IPACMDBG(" work-around setup iface %s rx property\n", dev2);
+	  IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD);	
+	}
+#endif
 	
 	if (rx_prop == NULL)
 	{
