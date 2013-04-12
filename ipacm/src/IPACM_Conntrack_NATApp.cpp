@@ -608,5 +608,13 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 	return -1;
 }
 
+uint32_t NatApp::GetTableHdl(uint32_t in_ip_addr)
+{
+	if(in_ip_addr == pub_ip_addr)
+	{
+		return nat_table_hdl;
+	}
 
+	return -1;
+}
 

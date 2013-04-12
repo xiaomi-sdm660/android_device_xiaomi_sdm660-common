@@ -1,5 +1,6 @@
 AM_CFLAGS = -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
 AM_CFLAGS += -I./../inc
+AM_CFLAGS += -DDEBUG
 
 c_sources   = ipa_nat_drv.c \
               ipa_nat_drvi.c \
