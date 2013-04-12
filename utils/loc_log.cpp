@@ -106,7 +106,8 @@ loc_name_val_s_type target_name[] =
     NAME_VAL(TARGET_APQ8064_STANDALONE),
     NAME_VAL(TARGET_APQ8064_FUSION3),
     NAME_VAL(TARGET_MPQ8064),
-    NAME_VAL(TARGET_MSM8930)
+    NAME_VAL(TARGET_MSM8930),
+    NAME_VAL(TARGET_APQ8030_STANDALONE)
 };
 
 static int target_name_num = sizeof(target_name)/sizeof(loc_name_val_s_type);

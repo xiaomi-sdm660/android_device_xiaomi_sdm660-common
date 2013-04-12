@@ -39,7 +39,8 @@ typedef enum {
     TARGET_APQ8064_STANDALONE,
     TARGET_APQ8064_FUSION3,
     TARGET_MPQ8064,
-    TARGET_MSM8930
+    TARGET_MSM8930,
+    TARGET_APQ8030_STANDALONE
 }targetEnumType;
 
 targetEnumType get_target(void);
