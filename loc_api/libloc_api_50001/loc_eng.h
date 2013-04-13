@@ -153,6 +153,7 @@ typedef struct
     int    mpc_port_buf;
     bool   ulp_initialized;
     uint32_t min_interval_cached;
+    UlpRecurrenceCriteria recurrence_type_cached;
 } loc_eng_data_s_type;
 
 #include "ulp.h"
