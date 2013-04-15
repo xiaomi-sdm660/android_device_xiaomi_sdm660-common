@@ -141,6 +141,8 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
 				IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", lan->dev_name, lan->ipa_if_num);
 				registr(ipa_interface_index, lan);
+				/* solve the new_addr comes earlier issue */
+                                IPACM_Iface::iface_addr_query(if_index);
 			}
 			break;
 
@@ -162,6 +164,8 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, wl);
 				IPACMDBG("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
 				registr(ipa_interface_index, wl);
+				/* solve the new_addr comes earlier issue */
+	                        IPACM_Iface::iface_addr_query(if_index);
 			}
 			break;
 
@@ -179,6 +183,8 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
 				IPACMDBG("ipa_WAN (%s):ipa_index (%d) instance open/registr ok\n", w->dev_name, w->ipa_if_num);
 				registr(ipa_interface_index, w);
+				/* solve the new_addr comes earlier issue */
+                                IPACM_Iface::iface_addr_query(if_index);
 			}
 			break;
 

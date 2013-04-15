@@ -114,6 +114,9 @@ public:
     /* Query ipa_interface_index by given linux interface_index */
   	static int iface_ipa_index_query(int interface_index);
 	  
+    /* Query ipa_interface ipv4_addr by given linux interface_index */
+  	static void iface_addr_query(int interface_index);
+
     /*Query the IPA endpoint property */
     int query_iface_property(void);
 
