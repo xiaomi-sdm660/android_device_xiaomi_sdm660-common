@@ -50,11 +50,32 @@ typedef struct
 	uint32_t ipv4_addr;
 }NonNatIfaces;
 
+/* for IPACM rm dependency use*/
+typedef struct _ipa_rm_client
+{
+    ipa_rm_resource_name producer_rm1; 
+    ipa_rm_resource_name consumer_rm1;
+    ipa_rm_resource_name producer_rm2; 
+    ipa_rm_resource_name consumer_rm2;
+    bool producer_up;
+    bool consumer_up;
+	bool rm_set;
+}ipa_rm_client;
+
 /* iface */
 class IPACM_Config
 {
 public:
 
+	/* IPACM ipa_client map to rm_resource*/
+	ipa_rm_resource_name ipa_client_rm_map_tbl[IPA_CLIENT_MAX];
+
+	/* IPACM monitored rm_depency table */
+	ipa_rm_client ipa_rm_tbl[IPA_MAX_RM_ENTRY];
+
+	/* IPACM rm_depency a2 endpoint check*/
+	int ipa_rm_a2_check;
+	
 	/* Store interested interface and their configuration from XML file */
 	ipa_ifi_dev_name_t *iface_table;
 
@@ -90,6 +111,7 @@ public:
 	}
 
 	int GetAlgPorts(int nPorts, ipacm_alg *pAlgPorts);
+
 	inline int GetNatMaxEntries(void)
 	{
 		return ipa_nat_max_entries;
@@ -101,6 +123,11 @@ public:
 	}
 	int GetNonNatIfaces(int nPorts, NonNatIfaces *ifaces);
 
+	/* for IPACM resource manager dependency usage */
+	void AddRmDepend(ipa_rm_resource_name rm1);
+ 
+	void DelRmDepend(ipa_rm_resource_name rm1);
+	
 private:
 	static IPACM_Config *pInstance;
 	IPACM_Config(void);

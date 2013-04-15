@@ -267,12 +267,12 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				}
 				
 				
-				if (ip_type != IPA_IP_v6) /* for ipv4 */
+                                if(get_client_memptr(wlan_client, wlan_index)->ipv4_set == true) /* for ipv4 */
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v4);
 				}				
 
-				if (ip_type != IPA_IP_v4) /* for ipv6 */
+				if(get_client_memptr(wlan_client, wlan_index)->ipv6_set == true) /* for ipv6 */
 				{
 					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v6);
 				}
@@ -1788,6 +1788,11 @@ int IPACM_Wlan::handle_down_evt()
 	/* free the wlan clients cache */
 	IPACMDBG("Free wlan clients cache\n");
 
+	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
+#if 0
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);	
+#endif
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
 fail:
 	free(wlan_client);
 	if (tx_prop != NULL)
