@@ -67,7 +67,7 @@ typedef struct _nat_table_entry
                              int n =0; \
                              n = snprintf(log_buf, sizeof(log_buf), "%s:%d %s() %s", __FILE__,  __LINE__, __FUNCTION__, "Error:");\
                              snprintf((log_buf+n), (sizeof(log_buf)-n)-1, "Invalid table handle\n");\
-                             logmessage(log_buf);\
+                             logmessage(log_buf, LOG_ERR);\
 				  		             }
 
 class NatApp
@@ -103,6 +103,7 @@ public:
 	static NatApp* GetInstance();
 
 	int AddTable(uint32_t);
+	uint32_t GetTableHdl(uint32_t);
 	int DeleteTable(uint32_t);
 
 	int AddEntry(const nat_table_entry *);

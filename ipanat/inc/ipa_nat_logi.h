@@ -48,34 +48,33 @@ extern "C"
 
 #include <stdio.h>
 #include <string.h>
+#include <syslog.h>
 
 #define NAT_LOG_SIZE 200
 
 #define PERROR(fmt)   printf("%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
                       perror(fmt);
-
 #define IPADBG(fmt, ...) {\
                              int n =0; \
                              n = snprintf(nat_log_buf, sizeof(nat_log_buf), "%s:%d %s() ", __FILE__,  __LINE__, __FUNCTION__);\
                              snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             log_nat_message(nat_log_buf);\
+                             log_nat_message(nat_log_buf, LOG_DEBUG);\
 				  		             }
-
 
 #define IPAERR(fmt, ...) {\
                              int n =0; \
                              n = snprintf(nat_log_buf, sizeof(nat_log_buf), "%s:%d %s() %s", __FILE__,  __LINE__, __FUNCTION__, "Error:");\
                              snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             log_nat_message(nat_log_buf);\
+                             log_nat_message(nat_log_buf, LOG_ERR);\
 				  		             }
 
 #define IPADUMP(fmt, ...) {\
                              int n =0; \
                              snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-1), fmt, ##__VA_ARGS__);\
-                             log_nat_message(nat_log_buf);\
+                             log_nat_message(nat_log_buf, LOG_INFO);\
 				  		             }
 
-extern void log_nat_message(char *msg);
+extern void log_nat_message(char *msg, int log_level);
 extern char nat_log_buf[NAT_LOG_SIZE];
 
 #ifdef __cplusplus

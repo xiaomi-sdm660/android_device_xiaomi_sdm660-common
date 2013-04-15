@@ -48,6 +48,7 @@ extern "C"
 
 #include <stdio.h>
 #include <string.h>
+#include <syslog.h>
 
 #define LOG_SIZE 200
 
@@ -58,7 +59,7 @@ extern "C"
                              int n =0; \
                              n = snprintf(log_buf, sizeof(log_buf), "%s:%d %s() ", __FILE__,  __LINE__, __FUNCTION__);\
                              snprintf((log_buf+n), (sizeof(log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             logmessage(log_buf);\
+                             logmessage(log_buf, LOG_DEBUG);\
 				  		             }
 
 
@@ -66,10 +67,10 @@ extern "C"
                              int n =0; \
                              n = snprintf(log_buf, sizeof(log_buf), "%s:%d %s() %s", __FILE__,  __LINE__, __FUNCTION__, "Error:");\
                              snprintf((log_buf+n), (sizeof(log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             logmessage(log_buf);\
+                             logmessage(log_buf, LOG_ERR);\
 				  		             }
 
-extern void logmessage(char *msg);
+extern void logmessage(char *msg, int log_level);
 extern char log_buf[LOG_SIZE];
 
 #ifdef __cplusplus
