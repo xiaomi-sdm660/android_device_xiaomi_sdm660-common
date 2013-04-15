@@ -359,6 +359,74 @@ int IPACM_Iface::iface_ipa_index_query
 	return link;
 }
 
+/* Query ipa_interface ipv4_addr by given linux interface_index */
+void IPACM_Iface::iface_addr_query
+(
+	 int interface_index
+)
+{
+	int fd;
+	struct ifreq ifr;
+	ipacm_cmd_q_data evt_data;
+	ipacm_event_data_addr *data_addr;
+	struct in_addr iface_ipv4;
+	
+	/* Search/Configure linux interface-index and map it to IPA interface-index */
+	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	{
+		PERROR("get interface name socket create failed");
+		return ;
+	}
+
+	memset(&ifr, 0, sizeof(struct ifreq));
+
+	ifr.ifr_ifindex = interface_index;
+	IPACMDBG("Interface index %d\n", interface_index);
+
+	if (ioctl(fd, SIOCGIFNAME, &ifr) < 0)
+	{
+		PERROR("call_ioctl_on_dev: ioctl failed:");
+		close(fd);
+		return ;
+	}
+	//close(fd);	
+	
+	ifr.ifr_addr.sa_family = AF_INET;	
+	IPACMDBG("Interface index %d name: %s\n", interface_index,ifr.ifr_name);
+
+	if (ioctl(fd, SIOCGIFADDR, &ifr) < 0)
+	{
+		PERROR("call_ioctl_on_dev: ioctl failed:");
+		close(fd);
+		return ;
+	}
+	close(fd);
+
+	IPACMDBG("GOT interface (%s) address %s\n", ifr.ifr_name,inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+    iface_ipv4 = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
+	
+    data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
+    if(data_addr == NULL)
+    {
+    	IPACMERR("unable to allocate memory for event data_addr\n");
+    	return ;
+    }						
+    data_addr->iptype = IPA_IP_v4;
+	data_addr->if_index = interface_index;
+	data_addr->ipv4_addr = 	iface_ipv4.s_addr;
+    data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);	
+				   
+	IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
+			 data_addr->if_index,
+			 data_addr->ipv4_addr);
+
+	evt_data.event = IPA_ADDR_ADD_EVENT;
+    evt_data.evt_data = data_addr;
+	IPACM_EvtDispatcher::PostEvt(&evt_data);												
+
+	return ;
+}
+
 /*Query the IPA endpoint property */
 int IPACM_Iface::query_iface_property(void)
 {
