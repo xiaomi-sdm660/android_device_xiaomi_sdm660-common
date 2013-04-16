@@ -1686,18 +1686,18 @@ int IPACM_Wlan::handle_down_evt()
 
 	if (rx_prop != NULL)
 	{
-	    /* delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules*/
-	    for (i = 3; i < wlan_ampdu_flt_rule.num_rules; i++)
-	    {
-	    	IPACMDBG("Delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules\n");
-	    	if (m_filtering.DeleteFilteringHdls(&wlan_ampdu_flt_rule.hdl[i],
-	    																			wlan_ampdu_flt_rule.ip[i], 1) == false)
-	    	{
-	    		res = IPACM_FAILURE;
-	    		goto fail;
-	    	}
-	    }
-	    IPACMDBG("finished delte AMPDU filtering rules\n ");
+	/* delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules*/
+	for (i = 3; i < wlan_ampdu_flt_rule.num_rules; i++)
+	{
+		IPACMDBG("Delete WLAN IPA_CLIENT_A5_WLAN_AMPDU_PROD filter rules\n");
+		if (m_filtering.DeleteFilteringHdls(&wlan_ampdu_flt_rule.hdl[i],
+																				wlan_ampdu_flt_rule.ip[i], 1) == false)
+		{
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+	IPACMDBG("finished delte AMPDU filtering rules\n ");
     }
 
 	/* Delete default v4 RT rule */
@@ -1789,9 +1789,6 @@ int IPACM_Wlan::handle_down_evt()
 	IPACMDBG("Free wlan clients cache\n");
 
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
-#if 0
-	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);	
-#endif
 	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
 fail:
 	free(wlan_client);
