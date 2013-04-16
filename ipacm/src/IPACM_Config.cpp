@@ -303,6 +303,13 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
            {
               IPACMDBG("SETUP RM_table entry %d's bi-direction dependency  \n", i);
 	          /* add bi-directional dependency*/
+#ifdef WLAN_SW_RX
+              if(i==0 || i==2)
+              {
+			     IPACMDBG("Skip ADD entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
+		      }
+              else
+              {		  
 	          memset(&dep, 0, sizeof(dep));
 	          dep.resource_name = ipa_rm_tbl[i].producer_rm1;
 	          dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
@@ -312,7 +319,18 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
 	          {
 	          	 IPACMERR("Failed adding dependecny for RM_table entry %d's bi-direction dependency (error:%d) \n", i,retval);
 	          }
-	          
+	     }	
+#else
+	          memset(&dep, 0, sizeof(dep));
+	          dep.resource_name = ipa_rm_tbl[i].producer_rm1;
+	          dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
+	          retval = ioctl(m_fd, IPA_IOC_RM_ADD_DEPENDENCY, &dep);
+			  IPACMDBG("ADD entry %d's dependency between Pro: %d, Con: %d \n", i,dep.resource_name,dep.depends_on_name);
+	          if (retval)
+	          {
+	          	 IPACMERR("Failed adding dependecny for RM_table entry %d's bi-direction dependency (error:%d) \n", i,retval);
+	          }		   
+#endif	          
 	          memset(&dep, 0, sizeof(dep));
 	          dep.resource_name = ipa_rm_tbl[i].producer_rm2;
 	          dep.depends_on_name = ipa_rm_tbl[i].consumer_rm2;
@@ -339,6 +357,13 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
            {
               IPACMDBG("SETUP RM_table entry %d's bi-direction dependency  \n", i);
 	          /* add bi-directional dependency*/
+#ifdef WLAN_SW_RX
+              if(i==0 || i==2)
+              {
+			     IPACMDBG("Skip ADD entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
+		      }
+              else
+              {		  
 	          memset(&dep, 0, sizeof(dep));
 	          dep.resource_name = ipa_rm_tbl[i].producer_rm1;
 	          dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
@@ -348,7 +373,18 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
 	          {
 	          	 IPACMERR("Failed adding dependecny for RM_table entry %d's bi-direction dependency (error:%d)  \n", i,retval);
 	          }
-	          
+ 	      }	
+#else
+	          memset(&dep, 0, sizeof(dep));
+	          dep.resource_name = ipa_rm_tbl[i].producer_rm1;
+	          dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
+	          retval = ioctl(m_fd, IPA_IOC_RM_ADD_DEPENDENCY, &dep);
+			  IPACMDBG("ADD entry %d's dependency between Pro: %d, Con: %d \n", i,dep.resource_name,dep.depends_on_name);
+	          if (retval)
+	          {
+	          	 IPACMERR("Failed adding dependecny for RM_table entry %d's bi-direction dependency (error:%d)  \n", i,retval);
+	          }
+#endif	
 	          memset(&dep, 0, sizeof(dep));
 	          dep.resource_name = ipa_rm_tbl[i].producer_rm2;
 	          dep.depends_on_name = ipa_rm_tbl[i].consumer_rm2;
@@ -404,6 +440,13 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	        IPACMDBG("Matched RM_table entry: %d's producer_rm1 and dependency is up \n", i);
 	        ipa_rm_tbl[i].rm_set = false;            
 		    /* delete bi-directional dependency*/
+#ifdef WLAN_SW_RX
+            if(i==0 || i==2)
+            {
+ 		       IPACMDBG("Skip DEL entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
+		    }
+            else
+            {
 	        memset(&dep, 0, sizeof(dep));
 	        dep.resource_name = ipa_rm_tbl[i].producer_rm1;
 	        dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
@@ -413,7 +456,18 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	        {
 	        	  IPACMERR("Failed deleting dependecny for RM_table entry %d's bi-direction dependency (error:%d) \n", i,retval);
 	        }
-            
+             }
+#else
+	         memset(&dep, 0, sizeof(dep));
+	         dep.resource_name = ipa_rm_tbl[i].producer_rm1;
+	         dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
+	         retval = ioctl(m_fd, IPA_IOC_RM_DEL_DEPENDENCY, &dep);
+			 IPACMDBG("Delete entry %d's dependency between Pro: %d, Con: %d \n", i,dep.resource_name,dep.depends_on_name);
+	         if (retval)
+	         {
+	         	  IPACMERR("Failed deleting dependecny for RM_table entry %d's bi-direction dependency (error:%d) \n", i,retval);
+	         }
+#endif				
 	        memset(&dep, 0, sizeof(dep));
 	        dep.resource_name = ipa_rm_tbl[i].producer_rm2;
 	        dep.depends_on_name = ipa_rm_tbl[i].consumer_rm2;
@@ -443,6 +497,24 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	         IPACMDBG("Matched RM_table entry: %d's consumer_rm1 and dependency is up \n", i);
              ipa_rm_tbl[i].rm_set = false;
              /* delete bi-directional dependency*/
+#ifdef WLAN_SW_RX
+             if(i==0 || i==2)
+             {
+ 		       IPACMDBG("Skip DEL entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
+		     }
+             else
+             {
+	            memset(&dep, 0, sizeof(dep));
+	            dep.resource_name = ipa_rm_tbl[i].producer_rm1;
+	            dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
+	            retval = ioctl(m_fd, IPA_IOC_RM_DEL_DEPENDENCY, &dep);
+			    IPACMDBG("Delete entry %d's dependency between Pro: %d, Con: %d \n", i,dep.resource_name,dep.depends_on_name);
+	            if (retval)
+	            {
+	            	  IPACMERR("Failed deleting dependecny for RM_table entry %d's bi-direction dependency (error:%d) \n", i,retval);
+	            }
+	     }
+#else
 	         memset(&dep, 0, sizeof(dep));
 	         dep.resource_name = ipa_rm_tbl[i].producer_rm1;
 	         dep.depends_on_name = ipa_rm_tbl[i].consumer_rm1;
@@ -452,7 +524,7 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	         {
 	         	  IPACMERR("Failed deleting dependecny for RM_table entry %d's bi-direction dependency (error:%d) \n", i,retval);
 	         }
-             
+#endif	             
 	         memset(&dep, 0, sizeof(dep));
 	         dep.resource_name = ipa_rm_tbl[i].producer_rm2;
 	         dep.depends_on_name = ipa_rm_tbl[i].consumer_rm2;
