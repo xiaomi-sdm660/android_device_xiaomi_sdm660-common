@@ -59,22 +59,9 @@ void logmessage(char *msg, int log_level)
 #ifdef DEBUG
 	 static FILE *fp = NULL;
 	 static bool is_sys_log_open = false;
-	 static bool dft_syslog = false;
 	 int log_sys = 0, log_file = 0;
 
 	 printf("%s\n", msg);
-
-	 if(dft_syslog == false)
-	 {
-		 /* By Default sys log is open */
-		 fp = fopen(LOG_USE_SYS, "w+");
-		 if(fp != NULL)
-		 {
-			 dft_syslog = true;
-			 fclose(fp);
-			 fp = NULL;
-		 }
-	 }
 
 	 if(access(LOG_USE_SYS, F_OK) != -1 )
 	 {
