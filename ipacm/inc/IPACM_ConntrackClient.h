@@ -71,6 +71,7 @@ private:
 	 struct nfct_filter *udp_filter;
 
 	 static int IPA_Conntrack_Filters_Ignore_Local_Addrs(struct nfct_filter *filter);
+	 static int IPA_Conntrack_Filters_Ignore_Bridge_Addrs(struct nfct_filter *filter);
 	 IPACM_ConntrackClient();
 
 public:

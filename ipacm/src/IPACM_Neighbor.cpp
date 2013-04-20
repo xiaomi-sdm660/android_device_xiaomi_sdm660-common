@@ -75,6 +75,54 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 	
 	if (data->iptype == IPA_IP_v4)
 	{
+		if (data->ipv4_addr != 0) /* not 0.0.0.0 */
+		{
+		    IPACMDBG(" Got New_Neighbor event with ipv4 address \n");
+			/* check if iface is bridge0*/
+			if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
+			{
+				/* searh if seen this client or not*/
+				for (i = 0; i < num_neighbor_client_temp; i++)
+				{
+					if (memcmp(neighbor_client[i].mac_addr, data->mac_addr, sizeof(neighbor_client[i].mac_addr)) == 0)
+					{
+						data->if_index = neighbor_client[i].iface_index;
+						/* construct IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT command and insert to command-queue */
+						if (event == IPA_NEW_NEIGH_EVENT) 
+						    evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
+						else 
+						    evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
+						
+						memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
+						IPACM_EvtDispatcher::PostEvt(&evt_data);
+						
+						/* ask for replaced iface name*/
+						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
+						IPACMDBG("Posted event %d, with %s for ipv4\n",
+										 evt_data.event,
+										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+
+						break;
+
+					};
+				}
+			}
+			else
+			{
+				/* construct IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT command and insert to command-queue */
+				if (event == IPA_NEW_NEIGH_EVENT) 
+					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
+				else 
+					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
+
+				memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
+				IPACM_EvtDispatcher::PostEvt(&evt_data);
+				IPACMDBG("Posted event %d with %s for ipv4\n",
+								 evt_data.event,
+								 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+		    }
+		}	
+#if 0	
 		/* construct IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT command and insert to command-queue*/
 		if (event == IPA_NEW_NEIGH_EVENT) 
 			evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
@@ -85,9 +133,10 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
 		IPACMDBG("Posted event %d with %s\n", evt_data.event,
 						 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+#endif						 
 	}
 	else
-	{
+	{   //ipv6 starts
 	
 		if ((data->ipv6_addr[0]) || (data->ipv6_addr[1]) || (data->ipv6_addr[2]) || (data->ipv6_addr[3]))
 		{
@@ -136,7 +185,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 		}
 		else
 		{
-		    IPACMDBG(" Got New_Neighbor event with no ipv6 address \n");
+		    IPACMDBG(" Got New_Neighbor event with no ipv6/ipv4 address \n");
 			/*no ipv6 in data searh if seen this client or not*/
 			for (i = 0; i < num_neighbor_client_temp; i++)
 			{
@@ -184,7 +233,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 				
 			}
 		}
-	}
+	} //ipv6 ends
 
 	return;
 }

@@ -147,6 +147,58 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 	return NFCT_CB_STOLEN;
 }
 
+int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Bridge_Addrs
+(
+	 struct nfct_filter *filter
+)
+{
+	int fd;
+	
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if(fd < 0)
+	{
+		PERROR("unable to open socket");
+		return -1;
+	}
+	
+	int ret;
+	uint32_t ipv4_addr;
+	struct ifreq ifr;
+
+	/* retrieve bridge0 interface ipv4 address */
+	ifr.ifr_addr.sa_family = AF_INET;	
+	strncpy(ifr.ifr_name, "bridge0", strlen("bridge0"));
+	ret = ioctl(fd, SIOCGIFADDR, &ifr);
+	if (ret < 0)
+	{
+		PERROR("unable to retrieve bridge0 interface address");
+		close(fd);
+		return -1;
+	}
+	IPACMDBG("Interface (%s) address %s\n", ifr.ifr_name, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+  ipv4_addr = ntohl(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr);
+	close(fd);
+
+	/* ignore whatever is destined to or originates from broadcast ip address */
+	struct nfct_filter_ipv4 filter_ipv4;
+	
+	filter_ipv4.addr = ipv4_addr;
+	filter_ipv4.mask = 0xffffffff;
+
+	nfct_filter_set_logic(filter,
+												NFCT_FILTER_DST_IPV4,
+												NFCT_FILTER_LOGIC_NEGATIVE);
+
+	nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
+
+	nfct_filter_set_logic(filter,
+												NFCT_FILTER_SRC_IPV4,
+												NFCT_FILTER_LOGIC_NEGATIVE);
+
+	nfct_filter_add_attr(filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
+
+  return 0;
+}
 
 /* Function which sets up filters to ignore
 		 connections to and from local interfaces */
@@ -286,6 +338,8 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 	}
 
 	close(sck);
+	IPA_Conntrack_Filters_Ignore_Bridge_Addrs(filter);
+
 	return 0;
 } /* IPA_Conntrack_Filters_Ignore_Local_Addrs() */
 
