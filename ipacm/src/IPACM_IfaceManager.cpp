@@ -131,9 +131,9 @@ int IPACM_IfaceManager::create_iface_instance(int if_index)
 				IPACM_Lan *lan = new IPACM_Lan(ipa_interface_index);
 				IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_ROUTE_ADD_EVENT, lan);
-				IPACM_EvtDispatcher::registr(IPA_ROUTE_DEL_EVENT, lan);
+				//IPACM_EvtDispatcher::registr(IPA_ROUTE_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, lan);
-				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, lan);
+				//IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, lan);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, lan);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, lan);

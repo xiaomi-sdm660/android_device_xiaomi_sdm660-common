@@ -275,9 +275,9 @@ int IPACM_Config::GetNonNatIfaces(int nIfaces, NonNatIfaces *pIfaces)
 void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
 {
    int retval = 0;
-   int m_fd; /* File descriptor of the IPA device node /dev/ipa */
+   int m_fd = 0; /* File descriptor of the IPA device node /dev/ipa */
    struct ipa_ioc_rm_dependency dep;
-   char *DEVICE_NAME = "/dev/ipa";
+   const char *DEVICE_NAME = "/dev/ipa";
 
    m_fd = open(DEVICE_NAME, O_RDWR);
    if (0 == m_fd)
@@ -304,7 +304,7 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
               IPACMDBG("SETUP RM_table entry %d's bi-direction dependency  \n", i);
 	          /* add bi-directional dependency*/
 #ifdef WLAN_SW_RX
-              if(i==0 || i==2)
+              if(ipa_rm_tbl[i].producer_rm1 == IPA_RM_RESOURCE_HSIC_PROD)
               {
 			     IPACMDBG("Skip ADD entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
 		      }
@@ -358,7 +358,7 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
               IPACMDBG("SETUP RM_table entry %d's bi-direction dependency  \n", i);
 	          /* add bi-directional dependency*/
 #ifdef WLAN_SW_RX
-              if(i==0 || i==2)
+              if(ipa_rm_tbl[i].producer_rm1 == IPA_RM_RESOURCE_HSIC_PROD)
               {
 			     IPACMDBG("Skip ADD entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
 		      }
@@ -413,9 +413,9 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1)
 void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 {
    int retval = 0;
-   int m_fd; /* File descriptor of the IPA device node /dev/ipa */
+   int m_fd = 0; /* File descriptor of the IPA device node /dev/ipa */
    struct ipa_ioc_rm_dependency dep;
-   char *DEVICE_NAME = "/dev/ipa";
+   const char *DEVICE_NAME = "/dev/ipa";
 
    m_fd = open(DEVICE_NAME, O_RDWR);
    if (0 == m_fd)
@@ -441,7 +441,7 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	        ipa_rm_tbl[i].rm_set = false;            
 		    /* delete bi-directional dependency*/
 #ifdef WLAN_SW_RX
-            if(i==0 || i==2)
+            if(ipa_rm_tbl[i].producer_rm1 == IPA_RM_RESOURCE_HSIC_PROD)
             {
  		       IPACMDBG("Skip DEL entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
 		    }
@@ -498,7 +498,7 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
              ipa_rm_tbl[i].rm_set = false;
              /* delete bi-directional dependency*/
 #ifdef WLAN_SW_RX
-             if(i==0 || i==2)
+             if(ipa_rm_tbl[i].producer_rm1 == IPA_RM_RESOURCE_HSIC_PROD)
              {
  		       IPACMDBG("Skip DEL entry %d's dependency between WLAN-Pro: %d, Con: %d \n", i, ipa_rm_tbl[i].producer_rm1,ipa_rm_tbl[i].consumer_rm1);	  
 		     }

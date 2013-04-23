@@ -201,10 +201,23 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			ipacm_event_data_all *data = (ipacm_event_data_all *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
 			if ((ipa_interface_index == ipa_if_num) && (data->iptype == IPA_IP_v6))
-				{
+			{
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT for ipv6\n");
 				handle_route_add_evt_v6(data);
 			}
+			/* support ipv4 unicast route add coming from bridge0 via new_neighbor event */
+                        if ((ipa_interface_index == ipa_if_num) && (data->iptype == IPA_IP_v4))
+	                {
+				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT for ipv4 \n");
+                                ipacm_event_data_addr data2;
+				memset(&data2, 0, sizeof(data2));
+				data2.iptype = IPA_IP_v4;
+                                data2.ipv4_addr = data->ipv4_addr;
+                                data2.ipv4_addr_mask = 0xFFFFFFFF;
+				IPACMDBG("IPv4 address:0x%x, mask:0x%x\n",
+										 data2.iptype, data2.ipv4_addr_mask);
+                                handle_route_add_evt(&data2);
+			}	
 		}
 		break;
 
@@ -217,6 +230,20 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT for ipv6\n");
 				handle_route_del_evt_v6(data);
 			}
+			/* support ipv4 unicast route delete coming from bridge0 via new_neighbor event */
+                        if ((ipa_interface_index == ipa_if_num) && (data->iptype == IPA_IP_v4))
+		        {
+				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT for ipv4 \n");
+                                ipacm_event_data_addr data2;
+				memset(&data2, 0, sizeof(data2));
+				data2.iptype = IPA_IP_v4;
+                                data2.ipv4_addr = data->ipv4_addr;
+                                data2.ipv4_addr_mask = 0xFFFFFFFF;
+				IPACMDBG("IPv4 address:0x%x, mask:0x%x\n",
+										 data2.iptype, data2.ipv4_addr_mask);
+                                handle_route_del_evt(&data2);
+			}	
+			
 		}
 		break;
 
