@@ -615,6 +615,55 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 
 				}
+				
+				/* Add IPACM support for ECM plug-in/plug_out */                
+				/*--------------------------------------------------------------------------
+                                   Check if the interface is running.If its a RTM_NEWLINK and the interface
+                                    is running then it means that its a link up event
+                                ---------------------------------------------------------------------------*/
+                                if((msg_ptr->nl_link_info.metainfo.ifi_flags & IFF_RUNNING) &&
+                                   (msg_ptr->nl_link_info.metainfo.ifi_flags & IFF_LOWER_UP))
+                                {
+				
+					data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+					if(data_fid == NULL)
+					{
+						IPACMERR("unable to allocate memory for event data_fid\n");
+						return IPACM_FAILURE;
+					}
+					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
+				
+				        ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+				        IPACMDBG("Got a ECM new link event (Interface %s) \n", dev_name);
+                  
+                                        /*--------------------------------------------------------------------------
+                                           Post LAN iface (ECM) link up event
+                                         ---------------------------------------------------------------------------*/
+                                        evt_data.event = IPA_LINK_UP_EVENT;
+					evt_data.evt_data = data_fid;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+                                }				
+                                else if(!(msg_ptr->nl_link_info.metainfo.ifi_flags & IFF_LOWER_UP))
+                                {
+					data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+					if(data_fid == NULL)
+					{
+						IPACMERR("unable to allocate memory for event data_fid\n");
+						return IPACM_FAILURE;
+					}
+					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
+
+					ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+         		                IPACMDBG("Got a ECM new link event (Interface %s) \n", dev_name);
+
+                                        /*--------------------------------------------------------------------------
+                                           Post LAN iface (ECM) link down event
+                                         ---------------------------------------------------------------------------*/
+                                        evt_data.event = IPA_LINK_DOWN_EVENT;
+					evt_data.evt_data = data_fid;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);                     
+                                }							
+				
 			}
 			break;
 

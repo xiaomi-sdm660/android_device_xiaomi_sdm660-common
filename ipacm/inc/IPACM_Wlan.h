@@ -105,7 +105,8 @@ private:
 
 	inline ipa_wlan_client* get_client_memptr(ipa_wlan_client *param, int cnt)
 	{
-		return (param + (wlan_client_len * cnt));
+	    char *ret = ((char *)param) + (wlan_client_len * cnt);
+		return (ipa_wlan_client *)ret;
 	}
 
 	inline int get_wlan_client_index(uint8_t *mac_addr)

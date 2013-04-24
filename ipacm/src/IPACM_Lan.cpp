@@ -209,14 +209,17 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
                         if ((ipa_interface_index == ipa_if_num) && (data->iptype == IPA_IP_v4))
 	                {
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT for ipv4 \n");
-                                ipacm_event_data_addr data2;
-				memset(&data2, 0, sizeof(data2));
-				data2.iptype = IPA_IP_v4;
-                                data2.ipv4_addr = data->ipv4_addr;
-                                data2.ipv4_addr_mask = 0xFFFFFFFF;
+                                ipacm_event_data_addr *data2;				
+				data2 = (ipacm_event_data_addr *)
+							 malloc(sizeof(ipacm_event_data_addr));				
+				memset(data2, 0, sizeof(data2));
+				data2->iptype = IPA_IP_v4;
+                                data2->ipv4_addr = data->ipv4_addr;
+                                data2->ipv4_addr_mask = 0xFFFFFFFF;
 				IPACMDBG("IPv4 address:0x%x, mask:0x%x\n",
-										 data2.iptype, data2.ipv4_addr_mask);
-                                handle_route_add_evt(&data2);
+										 data2->iptype, data2->ipv4_addr_mask);
+                                handle_route_add_evt(data2);
+				free(data2);
 			}	
 		}
 		break;
@@ -234,16 +237,18 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
                         if ((ipa_interface_index == ipa_if_num) && (data->iptype == IPA_IP_v4))
 		        {
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT for ipv4 \n");
-                                ipacm_event_data_addr data2;
-				memset(&data2, 0, sizeof(data2));
-				data2.iptype = IPA_IP_v4;
-                                data2.ipv4_addr = data->ipv4_addr;
-                                data2.ipv4_addr_mask = 0xFFFFFFFF;
+                                ipacm_event_data_addr *data2;				
+				data2 = (ipacm_event_data_addr *)
+							 malloc(sizeof(ipacm_event_data_addr));				
+				memset(data2, 0, sizeof(data2));
+				data2->iptype = IPA_IP_v4;
+                                data2->ipv4_addr = data->ipv4_addr;
+                                data2->ipv4_addr_mask = 0xFFFFFFFF;
 				IPACMDBG("IPv4 address:0x%x, mask:0x%x\n",
-										 data2.iptype, data2.ipv4_addr_mask);
-                                handle_route_del_evt(&data2);
+										 data2->iptype, data2->ipv4_addr_mask);
+                                handle_route_add_evt(data2);
+				free(data2);
 			}	
-			
 		}
 		break;
 
@@ -389,9 +394,9 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 		       	   	free(rt_rule);
 		       	   	return IPACM_FAILURE;
 		       	   }				   
-		       	   IPACMDBG("rt rule hdl1=0x%x\n", rt_rule_entry->rt_rule_hdl);
 		       	   get_rt_ruleptr(route_rule, num_uni_rt)->rt_rule_hdl[tx_index]
 		       		  = rt_rule_entry->rt_rule_hdl;
+		       	   IPACMDBG("ipv6 rt rule hdl1 for LAN-table=0x%x, entry:0x%x\n", rt_rule_entry->rt_rule_hdl,get_rt_ruleptr(route_rule, num_uni_rt)->rt_rule_hdl[tx_index]);
 
 			       /* Construct same v6 rule for rt_tbl_wan_v6*/
 				   strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
@@ -401,23 +406,29 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 		       	   	free(rt_rule);
 		       	   	return IPACM_FAILURE;
 		       	   }				   
-		       	   IPACMDBG("rt rule hdl1=0x%x\n", rt_rule_entry->rt_rule_hdl);
-		       	   get_rt_ruleptr(route_rule, num_uni_rt+1)->rt_rule_hdl[tx_index]
+		       	   get_rt_ruleptr(route_rule, (num_uni_rt+1))->rt_rule_hdl[tx_index]
 		       		  = rt_rule_entry->rt_rule_hdl;
+		       	   IPACMDBG("ipv6 rt rule hdl1 for WAN-table=0x%x, entry:0x%x\n", rt_rule_entry->rt_rule_hdl,get_rt_ruleptr(route_rule, (num_uni_rt+1))->rt_rule_hdl[tx_index]);
 
 
 			   }
-		       memcpy(&get_rt_ruleptr(route_rule, num_uni_rt)->rule,
-		       			 &rt_rule_entry->rule.attrib,
-		       			 sizeof(get_rt_ruleptr(route_rule, num_uni_rt)->rule));
-		       get_rt_ruleptr(route_rule, num_uni_rt)->ip = data->iptype;
-		       memcpy(&get_rt_ruleptr(route_rule, num_uni_rt+1)->rule,
-		       			 &rt_rule_entry->rule.attrib,
-		       			 sizeof(get_rt_ruleptr(route_rule, num_uni_rt+1)->rule));
-		       get_rt_ruleptr(route_rule, num_uni_rt+1)->ip = data->iptype;
-		       num_uni_rt+=2;
+
+		           get_rt_ruleptr(route_rule, num_uni_rt)->ip = IPA_IP_v6;
+		           get_rt_ruleptr(route_rule, num_uni_rt)->v6_addr[0] = data->ipv6_addr[0];
+		           get_rt_ruleptr(route_rule, num_uni_rt)->v6_addr[1] = data->ipv6_addr[1];
+		           get_rt_ruleptr(route_rule, num_uni_rt)->v6_addr[2] = data->ipv6_addr[2];
+		           get_rt_ruleptr(route_rule, num_uni_rt)->v6_addr[3] = data->ipv6_addr[3];
+
+		           get_rt_ruleptr(route_rule, (num_uni_rt+1))->ip = IPA_IP_v6;
+		           get_rt_ruleptr(route_rule, (num_uni_rt+1))->v6_addr[0] = data->ipv6_addr[0];
+		           get_rt_ruleptr(route_rule, (num_uni_rt+1))->v6_addr[1] = data->ipv6_addr[1];
+		           get_rt_ruleptr(route_rule, (num_uni_rt+1))->v6_addr[2] = data->ipv6_addr[2];
+		           get_rt_ruleptr(route_rule, (num_uni_rt+1))->v6_addr[3] = data->ipv6_addr[3];
+
+		           num_uni_rt=num_uni_rt+2;
 		       free(rt_rule);
 			   ipv6_set++;
+			   IPACMDBG("Total unicast Rt rules: %d\n", num_uni_rt);
            }
 		   else
 		   {
@@ -459,12 +470,12 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 	if (num_uni_rt < IPA_MAX_NUM_UNICAST_ROUTE_RULES)
 	{
         /* check the unicast RT rule is set or not*/
-	    for (i = 0; i <= num_uni_rt; i++)
+	    for (i = 0; i < num_uni_rt; i++)
 	    {
 
 		   if ( data->iptype == IPA_IP_v4 && 
-		         (data->ipv4_addr == get_rt_ruleptr(route_rule, i)->rule.u.v4.dst_addr) &&
-					(data->ipv4_addr_mask == get_rt_ruleptr(route_rule, i)->rule.u.v4.dst_addr_mask) )
+		         (data->ipv4_addr == get_rt_ruleptr(route_rule, i)->v4_addr) &&
+					(data->ipv4_addr_mask == get_rt_ruleptr(route_rule, i)->v4_addr_mask) )
 		   {
  		       IPACMDBG("find previous-added ipv4 unicast RT entry as index: %d, ignore adding\n",i);		       
 		       return IPACM_SUCCESS;
@@ -545,11 +556,16 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 			get_rt_ruleptr(route_rule, num_uni_rt)->rt_rule_hdl[tx_index]
 				 = rt_rule_entry->rt_rule_hdl;
 		}
-		memcpy(&get_rt_ruleptr(route_rule, num_uni_rt)->rule,
-					 &rt_rule_entry->rule.attrib,
-					 sizeof(get_rt_ruleptr(route_rule, num_uni_rt)->rule));
 
-		get_rt_ruleptr(route_rule, num_uni_rt)->ip = data->iptype;
+		get_rt_ruleptr(route_rule, num_uni_rt)->ip = IPA_IP_v4;
+		get_rt_ruleptr(route_rule, num_uni_rt)->v4_addr = data->ipv4_addr;
+		get_rt_ruleptr(route_rule, num_uni_rt)->v4_addr_mask = data->ipv4_addr_mask;
+                IPACMDBG("index: %d, ip-family: %d, IPv4 address:0x%x, IPv4 address mask:0x%x   \n", 
+	    	            num_uni_rt, get_rt_ruleptr(route_rule, num_uni_rt)->ip,
+				  get_rt_ruleptr(route_rule, num_uni_rt)->v4_addr,
+			          get_rt_ruleptr(route_rule, num_uni_rt)->v4_addr_mask);				
+			
+
 		free(rt_rule);
 		num_uni_rt++;
 	}
@@ -581,13 +597,13 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 	}
 	
 	/* delete 1 unicast RT rule */
-	for (i = 0; i <= num_uni_rt; i++)
+	for (i = 0; i < num_uni_rt; i++)
 	{
 
 		if (data->iptype == IPA_IP_v4)
 		{
-			if ((data->ipv4_addr == get_rt_ruleptr(route_rule, i)->rule.u.v4.dst_addr) &&
-					(data->ipv4_addr_mask == get_rt_ruleptr(route_rule, i)->rule.u.v4.dst_addr_mask))
+			if ((data->ipv4_addr == get_rt_ruleptr(route_rule, i)->v4_addr) &&
+					(data->ipv4_addr_mask == get_rt_ruleptr(route_rule, i)->v4_addr_mask))
 			{
 				for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 				{
@@ -607,9 +623,14 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 				}
 
 				/* remove that delted route rule entry*/
-				for (; i <= num_uni_rt; i++)
+				for (; i < num_uni_rt; i++)
 				{
-					get_rt_ruleptr(route_rule, i)->rule = get_rt_ruleptr(route_rule, (i + 1))->rule;
+					get_rt_ruleptr(route_rule, i)->v4_addr = get_rt_ruleptr(route_rule, (i + 1))->v4_addr;
+					get_rt_ruleptr(route_rule, i)->v4_addr_mask = get_rt_ruleptr(route_rule, (i + 1))->v4_addr_mask;
+					get_rt_ruleptr(route_rule, i)->v6_addr[0] = get_rt_ruleptr(route_rule, (i + 1))->v6_addr[0];
+					get_rt_ruleptr(route_rule, i)->v6_addr[1] = get_rt_ruleptr(route_rule, (i + 1))->v6_addr[1];
+					get_rt_ruleptr(route_rule, i)->v6_addr[2] = get_rt_ruleptr(route_rule, (i + 1))->v6_addr[2];
+					get_rt_ruleptr(route_rule, i)->v6_addr[3] = get_rt_ruleptr(route_rule, (i + 1))->v6_addr[3];
 					get_rt_ruleptr(route_rule, i)->ip = get_rt_ruleptr(route_rule, (i + 1))->ip;
 
 					for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
@@ -620,8 +641,8 @@ int IPACM_Lan::handle_route_del_evt(ipacm_event_data_addr *data)
 
 				num_uni_rt -= 1;
 				
-		                /* Del v4 RM dependency */
-	                        if(num_uni_rt == 0)
+		        /* Del v4 RM dependency */
+	            if(num_uni_rt == 0)
 				{
 				   /* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule*/ 
 				   IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
@@ -649,14 +670,14 @@ int IPACM_Lan::handle_route_del_evt_v6(ipacm_event_data_all *data)
 	}
 
 	/* delete 1 unicast RT rule with 2 entries */
-	for (i = 0; i <= num_uni_rt; i++)
+	for (i = 0; i < num_uni_rt; i++)
 	{
 	    if (data->iptype == IPA_IP_v6)
 		{
-			if ((data->ipv6_addr[0] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[0]) &&
-					(data->ipv6_addr[1] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[1]) &&
-					(data->ipv6_addr[2] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[2]) &&
-					(data->ipv6_addr[3] == get_rt_ruleptr(route_rule, i)->rule.u.v6.dst_addr[3]))
+			if ((data->ipv6_addr[0] == get_rt_ruleptr(route_rule, i)->v6_addr[0]) &&
+					(data->ipv6_addr[1] == get_rt_ruleptr(route_rule, i)->v6_addr[1]) &&
+					(data->ipv6_addr[2] == get_rt_ruleptr(route_rule, i)->v6_addr[2]) &&
+					(data->ipv6_addr[3] == get_rt_ruleptr(route_rule, i)->v6_addr[3]))
 			{
 				for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 				{
@@ -685,14 +706,20 @@ int IPACM_Lan::handle_route_del_evt_v6(ipacm_event_data_all *data)
 				}
 
 				/* remove that delted route rule entry*/
-				for (; i <= num_uni_rt; i++)
+				for (; i < num_uni_rt; i++)
 				{
 					for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 					{
 						get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index] = get_rt_ruleptr(route_rule, (i + 2))->rt_rule_hdl[tx_index];
 					}
-					get_rt_ruleptr(route_rule, i)->rule = get_rt_ruleptr(route_rule, (i + 2))->rule;
+					get_rt_ruleptr(route_rule, i)->v4_addr = get_rt_ruleptr(route_rule, (i + 2))->v4_addr;
+					get_rt_ruleptr(route_rule, i)->v4_addr_mask = get_rt_ruleptr(route_rule, (i + 2))->v4_addr_mask;
+					get_rt_ruleptr(route_rule, i)->v6_addr[0] = get_rt_ruleptr(route_rule, (i + 2))->v6_addr[0];
+					get_rt_ruleptr(route_rule, i)->v6_addr[1] = get_rt_ruleptr(route_rule, (i + 2))->v6_addr[1];
+					get_rt_ruleptr(route_rule, i)->v6_addr[2] = get_rt_ruleptr(route_rule, (i + 2))->v6_addr[2];
+					get_rt_ruleptr(route_rule, i)->v6_addr[3] = get_rt_ruleptr(route_rule, (i + 2))->v6_addr[3];
 					get_rt_ruleptr(route_rule, i)->ip = get_rt_ruleptr(route_rule, (i + 2))->ip;
+
 				}
 
 				num_uni_rt -= 2;
@@ -1086,14 +1113,13 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
-#if 1
+                /* private traffic use default RT-table go A5 */
 		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4))
 		{
 			IPACMERR("LAN m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_default_v4);
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
-#endif
 		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
 		{
 			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
@@ -1102,11 +1128,11 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			flt_rule_entry.status = -1;
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
-#if 1
-                        /* ipv4 wlan workaround way to make ipv4 ping happens */
+
+                        /* Support priave subnet feature including guest-AP can't talk to primary AP etc */
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
 			IPACMDBG(" private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
-#endif			
+
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
 						 sizeof(flt_rule_entry.rule.attrib));
@@ -1163,6 +1189,8 @@ int IPACM_Lan::handle_down_evt()
 		}
 	}
 
+        IPACMDBG("Finished delete default iface ipv4 rules \n ");	
+	
 	/* delete default v6 routing rule */
 	if (ip_type != IPA_IP_v4)
 	{
@@ -1179,6 +1207,7 @@ int IPACM_Lan::handle_down_evt()
 		}
 	}
 
+        IPACMDBG("Finished delete default iface ipv6 rules \n ");	
 
 	/* free unicast routing rule	*/
 	if (tx_prop != NULL)
@@ -1187,18 +1216,20 @@ int IPACM_Lan::handle_down_evt()
 		{
 			for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 			{
-
 							if(get_rt_ruleptr(route_rule, i)->ip != tx_prop->tx[tx_index].ip)
 							{
-										IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule added\n", 
-												tx_index, tx_prop->tx[tx_index].ip,get_rt_ruleptr(route_rule, i)->ip);		
+	    	            	                            IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no unicast LAN RT-rule deleted, index: %d\n", 
+	    	            					    tx_index, tx_prop->tx[tx_index].ip,get_rt_ruleptr(route_rule, i)->ip,i);		
 										continue;
 							}		
+
+				IPACMDBG("Tx:%d, ip-type: %d - ip-type: %d Delete unicast LAN RT-rule deleted index: %d\n", 
+         					    tx_index, tx_prop->tx[tx_index].ip,get_rt_ruleptr(route_rule, i)->ip,i);		
 
 				if (m_routing.DeleteRoutingHdl(get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index],
 																			 get_rt_ruleptr(route_rule, i)->ip) == false)
 				{
-					IPACMERR("Routing rule deletion failed!\n");
+					IPACMERR("Routing rule 0x%x deletion failed!\n",get_rt_ruleptr(route_rule, i)->rt_rule_hdl[tx_index]);
 					res = IPACM_FAILURE;
 					goto fail;
 				}

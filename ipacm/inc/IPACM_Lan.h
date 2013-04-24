@@ -55,8 +55,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* store each lan-iface unicast routing rule and its handler*/
 struct ipa_lan_rt_rule
 {
-	enum ipa_ip_type ip;
-	ipa_rule_attrib rule;
+	ipa_ip_type ip;
+	uint32_t v4_addr;
+	uint32_t v4_addr_mask;
+	uint32_t v6_addr[4];
 	uint32_t rt_rule_hdl[0];
 };
 
@@ -106,7 +108,8 @@ private:
 
 	inline ipa_lan_rt_rule* get_rt_ruleptr(ipa_lan_rt_rule *param, int cnt)
 	{
-		return (param + (rt_rule_len * cnt));
+	    char *ret = ((char *)param) + (rt_rule_len * cnt);
+	    return (ipa_lan_rt_rule *)ret;
 	}
 
 	/* handle unicast routing rule add event for ipv4 */

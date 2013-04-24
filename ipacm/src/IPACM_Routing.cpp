@@ -188,8 +188,8 @@ bool IPACM_Routing::DeleteRoutingHdl(uint32_t rt_rule_hdl, ipa_ip_type ip)
 
 	if (rt_rule_hdl == 0)
 	{
-		IPACMERR("Invalid route handle passed. Ignoring it\n");
-		return false;
+		IPACMERR(" No route handle passed. Ignoring it\n");
+		return res;
 	}
 
 	len = (sizeof(struct ipa_ioc_del_rt_rule)) + (NUM_RULES * sizeof(struct ipa_rt_rule_del));
