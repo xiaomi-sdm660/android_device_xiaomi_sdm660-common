@@ -55,23 +55,15 @@ IPACM_Neighbor::IPACM_Neighbor()
 
 void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 {
-	ipacm_event_data_all *data = NULL;
+	ipacm_event_data_all *data = (ipacm_event_data_all *)param;
+	ipacm_event_data_all *data_all = NULL;
 	int i, ipa_interface_index;
 	ipacm_cmd_q_data evt_data;
 	int num_neighbor_client_temp = num_neighbor_client;
 
 	IPACMDBG("Recieved event %d\n", event);
 
-	data = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
-	memcpy(data, param, sizeof(ipacm_event_data_all));
-
 	ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
-	
-#if 0
-	/*No that interface existed in ipa list*/
-	if(ipa_interface_index== INVALID_IFACE)
-	  return;
-#endif
 	
 	if (data->iptype == IPA_IP_v4)
 	{
@@ -93,11 +85,13 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 						else 
 						    evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 						
-						memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
+	                                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+	                                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
+						evt_data.evt_data = (void *)data_all;
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 						
 						/* ask for replaced iface name*/
-						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
+						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data_all->if_index);
 						IPACMDBG("Posted event %d, with %s for ipv4\n",
 										 evt_data.event,
 										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
@@ -115,25 +109,15 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 				else 
 					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 
-				memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
+	                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+	                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
+	                        evt_data.evt_data = (void *)data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
 				IPACMDBG("Posted event %d with %s for ipv4\n",
 								 evt_data.event,
 								 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 		    }
 		}	
-#if 0	
-		/* construct IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT command and insert to command-queue*/
-		if (event == IPA_NEW_NEIGH_EVENT) 
-			evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
-		else 
-			evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
-
-		memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
-		IPACM_EvtDispatcher::PostEvt(&evt_data);
-		IPACMDBG("Posted event %d with %s\n", evt_data.event,
-						 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
-#endif						 
 	}
 	else
 	{   //ipv6 starts
@@ -154,11 +138,13 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 						if (event == IPA_NEW_NEIGH_EVENT) evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT;
 						else evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 						
-						memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
+	                                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+	                                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
+						evt_data.evt_data = (void *)data_all;
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 						
 						/* ask for replaced iface name*/
-						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
+						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data_all->if_index);
 						IPACMDBG("Posted event %d, with %s for ipv6\n",
 										 evt_data.event,
 										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
@@ -176,7 +162,9 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 				else 
 					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 
-				memcpy(&evt_data.evt_data, &data, sizeof(evt_data.evt_data));
+	                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+	                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
+			        evt_data.evt_data = (void *)data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
 				IPACMDBG("Posted event %d with %s for ipv6\n",
 								 evt_data.event,
@@ -237,4 +225,3 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 
 	return;
 }
-
