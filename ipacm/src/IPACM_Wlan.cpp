@@ -707,6 +707,20 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 	                rt_rule->num_rules = (uint8_t)NUM;
 		        rt_rule->ip = iptype;
 
+
+		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+  	        {
+
+		        if(iptype != tx_prop->tx[tx_index].ip)
+		        {
+		   	        IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n", 
+		   	  				    tx_index, tx_prop->tx[tx_index].ip,iptype);		
+		   	        continue;
+		        }	   
+			
+  	   	        rt_rule_entry = &rt_rule->rules[0];
+			rt_rule_entry->at_rear = 0;
+
 			if (iptype == IPA_IP_v4)
 			{
 		                IPACMDBG("client index(%d):ipv4 address: 0x%x\n", wlan_index, 
@@ -718,38 +732,13 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 				strncpy(rt_rule->rt_tbl_name,
 								IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name,
 								sizeof(rt_rule->rt_tbl_name));
-			}
-			else
-			{
-                                IPACMDBG("client(%d): v6 header handle:(0x%x)\n",
-		  				 wlan_index,
-		  				 get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6);
 	   
-		  /* v6 LAN_RT_TBL */
-				strncpy(rt_rule->rt_tbl_name,
-								IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
-								sizeof(rt_rule->rt_tbl_name));
-			}
 
-		   for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
-  	           {
-		        if(iptype != tx_prop->tx[tx_index].ip)
-		        {
-		   	        IPACMDBG("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n", 
-		   	  				    tx_index, tx_prop->tx[tx_index].ip,iptype);		
-		   	        continue;
-		        }	   
-	              
-  	   	        rt_rule_entry = &rt_rule->rules[0];
-			rt_rule_entry->at_rear = 0;
-			rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-			memcpy(&rt_rule_entry->rule.attrib,
+			        rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+			        memcpy(&rt_rule_entry->rule.attrib,
 						 &tx_prop->tx[tx_index].attrib,
 						 sizeof(rt_rule_entry->rule.attrib));
-			rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-
-			if (iptype == IPA_IP_v4)
-			{
+			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		   	        rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(wlan_client, wlan_index)->v4_addr;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
@@ -773,7 +762,20 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 		   
 		            for(v6_num = get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6;v6_num < get_client_memptr(wlan_client, wlan_index)->ipv6_set;v6_num++)
 			    {
-		   	        rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6;
+                                IPACMDBG("client(%d): v6 header handle:(0x%x)\n",
+		  	    			 wlan_index,
+		  	    			 get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6);
+	            
+		                /* v6 LAN_RT_TBL */
+			    	strncpy(rt_rule->rt_tbl_name,
+			    					IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
+			    					sizeof(rt_rule->rt_tbl_name));
+					
+		                /* Support QCMAP LAN traffic feature, send to A5 */
+				rt_rule_entry->rule.dst = IPA_CLIENT_A5_LAN_WAN_CONS;
+			        memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
+		   	        rt_rule_entry->rule.hdr_hdl = 0;
+			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
 		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
 		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
@@ -798,6 +800,22 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
   	                        strncpy(rt_rule->rt_tbl_name,
   	                 					IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
   	                 					sizeof(rt_rule->rt_tbl_name));
+   	                
+                                /* Downlink traffic from Wan iface, directly through IPA */
+				rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+			        memcpy(&rt_rule_entry->rule.attrib,
+						 &tx_prop->tx[tx_index].attrib,
+						 sizeof(rt_rule_entry->rule.attrib));
+		   	        rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6;
+			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
+		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
+		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
+		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][3];
+				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
    	                
 		               if (false == m_routing.AddRoutingRule(rt_rule))
 		               {
@@ -1576,7 +1594,7 @@ int IPACM_Wlan::handle_private_subnet(ipa_ip_type iptype)
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
-#if 1
+
                 /* Make LAN-traffic always go A5, use default IPA-RT table */
 		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4))
 		{
@@ -1584,7 +1602,6 @@ int IPACM_Wlan::handle_private_subnet(ipa_ip_type iptype)
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
-#endif
 
 		for (i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
 		{
@@ -1593,12 +1610,11 @@ int IPACM_Wlan::handle_private_subnet(ipa_ip_type iptype)
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
-			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
-#if 1
-                        /* ipv4 word-around way make ping happens*/
+
+                        /* Support priave subnet feature including guest-AP can't talk to primary AP etc */
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
 			IPACMDBG(" private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
-#endif			
+	
 			memcpy(&flt_rule_entry.rule.attrib,
 						 &rx_prop->rx[0].attrib,
 						 sizeof(flt_rule_entry.rule.attrib));
