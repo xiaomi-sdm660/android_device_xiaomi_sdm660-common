@@ -86,6 +86,11 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 						    evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 						
 	                                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+				                if (data_all == NULL)
+				                {
+				        	    IPACMERR("Unable to allocate memory\n");
+				        	    return;
+				                }
 	                                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
 						evt_data.evt_data = (void *)data_all;
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -110,6 +115,11 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 
 	                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+				if (data_all == NULL)
+				{
+					IPACMERR("Unable to allocate memory\n");
+					return;
+				}
 	                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
 	                        evt_data.evt_data = (void *)data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -139,6 +149,11 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 						else evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 						
 	                                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+				                if (data_all == NULL)
+				                {
+				        	     IPACMERR("Unable to allocate memory\n");
+				        	     return;
+				                }
 	                                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
 						evt_data.evt_data = (void *)data_all;
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -163,6 +178,11 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 					evt_data.event = IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT;
 
 	                        data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
+				if (data_all == NULL)
+				{
+					IPACMERR("Unable to allocate memory\n");
+					return;
+				}
 	                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
 			        evt_data.evt_data = (void *)data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);

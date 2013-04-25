@@ -212,6 +212,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
                                 ipacm_event_data_addr *data2;				
 				data2 = (ipacm_event_data_addr *)
 							 malloc(sizeof(ipacm_event_data_addr));				
+				if (data2 == NULL)
+				{
+							IPACMERR("Unable to allocate memory\n");
+							return;
+				}
 				memset(data2, 0, sizeof(data2));
 				data2->iptype = IPA_IP_v4;
                                 data2->ipv4_addr = data->ipv4_addr;
@@ -240,6 +245,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
                                 ipacm_event_data_addr *data2;				
 				data2 = (ipacm_event_data_addr *)
 							 malloc(sizeof(ipacm_event_data_addr));				
+				if (data2 == NULL)
+				{
+							IPACMERR("Unable to allocate memory\n");
+							return;
+				}
 				memset(data2, 0, sizeof(data2));
 				data2->iptype = IPA_IP_v4;
                                 data2->ipv4_addr = data->ipv4_addr;
@@ -358,26 +368,10 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 
 		           strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
 				   
-		       	   if (tx_prop->tx[tx_index].hdr_name)
-		       	   {
-		       	   	memset(&sRetHeader, 0, sizeof(sRetHeader));
-		       	   	strncpy(sRetHeader.name,
-		       	   					tx_prop->tx[tx_index].hdr_name,
-		       	   					sizeof(tx_prop->tx[tx_index].hdr_name));
-                   
-		       	   	if (false == m_header.GetHeaderHandle(&sRetHeader))
-		       	   	{
-		       	   		IPACMERR(" ioctl failed\n");
-		       	   	    free(rt_rule);
-		       	   	    return IPACM_FAILURE;
-		       	   	}
-                   
-		       	   	rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
-		       	   }
-		       	   rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-		       	   memcpy(&rt_rule_entry->rule.attrib,
-		       	   			 &tx_prop->tx[tx_index].attrib,
-		       	   			 sizeof(rt_rule_entry->rule.attrib));
+		           /* Support QCMAP LAN traffic feature, send to A5 */
+                           rt_rule_entry->rule.dst = IPA_CLIENT_A5_LAN_WAN_CONS;
+				   memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
+				   rt_rule_entry->rule.hdr_hdl = 0;
 		       	   rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = data->ipv6_addr[0];
 		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = data->ipv6_addr[1];
@@ -398,8 +392,40 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 		       		  = rt_rule_entry->rt_rule_hdl;
 		       	   IPACMDBG("ipv6 rt rule hdl1 for LAN-table=0x%x, entry:0x%x\n", rt_rule_entry->rt_rule_hdl,get_rt_ruleptr(route_rule, num_uni_rt)->rt_rule_hdl[tx_index]);
 
-			       /* Construct same v6 rule for rt_tbl_wan_v6*/
-				   strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
+			       /* Construct same v6 rule for rt_tbl_wan_v6              */
+		       	   if (tx_prop->tx[tx_index].hdr_name)
+		       	   {
+		       	   	memset(&sRetHeader, 0, sizeof(sRetHeader));
+		       	   	strncpy(sRetHeader.name,
+		       	   					tx_prop->tx[tx_index].hdr_name,
+		       	   					sizeof(tx_prop->tx[tx_index].hdr_name));
+                   
+		       	   	if (false == m_header.GetHeaderHandle(&sRetHeader))
+		       	   	{
+		       	   		IPACMERR(" ioctl failed\n");
+		       	   	    free(rt_rule);
+		       	   	    return IPACM_FAILURE;
+		       	   	}
+                   
+		       	   	rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
+		       	   }
+
+		           /* Downlink traffic from Wan iface, directly through IPA */
+		       	   rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+		       	   memcpy(&rt_rule_entry->rule.attrib,
+		       	   			 &tx_prop->tx[tx_index].attrib,
+		       	   			 sizeof(rt_rule_entry->rule.attrib));
+		       	   rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = data->ipv6_addr[0];
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = data->ipv6_addr[1];
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = data->ipv6_addr[2];
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = data->ipv6_addr[3];
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+		       	   rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+		       	   
+		           strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
 		       	   if (false == m_routing.AddRoutingRule(rt_rule))
 		       	   {
 		       	   	IPACMERR("Routing rule addition failed!\n");
@@ -1113,13 +1139,15 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
-                /* private traffic use default RT-table go A5 */
+
+		/* Make LAN-traffic always go A5, use default IPA-RT table */
 		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4))
 		{
 			IPACMERR("LAN m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4=0x%p) Failed.\n", &IPACM_Iface::ipacmcfg->rt_tbl_default_v4);
 			free(m_pFilteringTable);
 			return IPACM_FAILURE;
 		}
+		
 		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
 		{
 			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
@@ -1127,7 +1155,6 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
-			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 
                         /* Support priave subnet feature including guest-AP can't talk to primary AP etc */
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
