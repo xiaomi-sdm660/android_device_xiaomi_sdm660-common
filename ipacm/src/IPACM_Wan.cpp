@@ -807,6 +807,7 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 	else
 	{
 	        hdr_hdl_sta_v4 = pHeaderDescriptor->hdr[0].hdr_hdl;
+		header_set_v4 = true;
 	        IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
 	}
 
@@ -890,6 +891,7 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 	                 }
 	                 else
 	                 {
+			   header_set_v6 = true;
 	                   hdr_hdl_sta_v6 = pHeaderDescriptor->hdr[0].hdr_hdl;
 	                   IPACMDBG("add full header name: %s (%x)\n", pHeaderDescriptor->hdr[0].name, pHeaderDescriptor->hdr[0].hdr_hdl);
 	                 }
@@ -910,16 +912,14 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
                      
                      
     /* see if default routes are setup before constructing full header */
-        if( (header_partial_default_wan_v4== true) && (header_set_v4 == false))
+    if(header_partial_default_wan_v4 == true)
 	{ 
 	   handle_route_add_evt(IPA_IP_v4);	
-           header_set_v4 = true;
 	}
     
-        if( (header_partial_default_wan_v6== true) && (header_set_v6 == false))
+    if(header_partial_default_wan_v6 == true)
 	{ 
 	   handle_route_add_evt(IPA_IP_v6);	
-           header_set_v6 = true;
 	}
 	
 fail:
