@@ -83,6 +83,7 @@ pthread_mutex_t LocEngContext::lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t LocEngContext::cond = PTHREAD_COND_INITIALIZER;
 LocEngContext* LocEngContext::me = NULL;
 boolean configAlreadyRead = false;
+unsigned int agpsStatus = 0;
 
 loc_gps_cfg_s_type gps_conf;
 loc_sap_cfg_s_type sap_conf;
@@ -430,7 +431,7 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
         //Send data disable to modem. This will be set to enable when
         //an UPDATE_NETWORK_STATE event is received from Android
         loc_eng_msg_set_data_enable *msg(new loc_eng_msg_set_data_enable(&loc_eng_data, NULL,
-                                                                         0, 0));
+                                                                         0, (agpsStatus ? 1:0)));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                   msg, loc_eng_free_msg);
     }
@@ -1242,6 +1243,14 @@ void loc_eng_agps_ril_update_network_availability(loc_eng_data_s_type &loc_eng_d
                                                   int available, const char* apn)
 {
     ENTRY_LOG_CALLFLOW();
+
+    //This is to store the status of data availability over the network.
+    //If GPS is not enabled, the INIT_CHECK will fail and the modem will
+    //not be updated with the network's availability. Since the data status
+    //can change before GPS is enabled the, storing the status will enable
+    //us to inform the modem after GPS is enabled
+    agpsStatus = available;
+
     INIT_CHECK(loc_eng_data.context, return);
     if (apn != NULL)
     {
