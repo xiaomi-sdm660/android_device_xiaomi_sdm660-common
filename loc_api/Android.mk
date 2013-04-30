@@ -22,6 +22,7 @@ ifeq ($(BOARD_USES_QCOM_HARDWARE), true)
 QMI_BOARD_PLATFORM_LIST := msm8960
 QMI_BOARD_PLATFORM_LIST += msm8974
 QMI_BOARD_PLATFORM_LIST += msm8226
+QMI_BOARD_PLATFORM_LIST += msm8610
 endif
 
 ifeq ($(call is-board-platform-in-list,$(QMI_BOARD_PLATFORM_LIST)),true)
