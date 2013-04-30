@@ -576,7 +576,10 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	}
 	else
 	{
-	  IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);		
+	  if(rx_prop != NULL)
+	  {
+	      IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);		
+	  }
 	}
 #else
   	IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);

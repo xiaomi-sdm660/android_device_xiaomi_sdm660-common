@@ -1299,6 +1299,7 @@ int IPACM_Lan::handle_down_evt()
 		}
 	}
 
+        IPACMDBG("Finished delete default iface ipv4 filtering rules \n ");
 
 	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
 	{
@@ -1312,6 +1313,8 @@ int IPACM_Lan::handle_down_evt()
 		}
 	}
 
+        IPACMDBG("Finished delete default iface ipv6 filtering rules \n ");
+	
 	/* delete wan filter rule */
 	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
 	{

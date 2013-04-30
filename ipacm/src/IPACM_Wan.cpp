@@ -398,6 +398,12 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	/* copy header from tx-property, see if partial or not */
 	/* assume all tx-property uses the same header name for v4 or v6*/
 
+	if(tx_prop == NULL)
+	{
+	  IPACMDBG("No tx properties, ignore default route setting\n");
+	  return IPACM_SUCCESS;
+	}
+	
         for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
 	{
 		   if(tx_prop->tx[cnt].ip==iptype)
@@ -623,6 +629,12 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 
 	IPACMDBG("got handle_route_del_evt with ip-family:%d \n", iptype);
 
+	if(tx_prop == NULL)
+	{
+	  IPACMDBG("No tx properties, ignore delete default route setting\n");
+	  return IPACM_SUCCESS;
+	}		
+	
 	if (((iptype == IPA_IP_v4) && (active_v4 == true)) ||
 			((iptype == IPA_IP_v6) && (active_v6 == true)))
 	{
