@@ -331,7 +331,7 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 			   }	   
 		   
 	               /* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
-	               IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+	               IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 		   
 		       /* not see this ipv6 before for LAN client*/
 			   v6_addr[ipv6_set][0] = data->ipv6_addr[0];
@@ -510,7 +510,7 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 	    }
 
                 /* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV4 RT-rule set */
-	        IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+	    IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 
 		/* unicast RT rule add start */
 		rt_rule = (struct ipa_ioc_add_rt_rule *)

@@ -57,9 +57,10 @@ typedef struct _ipa_rm_client
     ipa_rm_resource_name consumer_rm1;
     ipa_rm_resource_name producer_rm2; 
     ipa_rm_resource_name consumer_rm2;
-    bool producer_up;
-    bool consumer_up;
-	bool rm_set;
+    bool producer1_up;            /* only monitor producer_rm1, not monitor producer_rm2 */
+    bool consumer1_up;            /* only monitor consumer_rm1, not monitor consumer_rm2 */
+    bool rm_set;                  /* once producer1_up and consumer1_up, will add bi-directional dependency */
+    bool rx_bypass_ipa;          /* support WLAN may not register RX-property, should not add dependency */    
 }ipa_rm_client;
 
 /* iface */
@@ -124,7 +125,7 @@ public:
 	int GetNonNatIfaces(int nPorts, NonNatIfaces *ifaces);
 
 	/* for IPACM resource manager dependency usage */
-	void AddRmDepend(ipa_rm_resource_name rm1);
+	void AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa);
  
 	void DelRmDepend(ipa_rm_resource_name rm1);
 	

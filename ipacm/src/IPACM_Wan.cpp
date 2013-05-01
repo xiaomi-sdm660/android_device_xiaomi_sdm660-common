@@ -615,7 +615,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	}
 
 	/* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
-        IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+        IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 	
 	return IPACM_SUCCESS;
 }
@@ -964,18 +964,6 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 		if (IPACM_SUCCESS == IPACM_read_firewall_xml(firewall_config.firewall_config_file, &firewall_config))
 		{
 			IPACMDBG("QCMAP Firewall XML read OK \n");
-		}
-		else
-		{
-			IPACMERR("QCMAP Firewall XML read failed, no that file, use default configuration \n");
-		}
-	}
-	else
-	{
-		IPACMERR("No firewall xml mentioned \n");
-		return IPACM_FAILURE;
-	}
-
 	/* find the number of v4/v6 firewall rules */
 	for (i = 0; i < firewall_config.num_extd_firewall_entries; i++)
 	{
@@ -988,8 +976,18 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			rule_v6++;
 		}
 	}
-
 	IPACMDBG("firewall rule v4:%d v6:%d total:%d\n", rule_v4, rule_v6, firewall_config.num_extd_firewall_entries);
+		}
+		else
+		{
+			IPACMERR("QCMAP Firewall XML read failed, no that file, use default configuration \n");
+		}
+	}
+	else
+	{
+		IPACMERR("No firewall xml mentioned \n");
+		return IPACM_FAILURE;
+	}
 
 	/* construct ipa_ioc_add_flt_rule with N firewall rules */
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
