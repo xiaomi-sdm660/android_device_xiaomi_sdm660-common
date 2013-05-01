@@ -164,13 +164,14 @@ bool IPACM_Filtering::DeleteFilteringHdls
 	 uint32_t *flt_rule_hdls,
 	 ipa_ip_type ip,
 	 uint8_t num_rules
-	 )
+)
 {
 	struct ipa_ioc_del_flt_rule *flt_rule;
 	bool res = true;
 	int len = 0, cnt = 0;
+        const uint8_t UNIT_RULES = 1;
 
-	len = (sizeof(struct ipa_ioc_del_flt_rule)) + (num_rules * sizeof(struct ipa_flt_rule_del));
+	len = (sizeof(struct ipa_ioc_del_flt_rule)) + (UNIT_RULES * sizeof(struct ipa_flt_rule_del));
 	flt_rule = (struct ipa_ioc_del_flt_rule *)malloc(len);
 	if (flt_rule == NULL)
 	{
@@ -178,41 +179,43 @@ bool IPACM_Filtering::DeleteFilteringHdls
 		return false;
 	}
 
-	memset(flt_rule, 0, len);
-	flt_rule->commit = 1;
-	flt_rule->num_hdls = num_rules;
-	flt_rule->ip = ip;
-
-	for (cnt = 0; cnt < flt_rule->num_hdls; cnt++)
+	for (cnt = 0; cnt < num_rules; cnt++)
 	{
+	    memset(flt_rule, 0, len);
+	    flt_rule->commit = 1;
+	    flt_rule->num_hdls = UNIT_RULES;
+	    flt_rule->ip = ip;
 
-		if (flt_rule_hdls[cnt] == 0)
-		{
-			IPACMERR("invalid filter handle passed, ignoring it: %d\n", cnt)
-			res = false;
-			goto fail;
-		}
+	    if (flt_rule_hdls[cnt] == 0)
+	    {
+		   IPACMERR("invalid filter handle passed, ignoring it: %d\n", cnt)
+	    }
+            else
+	    {
 
-		flt_rule->hdl[cnt].status = -1;
-		flt_rule->hdl[cnt].hdl = flt_rule_hdls[cnt];
-		IPACMDBG("Deleting filter hdl:(0x%x) with ip type: %d\n", flt_rule_hdls[cnt], ip);
-	}
+		   flt_rule->hdl[0].status = -1;
+		   flt_rule->hdl[0].hdl = flt_rule_hdls[cnt];
+		   IPACMDBG("Deleting filter hdl:(0x%x) with ip type: %d\n", flt_rule_hdls[cnt], ip);
 
-	if (DeleteFilteringRule(flt_rule) == false)
-	{
-		PERROR("Filter rule deletion failed!\n");
-		res = false;
-		goto fail;
-	}
+	           if (DeleteFilteringRule(flt_rule) == false)
+	           {
+		        PERROR("Filter rule deletion failed!\n");
+		        res = false;
+		        goto fail;
+	           }
+		   else
+	           {
 
-	for (cnt = 0; cnt < flt_rule->num_hdls; cnt++)
-	{
-		if (flt_rule->hdl[cnt].status != 0)
-		{
-			IPACMERR("Filter rule hdl 0x%x deletion failed with error:%d\n",
-							 flt_rule->hdl[cnt].hdl, flt_rule->hdl[cnt].status);
-			res = false;
-		}
+		        if (flt_rule->hdl[0].status != 0)
+		        {
+			     IPACMERR("Filter rule hdl 0x%x deletion failed with error:%d\n",
+		        					 flt_rule->hdl[0].hdl, flt_rule->hdl[0].status);
+			     res = false;
+			     goto fail;
+		        }
+		   
+		   }	   
+	    }
 	}
 
 fail:

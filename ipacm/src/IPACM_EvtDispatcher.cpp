@@ -109,7 +109,7 @@ int IPACM_EvtDispatcher::PostEvt
 void IPACM_EvtDispatcher::ProcessEvt(ipacm_cmd_q_data *data)
 {
 
-	cmd_evts *tmp = head;
+	cmd_evts *tmp = head, tmp1;
 
 	if(head == NULL)
 	{
@@ -118,12 +118,13 @@ void IPACM_EvtDispatcher::ProcessEvt(ipacm_cmd_q_data *data)
 
 	while(tmp != NULL)
 	{
-		if(data->event == tmp->event)
+	        memcpy(&tmp1, tmp, sizeof(tmp1));
+		if(data->event == tmp1.event)
 		{
-			tmp->obj->event_callback(data->event, data->evt_data);
+			tmp1.obj->event_callback(data->event, data->evt_data);
 			IPACMDBG(" Find matched registered events\n");
 		}
-		tmp = tmp->next;
+	        tmp = tmp1.next;
 	}
 
 	IPACMDBG(" Finished process events\n");
