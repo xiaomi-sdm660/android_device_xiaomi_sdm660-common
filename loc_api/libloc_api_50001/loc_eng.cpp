@@ -426,6 +426,13 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
                                                        sap_conf.SENSOR_ALGORITHM_CONFIG_MASK));
         msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
                   sensor_perf_control_conf_msg, loc_eng_free_msg);
+
+        //Send data disable to modem. This will be set to enable when
+        //an UPDATE_NETWORK_STATE event is received from Android
+        loc_eng_msg_set_data_enable *msg(new loc_eng_msg_set_data_enable(&loc_eng_data, NULL,
+                                                                         0, 0));
+        msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
+                  msg, loc_eng_free_msg);
     }
 
     EXIT_LOG(%d, ret_val);
@@ -1797,7 +1804,8 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_set_data_enable *unaMsg = (loc_eng_msg_set_data_enable*)msg;
             loc_eng_data_p->client_handle->enableData(unaMsg->enable);
-            loc_eng_data_p->client_handle->setAPN(unaMsg->apn, unaMsg->length);
+            if(unaMsg->apn != NULL)
+                loc_eng_data_p->client_handle->setAPN(unaMsg->apn, unaMsg->length);
         }
         break;
 
