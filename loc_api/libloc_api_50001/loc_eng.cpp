@@ -1600,7 +1600,8 @@ static void loc_eng_deferred_action_thread(void* arg)
                                ((LOCATION_HAS_SOURCE_INFO & rpMsg->location.gpsLocation.flags) &&
                                 ULP_LOCATION_IS_FROM_HYBRID == rpMsg->location.position_source) ||
                                ((LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask) ||
-                                (LOC_POS_TECH_MASK_SENSORS & rpMsg->technology_mask)))) ||
+                                (LOC_POS_TECH_MASK_SENSORS & rpMsg->technology_mask)   ||
+                                (LOC_POS_TECH_MASK_HYBRID & rpMsg->technology_mask)))) ||
                              (LOC_SESS_INTERMEDIATE == loc_eng_data_p->intermediateFix &&
                               !((rpMsg->location.gpsLocation.flags & GPS_LOCATION_HAS_ACCURACY) &&
                                 (gps_conf.ACCURACY_THRES != 0) &&
