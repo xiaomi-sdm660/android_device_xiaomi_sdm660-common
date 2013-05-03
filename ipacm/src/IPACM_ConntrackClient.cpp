@@ -45,7 +45,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern IPACM_EvtDispatcher cm_dis;
 
-IPACM_ConntrackClient *IPACM_ConntrackClient::pInstance = NULL;
+IPACM_ConntrackClient *IPACM_ConntrackClient::pInstance = IPACM_ConntrackClient::GetInstance();
 IPACM_ConntrackListener *ct = new IPACM_ConntrackListener();
 
 /* ================================
