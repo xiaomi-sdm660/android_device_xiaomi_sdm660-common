@@ -519,11 +519,11 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	int res = IPACM_SUCCESS, len = 0;
 	struct ipa_flt_rule_add flt_rule_entry;
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
-#ifdef WLAN_SW_RX
-    /* Adding this hack because WLAN may not registered for Rx-endpoint, other ifaces will always have*/
+        /* Adding this hack because WLAN may not registered for Rx-endpoint, other ifaces will always have*/
 	char *dev_wlan0="wlan0";
 	char *dev_wlan1="wlan1";
-#endif
+	char *dev_ecm0="ecm0";
+
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)
 	{
@@ -567,23 +567,26 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	}
 
     /* ADD corresponding ipa_rm_resource_name of RX-endpoint before adding all IPV4V6 FT-rules */
-#ifdef WLAN_SW_RX
-	if(strcmp(dev_name,dev_wlan0) == 0 || strcmp(dev_name,dev_wlan1) == 0)
+	if(rx_prop != NULL)
 	{
-	  /* dev_name ==  dev2 (wlan0)*/
-	  IPACMDBG(" work-around setup iface %s rx property\n", dev_wlan0);
-	  IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD);	
+	    IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe],false);
+		IPACMDBG(" add producer dependency from %s with registered rx-prop\n", dev_name);
 	}
 	else
 	{
-	  if(rx_prop != NULL)
+	     /* only wlan may take software-path, not register Rx-property*/
+	        if(strcmp(dev_name,dev_wlan0) == 0 || strcmp(dev_name,dev_wlan1) == 0)
 	  {
-	      IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);		
+	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD,true);	
+		    IPACMDBG(" add producer dependency from %s without registered rx-prop \n", dev_name);
+	     }
+		 
+	     if(strcmp(dev_name,dev_ecm0) == 0)
+	     {
+	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_USB_PROD,true);	
+		    IPACMDBG(" add producer dependency from %s without registered rx-prop \n", dev_name);
 	  }
 	}
-#else
-  	IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
-#endif
 	
 	if (rx_prop == NULL)
 	{
