@@ -35,6 +35,7 @@
 #include <loc_eng_log.h>
 #include <log_util.h>
 #include <loc_eng_msg.h>
+#include "platform_lib_includes.h"
 
 #define MAX_APN_LEN 100
 #define MAX_URL_LEN 256

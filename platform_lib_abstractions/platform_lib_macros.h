@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation, nor the names of its
+ *     * Neither the name of The Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -24,37 +24,34 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef ULP_H
-#define ULP_H
+#ifndef __PLATFORM_LIB_MACROS_H__
+#define __PLATFORM_LIB_MACROS_H__
 
-#ifdef __cplusplus
-extern "C"
-{
+#ifdef USE_GLIB
+
+#define strlcat g_strlcat
+#define strlcpy g_strlcpy
+
+#define ALOGE(format, x...) printf("E/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
+#define ALOGW(format, x...) printf("W/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
+#define ALOGI(format, x...) printf("I/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
+#define ALOGD(format, x...) printf("D/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
+#define ALOGV(format, x...) printf("V/%s (%d): " format "\n", LOG_TAG, getpid(), ##x)
+
+#define GETTID_PLATFORM_LIB_ABSTRACTION (syscall(SYS_gettid))
+
+#define LOC_EXT_CREATE_THREAD_CB_PLATFORM_LIB_ABSTRACTION createPthread
+#define ELAPSED_MILLIS_SINCE_BOOT_PLATFORM_LIB_ABSTRACTION (elapsedMillisSinceBoot())
+
+
+#else
+
+#define GETTID_PLATFORM_LIB_ABSTRACTION (gettid())
+#define LOC_EXT_CREATE_THREAD_CB_PLATFORM_LIB_ABSTRACTION android::AndroidRuntime::createJavaThread
+#define ELAPSED_MILLIS_SINCE_BOOT_PLATFORM_LIB_ABSTRACTION  (android::elapsedRealtime())
+
 #endif
 
-#include <hardware/gps.h>
-
-struct loc_eng_data_s;
-
-/** Represents the standard ulp module interface. */
-typedef struct {
-    /** set to sizeof(ulpInterface) */
-    size_t   size;
-
-    /**
-     * Starts the libulp module. 0: success
-     */
-    int   (*init)(struct loc_eng_data_s &loc_eng_data);
-
-}ulpInterface;
-
-typedef const ulpInterface* (get_ulp_interface) (void);
-
-#ifdef __cplusplus
-}
 #endif
-#endif /* ULP_H */
-

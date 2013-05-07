@@ -37,13 +37,17 @@
 #include <stdbool.h>
 
 #include <hardware/gps.h>
+
+#ifndef USE_GLIB
 #include <utils/SystemClock.h>
+#endif /* USE_GLIB */
 #include "LocApiV02Adapter.h"
 #include "loc_api_v02_client.h"
 #include "loc_api_v02_log.h"
 #include "loc_api_sync_req.h"
 #include "LocApiAdapter.h"
 #include "loc_util_log.h"
+#include "platform_lib_includes.h"
 
 /* Default session id ; TBD needs incrementing for each */
 #define LOC_API_V02_DEF_SESSION_ID (1)
@@ -419,7 +423,7 @@ enum loc_api_adapter_err LocApiV02Adapter ::
 
   inject_time_msg.timeUtc = time;
 
-  inject_time_msg.timeUtc += (int64_t)(android::elapsedRealtime() - timeReference);
+  inject_time_msg.timeUtc += (int64_t)(ELAPSED_MILLIS_SINCE_BOOT_PLATFORM_LIB_ABSTRACTION - timeReference);
 
   inject_time_msg.timeUnc = uncertainty;
 

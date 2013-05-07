@@ -33,7 +33,7 @@
 #include <loc_eng.h>
 #include <loc_eng_msg.h>
 #include "log_util.h"
-
+#include "platform_lib_includes.h"
 
 /*===========================================================================
 FUNCTION    loc_eng_xtra_init

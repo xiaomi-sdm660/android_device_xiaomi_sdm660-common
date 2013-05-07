@@ -43,7 +43,7 @@
 #include <loc_eng.h>
 
 #include "log_util.h"
-
+#include "platform_lib_includes.h"
 /*=============================================================================
  *
  *                             DATA DECLARATION

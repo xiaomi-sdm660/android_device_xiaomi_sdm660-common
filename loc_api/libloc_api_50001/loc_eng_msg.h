@@ -42,6 +42,12 @@
 #ifndef SSID_BUF_SIZE
     #define SSID_BUF_SIZE (32+1)
 #endif
+#ifdef USE_GLIB
+
+#include <glib.h>
+
+#endif /* USE_GLIB */
+#include "platform_lib_includes.h"
 
 #ifdef __cplusplus
 extern "C" {

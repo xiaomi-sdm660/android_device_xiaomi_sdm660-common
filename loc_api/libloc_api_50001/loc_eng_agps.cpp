@@ -33,6 +33,7 @@
 #include <loc_eng_agps.h>
 #include <loc_eng_log.h>
 #include <log_util.h>
+#include "platform_lib_includes.h"
 #include <loc_eng_dmn_conn_handler.h>
 #include <loc_eng_dmn_conn.h>
 #include<sys/time.h>

@@ -30,6 +30,23 @@
 #ifndef __LOG_UTIL_H__
 #define __LOG_UTIL_H__
 
+#ifndef USE_GLIB
+#include <utils/Log.h>
+#endif /* USE_GLIB */
+
+#ifdef USE_GLIB
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#ifndef LOG_TAG
+#define LOG_TAG "GPS_UTILS"
+
+#endif  // LOG_TAG
+
+#endif /* USE_GLIB */
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -71,9 +88,6 @@ extern const char ENTRY_TAG[];
  *============================================================================*/
 extern void loc_logger_init(unsigned long debug, unsigned long timestamp);
 extern char* get_timestamp(char* str, unsigned long buf_size);
-
-
-#include <utils/Log.h>
 
 #ifndef DEBUG_DMN_LOC_API
 
