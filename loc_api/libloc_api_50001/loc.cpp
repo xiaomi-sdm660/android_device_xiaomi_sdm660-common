@@ -164,7 +164,6 @@ static const UlpEngineInterface sLocEngUlpEngInterface =
    loc_ulp_engine_stop
 };
 
-
 static bool loc_inject_raw_command(char* command, int length);
 
 static const InjectRawCmdInterface sLocEngInjectRawCmdInterface =
@@ -239,8 +238,8 @@ extern "C" const GpsInterface* get_gps_interface()
 
     target = get_target();
     LOC_LOGD("Target name check returned %s", loc_get_target_name(target));
-    //APQ8064
-    if(target == TARGET_APQ8064_STANDALONE) {
+    //APQ8064 and APQ8030
+    if((target == TARGET_APQ8064_STANDALONE) || (target == TARGET_APQ8030_STANDALONE)) {
         gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
         gss_fd = open("/dev/gss", O_RDONLY);
         if (gss_fd < 0)

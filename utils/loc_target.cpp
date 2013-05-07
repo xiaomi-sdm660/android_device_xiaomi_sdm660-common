@@ -44,10 +44,12 @@
 #define MPQ8064_ID_1 "130"
 #define MSM8930_ID_1 "142"
 #define MSM8930_ID_2 "116"
+#define APQ8030_ID_1 "157"
 
 #define LINE_LEN 100
 #define STR_LIQUID    "Liquid"
 #define STR_SURF      "Surf"
+#define STR_MTP       "MTP"
 #define IS_STR_END(c) ((c) == '\0' || (c) == '\n' || (c) == '\r')
 #define LENGTH(s) (sizeof(s) - 1)
 #define GPS_CHECK_NO_ERROR 0
@@ -93,12 +95,15 @@ targetEnumType get_target(void)
     read_a_line( id, rd_id, LINE_LEN);
 
     if( (!memcmp(rd_hw_platform, STR_LIQUID, LENGTH(STR_LIQUID)) && IS_STR_END(rd_hw_platform[LENGTH(STR_LIQUID)])) ||
-        (!memcmp(rd_hw_platform, STR_SURF,   LENGTH(STR_SURF))   && IS_STR_END(rd_hw_platform[LENGTH(STR_SURF)])) ) {
+        (!memcmp(rd_hw_platform, STR_SURF,   LENGTH(STR_SURF))   && IS_STR_END(rd_hw_platform[LENGTH(STR_SURF)])) ||
+        (!memcmp(rd_hw_platform, STR_MTP,   LENGTH(STR_MTP))   && IS_STR_END(rd_hw_platform[LENGTH(STR_MTP)]))) {
         if (!read_a_line( mdm, rd_mdm, LINE_LEN))
             target = TARGET_APQ8064_FUSION3;
         else if( (!memcmp(rd_id, APQ8064_ID_1, LENGTH(APQ8064_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8064_ID_1)])) ||
                  (!memcmp(rd_id, APQ8064_ID_2, LENGTH(APQ8064_ID_2)) && IS_STR_END(rd_id[LENGTH(APQ8064_ID_2)])) )
             target = TARGET_APQ8064_STANDALONE;
+	else if((!memcmp(rd_id, APQ8030_ID_1, LENGTH(APQ8030_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8030_ID_1)])))
+            target = TARGET_APQ8030_STANDALONE;
     }
     else if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1)) && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
         target = TARGET_MPQ8064;
