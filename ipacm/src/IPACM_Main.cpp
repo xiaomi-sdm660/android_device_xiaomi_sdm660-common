@@ -173,6 +173,7 @@ void* ipa_driver_wlan_notifier(void *param)
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
+        ipacm_event_data_fid *data_fid = NULL;
 
 	fd = open(IPA_DRIVER, O_RDWR);
 	if (fd == 0)
@@ -186,6 +187,7 @@ void* ipa_driver_wlan_notifier(void *param)
 		memset(buffer, 0, sizeof(buffer));
 		memset(&evt_data, 0, sizeof(evt_data));
 		data = NULL;
+		data_fid = NULL;
 
 		length = read(fd, buffer, IPA_DRIVER_WLAN_BUF_LEN);
 		if (length < 0)
@@ -204,13 +206,6 @@ void* ipa_driver_wlan_notifier(void *param)
 		}
 
 		/* Insert WLAN_DRIVER_EVENT to command queue */
-		data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
-		if (data == NULL)
-		{
-			IPACMERR("unable to allocate memory for event data\n");
-			return NULL;
-		}
-		
 		switch (event_hdr->msg_type)
 		{
 
@@ -229,13 +224,31 @@ void* ipa_driver_wlan_notifier(void *param)
 			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-
-			memcpy(data->mac_addr,
-						 event->mac_addr,
-						 sizeof(event->mac_addr));
-			ipa_get_if_index(event->name, &(data->if_index));
+                        data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+			if(data_fid == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_fid\n");
+				return NULL;
+			}			
+			ipa_get_if_index(event->name, &(data_fid->if_index));
 			evt_data.event = IPA_WLAN_AP_LINK_UP_EVENT;
-			evt_data.evt_data = data;
+			evt_data.evt_data = data_fid;
+			break;
+
+		case WLAN_AP_DISCONNECT:
+			IPACMDBG("Received WLAN_AP_DISCONNECT name: %s\n",event->name);
+			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
+							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
+                        data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+			if(data_fid == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_fid\n");
+				return NULL;
+			}			
+			ipa_get_if_index(event->name, &(data_fid->if_index));
+			evt_data.event = IPA_LINK_DOWN_EVENT;
+			evt_data.evt_data = data_fid;
 			break;
 
 		case WLAN_STA_CONNECT:
@@ -243,26 +256,51 @@ void* ipa_driver_wlan_notifier(void *param)
 			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-			memcpy(data->mac_addr,
-						 event->mac_addr,
-						 sizeof(event->mac_addr));
-			ipa_get_if_index(event->name, &(data->if_index));
-
+                        data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+			if(data_fid == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_fid\n");
+				return NULL;
+			}			
+			ipa_get_if_index(event->name, &(data_fid->if_index));
 			evt_data.event = IPA_WLAN_STA_LINK_UP_EVENT;
-			evt_data.evt_data = data;
+			evt_data.evt_data = data_fid;
+			break;
+
+		case WLAN_STA_DISCONNECT:
+			IPACMDBG("Received WLAN_STA_DISCONNECT name: %s\n",event->name);
+			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
+							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
+                        data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+			if(data_fid == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_fid\n");
+				return NULL;
+			}			
+			ipa_get_if_index(event->name, &(data_fid->if_index));
+			evt_data.event = IPA_LINK_DOWN_EVENT;
+			evt_data.evt_data = data_fid;
 			break;
 						
+			
 		case WLAN_CLIENT_CONNECT:
 			IPACMDBG("Received WLAN_CLIENT_CONNECT\n");
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-		  evt_data.event = IPA_WLAN_CLIENT_ADD_EVENT;
-			evt_data.evt_data = data;
-			ipa_get_if_index(event->name, &(data->if_index));
+		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
+		        if (data == NULL)
+		        {
+		    	        IPACMERR("unable to allocate memory for event data\n");
+		    	        return NULL;
+		        }
 			memcpy(data->mac_addr,
 						 event->mac_addr,
 						 sizeof(event->mac_addr));
+			ipa_get_if_index(event->name, &(data->if_index));
+		        evt_data.event = IPA_WLAN_CLIENT_ADD_EVENT;
+			evt_data.evt_data = data;
 			break;
 			
 		case WLAN_CLIENT_DISCONNECT:
@@ -270,11 +308,16 @@ void* ipa_driver_wlan_notifier(void *param)
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
+		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
+		        if (data == NULL)
+		        {
+		    	        IPACMERR("unable to allocate memory for event data\n");
+		    	        return NULL;
+		        }				 
 			memcpy(data->mac_addr,
 						 event->mac_addr,
 						 sizeof(event->mac_addr));
 			ipa_get_if_index(event->name, &(data->if_index));
-
 			evt_data.event = IPA_WLAN_CLIENT_DEL_EVENT;
 			evt_data.evt_data = data;			
 			break;
@@ -284,14 +327,18 @@ void* ipa_driver_wlan_notifier(void *param)
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-
-			ipa_get_if_index(event->name, &(data->if_index));
-
-			evt_data.event = IPA_WLAN_CLIENT_POWER_SAVE_EVENT;
-			evt_data.evt_data = data;
+		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
+		        if (data == NULL)
+		        {
+		    	        IPACMERR("unable to allocate memory for event data\n");
+		    	        return NULL;
+		        }
 			memcpy(data->mac_addr,
 						 event->mac_addr,
 						 sizeof(event->mac_addr));			
+			ipa_get_if_index(event->name, &(data->if_index));
+			evt_data.event = IPA_WLAN_CLIENT_POWER_SAVE_EVENT;
+			evt_data.evt_data = data;
 			break;
 
 		case WLAN_CLIENT_NORMAL_MODE:
@@ -299,7 +346,12 @@ void* ipa_driver_wlan_notifier(void *param)
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event->mac_addr[0], event->mac_addr[1], event->mac_addr[2],
 							 event->mac_addr[3], event->mac_addr[4], event->mac_addr[5]); 
-
+		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
+		        if (data == NULL)
+		        {
+		    	       IPACMERR("unable to allocate memory for event data\n");
+		    	       return NULL;
+		        }
 			memcpy(data->mac_addr,
 						 event->mac_addr,
 						 sizeof(event->mac_addr));
@@ -310,17 +362,11 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		default:
 			IPACMDBG("Unhandled message type: %d\n", event_hdr->msg_type);
-      free(data);
 			continue;
 
 		}
 
 		/* finish command queue */
-		if (evt_data.evt_data == NULL)
-		{
-			free(data);
-		}
-
 		IPACMDBG("Posting event:%d\n", evt_data.event);
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
 	}
