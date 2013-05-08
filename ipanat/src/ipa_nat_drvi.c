@@ -1696,15 +1696,13 @@ void ReorderCmds(struct ipa_ioc_nat_dma_cmd *cmd, int size)
 	tmp->entries = cmd->entries;
 	for (cnt=indx_tbl_start; cnt<cmd->entries; cnt++)
 	{
-		memcpy(&tmp->dma[cnt1], &cmd->dma[cnt], 
-					 sizeof(struct ipa_ioc_nat_dma_one));
+		tmp->dma[cnt1] = cmd->dma[cnt]; 
 		cnt1++;
 	}
 
 	for (cnt = 0; cnt<indx_tbl_start; cnt++)
 	{
-		memcpy(&tmp->dma[cnt1], &cmd->dma[cnt], 
-					 sizeof(struct ipa_ioc_nat_dma_one));
+		tmp->dma[cnt1] = cmd->dma[cnt];
 		cnt1++;
 	}
 
@@ -1787,7 +1785,7 @@ int ipa_nati_post_del_dma_cmd(uint8_t tbl_indx,
 	}
 
 	/* Just update the protocol field to invalid */
-	if (IPA_NAT_DEL_TYPE_HEAD == rule_pos)
+	else if (IPA_NAT_DEL_TYPE_HEAD == rule_pos)
 	{
 		cmd->dma[no_of_cmds].table_index = tbl_indx;
 		cmd->dma[no_of_cmds].base_addr = IPA_NAT_BASE_TBL;
@@ -1806,7 +1804,7 @@ int ipa_nati_post_del_dma_cmd(uint8_t tbl_indx,
 		 Update the previous entry of next_index field value
 		 with current entry next_index field value
 	*/
-	if (IPA_NAT_DEL_TYPE_MIDDLE == rule_pos)
+	else if (IPA_NAT_DEL_TYPE_MIDDLE == rule_pos)
 	{
 		prev_entry = Read16BitFieldValue(tbl_ptr[cur_tbl_entry].sw_spec_params,
 																		 SW_SPEC_PARAM_PREV_INDEX_FIELD);
@@ -1832,7 +1830,7 @@ int ipa_nati_post_del_dma_cmd(uint8_t tbl_indx,
 	/* 
 		 Reset the previous entry of next_index field with 0 
 	*/
-	if (IPA_NAT_DEL_TYPE_LAST == rule_pos)
+	else if (IPA_NAT_DEL_TYPE_LAST == rule_pos)
 	{
 		prev_entry = Read16BitFieldValue(tbl_ptr[cur_tbl_entry].sw_spec_params,
 																		 SW_SPEC_PARAM_PREV_INDEX_FIELD);
@@ -1892,7 +1890,7 @@ int ipa_nati_post_del_dma_cmd(uint8_t tbl_indx,
 	}
 
 	/* copy the next entry values to current entry */
-	if (IPA_NAT_DEL_TYPE_HEAD == indx_rule_pos)
+	else if (IPA_NAT_DEL_TYPE_HEAD == indx_rule_pos)
 	{
 		next_entry = Read16BitFieldValue(indx_tbl_ptr[indx_tbl_entry].tbl_entry_nxt_indx,
 																		 INDX_TBL_NEXT_INDEX_FILED);
@@ -1930,7 +1928,7 @@ int ipa_nati_post_del_dma_cmd(uint8_t tbl_indx,
 		 Update the previous entry of next_index field value
 		 with current entry next_index field value
 	*/
-	if (IPA_NAT_DEL_TYPE_MIDDLE == indx_rule_pos)
+	else if (IPA_NAT_DEL_TYPE_MIDDLE == indx_rule_pos)
 	{
 		prev_entry = cache_ptr->index_expn_table_meta[indx_tbl_entry].prev_index;
 
@@ -1953,7 +1951,7 @@ int ipa_nati_post_del_dma_cmd(uint8_t tbl_indx,
 	}
 
 	/* Reset the previous entry next_index field with 0 */
-	if (IPA_NAT_DEL_TYPE_LAST == indx_rule_pos)
+	else if (IPA_NAT_DEL_TYPE_LAST == indx_rule_pos)
 	{
 		prev_entry = cache_ptr->index_expn_table_meta[indx_tbl_entry].prev_index;
 
@@ -2226,7 +2224,8 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
   }
   if(!atl_one)
   {
-    IPADBG("No active base rules\n");
+    IPADBG("No active base rules, total: %d\n", 
+					     ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries);
   }
   atl_one = 0;
 
@@ -2241,12 +2240,15 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     if (Read16BitFieldValue(tbl_ptr[cnt].ip_cksm_enbl,
 														ENABLE_FIELD))
     {
-			ipa_nati_print_rule(&tbl_ptr[cnt], cnt);
+			atl_one = 1;
+			ipa_nati_print_rule(&tbl_ptr[cnt], 
+							(cnt + ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries -1));
     }
   }
   if(!atl_one)
   {
-    IPADBG("No active base expansion rules\n");
+    IPADBG("No active base expansion rules, total: %d\n", 
+					       ipv4_nat_cache.ip4_tbl[tbl_hdl-1].expn_table_entries);
   }
   atl_one = 0;
 
@@ -2261,12 +2263,14 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     if (Read16BitFieldValue(indx_tbl_ptr[cnt].tbl_entry_nxt_indx,
 														INDX_TBL_TBL_ENTRY_FIELD))
     {
+			atl_one = 1;
 			ipa_nati_print_index_rule(&indx_tbl_ptr[cnt], cnt);
     }
   }
   if(!atl_one)
   {
-    IPADBG("No active index table rules\n");
+    IPADBG("No active index table rules, total:%d\n",
+					    ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries);
   }
   atl_one = 0;
 
@@ -2282,12 +2286,15 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     if (Read16BitFieldValue(indx_tbl_ptr[cnt].tbl_entry_nxt_indx,
 														INDX_TBL_TBL_ENTRY_FIELD))
     {
-			ipa_nati_print_index_rule(&indx_tbl_ptr[cnt], cnt);
+			atl_one = 1;
+			ipa_nati_print_index_rule(&indx_tbl_ptr[cnt], 
+							(cnt + ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries -1));
     }
   }
   if(!atl_one)
   {
-    IPADBG("No active index expansion rules\n");
+    IPADBG("No active index expansion rules, total:%d\n",
+					      ipv4_nat_cache.ip4_tbl[tbl_hdl-1].expn_table_entries);
   }
   atl_one = 0;
 
@@ -2298,12 +2305,12 @@ void ipa_nati_print_rule(struct ipa_nat_rule *param, uint32_t rule_id)
 	struct ipa_nat_sw_rule sw_rule;
 	memcpy(&sw_rule, param, sizeof(sw_rule));
 
-  IPADUMP("rule-id:%d  Trgt-IP:0x%x  Trgt-Port:0x%x  ",rule_id, sw_rule.target_ip, sw_rule.target_port);
-  IPADUMP("Priv-IP:0x%x Priv-Port:0x%x  ", sw_rule.private_ip, sw_rule.private_port);
-  IPADUMP("Pub-Port:0x%x  Nxt-indx:0x%x  ", sw_rule.public_port, sw_rule.next_index);
-  IPADUMP("IP-cksm:0x%x  En-bit:0x%x  ", sw_rule.ip_chksum, sw_rule.enable);
+  IPADUMP("rule-id:%d  Trgt-IP:0x%x  Trgt-Port:%d  ",rule_id, sw_rule.target_ip, sw_rule.target_port);
+  IPADUMP("Priv-IP:0x%x Priv-Port:%d  ", sw_rule.private_ip, sw_rule.private_port);
+  IPADUMP("Pub-Port:%d  Nxt-indx:%d  ", sw_rule.public_port, sw_rule.next_index);
+  IPADUMP("IP-cksm-delta:0x%x  En-bit:0x%x  ", sw_rule.ip_chksum, sw_rule.enable);
   IPADUMP("TS:0x%x  Proto:0x%x  ", sw_rule.time_stamp, sw_rule.protocol);
-  IPADUMP("Prv-indx:0x%x  nxt-indx:0x%x  Tcp-udp-cksum:0x%x", sw_rule.prev_index, sw_rule.next_index, sw_rule.tcp_udp_chksum);
+  IPADUMP("Prv-indx:%d  nxt-indx:%d  Tcp-udp-cksum-delta:0x%x", sw_rule.prev_index, sw_rule.next_index, sw_rule.tcp_udp_chksum);
   IPADUMP("\n");
   return;
 }
@@ -2313,7 +2320,7 @@ void ipa_nati_print_index_rule(struct ipa_nat_indx_tbl_rule *param, uint32_t rul
 	struct ipa_nat_sw_indx_tbl_rule sw_rule;
 	memcpy(&sw_rule, param, sizeof(sw_rule));
 
-  IPADUMP("rule-id:%d  Table_entry:0x%x  Next_index:0x%x",
+  IPADUMP("rule-id:%d  Table_entry:%d  Next_index:%d",
 					        rule_id, sw_rule.tbl_entry, sw_rule.next_index);
   IPADUMP("\n");
   return;
