@@ -113,6 +113,10 @@ typedef uint16_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_MAG_DEV 0x0004
 /** UlpLocation has valid mode indicator. */
 #define GPS_LOCATION_EXTENDED_HAS_MODE_IND 0x0008
+/** GpsLocationExtended has valid vertical uncertainty */
+#define GPS_LOCATION_EXTENDED_HAS_VERT_UNC 0x0010
+/** GpsLocationExtended has valid speed uncertainty */
+#define GPS_LOCATION_EXTENDED_HAS_SPEED_UNC 0x0020
 
 /** Represents gps location extended. */
 typedef struct {
@@ -130,6 +134,10 @@ typedef struct {
     float           vdop;
     /** Contains Magnetic Deviation. */
     float           magneticDeviation;
+    /** vertical uncertainty in meters */
+    float           vert_unc;
+    /** speed uncertainty in m/s */
+    float           speed_unc;
 } GpsLocationExtended;
 
 typedef enum {

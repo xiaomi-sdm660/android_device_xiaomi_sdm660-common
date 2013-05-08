@@ -1697,6 +1697,18 @@ void LocApiV02Adapter :: reportPosition (
                 locationExtended.altitudeMeanSeaLevel = location_report_ptr->altitudeWrtMeanSeaLevel;
             }
 
+            if (location_report_ptr->vertUnc_valid)
+            {
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_VERT_UNC;
+               locationExtended.vert_unc = location_report_ptr->vertUnc;
+            }
+
+            if (location_report_ptr->speedUnc_valid )
+            {
+               locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_SPEED_UNC;
+               locationExtended.speed_unc = location_report_ptr->speedUnc;
+            }
+
             LocApiAdapter::reportPosition( location,
                                            locationExtended,
                                            locEngHandle.extPosInfo((void*)location_report_ptr),

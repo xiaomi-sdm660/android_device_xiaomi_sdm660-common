@@ -702,6 +702,18 @@ void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *loca
                     locationExtended.magneticDeviation = location_report_ptr->magnetic_deviation;
                 }
 
+                if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_VERTICAL_UNC)
+                {
+                   locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_VERT_UNC;
+                   locationExtended.vert_unc = location_report_ptr->vert_unc;
+                }
+
+                if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SPEED_UNC)
+                {
+                   locationExtended.flags |= GPS_LOCATION_EXTENDED_HAS_SPEED_UNC;
+                   locationExtended.speed_unc = location_report_ptr->speed_unc;
+                }
+
                 LOC_LOGV("reportPosition: fire callback\n");
                 LocApiAdapter::reportPosition(location,
                                               locationExtended,
