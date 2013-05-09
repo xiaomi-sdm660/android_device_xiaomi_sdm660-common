@@ -922,7 +922,7 @@ struct ulp_msg_inject_network_position : public loc_eng_msg {
         loc_eng_msg(instance, ULP_MSG_INJECT_NETWORK_POSITION),
         networkPosition(networkPos)
     {
-        LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  accuracy %d",
+        LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  accuracy %f",
              networkPosition.valid_flag,
              networkPosition.position.pos_source,
              networkPosition.position.latitude,

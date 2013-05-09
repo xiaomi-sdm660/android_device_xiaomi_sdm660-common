@@ -261,7 +261,7 @@ typedef struct  {
     /** longitude in degrees */
     double longitude;
     /** Horzizontal error estimate in meters */
-    uint16_t HEPE;
+    float HEPE;
 } UlpNetworkPosition;
 
 /** Represents access point information */
