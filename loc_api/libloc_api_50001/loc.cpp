@@ -187,6 +187,7 @@ static const UlpPhoneContextInterface sLocEngUlpPhoneContextInterface =
 };
 
 static loc_eng_data_s_type loc_afw_data;
+static UlpCallbacks ulp_cb_data;
 static int gss_fd = 0;
 
 /*===========================================================================
@@ -322,6 +323,17 @@ static int loc_init(GpsCallbacks* callbacks)
     else
         retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event,
                               loc_ulp_msg_sender);
+
+    if (ulp_cb_data.phone_context_cb) {
+        //ULP initilization already occurred so redo intializations here
+        //to restore callback table
+        loc_eng_ulp_phone_context_init(loc_afw_data, ulp_cb_data.phone_context_cb);
+    }
+
+    if (ulp_cb_data.network_location_cb) {
+        loc_eng_ulp_network_init(loc_afw_data, ulp_cb_data.network_location_cb);
+    }
+
 
     int ret_val1 = loc_eng_ulp_init(loc_afw_data, loc_eng_ulp_inf);
     //Initialize the cached min_interval
@@ -1123,7 +1135,13 @@ SIDE EFFECTS
 static int loc_ulp_phone_context_init(UlpPhoneContextCallbacks *callbacks)
 {
     ENTRY_LOG();
-    int ret_val = loc_eng_ulp_phone_context_init(loc_afw_data, callbacks);
+    int ret_val = -1;
+    if (loc_afw_data.context) {
+        ret_val = loc_eng_ulp_phone_context_init(loc_afw_data, callbacks);
+    } else
+    {
+        ulp_cb_data.phone_context_cb = callbacks;
+    }
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
@@ -1172,7 +1190,14 @@ SIDE EFFECTS
 static int loc_ulp_network_init(UlpNetworkLocationCallbacks *callbacks)
 {
    ENTRY_LOG();
-   int ret_val = loc_eng_ulp_network_init(loc_afw_data, callbacks);
+   int ret_val = -1;
+   if (loc_afw_data.context) {
+       ret_val = loc_eng_ulp_network_init(loc_afw_data, callbacks);
+   } else
+   {
+       ulp_cb_data.network_location_cb = callbacks;
+   }
+
    EXIT_LOG(%d, ret_val);
    return ret_val;
 }
@@ -1227,6 +1252,8 @@ static int loc_ulp_engine_init(UlpEngineCallbacks* callbacks)
         EXIT_LOG(%d, retVal);
         return retVal;
     }
+    //Intilize the ulp call back cache at this point
+    memset(&ulp_cb_data, 0, sizeof(UlpCallbacks));
     ulp_loc_cb = callbacks->location_cb;
     retVal = 0;
     EXIT_LOG(%d, retVal);
