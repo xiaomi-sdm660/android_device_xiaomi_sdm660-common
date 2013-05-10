@@ -419,7 +419,8 @@ static int loc_stop()
                                   ULP_CRITERIA_HAS_MIN_INTERVAL);
         native_criteria.provider_source = ULP_PROVIDER_SOURCE_GNSS;
         native_criteria.min_distance = 0; //This is not used by ULP engine so leaving it 0 for now
-        native_criteria.recurrence_type = ULP_LOC_RECURRENCE_PERIODIC; //We let LMS handle SingleShot
+        native_criteria.recurrence_type = loc_afw_data.recurrence_type_cached;
+        loc_afw_data.recurrence_type_cached = ULP_LOC_RECURRENCE_PERIODIC;
         //For a GPS client horizontal_accuracy & power_consumption are irrelevant
         native_criteria.preferred_horizontal_accuracy = ULP_HORZ_ACCURACY_DONT_CARE;
         native_criteria.preferred_power_consumption = ULP_POWER_REQ_DONT_CARE;
@@ -482,13 +483,19 @@ static int  loc_set_position_mode(GpsPositionMode mode,
                                   ULP_CRITERIA_HAS_MIN_INTERVAL);
         native_criteria.provider_source = ULP_PROVIDER_SOURCE_GNSS;
         native_criteria.min_distance = 0; //This is not used by ULP engine so leaving it 0 for now
-        native_criteria.recurrence_type = ULP_LOC_RECURRENCE_PERIODIC; //We let LMS handle SingleShot
+
+        if (LOC_POSITION_MODE_MS_ASSISTED == mode)
+            native_criteria.recurrence_type = ULP_LOC_RECURRENCE_SINGLE;
+        else
+            native_criteria.recurrence_type = ULP_LOC_RECURRENCE_PERIODIC;
+
         //For a GPS client horizontal_accuracy & power_consumption are irrelevant
         native_criteria.preferred_horizontal_accuracy = ULP_HORZ_ACCURACY_DONT_CARE;
         native_criteria.preferred_power_consumption = ULP_POWER_REQ_DONT_CARE;
         native_criteria.action = ULP_ADD_CRITERIA;
         native_criteria.min_interval = min_interval;
         loc_afw_data.min_interval_cached = min_interval; //cache a copy
+        loc_afw_data.recurrence_type_cached = native_criteria.recurrence_type; //cache a copy
         ret_val = loc_eng_update_criteria(loc_afw_data, native_criteria);
     }
 
