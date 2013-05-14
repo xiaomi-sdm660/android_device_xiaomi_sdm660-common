@@ -20,7 +20,7 @@ libgps_utils_so_la_c_sources = linked_list.c \
             msg_q.c \
             loc_cfg.cpp \
             loc_log.cpp \
-            ../platform_lib_abstractions/elapsed_millis_since_boot.cpp
+            ../platform_lib_abstractions/platform_lib_time.cpp
 
 library_includedir = $(pkgincludedir)/utils
 

@@ -110,8 +110,10 @@ SIDE EFFECTS
 int loc_eng_dmn_conn_glue_piperemove(const char * pipe_name, int fd)
 {
     close(fd);
-    if (pipe_name) unlink(pipe_name);
-    LOC_LOGD("fd = %d, %s\n", fd, pipe_name);
+    if (pipe_name != NULL) {
+        unlink(pipe_name);
+        LOC_LOGD("fd = %d, %s\n", fd, pipe_name);
+    }
     return 0;
 }
 

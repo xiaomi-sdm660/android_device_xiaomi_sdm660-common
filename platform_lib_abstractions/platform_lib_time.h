@@ -28,6 +28,7 @@
 
 #ifndef _PLATFORM_LIB_TIME_H_
 #define _PLATFORM_LIB_TIME_H_
+#include <sys/time.h>
 
 int64_t systemTime(int clock);
 int64_t elapsedMillisSinceBoot();
