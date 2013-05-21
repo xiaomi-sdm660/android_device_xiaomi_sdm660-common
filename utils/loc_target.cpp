@@ -45,7 +45,7 @@
 #define MSM8930_ID_1 "142"
 #define MSM8930_ID_2 "116"
 #define APQ8030_ID_1 "157"
-#define APQ8074_ID_1 "126"
+#define APQ8074_ID_1 "184"
 
 #define LINE_LEN 100
 #define STR_LIQUID    "Liquid"
@@ -107,8 +107,7 @@ targetEnumType get_target(void)
 	else if((!memcmp(rd_id, APQ8030_ID_1, LENGTH(APQ8030_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8030_ID_1)])))
             target = TARGET_APQ8030_STANDALONE;
     }
-    else if( (!memcmp(rd_hw_platform, STR_APQ, LENGTH(STR_APQ))  && IS_STR_END(rd_hw_platform[LENGTH(STR_APQ)])) &&
-             (!memcmp(rd_id, APQ8074_ID_1, LENGTH(APQ8074_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8074_ID_1)]))     )
+    else if (!memcmp(rd_id, APQ8074_ID_1, LENGTH(APQ8074_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8074_ID_1)]))
         target = TARGET_APQ8064_STANDALONE;
     else if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1)) && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
         target = TARGET_MPQ8064;
