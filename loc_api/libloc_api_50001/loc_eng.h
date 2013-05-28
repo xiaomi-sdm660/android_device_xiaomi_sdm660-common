@@ -250,6 +250,8 @@ int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
 int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
                              char* data, int length);
 
+int loc_eng_xtra_request_server(loc_eng_data_s_type &loc_eng_data);
+
 extern void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data,
                             GpsNiExtCallbacks *callbacks);
 extern void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,

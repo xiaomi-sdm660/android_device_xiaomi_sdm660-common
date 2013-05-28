@@ -62,6 +62,8 @@ int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
     else {
         xtra_module_data_ptr = &loc_eng_data.xtra_module_data;
         xtra_module_data_ptr->download_request_cb = callbacks->download_request_cb;
+        xtra_module_data_ptr->report_xtra_server_cb = callbacks->report_xtra_server_cb;
+
         ret_val = 0;
     }
     return ret_val;
@@ -92,4 +94,32 @@ int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
     loc_eng_msg_sender(&loc_eng_data, msg);
 
     return 0;
+}
+/*===========================================================================
+FUNCTION    loc_eng_xtra_request_server
+
+DESCRIPTION
+   Request the Xtra server url from the modem
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   length of server string
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+int loc_eng_xtra_request_server(loc_eng_data_s_type &loc_eng_data)
+{
+    loc_eng_msg_request_xtra_server *msg(new loc_eng_msg_request_xtra_server(&loc_eng_data));
+
+    if (NULL == msg)
+        return -1;
+
+    loc_eng_msg_sender(&loc_eng_data, msg);
+
+    return 0;
+
 }

@@ -1022,6 +1022,54 @@ enum loc_api_adapter_err LocApiV02Adapter :: setXtraData(
   return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
+/* Request the Xtra Server Url from the modem */
+enum loc_api_adapter_err LocApiV02Adapter :: requestXtraServer()
+{
+  locClientStatusEnumType status = eLOC_CLIENT_SUCCESS;
+
+  locClientReqUnionType req_union;
+  qmiLocGetPredictedOrbitsDataSourceIndMsgT_v02 request_xtra_server_ind;
+
+  status = loc_sync_send_req( clientHandle,
+                              QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_REQ_V02,
+                              req_union, LOC_ENGINE_SYNC_REQUEST_TIMEOUT,
+                              QMI_LOC_GET_PREDICTED_ORBITS_DATA_SOURCE_IND_V02,
+                              &request_xtra_server_ind);
+
+  if (status != eLOC_CLIENT_SUCCESS ||
+      eQMI_LOC_SUCCESS_V02 != request_xtra_server_ind.status ||
+      false == request_xtra_server_ind.serverList_valid ||
+      0 == request_xtra_server_ind.serverList.serverList_len)
+  {
+    return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+  }
+
+
+  if (request_xtra_server_ind.serverList.serverList_len == 1)
+  {
+    LocApiAdapter::reportXtraServer(request_xtra_server_ind.serverList.serverList[0].serverUrl,
+                                    "",
+                                    "",
+                                    QMI_LOC_MAX_SERVER_ADDR_LENGTH_V02);
+  }
+  else if (request_xtra_server_ind.serverList.serverList_len == 2)
+  {
+    LocApiAdapter::reportXtraServer(request_xtra_server_ind.serverList.serverList[0].serverUrl,
+                                    request_xtra_server_ind.serverList.serverList[1].serverUrl,
+                                    "",
+                                    QMI_LOC_MAX_SERVER_ADDR_LENGTH_V02);
+  }
+  else
+  {
+    LocApiAdapter::reportXtraServer(request_xtra_server_ind.serverList.serverList[0].serverUrl,
+                                    request_xtra_server_ind.serverList.serverList[1].serverUrl,
+                                    request_xtra_server_ind.serverList.serverList[2].serverUrl,
+                                    QMI_LOC_MAX_SERVER_ADDR_LENGTH_V02);
+  }
+
+  return LOC_API_ADAPTER_ERR_SUCCESS;
+}
+
 enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
   int handle, int is_succ, char* apn, AGpsBearerType bear,
   AGpsType agpsType)

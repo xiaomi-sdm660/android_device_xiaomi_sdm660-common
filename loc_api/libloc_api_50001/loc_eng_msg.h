@@ -445,6 +445,33 @@ struct loc_eng_msg_report_nmea : public loc_eng_msg {
     }
 };
 
+struct loc_eng_msg_report_xtra_server : public loc_eng_msg {
+    char *server1;
+    char *server2;
+    char *server3;
+    inline loc_eng_msg_report_xtra_server(void *instance,
+                                          const char *url1,
+                                          const char *url2,
+                                          const char *url3,
+                                          const int maxlength) :
+        loc_eng_msg(instance, LOC_ENG_MSG_REPORT_XTRA_SERVER),
+        server1(new char[maxlength+1]), server2(new char[maxlength+1]), server3(new char[maxlength+1])
+    {
+        strlcpy(server1, url1, maxlength);
+        strlcpy(server2, url2, maxlength);
+        strlcpy(server3, url3, maxlength);
+
+        LOC_LOGV("maxlength: %d\n  server1: %s\n  server2: %s\n  server3: %s\n",
+                maxlength, server1, server2, server3);
+    }
+    inline ~loc_eng_msg_report_xtra_server()
+    {
+        delete[] server1;
+        delete[] server2;
+        delete[] server3;
+    }
+};
+
 struct loc_eng_msg_request_bit : public loc_eng_msg {
     const loc_if_req_type_e_type ifType;
     const int ipv4Addr;
@@ -713,6 +740,14 @@ struct loc_eng_msg_inject_xtra_data : public loc_eng_msg {
     inline ~loc_eng_msg_inject_xtra_data()
     {
         delete[] data;
+    }
+};
+
+struct loc_eng_msg_request_xtra_server : public loc_eng_msg {
+    inline loc_eng_msg_request_xtra_server(void *instance) :
+        loc_eng_msg(instance, LOC_ENG_MSG_REQUEST_XTRA_SERVER)
+    {
+
     }
 };
 

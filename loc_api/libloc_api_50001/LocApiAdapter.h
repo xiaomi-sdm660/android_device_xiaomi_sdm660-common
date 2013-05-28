@@ -132,7 +132,8 @@ public:
                   void* svExt);
     void reportStatus(GpsStatusValue status);
     void reportNmea(const char* nmea, int length);
-    void reportAgpsStatus(AGpsExtStatus &agpsStatus);
+    void reportXtraServer(const char* url1, const char* url2, const char* url3, const int maxlength);
+    void reportAgpsStatus(AGpsStatus &agpsStatus);
     void requestXtraData();
     void requestTime();
     void requestLocation();
@@ -170,6 +171,9 @@ public:
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
         setXtraData(char* data, int length)
+    {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
+    inline virtual enum loc_api_adapter_err
+        requestXtraServer()
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
         atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType)

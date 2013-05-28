@@ -958,6 +958,49 @@ LocApiRpcAdapter::setXtraData(char* data, int length)
     return convertErr(rpc_ret_val);
 }
 
+/* Request the Xtra Server Url from the modem */
+enum loc_api_adapter_err
+LocApiRpcAdapter::requestXtraServer()
+{
+    loc_api_adapter_err           err;
+    rpc_loc_ioctl_data_u_type     data;
+    rpc_loc_ioctl_callback_s_type callback_data;
+
+    err = convertErr(loc_eng_ioctl(client_handle,
+                                   RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE,
+                                   &data,
+                                   LOC_IOCTL_DEFAULT_TIMEOUT,
+                                   &callback_data));
+
+    if (LOC_API_ADAPTER_ERR_SUCCESS != err)
+    {
+        LOC_LOGE("RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE failed!: err=%d\n", err);
+        return err;
+    }
+    else if (RPC_LOC_SESS_STATUS_SUCCESS != callback_data.status)
+    {
+        LOC_LOGE("RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE failed!: status=%ld\n", callback_data.status);
+        return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+    }
+    else if (RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE != callback_data.type)
+    {
+        LOC_LOGE("RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE is not the type expected! type=%d\n", callback_data.type);
+        return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+    }
+    else if (RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE != callback_data.data.disc)
+    {
+        LOC_LOGE("RPC_LOC_IOCTL_QUERY_PREDICTED_ORBITS_DATA_SOURCE is not the disc expected! disc=%d\n", callback_data.data.disc);
+        return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
+    }
+
+    LocApiAdapter::reportXtraServer(callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.predicted_orbits_data_source.servers[0],
+                                    callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.predicted_orbits_data_source.servers[1],
+                                    callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.predicted_orbits_data_source.servers[2],
+                                    255);
+
+    return LOC_API_ADAPTER_ERR_SUCCESS;
+}
+
 enum loc_api_adapter_err
 LocApiRpcAdapter::atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bearer, AGpsType agpsType)
 {

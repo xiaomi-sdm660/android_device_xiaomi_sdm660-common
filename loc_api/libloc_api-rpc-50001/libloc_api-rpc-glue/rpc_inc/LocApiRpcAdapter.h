@@ -97,6 +97,8 @@ public:
     virtual enum loc_api_adapter_err
         setXtraData(char* data, int length);
     virtual enum loc_api_adapter_err
+        requestXtraServer();
+    virtual enum loc_api_adapter_err
         atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType);
     virtual enum loc_api_adapter_err
         atlCloseStatus(int handle, int is_succ);
