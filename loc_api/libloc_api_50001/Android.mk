@@ -108,7 +108,6 @@ LOCAL_SHARED_LIBRARIES := \
     liblog \
     libloc_eng \
     libgps.utils \
-    libgeofence \
     libdl
 
 LOCAL_SRC_FILES += \
