@@ -4,7 +4,7 @@ LOCAL_PATH := $(call my-dir)
 
 GPS_DIR_LIST :=
 
-FEATURE_DELEXT := true
+FEATURE_DELEXT := false
 
 # add RPC dirs if RPC is available
 ifneq ($(TARGET_NO_RPC),true)
@@ -23,9 +23,6 @@ QMI_BOARD_PLATFORM_LIST += msm8226
 QMI_BOARD_PLATFORM_LIST += msm8610
 endif
 
-ifeq ($(call is-board-platform-in-list,$(QMI_BOARD_PLATFORM_LIST)),true)
-GPS_DIR_LIST += $(LOCAL_PATH)/loc_api_v02/
-endif #is-board-platform-in-list
 
 GPS_DIR_LIST += $(LOCAL_PATH)/libloc_api_50001/
 
