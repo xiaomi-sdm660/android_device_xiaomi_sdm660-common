@@ -2113,11 +2113,13 @@ int loc_eng_ulp_phone_context_settings_update(loc_eng_data_s_type &loc_eng_data,
 
     LOC_LOGD("loc_eng_ulp_phone_context_settings: context_type - 0x%x is_agps_enabled - %d "
              "is_battery_charging %d ,is_gps_enabled %d, is_network_position_available %d,"
-             "is_wifi_setting_enabled %d, is_agps_setting_enabled %d, is_enh_location_services_enabled %d\n",
+             "is_wifi_setting_enabled %d, is_agps_setting_enabled %d, is_enh_location_services_enabled %d,"
+             "is_pip_user_setting_enabled %d\n",
              settings->context_type ,settings->is_agps_enabled,settings->is_battery_charging,
              settings->is_gps_enabled, settings->is_network_position_available,
              settings->is_wifi_setting_enabled, settings->is_agps_enabled,
-             settings->is_enh_location_services_enabled );
+             settings->is_enh_location_services_enabled,
+             settings->is_pip_user_setting_enabled);
 
     if(loc_eng_data.ulp_initialized == true)
     {
