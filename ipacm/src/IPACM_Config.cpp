@@ -58,6 +58,7 @@ IPACM_Config::IPACM_Config()
 	ipa_num_private_subnet = 0;
 	ipa_num_alg_ports = 0;
 	ipa_nat_max_entries = 0;
+	ipa_nat_iface_entries = 0;
 
 	memset(&rt_tbl_default_v4, 0, sizeof(rt_tbl_default_v4));
 	memset(&rt_tbl_lan_v4, 0, sizeof(rt_tbl_lan_v4));
@@ -143,20 +144,13 @@ int IPACM_Config::Init(void)
 	ipa_nat_max_entries = cfg->nat_max_entries;
 	IPACMDBG("Nat Maximum Entries %d\n", ipa_nat_max_entries);
 
-	ipa_non_nat_iface_entries = cfg->non_nat_ifaces.num_iface_entries;
-	IPACMDBG("Number of Non Nat Iface Entries %d\n", ipa_non_nat_iface_entries);
-
-	pNonNatIfaces = (NonNatIfaces *)calloc(ipa_non_nat_iface_entries,
-																					sizeof(NonNatIfaces));
-	if (pNonNatIfaces != NULL)
+	/* Allocate more non-nat entries if the monitored iface dun have Tx/Rx properties */
+	pNatIfaces = (NatIfaces *)calloc(ipa_num_ipa_interfaces, sizeof(NatIfaces));
+	if (pNatIfaces == NULL)
 	{
-		for (i=0; i<cfg->non_nat_ifaces.num_iface_entries; i++)
-		{
-			memcpy(pNonNatIfaces[i].iface_name, 
-						 cfg->non_nat_ifaces.iface_entries[i].iface_name, 
-						 sizeof(pNonNatIfaces[i].iface_name));
-			IPACMDBG("IPACM_Config::pNonNatIfaces[%d] = %s\n", i, pNonNatIfaces[i].iface_name);
-		}
+		IPACMERR("unable to allocate nat ifaces\n");
+		ret = IPACM_FAILURE;
+		goto fail;
 	}
 
 	/* Construct the routing table ictol name in iface static member*/
@@ -252,7 +246,7 @@ int IPACM_Config::GetAlgPorts(int nPorts, ipacm_alg *pAlgPorts)
 	return 0;
 }
 
-int IPACM_Config::GetNonNatIfaces(int nIfaces, NonNatIfaces *pIfaces)
+int IPACM_Config::GetNatIfaces(int nIfaces, NatIfaces *pIfaces)
 {
 	if (nIfaces <= 0 || pIfaces == NULL)
 	{
@@ -263,10 +257,65 @@ int IPACM_Config::GetNonNatIfaces(int nIfaces, NonNatIfaces *pIfaces)
 	for (int cnt=0; cnt<nIfaces; cnt++)
 	{
 		memcpy(pIfaces[cnt].iface_name, 
-					 pNonNatIfaces[cnt].iface_name, 
+					 pNatIfaces[cnt].iface_name, 
 					 sizeof(pIfaces[cnt].iface_name));
 	}
 
+	return 0;
+}
+
+
+int IPACM_Config::AddNatIfaces(char *dev_name)
+{
+	IPACMDBG("Add iface %s to NAT-ifaces, origin it has %d nat ifaces\n", 
+					          dev_name, ipa_nat_iface_entries);
+	ipa_nat_iface_entries++;
+
+	if (ipa_nat_iface_entries < ipa_num_ipa_interfaces)
+	{
+		memcpy(pNatIfaces[ipa_nat_iface_entries - 1].iface_name,
+					 dev_name, IPA_IFACE_NAME_LEN);
+
+		IPACMDBG("Add Nat IfaceName: %s ,update nat-ifaces number: %d\n",
+						 pNatIfaces[ipa_nat_iface_entries - 1].iface_name, 
+						 ipa_nat_iface_entries);
+	}
+	
+	return 0;
+}
+
+int IPACM_Config::DelNatIfaces(char *dev_name)
+{
+	int i = 0;
+	IPACMDBG("Del iface %s from NAT-ifaces, origin it has %d nat ifaces\n",
+					 dev_name, ipa_nat_iface_entries);
+
+	for (i = 0; i < ipa_nat_iface_entries; i++)
+	{
+		if (strcmp(dev_name, pNatIfaces[i].iface_name) == 0)
+		{
+			IPACMDBG("Find Nat IfaceName: %s ,previous nat-ifaces number: %d\n",
+							 pNatIfaces[i].iface_name, ipa_nat_iface_entries);
+
+			/* Reset the matched entry */
+			memset(pNatIfaces[i].iface_name, 0, IPA_IFACE_NAME_LEN);
+
+			for (i; i < ipa_nat_iface_entries - 1; i++)
+			{
+				memcpy(pNatIfaces[i].iface_name,
+							 pNatIfaces[i + 1].iface_name, IPA_IFACE_NAME_LEN);
+
+				/* Reset the copied entry */
+				memset(pNatIfaces[i + 1].iface_name, 0, IPA_IFACE_NAME_LEN);
+			}
+			ipa_nat_iface_entries--;
+			IPACMDBG("Update nat-ifaces number: %d\n", ipa_nat_iface_entries);
+			return 0;
+		}
+	}
+
+	IPACMDBG("Can't find Nat IfaceName: %s with total nat-ifaces number: %d\n",
+					    dev_name, ipa_nat_iface_entries);
 	return 0;
 }
 

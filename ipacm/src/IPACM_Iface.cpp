@@ -508,6 +508,13 @@ int IPACM_Iface::query_iface_property(void)
 		}
 	}
 
+	/* Add Natting iface to IPACM_Config if there is  Rx/Tx property */
+	if (rx_prop != NULL || tx_prop != NULL)
+	{
+		IPACMDBG(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
+        IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name);
+	}		
+	
 	close(fd);
 	return res;
 }

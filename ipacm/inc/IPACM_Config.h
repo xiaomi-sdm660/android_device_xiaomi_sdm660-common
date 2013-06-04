@@ -47,8 +47,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef struct
 {
   char iface_name[IPA_IFACE_NAME_LEN];
-	uint32_t ipv4_addr;
-}NonNatIfaces;
+}NatIfaces;
 
 /* for IPACM rm dependency use*/
 typedef struct _ipa_rm_client
@@ -87,7 +86,7 @@ public:
 	ipa_private_subnet private_subnet_table[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
 
 	/* Store the non nat iface names */
-	NonNatIfaces *pNonNatIfaces; 
+	NatIfaces *pNatIfaces; 
 
 	/* Store the number of interface IPACM read from XML file */
 	int ipa_num_ipa_interfaces;
@@ -98,7 +97,7 @@ public:
 
 	int ipa_nat_max_entries;
 
-	int ipa_non_nat_iface_entries;
+	int ipa_nat_iface_entries;
 
 	/* IPACM routing table name for v4/v6 */
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan_v4, rt_tbl_wan_v4, rt_tbl_default_v4, rt_tbl_v6, rt_tbl_wan_v6;
@@ -118,16 +117,20 @@ public:
 		return ipa_nat_max_entries;
 	}
 
-	inline int GetNonNatIfacesCnt()
+	inline int GetNatIfacesCnt()
 	{
-		return ipa_non_nat_iface_entries;
+		return ipa_nat_iface_entries;
 	}
-	int GetNonNatIfaces(int nPorts, NonNatIfaces *ifaces);
+	int GetNatIfaces(int nPorts, NatIfaces *ifaces);
 
 	/* for IPACM resource manager dependency usage */
 	void AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa);
  
 	void DelRmDepend(ipa_rm_resource_name rm1);
+	
+	int AddNatIfaces(char *dev_name);
+
+	int DelNatIfaces(char *dev_name);
 	
 private:
 	static IPACM_Config *pInstance;
