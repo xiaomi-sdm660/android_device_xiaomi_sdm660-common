@@ -88,6 +88,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG("Received IPA_LINK_DOWN_EVENT\n");
 				handle_down_evt();
 				IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
 				delete this;
 				return;
 			}

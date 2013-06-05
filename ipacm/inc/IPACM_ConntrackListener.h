@@ -43,6 +43,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Conntrack_NATApp.h"
 #include "IPACM_Listener.h"
 
+#define MAX_NAT_IFACES 50
+
 using namespace std;
 
 class IPACM_ConntrackListener : public IPACM_Listener
@@ -52,8 +54,9 @@ private:
 	 bool isCTReg;
 	 bool isWanUp;
 
-	 int NonNatIfaceCnt;
-	 NonNatIfaces *pNonNatIfaces;
+	 int NatIfaceCnt;
+	 NatIfaces *pNatIfaces;
+	 uint32_t nat_iface_ipv4_addr[MAX_NAT_IFACES];
 	 IPACM_Config *pConfig;
 	 
 	 void ProcessCTMessage(void *data);

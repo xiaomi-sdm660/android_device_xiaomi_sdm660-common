@@ -111,6 +111,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
 				/* reset the AP-iface category to unknown */				 
 				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat=UNKNOWN_IF;
+				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
 				delete this;
 				return;
 			}

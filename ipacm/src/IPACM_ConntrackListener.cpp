@@ -41,9 +41,11 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 isCTReg = false;
 	 isWanUp = false;
 
-	 NonNatIfaceCnt = 0;
-	 pNonNatIfaces = NULL;
+	 NatIfaceCnt = 0;
+	 pNatIfaces = NULL;
 	 pConfig = NULL;
+
+	 memset(nat_iface_ipv4_addr, 0, sizeof(nat_iface_ipv4_addr));
 
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, this);
@@ -136,7 +138,7 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 {
 	ipacm_event_data_all *data = (ipacm_event_data_all *)in_param;
-	int fd=0, len=0;
+	int fd = 0, len = 0, cnt, i, j;
 	struct ifreq ifr;
 
 	if(del == false)
@@ -159,25 +161,34 @@ void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 			IPACMERR("Unable to get Config instance\n");
 			return;
 		}
+	}
 
-		NonNatIfaceCnt = pConfig->GetNonNatIfacesCnt();
-		if(NonNatIfaceCnt != 0)
+	cnt = pConfig->GetNatIfacesCnt();
+	if(NatIfaceCnt != cnt)
+	{
+		NatIfaceCnt = cnt;
+		if(pNatIfaces != NULL)
 		{
-			len = (sizeof(NonNatIfaces) * NonNatIfaceCnt);
-			pNonNatIfaces = (NonNatIfaces *)malloc(len);
-			if(pNonNatIfaces == NULL)
+			free(pNatIfaces);
+			pNatIfaces = NULL;
+		}
+
+		len = (sizeof(NatIfaces) * NatIfaceCnt);
+		pNatIfaces = (NatIfaces *)malloc(len);
+		if(pNatIfaces == NULL)
 			{
 				IPACMERR("Unable to allocate memory for non nat ifaces\n");
 				return;
 			}
-			memset(pNonNatIfaces, 0, len); 
+		memset(pNatIfaces, 0, len);
 
-			if(pConfig->GetNonNatIfaces(NonNatIfaceCnt, pNonNatIfaces) != 0)
+		if(pConfig->GetNatIfaces(NatIfaceCnt, pNatIfaces) != 0)
 			{
 				IPACMERR("Unable to retrieve non nat ifaces\n");
 				return;
 			}
-		}
+
+		IPACMDBG("Update %d Nat ifaces", NatIfaceCnt);
 	}
 
 	/* Search/Configure linux interface-index and map it to IPA interface-index */
@@ -197,34 +208,45 @@ void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 		return;
 	}
 
-	for (int i = 0; i <NonNatIfaceCnt; i++)
+	for(i = 0; i < NatIfaceCnt; i++)
 	{
 		if (strncmp(ifr.ifr_name, 
-								pNonNatIfaces[i].iface_name,
-								sizeof(pNonNatIfaces[i].iface_name)) == 0)
+							 pNatIfaces[i].iface_name,
+							 sizeof(pNatIfaces[i].iface_name)) == 0)
 		{
 			/* copy the ipv4 address to filter out downlink connections
 			   ignore downlink after listening connection event from
 			   conntrack as it is not destinated to private ip address */
 
-			IPACMDBG("Interface (%s) is non nat\n", ifr.ifr_name);
+			IPACMDBG("Interface (%s) is nat\n", ifr.ifr_name);
 			if(del == false)
 			{
-				pNonNatIfaces[i].ipv4_addr = data->ipv4_addr;
-				IPACMDBG("Ignore connections of Interface (%s)\n", pNonNatIfaces[i].iface_name);
-				IPACM_ConntrackClient::iptodot("and ipv4 address", pNonNatIfaces[i].ipv4_addr);
+				for(j = 0; j < MAX_NAT_IFACES; j++)
+				{
+					if(nat_iface_ipv4_addr[j] == 0)
+					{
+						nat_iface_ipv4_addr[j] = data->ipv4_addr;
+						break;
+					}
+				}
+				IPACMDBG("Nating connections of Interface (%s)\n", pNatIfaces[i].iface_name);
+				IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
 			}
 			else
 			{
-				if(pNonNatIfaces[i].ipv4_addr == 0)
+				for(j = 0; j < MAX_NAT_IFACES; j++)
 				{
-					IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, redudancy\n");
-					return;
+					if(nat_iface_ipv4_addr[j] == data->ipv4_addr)
+				{
+						/* Reset */
+						IPACMDBG("Reseting ct filters of Interface (%s)\n", pNatIfaces[i].iface_name);
+						IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
+
+						nat_iface_ipv4_addr[j] = 0;
+						break;
+					}
 				}
 
-				/* Reset it to avoid redudancy */
-				pNonNatIfaces[i].ipv4_addr = 0;
-				IPACMDBG("Reseting ct filters of Interface (%s)\n", pNonNatIfaces[i].iface_name);
 			}
 			break;
 		}
@@ -558,18 +580,26 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 /* Retrieve Protocol */
 	 rule.protocol = nfct_get_attr_u8(ct, ATTR_REPL_L4PROTO);
 
-	 for(int cnt = 0; cnt < NonNatIfaceCnt; cnt++)
+	 int cnt;
+	 for(cnt = 0; cnt <MAX_NAT_IFACES; cnt++)
 	 {
-		 if(pNonNatIfaces[cnt].ipv4_addr != 0)
+		 if(nat_iface_ipv4_addr[cnt] != 0)
 		 {
-			 if(rule.private_ip == pNonNatIfaces[cnt].ipv4_addr ||
-					rule.target_ip == pNonNatIfaces[cnt].ipv4_addr)
+			 if(rule.private_ip == nat_iface_ipv4_addr[cnt] ||
+					rule.target_ip == nat_iface_ipv4_addr[cnt])
 			 {
-				 IPACMDBG("Non Nat iface %s match, Ignoring above Nat entry\n",
-									pNonNatIfaces[cnt].iface_name);
-				 return;
+				IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): Nat entry match with ip addr", 
+				                       nat_iface_ipv4_addr[cnt]);
+				 break;
+			 }
 			 }
 		 }
+	 
+	 if(cnt == MAX_NAT_IFACES)
+	 {
+		IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): ignoring iface with ip address", 
+				                       nat_iface_ipv4_addr[cnt]);
+	    return;
 	 }
 	 
 	 IPACMDBG("Nat Entry with below information will be added\n");
