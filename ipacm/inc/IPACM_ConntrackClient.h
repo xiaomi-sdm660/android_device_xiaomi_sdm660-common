@@ -52,12 +52,24 @@ extern "C"
 {
 #include <libnetfilter_conntrack/libnetfilter_conntrack.h>
 #include <libnetfilter_conntrack/libnetfilter_conntrack_tcp.h>
+#include <sys/inotify.h>
 }
 
 using namespace std;
 
 #define UDP_TIMEOUT_UPDATE 20
 #define BROADCAST_IPV4_ADDR 0xFFFFFFFF
+
+
+#define IPACM_DIR_NAME       "/proc/sys/net/ipv4/netfilter"
+#define IPACM_TCP_FILE_NAME  "ip_conntrack_tcp_timeout_established"
+#define IPACM_UDP_FILE_NAME   "ip_conntrack_udp_timeout_stream"
+
+#define IPACM_TCP_FULL_FILE_NAME  "/proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established"
+#define IPACM_UDP_FULL_FILE_NAME   "/proc/sys/net/ipv4/netfilter/ip_conntrack_udp_timeout_stream"
+
+#define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
+#define INOTIFY_BUF_LEN     (INOTIFY_EVENT_SIZE + 2*sizeof(IPACM_TCP_FILE_NAME))
 
 class IPACM_ConntrackClient
 {
@@ -83,10 +95,12 @@ public:
 	 static int IPA_Conntrack_TCP_Filter_Init(void);
 	 static void* TCPRegisterWithConnTrack(void *);
 	 static void* UDPRegisterWithConnTrack(void *);
-	 static void* UDPConnTimeoutUpdate(void *ptr);
+	 static void* UDPConnTimeoutUpdate(void *);
+	 static void* TCPUDP_Timeout_monitor(void *);
 
 	 static void UpdateUDPFilters(void *);
 	 static void UpdateTCPFilters(void *);
+	 static void Read_TcpUdp_Timeout(char *in, int len);
 
 	 static IPACM_ConntrackClient* GetInstance();
 

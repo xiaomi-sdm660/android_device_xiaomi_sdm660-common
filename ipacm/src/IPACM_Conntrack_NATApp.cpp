@@ -29,7 +29,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Conntrack_NATApp.h"
 #include "IPACM_ConntrackClient.h"
 
-#define UDP_TIMEOUT_VALUE 30
 #define INVALID_IP_ADDR 0x0
 
 /* NatApp class Implementation */
@@ -393,8 +392,16 @@ void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
 	}
 	
 	nfct_set_attr_u8(ct, ATTR_L3PROTO, AF_INET);
-	nfct_set_attr_u8(ct, ATTR_L4PROTO, IPPROTO_UDP);
-	nfct_set_attr_u32(ct, ATTR_TIMEOUT, UDP_TIMEOUT_VALUE);
+	if(rule->protocol == IPPROTO_UDP)
+	{
+		nfct_set_attr_u8(ct, ATTR_L4PROTO, rule->protocol);
+		nfct_set_attr_u32(ct, ATTR_TIMEOUT, udp_timeout);
+	}
+	else
+	{
+		nfct_set_attr_u8(ct, ATTR_L4PROTO, rule->protocol);
+		nfct_set_attr_u32(ct, ATTR_TIMEOUT, tcp_timeout);
+	}
 
 	if(rule->dst_nat == false)
 	{
@@ -422,7 +429,9 @@ void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
 	IPACMDBG("Source Port: %d, Destination Port: %d\n",
 					 nfct_get_attr_u16(ct, ATTR_PORT_SRC), nfct_get_attr_u16(ct, ATTR_PORT_DST)); 
 	
-	IPACMDBG("updating udp connection with time: %d\n", UDP_TIMEOUT_VALUE);
+	IPACMDBG("updating %d connection with time: %d\n", 
+					 rule->protocol, nfct_get_attr_u32(ct, ATTR_TIMEOUT));
+
 	ret = nfct_query(ct_hdl, NFCT_Q_UPDATE, ct);
 	if(ret == -1)
 	{
@@ -445,8 +454,7 @@ void NatApp::UpdateUDPTimeStamp()
 	for(cnt = 0; cnt < curCnt; cnt++)
 	{
 		ts = 0;
-		if(IPPROTO_UDP == cache[cnt].protocol &&
-			 cache[cnt].enabled == true)
+		if(cache[cnt].enabled == true)
 		{
 			IPACMDBG("\n");
 			if(ipa_nat_query_timestamp(nat_table_hdl, cache[cnt].rule_hdl, &ts) < 0)
@@ -457,6 +465,8 @@ void NatApp::UpdateUDPTimeStamp()
 
 			if(cache[cnt].timestamp == ts)
 			{
+				IPACMERR("No Change in Time Stamp: cahce:%d, ipahw:%d\n",
+								                  cache[cnt].timestamp, ts);
 				continue;
 			}
 			
@@ -606,6 +616,20 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 	}
 
 	return -1;
+}
+
+void NatApp::UpdateTcpUdpTo(uint32_t new_value, int proto)
+{
+	if(proto == IPPROTO_TCP)
+	{
+		tcp_timeout = new_value;
+		IPACMDBG("new nat tcp timeout value: %d\n", tcp_timeout);
+	}
+	else if(proto == IPPROTO_UDP)
+	{
+		udp_timeout = new_value;
+		IPACMDBG("new nat udp timeout value: %d\n", udp_timeout);
+	}
 }
 
 uint32_t NatApp::GetTableHdl(uint32_t in_ip_addr)

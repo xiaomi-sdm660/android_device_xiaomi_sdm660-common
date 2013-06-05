@@ -85,6 +85,9 @@ private:
 	ipacm_alg *pALGPorts;
 	uint16_t nALGPort;
 
+	uint32_t tcp_timeout;
+	uint32_t udp_timeout;
+
 	uint32_t PwrSaveIfs[IPA_MAX_NUM_WIFI_CLIENTS];
 
 	struct nf_conntrack *ct;
@@ -113,6 +116,8 @@ public:
 
 	int UpdatePwrSaveIf(uint32_t);
 	int ResetPwrSaveIf(uint32_t);
+
+	void UpdateTcpUdpTo(uint32_t, int proto);
 };
 
 

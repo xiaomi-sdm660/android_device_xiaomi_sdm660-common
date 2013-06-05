@@ -278,7 +278,7 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 int IPACM_ConntrackListener::CreateNatThreads(void)
 {
 	 int ret;
-	 pthread_t tcp_thread = 0, udp_thread = 0, udpcto_thread = 0;
+	 pthread_t tcp_thread = 0, udp_thread = 0, udpcto_thread = 0, to_monitor_thread = 0;
 
 	 if(isCTReg == false)
 	 {
@@ -322,6 +322,19 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 IPACMDBG("created upd conn timeout thread\n");
 			}
 
+			if(!to_monitor_thread)
+			{
+				ret = pthread_create(&to_monitor_thread, NULL, IPACM_ConntrackClient::TCPUDP_Timeout_monitor, NULL);
+				 if(0 != ret)
+				 {
+						IPACMERR("unable to create tcp/udp timeout monitor thread\n");
+						PERROR("unable to create tcp/udp timeout monitor\n");
+						goto error;
+				 }
+
+				 IPACMDBG("created tcp/udp timeout monitor thread\n");
+			}
+
 			isCTReg = true;
 	 }
 
@@ -345,6 +358,11 @@ error:
 	 if(udpcto_thread)
 	 {
 			pthread_cancel(udpcto_thread);
+	 }
+
+	 if(to_monitor_thread)
+	 {
+		 pthread_cancel(to_monitor_thread);
 	 }
 
 	 return -1;
