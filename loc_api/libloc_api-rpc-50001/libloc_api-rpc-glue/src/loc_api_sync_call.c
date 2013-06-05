@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -195,7 +195,7 @@ void loc_api_callback_process_sync_call(
 {
    int i;
 
-   LOGV("loc_handle = 0x%lx, loc_event = 0x%lx", loc_handle, loc_event);
+   ALOGV("loc_handle = 0x%lx, loc_event = 0x%lx", loc_handle, loc_event);
    for (i = 0; i < loc_sync_data.num_of_slots; i++)
    {
       loc_sync_call_slot_s_type *slot = &loc_sync_data.slots[i];
@@ -211,7 +211,7 @@ void loc_api_callback_process_sync_call(
 
          slot->loc_cb_received_event_mask = loc_event;
 
-         LOGV("signal slot %d in_use %d, loc_handle 0x%lx, event_mask 0x%1x, ioctl_type %d", i, slot->in_use, slot->loc_handle, (int) slot->loc_cb_wait_event_mask, (int) slot->ioctl_type);
+         ALOGV("signal slot %d in_use %d, loc_handle 0x%lx, event_mask 0x%1x, ioctl_type %d", i, slot->in_use, slot->loc_handle, (int) slot->loc_cb_wait_event_mask, (int) slot->ioctl_type);
          pthread_cond_signal(&slot->loc_cb_arrived_cond);
          slot->signal_sent = 1;
 
@@ -252,21 +252,19 @@ static int loc_lock_a_slot()
       loc_sync_call_slot_s_type *slot = &loc_sync_data.slots[i];
       if (pthread_mutex_trylock(&slot->lock) == EBUSY)
       {
-         LOGV("trylock EBUSY : %d", i);
+         ALOGV("trylock EBUSY : %d", i);
          continue;
       }
 
       if (!slot->in_use && !slot->not_available)
       {
          select_id = i;
-         slot->in_use = 1;
-         slot->signal_sent = 0;
          /* Return from here and leave the mutex locked.
           * will unlock it in loc_unlock_slot()
           */
          break;
       }
-      /* LOGV("slot %d in_use = %d, not_available = %d : %d", i, slot->in_use, slot->not_available, i); */
+      /* ALOGV("slot %d in_use = %d, not_available = %d : %d", i, slot->in_use, slot->not_available, i); */
       pthread_mutex_unlock(&slot->lock);
    }
 
@@ -278,7 +276,7 @@ static int loc_lock_a_slot()
 FUNCTION    loc_unlock_slot
 
 DESCRIPTION
-   Frees a buffer slot after the synchronous API call
+   Unlocks a buffer slot
 
 DEPENDENCIES
    N/A
@@ -292,9 +290,54 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_unlock_slot(int select_id)
 {
-   loc_sync_data.slots[select_id].in_use = 0;
-
    pthread_mutex_unlock(&loc_sync_data.slots[select_id].lock);
+}
+
+/*===========================================================================
+
+FUNCTION    loc_lock_slot
+
+DESCRIPTION
+   Locks a specific slot that was previously locked from loc_lock_a_slot
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_lock_slot(int select_id)
+{
+    pthread_mutex_lock(&loc_sync_data.slots[select_id].lock);
+}
+
+/*===========================================================================
+
+FUNCTION    loc_set_slot_in_use
+
+DESCRIPTION
+   Sets the in_use flag of slot to true or false.
+   Should be called only after the slot is locked
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_set_slot_in_use(int select_id, boolean in_use)
+{
+    loc_sync_data.slots[select_id].in_use = in_use;
+    if (in_use == 1)
+        loc_sync_data.slots[select_id].signal_sent = 0;
 }
 
 /*===========================================================================
@@ -399,7 +442,7 @@ static int loc_api_wait_callback(
 )
 {
    int ret_val = RPC_LOC_API_SUCCESS;  /* the return value of this function: 0 = no error */
-   int rc;                             /* return code from pthread calls */
+   int rc = 0;                         /* return code from pthread calls */
 
    struct timespec expire_time;
 
@@ -417,7 +460,7 @@ static int loc_api_wait_callback(
    if (rc == ETIMEDOUT)
    {
       ret_val = RPC_LOC_API_TIMEOUT; /* Timed out */
-      LOGE("TIMEOUT: %d", select_id);
+      ALOGE("TIMEOUT: %d", select_id);
    }
    else {
       /* Obtained the first awaited callback */
@@ -462,29 +505,38 @@ int loc_api_sync_ioctl
 
    if (select_id < 0 || select_id >= loc_sync_data.num_of_slots)
    {
-      LOGE("slot not available ioctl_type = %s",
+      ALOGE("slot not available ioctl_type = %s",
            loc_get_ioctl_type_name(ioctl_type));
       return rc;
    }
 
+   loc_set_slot_in_use(select_id, 1); // set slot in use to true
+
    // Select the callback we are waiting for
    loc_api_save_callback(select_id, handle, 0, ioctl_type);
 
+   loc_unlock_slot(select_id); // slot is unlocked, but in_use is still true
+
+   // we want to avoid keeping the slot locked during the loc_ioctl because the rpc
+   // framework will also lock a different mutex during this call, and typically
+   // locking two different mutexes at the same time can lead to deadlock.
    rc =  loc_ioctl(handle, ioctl_type, ioctl_data_ptr);
+
+   loc_lock_slot(select_id);
 
    if (rc != RPC_LOC_API_SUCCESS)
    {
-      LOGE("loc_ioctl failed select_id = %d, ioctl_type %s, returned %s",
+      ALOGE("loc_ioctl failed select_id = %d, ioctl_type %s, returned %s",
            select_id, loc_get_ioctl_type_name(ioctl_type), loc_get_ioctl_status_name(rc));
    }
    else {
-      LOGV("select_id = %d, ioctl_type %d, returned RPC_LOC_API_SUCCESS",
+      ALOGV("select_id = %d, ioctl_type %d, returned RPC_LOC_API_SUCCESS",
           select_id, ioctl_type);
       // Wait for the callback of loc_ioctl
       if ((rc = loc_api_wait_callback(select_id, timeout_msec / 1000, NULL, &callback_data)) != 0)
       {
          // Callback waiting failed
-         LOGE("callback wait failed select_id = %d, ioctl_type %s, returned %s",
+         ALOGE("callback wait failed select_id = %d, ioctl_type %s, returned %s",
               select_id, loc_get_ioctl_type_name(ioctl_type), loc_get_ioctl_status_name(rc));
       }
       else
@@ -493,15 +545,16 @@ int loc_api_sync_ioctl
          if (callback_data.status != RPC_LOC_API_SUCCESS)
          {
             rc = callback_data.status;
-            LOGE("callback status failed select_id = %d, ioctl_type %s, returned %s",
+            ALOGE("callback status failed select_id = %d, ioctl_type %s, returned %s",
                  select_id, loc_get_ioctl_type_name(ioctl_type), loc_get_ioctl_status_name(rc));
          } else {
-            LOGV("callback status success select_id = %d, ioctl_type %d, returned %d",
+            ALOGV("callback status success select_id = %d, ioctl_type %d, returned %d",
                 select_id, ioctl_type, rc);
          }
       } /* wait callback */
    } /* loc_ioctl */
 
+   loc_set_slot_in_use(select_id, 0); // set slot in use to false
    loc_unlock_slot(select_id);
 
    return rc;

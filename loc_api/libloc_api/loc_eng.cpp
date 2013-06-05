@@ -1,4 +1,4 @@
-/* Copyright (c) 2009,2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009,2011 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -78,8 +78,8 @@ static int loc_eng_agps_data_conn_failed();
 static int loc_eng_agps_set_server(AGpsType type, const char* hostname, int port);
 
 
-static int32 loc_event_cb (rpc_loc_client_handle_type client_handle, 
-                           rpc_loc_event_mask_type loc_event, 
+static int32 loc_event_cb (rpc_loc_client_handle_type client_handle,
+                           rpc_loc_event_mask_type loc_event,
                            const rpc_loc_event_payload_u_type* loc_event_payload);
 static void loc_eng_report_position (const rpc_loc_parsed_position_s_type *location_report_ptr);
 static void loc_eng_report_sv (const rpc_loc_gnss_info_s_type *gnss_report_ptr);
@@ -743,7 +743,7 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_eng_report_position (const rpc_loc_parsed_position_s_type *location_report_ptr)
 {
-    GpsLocation location;
+    UlpLocation location;
 
     LOGV ("loc_eng_report_position: location report, valid mask = 0x%x, sess status = %d\n",
          (uint32) location_report_ptr->valid_mask, location_report_ptr->session_status);
@@ -831,7 +831,7 @@ static void loc_eng_report_sv (const rpc_loc_gnss_info_s_type *gnss_report_ptr)
 {
     GpsSvStatus     SvStatus;
     int             num_svs_max, i;
-	const rpc_loc_sv_info_s_type *sv_info_ptr;
+    const rpc_loc_sv_info_s_type *sv_info_ptr;
 
     LOGV ("loc_eng_report_sv: valid_mask = 0x%x, num of sv = %d\n",
             (uint32) gnss_report_ptr->valid_mask,
@@ -1273,7 +1273,7 @@ static void loc_eng_process_atl_deferred_action (int flags)
     LOGV("loc_eng_process_atl_deferred_action, agps_status = %d\n", loc_eng_data.agps_status);
 
     memset (&ioctl_data, 0, sizeof (rpc_loc_ioctl_data_u_type));
- 
+
     if (flags & DEFERRED_ACTION_AGPS_DATA_CLOSED)
     {
         ioctl_data.disc = RPC_LOC_IOCTL_INFORM_SERVER_CLOSE_STATUS;

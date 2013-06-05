@@ -20,6 +20,10 @@ LOCAL_CFLAGS+=$(GPS_FEATURES)
 # for loc_api_fixup.c
 LOCAL_CFLAGS+=-DADD_XDR_FLOAT -DADD_XDR_BOOL
 
+ifeq ($(FEATURE_IPV6), true)
+LOCAL_CFLAGS += -DFEATURE_IPV6
+endif #FEATURE_IPV6
+
 LOCAL_SHARED_LIBRARIES:= \
     librpc \
     libutils \

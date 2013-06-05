@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -31,6 +31,13 @@
 
 #include <linux/types.h>
 #include <arpa/inet.h>
+
+//for SSID_BUF_SIZE
+#include <hardware/gps.h>
+
+#ifndef SSID_BUF_SIZE
+    #define SSID_BUF_SIZE (32+1)
+#endif
 
 enum {
     /* 0x0 - 0xEF is reserved for daemon internal */
@@ -55,10 +62,27 @@ struct ctrl_msg_unblock {
     int reserved;
 };
 
+typedef enum {
+  IF_REQUEST_TYPE_SUPL = 0,
+  IF_REQUEST_TYPE_WIFI,
+  IF_REQUEST_TYPE_ANY
+} ctrl_if_req_type_e_type;
+
+typedef enum {
+  IF_REQUEST_SENDER_ID_QUIPC = 0,
+  IF_REQUEST_SENDER_ID_MSAPM,
+  IF_REQUEST_SENDER_ID_MSAPU,
+  IF_REQUEST_SENDER_ID_GPSONE_DAEMON,
+  IF_REQUEST_SENDER_ID_MODEM
+} ctrl_if_req_sender_id_e_type;
+
 struct ctrl_msg_if_request {
-    unsigned is_supl; /* 1: use Android SUPL connection; 0: use Android default internet connection */
+    ctrl_if_req_type_e_type type;
+    ctrl_if_req_sender_id_e_type sender_id;
     unsigned long ipv4_addr;
     unsigned char ipv6_addr[16];
+    char ssid[SSID_BUF_SIZE];
+    char password[SSID_BUF_SIZE];
 };
 
 /* do not change this structure */

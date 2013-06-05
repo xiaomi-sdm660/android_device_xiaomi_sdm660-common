@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -33,23 +33,77 @@
 #include <fcntl.h>
 #include <linux/types.h>
 #include <unistd.h>
+#include <errno.h>
+#include <grp.h>
+#include <sys/stat.h>
 
 #include "log_util.h"
 
 #include "loc_eng_dmn_conn_glue_msg.h"
 #include "loc_eng_dmn_conn_handler.h"
 #include "loc_eng_dmn_conn.h"
+#include "loc_eng_msg.h"
 
 static int loc_api_server_msgqid;
 static int loc_api_resp_msgqid;
+static int quipc_msgqid;
+static int msapm_msgqid;
+static int msapu_msgqid;
 
 static const char * global_loc_api_q_path = GPSONE_LOC_API_Q_PATH;
 static const char * global_loc_api_resp_q_path = GPSONE_LOC_API_RESP_Q_PATH;
+static const char * global_quipc_ctrl_q_path = QUIPC_CTRL_Q_PATH;
+static const char * global_msapm_ctrl_q_path = MSAPM_CTRL_Q_PATH;
+static const char * global_msapu_ctrl_q_path = MSAPU_CTRL_Q_PATH;
 
 static int loc_api_server_proc_init(void *context)
 {
     loc_api_server_msgqid = loc_eng_dmn_conn_glue_msgget(global_loc_api_q_path, O_RDWR);
+    //change mode/group for the global_loc_api_q_path pipe
+    int result = chmod (global_loc_api_q_path, 0660);
+    if (result != 0)
+    {
+        LOC_LOGE("failed to change mode for %s, error = %s\n", global_loc_api_q_path, strerror(errno));
+    }
+
+    struct group * gps_group = getgrnam("gps");
+    if (gps_group != NULL)
+    {
+       result = chown (global_loc_api_q_path, -1, gps_group->gr_gid);
+       if (result != 0)
+       {
+          LOC_LOGE("chown for pipe failed, pipe %s, gid = %d, result = %d, error = %s\n",
+                   global_loc_api_q_path, gps_group->gr_gid, result, strerror(errno));
+       }
+    }
+    else
+    {
+       LOC_LOGE("getgrnam for gps failed, error code = %d\n",  errno);
+    }
+
     loc_api_resp_msgqid = loc_eng_dmn_conn_glue_msgget(global_loc_api_resp_q_path, O_RDWR);
+
+    //change mode/group for the global_loc_api_resp_q_path pipe
+    result = chmod (global_loc_api_resp_q_path, 0660);
+    if (result != 0)
+    {
+        LOC_LOGE("failed to change mode for %s, error = %s\n", global_loc_api_resp_q_path, strerror(errno));
+    }
+
+    if (gps_group != NULL)
+    {
+       result = chown (global_loc_api_resp_q_path, -1, gps_group->gr_gid);
+       if (result != 0)
+       {
+          LOC_LOGE("chown for pipe failed, pipe %s, gid = %d, result = %d, error = %s\n",
+                   global_loc_api_resp_q_path,
+                   gps_group->gr_gid, result, strerror(errno));
+       }
+    }
+
+    quipc_msgqid = loc_eng_dmn_conn_glue_msgget(global_quipc_ctrl_q_path, O_RDWR);
+    msapm_msgqid = loc_eng_dmn_conn_glue_msgget(global_msapm_ctrl_q_path , O_RDWR);
+    msapu_msgqid = loc_eng_dmn_conn_glue_msgget(global_msapu_ctrl_q_path , O_RDWR);
 
     LOC_LOGD("%s:%d] loc_api_server_msgqid = %d\n", __func__, __LINE__, loc_api_server_msgqid);
     return 0;
@@ -80,6 +134,7 @@ static int loc_api_server_proc(void *context)
     LOC_LOGD("%s:%d] %d listening on %s...\n", __func__, __LINE__, cnt, (char *) context);
     length = loc_eng_dmn_conn_glue_msgrcv(loc_api_server_msgqid, p_cmsgbuf, sz);
     if (length <= 0) {
+        free(p_cmsgbuf);
         LOC_LOGE("%s:%d] fail receiving msg from gpsone_daemon, retry later\n", __func__, __LINE__);
         usleep(1000);
         return 0;
@@ -114,6 +169,9 @@ static int loc_api_server_proc_post(void *context)
     LOC_LOGD("%s:%d]\n", __func__, __LINE__);
     loc_eng_dmn_conn_glue_msgremove( global_loc_api_q_path, loc_api_server_msgqid);
     loc_eng_dmn_conn_glue_msgremove( global_loc_api_resp_q_path, loc_api_resp_msgqid);
+    loc_eng_dmn_conn_glue_msgremove( global_quipc_ctrl_q_path, quipc_msgqid);
+    loc_eng_dmn_conn_glue_msgremove( global_msapm_ctrl_q_path, msapm_msgqid);
+    loc_eng_dmn_conn_glue_msgremove( global_msapu_ctrl_q_path, msapu_msgqid);
     return 0;
 }
 
@@ -165,16 +223,48 @@ int loc_eng_dmn_conn_loc_api_server_join(void)
     return 0;
 }
 
-int loc_eng_dmn_conn_loc_api_server_data_conn(int status) {
+int loc_eng_dmn_conn_loc_api_server_data_conn(int sender_id, int status) {
   struct ctrl_msgbuf cmsgbuf;
+  LOC_LOGD("%s:%d] quipc_msgqid = %d\n", __func__, __LINE__, quipc_msgqid);
   cmsgbuf.ctrl_type = GPSONE_LOC_API_RESPONSE;
   cmsgbuf.cmsg.cmsg_response.result = status;
-  LOC_LOGD("%s:%d] status = %d",__func__, __LINE__, status);
-  if (loc_eng_dmn_conn_glue_msgsnd(loc_api_resp_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
-    LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
-    return -1;
+  switch (sender_id) {
+    case LOC_ENG_IF_REQUEST_SENDER_ID_QUIPC: {
+      LOC_LOGD("%s:%d] sender_id = LOC_ENG_IF_REQUEST_SENDER_ID_QUIPC", __func__, __LINE__);
+      if (loc_eng_dmn_conn_glue_msgsnd(quipc_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
+        LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
+        return -1;
+      }
+      break;
+    }
+    case LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM: {
+      LOC_LOGD("%s:%d] sender_id = LOC_ENG_IF_REQUEST_SENDER_ID_MSAPM", __func__, __LINE__);
+      if (loc_eng_dmn_conn_glue_msgsnd(msapm_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
+        LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
+        return -1;
+      }
+      break;
+    }
+    case LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU: {
+      LOC_LOGD("%s:%d] sender_id = LOC_ENG_IF_REQUEST_SENDER_ID_MSAPU", __func__, __LINE__);
+      if (loc_eng_dmn_conn_glue_msgsnd(msapu_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
+        LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
+        return -1;
+      }
+      break;
+    }
+    case LOC_ENG_IF_REQUEST_SENDER_ID_GPSONE_DAEMON: {
+      LOC_LOGD("%s:%d] sender_id = LOC_ENG_IF_REQUEST_SENDER_ID_GPSONE_DAEMON", __func__, __LINE__);
+      if (loc_eng_dmn_conn_glue_msgsnd(loc_api_resp_msgqid, & cmsgbuf, sizeof(struct ctrl_msgbuf)) < 0) {
+        LOC_LOGD("%s:%d] error! conn_glue_msgsnd failed\n", __func__, __LINE__);
+        return -1;
+      }
+      break;
+    }
+    default: {
+      LOC_LOGD("%s:%d] invalid sender ID!", __func__, __LINE__);
+    }
   }
   return 0;
-
 }
 

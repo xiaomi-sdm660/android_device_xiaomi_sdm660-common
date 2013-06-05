@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -37,7 +37,7 @@ extern "C"
 
 #include <ctype.h>
 #include <hardware/gps.h>
-#include "loc_eng_msg_id.h"
+#include <loc.h>
 
 const char* loc_get_gps_status_name(GpsStatusValue gps_status);
 const char* loc_get_msg_name(int id);
@@ -48,7 +48,7 @@ const char* loc_get_agps_type_name(AGpsType type);
 const char* loc_get_ni_type_name(GpsNiType type);
 const char* loc_get_ni_response_name(GpsUserResponseType response);
 const char* loc_get_ni_encoding_name(GpsNiEncodingType encoding);
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
 const char* loc_get_agps_bear_name(AGpsBearerType bear);
 #endif
 const char* loc_get_server_type_name(LocServerType type);
