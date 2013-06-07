@@ -107,7 +107,8 @@ static loc_name_val_s_type loc_eng_msgs[] =
     NAME_VAL( ULP_MSG_MONITOR ),
     NAME_VAL( LOC_ENG_MSG_LPP_CONFIG ),
     NAME_VAL( ULP_MSG_INJECT_RAW_COMMAND ),
-    NAME_VAL( LOC_ENG_MSG_A_GLONASS_PROTOCOL )
+    NAME_VAL( LOC_ENG_MSG_A_GLONASS_PROTOCOL ),
+    NAME_VAL( LOC_ENG_MSG_LOC_INIT )
 };
 static int loc_eng_msgs_num = sizeof(loc_eng_msgs) / sizeof(loc_name_val_s_type);
 
