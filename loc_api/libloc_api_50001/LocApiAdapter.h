@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -32,9 +32,13 @@
 #include <ctype.h>
 #include <hardware/gps.h>
 #include <loc.h>
+#include <loc_eng_log.h>
 #include <log_util.h>
+#include <loc_eng_msg.h>
 
-#define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+#define MAX_APN_LEN 100
+#define MAX_URL_LEN 256
+#define smaller_of(a, b) (((a) > (b)) ? (b) : (a))
 
 enum loc_api_adapter_err {
     LOC_API_ADAPTER_ERR_SUCCESS             = 0,
@@ -85,6 +89,7 @@ struct LocEng {
     const gps_acquire_wakelock acquireWakelock;
     const gps_release_wakelock releaseWakeLock;
     const loc_msg_sender       sendMsge;
+    const loc_msg_sender       sendUlpMsg;
     const loc_ext_parser       extPosInfo;
     const loc_ext_parser       extSvInfo;
 
@@ -93,6 +98,7 @@ struct LocEng {
            gps_acquire_wakelock acqwl,
            gps_release_wakelock relwl,
            loc_msg_sender msgSender,
+           loc_msg_sender msgUlpSender,
            loc_ext_parser posParser,
            loc_ext_parser svParser);
 };
@@ -100,6 +106,8 @@ struct LocEng {
 class LocApiAdapter {
 protected:
     const LocEng locEngHandle;
+    LocPosMode fixCriteria;
+    bool navigating;
 
     LocApiAdapter(LocEng &locEng);
 
@@ -114,10 +122,14 @@ public:
     static int decodeAddress(char *addr_string, int string_size,
                              const char *data, int data_size);
 
-    void reportPosition(GpsLocation &location,
+    void reportPosition(UlpLocation &location,
+                        GpsLocationExtended &locationExtended,
                         void* locationExt,
-                        enum loc_sess_status status);
-    void reportSv(GpsSvStatus &svStatus, void* svExt);
+                        enum loc_sess_status status,
+                        LocPosTechMask loc_technology_mask = LOC_POS_TECH_MASK_DEFAULT);
+    void reportSv(GpsSvStatus &svStatus,
+                  GpsLocationExtended &locationExtended,
+                  void* svExt);
     void reportStatus(GpsStatusValue status);
     void reportNmea(const char* nmea, int length);
     void reportAgpsStatus(AGpsStatus &agpsStatus);
@@ -159,7 +171,7 @@ public:
     inline virtual enum loc_api_adapter_err
         setXtraData(char* data, int length)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
     inline virtual enum loc_api_adapter_err
         atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
@@ -172,9 +184,7 @@ public:
         atlCloseStatus(int handle, int is_succ)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
-        setPositionMode(LocPositionMode mode, GpsPositionRecurrence recurrence,
-                        uint32_t min_interval, uint32_t preferred_accuracy,
-                        uint32_t preferred_time)
+        setPositionMode(const LocPosMode *posMode)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
         setServer(const char* url, int len)
@@ -190,15 +200,36 @@ public:
         setSUPLVersion(uint32_t version)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
+        setLPPConfig(uint32_t profile)
+    {LOC_LOGW("%s: default implementation invoked", __func__);
+     return LOC_API_ADAPTER_ERR_SUCCESS; }
+    inline virtual enum loc_api_adapter_err
         setSensorControlConfig(int sensorUsage)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
-        setSensorProperties(float gyroBiasVarianceRandomWalk)
+        setSensorProperties(bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
+                            bool accelBiasVarianceRandomWalk_valid, float accelBiasVarianceRandomWalk,
+                            bool angleBiasVarianceRandomWalk_valid, float angleBiasVarianceRandomWalk,
+                            bool rateBiasVarianceRandomWalk_valid, float rateBiasVarianceRandomWalk,
+                            bool velocityBiasVarianceRandomWalk_valid, float velocityBiasVarianceRandomWalk)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
     inline virtual enum loc_api_adapter_err
         setSensorPerfControlConfig(int controlMode, int accelSamplesPerBatch, int accelBatchesPerSec,
-                            int gyroSamplesPerBatch, int gyroBatchesPerSec)
+                            int gyroSamplesPerBatch, int gyroBatchesPerSec,
+                            int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+                            int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig)
     {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
+    inline virtual enum loc_api_adapter_err
+        setExtPowerConfig(int isBatteryCharging)
+    {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
+    inline virtual enum loc_api_adapter_err
+        setAGLONASSProtocol(unsigned long aGlonassProtocol)
+    {LOC_LOGW("%s: default implementation invoked", __func__); return LOC_API_ADAPTER_ERR_SUCCESS;}
+
+    inline const LocPosMode& getPositionMode() const {return fixCriteria;}
+
+    inline bool isInSession() { return navigating; }
+    inline virtual void setInSession(bool inSession) { navigating = inSession; }
 };
 
 extern "C" LocApiAdapter* getLocApiAdapter(LocEng &locEng);

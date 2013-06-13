@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -31,7 +31,6 @@
 #define LOG_TAG "LocSvc_eng"
 
 #include "hardware/gps.h"
-#include "loc.h"
 #include "loc_log.h"
 #include "loc_eng_log.h"
 #include "loc_eng_msg_id.h"
@@ -88,10 +87,27 @@ static loc_name_val_s_type loc_eng_msgs[] =
     NAME_VAL( LOC_ENG_MSG_RELEASE_ATL ),
     NAME_VAL( LOC_ENG_MSG_REQUEST_BIT ),
     NAME_VAL( LOC_ENG_MSG_RELEASE_BIT ),
+    NAME_VAL( LOC_ENG_MSG_REQUEST_WIFI ),
+    NAME_VAL( LOC_ENG_MSG_RELEASE_WIFI ),
     NAME_VAL( LOC_ENG_MSG_REQUEST_NI ),
     NAME_VAL( LOC_ENG_MSG_INFORM_NI_RESPONSE ),
     NAME_VAL( LOC_ENG_MSG_REQUEST_XTRA_DATA ),
-    NAME_VAL( LOC_ENG_MSG_REQUEST_TIME )
+    NAME_VAL( LOC_ENG_MSG_REQUEST_TIME ),
+    NAME_VAL( LOC_ENG_MSG_EXT_POWER_CONFIG ),
+    NAME_VAL( LOC_ENG_MSG_REQUEST_POSITION ),
+    NAME_VAL( LOC_ENG_MSG_REQUEST_PHONE_CONTEXT ),
+    NAME_VAL( LOC_ENG_MSG_REQUEST_NETWORK_POSIITON ),
+    NAME_VAL( ULP_MSG_UPDATE_CRITERIA ),
+    NAME_VAL( ULP_MSG_START_FIX ),
+    NAME_VAL( ULP_MSG_STOP_FIX ),
+    NAME_VAL( ULP_MSG_INJECT_PHONE_CONTEXT_SETTINGS ),
+    NAME_VAL( ULP_MSG_INJECT_NETWORK_POSITION ),
+    NAME_VAL( ULP_MSG_REPORT_QUIPC_POSITION ),
+    NAME_VAL( ULP_MSG_REQUEST_COARSE_POSITION ),
+    NAME_VAL( ULP_MSG_MONITOR ),
+    NAME_VAL( LOC_ENG_MSG_LPP_CONFIG ),
+    NAME_VAL( ULP_MSG_INJECT_RAW_COMMAND ),
+    NAME_VAL( LOC_ENG_MSG_A_GLONASS_PROTOCOL )
 };
 static int loc_eng_msgs_num = sizeof(loc_eng_msgs) / sizeof(loc_name_val_s_type);
 
@@ -111,7 +127,8 @@ static loc_name_val_s_type loc_eng_position_modes[] =
     NAME_VAL( LOC_POSITION_MODE_RESERVED_1 ),
     NAME_VAL( LOC_POSITION_MODE_RESERVED_2 ),
     NAME_VAL( LOC_POSITION_MODE_RESERVED_3 ),
-    NAME_VAL( LOC_POSITION_MODE_RESERVED_4 )
+    NAME_VAL( LOC_POSITION_MODE_RESERVED_4 ),
+    NAME_VAL( LOC_POSITION_MODE_RESERVED_5 )
 };
 static int loc_eng_position_mode_num = sizeof(loc_eng_position_modes) / sizeof(loc_name_val_s_type);
 
@@ -150,7 +167,7 @@ static loc_name_val_s_type loc_eng_aiding_data_bits[] =
     NAME_VAL( GPS_DELETE_SADATA ),
     NAME_VAL( GPS_DELETE_RTI ),
     NAME_VAL( GPS_DELETE_CELLDB_INFO )
-#ifdef QCOM_FEATURE_DELEXT
+#ifdef FEATURE_DELEXT
     ,NAME_VAL( GPS_DELETE_ALMANAC_CORR ),
     NAME_VAL( GPS_DELETE_FREQ_BIAS_EST ),
     NAME_VAL( GPS_DELETE_EPHEMERIS_GLO ),
@@ -172,13 +189,13 @@ const char* loc_get_aiding_data_mask_names(GpsAidingData data)
 
 static loc_name_val_s_type loc_eng_agps_types[] =
 {
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
     NAME_VAL( AGPS_TYPE_INVALID ),
     NAME_VAL( AGPS_TYPE_ANY ),
 #endif
     NAME_VAL( AGPS_TYPE_SUPL ),
     NAME_VAL( AGPS_TYPE_C2K )
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
     ,NAME_VAL( AGPS_TYPE_WWAN_ANY )
 #endif
 };
@@ -233,7 +250,7 @@ const char* loc_get_ni_encoding_name(GpsNiEncodingType encoding)
     return loc_get_name_from_val(loc_eng_ni_encodings, loc_eng_ni_encoding_num, (long) encoding);
 }
 
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
 static loc_name_val_s_type loc_eng_agps_bears[] =
 {
     NAME_VAL( AGPS_APN_BEARER_INVALID ),

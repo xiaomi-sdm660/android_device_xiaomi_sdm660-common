@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -37,6 +37,7 @@
 #include <hardware/gps.h>
 #include <linked_list.h>
 #include <LocApiAdapter.h>
+#include "loc_eng_msg.h"
 
 // forward declaration
 class AgpsStateMachine;
@@ -149,20 +150,21 @@ class AgpsStateMachine {
     char* mAPN;
     // for convenience, we don't do strlen each time.
     unsigned int mAPNLen;
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
     // bear
     AGpsBearerType mBearer;
 #endif
     // ipv4 address for routing
+    bool mEnforceSingleSubscriber;
 
 public:
-    AgpsStateMachine(void (*servicer)(AGpsStatus* status), AGpsType type);
+    AgpsStateMachine(void (*servicer)(AGpsStatus* status), AGpsType type, bool enforceSingleSubscriber);
     virtual ~AgpsStateMachine();
 
     // self explanatory methods below
     void setAPN(const char* apn, unsigned int len);
     inline const char* getAPN() const { return (const char*)mAPN; }
-#ifdef QCOM_FEATURE_IPV6
+#ifdef FEATURE_IPV6
     inline void setBearer(AGpsBearerType bearer) { mBearer = bearer; }
     inline AGpsBearerType getBearer() const { return mBearer; }
 #endif
@@ -198,14 +200,16 @@ public:
 // multiple clients from modem.  In the case of BIT, there is only one
 // cilent from BIT daemon.
 struct Subscriber {
-    const int ID;
+    const uint32_t ID;
     const AgpsStateMachine* mStateMachine;
     inline Subscriber(const int id,
                       const AgpsStateMachine* stateMachine) :
         ID(id), mStateMachine(stateMachine) {}
     inline virtual ~Subscriber() {}
 
-    virtual void setIPAddresses(int &v4, char* v6) = 0;
+    virtual void setIPAddresses(uint32_t &v4, char* v6) = 0;
+    inline virtual void setWifiInfo(char* ssid, char* password)
+    { ssid[0] = 0; password[0] = 0; }
 
     inline virtual bool equals(const Subscriber *s) const
     { return ID == s->ID; }
@@ -239,7 +243,7 @@ struct BITSubscriber : public Subscriber {
 
     virtual bool notifyRsrcStatus(Notification &notification);
 
-    inline virtual void setIPAddresses(int &v4, char* v6)
+    inline virtual void setIPAddresses(uint32_t &v4, char* v6)
     { v4 = ID; memcpy(v6, ipv6Addr, sizeof(ipv6Addr)); }
 
     virtual Subscriber* clone()
@@ -256,19 +260,72 @@ private:
 // ATLSubscriber, created with requests from ATL
 struct ATLSubscriber : public Subscriber {
     const LocApiAdapter* mLocAdapter;
+    const bool mBackwardCompatibleMode;
     inline ATLSubscriber(const int id,
                          const AgpsStateMachine* stateMachine,
-                         const LocApiAdapter* adapter) :
-        Subscriber(id, stateMachine), mLocAdapter(adapter) {}
+                         const LocApiAdapter* adapter,
+                         const bool compatibleMode) :
+        Subscriber(id, stateMachine), mLocAdapter(adapter),
+        mBackwardCompatibleMode(compatibleMode){}
     virtual bool notifyRsrcStatus(Notification &notification);
 
-    inline virtual void setIPAddresses(int &v4, char* v6)
+    inline virtual void setIPAddresses(uint32_t &v4, char* v6)
     { v4 = INADDR_NONE; v6[0] = 0; }
 
     inline virtual Subscriber* clone()
     {
-        return new ATLSubscriber(ID, mStateMachine, mLocAdapter);
+        return new ATLSubscriber(ID, mStateMachine, mLocAdapter,
+                                 mBackwardCompatibleMode);
     }
 };
+
+#ifdef FEATURE_IPV6
+// WIFISubscriber, created with requests from MSAPM or QuIPC
+struct WIFISubscriber : public Subscriber {
+    char * mSSID;
+    char * mPassword;
+    loc_if_req_sender_id_e_type senderId;
+    bool mIsInactive;
+    inline WIFISubscriber(const AgpsStateMachine* stateMachine,
+                         char * ssid, char * password, loc_if_req_sender_id_e_type sender_id) :
+        Subscriber(sender_id, stateMachine),
+        mSSID(NULL == ssid ? NULL : new char[SSID_BUF_SIZE]),
+        mPassword(NULL == password ? NULL : new char[SSID_BUF_SIZE]),
+        senderId(sender_id)
+    {
+      if (NULL != mSSID)
+          strlcpy(mSSID, ssid, SSID_BUF_SIZE);
+      if (NULL != mPassword)
+          strlcpy(mPassword, password, SSID_BUF_SIZE);
+      mIsInactive = false;
+    }
+
+    virtual bool notifyRsrcStatus(Notification &notification);
+
+    inline virtual void setIPAddresses(uint32_t &v4, char* v6) {}
+
+    inline virtual void setWifiInfo(char* ssid, char* password)
+    {
+      if (NULL != mSSID)
+          strlcpy(ssid, mSSID, SSID_BUF_SIZE);
+      else
+          ssid[0] = '\0';
+      if (NULL != mPassword)
+          strlcpy(password, mPassword, SSID_BUF_SIZE);
+      else
+          password[0] = '\0';
+    }
+
+    inline virtual bool waitForCloseComplete() { return true; }
+
+    inline virtual void setInactive() { mIsInactive = true; }
+    inline virtual bool isInactive() { return mIsInactive; }
+
+    virtual Subscriber* clone()
+    {
+        return new WIFISubscriber(mStateMachine, mSSID, mPassword, senderId);
+    }
+};
+#endif
 
 #endif //__LOC_ENG_AGPS_H__
