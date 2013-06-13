@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -52,7 +52,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
-                       GpsXtraCallbacks* callbacks)
+                       GpsXtraExtCallbacks* callbacks)
 {
     int ret_val = -1;
     loc_eng_xtra_data_s_type *xtra_module_data_ptr;

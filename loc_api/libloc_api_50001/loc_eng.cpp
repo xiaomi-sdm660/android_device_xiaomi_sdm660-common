@@ -869,7 +869,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsCallbacks* callbacks)
+void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* callbacks)
 {
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.context, return);
@@ -886,14 +886,12 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsCallbacks* callbac
     loc_eng_data.agnss_nif = new AgpsStateMachine(loc_eng_data.agps_status_cb,
                                                   AGPS_TYPE_SUPL,
                                                   false);
-#ifdef FEATURE_IPV6
     loc_eng_data.internet_nif = new AgpsStateMachine(loc_eng_data.agps_status_cb,
                                                      AGPS_TYPE_WWAN_ANY,
                                                      false);
     loc_eng_data.wifi_nif = new AgpsStateMachine(loc_eng_data.agps_status_cb,
                                                  AGPS_TYPE_WIFI,
                                                  true);
-#endif
 
     loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
                                                    NULL, NULL, &loc_eng_data);
@@ -919,8 +917,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-#ifdef FEATURE_IPV6
-int loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType,
+int loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
                      const char* apn, AGpsBearerType bearerType)
 {
     ENTRY_LOG_CALLFLOW();
@@ -945,33 +942,6 @@ int loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType,
     EXIT_LOG(%d, 0);
     return 0;
 }
-#else
-int loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data,
-                     const char* apn)
-{
-    ENTRY_LOG_CALLFLOW();
-    INIT_CHECK(loc_eng_data.context && loc_eng_data.agps_status_cb,
-               return -1);
-
-    if (apn == NULL)
-    {
-        LOC_LOGE("APN Name NULL\n");
-        return 0;
-    }
-
-    LOC_LOGD("loc_eng_agps_open APN name = [%s]", apn);
-
-    int apn_len = smaller_of(strlen (apn), MAX_APN_LEN);
-    loc_eng_msg_atl_open_success *msg(
-        new loc_eng_msg_atl_open_success(&loc_eng_data, apn,
-                                        apn_len));
-    msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
-              msg, loc_eng_free_msg);
-
-    EXIT_LOG(%d, 0);
-    return 0;
-}
-#endif
 
 /*===========================================================================
 FUNCTION    loc_eng_agps_closed
@@ -990,8 +960,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-#ifdef FEATURE_IPV6
-int loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType)
+int loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType)
 {
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.context && loc_eng_data.agps_status_cb,
@@ -1004,21 +973,6 @@ int loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType)
     EXIT_LOG(%d, 0);
     return 0;
 }
-#else
-int loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data)
-{
-    ENTRY_LOG_CALLFLOW();
-    INIT_CHECK(loc_eng_data.context && loc_eng_data.agps_status_cb,
-               return -1);
-
-    loc_eng_msg_atl_closed *msg(new loc_eng_msg_atl_closed(&loc_eng_data));
-    msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
-              msg, loc_eng_free_msg);
-
-    EXIT_LOG(%d, 0);
-    return 0;
-}
-#endif
 
 /*===========================================================================
 FUNCTION    loc_eng_agps_open_failed
@@ -1037,8 +991,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-#ifdef FEATURE_IPV6
-int loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsType)
+int loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType)
 {
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.context && loc_eng_data.agps_status_cb,
@@ -1051,21 +1004,6 @@ int loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsType agpsTyp
     EXIT_LOG(%d, 0);
     return 0;
 }
-#else
-int loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data)
-{
-    ENTRY_LOG_CALLFLOW();
-    INIT_CHECK(loc_eng_data.context && loc_eng_data.agps_status_cb,
-               return -1);
-
-    loc_eng_msg_atl_open_failed *msg(new loc_eng_msg_atl_open_failed(&loc_eng_data));
-    msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
-              msg, loc_eng_free_msg);
-
-    EXIT_LOG(%d, 0);
-    return 0;
-}
-#endif
 
 /*===========================================================================
 
@@ -1365,9 +1303,7 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
 
     if (loc_eng_data.agps_status_cb != NULL) {
         loc_eng_data.agnss_nif->dropAllSubscribers();
-#ifdef FEATURE_IPV6
         loc_eng_data.internet_nif->dropAllSubscribers();
-#endif
 
         loc_eng_agps_reinit(loc_eng_data);
     }
@@ -1680,10 +1616,8 @@ static void loc_eng_deferred_action_thread(void* arg)
             loc_eng_msg_request_bit* brqMsg = (loc_eng_msg_request_bit*)msg;
             if (brqMsg->ifType == LOC_ENG_IF_REQUEST_TYPE_SUPL) {
                 stateMachine = loc_eng_data_p->agnss_nif;
-#ifdef FEATURE_IPV6
             } else if (brqMsg->ifType == LOC_ENG_IF_REQUEST_TYPE_ANY) {
                 stateMachine = loc_eng_data_p->internet_nif;
-#endif
             } else {
                 LOC_LOGD("%s]%d: unknown I/F request type = 0x%x\n", __func__, __LINE__, brqMsg->ifType);
                 break;
@@ -1700,10 +1634,8 @@ static void loc_eng_deferred_action_thread(void* arg)
             loc_eng_msg_release_bit* brlMsg = (loc_eng_msg_release_bit*)msg;
             if (brlMsg->ifType == LOC_ENG_IF_REQUEST_TYPE_SUPL) {
                 stateMachine = loc_eng_data_p->agnss_nif;
-#ifdef FEATURE_IPV6
             } else if (brlMsg->ifType == LOC_ENG_IF_REQUEST_TYPE_ANY) {
                 stateMachine = loc_eng_data_p->internet_nif;
-#endif
             } else {
                 LOC_LOGD("%s]%d: unknown I/F request type = 0x%x\n", __func__, __LINE__, brlMsg->ifType);
                 break;
@@ -1717,16 +1649,11 @@ static void loc_eng_deferred_action_thread(void* arg)
         case LOC_ENG_MSG_REQUEST_ATL:
         {
             loc_eng_msg_request_atl* arqMsg = (loc_eng_msg_request_atl*)msg;
-#ifdef FEATURE_IPV6
             boolean backwardCompatibleMode = AGPS_TYPE_INVALID == arqMsg->type;
             AgpsStateMachine* stateMachine = (AGPS_TYPE_SUPL == arqMsg->type ||
                                               backwardCompatibleMode) ?
                                              loc_eng_data_p->agnss_nif :
                                              loc_eng_data_p->internet_nif;
-#else
-            boolean backwardCompatibleMode = false;
-            AgpsStateMachine* stateMachine = loc_eng_data_p->agnss_nif;
-#endif
             ATLSubscriber subscriber(arqMsg->handle,
                                      stateMachine,
                                      loc_eng_data_p->client_handle,
@@ -1745,19 +1672,16 @@ static void loc_eng_deferred_action_thread(void* arg)
                              false);
             // attempt to unsubscribe from agnss_nif first
             if (! loc_eng_data_p->agnss_nif->unsubscribeRsrc((Subscriber*)&s1)) {
-#ifdef FEATURE_IPV6
                 ATLSubscriber s2(arlMsg->handle,
                                  loc_eng_data_p->internet_nif,
                                  loc_eng_data_p->client_handle,
                                  false);
                 // if unsuccessful, try internet_nif
                 loc_eng_data_p->internet_nif->unsubscribeRsrc((Subscriber*)&s2);
-#endif
             }
         }
         break;
 
-#ifdef FEATURE_IPV6
         case LOC_ENG_MSG_REQUEST_WIFI:
         {
             loc_eng_msg_request_wifi *wrqMsg = (loc_eng_msg_request_wifi *)msg;
@@ -1782,7 +1706,6 @@ static void loc_eng_deferred_action_thread(void* arg)
             stateMachine->unsubscribeRsrc((Subscriber*)&subscriber);
         }
         break;
-#endif
 
         case LOC_ENG_MSG_REQUEST_XTRA_DATA:
             if (loc_eng_data_p->xtra_module_data.download_request_cb != NULL)
@@ -1829,7 +1752,7 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_atl_open_success *aosMsg = (loc_eng_msg_atl_open_success*)msg;
             AgpsStateMachine* stateMachine;
-#ifdef FEATURE_IPV6
+
             switch (aosMsg->agpsType) {
               case AGPS_TYPE_WIFI: {
                 stateMachine = loc_eng_data_p->wifi_nif;
@@ -1845,9 +1768,6 @@ static void loc_eng_deferred_action_thread(void* arg)
             }
 
             stateMachine->setBearer(aosMsg->bearerType);
-#else
-            stateMachine = loc_eng_data_p->agnss_nif;
-#endif
             stateMachine->setAPN(aosMsg->apn, aosMsg->length);
             stateMachine->onRsrcEvent(RSRC_GRANTED);
         }
@@ -1857,7 +1777,7 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_atl_closed *acsMsg = (loc_eng_msg_atl_closed*)msg;
             AgpsStateMachine* stateMachine;
-#ifdef FEATURE_IPV6
+
             switch (acsMsg->agpsType) {
               case AGPS_TYPE_WIFI: {
                 stateMachine = loc_eng_data_p->wifi_nif;
@@ -1871,9 +1791,6 @@ static void loc_eng_deferred_action_thread(void* arg)
                 stateMachine  = loc_eng_data_p->internet_nif;
               }
             }
-#else
-            stateMachine = loc_eng_data_p->agnss_nif;
-#endif
             stateMachine->onRsrcEvent(RSRC_RELEASED);
         }
         break;
@@ -1882,7 +1799,7 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_atl_open_failed *aofMsg = (loc_eng_msg_atl_open_failed*)msg;
             AgpsStateMachine* stateMachine;
-#ifdef FEATURE_IPV6
+
             switch (aofMsg->agpsType) {
               case AGPS_TYPE_WIFI: {
                 stateMachine = loc_eng_data_p->wifi_nif;
@@ -1896,9 +1813,6 @@ static void loc_eng_deferred_action_thread(void* arg)
                 stateMachine  = loc_eng_data_p->internet_nif;
               }
             }
-#else
-            stateMachine = loc_eng_data_p->agnss_nif;
-#endif
             stateMachine->onRsrcEvent(RSRC_DENIED);
         }
         break;

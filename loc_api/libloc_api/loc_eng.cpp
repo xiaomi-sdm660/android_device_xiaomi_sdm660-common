@@ -1421,7 +1421,7 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_eng_process_deferred_action (void* arg)
 {
-    AGpsStatus      status;
+    AGpsExtStatus      status;
     status.size = sizeof(status);
     status.type = AGPS_TYPE_SUPL;
 

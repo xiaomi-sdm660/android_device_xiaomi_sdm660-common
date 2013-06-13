@@ -28,10 +28,6 @@ LOCAL_CFLAGS += \
     -fno-short-enums \
     -D_ANDROID_
 
-ifeq ($(FEATURE_IPV6), true)
-LOCAL_CFLAGS += -DFEATURE_IPV6
-endif #FEATURE_IPV6
-
 ifeq ($(FEATURE_DELEXT), true)
 LOCAL_CFLAGS += -DFEATURE_DELEXT
 endif #FEATURE_DELEXT

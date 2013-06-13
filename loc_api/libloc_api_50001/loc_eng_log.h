@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -48,9 +48,7 @@ const char* loc_get_agps_type_name(AGpsType type);
 const char* loc_get_ni_type_name(GpsNiType type);
 const char* loc_get_ni_response_name(GpsUserResponseType response);
 const char* loc_get_ni_encoding_name(GpsNiEncodingType encoding);
-#ifdef FEATURE_IPV6
 const char* loc_get_agps_bear_name(AGpsBearerType bear);
-#endif
 const char* loc_get_server_type_name(LocServerType type);
 const char* loc_get_position_sess_status_name(enum loc_sess_status status);
 const char* loc_get_agps_status_name(AGpsStatusValue status);
