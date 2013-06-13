@@ -307,9 +307,6 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     // Create context (msg q + thread) (if not yet created)
     // This will also parse gps.conf, if not done.
     loc_eng_data.context = (void*)LocEngContext::get(callbacks->create_thread_cb);
-    if (NULL != callbacks->set_capabilities_cb) {
-        callbacks->set_capabilities_cb(gps_conf.CAPABILITIES);
-    }
 
     // Save callbacks
     loc_eng_data.location_cb  = callbacks->location_cb;
