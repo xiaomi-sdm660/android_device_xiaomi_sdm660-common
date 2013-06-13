@@ -74,19 +74,7 @@ static void loc_delete_aiding_data(GpsAidingData f);
 static int  loc_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence recurrence,
                                   uint32_t min_interval, uint32_t preferred_accuracy,
                                   uint32_t preferred_time);
-
-//ULP/Hybrid provider Function definitions
-static int loc_ulp_network_init(UlpNetworkLocationCallbacks *callbacks);
-static int loc_ulp_send_network_position(UlpNetworkPositionReport *position_report);
-static int loc_ulp_phone_context_init(UlpPhoneContextCallbacks *callback);
-static int loc_ulp_phone_context_settings_update(UlpPhoneContextSettings *settings);
-static int loc_ulp_engine_update_criteria(UlpLocationCriteria criteria);
 static const void* loc_get_extension(const char* name);
-static ulp_location_callback ulp_loc_cb = NULL;
-static int loc_ulp_engine_init(UlpEngineCallbacks* callbacks);
-static int  loc_ulp_engine_start();
-static int  loc_ulp_engine_stop();
-
 
 // Defines the GpsInterface in gps.h
 static const GpsInterface sLocEngInterface =
@@ -158,39 +146,7 @@ static const AGpsRilInterface sLocEngAGpsRilInterface =
    loc_agps_ril_update_network_availability
 };
 
-static const UlpEngineInterface sLocEngUlpEngInterface =
-{
-   sizeof(UlpEngineInterface),
-   loc_ulp_engine_init,
-   loc_ulp_engine_update_criteria,
-   loc_ulp_engine_start,
-   loc_ulp_engine_stop
-};
-
-static bool loc_inject_raw_command(char* command, int length);
-
-static const InjectRawCmdInterface sLocEngInjectRawCmdInterface =
-{
-   sizeof(InjectRawCmdInterface),
-   loc_inject_raw_command
-};
-
-//ULP/Hybrid provider interfaces
-static const UlpNetworkInterface sUlpNetworkInterface =
-{
-   sizeof(UlpNetworkInterface),
-   loc_ulp_network_init,
-   loc_ulp_send_network_position
-};
-static const UlpPhoneContextInterface sLocEngUlpPhoneContextInterface =
-{
-    sizeof(UlpPhoneContextInterface),
-    loc_ulp_phone_context_init,
-    loc_ulp_phone_context_settings_update
-};
-
 static loc_eng_data_s_type loc_afw_data;
-static UlpCallbacks ulp_cb_data;
 static LocCallbacks afw_cb_data;
 static int gss_fd = 0;
 
@@ -228,17 +184,17 @@ const GpsInterface* gps_get_hardware_interface ()
         ret_val = &sLocEngInterface;
     }
 
+    loc_eng_read_config();
+
+    //We load up libulp module at this point itself
+    loc_eng_ulp_inf = loc_eng_get_ulp_inf();
+
     if (0 != loc_hal_init()) {
         LOC_LOGE("HAL could not be initialized");
         ret_val = NULL;
     } else {
         ret_val = &sLocEngInterface;
     }
-
-    loc_eng_read_config();
-
-    //We load up libulp module at this point itself
-    loc_eng_ulp_inf = loc_eng_get_ulp_inf();
 
     EXIT_LOG(%p, ret_val);
     return ret_val;
@@ -351,8 +307,6 @@ static int loc_hal_init(void)
                               loc_ulp_msg_sender);
 
     int ret_val1 = loc_eng_ulp_init(loc_afw_data, loc_eng_ulp_inf);
-    //Initialize the cached min_interval
-    loc_afw_data.min_interval_cached = ULP_MIN_INTERVAL_INVALID;
     LOC_LOGD("loc_eng_ulp_init returned %d\n",ret_val1);
 
     EXIT_LOG(%d, retVal);
@@ -438,26 +392,8 @@ static int loc_stop()
 {
     ENTRY_LOG();
     int ret_val = -1;
-    if (loc_afw_data.ulp_initialized) {
-        //ULP initialized so we need to simulate REMOVE_CRITERIA for
-        //last client to libulp and we dont need to send loc_eng_stop
-        UlpLocationCriteria native_criteria;
-        native_criteria.valid_mask = (ULP_CRITERIA_HAS_ACTION | ULP_CRITERIA_HAS_PROVIDER_SOURCE | ULP_CRITERIA_HAS_RECURRENCE_TYPE |
-                                  ULP_CRITERIA_HAS_MIN_INTERVAL);
-        native_criteria.provider_source = ULP_PROVIDER_SOURCE_GNSS;
-        native_criteria.min_distance = 0; //This is not used by ULP engine so leaving it 0 for now
-        native_criteria.recurrence_type = loc_afw_data.recurrence_type_cached;
-        loc_afw_data.recurrence_type_cached = ULP_LOC_RECURRENCE_PERIODIC;
-        //For a GPS client horizontal_accuracy & power_consumption are irrelevant
-        native_criteria.preferred_horizontal_accuracy = ULP_HORZ_ACCURACY_DONT_CARE;
-        native_criteria.preferred_power_consumption = ULP_POWER_REQ_DONT_CARE;
-        native_criteria.action = ULP_REMOVE_CRITERIA;
-        native_criteria.min_interval = loc_afw_data.min_interval_cached;
-        loc_afw_data.min_interval_cached = ULP_MIN_INTERVAL_INVALID;
-        ret_val = loc_eng_update_criteria(loc_afw_data, native_criteria);
-    } else {
-        ret_val = loc_eng_stop(loc_afw_data);
-    }
+    ret_val = loc_eng_stop(loc_afw_data);
+
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
@@ -486,45 +422,22 @@ static int  loc_set_position_mode(GpsPositionMode mode,
 {
     ENTRY_LOG();
     int ret_val = -1;
-    if (!loc_afw_data.ulp_initialized) {
-        LocPositionMode locMode;
-        switch (mode) {
-        case GPS_POSITION_MODE_MS_BASED:
-            locMode = LOC_POSITION_MODE_MS_BASED;
-            break;
-        case GPS_POSITION_MODE_MS_ASSISTED:
-            locMode = LOC_POSITION_MODE_MS_ASSISTED;
-            break;
-        default:
-            locMode = LOC_POSITION_MODE_STANDALONE;
-            break;
-        }
-
-        LocPosMode params(locMode, recurrence, min_interval,
-                          preferred_accuracy, preferred_time, NULL, NULL);
-        ret_val = loc_eng_set_position_mode(loc_afw_data, params);
-    } else {
-        //ULP initialized so suppress set_position_mode updates to loc_eng
-        UlpLocationCriteria native_criteria;
-        native_criteria.valid_mask = (ULP_CRITERIA_HAS_ACTION | ULP_CRITERIA_HAS_PROVIDER_SOURCE | ULP_CRITERIA_HAS_RECURRENCE_TYPE |
-                                  ULP_CRITERIA_HAS_MIN_INTERVAL);
-        native_criteria.provider_source = ULP_PROVIDER_SOURCE_GNSS;
-        native_criteria.min_distance = 0; //This is not used by ULP engine so leaving it 0 for now
-
-        if (LOC_POSITION_MODE_MS_ASSISTED == mode)
-            native_criteria.recurrence_type = ULP_LOC_RECURRENCE_SINGLE;
-        else
-            native_criteria.recurrence_type = ULP_LOC_RECURRENCE_PERIODIC;
-
-        //For a GPS client horizontal_accuracy & power_consumption are irrelevant
-        native_criteria.preferred_horizontal_accuracy = ULP_HORZ_ACCURACY_DONT_CARE;
-        native_criteria.preferred_power_consumption = ULP_POWER_REQ_DONT_CARE;
-        native_criteria.action = ULP_ADD_CRITERIA;
-        native_criteria.min_interval = min_interval;
-        loc_afw_data.min_interval_cached = min_interval; //cache a copy
-        loc_afw_data.recurrence_type_cached = native_criteria.recurrence_type; //cache a copy
-        ret_val = loc_eng_update_criteria(loc_afw_data, native_criteria);
+    LocPositionMode locMode;
+    switch (mode) {
+    case GPS_POSITION_MODE_MS_BASED:
+        locMode = LOC_POSITION_MODE_MS_BASED;
+        break;
+    case GPS_POSITION_MODE_MS_ASSISTED:
+        locMode = LOC_POSITION_MODE_MS_ASSISTED;
+        break;
+    default:
+        locMode = LOC_POSITION_MODE_STANDALONE;
+        break;
     }
+
+    LocPosMode params(locMode, recurrence, min_interval,
+                      preferred_accuracy, preferred_time, NULL, NULL);
+    ret_val = loc_eng_set_position_mode(loc_afw_data, params);
 
     EXIT_LOG(%d, ret_val);
     return ret_val;
@@ -637,31 +550,6 @@ static void loc_delete_aiding_data(GpsAidingData f)
     EXIT_LOG(%s, VOID_RET);
 }
 
-/*===========================================================================
-FUNCTION    loc_update_criteria
-
-DESCRIPTION
-   This is used to inform the ULP module of new unique criteria that are passed
-   in by the applications
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   0: success
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_ulp_engine_update_criteria(UlpLocationCriteria criteria)
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_update_criteria(loc_afw_data, criteria);
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
 const GpsGeofencingInterface* get_geofence_interface(void)
 {
     ENTRY_LOG();
@@ -695,7 +583,6 @@ exit:
     EXIT_LOG(%d, geofence_interface == NULL);
     return geofence_interface;
 }
-
 /*===========================================================================
 FUNCTION    loc_get_extension
 
@@ -744,22 +631,6 @@ const void* loc_get_extension(const char* name)
        {
            ret_val = &sLocEngAGpsRilInterface;
        }
-   }
-   else if (strcmp(name, ULP_ENGINE_INTERFACE) == 0)
-   {
-      ret_val = &sLocEngUlpEngInterface;
-   }
-   else if (strcmp(name, ULP_RAW_CMD_INTERFACE) == 0)
-   {
-      ret_val = &sLocEngInjectRawCmdInterface;
-   }
-   else if(strcmp(name, ULP_PHONE_CONTEXT_INTERFACE) == 0)
-   {
-     ret_val = &sLocEngUlpPhoneContextInterface;
-   }
-   else if(strcmp(name, ULP_NETWORK_INTERFACE) == 0)
-   {
-     ret_val = &sUlpNetworkInterface;
    }
    else if (strcmp(name, GPS_GEOFENCING_INTERFACE) == 0)
    {
@@ -1042,45 +913,16 @@ static void loc_agps_ril_update_network_availability(int available, const char* 
     EXIT_LOG(%s, VOID_RET);
 }
 
-/*===========================================================================
-FUNCTION    loc_inject_raw_command
-
-DESCRIPTION
-   This is used to send special test modem commands from the applications
-   down into the HAL
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   0: success
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static bool loc_inject_raw_command(char* command, int length)
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_inject_raw_command(loc_afw_data, command, length);
-    EXIT_LOG(%s, loc_logger_boolStr[ret_val!=0]);
-    return ret_val;
-}
-
 static void local_loc_cb(UlpLocation* location, void* locExt)
 {
     ENTRY_LOG();
     if (NULL != location) {
         CALLBACK_LOG_CALLFLOW("location_cb - from", %d, location->position_source);
-        if (ULP_LOCATION_IS_FROM_GNSS == location->position_source ) {
-            if (NULL != gps_loc_cb) {
-                gps_loc_cb(&location->gpsLocation);
-            } else {
-                   LOC_LOGE("Error. GPS not enabled");
-               }
+
+        if (NULL != gps_loc_cb) {
+            gps_loc_cb(&location->gpsLocation);
         } else {
-            if (NULL != ulp_loc_cb) {
-                ulp_loc_cb(location);
-            }
+               LOC_LOGE("Error. GPS not enabled");
         }
     }
     EXIT_LOG(%s, VOID_RET);
@@ -1149,158 +991,6 @@ exit:
     EXIT_LOG(%d, loc_eng_ulpInf == NULL);
     return loc_eng_ulpInf;
 }
-
-/*===========================================================================
-FUNCTION    loc_ulp_network_init
-
-DESCRIPTION
-   Initialize the ULP network interface.
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static int loc_ulp_phone_context_init(UlpPhoneContextCallbacks *callbacks)
-{
-    ENTRY_LOG();
-    int ret_val = -1;
-    ret_val = loc_eng_ulp_phone_context_init(loc_afw_data, callbacks);
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-/*===========================================================================
-FUNCTION    loc_ulp_phone_context_settings_update
-
-DESCRIPTION
-   This is used to inform the ULP module of phone settings changes carried out
-   by the users
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   0: success
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-
-static int loc_ulp_phone_context_settings_update(UlpPhoneContextSettings *settings)
-{
-    ENTRY_LOG();
-    int ret_val = -1;
-    ret_val = loc_eng_ulp_phone_context_settings_update(loc_afw_data, settings);
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-/*===========================================================================
-FUNCTION    loc_ulp_network_init
-
-DESCRIPTION
-   Initialize the ULP network interface.
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static int loc_ulp_network_init(UlpNetworkLocationCallbacks *callbacks)
-{
-   ENTRY_LOG();
-   int ret_val = -1;
-   ret_val = loc_eng_ulp_network_init(loc_afw_data, callbacks);
-   EXIT_LOG(%d, ret_val);
-   return ret_val;
-}
-
-/*===========================================================================
-FUNCTION    loc_eng_ulp_send_network_position
-
-DESCRIPTION
-   Ulp send data
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_ulp_send_network_position(UlpNetworkPositionReport *position_report)
-{
-    ENTRY_LOG();
-    int ret_val = -1;
-    ret_val = loc_eng_ulp_send_network_position(loc_afw_data, position_report);
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-/*===========================================================================
-FUNCTION    loc_ulp_engine_init
-
-DESCRIPTION
-   Initialize the ULP Engine interface.
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static int loc_ulp_engine_init(UlpEngineCallbacks* callbacks)
-{
-    int retVal = -1;
-    ENTRY_LOG();
-    if(callbacks == NULL) {
-        LOC_LOGE("loc_ulp_engine_init failed. cb = NULL\n");
-        EXIT_LOG(%d, retVal);
-        return retVal;
-    }
-    //Intilize the ulp call back cache at this point
-    memset(&ulp_cb_data, 0, sizeof(UlpCallbacks));
-    ulp_loc_cb = callbacks->location_cb;
-    retVal = 0;
-    EXIT_LOG(%d, retVal);
-    return retVal;
-}
-
-static int loc_ulp_engine_start()
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_start(loc_afw_data);
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-static int loc_ulp_engine_stop()
-{
-    ENTRY_LOG();
-    int ret_val = loc_eng_stop(loc_afw_data);
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
 
 /*===========================================================================
 FUNCTION    loc_init

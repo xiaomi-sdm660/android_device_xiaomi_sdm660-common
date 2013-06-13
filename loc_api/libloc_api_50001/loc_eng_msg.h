@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "log_util.h"
-#include "loc.h"
 #include <loc_eng_log.h>
 #include "loc_eng_msg_id.h"
 
@@ -822,118 +821,6 @@ struct loc_eng_msg_set_data_enable : public loc_eng_msg {
     inline ~loc_eng_msg_set_data_enable()
     {
         delete[] apn;
-    }
-};
-
-struct loc_eng_msg_request_network_position : public loc_eng_msg {
-    const UlpNetworkRequestPos networkPosRequest;
-    inline loc_eng_msg_request_network_position (void* instance, UlpNetworkRequestPos networkPosReq) :
-        loc_eng_msg(instance, LOC_ENG_MSG_REQUEST_NETWORK_POSIITON),
-        networkPosRequest(networkPosReq)
-    {
-        LOC_LOGV("network position request: desired pos source %d\n  request type: %d\n interval ms: %d ",
-             networkPosReq.desired_position_source,
-             networkPosReq.request_type,
-             networkPosReq.interval_ms);
-    }
-};
-
-struct loc_eng_msg_request_phone_context : public loc_eng_msg {
-    const UlpPhoneContextRequest contextRequest;
-    inline loc_eng_msg_request_phone_context (void* instance, UlpPhoneContextRequest contextReq) :
-        loc_eng_msg(instance, LOC_ENG_MSG_REQUEST_PHONE_CONTEXT),
-        contextRequest(contextReq)
-    {
-        LOC_LOGV("phone context request: request type 0x%x context type: 0x%x ",
-             contextRequest.request_type,
-             contextRequest.context_type);
-    }
-};
-
-struct ulp_msg_update_criteria : public loc_eng_msg {
-    const UlpLocationCriteria locationCriteria;
-    inline ulp_msg_update_criteria (void* instance, UlpLocationCriteria criteria) :
-        loc_eng_msg(instance, ULP_MSG_UPDATE_CRITERIA),
-        locationCriteria(criteria)
-    {
-        LOC_LOGV("location criteria: aciton %d\n  valid mask: %d\n provider source: %d\n accuracy %d\n recurrence type %d\n min interval %d\n power consumption %d\n intermediate pos %d ",
-             locationCriteria.action,
-             locationCriteria.valid_mask,
-             locationCriteria.provider_source,
-             locationCriteria.preferred_horizontal_accuracy,
-             locationCriteria.recurrence_type,
-             locationCriteria.min_interval,
-             locationCriteria.preferred_power_consumption,
-             locationCriteria.intermediate_pos_report_enabled);
-    }
-};
-
-struct ulp_msg_inject_raw_command : public loc_eng_msg {
-    const char* rawCommand;
-    const int rawCommandLength;
-    inline ulp_msg_inject_raw_command (void* instance, char* command, int length) :
-        loc_eng_msg(instance, ULP_MSG_INJECT_RAW_COMMAND),
-        rawCommand(new char[length]),
-        rawCommandLength(length)
-    {
-      memcpy((void*)rawCommand, (void*)command, length);
-      LOC_LOGV("inject raw command: command %s\n  command length: %d\n ",
-             rawCommand,
-             rawCommandLength);
-    }
-
-    inline ~ulp_msg_inject_raw_command()
-    {
-        delete[] rawCommand;
-    }
-};
-
-struct ulp_msg_inject_phone_context_settings : public loc_eng_msg {
-    const UlpPhoneContextSettings phoneSetting;
-    inline ulp_msg_inject_phone_context_settings(void* instance, UlpPhoneContextSettings setting) :
-        loc_eng_msg(instance, ULP_MSG_INJECT_PHONE_CONTEXT_SETTINGS),
-        phoneSetting(setting)
-    {
-        LOC_LOGV("context type: %d\n  gps enabled: %d\n network position available %d\n wifi setting enabled %d\n battery charging %d"
-                 "is_agps_setting_enabled %d, is_enh_location_services_enabled %d\n",
-             phoneSetting.context_type,
-             phoneSetting.is_gps_enabled,
-             phoneSetting.is_network_position_available,
-             phoneSetting.is_wifi_setting_enabled,
-             phoneSetting.is_battery_charging,
-             phoneSetting.is_agps_enabled,
-             phoneSetting.is_enh_location_services_enabled);
-    }
-};
-
-struct ulp_msg_inject_network_position : public loc_eng_msg {
-    const UlpNetworkPositionReport networkPosition;
-    inline ulp_msg_inject_network_position(void* instance, UlpNetworkPositionReport networkPos) :
-        loc_eng_msg(instance, ULP_MSG_INJECT_NETWORK_POSITION),
-        networkPosition(networkPos)
-    {
-        LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  accuracy %f",
-             networkPosition.valid_flag,
-             networkPosition.position.pos_source,
-             networkPosition.position.latitude,
-             networkPosition.position.longitude,
-             networkPosition.position.HEPE);
-    }
-};
-
-struct ulp_msg_report_quipc_position : public loc_eng_msg {
-    const UlpLocation location;
-    const int  quipc_error_code;
-    inline ulp_msg_report_quipc_position(void* instance, UlpLocation &loc,
-                                         int  quipc_err) :
-        loc_eng_msg(instance, ULP_MSG_REPORT_QUIPC_POSITION),
-        location(loc), quipc_error_code(quipc_err)
-    {
-        LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Quipc error: %d",
-                 location.gpsLocation.flags, location.position_source, location.gpsLocation.latitude, location.gpsLocation.longitude,
-                 location.gpsLocation.altitude, location.gpsLocation.speed, location.gpsLocation.bearing, location.gpsLocation.accuracy,
-                 location.gpsLocation.timestamp, location.rawDataSize, location.rawData,
-                 quipc_error_code);
     }
 };
 
