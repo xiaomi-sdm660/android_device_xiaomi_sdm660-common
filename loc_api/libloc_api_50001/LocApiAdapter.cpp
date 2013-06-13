@@ -180,6 +180,12 @@ void LocApiAdapter::reportNmea(const char* nmea, int length)
     locEngHandle.sendMsge(locEngHandle.owner, msg);
 }
 
+void LocApiAdapter::reportXtraServer(const char* url1, const char* url2, const char* url3, const int maxlength)
+{
+    loc_eng_msg_report_xtra_server *msg(new loc_eng_msg_report_xtra_server(locEngHandle.owner, url1, url2, url3, maxlength));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
+}
+
 void LocApiAdapter::requestATL(int connHandle, AGpsType agps_type)
 {
     loc_eng_msg_request_atl *msg(new loc_eng_msg_request_atl(locEngHandle.owner, connHandle, agps_type));

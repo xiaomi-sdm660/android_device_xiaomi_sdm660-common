@@ -49,10 +49,17 @@ typedef struct {
     gps_request_utc_time request_utc_time_cb;
 } GpsExtCallbacks;
 
+/** Callback to report the xtra server url to the client.
+ *  The client should use this url when downloading xtra unless overwritten
+ *  in the gps.conf file
+ */
+typedef void (* report_xtra_server)(const char*, const char*, const char*);
+
 /** Callback structure for the XTRA interface. */
 typedef struct {
     gps_xtra_download_request download_request_cb;
     gps_create_thread create_thread_cb;
+    report_xtra_server report_xtra_server_cb;
 } GpsXtraExtCallbacks;
 
 /** Represents the status of AGPS. */

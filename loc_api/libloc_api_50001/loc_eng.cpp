@@ -1610,6 +1610,14 @@ static void loc_eng_deferred_action_thread(void* arg)
             }
             break;
 
+        case LOC_ENG_MSG_REPORT_XTRA_SERVER:
+            if (NULL != loc_eng_data_p->xtra_module_data.report_xtra_server_cb) {
+                loc_eng_msg_report_xtra_server* xsMsg = (loc_eng_msg_report_xtra_server*)msg;
+                CALLBACK_LOG_CALLFLOW("report_xtra_server_cb", %s, xsMsg->server1);
+                loc_eng_data_p->xtra_module_data.report_xtra_server_cb(xsMsg->server1, xsMsg->server2, xsMsg->server3);
+            }
+            break;
+
         case LOC_ENG_MSG_REQUEST_BIT:
         {
             AgpsStateMachine* stateMachine;
@@ -1745,6 +1753,12 @@ static void loc_eng_deferred_action_thread(void* arg)
         {
             loc_eng_msg_inject_xtra_data *xdMsg = (loc_eng_msg_inject_xtra_data*)msg;
             loc_eng_data_p->client_handle->setXtraData(xdMsg->data, xdMsg->length);
+        }
+        break;
+
+        case LOC_ENG_MSG_REQUEST_XTRA_SERVER:
+        {
+            loc_eng_data_p->client_handle->requestXtraServer();
         }
         break;
 
