@@ -25,10 +25,6 @@ LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
 
-ifeq ($(FEATURE_DELEXT), true)
-LOCAL_CFLAGS += -DFEATURE_DELEXT
-endif #FEATURE_DELEXT
-
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils
 
