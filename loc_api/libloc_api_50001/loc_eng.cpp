@@ -1620,7 +1620,10 @@ static void loc_eng_deferred_action_thread(void* arg)
 
                 if (loc_eng_data_p->generateNmea && rpMsg->location.position_source == ULP_LOCATION_IS_FROM_GNSS)
                 {
-                    loc_eng_nmea_generate_pos(loc_eng_data_p, rpMsg->location, rpMsg->locationExtended);
+                    unsigned char generate_nmea = reported && (rpMsg->status != LOC_SESS_FAILURE);
+                    loc_eng_nmea_generate_pos(loc_eng_data_p, rpMsg->location,
+                                              rpMsg->locationExtended,
+                                              generate_nmea);
                 }
 
                 // Free the allocated memory for rawData
