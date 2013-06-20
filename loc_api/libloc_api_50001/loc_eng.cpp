@@ -1800,8 +1800,14 @@ static void loc_eng_deferred_action_thread(void* arg)
                                      arlMsg->handle);
                     LOC_LOGD("%s:%d]: Request to stop Emergency call. Handle: %d\n",
                              __func__, __LINE__, arlMsg->handle);
-                    loc_eng_data_p->ds_nif->unsubscribeRsrc((Subscriber*)&s3);
-                    LOC_LOGD("%s:%d]: Unsubscribed from ds_nif", __func__, __LINE__);
+                    if(loc_eng_data_p->ds_nif->unsubscribeRsrc((Subscriber*)&s3)) {
+                        LOC_LOGD("%s:%d]: Unsubscribed from ds_nif", __func__, __LINE__);
+                    }
+                    else {
+                        LOC_LOGE("%s:%d]: Could not release ATL. No subscribers found\n",
+                                 __func__, __LINE__);
+                        loc_eng_data_p->client_handle->atlCloseStatus(arlMsg->handle, 0);
+                    }
                 }
 #endif
             }
