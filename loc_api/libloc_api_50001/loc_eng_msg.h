@@ -597,6 +597,23 @@ struct loc_eng_msg_request_atl : public loc_eng_msg {
     }
 };
 
+struct loc_eng_msg_request_supl_es : public loc_eng_msg {
+    const int handle;
+    inline loc_eng_msg_request_supl_es(void* instance, int hndl) :
+        loc_eng_msg(instance, LOC_ENG_MSG_REQUEST_SUPL_ES),
+        handle(hndl)
+    {
+        LOC_LOGV("handle: %d\n", handle);
+    }
+};
+
+struct loc_eng_msg_close_data_call: public loc_eng_msg {
+    inline loc_eng_msg_close_data_call(void *instance) :
+        loc_eng_msg(instance, LOC_ENG_MSG_CLOSE_DATA_CALL)
+    {
+        LOC_LOGV("%s:%d]Close data call: ", __func__, __LINE__);
+    }
+};
 struct loc_eng_msg_release_atl : public loc_eng_msg {
     const int handle;
     inline loc_eng_msg_release_atl(void* instance, int hndl) :
@@ -722,12 +739,12 @@ struct loc_eng_msg_inject_xtra_data : public loc_eng_msg {
 
 #ifdef FEATURE_IPV6
 struct loc_eng_msg_atl_open_success : public loc_eng_msg {
-    const AGpsStatusValue agpsType;
+    const AGpsType agpsType;
     const int length;
     char* const apn;
     const AGpsBearerType bearerType;
     inline loc_eng_msg_atl_open_success(void* instance,
-                                        AGpsStatusValue atype,
+                                        AGpsType atype,
                                         const char* name,
                                         int len,
                                         AGpsBearerType btype) :
@@ -794,9 +811,9 @@ struct loc_eng_msg_atl_open_failed : public loc_eng_msg {
 
 #ifdef FEATURE_IPV6
 struct loc_eng_msg_atl_closed : public loc_eng_msg {
-    const AGpsStatusValue agpsType;
+    const AGpsType agpsType;
     inline loc_eng_msg_atl_closed(void* instance,
-                                  AGpsStatusValue atype) :
+                                  AGpsType atype) :
         loc_eng_msg(instance, LOC_ENG_MSG_ATL_CLOSED),
         agpsType(atype)
     {

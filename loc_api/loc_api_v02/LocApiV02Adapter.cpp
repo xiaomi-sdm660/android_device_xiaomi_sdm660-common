@@ -45,7 +45,6 @@
 #include "LocApiAdapter.h"
 #include "loc_util_log.h"
 
-
 /* Default session id ; TBD needs incrementing for each */
 #define LOC_API_V02_DEF_SESSION_ID (1)
 
@@ -160,6 +159,7 @@ locClientCallbacksType globalCallbacks =
 
 /* Constructor for LocApiV02Adapter */
 LocApiV02Adapter :: LocApiV02Adapter(LocEng &locEng):
+  dsClientHandle(NULL),
   LocApiAdapter(locEng), clientHandle( LOC_CLIENT_INVALID_HANDLE_VALUE),
   eventMask(convertMask(locEng.eventMask))
 {
@@ -1059,28 +1059,36 @@ enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
   {
     conn_status_req.statusType = eQMI_LOC_SERVER_REQ_STATUS_SUCCESS_V02;
 
-    strlcpy(conn_status_req.apnProfile.apnName, apn,
-            sizeof(conn_status_req.apnProfile.apnName) );
+    if(apn != NULL)
+        strlcpy(conn_status_req.apnProfile.apnName, apn,
+                sizeof(conn_status_req.apnProfile.apnName) );
 
 #ifdef FEATURE_IPV6
     switch(bear)
     {
-      case AGPS_APN_BEARER_IPV4:
+    case AGPS_APN_BEARER_IPV4:
         conn_status_req.apnProfile.pdnType =
-          eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4_V02;
+            eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4_V02;
+        conn_status_req.apnProfile_valid = 1;
         break;
 
-      case AGPS_APN_BEARER_IPV6:
+    case AGPS_APN_BEARER_IPV6:
         conn_status_req.apnProfile.pdnType =
-          eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV6_V02;
+            eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV6_V02;
+        conn_status_req.apnProfile_valid = 1;
         break;
 
-      case AGPS_APN_BEARER_IPV4V6:
+    case AGPS_APN_BEARER_IPV4V6:
         conn_status_req.apnProfile.pdnType =
-          eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4V6_V02;
+            eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4V6_V02;
+        conn_status_req.apnProfile_valid = 1;
         break;
 
-      default:
+    case AGPS_APN_BEARER_INVALID:
+        conn_status_req.apnProfile_valid = 0;
+        break;
+
+    default:
         LOC_LOGE("%s:%d]:invalid bearer type\n",__func__,__LINE__);
         return LOC_API_ADAPTER_ERR_INVALID_HANDLE;
     }
@@ -1089,7 +1097,6 @@ enum loc_api_adapter_err LocApiV02Adapter :: atlOpenStatus(
       eQMI_LOC_APN_PROFILE_PDN_TYPE_IPV4_V02;
 #endif
 
-    conn_status_req.apnProfile_valid = 1;
   }
   else
   {
@@ -1523,7 +1530,6 @@ enum loc_api_adapter_err LocApiV02Adapter :: setAGLONASSProtocol(unsigned long a
   return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
-
 /* Convert event mask from loc eng to loc_api_v02 format */
 locClientEventMaskType LocApiV02Adapter :: convertMask(
   LOC_API_ADAPTER_EVENT_MASK_T mask)
@@ -1908,39 +1914,42 @@ void LocApiV02Adapter :: reportNmea (
 
 /* convert and report an ATL request to loc engine */
 void LocApiV02Adapter :: reportAtlRequest(
-  const qmiLocEventLocationServerConnectionReqIndMsgT_v02 * server_request_ptr)
+    const qmiLocEventLocationServerConnectionReqIndMsgT_v02 * server_request_ptr)
 {
-  uint32_t connHandle = server_request_ptr->connHandle;
-  // service ATL open request; copy the WWAN type
-  if(server_request_ptr->requestType == eQMI_LOC_SERVER_REQUEST_OPEN_V02 )
-  {
-    AGpsType agpsType;
-#ifdef FEATURE_IPV6
-    switch(server_request_ptr->wwanType)
+    uint32_t connHandle = server_request_ptr->connHandle;
+    // service ATL open request; copy the WWAN type
+    if(server_request_ptr->requestType == eQMI_LOC_SERVER_REQUEST_OPEN_V02 )
     {
-      case eQMI_LOC_WWAN_TYPE_INTERNET_V02:
-        agpsType = AGPS_TYPE_WWAN_ANY;
-        break;
-
-      case eQMI_LOC_WWAN_TYPE_AGNSS_V02:
-        agpsType = AGPS_TYPE_SUPL;
-        break;
-
-      default:
-        agpsType = AGPS_TYPE_WWAN_ANY;
-        break;
-    }
+        AGpsType agpsType;
+#ifdef FEATURE_IPV6
+        switch(server_request_ptr->wwanType)
+        {
+        case eQMI_LOC_WWAN_TYPE_INTERNET_V02:
+            agpsType = AGPS_TYPE_WWAN_ANY;
+            LocApiAdapter::requestATL(connHandle, agpsType);
+            break;
+        case eQMI_LOC_WWAN_TYPE_AGNSS_V02:
+            agpsType = AGPS_TYPE_SUPL;
+            LocApiAdapter::requestATL(connHandle, agpsType);
+            break;
+        case eQMI_LOC_WWAN_TYPE_AGNSS_EMERGENCY_V02:
+            LocApiAdapter::requestSuplES(connHandle);
+            break;
+        default:
+            agpsType = AGPS_TYPE_WWAN_ANY;
+            LocApiAdapter::requestATL(connHandle, agpsType);
+            break;
+        }
 #else
-    agpsType = AGPS_TYPE_SUPL;
+        agpsType = AGPS_TYPE_SUPL;
+        LocApiAdapter::requestATL(connHandle, agpsType);
 #endif
-    LocApiAdapter::requestATL(connHandle, agpsType);
-  }
-
-  // service the ATL close request
-  else if (server_request_ptr->requestType == eQMI_LOC_SERVER_REQUEST_CLOSE_V02)
-  {
-    LocApiAdapter::releaseATL(connHandle);
-  }
+    }
+    // service the ATL close request
+    else if (server_request_ptr->requestType == eQMI_LOC_SERVER_REQUEST_CLOSE_V02)
+    {
+        LocApiAdapter::releaseATL(connHandle);
+    }
 }
 
 /* conver the NI report to loc eng format and send t loc engine */
@@ -2254,4 +2263,99 @@ void LocApiV02Adapter :: errorCb(locClientHandleType handle,
 LocApiAdapter* getLocApiAdapter(LocEng &locEng)
 {
  return(new LocApiV02Adapter(locEng));
+}
+
+static void ds_client_global_event_cb(ds_client_status_enum_type result,
+                                       void *loc_adapter_cookie)
+{
+    LocApiV02Adapter *locApiV02AdapterInstance =
+        (LocApiV02Adapter *)loc_adapter_cookie;
+    locApiV02AdapterInstance->ds_client_event_cb(result);
+    return;
+}
+
+void LocApiV02Adapter::ds_client_event_cb(ds_client_status_enum_type result)
+{
+    if(result == E_DS_CLIENT_DATA_CALL_CONNECTED) {
+        LOC_LOGD("%s:%d]: Emergency call is up", __func__, __LINE__);
+        LocApiAdapter::reportDataCallOpened();
+    }
+    else if(result == E_DS_CLIENT_DATA_CALL_DISCONNECTED) {
+        LOC_LOGE("%s:%d]: Emergency call is stopped", __func__, __LINE__);
+        LocApiAdapter::reportDataCallClosed();
+    }
+    return;
+}
+
+ds_client_cb_data ds_client_cb{
+    ds_client_global_event_cb
+};
+
+int LocApiV02Adapter :: openAndStartDataCall()
+{
+    enum loc_api_adapter_err ret;
+    int profile_index;
+    ds_client_status_enum_type result = ds_client_open_call(&dsClientHandle,
+                                                            &ds_client_cb,
+                                                            (void *)this,
+                                                            &profile_index);
+    if(result == E_DS_CLIENT_SUCCESS) {
+        result = ds_client_start_call(dsClientHandle, profile_index);
+
+        if(result == E_DS_CLIENT_SUCCESS) {
+            LOC_LOGD("%s:%d]: Request to start Emergency call sent\n",
+                 __func__, __LINE__);
+        ret = LOC_API_ADAPTER_ERR_SUCCESS;
+        }
+        else {
+            LOC_LOGE("%s:%d]: Unable to bring up emergency call using DS. ret = %d",
+                 __func__, __LINE__, (int)ret);
+            ret = LOC_API_ADAPTER_ERR_UNSUPPORTED;
+        }
+    }
+    else if(result == E_DS_CLIENT_RETRY_LATER) {
+        LOC_LOGE("%s:%d]: Could not start emergency call. Retry after delay\n",
+                 __func__, __LINE__);
+        ret = LOC_API_ADAPTER_ERR_ENGINE_BUSY;
+    }
+    else {
+        LOC_LOGE("%s:%d]: Unable to bring up emergency call using DS. ret = %d",
+                 __func__, __LINE__, (int)ret);
+        ret = LOC_API_ADAPTER_ERR_UNSUPPORTED;
+    }
+
+    return (int)ret;
+}
+
+void LocApiV02Adapter :: stopDataCall()
+{
+    ds_client_status_enum_type ret =
+        ds_client_stop_call(dsClientHandle);
+    if (ret == E_DS_CLIENT_SUCCESS) {
+        LOC_LOGD("%s:%d]: Request to Close SUPL ES call sent\n", __func__, __LINE__);
+    }
+    else {
+        if (ret == E_DS_CLIENT_FAILURE_INVALID_HANDLE) {
+            LOC_LOGE("%s:%d]: Conn handle not found for SUPL ES",
+                     __func__, __LINE__);
+        }
+        LOC_LOGE("%s:%d]: Could not close SUPL ES call. Ret: %d\n"
+                 ,__func__, __LINE__, ret);
+    }
+    return;
+}
+
+void LocApiV02Adapter :: closeDataCall()
+{
+    ds_client_close_call(&dsClientHandle);
+    LOC_LOGD("%s:%d]: Release data client handle\n", __func__, __LINE__);
+    return;
+}
+
+int LocApiV02Adapter :: initDataServiceClient()
+{
+    int ret=0;
+    ret = ds_client_init();
+    LOC_LOGD("%s:%d]: ret = %d\n", __func__, __LINE__,ret);
+    return ret;
 }

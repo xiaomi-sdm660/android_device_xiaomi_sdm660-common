@@ -33,6 +33,7 @@
 #include "loc_api_v02_client.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "ds_client.h"
 
 /* This class derives from the LocApiAdapter class.
    The members of this class are responsible for converting
@@ -40,6 +41,8 @@
    This class also implements some of the virtual functions that
    handle the requests from loc engine. */
 class LocApiV02Adapter : public LocApiAdapter {
+  /*ds client handle*/
+  dsClientHandleType dsClientHandle;
 
   /* loc api v02 handle*/
   locClientHandleType clientHandle;
@@ -109,6 +112,12 @@ public:
      error */
   void errorCb(locClientHandleType handle,
                locClientErrorEnumType errorId);
+
+  void ds_client_event_cb(ds_client_status_enum_type result);
+  int openAndStartDataCall();
+  void stopDataCall();
+  void closeDataCall();
+  int initDataServiceClient();
 
   virtual enum loc_api_adapter_err reinit();
 

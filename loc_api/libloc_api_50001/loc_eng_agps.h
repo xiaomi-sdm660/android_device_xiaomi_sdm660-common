@@ -38,6 +38,7 @@
 #include <linked_list.h>
 #include <LocApiAdapter.h>
 #include "loc_eng_msg.h"
+#include <loc_timer.h>
 
 // forward declaration
 class AgpsStateMachine;
@@ -52,6 +53,18 @@ typedef enum {
     RSRC_DENIED,
     RSRC_STATUS_MAX
 } AgpsRsrcStatus;
+
+typedef enum {
+    servicerTypeNoCbParam,
+    servicerTypeAgps,
+    servicerTypeExt
+}servicerType;
+
+//DS Callback struct
+typedef struct {
+    LocApiAdapter *mAdapter;
+    AGpsStatusValue action;
+}dsCbData;
 
 // information bundle for subscribers
 struct Notification {
@@ -101,7 +114,7 @@ class AgpsState {
     // no class members are public.  We don't want
     // anyone but state machine to use state.
     friend class AgpsStateMachine;
-
+    friend class DSStateMachine;
     // state transitions are done here.
     // Each state implements its own transitions (of course).
     inline virtual AgpsState* onRsrcEvent(AgpsRsrcStatus event, void* data) = 0;
@@ -129,21 +142,56 @@ public:
     inline virtual char* whoami() = 0;
 };
 
+class Servicer {
+    void (*callback)(void);
+public:
+    static Servicer* getServicer(servicerType type, void *cb_func);
+    virtual int requestRsrc(void *cb_data);
+    Servicer() {}
+    Servicer(void *cb_func)
+    { callback = (void(*)(void))(cb_func); }
+    virtual ~Servicer(){}
+    inline virtual char *whoami() {return (char*)"Servicer";}
+};
+
+class ExtServicer : public Servicer {
+    int (*callbackExt)(void *cb_data);
+public:
+    int requestRsrc(void *cb_data);
+    ExtServicer() {}
+    ExtServicer(void *cb_func)
+    { callbackExt = (int(*)(void *))(cb_func); }
+    virtual ~ExtServicer(){}
+    inline virtual char *whoami() {return (char*)"ExtServicer";}
+};
+
+class AGpsServicer : public Servicer {
+    void (*callbackAGps)(AGpsStatus* status);
+public:
+    int requestRsrc(void *cb_data);
+    AGpsServicer() {}
+    AGpsServicer(void *cb_func)
+    { callbackAGps = (void(*)(AGpsStatus *))(cb_func); }
+    virtual ~AGpsServicer(){}
+    inline virtual char *whoami() {return (char*)"AGpsServicer";}
+};
+
 class AgpsStateMachine {
+protected:
+    // a linked list of subscribers.
+    void* mSubscribers;
+    //handle to whoever provides the service
+    Servicer *mServicer;
     // allows AgpsState to access private data
     // each state is really internal data to the
     // state machine, so it should be able to
     // access anything within the state machine.
     friend class AgpsState;
-
-    // handle to whoever provides the service
-    void (* const mServicer)(AGpsStatus* status);
-    // NIF type: AGNSS or INTERNET.
-    const AGpsType mType;
     // pointer to the current state.
     AgpsState* mStatePtr;
-    // a linked list of subscribers.
-    void* mSubscribers;
+private:
+    // NIF type: AGNSS or INTERNET.
+    const AGpsType mType;
     // apn to the NIF.  Each state machine tracks
     // resource state of a particular NIF.  For each
     // NIF, there is also an active APN.
@@ -158,7 +206,8 @@ class AgpsStateMachine {
     bool mEnforceSingleSubscriber;
 
 public:
-    AgpsStateMachine(void (*servicer)(AGpsStatus* status), AGpsType type, bool enforceSingleSubscriber);
+    AgpsStateMachine(servicerType servType, void *cb_func,
+                     AGpsType type, bool enforceSingleSubscriber);
     virtual ~AgpsStateMachine();
 
     // self explanatory methods below
@@ -179,11 +228,15 @@ public:
     // add a subscriber in the linked list, if not already there.
     void addSubscriber(Subscriber* subscriber) const;
 
-    void onRsrcEvent(AgpsRsrcStatus event);
+    virtual void onRsrcEvent(AgpsRsrcStatus event);
 
     // put the data together and send the FW
-    void sendRsrcRequest(AGpsStatusValue action) const;
+    virtual int sendRsrcRequest(AGpsStatusValue action) const;
 
+    //if list is empty, linked_list_empty returns 1
+    //else if list is not empty, returns 0
+    //so hasSubscribers() returns 1 if list is not empty
+    //and returns 0 if list is empty
     inline bool hasSubscribers() const
     { return !linked_list_empty(mSubscribers); }
 
@@ -194,6 +247,24 @@ public:
 
     // private. Only a state gets to call this.
     void notifySubscribers(Notification& notification) const;
+
+};
+
+class DSStateMachine : public AgpsStateMachine {
+    static const unsigned char MAX_START_DATA_CALL_RETRIES;
+    static const unsigned int DATA_CALL_RETRY_DELAY_MSEC;
+    LocApiAdapter* mLocAdapter;
+    unsigned char mRetries;
+public:
+    DSStateMachine(servicerType type,
+                    void *cb_func,
+                    LocApiAdapter* adapterHandle);
+    int sendRsrcRequest(AGpsStatusValue action) const;
+    void onRsrcEvent(AgpsRsrcStatus event);
+    void retryCallback();
+    void informStatus(AgpsRsrcStatus status, int ID) const;
+    inline void incRetries() {mRetries++;}
+    inline virtual char *whoami() {return (char*)"DSStateMachine";}
 };
 
 // each subscriber is a AGPS client.  In the case of ATL, there could be
@@ -252,7 +323,7 @@ struct BITSubscriber : public Subscriber {
     }
 
     virtual bool equals(const Subscriber *s) const;
-
+    inline virtual ~BITSubscriber(){}
 private:
     char ipv6Addr[16];
 };
@@ -277,6 +348,7 @@ struct ATLSubscriber : public Subscriber {
         return new ATLSubscriber(ID, mStateMachine, mLocAdapter,
                                  mBackwardCompatibleMode);
     }
+    inline virtual ~ATLSubscriber(){}
 };
 
 #ifdef FEATURE_IPV6
@@ -325,7 +397,28 @@ struct WIFISubscriber : public Subscriber {
     {
         return new WIFISubscriber(mStateMachine, mSSID, mPassword, senderId);
     }
+    inline virtual ~WIFISubscriber(){}
 };
 #endif
+
+struct DSSubscriber : public Subscriber {
+    bool mIsInactive;
+    inline DSSubscriber(const AgpsStateMachine *stateMachine,
+                         const int id) :
+        Subscriber(id, stateMachine)
+    {
+        mIsInactive = false;
+    }
+    inline virtual void setIPAddresses(uint32_t &v4, char* v6) {}
+    virtual Subscriber* clone()
+    {return new DSSubscriber(mStateMachine, ID);}
+    virtual bool notifyRsrcStatus(Notification &notification);
+    inline virtual bool waitForCloseComplete() { return true; }
+    virtual void setInactive();
+    inline virtual bool isInactive()
+    { return mIsInactive; }
+    inline virtual ~DSSubscriber(){}
+    inline virtual char *whoami() {return (char*)"DSSubscriber";}
+};
 
 #endif //__LOC_ENG_AGPS_H__
