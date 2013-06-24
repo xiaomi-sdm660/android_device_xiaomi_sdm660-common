@@ -56,6 +56,11 @@ void UpdateSwSpecParams(struct ipa_nat_rule *rule,
   if(IPA_NAT_SW_PARAM_INDX_TBL_ENTRY_BYTE == param_type)
   {
 		value = (value << INDX_TBL_ENTRY_SIZE_IN_BITS);
+		temp &= 0x0000FFFF;
+  }
+  else 
+  {
+		temp &= 0xFFFF0000;
   }
   
   temp = (temp | value);
@@ -571,7 +576,7 @@ uint16_t ipa_nati_make_rule_hdl(uint16_t tbl_hdl,
     }
   }
 
-  return cnt;
+  return 0;
 }
 
 /**
@@ -2242,7 +2247,7 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     {
 			atl_one = 1;
 			ipa_nati_print_rule(&tbl_ptr[cnt], 
-							(cnt + ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries -1));
+							(cnt + ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries));
     }
   }
   if(!atl_one)
@@ -2288,7 +2293,7 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
     {
 			atl_one = 1;
 			ipa_nati_print_index_rule(&indx_tbl_ptr[cnt], 
-							(cnt + ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries -1));
+							(cnt + ipv4_nat_cache.ip4_tbl[tbl_hdl-1].table_entries));
     }
   }
   if(!atl_one)
@@ -2302,15 +2307,27 @@ void ipa_nat_dump_ipv4_table(uint32_t tbl_hdl)
 
 void ipa_nati_print_rule(struct ipa_nat_rule *param, uint32_t rule_id)
 {
-	struct ipa_nat_sw_rule sw_rule;
-	memcpy(&sw_rule, param, sizeof(sw_rule));
+  struct ipa_nat_sw_rule sw_rule;
+  memcpy(&sw_rule, param, sizeof(sw_rule));
+  uint32_t ip_addr = 0;
 
-  IPADUMP("rule-id:%d  Trgt-IP:0x%x  Trgt-Port:%d  ",rule_id, sw_rule.target_ip, sw_rule.target_port);
-  IPADUMP("Priv-IP:0x%x Priv-Port:%d  ", sw_rule.private_ip, sw_rule.private_port);
+  IPADUMP("rule-id:%d  ",rule_id);
+  ip_addr = sw_rule.target_ip;
+  IPADUMP("Trgt-IP:%d.%d.%d.%d  ",
+		    ((ip_addr & 0xFF000000) >> 24), ((ip_addr & 0x00FF0000) >> 16),
+			((ip_addr & 0x0000FF00) >> 8), ((ip_addr & 0x000000FF)));
+
+  IPADUMP("Trgt-Port:%d  Priv-Port:%d  ",sw_rule.target_port, sw_rule.private_port);
+
+  ip_addr = sw_rule.private_ip;
+  IPADUMP("Priv-IP:%d.%d.%d.%d ", 
+							((ip_addr & 0xFF000000) >> 24), ((ip_addr & 0x00FF0000) >> 16),
+							((ip_addr & 0x0000FF00) >> 8), ((ip_addr & 0x000000FF)));
+
   IPADUMP("Pub-Port:%d  Nxt-indx:%d  ", sw_rule.public_port, sw_rule.next_index);
   IPADUMP("IP-cksm-delta:0x%x  En-bit:0x%x  ", sw_rule.ip_chksum, sw_rule.enable);
   IPADUMP("TS:0x%x  Proto:0x%x  ", sw_rule.time_stamp, sw_rule.protocol);
-  IPADUMP("Prv-indx:%d  nxt-indx:%d  Tcp-udp-cksum-delta:0x%x", sw_rule.prev_index, sw_rule.next_index, sw_rule.tcp_udp_chksum);
+  IPADUMP("Prv-indx:%d  Tcp-udp-cksum-delta:0x%x", sw_rule.prev_index, sw_rule.tcp_udp_chksum);
   IPADUMP("\n");
   return;
 }
