@@ -526,10 +526,11 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	int res = IPACM_SUCCESS, len = 0;
 	struct ipa_flt_rule_add flt_rule_entry;
 	ipa_ioc_add_flt_rule *m_pFilteringTable;
-        /* Adding this hack because WLAN may not registered for Rx-endpoint, other ifaces will always have*/
-	char *dev_wlan0="wlan0";
-	char *dev_wlan1="wlan1";
-	char *dev_ecm0="ecm0";
+
+  /* Adding this hack because WLAN may not registered for Rx-endpoint, other ifaces will always have*/
+	const char *dev_wlan0="wlan0";
+	const char *dev_wlan1="wlan1";
+	const char *dev_ecm0="ecm0";
 
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)

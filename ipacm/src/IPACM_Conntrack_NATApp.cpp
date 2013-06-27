@@ -201,13 +201,11 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 
 	CHK_TBL_HDL();
 
-#ifdef IPACM_DEBUG
   IPACMDBG("Received below nat entry for deletion\n");
 	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
 	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
 	IPACMDBG("protocolcol: %d\n", rule->protocol);
-#endif
 
 	for(; cnt < max_entries; cnt++)
 	{
@@ -345,8 +343,6 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 		return -1;
 	}
 
-
-#ifdef IPACM_DEBUG
 	if(cache[cnt].enabled == true)
 	{
 		IPACMDBG("Added below rule successfully\n");
@@ -356,7 +352,6 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 		IPACMDBG("Public Port:%d\n", rule->public_port);
 		IPACMDBG("protocol: %d\n", rule->protocol);
 	}
-#endif
 
 	return 0;
 }
@@ -365,11 +360,9 @@ void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
 {
 	int ret;
 
-#ifdef IPACM_DEBUG
 	IPACM_ConntrackClient::iptodot("Private IP:", rule->private_ip);
 	IPACM_ConntrackClient::iptodot("Target IP:",  rule->target_ip);
 	IPACMDBG("Private Port: %d, Target Port: %d\n", rule->private_port, rule->target_port);
-#endif
 
 	if(!ct_hdl)
 	{
@@ -603,14 +596,12 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 			}
 			cache[cnt].enabled = true;
 
-#ifdef IPACM_DEBUG
 			IPACMDBG("On power reset added below rule successfully\n");
 			IPACM_ConntrackClient::iptodot("Private IP", nat_rule.private_ip);
 			IPACM_ConntrackClient::iptodot("Target IP", nat_rule.target_ip);
 			IPACMDBG("Private Port:%d \t Target Port: %d\t", nat_rule.private_port, nat_rule.target_port);
 			IPACMDBG("Public Port:%d\n", nat_rule.public_port);
 			IPACMDBG("protocol: %d\n", nat_rule.protocol);
-#endif
 
 		}
 	}

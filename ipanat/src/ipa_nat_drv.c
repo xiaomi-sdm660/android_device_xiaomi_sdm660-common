@@ -110,9 +110,12 @@ int ipa_nat_add_ipv4_rule(uint32_t tbl_hdl,
   }
   IPADBG("Passed Table handle: 0x%x\n", tbl_hdl);
 
-  *rule_hdl = ipa_nati_add_ipv4_rule(tbl_hdl, clnt_rule);
-  IPADBG("returning rule handle 0x%x\n", *rule_hdl);
+  if(ipa_nati_add_ipv4_rule(tbl_hdl, clnt_rule, rule_hdl) != 0)
+	{
+		return -1;
+	}
 
+  IPADBG("returning rule handle 0x%x\n", *rule_hdl);
   return 0;
 }
 

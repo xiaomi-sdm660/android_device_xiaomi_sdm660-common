@@ -300,7 +300,7 @@ int IPACM_Config::DelNatIfaces(char *dev_name)
 			/* Reset the matched entry */
 			memset(pNatIfaces[i].iface_name, 0, IPA_IFACE_NAME_LEN);
 
-			for (i; i < ipa_nat_iface_entries - 1; i++)
+			for (; i < ipa_nat_iface_entries - 1; i++)
 			{
 				memcpy(pNatIfaces[i].iface_name,
 							 pNatIfaces[i + 1].iface_name, IPA_IFACE_NAME_LEN);

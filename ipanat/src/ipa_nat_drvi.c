@@ -1072,14 +1072,14 @@ int ipa_nati_query_timestamp(uint32_t  tbl_hdl,
   return 0;
 }
 
-uint32_t ipa_nati_add_ipv4_rule(uint32_t tbl_hdl,
-                                const ipa_nat_ipv4_rule *clnt_rule)
+int ipa_nati_add_ipv4_rule(uint32_t tbl_hdl,
+                           const ipa_nat_ipv4_rule *clnt_rule,
+													 uint32_t *rule_hdl)
 {
   struct ipa_nat_ip4_table_cache *tbl_ptr;
   struct ipa_nat_sw_rule sw_rule;
   struct ipa_nat_indx_tbl_sw_rule index_sw_rule;
   uint16_t new_entry, new_index_tbl_entry;
-  uint32_t rule_hdl = 0;
 
   memset(&sw_rule, 0, sizeof(sw_rule));
   memset(&index_sw_rule, 0, sizeof(index_sw_rule));
@@ -1108,8 +1108,8 @@ uint32_t ipa_nati_add_ipv4_rule(uint32_t tbl_hdl,
   }
  
   /* Generate rule handle */
-  rule_hdl  = ipa_nati_make_rule_hdl((uint16_t)tbl_hdl, new_entry);
-  if (!rule_hdl)
+  *rule_hdl  = ipa_nati_make_rule_hdl((uint16_t)tbl_hdl, new_entry);
+  if (!(*rule_hdl))
   {
     IPAERR("unable to generate rule handle\n");
     return -1;
@@ -1119,7 +1119,7 @@ uint32_t ipa_nati_add_ipv4_rule(uint32_t tbl_hdl,
   ipa_nat_dump_ipv4_table(tbl_hdl);
 #endif
 
-  return rule_hdl;
+  return 0;
 }
 int ipa_nati_generate_rule(uint32_t tbl_hdl,
                            const ipa_nat_ipv4_rule *clnt_rule,

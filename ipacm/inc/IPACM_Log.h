@@ -50,28 +50,19 @@ extern "C"
 #include <string.h>
 #include <syslog.h>
 
-#define LOG_SIZE 200
-
 #define PERROR(fmt)   printf("%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
                       perror(fmt);
 
-#define IPACMDBG(fmt, ...) {\
-                             int n =0; \
-                             n = snprintf(log_buf, sizeof(log_buf), "%s:%d %s() ", __FILE__,  __LINE__, __FUNCTION__);\
-                             snprintf((log_buf+n), (sizeof(log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             logmessage(log_buf, LOG_DEBUG);\
-				  		             }
+#define IPACMERR(fmt, ...) syslog(LOG_ERR, "ERROR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+                           printf("ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
 
+#ifdef DEBUG
+#define IPACMDBG(fmt, ...) syslog(LOG_DEBUG, "%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+                           printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#else
+#define IPACMDBG(fmt, ...)
+#endif
 
-#define IPACMERR(fmt, ...) {\
-                             int n =0; \
-                             n = snprintf(log_buf, sizeof(log_buf), "%s:%d %s() %s", __FILE__,  __LINE__, __FUNCTION__, "Error:");\
-                             snprintf((log_buf+n), (sizeof(log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             logmessage(log_buf, LOG_ERR);\
-				  		             }
-
-extern void logmessage(char *msg, int log_level);
-extern char log_buf[LOG_SIZE];
 
 #ifdef __cplusplus
 }
