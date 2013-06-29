@@ -348,14 +348,9 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     } else {
         LOC_LOGD("loc_eng_init created client, id = %p\n", loc_eng_data.client_handle);
 
-        // call reinit to send initialization messages
-       int tries = 30;
-       while (tries > 0 &&
-              LOC_API_ADAPTER_ERR_SUCCESS != (ret_val = loc_eng_reinit(loc_eng_data))) {
-           tries--;
-           LOC_LOGD("loc_eng_init client open failed, %d more tries", tries);
-           sleep(1);
-       }
+        /*send reinit event to QMI instead of call reinit directly*/
+        loc_eng_msg *msg(new loc_eng_msg(locEngHandle.owner, LOC_ENG_MSG_LOC_INIT));
+        locEngHandle.sendMsge(locEngHandle.owner, msg);
     }
 
     EXIT_LOG(%d, ret_val);
@@ -1868,6 +1863,11 @@ static void loc_eng_deferred_action_thread(void* arg)
                 LOC_LOGE("Ulp Phone context request call back not initialized");
             }
         break;
+
+        case LOC_ENG_MSG_LOC_INIT:
+        {
+            loc_eng_reinit(*loc_eng_data_p);
+        }
 
         default:
             LOC_LOGE("unsupported msgid = %d\n", msg->msgid);

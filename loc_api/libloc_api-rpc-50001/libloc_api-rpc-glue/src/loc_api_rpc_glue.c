@@ -62,6 +62,9 @@
 /* Logging Improvement */
 #include "log_util.h"
 
+/*Maximum number of Modem init*/
+#define RPC_TRY_NUM 10
+
 /* Uncomment to force ALOGD messages */
 // #define ALOGD ALOGI
 
@@ -308,6 +311,7 @@ rpc_loc_client_handle_type loc_open (
     void*                         userData
 )
 {
+    int try_num = RPC_TRY_NUM;
     ENTRY_LOG();
     LOC_GLUE_CHECK_INIT(rpc_loc_client_handle_type);
 
@@ -352,13 +356,21 @@ rpc_loc_client_handle_type loc_open (
     enum clnt_stat stat = RPC_SUCCESS;
 
     EXIT_LOG_CALLFLOW(%s, "loc client open");
-    stat = RPC_FUNC_VERSION(rpc_loc_open_, RPC_LOC_OPEN_VERSION)(&args, &rets, loc_api_clnt);
+
+     /*try more for rpc_loc_open_xx()*/
+
+    do
+    {
+        stat = RPC_FUNC_VERSION(rpc_loc_open_, RPC_LOC_OPEN_VERSION)(&args, &rets, loc_api_clnt);
+        ret_val = (rpc_loc_client_handle_type) rets.loc_open_result;
+        try_num--;
+
+    }while( (RPC_SUCCESS != stat||0 > ret_val) && 0 != try_num );
+
     LOC_GLUE_CHECK_RESULT(stat, int32);
 
     /* save the handle in the table */
     loc_glue_callback_table[i].handle = (rpc_loc_client_handle_type) rets.loc_open_result;
-
-    ret_val = (rpc_loc_client_handle_type) rets.loc_open_result;
 
     return ret_val;
 
