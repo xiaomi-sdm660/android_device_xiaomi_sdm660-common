@@ -47,6 +47,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Filtering.h"
 #include "IPACM_Lan.h"
 #include "IPACM_Iface.h"
+#include "IPACM_Conntrack_NATApp.h"
 
 typedef struct _wlan_client_rt_hdl
 {
@@ -102,6 +103,8 @@ private:
 	int header_name_count; 
 	int num_wifi_client;
 	wlan_ampdu_flt_rules wlan_ampdu_flt_rule;
+
+	NatApp *Nat_App;
 
 	inline ipa_wlan_client* get_client_memptr(ipa_wlan_client *param, int cnt)
 	{
