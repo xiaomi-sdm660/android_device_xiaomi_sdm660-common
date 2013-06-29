@@ -57,8 +57,9 @@ int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
     int ret_val = -1;
     loc_eng_xtra_data_s_type *xtra_module_data_ptr;
 
-    if(callbacks == NULL)
+    if(callbacks == NULL) {
         LOC_LOGE("loc_eng_xtra_init: failed, cb is NULL");
+    }
     else {
         xtra_module_data_ptr = &loc_eng_data.xtra_module_data;
         xtra_module_data_ptr->download_request_cb = callbacks->download_request_cb;

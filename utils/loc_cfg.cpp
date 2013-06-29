@@ -47,7 +47,7 @@
  *============================================================================*/
 
 /* Parameter data */
-static uint8_t DEBUG_LEVEL = 3;
+static uint8_t DEBUG_LEVEL = 0xff;
 static uint8_t TIMESTAMP = 0;
 
 /* Parameter spec table */
