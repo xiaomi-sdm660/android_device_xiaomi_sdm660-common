@@ -290,11 +290,12 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
                   void (*loc_external_msg_sender) (void*, void*))
 
 {
-    int ret_val =-1;
+    int ret_val = 0;
 
     ENTRY_LOG_CALLFLOW();
     if (NULL == callbacks || 0 == event) {
         LOC_LOGE("loc_eng_init: bad parameters cb %p eMask %d", callbacks, event);
+        ret_val = -1;
         EXIT_LOG(%d, ret_val);
         return ret_val;
     }
@@ -1861,13 +1862,14 @@ static void loc_eng_deferred_action_thread(void* arg)
             }
             else
                 LOC_LOGE("Ulp Phone context request call back not initialized");
-            }
+        }
         break;
 
         case LOC_ENG_MSG_LOC_INIT:
         {
             loc_eng_reinit(*loc_eng_data_p);
         }
+        break;
 
         default:
             LOC_LOGE("unsupported msgid = %d\n", msg->msgid);
