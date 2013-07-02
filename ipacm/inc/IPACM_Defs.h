@@ -115,9 +115,7 @@ typedef enum
 	IPA_HANDLE_WAN_UP,                        /* 21 ipacm_event_iface_up  */
 	IPA_HANDLE_WAN_DOWN,                      /* 22 unsigned long  */
 	IPA_HANDLE_WLAN_UP,                       /* 23 ipacm_event_iface_up */
-	IPA_HANDLE_LAN_UP,                        /* 24 ipacm_event_iface_up */
-	IPA_HANDLE_POWER_SAVE,                    /* 25 ipacm_event_iface_up */
-	IPA_HANDLE_RESET_POWER_SAVE               /* 26 ipacm_event_iface_up */
+	IPA_HANDLE_LAN_UP                         /* 24 ipacm_event_iface_up */
 } ipa_cm_event_id;
 
 typedef enum

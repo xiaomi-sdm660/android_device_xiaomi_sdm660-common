@@ -65,8 +65,6 @@ private:
 	 void TriggerWANDown(uint32_t wan_addr);
 	 int  CreateNatThreads(void);
 
-	 void HandlePowerSave(void *data);
-	 void HandleResetPower(void *data);
 	 void HandleNeighIpAddrEvt(void *data, bool);
 
 public:

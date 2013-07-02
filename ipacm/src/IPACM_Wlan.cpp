@@ -79,6 +79,13 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 		return;
 	}
 
+	Nat_App = NatApp::GetInstance();
+	if (Nat_App == NULL)
+	{
+		IPACMERR("unable to get Nat App instance \n");
+		return;
+	}
+
 	IPACMDBG("index:%d constructor: Tx properties:%d\n", iface_index, iface_query->num_tx_props);
 	return;
 }
@@ -245,39 +252,30 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				if ((wlan_index != IPACM_INVALID_INDEX) &&
 						(get_client_memptr(wlan_client, wlan_index)->power_save_set == true))
 				{
-				    if(get_client_memptr(wlan_client, wlan_index)->ipv4_set == true)
-				    {
-					ipacm_cmd_q_data evt_data;
-					ipacm_event_iface_up *data = NULL;
 
-					data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
-					if (data == NULL)
-					{
-						IPACMERR("unable to allocate memory\n");
-						return;
-					}
-
-					data->ipv4_addr = get_client_memptr(wlan_client, wlan_index)->v4_addr;
-					evt_data.event = IPA_HANDLE_RESET_POWER_SAVE;
-					evt_data.evt_data = (void *)data;
-					IPACM_EvtDispatcher::PostEvt(&evt_data);
-					    IPACMDBG("recover client index(%d):ipv4 address: 0x%x\n", wlan_index, get_client_memptr(wlan_client, wlan_index)->v4_addr);
-				     }
 					IPACMDBG("change wlan client out of  power safe mode \n");
 					get_client_memptr(wlan_client, wlan_index)->power_save_set = false;
-				}
 				
-				
-                                if(get_client_memptr(wlan_client, wlan_index)->ipv4_set == true) /* for ipv4 */
-				{
-					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v4);
-				}				
+					/* First add route rules and then nat rules */
+                    if(get_client_memptr(wlan_client, wlan_index)->ipv4_set == true) /* for ipv4 */
+				    {
+						     IPACMDBG("recover client index(%d):ipv4 address: 0x%x\n",
+										 wlan_index,
+										 get_client_memptr(wlan_client, wlan_index)->v4_addr);
 
-				if(get_client_memptr(wlan_client, wlan_index)->ipv6_set == true) /* for ipv6 */
-				{
-					handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v6);
-				}
-			}
+						IPACMDBG("Adding Route Rules\n");
+					    handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v4);
+
+						IPACMDBG("Adding Nat Rules\n");
+						Nat_App->ResetPwrSaveIf(get_client_memptr(wlan_client, wlan_index)->v4_addr);
+				    }				
+
+				    if(get_client_memptr(wlan_client, wlan_index)->ipv6_set == true) /* for ipv6 */
+				    {
+					    handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v6);
+				    }
+			    }
+		    }
 		}
 		break;
 
@@ -852,8 +850,6 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 {
 	int clt_indx;
-	ipacm_cmd_q_data evt_data;
-	ipacm_event_iface_up *data;
 	IPACMDBG("wlan->handle_wlan_client_pwrsave();\n");
 
 	clt_indx = get_wlan_client_index(mac_addr);
@@ -865,24 +861,14 @@ int IPACM_Wlan::handle_wlan_client_pwrsave(uint8_t *mac_addr)
 
         if (get_client_memptr(wlan_client, clt_indx)->power_save_set == false)
 	{
+		/* First reset nat rules and then route rules */
 	    if(get_client_memptr(wlan_client, clt_indx)->ipv4_set == true)
 	    {
-		data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
-		if (data == NULL)
-		{
-			IPACMERR("unable to allocate memory\n");
-			return IPACM_FAILURE;
-		}
-
-		data->ipv4_addr = get_client_memptr(wlan_client, clt_indx)->v4_addr ;
-		   IPACMDBG("power-save client index(%d):ipv4 address: 0x%x\n", clt_indx, get_client_memptr(wlan_client, clt_indx)->v4_addr);
-           
-           
-		evt_data.event = IPA_HANDLE_POWER_SAVE;
-		evt_data.evt_data = (void *)data;
-		IPACM_EvtDispatcher::PostEvt(&evt_data);
+			IPACMDBG("Deleting Nat Rules\n");
+			Nat_App->UpdatePwrSaveIf(get_client_memptr(wlan_client, clt_indx)->v4_addr);
  	     }
  	  
+		IPACMDBG("Deleting default qos Route Rules\n");
 		delete_default_qos_rtrules(clt_indx, IPA_IP_v4);
 		delete_default_qos_rtrules(clt_indx, IPA_IP_v6);
                 get_client_memptr(wlan_client, clt_indx)->power_save_set = true;

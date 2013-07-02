@@ -51,8 +51,6 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, this);
 	 IPACM_EvtDispatcher::registr(IPA_PROCESS_CT_MESSAGE, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WLAN_UP, this);
-	 IPACM_EvtDispatcher::registr(IPA_HANDLE_POWER_SAVE, this);
-	 IPACM_EvtDispatcher::registr(IPA_HANDLE_RESET_POWER_SAVE, this);
 	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, this);
 	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, this);
 }
@@ -116,17 +114,6 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			 IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT event\n");
 			 HandleNeighIpAddrEvt(data, true);
 		 }
-		 break;
-
-
-	 case IPA_HANDLE_POWER_SAVE:
-		 IPACMDBG("Received IPA_HANDLE_POWER_SAVE event\n");
-		 HandlePowerSave(data);
-		 break;
-
-	 case IPA_HANDLE_RESET_POWER_SAVE:
-		 IPACMDBG("Received IPA_HANDLE_RESET_POWER_SAVE event\n");
-		 HandleResetPower(data);
 		 break;
 
 	 default:
@@ -254,27 +241,10 @@ void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 
 }
 
-void IPACM_ConntrackListener::HandlePowerSave(void *in_param)
-{
-	ipacm_event_iface_up *pwrsv_data = (ipacm_event_iface_up *)in_param;
-
-	IPACM_ConntrackClient::iptodot("power save ip address",
-																 pwrsv_data->ipv4_addr);
-	NatApp::GetInstance()->UpdatePwrSaveIf(pwrsv_data->ipv4_addr);
-}
-
-void IPACM_ConntrackListener::HandleResetPower(void *in_param)
-{
-	ipacm_event_iface_up *pwrsv_data = (ipacm_event_iface_up *)in_param;
-
-	IPACM_ConntrackClient::iptodot("Reset power save ip address", 
-																 pwrsv_data->ipv4_addr);
-	NatApp::GetInstance()->ResetPwrSaveIf(pwrsv_data->ipv4_addr);
-}
-
 void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 {
 	 ipacm_event_iface_up *wanup_data = (ipacm_event_iface_up *)in_param;
+	 NatApp *na;
 
 	 IPACMDBG("Recevied below informatoin during wanup:\n");
 	 IPACMDBG("if_name:%s, ipv4_address:0x%x\n",
@@ -286,12 +256,17 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 		 return;
 	 }
 
-	 isWanUp = true;
-	 wan_ipaddr = wanup_data->ipv4_addr;
 	 IPACM_ConntrackClient::iptodot("public ip address", wanup_data->ipv4_addr);
+	 isWanUp = true;
 
+	 wan_ipaddr = wanup_data->ipv4_addr;
 	 memcpy(wan_ifname, wanup_data->ifname, sizeof(wan_ifname));
-	 NatApp::GetInstance()->AddTable(wanup_data->ipv4_addr);
+
+	 na = NatApp::GetInstance();
+	 if(na != NULL)
+	 {
+		 na->AddTable(wanup_data->ipv4_addr);
+	 }
 
 	 IPACMDBG("creating nat threads\n");
 	 CreateNatThreads();
@@ -395,8 +370,13 @@ void IPACM_ConntrackListener::TriggerWANDown(uint32_t wan_addr)
 	 IPACMDBG("Deleting ipv4 nat table with ");
 	 IPACM_ConntrackClient::iptodot("public ip address", wan_addr);
 	 isWanUp = false;
+	 NatApp *na;
 
-	 NatApp::GetInstance()->DeleteTable(wan_addr);
+	 na = NatApp::GetInstance();
+	 if(na != NULL)
+	 {
+		 na->DeleteTable(wan_addr);
+	 }
 }
 
 
@@ -493,6 +473,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 nat_table_entry rule;
 	 u_int8_t tcp_state;
 	 uint32_t status = 0;
+	 NatApp *na = NULL;
 
 	 status = nfct_get_attr_u32(ct, ATTR_STATUS);
 
@@ -612,16 +593,23 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 
 	 if(IPPROTO_TCP == rule.protocol)
 	 {
+		        na = NatApp::GetInstance();
+			if(na == NULL)
+			{
+				IPACMERR("unable to get nat app instance");
+				return;
+			}
+
 			tcp_state = nfct_get_attr_u8(ct, ATTR_TCP_STATE);
 			if(TCP_CONNTRACK_ESTABLISHED == tcp_state)
 			{
 				 IPACMDBG("TCP state TCP_CONNTRACK_ESTABLISHED(%d)\n", tcp_state);
-				 NatApp::GetInstance()->AddEntry(&rule);
+				 na->AddEntry(&rule);
 			}
 			else if(TCP_CONNTRACK_FIN_WAIT == tcp_state)
 			{
 				 IPACMDBG("TCP state TCP_CONNTRACK_FIN_WAIT(%d)\n", tcp_state);
-				 NatApp::GetInstance()->DeleteEntry(&rule);
+				 na->DeleteEntry(&rule);
 			}
 			else
 			{
@@ -631,15 +619,22 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 }
 	 else if(IPPROTO_UDP == rule.protocol)
 	 {
+		  na = NatApp::GetInstance();
+			if(na == NULL)
+			{
+				IPACMERR("unable to get nat app instance");
+				return;
+			}
+
 			if(NFCT_T_NEW == type)
 			{
 				 IPACMDBG("New UDP connection at time %ld\n", time(NULL));
-				 NatApp::GetInstance()->AddEntry(&rule);
+				 na->AddEntry(&rule);
 			}
 			else if(NFCT_T_DESTROY == type)
 			{
 				 IPACMDBG("UDP connection close at time %ld\n", time(NULL));
-				 NatApp::GetInstance()->DeleteEntry(&rule);
+				 na->DeleteEntry(&rule);
 			}
 	 }
 	 else
