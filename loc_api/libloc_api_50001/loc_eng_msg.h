@@ -922,14 +922,16 @@ struct ulp_msg_inject_phone_context_settings : public loc_eng_msg {
         phoneSetting(setting)
     {
         LOC_LOGV("context type: %d\n  gps enabled: %d\n network position available %d\n wifi setting enabled %d\n battery charging %d"
-                 "is_agps_setting_enabled %d, is_enh_location_services_enabled %d\n",
+                 "is_agps_setting_enabled %d, is_enh_location_services_enabled %d"
+                 " is_pip_user_setting_enabled %d\n",
              phoneSetting.context_type,
              phoneSetting.is_gps_enabled,
              phoneSetting.is_network_position_available,
              phoneSetting.is_wifi_setting_enabled,
              phoneSetting.is_battery_charging,
              phoneSetting.is_agps_enabled,
-             phoneSetting.is_enh_location_services_enabled);
+             phoneSetting.is_enh_location_services_enabled,
+             phoneSetting.is_pip_user_setting_enabled);
     }
 };
 
