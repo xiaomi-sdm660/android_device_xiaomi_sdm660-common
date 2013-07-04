@@ -100,7 +100,8 @@ LOCAL_SHARED_LIBRARIES := \
     liblog \
     libloc_eng \
     libgps.utils \
-    libdl
+    libdl \
+    libandroid_runtime
 
 LOCAL_SRC_FILES += \
     loc.cpp \
