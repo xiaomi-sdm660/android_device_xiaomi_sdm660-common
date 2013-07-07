@@ -42,8 +42,6 @@ extern "C"
 #include <ipa_nat_drv.h>
 }
 
-#define IPACM_DEBUG
-
 typedef struct _nat_table_entry
 {
 	uint32_t private_ip;
@@ -63,12 +61,7 @@ typedef struct _nat_table_entry
 
 }nat_table_entry;
 
-#define CHK_TBL_HDL() if(0 == nat_table_hdl){\
-                             int n =0; \
-                             n = snprintf(log_buf, sizeof(log_buf), "%s:%d %s() %s", __FILE__,  __LINE__, __FUNCTION__, "Error:");\
-                             snprintf((log_buf+n), (sizeof(log_buf)-n)-1, "Invalid table handle\n");\
-                             logmessage(log_buf, LOG_ERR);\
-				  		             }
+#define CHK_TBL_HDL()  if(nat_table_hdl == 0){ return -1; }
 
 class NatApp
 {

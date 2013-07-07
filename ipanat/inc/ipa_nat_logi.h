@@ -50,32 +50,24 @@ extern "C"
 #include <string.h>
 #include <syslog.h>
 
-#define NAT_LOG_SIZE 200
-
 #define PERROR(fmt)   printf("%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
                       perror(fmt);
-#define IPADBG(fmt, ...) {\
-                             int n =0; \
-                             n = snprintf(nat_log_buf, sizeof(nat_log_buf), "%s:%d %s() ", __FILE__,  __LINE__, __FUNCTION__);\
-                             snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             log_nat_message(nat_log_buf, LOG_DEBUG);\
-				  		             }
 
-#define IPAERR(fmt, ...) {\
-                             int n =0; \
-                             n = snprintf(nat_log_buf, sizeof(nat_log_buf), "%s:%d %s() %s", __FILE__,  __LINE__, __FUNCTION__, "Error:");\
-                             snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-n-1), fmt, ##__VA_ARGS__);\
-                             log_nat_message(nat_log_buf, LOG_ERR);\
-				  		             }
+#define IPAERR(fmt, ...) syslog(LOG_ERR, "ERROR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+										     printf("ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
 
-#define IPADUMP(fmt, ...) {\
-                             int n =0; \
-                             snprintf((nat_log_buf+n), (sizeof(nat_log_buf)-1), fmt, ##__VA_ARGS__);\
-                             log_nat_message(nat_log_buf, LOG_INFO);\
-				  		             }
+#ifdef DEBUG
+#define IPADBG(fmt, ...) syslog(LOG_DEBUG, "%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+	                       printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
 
-extern void log_nat_message(char *msg, int log_level);
-extern char nat_log_buf[NAT_LOG_SIZE];
+#define IPADUMP(fmt, ...) syslog(LOG_DEBUG, fmt, ##__VA_ARGS__);\
+                          printf(fmt, ##__VA_ARGS__);
+
+#else
+#define IPADBG(fmt, ...)
+#define IPADUMP(fmt, ...)
+#endif
+
 
 #ifdef __cplusplus
 }

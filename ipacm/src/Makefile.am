@@ -2,7 +2,7 @@ AM_CPPFLAGS = -I./../inc \
 	      -I$(top_srcdir)/ipanat/inc \
 	      ${LIBXML_CFLAGS}
 AM_CPPFLAGS += -Wall -Wundef -Wno-trigraphs
-AM_CPPFLAGS	+= -DDEBUG
+#AM_CPPFLAGS	+= -DDEBUG
 
 ipacm_SOURCES =	IPACM_Main.cpp \
 		IPACM_Conntrack_NATApp.cpp\

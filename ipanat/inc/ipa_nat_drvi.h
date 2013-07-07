@@ -407,8 +407,9 @@ int ipa_nati_query_timestamp(uint32_t  tbl_hdl,
                             uint32_t  rule_hdl,
                             uint32_t  *time_stamp);
 
-uint32_t ipa_nati_add_ipv4_rule(uint32_t tbl_hdl, 
-                           const ipa_nat_ipv4_rule *clnt_rule);
+int ipa_nati_add_ipv4_rule(uint32_t tbl_hdl, 
+                           const ipa_nat_ipv4_rule *clnt_rule,
+													 uint32_t *rule_hdl);
 
 int ipa_nati_generate_rule(uint32_t tbl_hdl,
                            const ipa_nat_ipv4_rule *clnt_rule,

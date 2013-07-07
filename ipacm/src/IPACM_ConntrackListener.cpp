@@ -578,9 +578,9 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 
 	 if(cnt == MAX_NAT_IFACES)
 	 {
-		IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): ignoring iface with ip address", 
-				                       nat_iface_ipv4_addr[cnt]);
-	    return;
+		 IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): ignoring nat rule with private ip",
+																		rule.private_ip);
+		 return;
 	 }
 	 
 	 IPACMDBG("Nat Entry with below information will be added\n");
