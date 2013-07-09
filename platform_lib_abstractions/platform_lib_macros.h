@@ -48,6 +48,15 @@
 
 #else
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+pid_t gettid(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #define GETTID_PLATFORM_LIB_ABSTRACTION (gettid())
 #define LOC_EXT_CREATE_THREAD_CB_PLATFORM_LIB_ABSTRACTION android::AndroidRuntime::createJavaThread
 #define ELAPSED_MILLIS_SINCE_BOOT_PLATFORM_LIB_ABSTRACTION  (android::elapsedRealtime())
