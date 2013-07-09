@@ -95,7 +95,7 @@ private:
 };
 
 // Module data
-typedef struct
+typedef struct loc_eng_data_s
 {
     LocApiAdapter                 *client_handle;
     loc_location_cb_ext            location_cb;
