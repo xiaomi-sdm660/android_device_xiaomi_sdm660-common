@@ -1727,21 +1727,21 @@ static locClientStatusEnumType locClientQmiCtrlPointInit(
         // get the service addressing information
         rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
                                          &num_services);
-        /* If service is not up wait on a signal until the service is up
-         * or a timeout occurs. */
-        if (rc != QMI_NO_ERR) {
-            QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT_UNIT);
-            nosignal = QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params);
-            if (!nosignal)
-                rc = qmi_client_get_service_list(locClientServiceObject, NULL, NULL,
-                                                 &num_services);
-        }
+        LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc: %d "
+                 "total timeout: %d", __func__, __LINE__, rc, timeout);
 
-        timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
+        if(rc == QMI_NO_ERR)
+            break;
 
-        LOC_LOGV("%s:%d]: qmi_client_get_service_list() rc %d, nosignal %d, "
-                 "total timeout %d", __func__, __LINE__, rc, nosignal, timeout);
-    } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL && nosignal && rc != QMI_NO_ERR);
+        /* Service is not up. Wait on a signal until the service is up
+           or a timeout occurs. */
+        LOC_LOGD("%s:%d]: Service not up. Starting delay timer\n", __func__, __LINE__);
+        QMI_CCI_OS_SIGNAL_WAIT(&os_params, LOC_CLIENT_SERVICE_TIMEOUT_UNIT);
+        nosignal = QMI_CCI_OS_SIGNAL_TIMED_OUT(&os_params);
+        if(nosignal)
+            timeout += LOC_CLIENT_SERVICE_TIMEOUT_UNIT;
+
+    } while (timeout < LOC_CLIENT_SERVICE_TIMEOUT_TOTAL);
 
     if (0 == num_services || rc != QMI_NO_ERR) {
         if (!nosignal) {
@@ -2209,4 +2209,3 @@ bool locClientGetSizeByEventIndId(uint32_t eventIndId, size_t *pEventIndSize)
   // not found
   return false;
 }
-
