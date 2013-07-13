@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,7 +36,7 @@ extern "C"
 #endif
 
 #include <hardware/gps.h>
-#include "loc_eng.h"
+struct loc_eng_data_s;
 
 /** Represents the standard ulp module interface. */
 typedef struct {
@@ -46,7 +46,9 @@ typedef struct {
     /**
      * Starts the libulp module. 0: success
      */
-    int   (*init)(loc_eng_data_s_type &loc_eng_data);
+    int   (*init)(struct loc_eng_data_s &loc_eng_data);
+    /** Get a pointer to extension information. */
+    const void* (*get_extension)(const char* name);
 
 }ulpInterface;
 

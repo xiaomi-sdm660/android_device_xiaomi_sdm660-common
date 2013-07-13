@@ -95,7 +95,7 @@ private:
 };
 
 // Module data
-typedef struct
+typedef struct loc_eng_data_s
 {
     LocApiAdapter                 *client_handle;
     loc_location_cb_ext            location_cb;
@@ -107,8 +107,6 @@ typedef struct
     gps_acquire_wakelock           acquire_wakelock_cb;
     gps_release_wakelock           release_wakelock_cb;
     gps_request_utc_time           request_utc_time_cb;
-    ulp_network_location_request   ulp_network_callback;
-    ulp_request_phone_context      ulp_phone_context_req_cb;
     boolean                        intermediateFix;
     AGpsStatusValue                agps_status;
     // used to defer stopping the GPS engine until AGPS data calls are done
@@ -152,8 +150,6 @@ typedef struct
     char   mpc_host_buf[101];
     int    mpc_port_buf;
     bool   ulp_initialized;
-    uint32_t min_interval_cached;
-    UlpRecurrenceCriteria recurrence_type_cached;
 } loc_eng_data_s_type;
 
 #include "ulp.h"
@@ -220,9 +216,6 @@ int  loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
                                LocPosMode &params);
 const void* loc_eng_get_extension(loc_eng_data_s_type &loc_eng_data,
                                   const char* name);
-int  loc_eng_update_criteria(loc_eng_data_s_type &loc_eng_data,
-                             UlpLocationCriteria criteria);
-
 void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data,
                        AGpsExtCallbacks* callbacks);
 int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
@@ -260,14 +253,6 @@ extern void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
                                    const GpsNiNotification *notif,
                                    const void* passThrough);
 extern void loc_eng_ni_reset_on_engine_restart(loc_eng_data_s_type &loc_eng_data);
-int loc_eng_ulp_network_init(loc_eng_data_s_type &loc_eng_data, UlpNetworkLocationCallbacks *callbacks);
-
-int loc_eng_ulp_phone_context_settings_update(loc_eng_data_s_type &loc_eng_data,
-                                              UlpPhoneContextSettings *settings);
-int loc_eng_ulp_phone_context_init(loc_eng_data_s_type &loc_eng_data,
-                                   UlpPhoneContextCallbacks *callback);
-int loc_eng_ulp_send_network_position(loc_eng_data_s_type &loc_eng_data,
-                                             UlpNetworkPositionReport *position_report);
 int loc_eng_read_config(void);
 #ifdef __cplusplus
 }

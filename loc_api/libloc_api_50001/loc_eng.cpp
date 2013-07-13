@@ -523,19 +523,13 @@ int loc_eng_start(loc_eng_data_s_type &loc_eng_data)
    ENTRY_LOG_CALLFLOW();
    INIT_CHECK(loc_eng_data.context, return -1);
 
-   if(loc_eng_data.ulp_initialized == true)
-   {
-       //Pass the start messgage to ULP if present & activated
-       loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, ULP_MSG_START_FIX));
-       msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q,
-                  msg, loc_eng_free_msg);
-   }
-   else
-   {
-       loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_START_FIX));
-       msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
-                 msg, loc_eng_free_msg);
-   }
+   void* target_q = loc_eng_data.ulp_initialized?
+                    (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q:
+                    (void*)((LocEngContext*)(loc_eng_data.context))->deferred_q;
+
+   //Pass the start messgage to ULP if present & activated
+   loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_START_FIX));
+   msg_q_snd( target_q, msg, loc_eng_free_msg);
    EXIT_LOG(%d, 0);
    return 0;
 }
@@ -581,19 +575,13 @@ int loc_eng_stop(loc_eng_data_s_type &loc_eng_data)
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.context, return -1);
 
-    if(loc_eng_data.ulp_initialized == true)
-    {
-        //Pass the start messgage to ULP if present & activated
-        loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, ULP_MSG_STOP_FIX));
-        msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q,
-                   msg, loc_eng_free_msg);
-    }
-    else
-    {
-        loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_STOP_FIX));
-        msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
-                  msg, loc_eng_free_msg);
-    }
+    void* target_q = loc_eng_data.ulp_initialized?
+                     (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q:
+                     (void*)((LocEngContext*)(loc_eng_data.context))->deferred_q;
+
+    //Pass the start messgage to ULP if present & activated
+    loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_STOP_FIX));
+    msg_q_snd( target_q, msg, loc_eng_free_msg);
 
     EXIT_LOG(%d, 0);
     return 0;
@@ -665,9 +653,13 @@ int loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
     INIT_CHECK(loc_eng_data.context, return -1);
     loc_eng_msg_position_mode *msg(
         new loc_eng_msg_position_mode(&loc_eng_data, params));
-    msg_q_snd((void*)((LocEngContext*)(loc_eng_data.context))->deferred_q,
-              msg, loc_eng_free_msg);
 
+    void* target_q = loc_eng_data.ulp_initialized?
+                     (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q:
+                     (void*)((LocEngContext*)(loc_eng_data.context))->deferred_q;
+
+    //Pass the start messgage to ULP if present & activated
+    msg_q_snd(target_q, msg, loc_eng_free_msg);
     EXIT_LOG(%d, 0);
     return 0;
 }
@@ -1515,20 +1507,16 @@ static void loc_eng_deferred_action_thread(void* arg)
                     }
                     // what's in the else if is... (line by line)
                     // 1. this is a good fix; or
-                    //   1.1 there is source info; or
-                    //   1.1.1 this is from hybrid provider;
-                    //   1.2 it is a Satellite fix; or
-                    //   1.2.1 it is a sensor fix
+                    //   1.1 it is a Satellite fix; or
+                    //   1.1.1 it is a sensor fix
                     // 2. (must be intermediate fix... implicit)
                     //   2.1 we accepte intermediate; and
                     //   2.2 it is NOT the case that
                     //   2.2.1 there is inaccuracy; and
                     //   2.2.2 we care about inaccuracy; and
                     //   2.2.3 the inaccuracy exceeds our tolerance
-                    else if ((LOC_SESS_SUCCESS == rpMsg->status && (
-                               ((LOCATION_HAS_SOURCE_INFO & rpMsg->location.gpsLocation.flags) &&
-                                ULP_LOCATION_IS_FROM_HYBRID == rpMsg->location.position_source) ||
-                               ((LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask) ||
+                    else if ((LOC_SESS_SUCCESS == rpMsg->status &&
+                               (((LOC_POS_TECH_MASK_SATELLITE & rpMsg->technology_mask) ||
                                 (LOC_POS_TECH_MASK_SENSORS & rpMsg->technology_mask)))) ||
                              (LOC_SESS_INTERMEDIATE == loc_eng_data_p->intermediateFix &&
                               !((rpMsg->location.gpsLocation.flags & GPS_LOCATION_HAS_ACCURACY) &&
@@ -1832,36 +1820,6 @@ static void loc_eng_deferred_action_thread(void* arg)
             loc_eng_handle_engine_up(*loc_eng_data_p);
             break;
 
-        case LOC_ENG_MSG_REQUEST_NETWORK_POSIITON:
-        {
-            loc_eng_msg_request_network_position *nlprequestmsg = (loc_eng_msg_request_network_position*)msg;
-            //loc_eng_handle_request_network_position(nlprequestmsg );
-            LOC_LOGD("Received n/w position request from ULP.Request type %d Periodicity: %d\n",
-                     nlprequestmsg->networkPosRequest.request_type,
-                      nlprequestmsg->networkPosRequest.interval_ms);
-            if(loc_eng_data_p->ulp_network_callback != NULL)
-            {
-                loc_eng_data_p->ulp_network_callback((UlpNetworkRequestPos*)&(nlprequestmsg->networkPosRequest));
-            }
-            else
-                LOC_LOGE("Ulp Network call back not initialized");
-        }
-        break;
-
-        case LOC_ENG_MSG_REQUEST_PHONE_CONTEXT:
-        {
-            loc_eng_msg_request_phone_context *contextReqMsg = (loc_eng_msg_request_phone_context*)msg;
-            LOC_LOGD("Received phone context request from ULP.context_type 0x%x,request_type 0x%x  ",
-                     contextReqMsg->contextRequest.context_type,contextReqMsg->contextRequest.request_type)
-            if(loc_eng_data_p->ulp_phone_context_req_cb != NULL)
-            {
-                loc_eng_data_p->ulp_phone_context_req_cb((UlpPhoneContextRequest*)&(contextReqMsg->contextRequest));
-            }
-            else
-                LOC_LOGE("Ulp Phone context request call back not initialized");
-        }
-        break;
-
         case LOC_ENG_MSG_LOC_INIT:
         {
             loc_eng_reinit(*loc_eng_data_p);
@@ -1929,235 +1887,6 @@ int loc_eng_ulp_init(loc_eng_data_s_type &loc_eng_data, const ulpInterface * loc
     }
     else
         LOC_LOGE("ulp not initialized. NULL parameter");
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-/*===========================================================================
-FUNCTION    loc_eng_inject_raw_command
-
-DESCRIPTION
-   This is used to send special test modem commands from the applications
-   down into the HAL
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   0: success
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-bool loc_eng_inject_raw_command(loc_eng_data_s_type &loc_eng_data,
-                                char* command, int length)
-{
-    ENTRY_LOG_CALLFLOW();
-    INIT_CHECK(loc_eng_data.context, return -1);
-    boolean ret_val;
-    LOC_LOGD("loc_eng_send_extra_command: %s\n", command);
-    ret_val = TRUE;
-
-    if(loc_eng_data.ulp_initialized == true)
-    {
-        ulp_msg_inject_raw_command *msg(
-            new ulp_msg_inject_raw_command(&loc_eng_data,command, length));
-        msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q
-                   , msg, loc_eng_free_msg);
-        ret_val = 0;
-    }else
-    {
-        ret_val = -1;
-    }
-
-
-    EXIT_LOG(%s, loc_logger_boolStr[ret_val!=0]);
-    return ret_val;
-}
-/*===========================================================================
-FUNCTION    loc_eng_update_criteria
-
-DESCRIPTION
-   This is used to inform the ULP module of new unique criteria that are passed
-   in by the applications
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   0: success
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_eng_update_criteria(loc_eng_data_s_type &loc_eng_data,
-                            UlpLocationCriteria criteria)
-{
-    ENTRY_LOG_CALLFLOW();
-    INIT_CHECK(loc_eng_data.context, return -1);
-    int ret_val;
-
-    if(loc_eng_data.ulp_initialized == true)
-    {
-       LOC_LOGD("SJ:loc_eng_update_criteria: valid 0x%x action:%d, minTime:%ld, minDistance:%f, singleShot:%d, horizontalAccuracy:%d, powerRequirement:%d \n",
-         criteria.valid_mask, criteria.action, criteria.min_interval, criteria.min_distance,  criteria.recurrence_type,  criteria.preferred_horizontal_accuracy,
-              criteria.preferred_power_consumption );
-     ulp_msg_update_criteria *msg(
-         new ulp_msg_update_criteria(&loc_eng_data,criteria));
-     msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q
-                , msg, loc_eng_free_msg);
-     ret_val = 0;
-    }else
-    {
-        ret_val = -1;
-    }
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-/*===========================================================================
-FUNCTION    loc_eng_ulp_phone_context_settings_update
-
-DESCRIPTION
-   This is used to inform the ULP module of phone settings changes carried out
-   by the users
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   0: success
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-
-int loc_eng_ulp_phone_context_settings_update(loc_eng_data_s_type &loc_eng_data,
-                                              UlpPhoneContextSettings *settings)
-{
-    ENTRY_LOG();
-    int ret_val = -1;
-
-    LOC_LOGD("loc_eng_ulp_phone_context_settings: context_type - 0x%x is_agps_enabled - %d "
-             "is_battery_charging %d ,is_gps_enabled %d, is_network_position_available %d,"
-             "is_wifi_setting_enabled %d, is_agps_setting_enabled %d, is_enh_location_services_enabled %d\n",
-             settings->context_type ,settings->is_agps_enabled,settings->is_battery_charging,
-             settings->is_gps_enabled, settings->is_network_position_available,
-             settings->is_wifi_setting_enabled, settings->is_agps_enabled,
-             settings->is_enh_location_services_enabled );
-
-    if(loc_eng_data.ulp_initialized == true)
-    {
-        ulp_msg_inject_phone_context_settings *msg
-         (new ulp_msg_inject_phone_context_settings(&loc_eng_data, *settings));
-        msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q, msg, loc_eng_free_msg);
-        ret_val = 0;
-    }
-
-    // Send battery information to modem for processing.
-    if(settings->context_type & ULP_PHONE_CONTEXT_BATTERY_CHARGING_STATE)
-    {
-        loc_eng_msg_ext_power_config *msg(new loc_eng_msg_ext_power_config(&loc_eng_data, settings->is_battery_charging));
-        msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->deferred_q, msg, loc_eng_free_msg);
-    }
-
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-/*===========================================================================
-FUNCTION    loc_eng_ulp_network_init
-
-DESCRIPTION
-   Initialize the ULP network interface.
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_eng_ulp_phone_context_init(loc_eng_data_s_type &loc_eng_data,UlpPhoneContextCallbacks *callback)
-{
-    int ret_val = -1;
-    ENTRY_LOG();
-    if(callback != NULL) {
-        loc_eng_data.ulp_phone_context_req_cb = callback->ulp_request_phone_context_cb ;
-        ret_val = 0;
-    }
-    else
-        LOC_LOGE("loc_eng_ulp_phone_context_init: bad parameters cb %p", callback);
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-/*===========================================================================
-FUNCTION    loc_eng_ulp_network_init
-
-DESCRIPTION
-   Initialize the ULP network interface.
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_eng_ulp_network_init(loc_eng_data_s_type &loc_eng_data,
-                             UlpNetworkLocationCallbacks *callbacks)
-{
-    int ret_val = -1;
-    ENTRY_LOG_CALLFLOW();
-    if(callbacks != NULL) {
-        loc_eng_data.ulp_network_callback = callbacks->ulp_network_location_request_cb;
-        ret_val = 0;
-    }
-    else
-        LOC_LOGE("loc_eng_ulp_network_init: bad parameters cb %p", callbacks);
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
-
-
-/*===========================================================================
-FUNCTION    loc_eng_ulp_send_network_position
-
-DESCRIPTION
-   Ulp send data
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_eng_ulp_send_network_position(loc_eng_data_s_type &loc_eng_data,
-                                             UlpNetworkPositionReport *position_report)
-{
-    ENTRY_LOG();
-    int ret_val = 0;
-    if(loc_eng_data.ulp_initialized == true)
-    {
-     ulp_msg_inject_network_position *msg
-         (new ulp_msg_inject_network_position(&loc_eng_data, *position_report));
-     msg_q_snd( (void*)((LocEngContext*)(loc_eng_data.context))->ulp_q
-                , msg, loc_eng_free_msg);
-     ret_val = 0;
-    }else
-    {
-        ret_val = -1;
-    }
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }

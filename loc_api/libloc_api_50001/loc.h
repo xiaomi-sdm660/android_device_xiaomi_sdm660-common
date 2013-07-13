@@ -78,11 +78,6 @@ typedef struct {
     gps_request_utc_time request_utc_time_cb;
 } LocCallbacks;
 
-typedef struct {
-    UlpNetworkLocationCallbacks* network_location_cb;
-    UlpPhoneContextCallbacks* phone_context_cb;
-} UlpCallbacks;
-
 enum loc_sess_status {
     LOC_SESS_SUCCESS,
     LOC_SESS_INTERMEDIATE,
