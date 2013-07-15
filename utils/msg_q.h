@@ -58,7 +58,7 @@ FUNCTION    msg_q_init
 DESCRIPTION
    Initializes internal structures for message queue.
 
-   msg_q_data: State of message queue to be initialized.
+   msg_q_data: pointer to an opaque Q handle to be returned; NULL if fails
 
 DEPENDENCIES
    N/A
@@ -71,6 +71,24 @@ SIDE EFFECTS
 
 ===========================================================================*/
 msq_q_err_type msg_q_init(void** msg_q_data);
+
+/*===========================================================================
+FUNCTION    msg_q_init2
+
+DESCRIPTION
+   Initializes internal structures for message queue.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   opaque handle to the Q created; NULL if create fails
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+const void* msg_q_init2();
 
 /*===========================================================================
 FUNCTION    msg_q_destroy
