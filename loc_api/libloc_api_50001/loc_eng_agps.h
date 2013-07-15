@@ -35,10 +35,11 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <hardware/gps.h>
+#include <gps_extended.h>
+#include <loc_core_log.h>
 #include <linked_list.h>
-#include <LocApiAdapter.h>
-#include "loc_eng_msg.h"
 #include <loc_timer.h>
+#include <LocEngAdapter.h>
 
 // forward declaration
 class AgpsStateMachine;
@@ -62,7 +63,7 @@ typedef enum {
 
 //DS Callback struct
 typedef struct {
-    LocApiAdapter *mAdapter;
+    LocEngAdapter *mAdapter;
     AGpsStatusValue action;
 }dsCbData;
 
@@ -249,12 +250,12 @@ public:
 class DSStateMachine : public AgpsStateMachine {
     static const unsigned char MAX_START_DATA_CALL_RETRIES;
     static const unsigned int DATA_CALL_RETRY_DELAY_MSEC;
-    LocApiAdapter* mLocAdapter;
+    LocEngAdapter* mLocAdapter;
     unsigned char mRetries;
 public:
     DSStateMachine(servicerType type,
-                    void *cb_func,
-                    LocApiAdapter* adapterHandle);
+                   void *cb_func,
+                   LocEngAdapter* adapterHandle);
     int sendRsrcRequest(AGpsStatusValue action) const;
     void onRsrcEvent(AgpsRsrcStatus event);
     void retryCallback();
@@ -297,40 +298,40 @@ struct Subscriber {
 
 // BITSubscriber, created with requests from BIT daemon
 struct BITSubscriber : public Subscriber {
+    char mIPv6Addr[16];
+
     inline BITSubscriber(const AgpsStateMachine* stateMachine,
                          unsigned int ipv4, char* ipv6) :
         Subscriber(ipv4, stateMachine)
     {
         if (NULL == ipv6) {
-            ipv6Addr[0] = NULL;
+            mIPv6Addr[0] = 0;
         } else {
-            memcpy(ipv6Addr, ipv6, sizeof(ipv6Addr));
+            memcpy(mIPv6Addr, ipv6, sizeof(mIPv6Addr));
         }
     }
 
     virtual bool notifyRsrcStatus(Notification &notification);
 
     inline virtual void setIPAddresses(uint32_t &v4, char* v6)
-    { v4 = ID; memcpy(v6, ipv6Addr, sizeof(ipv6Addr)); }
+    { v4 = ID; memcpy(v6, mIPv6Addr, sizeof(mIPv6Addr)); }
 
     virtual Subscriber* clone()
     {
-        return new BITSubscriber(mStateMachine, ID, ipv6Addr);
+        return new BITSubscriber(mStateMachine, ID, mIPv6Addr);
     }
 
     virtual bool equals(const Subscriber *s) const;
     inline virtual ~BITSubscriber(){}
-private:
-    char ipv6Addr[16];
 };
 
 // ATLSubscriber, created with requests from ATL
 struct ATLSubscriber : public Subscriber {
-    const LocApiAdapter* mLocAdapter;
+    const LocEngAdapter* mLocAdapter;
     const bool mBackwardCompatibleMode;
     inline ATLSubscriber(const int id,
                          const AgpsStateMachine* stateMachine,
-                         const LocApiAdapter* adapter,
+                         const LocEngAdapter* adapter,
                          const bool compatibleMode) :
         Subscriber(id, stateMachine), mLocAdapter(adapter),
         mBackwardCompatibleMode(compatibleMode){}

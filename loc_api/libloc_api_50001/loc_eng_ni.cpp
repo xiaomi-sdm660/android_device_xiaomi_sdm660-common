@@ -39,11 +39,15 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <time.h>
+#include <MsgTask.h>
 
 #include <loc_eng.h>
 
 #include "log_util.h"
 #include "platform_lib_includes.h"
+
+using namespace loc_core;
+
 /*=============================================================================
  *
  *                             DATA DECLARATION
@@ -56,6 +60,42 @@
  *
  *============================================================================*/
 static void* ni_thread_proc(void *args);
+
+struct LocEngInformNiResponse : public LocMsg {
+    LocEngAdapter* mAdapter;
+    const GpsUserResponseType mResponse;
+    const void *mPayload;
+    inline LocEngInformNiResponse(LocEngAdapter* adapter,
+                                  GpsUserResponseType resp,
+                                  const void* data) :
+        LocMsg(), mAdapter(adapter),
+        mResponse(resp), mPayload(data)
+    {
+        locallog();
+    }
+    inline ~LocEngInformNiResponse()
+    {
+        // this is a bit weird since mPayload is not
+        // allocated by this class.  But there is no better way.
+        // mPayload actually won't be NULL here.
+        free((void*)mPayload);
+    }
+    inline virtual void proc() const
+    {
+        mAdapter->informNiResponse(mResponse, mPayload);
+    }
+    inline void locallog() const
+    {
+        LOC_LOGV("LocEngInformNiResponse - "
+                 "response: %s\n  mPayload: %p",
+                 loc_get_ni_response_name(mResponse),
+                 mPayload);
+    }
+    inline virtual void log() const
+    {
+        locallog();
+    }
+};
 
 /*===========================================================================
 
@@ -179,15 +219,15 @@ static void* ni_thread_proc(void *args)
     loc_eng_ni_data_p->respRecvd = FALSE; /* Reset the user response flag for the next session*/
 
     // adding this check to support modem restart, in which case, we need the thread
-    // to exit without calling sending data to loc_eng_msg_q. We made sure that
-    // rawRequest is NULL in loc_eng_ni_reset_on_engine_restart()
-    loc_eng_msg_inform_ni_response *msg = NULL;
+    // to exit without calling sending data. We made sure that rawRequest is NULL in
+    // loc_eng_ni_reset_on_engine_restart()
+    LocEngAdapter* adapter = loc_eng_data_p->adapter;
+    LocEngInformNiResponse *msg = NULL;
 
     if (NULL != loc_eng_ni_data_p->rawRequest) {
-        loc_eng_data_s_type *loc_eng_data_p = (loc_eng_data_s_type*)args;
-        msg = new loc_eng_msg_inform_ni_response(loc_eng_data_p,
-                                                 loc_eng_ni_data_p->resp,
-                                                 loc_eng_ni_data_p->rawRequest);
+        msg = new LocEngInformNiResponse(adapter,
+                                         loc_eng_ni_data_p->resp,
+                                         loc_eng_ni_data_p->rawRequest);
         loc_eng_ni_data_p->rawRequest = NULL;
     }
     pthread_mutex_unlock(&loc_eng_ni_data_p->tLock);
@@ -196,7 +236,7 @@ static void* ni_thread_proc(void *args)
     loc_eng_ni_data_p->reqID++;
 
     if (NULL != msg) {
-        loc_eng_msg_sender(loc_eng_data_p, msg);
+        adapter->sendMsg(msg);
     }
 
     EXIT_LOG(%s, VOID_RET);

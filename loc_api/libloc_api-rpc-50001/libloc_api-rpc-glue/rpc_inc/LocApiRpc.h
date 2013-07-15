@@ -26,24 +26,30 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef LOC_API_RPC_ADAPTER_H
-#define LOC_API_RPC_ADAPTER_H
+#ifndef LOC_API_RPC_H
+#define LOC_API_RPC_H
 
 #include <rpc/rpc.h>
+#include <loc_api_rpcgen_common_rpc.h>
 #include <loc_api_rpc_glue.h>
-#include <LocApiAdapter.h>
+#include <LocApiBase.h>
+#include <loc_log.h>
 
+using namespace loc_core;
 
-class LocApiRpcAdapter : public LocApiAdapter {
+class LocApiRpc : public LocApiBase {
     // RPC communication establishment
     rpc_loc_client_handle_type client_handle;
-    rpc_loc_event_mask_type eMask;
     int dataEnableLastSet;
     char apnLastSet[MAX_APN_LEN];
 
+    static const LOC_API_ADAPTER_EVENT_MASK_T maskAll;
     static const rpc_loc_event_mask_type locBits[];
     static rpc_loc_event_mask_type convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
     static enum loc_api_adapter_err convertErr(int rpcErr);
+    static GpsNiEncodingType convertNiEncodingType(int loc_encoding);
+    static int NIEventFillVerfiyType(GpsNiNotification &notif,
+                              rpc_loc_ni_notify_verify_e_type notif_priv);
 
     void reportPosition(const rpc_loc_parsed_position_s_type *location_report_ptr);
     void reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr);
@@ -51,13 +57,16 @@ class LocApiRpcAdapter : public LocApiAdapter {
     void reportNmea(const rpc_loc_nmea_report_s_type *nmea_report_ptr);
     void ATLEvent(const rpc_loc_server_request_s_type *server_request_ptr);
     void NIEvent(const rpc_loc_ni_event_s_type *ni_req_ptr);
-    int NIEventFillVerfiyType(GpsNiNotification &notif,
-                              rpc_loc_ni_notify_verify_e_type notif_priv);
-    GpsNiEncodingType convertNiEncodingType(int loc_encoding);
+
+    virtual enum loc_api_adapter_err
+        open(LOC_API_ADAPTER_EVENT_MASK_T mask);
+    virtual enum loc_api_adapter_err
+        close();
 
 public:
-    LocApiRpcAdapter(LocEng &locEng);
-    ~LocApiRpcAdapter();
+    LocApiRpc(const MsgTask* msgTask,
+              LOC_API_ADAPTER_EVENT_MASK_T exMask);
+    ~LocApiRpc();
 
     int locEventCB(rpc_loc_client_handle_type client_handle,
                    rpc_loc_event_mask_type loc_event,
@@ -67,13 +76,11 @@ public:
 
     // RPC adapter interface implementations
     virtual enum loc_api_adapter_err
-        reinit();
-    virtual enum loc_api_adapter_err
-        startFix();
+        startFix(const LocPosMode& posMode);
     virtual enum loc_api_adapter_err
         stopFix();
     virtual enum loc_api_adapter_err
-        setPositionMode(const LocPosMode *mode);
+        setPositionMode(const LocPosMode& mode);
     inline virtual enum loc_api_adapter_err
         enableData(int enable) { return enableData(enable, false); }
     virtual enum loc_api_adapter_err
@@ -108,4 +115,7 @@ public:
     virtual void setInSession(bool inSession);
 };
 
-#endif //LOC_API_RPC_ADAPTER_H
+extern "C" LocApiBase* getLocApi(const MsgTask* msgTask,
+                                 LOC_API_ADAPTER_EVENT_MASK_T exMask);
+
+#endif //LOC_API_RPC_H
