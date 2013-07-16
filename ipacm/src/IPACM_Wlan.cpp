@@ -200,8 +200,11 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 
 	case IPA_HANDLE_WAN_DOWN:
 		IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
-		IPACM_Lan::handle_wan_down();
-		handle_wan_down();
+		if (rx_prop != NULL)
+	        {
+		   IPACM_Lan::handle_wan_down();
+		}
+                handle_wan_down();
 		break;
 
 	case IPA_WLAN_CLIENT_ADD_EVENT:

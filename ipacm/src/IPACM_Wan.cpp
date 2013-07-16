@@ -1547,20 +1547,20 @@ int IPACM_Wan::handle_down_evt()
 	}
 
 	/* make sure default routing rules and firewall rules are deleted*/
-	if (ip_type != IPA_IP_v6)
+	if (active_v4)
 	{
 	   	if (rx_prop != NULL)
-	    {
+	        {
 		del_dft_firewall_rules(IPA_IP_v4);
 		}
 		handle_route_del_evt(IPA_IP_v4);
 		IPACMDBG("Delete default v4 routing rules\n");
 	}
 
-	if (ip_type != IPA_IP_v4)
+	if (active_v6)
 	{
 	   	if (rx_prop != NULL)
-	    {
+	        {
 		del_dft_firewall_rules(IPA_IP_v6);
 		}
 		handle_route_del_evt(IPA_IP_v6);
