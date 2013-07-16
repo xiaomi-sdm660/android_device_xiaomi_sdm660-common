@@ -637,7 +637,9 @@ const void* loc_get_extension(const char* name)
    }
    else if (strcmp(name, GPS_GEOFENCING_INTERFACE) == 0)
    {
-     ret_val = get_geofence_interface();
+       if ((gps_conf.CAPABILITIES | GPS_CAPABILITY_GEOFENCING) == gps_conf.CAPABILITIES ){
+           ret_val = get_geofence_interface();
+       }
    }
    else
    {
