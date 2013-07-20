@@ -38,8 +38,11 @@
 using namespace loc_core;
 
 class LocApiRpc : public LocApiBase {
+protected:
     // RPC communication establishment
     rpc_loc_client_handle_type client_handle;
+
+private:
     int dataEnableLastSet;
     char apnLastSet[MAX_APN_LEN];
 
@@ -58,6 +61,7 @@ class LocApiRpc : public LocApiBase {
     void ATLEvent(const rpc_loc_server_request_s_type *server_request_ptr);
     void NIEvent(const rpc_loc_ni_event_s_type *ni_req_ptr);
 
+protected:
     virtual enum loc_api_adapter_err
         open(LOC_API_ADAPTER_EVENT_MASK_T mask);
     virtual enum loc_api_adapter_err
@@ -68,7 +72,7 @@ public:
               LOC_API_ADAPTER_EVENT_MASK_T exMask);
     ~LocApiRpc();
 
-    int locEventCB(rpc_loc_client_handle_type client_handle,
+    virtual int locEventCB(rpc_loc_client_handle_type client_handle,
                    rpc_loc_event_mask_type loc_event,
                    const rpc_loc_event_payload_u_type* loc_event_payload);
 

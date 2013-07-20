@@ -39,7 +39,7 @@
 
 namespace loc_core {
 
-const char* ContextBase::mIzatLibName = "libloc_api_v02.so ";
+const char* ContextBase::mIzatLibName = "libizat_core.so";
 // we initialized this handle to 1 because it can't possibly
 // 1 if it ever gets assigned a value. NULL on the otherhand
 // is possilbe.

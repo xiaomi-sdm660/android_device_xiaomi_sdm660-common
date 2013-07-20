@@ -44,6 +44,8 @@ class LocDualContext : public ContextBase {
 
     static const MsgTask* getMsgTask(MsgTask::tCreate tCreator,
                                      const char* name);
+    static const MsgTask* getMsgTask(MsgTask::tAssociate tAssociate,
+                                     const char* name);
 
 protected:
     LocDualContext(const MsgTask* msgTask,
@@ -57,7 +59,11 @@ public:
 
     static ContextBase* getLocFgContext(MsgTask::tCreate tCreator,
                                         const char* name);
+    static ContextBase* getLocFgContext(MsgTask::tAssociate tAssociate,
+                                        const char* name);
     static ContextBase* getLocBgContext(MsgTask::tCreate tCreator,
+                                        const char* name);
+    static ContextBase* getLocBgContext(MsgTask::tAssociate tAssociate,
                                         const char* name);
 
     static bool hasAgpsExt();

@@ -878,8 +878,8 @@ LocEngReportXtraServer::LocEngReportXtraServer(void* locEng,
     mServers(new char[3*(mMaxLen+1)])
 {
     strlcpy(mServers, url1, mMaxLen);
-    strlcpy(&mServers[mMaxLen], url2, mMaxLen);
-    strlcpy(&mServers[mMaxLen<<1], url3, mMaxLen);
+    strlcpy(&(mServers[mMaxLen+1]), url2, mMaxLen);
+    strlcpy(&(mServers[(mMaxLen+1)<<1]), url3, mMaxLen);
     locallog();
 }
 void LocEngReportXtraServer::proc() const {
@@ -889,8 +889,8 @@ void LocEngReportXtraServer::proc() const {
     if (locEngXtra->report_xtra_server_cb != NULL) {
         CALLBACK_LOG_CALLFLOW("report_xtra_server_cb", %s, mServers);
         locEngXtra->report_xtra_server_cb(mServers,
-                                          &mServers[mMaxLen],
-                                          &mServers[mMaxLen<<1]);
+                                          &(mServers[mMaxLen+1]),
+                                          &(mServers[(mMaxLen+1)<<1]));
     } else {
         LOC_LOGE("Callback function for request xtra is NULL");
     }

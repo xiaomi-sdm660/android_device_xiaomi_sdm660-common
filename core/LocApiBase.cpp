@@ -328,16 +328,6 @@ void LocApiBase::requestNiNotify(GpsNiNotification &notify, const void* data)
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestNiNotify(notify, data));
 }
 
-
-// downward calls
-// All below functions are to be defined by adapter specific modules:
-// RPC, QMI, etc.  The default implementation is empty.
-#define DEFAULT_IMPL(rtv)                                     \
-{                                                             \
-    LOC_LOGW("%s: default implementation invoked", __func__); \
-    return rtv;                                               \
-}
-
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)

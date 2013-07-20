@@ -37,6 +37,14 @@
 #define smaller_of(a, b) (((a) > (b)) ? (b) : (a))
 #define MAX_APN_LEN 100
 
+// This will be overridden by the individual adapters
+// if necessary.
+#define DEFAULT_IMPL(rtv)                                     \
+{                                                             \
+    LOC_LOGW("%s: default implementation invoked", __func__); \
+    return rtv;                                               \
+}
+
 namespace loc_core {
 
 int hexcode(char *hexstring, int string_size,
@@ -122,20 +130,20 @@ class LocApiBase {
     friend class ContextBase;
     const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
     const MsgTask* mMsgTask;
+
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
 
     static LocApiBase* create(const MsgTask* msgTask,
                               LOC_API_ADAPTER_EVENT_MASK_T exMask,
                               void* libHandle);
 
+protected:
     virtual enum loc_api_adapter_err
         open(LOC_API_ADAPTER_EVENT_MASK_T mask);
     virtual enum loc_api_adapter_err
         close();
 
     LOC_API_ADAPTER_EVENT_MASK_T getEvtMask();
-
-protected:
     LOC_API_ADAPTER_EVENT_MASK_T mMask;
     LocApiBase(const MsgTask* msgTask,
                LOC_API_ADAPTER_EVENT_MASK_T excludedMask);
@@ -143,6 +151,8 @@ protected:
     bool isInSession();
 
 public:
+    inline virtual void* getSibling() { return NULL; }
+
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
