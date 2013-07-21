@@ -119,6 +119,8 @@ typedef struct loc_eng_data_s
     AgpsStateMachine*              agnss_nif;
     AgpsStateMachine*              internet_nif;
     AgpsStateMachine*              wifi_nif;
+    //State machine for Data Services
+    AgpsStateMachine*              ds_nif;
 
     // GPS engine status
     GpsStatusValue                 engine_status;

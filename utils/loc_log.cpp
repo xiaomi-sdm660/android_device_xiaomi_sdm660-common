@@ -34,8 +34,11 @@
 #include <sys/time.h>
 #include "loc_log.h"
 #include "msg_q.h"
+#ifdef USE_GLIB
+#include <time.h>
+#endif /* USE_GLIB  */
 #include "log_util.h"
-
+#include "platform_lib_includes.h"
 // Logging Improvements
 const char *loc_logger_boolStr[]={"False","True"};
 const char VOID_RET[]   = "None";

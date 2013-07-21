@@ -57,10 +57,15 @@
 /* Logging */
 #define LOG_TAG "LocSvc_api_rpc_glue"
 #define LOG_NDDEBUG 0
+#ifndef USE_GLIB
 #include <utils/Log.h>
+#endif /* USE_GLIB */
 
 /* Logging Improvement */
 #include "log_util.h"
+#include "platform_lib_includes.h"
+/*Maximum number of Modem init*/
+#define RPC_TRY_NUM 10
 
 /*Maximum number of Modem init*/
 #define RPC_TRY_NUM 10

@@ -99,6 +99,12 @@ enum loc_eng_msg_ids_t {
 
     //Message is sent by LOC to do LOC INIT
     LOC_ENG_MSG_LOC_INIT,
+
+    /*Message is sent by modem to request emergency call setup*/
+    LOC_ENG_MSG_REQUEST_SUPL_ES,
+
+    /*Ask the DS client to close the data call by releasing the handle*/
+    LOC_ENG_MSG_CLOSE_DATA_CALL,
 };
 
 #ifdef __cplusplus

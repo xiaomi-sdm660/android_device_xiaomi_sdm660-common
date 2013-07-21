@@ -31,12 +31,20 @@
 
 #include <unistd.h>
 #include <math.h>
+#ifndef USE_GLIB
 #include <utils/SystemClock.h>
+#endif /* USE_GLIB */
 #include "LocApiRpcAdapter.h"
 #include "loc_api_rpcgen_common_rpc.h"
 #include "log_util.h"
 #include "loc_log.h"
 #include "loc_api_log.h"
+#ifdef USE_GLIB
+#include <glib.h>
+#endif
+#include "librpc.h"
+#include "platform_lib_includes.h"
+
 
 #define LOC_XTRA_INJECT_DEFAULT_TIMEOUT (3100)
 #define XTRA_BLOCK_SIZE                 (3072)
@@ -390,7 +398,7 @@ LocApiRpcAdapter::setTime(GpsUtcTime time, int64_t timeReference, int uncertaint
 
     time_info_ptr = &ioctl_data.rpc_loc_ioctl_data_u_type_u.assistance_data_time;
     time_info_ptr->time_utc = time;
-    time_info_ptr->time_utc += (int64_t)(android::elapsedRealtime() - timeReference);
+    time_info_ptr->time_utc += (int64_t)(ELAPSED_MILLIS_SINCE_BOOT_PLATFORM_LIB_ABSTRACTION - timeReference);
     time_info_ptr->uncertainty = uncertainty; // Uncertainty in ms
 
     ioctl_data.disc = ioctl_type;
