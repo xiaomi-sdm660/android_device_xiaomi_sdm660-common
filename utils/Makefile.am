@@ -38,7 +38,7 @@ libgps_utils_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
 libgps_utils_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libgps_utils_so_la_LIBADD = -lstdc++ -lcutils
+libgps_utils_so_la_LIBADD = -lstdc++
 
 #Create and Install libraries
 lib_LTLIBRARIES = libgps_utils_so.la

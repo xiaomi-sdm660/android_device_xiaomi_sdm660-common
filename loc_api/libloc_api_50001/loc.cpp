@@ -43,7 +43,12 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <LocDualContext.h>
+#ifdef _ANDROID
 #include <cutils/properties.h>
+#else
+#include "fake_property_service.h"
+#endif
+#include <hardware/gps.h>
 
 using namespace loc_core;
 
@@ -165,6 +170,7 @@ const GpsInterface* gps_get_hardware_interface ()
     const GpsInterface* ret_val;
 
     char propBuf[PROPERTY_VALUE_MAX];
+    memset(propBuf, 0, sizeof(propBuf));
 
     loc_eng_read_config();
 

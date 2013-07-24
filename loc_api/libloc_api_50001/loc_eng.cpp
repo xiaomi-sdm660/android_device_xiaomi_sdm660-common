@@ -47,11 +47,21 @@
 
 #include <LocEngAdapter.h>
 
+#ifdef _ANDROID
 #include <cutils/sched_policy.h>
+#endif
+
 #ifndef USE_GLIB
 #include <utils/SystemClock.h>
 #include <utils/Log.h>
 #endif /* USE_GLIB */
+
+#ifndef _ANDROID
+typedef enum {
+    SP_BACKGROUND = 0,
+    SP_FOREGROUND = 1,
+} SchedPolicy;
+#endif
 
 #ifdef USE_GLIB
 #include <glib.h>
@@ -72,6 +82,12 @@
 #include "platform_lib_includes.h"
 #include "loc_core_log.h"
 #include "loc_eng_log.h"
+
+#ifdef _ANDROID
+#include <cutils/properties.h>
+#else
+#include "fake_property_service.h"
+#endif
 
 #define SUCCESS TRUE
 #define FAILURE FALSE
