@@ -33,6 +33,7 @@
 #include "loc_api_log.h"
 #include "loc_log.h"
 #include "log_util.h"
+#include "platform_lib_includes.h"
 #include "rpc/rpc.h"
 #include "loc_api_fixup.h"
 

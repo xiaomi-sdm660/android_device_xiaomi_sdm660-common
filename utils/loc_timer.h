@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -27,16 +27,28 @@
  *
  */
 
-#ifndef LOC_ENG_NMEA_H
-#define LOC_ENG_NMEA_H
+#ifndef __LOC_DELAY_H__
+#define __LOC_DELAY_H__
 
-#include <hardware/gps.h>
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+#include<pthread.h>
+#include "log_util.h"
 
-#define NMEA_SENTENCE_MAX_LENGTH 200
+/*
+  Return values:
+  Success = 0
+  Failure = Non zero
+*/
+typedef void(*loc_timer_callback)(void *user_data, int result);
 
-void loc_eng_nmea_send(char *pNmea, int length, loc_eng_data_s_type *loc_eng_data_p);
-int loc_eng_nmea_put_checksum(char *pNmea, int maxSize);
-void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p, const GpsSvStatus &svStatus, const GpsLocationExtended &locationExtended);
-void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p, const UlpLocation &location, const GpsLocationExtended &locationExtended, unsigned char generate_nmea);
+//int loc_timer_start(loc_timer_client_data *p_thread);
+int loc_timer_start(unsigned int delay_msec,
+                    loc_timer_callback,
+                    void* user_data);
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
-#endif // LOC_ENG_NMEA_H
+#endif //__LOC_DELAY_H__

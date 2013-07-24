@@ -39,6 +39,10 @@
 #include <time.h>
 #include <loc_cfg.h>
 #include <log_util.h>
+#ifdef USE_GLIB
+#include <glib.h>
+#endif
+#include "platform_lib_includes.h"
 
 /*=============================================================================
  *
@@ -47,7 +51,7 @@
  *============================================================================*/
 
 /* Parameter data */
-static uint8_t DEBUG_LEVEL = 3;
+static uint8_t DEBUG_LEVEL = 0xff;
 static uint8_t TIMESTAMP = 0;
 
 /* Parameter spec table */

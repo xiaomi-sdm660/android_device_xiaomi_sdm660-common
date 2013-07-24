@@ -174,6 +174,8 @@ const GpsInterface* gps_get_hardware_interface ()
 
     char propBuf[PROPERTY_VALUE_MAX];
 
+    loc_eng_read_config();
+
     // check to see if GPS should be disabled
     property_get("gps.disable", propBuf, "");
     if (propBuf[0] == '1')
@@ -216,8 +218,9 @@ extern "C" const GpsInterface* get_gps_interface()
         if((target == TARGET_APQ8064_STANDALONE) || (target == TARGET_APQ8030_STANDALONE)) {
             gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
             gss_fd = open("/dev/gss", O_RDONLY);
-            if (gss_fd < 0)
+            if (gss_fd < 0) {
                 LOC_LOGE("GSS open failed: %s\n", strerror(errno));
+            }
             else {
                 LOC_LOGD("GSS open success! CAPABILITIES %0lx\n", gps_conf.CAPABILITIES);
             }

@@ -192,6 +192,18 @@ void LocApiAdapter::requestATL(int connHandle, AGpsType agps_type)
     locEngHandle.sendMsge(locEngHandle.owner, msg);
 }
 
+void LocApiAdapter::requestSuplES(int connHandle)
+{
+    loc_eng_msg_request_supl_es *msg(new loc_eng_msg_request_supl_es(locEngHandle.owner, connHandle));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
+}
+
+void LocApiAdapter::releaseDataHandle(void)
+{
+    loc_eng_msg_close_data_call *msg(new loc_eng_msg_close_data_call(locEngHandle.owner));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
+}
+
 void LocApiAdapter::releaseATL(int connHandle)
 {
     loc_eng_msg_release_atl *msg(new loc_eng_msg_release_atl(locEngHandle.owner, connHandle));
@@ -238,5 +250,20 @@ void LocApiAdapter::handleEngineDownEvent()
 void LocApiAdapter::handleEngineUpEvent()
 {
     loc_eng_msg *msg(new loc_eng_msg(locEngHandle.owner, LOC_ENG_MSG_ENGINE_UP));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
+}
+
+void LocApiAdapter::reportDataCallOpened()
+{
+    loc_eng_msg_atl_open_success *msg(new loc_eng_msg_atl_open_success(locEngHandle.owner,
+                                                                       AGPS_TYPE_INVALID,
+                                                                       NULL, 0, 0));
+    locEngHandle.sendMsge(locEngHandle.owner, msg);
+}
+
+void LocApiAdapter::reportDataCallClosed()
+{
+    loc_eng_msg_atl_closed *msg(new loc_eng_msg_atl_closed(locEngHandle.owner,
+                                                           AGPS_TYPE_INVALID));
     locEngHandle.sendMsge(locEngHandle.owner, msg);
 }

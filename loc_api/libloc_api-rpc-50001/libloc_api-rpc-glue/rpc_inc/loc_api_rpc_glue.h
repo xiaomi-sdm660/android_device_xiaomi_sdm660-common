@@ -48,8 +48,8 @@ typedef unsigned char boolean;
 #define TRUE 1
 #define FALSE 0
 
-#include "rpc_inc/loc_api_fixup.h"
-#include "rpc_inc/loc_api_sync_call.h"
+#include "loc_api_fixup.h"
+#include "loc_api_sync_call.h"
 #include <rpc/clnt.h>
 
 #ifdef __cplusplus

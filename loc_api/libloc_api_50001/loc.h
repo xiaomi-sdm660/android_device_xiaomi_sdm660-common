@@ -92,7 +92,8 @@ typedef uint32_t LocPosTechMask;
 #define LOC_POS_TECH_MASK_SENSORS ((LocPosTechMask)0x00000008)
 #define LOC_POS_TECH_MASK_REFERENCE_LOCATION ((LocPosTechMask)0x00000010)
 #define LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION ((LocPosTechMask)0x00000020)
-
+#define LOC_POS_TECH_MASK_AFLT ((LocPosTechMask)0x00000040)
+#define LOC_POS_TECH_MASK_HYBRID ((LocPosTechMask)0x00000080)
 void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
 
 #ifdef __cplusplus
