@@ -36,27 +36,60 @@
 #include <log_util.h>
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
+#include <UlpProxyBase.h>
 #include <platform_lib_includes.h>
 
 #define MAX_URL_LEN 256
 
 using namespace loc_core;
 
+class LocEngAdapter;
+
+class LocInternalAdapter : public LocAdapterBase {
+    LocEngAdapter* mLocEngAdapter;
+public:
+    LocInternalAdapter(LocEngAdapter* adapter);
+
+    virtual void reportPosition(UlpLocation &location,
+                                GpsLocationExtended &locationExtended,
+                                void* locationExt,
+                                enum loc_sess_status status,
+                                LocPosTechMask loc_technology_mask);
+    virtual void reportSv(GpsSvStatus &svStatus,
+                          GpsLocationExtended &locationExtended,
+                          void* svExt);
+    virtual void setPositionModeInt(LocPosMode& posMode);
+    virtual void startFixInt();
+    virtual void stopFixInt();
+    virtual void setUlpProxy(UlpProxyBase* ulp);
+};
+
 typedef void (*loc_msg_sender)(void* loc_eng_data_p, void* msgp);
 
 class LocEngAdapter : public LocAdapterBase {
     void* mOwner;
-    loc_msg_sender mSendUlpMsg;
+    LocInternalAdapter* mInternalAdapter;
+    UlpProxyBase* mUlp;
     LocPosMode mFixCriteria;
     bool mNavigating;
 
 public:
-    const bool mAgpsEnabled;
+    bool mAgpsEnabled;
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
-                  void* owner, loc_msg_sender msgSender,
+                  void* owner,
                   MsgTask::tCreate tCreator);
     virtual ~LocEngAdapter();
+
+    virtual void setUlpProxy(UlpProxyBase* ulp);
+    inline void requestUlp(unsigned long capabilities) {
+        mContext->requestUlp(mInternalAdapter, capabilities);
+    }
+    inline LocInternalAdapter* getInternalAdapter() { return mInternalAdapter; }
+    inline UlpProxyBase* getUlpProxy() { return mUlp; }
+    inline void* getOwner() { return mOwner; }
+    inline bool hasAgpsExt() { return mContext->hasAgpsExt(); }
+    inline const MsgTask* getMsgTask() { return mMsgTask; }
 
     inline enum loc_api_adapter_err
         startFix()

@@ -130,13 +130,10 @@ typedef struct loc_eng_data_s
     int    mpc_host_set;
     char   mpc_host_buf[101];
     int    mpc_port_buf;
-    void   *ulp_q;
 
     loc_ext_parser location_ext_parser;
     loc_ext_parser sv_ext_parser;
 } loc_eng_data_s_type;
-
-#include "ulp.h"
 
 /* GPS.conf support */
 typedef struct loc_gps_cfg_s
@@ -182,9 +179,7 @@ extern loc_sap_cfg_s_type sap_conf;
 
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,
                   LocCallbacks* callbacks,
-                  LOC_API_ADAPTER_EVENT_MASK_T event,
-                  void (*loc_external_msg_sender) (void*, void*));
-int loc_eng_ulp_init(loc_eng_data_s_type &loc_eng_data, const ulpInterface * loc_eng_ulpInf);
+                  LOC_API_ADAPTER_EVENT_MASK_T event);
 int  loc_eng_start(loc_eng_data_s_type &loc_eng_data);
 int  loc_eng_stop(loc_eng_data_s_type &loc_eng_data);
 void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data);

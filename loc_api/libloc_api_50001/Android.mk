@@ -41,8 +41,7 @@ LOCAL_CFLAGS += \
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
     $(TARGET_OUT_HEADERS)/libloc_core \
-    hardware/qcom/gps/loc_api/libloc_api_50001 \
-    hardware/qcom/gps/loc_api/ulp/inc
+    hardware/qcom/gps/loc_api/libloc_api_50001
 
 LOCAL_COPY_HEADERS_TO:= libloc_eng/
 LOCAL_COPY_HEADERS:= \
@@ -53,7 +52,6 @@ LOCAL_COPY_HEADERS:= \
    loc_eng_ni.h \
    loc_eng_agps.h \
    loc_eng_msg.h \
-   loc_eng_msg_id.h \
    loc_eng_log.h
 
 LOCAL_PRELINK_MODULE := false
@@ -94,8 +92,7 @@ endif
 ## Includes
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core \
-    hardware/qcom/gps/loc_api/ulp/inc
+    $(TARGET_OUT_HEADERS)/libloc_core
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw

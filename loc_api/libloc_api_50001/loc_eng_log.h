@@ -37,8 +37,6 @@ extern "C"
 
 #include <ctype.h>
 
-const char* loc_get_msg_name(int id);
-
 #ifdef __cplusplus
 }
 #endif

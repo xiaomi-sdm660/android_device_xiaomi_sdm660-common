@@ -37,7 +37,6 @@
 #include <log_util.h>
 #include <loc_eng_log.h>
 #include <loc_eng.h>
-#include <loc_eng_msg_id.h>
 #include <MsgTask.h>
 #include <LocEngAdapter.h>
 
@@ -57,92 +56,10 @@ extern "C" {
 
 using namespace loc_core;
 
-struct loc_eng_msg {
-    const void* owner;
-    const int msgid;
-    inline loc_eng_msg(void* instance, int id) :
-        owner(instance), msgid(id)
-    {
-        LOC_LOGV("creating msg %s", loc_get_msg_name(msgid));
-        LOC_LOGV("creating msg ox%x", msgid);
-    }
-    virtual ~loc_eng_msg()
-    {
-        LOC_LOGV("deleting msg %s (0x%x)", loc_get_msg_name(msgid), msgid);
-    }
-};
-
-struct loc_eng_msg_position_mode : public loc_eng_msg {
-    const LocPosMode pMode;
-    inline loc_eng_msg_position_mode(void* instance,
-                                     LocPosMode &mode) :
-        loc_eng_msg(instance, LOC_ENG_MSG_SET_POSITION_MODE),
-        pMode(mode)
-    {
-        pMode.logv();
-    }
-};
-
-struct loc_eng_msg_report_position : public loc_eng_msg {
-    const UlpLocation location;
-    const GpsLocationExtended locationExtended;
-    const void* locationExt;
-    const enum loc_sess_status status;
-    const LocPosTechMask technology_mask;
-    inline loc_eng_msg_report_position(void* instance, UlpLocation &loc, GpsLocationExtended &locExtended, void* locExt,
-                                       enum loc_sess_status st) :
-        loc_eng_msg(instance, LOC_ENG_MSG_REPORT_POSITION),
-        location(loc), locationExtended(locExtended), locationExt(locExt), status(st), technology_mask(LOC_POS_TECH_MASK_DEFAULT)
-    {
-        LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Session status: %d\n Technology mask: %u",
-                 location.gpsLocation.flags, location.position_source,
-                 location.gpsLocation.latitude, location.gpsLocation.longitude,
-                 location.gpsLocation.altitude, location.gpsLocation.speed,
-                 location.gpsLocation.bearing, location.gpsLocation.accuracy,
-                 location.gpsLocation.timestamp, location.rawDataSize,
-                 location.rawData,status,technology_mask);
-    }
-    inline loc_eng_msg_report_position(void* instance, UlpLocation &loc, GpsLocationExtended &locExtended, void* locExt,
-                                       enum loc_sess_status st, LocPosTechMask technology) :
-        loc_eng_msg(instance, LOC_ENG_MSG_REPORT_POSITION),
-        location(loc), locationExtended(locExtended), locationExt(locExt), status(st), technology_mask(technology)
-    {
-        LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  Session status: %d\n Technology mask: %u",
-                 location.gpsLocation.flags, location.position_source,
-                 location.gpsLocation.latitude, location.gpsLocation.longitude,
-                 location.gpsLocation.altitude, location.gpsLocation.speed,
-                 location.gpsLocation.bearing, location.gpsLocation.accuracy,
-                 location.gpsLocation.timestamp, location.rawDataSize,
-                 location.rawData,status,technology_mask);
-    }
-};
-
-struct loc_eng_msg_report_sv : public loc_eng_msg {
-    const GpsSvStatus svStatus;
-    const GpsLocationExtended locationExtended;
-    const void* svExt;
-    inline loc_eng_msg_report_sv(void* instance, GpsSvStatus &sv, GpsLocationExtended &locExtended, void* ext) :
-        loc_eng_msg(instance, LOC_ENG_MSG_REPORT_SV), svStatus(sv), locationExtended(locExtended), svExt(ext)
-    {
-        LOC_LOGV("num sv: %d\n  ephemeris mask: %dxn  almanac mask: %x\n  used in fix mask: %x\n      sv: prn         snr       elevation      azimuth",
-                 svStatus.num_svs, svStatus.ephemeris_mask, svStatus.almanac_mask, svStatus.used_in_fix_mask);
-        for (int i = 0; i < svStatus.num_svs && i < GPS_MAX_SVS; i++) {
-            LOC_LOGV("   %d:   %d    %f    %f    %f\n  ",
-                     i,
-                     svStatus.sv_list[i].prn,
-                     svStatus.sv_list[i].snr,
-                     svStatus.sv_list[i].elevation,
-                     svStatus.sv_list[i].azimuth);
-        }
-    }
-};
-
-
 struct LocEngPositionMode : public LocMsg {
     LocEngAdapter* mAdapter;
     const LocPosMode mPosMode;
-    LocEngPositionMode(LocEngAdapter* adapter,
-                       LocPosMode &mode);
+    LocEngPositionMode(LocEngAdapter* adapter, LocPosMode &mode);
     virtual void proc() const;
     virtual void log() const;
     void send() const;
@@ -150,8 +67,8 @@ struct LocEngPositionMode : public LocMsg {
 
 
 struct LocEngStartFix : public LocMsg {
-    loc_eng_data_s_type* mLocEng;
-    LocEngStartFix(loc_eng_data_s_type* locEng);
+    LocEngAdapter* mAdapter;
+    LocEngStartFix(LocEngAdapter* adapter);
     virtual void proc() const;
     void locallog() const;
     virtual void log() const;
@@ -159,8 +76,8 @@ struct LocEngStartFix : public LocMsg {
 };
 
 struct LocEngStopFix : public LocMsg {
-    loc_eng_data_s_type* mLocEng;
-    LocEngStopFix(loc_eng_data_s_type* locEng);
+    LocEngAdapter* mAdapter;
+    LocEngStopFix(LocEngAdapter* adapter);
     virtual void proc() const;
     void locallog() const;
     virtual void log() const;
@@ -168,13 +85,13 @@ struct LocEngStopFix : public LocMsg {
 };
 
 struct LocEngReportPosition : public LocMsg {
-    void* mLocEng;
+    LocAdapterBase* mAdapter;
     const UlpLocation mLocation;
     const GpsLocationExtended mLocationExtended;
     const void* mLocationExt;
     const enum loc_sess_status mStatus;
     const LocPosTechMask mTechMask;
-    LocEngReportPosition(void* locEng,
+    LocEngReportPosition(LocAdapterBase* adapter,
                          UlpLocation &loc,
                          GpsLocationExtended &locExtended,
                          void* locExt,
@@ -187,11 +104,11 @@ struct LocEngReportPosition : public LocMsg {
 };
 
 struct LocEngReportSv : public LocMsg {
-    void* mLocEng;
+    LocAdapterBase* mAdapter;
     const GpsSvStatus mSvStatus;
     const GpsLocationExtended mLocationExtended;
     const void* mSvExt;
-    LocEngReportSv(void* locEng,
+    LocEngReportSv(LocAdapterBase* adapter,
                    GpsSvStatus &sv,
                    GpsLocationExtended &locExtended,
                    void* svExtended);

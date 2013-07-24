@@ -30,6 +30,7 @@
 #define LOC_API_ADAPTER_BASE_H
 
 #include <gps_extended.h>
+#include <UlpProxyBase.h>
 #include <ContextBase.h>
 
 namespace loc_core {
@@ -40,6 +41,9 @@ protected:
     ContextBase* mContext;
     LocApiBase* mLocApi;
     const MsgTask* mMsgTask;
+
+    inline LocAdapterBase(const MsgTask* msgTask) :
+        mEvtMask(0), mContext(NULL), mLocApi(NULL), mMsgTask(msgTask) {}
 
     LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
                    ContextBase* context);
@@ -65,8 +69,12 @@ public:
 
     // This will be overridden by the individual adapters
     // if necessary.
+    inline virtual void setUlpProxy(UlpProxyBase* ulp) {}
     inline virtual void handleEngineUpEvent() {}
-    virtual void handleEngineDownEvent() ;
+    virtual void handleEngineDownEvent();
+    inline virtual void setPositionModeInt(LocPosMode& posMode) {}
+    virtual void startFixInt() {}
+    virtual void stopFixInt() {}
     virtual void reportPosition(UlpLocation &location,
                                 GpsLocationExtended &locationExtended,
                                 void* locationExt,

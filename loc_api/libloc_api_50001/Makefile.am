@@ -1,7 +1,6 @@
 AM_CFLAGS = \
      -I../../utils \
      -I../../platform_lib_abstractions \
-     -I../ulp/inc \
      -fno-short-enums \
      -DFEATURE_GNSS_BIT_API
 
@@ -69,9 +68,7 @@ library_include_HEADERS = \
    loc_eng_ni.h \
    loc_eng_agps.h \
    loc_eng_msg.h \
-   loc_eng_msg_id.h \
-   loc_eng_log.h \
-   ../ulp/inc/ulp.h
+   loc_eng_log.h
 
 library_includedir = $(pkgincludedir)/libloc_api_50001
 

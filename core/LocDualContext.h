@@ -40,7 +40,6 @@ class LocDualContext : public ContextBase {
     static const MsgTask* mMsgTask;
     static ContextBase* mFgContext;
     static ContextBase* mBgContext;
-    static char mHasAgpsExt;
 
     static const MsgTask* getMsgTask(MsgTask::tCreate tCreator,
                                      const char* name);
@@ -53,6 +52,7 @@ protected:
     inline virtual ~LocDualContext() {}
 
 public:
+    static const char* mIzatLibName;
     static const LOC_API_ADAPTER_EVENT_MASK_T mFgExclMask;
     static const LOC_API_ADAPTER_EVENT_MASK_T mBgExclMask;
     static const char* mLocationHalName;
@@ -65,8 +65,6 @@ public:
                                         const char* name);
     static ContextBase* getLocBgContext(MsgTask::tAssociate tAssociate,
                                         const char* name);
-
-    static bool hasAgpsExt();
 };
 
 }

@@ -56,10 +56,9 @@ const MsgTask* LocDualContext::mMsgTask = NULL;
 ContextBase* LocDualContext::mFgContext = NULL;
 ContextBase* LocDualContext::mBgContext = NULL;
 
-char LocDualContext::mHasAgpsExt = 0xff;
-
 // the name must be shorter than 15 chars
 const char* LocDualContext::mLocationHalName = "Loc_hal_worker";
+const char* LocDualContext::mIzatLibName = "libizat_core.so";
 
 const MsgTask* LocDualContext::getMsgTask(MsgTask::tCreate tCreator,
                                           const char* name)
@@ -124,26 +123,9 @@ ContextBase* LocDualContext::getLocBgContext(MsgTask::tAssociate tAssociate,
     return mBgContext;
 }
 
-
-bool LocDualContext::hasAgpsExt()
-{
-    if (0xff == mHasAgpsExt) {
-        mHasAgpsExt = 0;
-        void* handle = ContextBase::getIzatLibHandle();
-        if (NULL != handle) {
-            bool(*getter)() = (bool(*)())dlsym(handle, "hasAgpsExt");
-            if (NULL != getter) {
-                mHasAgpsExt = (*getter)();
-            }
-        }
-    }
-
-    return mHasAgpsExt == 1;
-}
-
 LocDualContext::LocDualContext(const MsgTask* msgTask,
                                LOC_API_ADAPTER_EVENT_MASK_T exMask) :
-    ContextBase(msgTask, exMask)
+    ContextBase(msgTask, exMask, mIzatLibName)
 {
 }
 
