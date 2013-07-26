@@ -1806,6 +1806,9 @@ int IPACM_Wlan::handle_down_evt()
 	IPACMDBG("Free wlan clients cache\n");
 
 fail:
+	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
+
 	free(wlan_client);
 	if (tx_prop != NULL)
 	{
@@ -1819,9 +1822,6 @@ fail:
 	{
 		free(iface_query);
 	}
-
-	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
-	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
 
 	return res;
 }

@@ -1323,6 +1323,9 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 fail:
+	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);	
+
 	if (tx_prop != NULL)
 	{
 		free(tx_prop); 
@@ -1335,9 +1338,6 @@ fail:
 	{
 		free(iface_query);
 	}
-
-	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
-	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);	
 	
 	return res;
 }
