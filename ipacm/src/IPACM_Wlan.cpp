@@ -329,6 +329,16 @@ int IPACM_Wlan::handle_wlan_client_init(uint8_t *mac_addr)
 	struct ipa_ioc_copy_hdr sCopyHeader;
 	struct ipa_ioc_add_hdr *pHeaderDescriptor = NULL;
         uint32_t cnt;
+	int clnt_indx;
+
+	
+	clnt_indx = get_wlan_client_index(mac_addr);
+
+	if (clnt_indx != IPACM_INVALID_INDEX)
+	{
+		IPACMERR("wlan is found/attached already with index %d \n", clnt_indx);
+		return IPACM_FAILURE;
+	}	
 
 	/* start of adding header */
 	if ((num_wifi_client >= IPA_MAX_NUM_WIFI_CLIENTS) ||
@@ -1795,8 +1805,6 @@ int IPACM_Wlan::handle_down_evt()
 	/* free the wlan clients cache */
 	IPACMDBG("Free wlan clients cache\n");
 
-	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
-	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
 fail:
 	free(wlan_client);
 	if (tx_prop != NULL)
@@ -1811,6 +1819,9 @@ fail:
 	{
 		free(iface_query);
 	}
+
+	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
 
 	return res;
 }
