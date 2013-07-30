@@ -205,7 +205,7 @@ const GpsInterface* gps_get_hardware_interface ()
 // for gps.c
 extern "C" const GpsInterface* get_gps_interface()
 {
-    targetEnumType target = TARGET_OTHER;
+    unsigned int target = TARGET_DEFAULT;
     if (NULL == loc_afw_data.context) {
         loc_eng_read_config();
 
@@ -214,8 +214,8 @@ extern "C" const GpsInterface* get_gps_interface()
 
         target = get_target();
         LOC_LOGD("Target name check returned %s", loc_get_target_name(target));
-        //APQ8064 and APQ8030
-        if((target == TARGET_APQ8064_STANDALONE) || (target == TARGET_APQ8030_STANDALONE)) {
+        //APQ8064
+        if( getTargetGnssType(target) == GNSS_GSS ) {
             gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
             gss_fd = open("/dev/gss", O_RDONLY);
             if (gss_fd < 0) {
@@ -226,7 +226,7 @@ extern "C" const GpsInterface* get_gps_interface()
             }
         }
         //MPQ8064
-        else if(target == TARGET_MPQ8064) {
+        else if( getTargetGnssType(target) == GNSS_NONE) {
             LOC_LOGE("No GPS HW on this target (MPQ8064). Not returning interface");
             return NULL;
         }
