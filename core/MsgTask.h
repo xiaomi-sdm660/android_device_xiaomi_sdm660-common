@@ -26,41 +26,41 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef __MSG_TASK__
+#define __MSG_TASK__
 
-#ifndef __LOC_H__
-#define __LOC_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
+#include <stdbool.h>
 #include <ctype.h>
-#include <cutils/properties.h>
-#include <hardware/gps.h>
-#include <gps_extended.h>
+#include <string.h>
+#include <pthread.h>
 
-typedef void (*loc_location_cb_ext) (UlpLocation* location, void* locExt);
-typedef void (*loc_sv_status_cb_ext) (GpsSvStatus* sv_status, void* svExt);
-typedef void* (*loc_ext_parser)(void* data);
+namespace loc_core {
 
-typedef struct {
-    loc_location_cb_ext location_cb;
-    gps_status_callback status_cb;
-    loc_sv_status_cb_ext sv_status_cb;
-    gps_nmea_callback nmea_cb;
-    gps_set_capabilities set_capabilities_cb;
-    gps_acquire_wakelock acquire_wakelock_cb;
-    gps_release_wakelock release_wakelock_cb;
-    gps_create_thread create_thread_cb;
-    loc_ext_parser location_ext_parser;
-    loc_ext_parser sv_ext_parser;
-    gps_request_utc_time request_utc_time_cb;
-} LocCallbacks;
+struct LocMsg {
+    inline LocMsg() {}
+    inline virtual ~LocMsg() {}
+    virtual void proc() const = 0;
+    inline virtual void log() const {}
+};
 
-void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
+class MsgTask {
+public:
+    typedef void* (*tStart)(void*);
+    typedef pthread_t (*tCreate)(const char* name, tStart start, void* arg);
+    typedef int (*tAssociate)();
+    MsgTask(tCreate tCreator, const char* threadName);
+    MsgTask(tAssociate tAssociator, const char* threadName);
+    ~MsgTask();
+    void sendMsg(const LocMsg* msg) const;
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+private:
+    const void* mQ;
+    tAssociate mAssociator;
+    MsgTask(const void* q, tAssociate associator);
+    static void* loopMain(void* copy);
+    void createPThread(const char* name);
+};
 
-#endif //__LOC_H__
+} // namespace loc_core
+
+#endif //__MSG_TASK__

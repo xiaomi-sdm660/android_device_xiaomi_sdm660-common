@@ -259,7 +259,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
 
         if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
             length = snprintf(pMarker, lengthRemaining, "%c", 'N'); // N means no fix
-        else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->client_handle->getPositionMode().mode)
+        else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->adapter->getPositionMode().mode)
             length = snprintf(pMarker, lengthRemaining, "%c", 'A'); // A means autonomous
         else
             length = snprintf(pMarker, lengthRemaining, "%c", 'D'); // D means differential
@@ -412,7 +412,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
 
         if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
             length = snprintf(pMarker, lengthRemaining, "%c", 'N'); // N means no fix
-        else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->client_handle->getPositionMode().mode)
+        else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->adapter->getPositionMode().mode)
             length = snprintf(pMarker, lengthRemaining, "%c", 'A'); // A means autonomous
         else
             length = snprintf(pMarker, lengthRemaining, "%c", 'D'); // D means differential
@@ -490,7 +490,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         char gpsQuality;
         if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
             gpsQuality = '0'; // 0 means no fix
-        else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->client_handle->getPositionMode().mode)
+        else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->adapter->getPositionMode().mode)
             gpsQuality = '1'; // 1 means GPS fix
         else
             gpsQuality = '2'; // 2 means DGPS fix

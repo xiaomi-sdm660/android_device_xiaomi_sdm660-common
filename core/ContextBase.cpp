@@ -26,41 +26,38 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#define LOG_NDDEBUG 0
+#define LOG_TAG "LocSvc_CtxBase"
 
-#ifndef __LOC_H__
-#define __LOC_H__
+#include <dlfcn.h>
+#include <cutils/sched_policy.h>
+#include <unistd.h>
+#include <ContextBase.h>
+#include <msg_q.h>
+#include <log_util.h>
+#include <loc_log.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+namespace loc_core {
 
-#include <ctype.h>
-#include <cutils/properties.h>
-#include <hardware/gps.h>
-#include <gps_extended.h>
+const char* ContextBase::mIzatLibName = "libloc_api_v02.so ";
+// we initialized this handle to 1 because it can't possibly
+// 1 if it ever gets assigned a value. NULL on the otherhand
+// is possilbe.
+void* ContextBase::mIzatLibHandle = (void*)1;
 
-typedef void (*loc_location_cb_ext) (UlpLocation* location, void* locExt);
-typedef void (*loc_sv_status_cb_ext) (GpsSvStatus* sv_status, void* svExt);
-typedef void* (*loc_ext_parser)(void* data);
-
-typedef struct {
-    loc_location_cb_ext location_cb;
-    gps_status_callback status_cb;
-    loc_sv_status_cb_ext sv_status_cb;
-    gps_nmea_callback nmea_cb;
-    gps_set_capabilities set_capabilities_cb;
-    gps_acquire_wakelock acquire_wakelock_cb;
-    gps_release_wakelock release_wakelock_cb;
-    gps_create_thread create_thread_cb;
-    loc_ext_parser location_ext_parser;
-    loc_ext_parser sv_ext_parser;
-    gps_request_utc_time request_utc_time_cb;
-} LocCallbacks;
-
-void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
-
-#ifdef __cplusplus
+void* ContextBase::getIzatLibHandle()
+{
+    if ((void*)1 == mIzatLibHandle) {
+        mIzatLibHandle = dlopen(mIzatLibName, RTLD_NOW);
+    }
+    return mIzatLibHandle;
 }
-#endif /* __cplusplus */
 
-#endif //__LOC_H__
+ContextBase::ContextBase(const MsgTask* msgTask,
+                         LOC_API_ADAPTER_EVENT_MASK_T exMask) :
+    mMsgTask(msgTask),
+    mLocApi(LocApiBase::create(mMsgTask, exMask, getIzatLibHandle()))
+{
+}
+
+}
