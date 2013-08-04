@@ -81,9 +81,9 @@ static int read_a_line(const char * file_path, char * line, int line_size)
     return result;
 }
 
-targetEnumType get_target(void)
+unsigned int get_target(void)
 {
-    targetEnumType target = TARGET_OTHER;
+    unsigned int target = TARGET_DEFAULT;
 
     char hw_platform[]      = "/sys/devices/system/soc/soc0/hw_platform";
     char id[]               = "/sys/devices/system/soc/soc0/id";
@@ -92,27 +92,35 @@ targetEnumType get_target(void)
     char rd_hw_platform[LINE_LEN];
     char rd_id[LINE_LEN];
     char rd_mdm[LINE_LEN];
+    char baseband[LINE_LEN];
 
+    property_get("ro.baseband", baseband, "");
     read_a_line(hw_platform, rd_hw_platform, LINE_LEN);
     read_a_line( id, rd_id, LINE_LEN);
 
-    if( (!memcmp(rd_hw_platform, STR_LIQUID, LENGTH(STR_LIQUID)) && IS_STR_END(rd_hw_platform[LENGTH(STR_LIQUID)])) ||
-        (!memcmp(rd_hw_platform, STR_SURF,   LENGTH(STR_SURF))   && IS_STR_END(rd_hw_platform[LENGTH(STR_SURF)])) ||
-        (!memcmp(rd_hw_platform, STR_MTP,   LENGTH(STR_MTP))   && IS_STR_END(rd_hw_platform[LENGTH(STR_MTP)]))) {
-        if (!read_a_line( mdm, rd_mdm, LINE_LEN))
-            target = TARGET_APQ8064_FUSION3;
-        else if( (!memcmp(rd_id, APQ8064_ID_1, LENGTH(APQ8064_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8064_ID_1)])) ||
-                 (!memcmp(rd_id, APQ8064_ID_2, LENGTH(APQ8064_ID_2)) && IS_STR_END(rd_id[LENGTH(APQ8064_ID_2)])) )
-            target = TARGET_APQ8064_STANDALONE;
-	else if((!memcmp(rd_id, APQ8030_ID_1, LENGTH(APQ8030_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8030_ID_1)])))
-            target = TARGET_APQ8030_STANDALONE;
+    if( !memcmp(baseband, STR_APQ, LENGTH(STR_APQ)) ){
+        if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1))
+            && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
+            target = TARGET_MPQ;
+        else
+            target = TARGET_APQ_SA;
     }
-    else if (!memcmp(rd_id, APQ8074_ID_1, LENGTH(APQ8074_ID_1)) && IS_STR_END(rd_id[LENGTH(APQ8074_ID_1)]))
-        target = TARGET_APQ8064_STANDALONE;
-    else if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1)) && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
-        target = TARGET_MPQ8064;
-    else if( (!memcmp(rd_id, MSM8930_ID_1, LENGTH(MSM8930_ID_1)) && IS_STR_END(rd_id[LENGTH(MSM8930_ID_1)])) ||
-             (!memcmp(rd_id, MSM8930_ID_2, LENGTH(MSM8930_ID_2)) && IS_STR_END(rd_id[LENGTH(MSM8930_ID_2)])) )
-        target = TARGET_MSM8930;
+    else {
+        if( (!memcmp(rd_hw_platform, STR_LIQUID, LENGTH(STR_LIQUID))
+             && IS_STR_END(rd_hw_platform[LENGTH(STR_LIQUID)])) ||
+            (!memcmp(rd_hw_platform, STR_SURF,   LENGTH(STR_SURF))
+             && IS_STR_END(rd_hw_platform[LENGTH(STR_SURF)])) ||
+            (!memcmp(rd_hw_platform, STR_MTP,   LENGTH(STR_MTP))
+             && IS_STR_END(rd_hw_platform[LENGTH(STR_MTP)]))) {
+
+            if (!read_a_line( mdm, rd_mdm, LINE_LEN))
+                target = TARGET_MDM;
+        }
+        else if( (!memcmp(rd_id, MSM8930_ID_1, LENGTH(MSM8930_ID_1))
+                   && IS_STR_END(rd_id[LENGTH(MSM8930_ID_1)])) ||
+                  (!memcmp(rd_id, MSM8930_ID_2, LENGTH(MSM8930_ID_2))
+                   && IS_STR_END(rd_id[LENGTH(MSM8930_ID_2)])) )
+             target = TARGET_MSM_NO_SSC;
+    }
     return target;
 }

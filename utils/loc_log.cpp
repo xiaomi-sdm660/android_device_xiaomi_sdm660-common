@@ -39,6 +39,9 @@
 #endif /* USE_GLIB  */
 #include "log_util.h"
 #include "platform_lib_includes.h"
+
+#define  BUFFER_SIZE  120
+
 // Logging Improvements
 const char *loc_logger_boolStr[]={"False","True"};
 const char VOID_RET[]   = "None";
@@ -105,12 +108,12 @@ const char* log_succ_fail_string(int is_succ)
 //Target names
 loc_name_val_s_type target_name[] =
 {
-    NAME_VAL(TARGET_OTHER),
-    NAME_VAL(TARGET_APQ8064_STANDALONE),
-    NAME_VAL(TARGET_APQ8064_FUSION3),
-    NAME_VAL(TARGET_MPQ8064),
-    NAME_VAL(TARGET_MSM8930),
-    NAME_VAL(TARGET_APQ8030_STANDALONE)
+    NAME_VAL(GNSS_NONE),
+    NAME_VAL(GNSS_MSM),
+    NAME_VAL(GNSS_GSS),
+    NAME_VAL(GNSS_MDM),
+    NAME_VAL(GNSS_GRIFFON),
+    NAME_VAL(GNSS_UNKNOWN)
 };
 
 static int target_name_num = sizeof(target_name)/sizeof(loc_name_val_s_type);
@@ -128,10 +131,26 @@ RETURN VALUE
    The target name string
 
 ===========================================================================*/
-const char *loc_get_target_name(targetEnumType target)
+const char *loc_get_target_name(unsigned int target)
 {
-    return loc_get_name_from_val(target_name, target_name_num, (long)target);
+    int index = 0;
+    char ret[BUFFER_SIZE];
+
+    index =  getTargetGnssType(target);
+    if( index >= target_name_num || index < 0)
+        index = target_name_num - 1;
+
+    if( (target & HAS_SSC) == HAS_SSC ) {
+        sprintf(ret, " %s with SSC",
+           loc_get_name_from_val(target_name, target_name_num, (long)index) );
+    }
+    else {
+       sprintf(ret, " %s  without SSC",
+           loc_get_name_from_val(target_name, target_name_num, (long)index) );
+    }
+    return ret;
 }
+
 
 /*===========================================================================
 

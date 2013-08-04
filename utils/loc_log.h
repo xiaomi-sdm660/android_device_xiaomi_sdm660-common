@@ -55,7 +55,7 @@ typedef struct
 const char* loc_get_name_from_mask(loc_name_val_s_type table[], int table_size, long mask);
 const char* loc_get_name_from_val(loc_name_val_s_type table[], int table_size, long value);
 const char* loc_get_msg_q_status(int status);
-const char* loc_get_target_name(targetEnumType target);
+const char* loc_get_target_name(unsigned int target);
 
 extern const char* log_succ_fail_string(int is_succ);
 
