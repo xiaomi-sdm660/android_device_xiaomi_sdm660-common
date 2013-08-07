@@ -27,27 +27,24 @@
  *
  */
 #define LOG_NDDEBUG 0
-#define LOG_TAG "LocSvc_api_rpc"
+#define LOG_TAG "LocSvc_adapter"
 
 #include <unistd.h>
 #include <math.h>
 #ifndef USE_GLIB
 #include <utils/SystemClock.h>
 #endif /* USE_GLIB */
-#include <LocApiRpc.h>
-#include <LocAdapterBase.h>
-#include <loc_api_fixup.h>
-#include <loc_api_rpc_glue.h>
-#include <log_util.h>
-#include <loc_log.h>
-#include <loc_api_log.h>
+#include "LocApiRpcAdapter.h"
+#include "loc_api_rpcgen_common_rpc.h"
+#include "log_util.h"
+#include "loc_log.h"
+#include "loc_api_log.h"
 #ifdef USE_GLIB
 #include <glib.h>
 #endif
-#include <librpc.h>
-#include <platform_lib_includes.h>
+#include "librpc.h"
+#include "platform_lib_includes.h"
 
-using namespace loc_core;
 
 #define LOC_XTRA_INJECT_DEFAULT_TIMEOUT (3100)
 #define XTRA_BLOCK_SIZE                 (3072)
@@ -80,7 +77,7 @@ static int32 loc_event_cb
 {
     MODEM_LOG_CALLFLOW(%s, loc_get_event_name(loc_event));
     loc_callback_log(loc_event, loc_event_payload);
-    int32 ret_val = ((LocApiRpc*)user)->locEventCB(client_handle, loc_event, loc_event_payload);
+    int32 ret_val = ((LocApiRpcAdapter*)user)->locEventCB(client_handle, loc_event, loc_event_payload);
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
@@ -104,21 +101,17 @@ SIDE EFFECTS
 static void loc_rpc_global_cb(void* user, CLIENT* clnt, enum rpc_reset_event event)
 {
     MODEM_LOG_CALLFLOW(%s, loc_get_rpc_reset_event_name(event));
-    ((LocApiRpc*)user)->locRpcGlobalCB(clnt, event);
+    ((LocApiRpcAdapter*)user)->locRpcGlobalCB(clnt, event);
     EXIT_LOG(%p, VOID_RET);
 }
 
-const LOC_API_ADAPTER_EVENT_MASK_T LocApiRpc::maskAll =
-    LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT |
-    LOC_API_ADAPTER_BIT_SATELLITE_REPORT |
-    LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST |
-    LOC_API_ADAPTER_BIT_ASSISTANCE_DATA_REQUEST |
-    LOC_API_ADAPTER_BIT_IOCTL_REPORT |
-    LOC_API_ADAPTER_BIT_STATUS_REPORT |
-    LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT |
-    LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
 
-const rpc_loc_event_mask_type LocApiRpc::locBits[] =
+LocApiAdapter* getLocApiAdapter(LocEng &locEng)
+{
+    return new LocApiRpcAdapter(locEng);
+}
+
+const rpc_loc_event_mask_type LocApiRpcAdapter::locBits[] =
 {
     RPC_LOC_EVENT_PARSED_POSITION_REPORT,
     RPC_LOC_EVENT_SATELLITE_REPORT,
@@ -131,24 +124,27 @@ const rpc_loc_event_mask_type LocApiRpc::locBits[] =
     RPC_LOC_EVENT_STATUS_REPORT
 };
 
-// constructor
-LocApiRpc::LocApiRpc(const MsgTask* msgTask,
-                     LOC_API_ADAPTER_EVENT_MASK_T exMask) :
-    LocApiBase(msgTask, exMask),
+LocApiRpcAdapter::LocApiRpcAdapter(LocEng &locEng) :
+    LocApiAdapter(locEng),
     client_handle(RPC_LOC_CLIENT_HANDLE_INVALID),
+    eMask(convertMask(locEng.eventMask)),
     dataEnableLastSet(-1)
 {
     memset(apnLastSet, 0, sizeof(apnLastSet));
     loc_api_glue_init();
 }
 
-LocApiRpc::~LocApiRpc()
+LocApiRpcAdapter::~LocApiRpcAdapter()
 {
-    close();
+    if (RPC_LOC_CLIENT_HANDLE_INVALID != client_handle) {
+        loc_clear(client_handle);
+    }
+
+    loc_close(client_handle);
 }
 
 rpc_loc_event_mask_type
-LocApiRpc::convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask)
+LocApiRpcAdapter::convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask)
 {
     rpc_loc_event_mask_type newMask = 0;
 
@@ -163,7 +159,7 @@ LocApiRpc::convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::convertErr(int rpcErr)
+LocApiRpcAdapter::convertErr(int rpcErr)
 {
     switch(rpcErr)
     {
@@ -192,7 +188,7 @@ LocApiRpc::convertErr(int rpcErr)
     }
 }
 
-void LocApiRpc::locRpcGlobalCB(CLIENT* clnt, enum rpc_reset_event event)
+void LocApiRpcAdapter::locRpcGlobalCB(CLIENT* clnt, enum rpc_reset_event event)
 {
     static rpc_loc_engine_state_e_type last_state = RPC_LOC_ENGINE_STATE_MAX;
 
@@ -212,10 +208,12 @@ void LocApiRpc::locRpcGlobalCB(CLIENT* clnt, enum rpc_reset_event event)
     }
 }
 
-int32 LocApiRpc::locEventCB(rpc_loc_client_handle_type client_handle,
+int32 LocApiRpcAdapter::locEventCB(rpc_loc_client_handle_type client_handle,
                      rpc_loc_event_mask_type loc_event,
                      const rpc_loc_event_payload_u_type* loc_event_payload)
 {
+    locEngHandle.acquireWakelock();
+
     // Parsed report
     if (loc_event & RPC_LOC_EVENT_PARSED_POSITION_REPORT)
     {
@@ -271,89 +269,60 @@ int32 LocApiRpc::locEventCB(rpc_loc_client_handle_type client_handle,
         NIEvent(&loc_event_payload->rpc_loc_event_payload_u_type_u.ni_request);
     }
 
+    locEngHandle.releaseWakeLock();
     return RPC_LOC_API_SUCCESS;//We simply want to return sucess here as we do not want to
     // cause any issues in RPC thread context
 }
 
 enum loc_api_adapter_err
-LocApiRpc::open(LOC_API_ADAPTER_EVENT_MASK_T mask)
+LocApiRpcAdapter::reinit()
 {
     enum loc_api_adapter_err ret_val = LOC_API_ADAPTER_ERR_SUCCESS;
+    if (RPC_LOC_CLIENT_HANDLE_INVALID != client_handle) {
+        loc_clear(client_handle);
+    }
 
-    // RPC does not dynamically update the event mask. And in the
-    // case of RPC, all we support are positioning (gps + agps)
-    // masks anyways, so we simply mask all of them on always.
-    // After doing so the first time in a power cycle, we know there
-    // will the following if condition will never be true any more.
-    mask = maskAll;
+    client_handle = loc_open(eMask, loc_event_cb, loc_rpc_global_cb, this);
 
-    if (mask != mMask) {
-        if (RPC_LOC_CLIENT_HANDLE_INVALID != client_handle) {
-            close();
-        }
-
-        mMask = mask;
-        // it is important to cap the mask here, because not all LocApi's
-        // can enable the same bits, e.g. foreground and bckground.
-        client_handle = loc_open(convertMask(mask),
-                                 loc_event_cb,
-                                 loc_rpc_global_cb, this);
-
-        if (client_handle < 0) {
-            mMask = 0;
-            client_handle = RPC_LOC_CLIENT_HANDLE_INVALID;
-            ret_val = LOC_API_ADAPTER_ERR_INVALID_HANDLE;
-        }
+    if (client_handle < 0) {
+        ret_val = LOC_API_ADAPTER_ERR_INVALID_HANDLE;
     }
 
     return ret_val;
 }
 
 enum loc_api_adapter_err
-LocApiRpc::close()
-{
-    if (RPC_LOC_CLIENT_HANDLE_INVALID != client_handle) {
-        loc_clear(client_handle);
-    }
-
-    loc_close(client_handle);
-    mMask = 0;
-    client_handle = RPC_LOC_CLIENT_HANDLE_INVALID;
-
-    return LOC_API_ADAPTER_ERR_SUCCESS;
-}
-
-enum loc_api_adapter_err
-LocApiRpc::startFix(const LocPosMode& posMode) {
-   LOC_LOGD("LocApiRpc::startFix() called");
+LocApiRpcAdapter::startFix() {
+   LOC_LOGD("LocApiRpcAdapter::startFix() called");
    return convertErr(
        loc_start_fix(client_handle)
        );
 }
 
 enum loc_api_adapter_err
-LocApiRpc::stopFix() {
-   LOC_LOGD("LocApiRpc::stopFix() called");
+LocApiRpcAdapter::stopFix() {
+   LOC_LOGD("LocApiRpcAdapter::stopFix() called");
    return convertErr(
        loc_stop_fix(client_handle)
        );
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setPositionMode(const LocPosMode& posMode)
+LocApiRpcAdapter::setPositionMode(const LocPosMode *posMode)
 {
     rpc_loc_ioctl_data_u_type    ioctl_data;
-    rpc_loc_fix_criteria_s_type *fix_criteria_ptr =
-        &ioctl_data.rpc_loc_ioctl_data_u_type_u.fix_criteria;
+    rpc_loc_fix_criteria_s_type *fix_criteria_ptr;
     rpc_loc_ioctl_e_type         ioctl_type = RPC_LOC_IOCTL_SET_FIX_CRITERIA;
     rpc_loc_operation_mode_e_type op_mode;
     int                          ret_val;
-    const LocPosMode* fixCriteria = &posMode;
+
+    if (NULL != posMode)
+        fixCriteria = *posMode;
 
     ALOGD ("loc_eng_set_position mode, client = %d, interval = %d, mode = %d\n",
-          (int32) client_handle, fixCriteria->min_interval, fixCriteria->mode);
+          (int32) client_handle, fixCriteria.min_interval, fixCriteria.mode);
 
-    switch (fixCriteria->mode)
+    switch (fixCriteria.mode)
     {
     case LOC_POSITION_MODE_MS_BASED:
         op_mode = RPC_LOC_OPER_MODE_MSB;
@@ -379,24 +348,25 @@ LocApiRpc::setPositionMode(const LocPosMode& posMode)
         op_mode = RPC_LOC_OPER_MODE_STANDALONE;
     }
 
+    fix_criteria_ptr = &ioctl_data.rpc_loc_ioctl_data_u_type_u.fix_criteria;
     fix_criteria_ptr->valid_mask = RPC_LOC_FIX_CRIT_VALID_PREFERRED_OPERATION_MODE |
                                    RPC_LOC_FIX_CRIT_VALID_RECURRENCE_TYPE;
-    fix_criteria_ptr->min_interval = fixCriteria->min_interval;
+    fix_criteria_ptr->min_interval = fixCriteria.min_interval;
     fix_criteria_ptr->preferred_operation_mode = op_mode;
 
-    fix_criteria_ptr->min_interval = fixCriteria->min_interval;
+    fix_criteria_ptr->min_interval = fixCriteria.min_interval;
     fix_criteria_ptr->valid_mask |= RPC_LOC_FIX_CRIT_VALID_MIN_INTERVAL;
 
-    if (fixCriteria->preferred_accuracy > 0) {
-        fix_criteria_ptr->preferred_accuracy = fixCriteria->preferred_accuracy;
+    if (fixCriteria.preferred_accuracy > 0) {
+        fix_criteria_ptr->preferred_accuracy = fixCriteria.preferred_accuracy;
         fix_criteria_ptr->valid_mask |= RPC_LOC_FIX_CRIT_VALID_PREFERRED_ACCURACY;
     }
-    if (fixCriteria->preferred_time > 0) {
-        fix_criteria_ptr->preferred_response_time = fixCriteria->preferred_time;
+    if (fixCriteria.preferred_time > 0) {
+        fix_criteria_ptr->preferred_response_time = fixCriteria.preferred_time;
         fix_criteria_ptr->valid_mask |= RPC_LOC_FIX_CRIT_VALID_PREFERRED_RESPONSE_TIME;
     }
 
-    switch (fixCriteria->recurrence) {
+    switch (fixCriteria.recurrence) {
     case GPS_POSITION_RECURRENCE_SINGLE:
         fix_criteria_ptr->recurrence_type = RPC_LOC_SINGLE_FIX;
         break;
@@ -417,7 +387,7 @@ LocApiRpc::setPositionMode(const LocPosMode& posMode)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setTime(GpsUtcTime time, int64_t timeReference, int uncertainty)
+LocApiRpcAdapter::setTime(GpsUtcTime time, int64_t timeReference, int uncertainty)
 {
     rpc_loc_ioctl_data_u_type        ioctl_data;
     rpc_loc_assist_data_time_s_type *time_info_ptr;
@@ -443,7 +413,7 @@ LocApiRpc::setTime(GpsUtcTime time, int64_t timeReference, int uncertainty)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::injectPosition(double latitude, double longitude, float accuracy)
+LocApiRpcAdapter::injectPosition(double latitude, double longitude, float accuracy)
 {
     /* IOCTL data */
     rpc_loc_ioctl_data_u_type ioctl_data;
@@ -482,7 +452,7 @@ LocApiRpc::injectPosition(double latitude, double longitude, float accuracy)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::informNiResponse(GpsUserResponseType userResponse,
+LocApiRpcAdapter::informNiResponse(GpsUserResponseType userResponse,
                                    const void* passThroughData)
 {
     rpc_loc_ioctl_data_u_type data;
@@ -519,7 +489,7 @@ LocApiRpc::informNiResponse(GpsUserResponseType userResponse,
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setAPN(char* apn, int len, boolean force)
+LocApiRpcAdapter::setAPN(char* apn, int len, boolean force)
 {
     enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
     int size = sizeof(apnLastSet);
@@ -530,7 +500,7 @@ LocApiRpc::setAPN(char* apn, int len, boolean force)
         }
         memcpy(apnLastSet, apn, size);
 
-        if (!isInSession()) {
+        if (false == navigating) {
             rpc_loc_ioctl_data_u_type ioctl_data = {RPC_LOC_IOCTL_SET_LBS_APN_PROFILE, {0}};
             ioctl_data.rpc_loc_ioctl_data_u_type_u.apn_profiles[0].srv_system_type = LOC_APN_PROFILE_SRV_SYS_MAX;
             ioctl_data.rpc_loc_ioctl_data_u_type_u.apn_profiles[0].pdp_type = LOC_APN_PROFILE_PDN_TYPE_IPV4;
@@ -548,16 +518,17 @@ LocApiRpc::setAPN(char* apn, int len, boolean force)
     return rtv;
 }
 
-void LocApiRpc::setInSession(bool inSession)
+void LocApiRpcAdapter::setInSession(bool inSession)
 {
-    if (!inSession) {
+    LocApiAdapter::setInSession(inSession);
+    if (false == navigating) {
         enableData(dataEnableLastSet, true);
         setAPN(apnLastSet, sizeof(apnLastSet)-1, true);
     }
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setServer(const char* url, int len)
+LocApiRpcAdapter::setServer(const char* url, int len)
 {
     rpc_loc_ioctl_data_u_type         ioctl_data;
     rpc_loc_server_info_s_type       *server_info_ptr;
@@ -588,7 +559,7 @@ LocApiRpc::setServer(const char* url, int len)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setServer(unsigned int ip, int port, LocServerType type)
+LocApiRpcAdapter::setServer(unsigned int ip, int port, LocServerType type)
 {
     rpc_loc_ioctl_data_u_type         ioctl_data;
     rpc_loc_server_info_s_type       *server_info_ptr;
@@ -623,13 +594,13 @@ LocApiRpc::setServer(unsigned int ip, int port, LocServerType type)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::enableData(int enable, boolean force)
+LocApiRpcAdapter::enableData(int enable, boolean force)
 {
     enum loc_api_adapter_err rtv = LOC_API_ADAPTER_ERR_SUCCESS;
     if (force || dataEnableLastSet != enable) {
         dataEnableLastSet = enable;
 
-        if (!isInSession()) {
+        if (false == navigating) {
             rpc_loc_ioctl_data_u_type ioctl_data = {RPC_LOC_IOCTL_SET_DATA_ENABLE, {0}};
 
             ioctl_data.rpc_loc_ioctl_data_u_type_u.data_enable = enable;
@@ -646,7 +617,7 @@ LocApiRpc::enableData(int enable, boolean force)
 }
 
 enum loc_api_adapter_err
-LocApiRpc::deleteAidingData(GpsAidingData bits)
+LocApiRpcAdapter::deleteAidingData(GpsAidingData bits)
 {
     rpc_loc_ioctl_data_u_type ioctl_data = {RPC_LOC_IOCTL_DELETE_ASSIST_DATA, {0}};
     ioctl_data.rpc_loc_ioctl_data_u_type_u.assist_data_delete.type = bits;
@@ -660,7 +631,7 @@ LocApiRpc::deleteAidingData(GpsAidingData bits)
         );
 }
 
-void LocApiRpc::reportPosition(const rpc_loc_parsed_position_s_type *location_report_ptr)
+void LocApiRpcAdapter::reportPosition(const rpc_loc_parsed_position_s_type *location_report_ptr)
 {
     LocPosTechMask tech_Mask = LOC_POS_TECH_MASK_DEFAULT;
 
@@ -752,36 +723,30 @@ void LocApiRpc::reportPosition(const rpc_loc_parsed_position_s_type *location_re
                 }
 
                 LOC_LOGV("reportPosition: fire callback\n");
-                enum loc_sess_status fixStatus =
-                    (location_report_ptr->session_status
-                     == RPC_LOC_SESS_STATUS_IN_PROGESS ?
-                     LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS);
-                LocApiBase::reportPosition(location,
-                                           locationExtended,
-                                           (void*)location_report_ptr,
-                                           fixStatus,
-                                           tech_Mask);
+                LocApiAdapter::reportPosition(location,
+                                              locationExtended,
+                                              locEngHandle.extPosInfo((void*)location_report_ptr),
+                                              (location_report_ptr->session_status == RPC_LOC_SESS_STATUS_IN_PROGESS ?
+                                               LOC_SESS_INTERMEDIATE : LOC_SESS_SUCCESS),
+                                               tech_Mask);
             }
         }
         else
         {
-            LocApiBase::reportPosition(location,
-                                       locationExtended,
-                                       NULL,
-                                       LOC_SESS_FAILURE);
-            LOC_LOGV("loc_eng_report_position: ignore position report "
-                     "when session status = %d\n",
-                     location_report_ptr->session_status);
+            LocApiAdapter::reportPosition(location,
+                                          locationExtended,
+                                          NULL,
+                                          LOC_SESS_FAILURE);
+            LOC_LOGV("loc_eng_report_position: ignore position report when session status = %d\n", location_report_ptr->session_status);
         }
     }
     else
     {
-        LOC_LOGV("loc_eng_report_position: ignore position report "
-                 "when session status is not set\n");
+        LOC_LOGV("loc_eng_report_position: ignore position report when session status is not set\n");
     }
 }
 
-void LocApiRpc::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
+void LocApiRpcAdapter::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
 {
     GpsSvStatus     SvStatus = {0};
     GpsLocationExtended locationExtended = {0};
@@ -881,52 +846,51 @@ void LocApiRpc::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
 
     if (SvStatus.num_svs >= 0)
     {
-        LocApiBase::reportSv(SvStatus,
-                             locationExtended,
-                             (void*)gnss_report_ptr);
+        LocApiAdapter::reportSv(SvStatus,
+                                locationExtended,
+                                locEngHandle.extSvInfo((void*)gnss_report_ptr));
     }
 }
 
-void LocApiRpc::reportStatus(const rpc_loc_status_event_s_type *status_report_ptr)
+void LocApiRpcAdapter::reportStatus(const rpc_loc_status_event_s_type *status_report_ptr)
 {
 
     if (status_report_ptr->event == RPC_LOC_STATUS_EVENT_ENGINE_STATE) {
         if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_ON)
         {
-            LocApiBase::reportStatus(GPS_STATUS_ENGINE_ON);
-            LocApiBase::reportStatus(GPS_STATUS_SESSION_BEGIN);
+            LocApiAdapter::reportStatus(GPS_STATUS_ENGINE_ON);
+            LocApiAdapter::reportStatus(GPS_STATUS_SESSION_BEGIN);
         }
         else if (status_report_ptr->payload.rpc_loc_status_event_payload_u_type_u.engine_state == RPC_LOC_ENGINE_STATE_OFF)
         {
-            LocApiBase::reportStatus(GPS_STATUS_SESSION_END);
-            LocApiBase::reportStatus(GPS_STATUS_ENGINE_OFF);
+            LocApiAdapter::reportStatus(GPS_STATUS_SESSION_END);
+            LocApiAdapter::reportStatus(GPS_STATUS_ENGINE_OFF);
         }
         else
         {
-            LocApiBase::reportStatus(GPS_STATUS_NONE);
+            LocApiAdapter::reportStatus(GPS_STATUS_NONE);
         }
     }
 
 }
 
-void LocApiRpc::reportNmea(const rpc_loc_nmea_report_s_type *nmea_report_ptr)
+void LocApiRpcAdapter::reportNmea(const rpc_loc_nmea_report_s_type *nmea_report_ptr)
 {
 
 #if (AMSS_VERSION==3200)
-    LocApiBase::reportNmea(nmea_report_ptr->nmea_sentences.nmea_sentences_val,
-                           nmea_report_ptr->nmea_sentences.nmea_sentences_len);
+    LocApiAdapter::reportNmea(nmea_report_ptr->nmea_sentences.nmea_sentences_val,
+                              nmea_report_ptr->nmea_sentences.nmea_sentences_len);
 #else
-    LocApiBase::reportNmea(nmea_report_ptr->nmea_sentences,
-                           nmea_report_ptr->length);
+    LocApiAdapter::reportNmea(nmea_report_ptr->nmea_sentences,
+                              nmea_report_ptr->length);
     LOC_LOGD("loc_eng_report_nmea: $%c%c%c\n",
-             nmea_report_ptr->nmea_sentences[3],
-             nmea_report_ptr->nmea_sentences[4],
+             nmea_report_ptr->nmea_sentences[3], nmea_report_ptr->nmea_sentences[4],
              nmea_report_ptr->nmea_sentences[5]);
 #endif /* #if (AMSS_VERSION==3200) */
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setXtraData(char* data, int length)
+LocApiRpcAdapter::setXtraData(char* data, int length)
 {
     int     rpc_ret_val = RPC_LOC_API_GENERAL_FAILURE;
     int     total_parts;
@@ -1004,7 +968,7 @@ LocApiRpc::setXtraData(char* data, int length)
 
 /* Request the Xtra Server Url from the modem */
 enum loc_api_adapter_err
-LocApiRpc::requestXtraServer()
+LocApiRpcAdapter::requestXtraServer()
 {
     loc_api_adapter_err           err;
     rpc_loc_ioctl_data_u_type     data;
@@ -1037,19 +1001,16 @@ LocApiRpc::requestXtraServer()
         return LOC_API_ADAPTER_ERR_GENERAL_FAILURE;
     }
 
-    reportXtraServer(callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.
-                     predicted_orbits_data_source.servers[0],
-                     callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.
-                     predicted_orbits_data_source.servers[1],
-                     callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.
-                     predicted_orbits_data_source.servers[2],
-                     255);
+    LocApiAdapter::reportXtraServer(callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.predicted_orbits_data_source.servers[0],
+                                    callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.predicted_orbits_data_source.servers[1],
+                                    callback_data.data.rpc_loc_ioctl_callback_data_u_type_u.predicted_orbits_data_source.servers[2],
+                                    255);
 
     return LOC_API_ADAPTER_ERR_SUCCESS;
 }
 
 enum loc_api_adapter_err
-LocApiRpc::atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bearer, AGpsType agpsType)
+LocApiRpcAdapter::atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bearer, AGpsType agpsType)
 {
     rpc_loc_server_open_status_e_type open_status = is_succ ? RPC_LOC_SERVER_OPEN_SUCCESS : RPC_LOC_SERVER_OPEN_FAIL;
    rpc_loc_ioctl_data_u_type           ioctl_data;
@@ -1123,7 +1084,7 @@ LocApiRpc::atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear
 }
 
 enum loc_api_adapter_err
-LocApiRpc::atlCloseStatus(int handle, int is_succ)
+LocApiRpcAdapter::atlCloseStatus(int handle, int is_succ)
 {
     rpc_loc_ioctl_data_u_type           ioctl_data;
     ioctl_data.disc = RPC_LOC_IOCTL_INFORM_SERVER_CLOSE_STATUS;
@@ -1143,7 +1104,7 @@ LocApiRpc::atlCloseStatus(int handle, int is_succ)
         );
 }
 
-void LocApiRpc::ATLEvent(const rpc_loc_server_request_s_type *server_request_ptr)
+void LocApiRpcAdapter::ATLEvent(const rpc_loc_server_request_s_type *server_request_ptr)
 {
     int connHandle;
     AGpsType agps_type;
@@ -1179,7 +1140,7 @@ void LocApiRpc::ATLEvent(const rpc_loc_server_request_s_type *server_request_ptr
    }
 }
 
-void LocApiRpc::NIEvent(const rpc_loc_ni_event_s_type *ni_req)
+void LocApiRpcAdapter::NIEvent(const rpc_loc_ni_event_s_type *ni_req)
 {
     GpsNiNotification notif = {0};
 
@@ -1242,8 +1203,8 @@ void LocApiRpc::NIEvent(const rpc_loc_ni_event_s_type *ni_req)
 #endif /* #if (AMSS_VERSION==3200) */
 
             char lcs_addr[32]; // Decoded LCS address for UMTS CP NI
-            addr_len = decodeAddress(lcs_addr, sizeof lcs_addr, address_source,
-                                     umts_cp_req->ext_client_address_data.ext_client_address_len);
+            addr_len = LocApiAdapter::decodeAddress(lcs_addr, sizeof lcs_addr, address_source,
+                                                    umts_cp_req->ext_client_address_data.ext_client_address_len);
 
             // The address is ASCII string
             if (addr_len)
@@ -1322,10 +1283,10 @@ void LocApiRpc::NIEvent(const rpc_loc_ni_event_s_type *ni_req)
     // this copy will get freed in loc_eng_ni when loc_ni_respond() is called
     rpc_loc_ni_event_s_type *copy = (rpc_loc_ni_event_s_type *)malloc(sizeof(*copy));
     memcpy(copy, ni_req, sizeof(*copy));
-    requestNiNotify(notif, (const void*)copy);
+    LocApiAdapter::requestNiNotify(notif, (const void*)copy);
 }
 
-int LocApiRpc::NIEventFillVerfiyType(GpsNiNotification &notif,
+int LocApiRpcAdapter::NIEventFillVerfiyType(GpsNiNotification &notif,
                                 rpc_loc_ni_notify_verify_e_type notif_priv)
 {
    switch (notif_priv)
@@ -1356,7 +1317,7 @@ int LocApiRpc::NIEventFillVerfiyType(GpsNiNotification &notif,
 }
 
 enum loc_api_adapter_err
-LocApiRpc::setSUPLVersion(uint32_t version)
+LocApiRpcAdapter::setSUPLVersion(uint32_t version)
 {
    rpc_loc_ioctl_data_u_type ioctl_data = {RPC_LOC_IOCTL_SET_SUPL_VERSION, {0}};
    ioctl_data.rpc_loc_ioctl_data_u_type_u.supl_version = (int)version;
@@ -1369,7 +1330,7 @@ LocApiRpc::setSUPLVersion(uint32_t version)
        );
 }
 
-GpsNiEncodingType LocApiRpc::convertNiEncodingType(int loc_encoding)
+GpsNiEncodingType LocApiRpcAdapter::convertNiEncodingType(int loc_encoding)
 {
    switch (loc_encoding)
    {
@@ -1384,9 +1345,4 @@ GpsNiEncodingType LocApiRpc::convertNiEncodingType(int loc_encoding)
    default:
        return GPS_ENC_UNKNOWN;
    }
-}
-
-LocApiBase* getLocApi(const MsgTask* msgTask,
-                      LOC_API_ADAPTER_EVENT_MASK_T exMask) {
-    return new LocApiRpc(msgTask, exMask);
 }

@@ -31,7 +31,7 @@
 #define LOG_TAG "LocSvc_afw"
 
 #include <hardware/gps.h>
-#include <gps_extended.h>
+#include <loc_ulp.h>
 #include <loc_eng.h>
 #include <loc_target.h>
 #include <loc_log.h>
@@ -43,16 +43,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <LocDualContext.h>
-#include <loc_eng_msg.h>
+#include <android_runtime/AndroidRuntime.h>
+
 #include <cutils/properties.h>
-
-namespace android {
-    namespace AndroidRuntime {
-        void* createJavaThread(const char* name, void (*start)(void *), void* arg);
-    }
-}
-
 //Globals defns
 static const ulpInterface * loc_eng_ulp_inf = NULL;
 static const ulpInterface * loc_eng_get_ulp_inf(void);
@@ -213,7 +206,7 @@ const GpsInterface* gps_get_hardware_interface ()
 extern "C" const GpsInterface* get_gps_interface()
 {
     unsigned int target = TARGET_DEFAULT;
-    if (NULL == loc_afw_data.adapter) {
+    if (NULL == loc_afw_data.context) {
         loc_eng_read_config();
 
         //We load up libulp module at this point itself
@@ -252,8 +245,8 @@ static void loc_free_msg(void* msg)
 
 void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg)
 {
-    loc_eng_data_s_type* loc_eng = (loc_eng_data_s_type*)loc_eng_data_p;
-    msg_q_snd(loc_eng->ulp_q, msg, loc_free_msg);
+    LocEngContext* loc_eng_context = (LocEngContext*)((loc_eng_data_s_type*)loc_eng_data_p)->context;
+    msg_q_snd((void*)loc_eng_context->ulp_q, msg, loc_free_msg);
 }
 
 /*===========================================================================
@@ -277,24 +270,25 @@ static int loc_hal_init(void)
 {
     int retVal = -1;
     ENTRY_LOG();
-    LOC_API_ADAPTER_EVENT_MASK_T event;
 
-    if (loc_core::LocDualContext::hasAgpsExt()) {
-        event = LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT |
-                LOC_API_ADAPTER_BIT_SATELLITE_REPORT |
-                LOC_API_ADAPTER_BIT_IOCTL_REPORT |
-                LOC_API_ADAPTER_BIT_STATUS_REPORT |
-                LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT;
-    } else {
-        event = LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT |
-                LOC_API_ADAPTER_BIT_SATELLITE_REPORT |
-                LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST |
-                LOC_API_ADAPTER_BIT_ASSISTANCE_DATA_REQUEST |
-                LOC_API_ADAPTER_BIT_IOCTL_REPORT |
-                LOC_API_ADAPTER_BIT_STATUS_REPORT |
-                LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT |
-                LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
-    }
+#ifdef TARGET_USES_QCOM_BSP
+    LOC_API_ADAPTER_EVENT_MASK_T event =
+        LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT |
+        LOC_API_ADAPTER_BIT_SATELLITE_REPORT |
+        LOC_API_ADAPTER_BIT_IOCTL_REPORT |
+        LOC_API_ADAPTER_BIT_STATUS_REPORT |
+        LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT;
+#else
+    LOC_API_ADAPTER_EVENT_MASK_T event =
+        LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT |
+        LOC_API_ADAPTER_BIT_SATELLITE_REPORT |
+        LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST |
+        LOC_API_ADAPTER_BIT_ASSISTANCE_DATA_REQUEST |
+        LOC_API_ADAPTER_BIT_IOCTL_REPORT |
+        LOC_API_ADAPTER_BIT_STATUS_REPORT |
+        LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT |
+        LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
+#endif
     LocCallbacks clientCallbacks = {local_loc_cb, /* location_cb */
                                     local_status_cb, /* status_cb */
                                     local_sv_cb, /* sv_status_cb */
@@ -473,9 +467,9 @@ static int loc_inject_time(GpsUtcTime time, int64_t timeReference, int uncertain
     ENTRY_LOG();
     int ret_val = 0;
 
-    if (loc_core::LocDualContext::hasAgpsExt()) {
+    #ifndef TARGET_USES_QCOM_BSP
         ret_val = loc_eng_inject_time(loc_afw_data, time, timeReference, uncertainty);
-    }
+    #endif
 
     EXIT_LOG(%d, ret_val);
     return ret_val;
@@ -616,21 +610,21 @@ const void* loc_get_extension(const char* name)
    LOC_LOGD("%s:%d] For Interface = %s\n",__func__, __LINE__, name);
    if (strcmp(name, GPS_XTRA_INTERFACE) == 0)
    {
-       if (loc_core::LocDualContext::hasAgpsExt()) {
+      #ifndef TARGET_USES_QCOM_BSP
           ret_val = &sLocEngXTRAInterface;
-       }
+      #endif
    }
    else if (strcmp(name, AGPS_INTERFACE) == 0)
    {
-       if (loc_core::LocDualContext::hasAgpsExt()) {
+       #ifndef TARGET_USES_QCOM_BSP
            ret_val = &sLocEngAGpsInterface;
-       }
+       #endif
    }
    else if (strcmp(name, GPS_NI_INTERFACE) == 0)
    {
-       if (loc_core::LocDualContext::hasAgpsExt()) {
+       #ifndef TARGET_USES_QCOM_BSP
            ret_val = &sLocEngNiInterface;
-       }
+       #endif
    }
    else if (strcmp(name, AGPS_RIL_INTERFACE) == 0)
    {
@@ -1028,7 +1022,7 @@ static int loc_init(GpsCallbacks* callbacks)
         EXIT_LOG(%d, retVal);
         return retVal;
     }
-    memset(&afw_cb_data, 0, sizeof (afw_cb_data));
+    memset(&afw_cb_data, NULL, sizeof (LocCallbacks));
     gps_loc_cb = callbacks->location_cb;
     afw_cb_data.status_cb = callbacks->status_cb;
     gps_sv_cb = callbacks->sv_status_cb;
