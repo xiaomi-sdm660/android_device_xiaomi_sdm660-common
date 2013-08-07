@@ -5,7 +5,7 @@ AM_CFLAGS = \
      -fno-short-enums \
      -DFEATURE_GNSS_BIT_API
 
-libloc_adapter_so_la_SOURCES = loc_eng_log.cpp LocEngAdapter.cpp
+libloc_adapter_so_la_SOURCES = loc_eng_log.cpp LocApiAdapter.cpp
 
 if USE_GLIB
 libloc_adapter_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
@@ -62,7 +62,7 @@ endif
 libgps_default_so_la_LIBADD = -lstdc++ -lcutils ../../utils/libgps_utils_so.la -ldl libloc_eng_so.la
 
 library_include_HEADERS = \
-   LocEngAdapter.h \
+   LocApiAdapter.h \
    loc.h \
    loc_eng.h \
    loc_eng_xtra.h \

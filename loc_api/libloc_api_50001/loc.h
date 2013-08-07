@@ -37,7 +37,28 @@ extern "C" {
 #include <ctype.h>
 #include <cutils/properties.h>
 #include <hardware/gps.h>
-#include <gps_extended.h>
+#include <loc_ulp.h>
+#include "gps_extended.h"
+
+#define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+
+typedef enum loc_server_type {
+    LOC_AGPS_CDMA_PDE_SERVER,
+    LOC_AGPS_CUSTOM_PDE_SERVER,
+    LOC_AGPS_MPC_SERVER,
+    LOC_AGPS_SUPL_SERVER
+} LocServerType;
+
+typedef enum loc_position_mode_type {
+    LOC_POSITION_MODE_STANDALONE,
+    LOC_POSITION_MODE_MS_BASED,
+    LOC_POSITION_MODE_MS_ASSISTED,
+    LOC_POSITION_MODE_RESERVED_1,
+    LOC_POSITION_MODE_RESERVED_2,
+    LOC_POSITION_MODE_RESERVED_3,
+    LOC_POSITION_MODE_RESERVED_4,
+    LOC_POSITION_MODE_RESERVED_5
+} LocPositionMode;
 
 typedef void (*loc_location_cb_ext) (UlpLocation* location, void* locExt);
 typedef void (*loc_sv_status_cb_ext) (GpsSvStatus* sv_status, void* svExt);
@@ -57,6 +78,22 @@ typedef struct {
     gps_request_utc_time request_utc_time_cb;
 } LocCallbacks;
 
+enum loc_sess_status {
+    LOC_SESS_SUCCESS,
+    LOC_SESS_INTERMEDIATE,
+    LOC_SESS_FAILURE
+};
+
+typedef uint32_t LocPosTechMask;
+#define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
+#define LOC_POS_TECH_MASK_SATELLITE ((LocPosTechMask)0x00000001)
+#define LOC_POS_TECH_MASK_CELLID ((LocPosTechMask)0x00000002)
+#define LOC_POS_TECH_MASK_WIFI ((LocPosTechMask)0x00000004)
+#define LOC_POS_TECH_MASK_SENSORS ((LocPosTechMask)0x00000008)
+#define LOC_POS_TECH_MASK_REFERENCE_LOCATION ((LocPosTechMask)0x00000010)
+#define LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION ((LocPosTechMask)0x00000020)
+#define LOC_POS_TECH_MASK_AFLT ((LocPosTechMask)0x00000040)
+#define LOC_POS_TECH_MASK_HYBRID ((LocPosTechMask)0x00000080)
 void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
 
 #ifdef __cplusplus

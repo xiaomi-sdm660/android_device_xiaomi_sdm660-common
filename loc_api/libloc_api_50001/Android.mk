@@ -5,7 +5,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libloc_eng
+LOCAL_MODULE := libloc_adapter
 LOCAL_MODULE_OWNER := qcom
 
 LOCAL_MODULE_TAGS := optional
@@ -13,9 +13,51 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
-    libdl \
     liblog \
-    libloc_core \
+    libgps.utils \
+    libdl
+
+LOCAL_SRC_FILES += \
+    loc_eng_log.cpp \
+    LocApiAdapter.cpp
+
+LOCAL_CFLAGS += \
+     -fno-short-enums \
+     -D_ANDROID_
+
+LOCAL_C_INCLUDES:= \
+    $(TARGET_OUT_HEADERS)/gps.utils \
+    hardware/qcom/gps/loc_api/libloc_api_50001
+
+LOCAL_COPY_HEADERS_TO:= libloc_eng/
+LOCAL_COPY_HEADERS:= \
+   LocApiAdapter.h \
+   loc.h \
+   gps_extended.h \
+   loc_eng.h \
+   loc_eng_xtra.h \
+   loc_eng_ni.h \
+   loc_eng_agps.h \
+   loc_eng_msg.h \
+   loc_eng_msg_id.h \
+   loc_eng_log.h \
+   loc_ulp.h
+
+LOCAL_PRELINK_MODULE := false
+
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libloc_eng
+
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SHARED_LIBRARIES := \
+    libutils \
+    libcutils \
+    liblog \
+    libloc_adapter \
     libgps.utils
 
 LOCAL_SRC_FILES += \
@@ -24,8 +66,7 @@ LOCAL_SRC_FILES += \
     loc_eng_xtra.cpp \
     loc_eng_ni.cpp \
     loc_eng_log.cpp \
-    loc_eng_nmea.cpp \
-    LocEngAdapter.cpp
+    loc_eng_nmea.cpp
 
 LOCAL_SRC_FILES += \
     loc_eng_dmn_conn.cpp \
@@ -40,21 +81,7 @@ LOCAL_CFLAGS += \
 
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core \
-    hardware/qcom/gps/loc_api/libloc_api_50001 \
     hardware/qcom/gps/loc_api/ulp/inc
-
-LOCAL_COPY_HEADERS_TO:= libloc_eng/
-LOCAL_COPY_HEADERS:= \
-   LocEngAdapter.h \
-   loc.h \
-   loc_eng.h \
-   loc_eng_xtra.h \
-   loc_eng_ni.h \
-   loc_eng_agps.h \
-   loc_eng_msg.h \
-   loc_eng_msg_id.h \
-   loc_eng_log.h
 
 LOCAL_PRELINK_MODULE := false
 
@@ -63,7 +90,6 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := gps.$(BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE)
-LOCAL_MODULE_OWNER := qcom
 
 LOCAL_MODULE_TAGS := optional
 
@@ -74,7 +100,6 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     liblog \
     libloc_eng \
-    libloc_core \
     libgps.utils \
     libdl \
     libandroid_runtime
@@ -94,7 +119,6 @@ endif
 ## Includes
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core \
     hardware/qcom/gps/loc_api/ulp/inc
 
 LOCAL_PRELINK_MODULE := false

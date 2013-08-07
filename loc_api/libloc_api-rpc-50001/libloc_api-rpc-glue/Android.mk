@@ -9,7 +9,7 @@ source_files:= \
     src/loc_apicb_appinit.c \
     src/loc_api_fixup.c \
     src/loc_api_log.c \
-    src/LocApiRpc.cpp
+    src/LocApiRpcAdapter.cpp
 
 LOCAL_SRC_FILES:= $(source_files)
 
@@ -26,7 +26,7 @@ LOCAL_SHARED_LIBRARIES:= \
     libcutils \
     libcommondefs \
     libgps.utils \
-    libloc_core
+    libloc_adapter
 
 LOCAL_STATIC_LIBRARIES := \
     libloc_api_rpcgen
@@ -37,20 +37,20 @@ LOCAL_C_INCLUDES:= \
     $(LOCAL_PATH) \
     $(LOCAL_PATH)/rpc_inc \
     $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core \
     $(TARGET_OUT_HEADERS)/loc_api/rpcgen/inc \
+    $(TARGET_OUT_HEADERS)/libcommondefs-rpc \
     $(TARGET_OUT_HEADERS)/libcommondefs/rpcgen/inc \
     $(TARGET_OUT_HEADERS)/librpc \
     $(TARGET_OUT_HEADERS)/libloc-rpc/rpc_inc \
-    $(TOP)/hardware/msm7k/librpc
+    $(TARGET_OUT_HEADERS)/libloc_eng \
+    hardware/msm7k/librpc
 
 LOCAL_COPY_HEADERS_TO:= libloc_api-rpc-qc/$(RPC_INC)
 LOCAL_COPY_HEADERS:= \
     $(RPC_INC)/loc_api_rpc_glue.h \
     $(RPC_INC)/loc_api_fixup.h \
     $(RPC_INC)/loc_api_sync_call.h \
-    $(RPC_INC)/loc_apicb_appinit.h \
-    $(RPC_INC)/LocApiRpc.h
+    $(RPC_INC)/loc_apicb_appinit.h
 
 LOCAL_MODULE:= libloc_api-rpc-qc
 LOCAL_MODULE_OWNER := qcom

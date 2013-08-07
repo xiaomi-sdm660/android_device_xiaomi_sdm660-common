@@ -31,56 +31,9 @@
 #define LOG_TAG "LocSvc_eng"
 
 #include <loc_eng.h>
-#include <MsgTask.h>
+#include <loc_eng_msg.h>
 #include "log_util.h"
 #include "platform_lib_includes.h"
-
-using namespace loc_core;
-
-struct LocEngRequestXtraServer : public LocMsg {
-    LocEngAdapter* mAdapter;
-    inline LocEngRequestXtraServer(LocEngAdapter* adapter) :
-        LocMsg(), mAdapter(adapter)
-    {
-        locallog();
-    }
-    inline virtual void proc() const {
-        mAdapter->requestXtraServer();
-    }
-    inline void locallog() const {
-        LOC_LOGV("LocEngRequestXtraServer");
-    }
-    inline virtual void log() const {
-        locallog();
-    }
-};
-
-struct LocEngInjectXtraData : public LocMsg {
-    LocEngAdapter* mAdapter;
-    char* mData;
-    const int mLen;
-    inline LocEngInjectXtraData(LocEngAdapter* adapter,
-                                char* data, int len):
-        LocMsg(), mAdapter(adapter),
-        mData(new char[len]), mLen(len)
-    {
-        memcpy((void*)mData, (void*)data, len);
-        locallog();
-    }
-    inline ~LocEngInjectXtraData()
-    {
-        delete[] mData;
-    }
-    inline virtual void proc() const {
-        mAdapter->setXtraData(mData, mLen);
-    }
-    inline  void locallog() const {
-        LOC_LOGV("length: %d\n  data: %p", mLen, mData);
-    }
-    inline virtual void log() const {
-        locallog();
-    }
-};
 
 /*===========================================================================
 FUNCTION    loc_eng_xtra_init
@@ -136,8 +89,9 @@ SIDE EFFECTS
 int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
                              char* data, int length)
 {
-    LocEngAdapter* adapter = loc_eng_data.adapter;
-    adapter->sendMsg(new LocEngInjectXtraData(adapter, data, length));
+    loc_eng_msg_inject_xtra_data *msg(new loc_eng_msg_inject_xtra_data(&loc_eng_data,
+                                                                       data, length));
+    loc_eng_msg_sender(&loc_eng_data, msg);
 
     return 0;
 }
@@ -159,8 +113,12 @@ SIDE EFFECTS
 ===========================================================================*/
 int loc_eng_xtra_request_server(loc_eng_data_s_type &loc_eng_data)
 {
-    LocEngAdapter* adapter = loc_eng_data.adapter;
-    adapter->sendMsg(new LocEngRequestXtraServer(adapter));
+    loc_eng_msg_request_xtra_server *msg(new loc_eng_msg_request_xtra_server(&loc_eng_data));
+
+    if (NULL == msg)
+        return -1;
+
+    loc_eng_msg_sender(&loc_eng_data, msg);
 
     return 0;
 
