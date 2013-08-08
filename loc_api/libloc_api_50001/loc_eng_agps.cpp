@@ -33,10 +33,10 @@
 #include <loc_eng_agps.h>
 #include <loc_eng_log.h>
 #include <log_util.h>
-#include "platform_lib_includes.h"
+#include <platform_lib_includes.h>
 #include <loc_eng_dmn_conn_handler.h>
 #include <loc_eng_dmn_conn.h>
-#include<sys/time.h>
+#include <sys/time.h>
 
 //======================================================================
 // C callbacks
@@ -109,7 +109,7 @@ bool BITSubscriber::equals(const Subscriber *s) const
 
     return (ID == bitS->ID &&
             (INADDR_NONE != (unsigned int)ID ||
-             0 == strncmp(ipv6Addr, bitS->ipv6Addr, sizeof(ipv6Addr))));
+             0 == strncmp(mIPv6Addr, bitS->mIPv6Addr, sizeof(mIPv6Addr))));
 }
 
 bool BITSubscriber::notifyRsrcStatus(Notification &notification)
@@ -152,13 +152,13 @@ bool ATLSubscriber::notifyRsrcStatus(Notification &notification)
         {
         case RSRC_UNSUBSCRIBE:
         case RSRC_RELEASED:
-            ((LocApiAdapter*)mLocAdapter)->atlCloseStatus(ID, 1);
+            ((LocEngAdapter*)mLocAdapter)->atlCloseStatus(ID, 1);
             break;
         case RSRC_DENIED:
         {
             AGpsExtType type = mBackwardCompatibleMode ?
                               AGPS_TYPE_INVALID : mStateMachine->getType();
-            ((LocApiAdapter*)mLocAdapter)->atlOpenStatus(ID, 0,
+            ((LocEngAdapter*)mLocAdapter)->atlOpenStatus(ID, 0,
                                             (char*)mStateMachine->getAPN(),
                                             mStateMachine->getBearer(),
                                             type);
@@ -168,7 +168,7 @@ bool ATLSubscriber::notifyRsrcStatus(Notification &notification)
         {
             AGpsExtType type = mBackwardCompatibleMode ?
                               AGPS_TYPE_INVALID : mStateMachine->getType();
-            ((LocApiAdapter*)mLocAdapter)->atlOpenStatus(ID, 1,
+            ((LocEngAdapter*)mLocAdapter)->atlOpenStatus(ID, 1,
                                             (char*)mStateMachine->getAPN(),
                                             mStateMachine->getBearer(),
                                             type);
@@ -627,6 +627,7 @@ AgpsStateMachine::AgpsStateMachine(servicerType servType,
     mStatePtr(new AgpsReleasedState(this)),mType(type),
     mAPN(NULL),
     mAPNLen(0),
+    mBearer(AGPS_APN_BEARER_INVALID),
     mEnforceSingleSubscriber(enforceSingleSubscriber),
     mServicer(Servicer :: getServicer(servType, (void *)cb_func))
 {
@@ -826,7 +827,7 @@ err:
 }
 
 DSStateMachine :: DSStateMachine(servicerType type, void *cb_func,
-                                   LocApiAdapter* adapterHandle):
+                                 LocEngAdapter* adapterHandle):
     AgpsStateMachine(type, cb_func, AGPS_TYPE_INVALID,false),
     mLocAdapter(adapterHandle)
 {
@@ -947,17 +948,17 @@ void DSStateMachine :: informStatus(AgpsRsrcStatus status, int ID) const
     LOC_LOGD("DSStateMachine :: informStatus. Status=%d\n",(int)status);
     switch(status) {
     case RSRC_UNSUBSCRIBE:
-        ((LocApiAdapter*)mLocAdapter)->atlCloseStatus(ID, 1);
+        mLocAdapter->atlCloseStatus(ID, 1);
         break;
     case RSRC_RELEASED:
-        ((LocApiAdapter*)mLocAdapter)->releaseDataHandle();
+        mLocAdapter->closeDataCall();
         break;
     case RSRC_DENIED:
         ((DSStateMachine *)this)->mRetries = 0;
         mLocAdapter->requestATL(ID, AGPS_TYPE_SUPL);
         break;
     case RSRC_GRANTED:
-        ((LocApiAdapter*)mLocAdapter)->atlOpenStatus(ID, 1,
+        mLocAdapter->atlOpenStatus(ID, 1,
                                                      NULL,
                                                      AGPS_APN_BEARER_INVALID,
                                                      AGPS_TYPE_INVALID);
