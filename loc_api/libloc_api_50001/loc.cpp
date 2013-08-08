@@ -571,7 +571,19 @@ const void* loc_get_extension(const char* name)
    }
    else if (strcmp(name, AGPS_INTERFACE) == 0)
    {
-       ret_val = &sLocEngAGpsInterface;
+       //Return an interface to AGPS only if MSA or MSB capabilities
+       //are present. If the target is an APQ, these masks are
+       //cleared in get_gps_interface() and the below logic will
+       //return NULL as the interface for AGPS
+       if((gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) ||
+          (gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB) ) {
+           LOC_LOGD("%s:%d]: AGPS capabilities found\n", __func__, __LINE__);
+           ret_val = &sLocEngAGpsInterface;
+       }
+       else {
+           LOC_LOGD("%s:%d]: Returning NULL AgpsInterface\n", __func__, __LINE__);
+           ret_val = NULL;
+       }
    }
    else if (strcmp(name, GPS_NI_INTERFACE) == 0)
    {
