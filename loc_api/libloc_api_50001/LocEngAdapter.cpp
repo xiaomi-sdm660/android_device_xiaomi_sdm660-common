@@ -35,15 +35,47 @@
 
 using namespace loc_core;
 
+LocInternalAdapter::LocInternalAdapter(LocEngAdapter* adapter) :
+    LocAdapterBase(adapter->getMsgTask()),
+    mLocEngAdapter(adapter)
+{
+}
+void LocInternalAdapter::setPositionModeInt(LocPosMode& posMode) {
+    sendMsg(new LocEngPositionMode(mLocEngAdapter, posMode));
+}
+void LocInternalAdapter::startFixInt() {
+    sendMsg(new LocEngStartFix(mLocEngAdapter));
+}
+void LocInternalAdapter::stopFixInt() {
+    sendMsg(new LocEngStopFix(mLocEngAdapter));
+}
+void LocInternalAdapter::setUlpProxy(UlpProxyBase* ulp) {
+    struct LocSetUlpProxy : public LocMsg {
+        LocAdapterBase* mAdapter;
+        UlpProxyBase* mUlp;
+        inline LocSetUlpProxy(LocAdapterBase* adapter, UlpProxyBase* ulp) :
+            LocMsg(), mAdapter(adapter), mUlp(ulp) {
+        }
+        virtual void proc() const {
+            LOC_LOGV("%s] ulp %p adapter %p", __func__,
+                     mUlp, mAdapter);
+            mAdapter->setUlpProxy(mUlp);
+        }
+    };
+
+    sendMsg(new LocSetUlpProxy(mLocEngAdapter, ulp));
+}
+
 LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
-                             void* owner, loc_msg_sender msgSender,
+                             void* owner,
                              MsgTask::tCreate tCreator) :
     LocAdapterBase(mask,
                    LocDualContext::getLocFgContext(
                          tCreator,
                          LocDualContext::mLocationHalName)),
-    mOwner(owner), mSendUlpMsg(msgSender), mNavigating(false),
-    mAgpsEnabled(loc_core::LocDualContext::hasAgpsExt())
+    mOwner(owner), mInternalAdapter(new LocInternalAdapter(this)),
+    mUlp(new UlpProxyBase()), mNavigating(false),
+    mAgpsEnabled(false)
 {
     memset(&mFixCriteria, 0, sizeof(mFixCriteria));
     LOC_LOGD("LocEngAdapter created");
@@ -52,32 +84,59 @@ LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
 inline
 LocEngAdapter::~LocEngAdapter()
 {
+    delete mInternalAdapter;
     LOC_LOGV("LocEngAdapter deleted");
 }
+
+void LocEngAdapter::setUlpProxy(UlpProxyBase* ulp)
+{
+    delete mUlp;
+    LOC_LOGV("%s] %p", __func__, ulp);
+    if (NULL == ulp) {
+        ulp = new UlpProxyBase();
+    }
+    mUlp = ulp;
+}
+
+void LocInternalAdapter::reportPosition(UlpLocation &location,
+                                        GpsLocationExtended &locationExtended,
+                                        void* locationExt,
+                                        enum loc_sess_status status,
+                                        LocPosTechMask loc_technology_mask)
+{
+    sendMsg(new LocEngReportPosition(mLocEngAdapter,
+                                     location,
+                                     locationExtended,
+                                     locationExt,
+                                     status,
+                                     loc_technology_mask));
+}
+
 
 void LocEngAdapter::reportPosition(UlpLocation &location,
                                    GpsLocationExtended &locationExtended,
                                    void* locationExt,
                                    enum loc_sess_status status,
-                                   LocPosTechMask loc_technology_mask )
+                                   LocPosTechMask loc_technology_mask)
 {
-    if (mSendUlpMsg) {
-        loc_eng_msg_report_position *msg(
-            new loc_eng_msg_report_position(mOwner,
-                                            location,
-                                            locationExtended,
-                                            locationExt,
-                                            status,
-                                            loc_technology_mask));
-        mSendUlpMsg(mOwner, msg);
-    } else {
-        sendMsg(new LocEngReportPosition(mOwner,
-                                         location,
+    if (! mUlp->reportPosition(location,
+                               locationExtended,
+                               locationExt,
+                               status,
+                               loc_technology_mask )) {
+        mInternalAdapter->reportPosition(location,
                                          locationExtended,
                                          locationExt,
                                          status,
-                                         loc_technology_mask));
+                                         loc_technology_mask);
     }
+}
+
+void LocInternalAdapter::reportSv(GpsSvStatus &svStatus,
+                                  GpsLocationExtended &locationExtended,
+                                  void* svExt){
+    sendMsg(new LocEngReportSv(mLocEngAdapter, svStatus,
+                               locationExtended, svExt));
 }
 
 void LocEngAdapter::reportSv(GpsSvStatus &svStatus,
@@ -88,14 +147,8 @@ void LocEngAdapter::reportSv(GpsSvStatus &svStatus,
     // We want to send SV info to ULP to help it in determining GNSS
     // signal strength ULP will forward the SV reports to HAL without
     // any modifications
-    if (mSendUlpMsg) {
-        loc_eng_msg_report_sv *msg(
-            new loc_eng_msg_report_sv(mOwner, svStatus,
-                                      locationExtended, svExt));
-        mSendUlpMsg(mOwner, msg);
-    } else {
-        sendMsg(new LocEngReportSv(mOwner, svStatus,
-                                   locationExtended, svExt));
+    if (! mUlp->reportSv(svStatus, locationExtended, svExt)) {
+        mInternalAdapter->reportSv(svStatus, locationExtended, svExt);
     }
 }
 

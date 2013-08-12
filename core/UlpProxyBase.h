@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,36 +26,38 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef ULP_PROXY_BASE_H
+#define ULP_PROXY_BASE_H
 
-#ifndef ULP_H
-#define ULP_H
+#include <gps_extended.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+namespace loc_core {
 
-#include <hardware/gps.h>
-struct loc_eng_data_s;
+class LocAdapterBase;
 
-/** Represents the standard ulp module interface. */
-typedef struct {
-    /** set to sizeof(ulpInterface) */
-    size_t   size;
+class UlpProxyBase {
+public:
+    inline UlpProxyBase() {}
+    inline virtual ~UlpProxyBase() {}
+    inline virtual bool sendStartFix() { return false;}
+    inline virtual bool sendStopFix() { return false;}
+    inline virtual bool sendFixMode(LocPosMode &params) { return false;}
+    inline virtual bool reportPosition(UlpLocation &location,
+                                       GpsLocationExtended &locationExtended,
+                                       void* locationExt,
+                                       enum loc_sess_status status,
+                                       LocPosTechMask loc_technology_mask) {
+        return false;
+    }
+    inline virtual bool reportSv(GpsSvStatus &svStatus,
+                                 GpsLocationExtended &locationExtended,
+                                 void* svExt) {
+        return false;
+    }
+    inline virtual void setAdapter(LocAdapterBase* adapter) {}
+    inline virtual void setCapabilities(unsigned long capabilities) {}
+};
 
-    /**
-     * Starts the libulp module. 0: success
-     */
-    int   (*init)(struct loc_eng_data_s &loc_eng_data);
-    /** Get a pointer to extension information. */
-    const void* (*get_extension)(const char* name);
+} // namespace loc_core
 
-}ulpInterface;
-
-typedef const ulpInterface* (get_ulp_interface) (void);
-
-#ifdef __cplusplus
-}
-#endif
-#endif /* ULP_H */
-
+#endif // ULP_PROXY_BASE_H

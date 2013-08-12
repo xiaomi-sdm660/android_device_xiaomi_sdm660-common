@@ -37,6 +37,8 @@ LOCAL_COPY_HEADERS:= \
     LocAdapterBase.h \
     ContextBase.h \
     LocDualContext.h \
+    IzatProxyBase.h \
+    UlpProxyBase.h \
     gps_extended_c.h \
     gps_extended.h \
     loc_core_log.h

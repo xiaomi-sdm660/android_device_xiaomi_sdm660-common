@@ -57,8 +57,6 @@ typedef struct {
     gps_request_utc_time request_utc_time_cb;
 } LocCallbacks;
 
-void loc_ulp_msg_sender(void* loc_eng_data_p, void* msg);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

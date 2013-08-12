@@ -32,7 +32,6 @@
 #include <dlfcn.h>
 #include <LocApiBase.h>
 #include <LocAdapterBase.h>
-#include <loc_target.h>
 #include <log_util.h>
 
 namespace loc_core {
@@ -103,41 +102,6 @@ struct LocSsrMsg : public LocMsg {
         locallog();
     }
 };
-
-LocApiBase* LocApiBase::create(const MsgTask* msgTask,
-                               LOC_API_ADAPTER_EVENT_MASK_T exMask,
-                               void* libHandle)
-{
-    LocApiBase* locApi = NULL;
-
-    // first if can not be MPQ
-    if (TARGET_MPQ != get_target()) {
-        getLocApi_t* getter = NULL;
-        // needto check if locaction.so exists
-        void* handle = ContextBase::getIzatLibHandle();
-
-        if (NULL == handle ||
-            NULL == (getter = (getLocApi_t*)dlsym(handle, "getLocApi")) ||
-            NULL == (locApi = (*getter)(msgTask, exMask))) {
-            // only RPC is the option now
-            handle = dlopen("libloc_api-rpc-qc.so", RTLD_NOW);
-            if (NULL != handle) {
-                getter = (getLocApi_t*)dlsym(handle, "getLocApi");
-                if (NULL != getter) {
-                    locApi = (*getter)(msgTask, exMask);
-                }
-            }
-        }
-    }
-
-    // locApi could still be NULL at this time
-    // we would then create a dummy one
-    if (NULL == locApi) {
-        locApi = new LocApiBase(msgTask, exMask);
-    }
-
-    return locApi;
-}
 
 LocApiBase::LocApiBase(const MsgTask* msgTask,
                        LOC_API_ADAPTER_EVENT_MASK_T excludedMask) :

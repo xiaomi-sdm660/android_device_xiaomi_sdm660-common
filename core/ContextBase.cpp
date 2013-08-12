@@ -34,29 +34,63 @@
 #include <unistd.h>
 #include <ContextBase.h>
 #include <msg_q.h>
+#include <loc_target.h>
 #include <log_util.h>
 #include <loc_log.h>
 
 namespace loc_core {
 
-const char* ContextBase::mIzatLibName = "libizat_core.so";
-// we initialized this handle to 1 because it can't possibly
-// 1 if it ever gets assigned a value. NULL on the otherhand
-// is possilbe.
-void* ContextBase::mIzatLibHandle = (void*)1;
 
-void* ContextBase::getIzatLibHandle()
+IzatProxyBase* ContextBase::getIzatProxy(const char* libName)
 {
-    if ((void*)1 == mIzatLibHandle) {
-        mIzatLibHandle = dlopen(mIzatLibName, RTLD_NOW);
+    IzatProxyBase* proxy = NULL;
+    void* lib = dlopen(libName, RTLD_NOW);
+
+    if ((void*)NULL != lib) {
+        getIzatProxy_t* getter = (getIzatProxy_t*)dlsym(lib, "getIzatProxy");
+        if (NULL != getter) {
+            proxy = (*getter)();
+        }
     }
-    return mIzatLibHandle;
+    if (NULL == proxy) {
+        proxy = new IzatProxyBase();
+    }
+    return proxy;
+}
+
+LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
+{
+    LocApiBase* locApi = NULL;
+
+    // first if can not be MPQ
+    if (TARGET_MPQ != get_target()) {
+        if (NULL == (locApi = mIzatProxy->getLocApi(mMsgTask, exMask))) {
+            // only RPC is the option now
+            void* handle = dlopen("libloc_api-rpc-qc.so", RTLD_NOW);
+            if (NULL != handle) {
+                getLocApi_t* getter = (getLocApi_t*)dlsym(handle, "getLocApi");
+                if (NULL != getter) {
+                    locApi = (*getter)(mMsgTask, exMask);
+                }
+            }
+        }
+    }
+
+    // locApi could still be NULL at this time
+    // we would then create a dummy one
+    if (NULL == locApi) {
+        locApi = new LocApiBase(mMsgTask, exMask);
+    }
+
+    return locApi;
 }
 
 ContextBase::ContextBase(const MsgTask* msgTask,
-                         LOC_API_ADAPTER_EVENT_MASK_T exMask) :
+                         LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                         const char* libName) :
+    mIzatProxy(getIzatProxy(libName)),
     mMsgTask(msgTask),
-    mLocApi(LocApiBase::create(mMsgTask, exMask, getIzatLibHandle()))
+    mLocApi(createLocApi(exMask))
 {
 }
 

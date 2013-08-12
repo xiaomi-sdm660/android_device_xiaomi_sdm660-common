@@ -34,17 +34,6 @@
 #include <gps_extended.h>
 #include <MsgTask.h>
 
-#define smaller_of(a, b) (((a) > (b)) ? (b) : (a))
-#define MAX_APN_LEN 100
-
-// This will be overridden by the individual adapters
-// if necessary.
-#define DEFAULT_IMPL(rtv)                                     \
-{                                                             \
-    LOC_LOGW("%s: default implementation invoked", __func__); \
-    return rtv;                                               \
-}
-
 namespace loc_core {
 
 int hexcode(char *hexstring, int string_size,
@@ -52,65 +41,6 @@ int hexcode(char *hexstring, int string_size,
 int decodeAddress(char *addr_string, int string_size,
                   const char *data, int data_size);
 
-enum loc_api_adapter_err {
-    LOC_API_ADAPTER_ERR_SUCCESS             = 0,
-    LOC_API_ADAPTER_ERR_GENERAL_FAILURE     = 1,
-    LOC_API_ADAPTER_ERR_UNSUPPORTED         = 2,
-    LOC_API_ADAPTER_ERR_INVALID_HANDLE      = 4,
-    LOC_API_ADAPTER_ERR_INVALID_PARAMETER   = 5,
-    LOC_API_ADAPTER_ERR_ENGINE_BUSY         = 6,
-    LOC_API_ADAPTER_ERR_PHONE_OFFLINE       = 7,
-    LOC_API_ADAPTER_ERR_TIMEOUT             = 8,
-    LOC_API_ADAPTER_ERR_SERVICE_NOT_PRESENT = 9,
-
-    LOC_API_ADAPTER_ERR_ENGINE_DOWN         = 100,
-    LOC_API_ADAPTER_ERR_FAILURE,
-    LOC_API_ADAPTER_ERR_UNKNOWN
-};
-
-enum loc_api_adapter_event_index {
-    LOC_API_ADAPTER_REPORT_POSITION = 0,       // Position report comes in loc_parsed_position_s_type
-    LOC_API_ADAPTER_REPORT_SATELLITE,          // Satellite in view report
-    LOC_API_ADAPTER_REPORT_NMEA_1HZ,           // NMEA report at 1HZ rate
-    LOC_API_ADAPTER_REPORT_NMEA_POSITION,      // NMEA report at position report rate
-    LOC_API_ADAPTER_REQUEST_NI_NOTIFY_VERIFY,  // NI notification/verification request
-    LOC_API_ADAPTER_REQUEST_ASSISTANCE_DATA,   // Assistance data, eg: time, predicted orbits request
-    LOC_API_ADAPTER_REQUEST_LOCATION_SERVER,   // Request for location server
-    LOC_API_ADAPTER_REPORT_IOCTL,              // Callback report for loc_ioctl
-    LOC_API_ADAPTER_REPORT_STATUS,             // Misc status report: eg, engine state
-    LOC_API_ADAPTER_REQUEST_WIFI,              //
-    LOC_API_ADAPTER_SENSOR_STATUS,             //
-    LOC_API_ADAPTER_REQUEST_TIME_SYNC,         //
-    LOC_API_ADAPTER_REPORT_SPI,                //
-    LOC_API_ADAPTER_REPORT_NI_GEOFENCE,        //
-    LOC_API_ADAPTER_GEOFENCE_GEN_ALERT,        //
-    LOC_API_ADAPTER_REPORT_GENFENCE_BREACH,    //
-    LOC_API_ADAPTER_PEDOMETER_CTRL,            //
-    LOC_API_ADAPTER_MOTION_CTRL,               //
-
-    LOC_API_ADAPTER_EVENT_MAX
-};
-
-#define LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT   (1<<LOC_API_ADAPTER_REPORT_POSITION)
-#define LOC_API_ADAPTER_BIT_SATELLITE_REPORT         (1<<LOC_API_ADAPTER_REPORT_SATELLITE)
-#define LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT          (1<<LOC_API_ADAPTER_REPORT_NMEA_1HZ)
-#define LOC_API_ADAPTER_BIT_NMEA_POSITION_REPORT     (1<<LOC_API_ADAPTER_REPORT_NMEA_POSITION)
-#define LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST (1<<LOC_API_ADAPTER_REQUEST_NI_NOTIFY_VERIFY)
-#define LOC_API_ADAPTER_BIT_ASSISTANCE_DATA_REQUEST  (1<<LOC_API_ADAPTER_REQUEST_ASSISTANCE_DATA)
-#define LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST  (1<<LOC_API_ADAPTER_REQUEST_LOCATION_SERVER)
-#define LOC_API_ADAPTER_BIT_IOCTL_REPORT             (1<<LOC_API_ADAPTER_REPORT_IOCTL)
-#define LOC_API_ADAPTER_BIT_STATUS_REPORT            (1<<LOC_API_ADAPTER_REPORT_STATUS)
-#define LOC_API_ADAPTER_BIT_REQUEST_WIFI             (1<<LOC_API_ADAPTER_REQUEST_WIFI)
-#define LOC_API_ADAPTER_BIT_SENSOR_STATUS            (1<<LOC_API_ADAPTER_SENSOR_STATUS)
-#define LOC_API_ADAPTER_BIT_REQUEST_TIME_SYNC        (1<<LOC_API_ADAPTER_REQUEST_TIME_SYNC)
-#define LOC_API_ADAPTER_BIT_REPORT_SPI               (1<<LOC_API_ADAPTER_REPORT_SPI)
-#define LOC_API_ADAPTER_BIT_REPORT_NI_GEOFENCE       (1<<LOC_API_ADAPTER_REPORT_NI_GEOFENCE)
-#define LOC_API_ADAPTER_BIT_GEOFENCE_GEN_ALERT       (1<<LOC_API_ADAPTER_GEOFENCE_GEN_ALERT)
-#define LOC_API_ADAPTER_BIT_REPORT_GENFENCE_BREACH   (1<<LOC_API_ADAPTER_REPORT_GENFENCE_BREACH)
-#define LOC_API_ADAPTER_BIT_PEDOMETER_CTRL           (1<<LOC_API_ADAPTER_PEDOMETER_CTRL)
-#define LOC_API_ADAPTER_BIT_MOTION_CTRL              (1<<LOC_API_ADAPTER_MOTION_CTRL)
-
-typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
 #define MAX_ADAPTERS          10
 
 #define TO_ALL_ADAPTERS(adapters, call)                                \
@@ -132,10 +62,6 @@ class LocApiBase {
     const MsgTask* mMsgTask;
 
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
-
-    static LocApiBase* create(const MsgTask* msgTask,
-                              LOC_API_ADAPTER_EVENT_MASK_T exMask,
-                              void* libHandle);
 
 protected:
     virtual enum loc_api_adapter_err

@@ -65,7 +65,6 @@
 #include <loc_eng_dmn_conn.h>
 #include <loc_eng_dmn_conn_handler.h>
 #include <loc_eng_msg.h>
-#include <loc_eng_msg_id.h>
 #include <loc_eng_nmea.h>
 #include <msg_q.h>
 #include <loc.h>
@@ -190,11 +189,6 @@ static void deleteAidingData(loc_eng_data_s_type &logEng);
 static AgpsStateMachine*
 getAgpsStateMachine(loc_eng_data_s_type& logEng, AGpsExtType agpsType);
 
-static void loc_eng_free_msg(void* msg)
-{
-    delete (loc_eng_msg*)msg;
-}
-
 static void update_aiding_data_for_deletion(loc_eng_data_s_type& loc_eng_data) {
     if (loc_eng_data.engine_status != GPS_STATUS_ENGINE_ON &&
         loc_eng_data.aiding_data_for_deletion != 0)
@@ -246,14 +240,15 @@ inline void LocEngRequestNi::log() const {
 // in loc_eng_ni.cpp
 
 //        case LOC_ENG_MSG_START_FIX:
-LocEngStartFix::LocEngStartFix(loc_eng_data_s_type* locEng) :
-    LocMsg(), mLocEng(locEng)
+LocEngStartFix::LocEngStartFix(LocEngAdapter* adapter) :
+    LocMsg(), mAdapter(adapter)
 {
     locallog();
 }
 inline void LocEngStartFix::proc() const
 {
-    loc_eng_start_handler(*mLocEng);
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mAdapter->getOwner();
+    loc_eng_start_handler(*locEng);
 }
 inline void LocEngStartFix::locallog() const
 {
@@ -264,19 +259,19 @@ inline void LocEngStartFix::log() const
     locallog();
 }
 void LocEngStartFix::send() const {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    locEng->adapter->sendMsg(this);
+    mAdapter->sendMsg(this);
 }
 
 //        case LOC_ENG_MSG_STOP_FIX:
-LocEngStopFix::LocEngStopFix(loc_eng_data_s_type* locEng) :
-    LocMsg(), mLocEng(locEng)
+LocEngStopFix::LocEngStopFix(LocEngAdapter* adapter) :
+    LocMsg(), mAdapter(adapter)
 {
     locallog();
 }
 inline void LocEngStopFix::proc() const
 {
-    loc_eng_stop_handler(*mLocEng);
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mAdapter->getOwner();
+    loc_eng_stop_handler(*locEng);
 }
 inline void LocEngStopFix::locallog() const
 {
@@ -287,8 +282,7 @@ inline void LocEngStopFix::log() const
     locallog();
 }
 void LocEngStopFix::send() const {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    locEng->adapter->sendMsg(this);
+    mAdapter->sendMsg(this);
 }
 
 //        case LOC_ENG_MSG_SET_POSITION_MODE:
@@ -669,21 +663,24 @@ struct LocEngExtPowerConfig : public LocMsg {
 };
 
 //        case LOC_ENG_MSG_REPORT_POSITION:
-LocEngReportPosition::LocEngReportPosition(void* locEng,
+LocEngReportPosition::LocEngReportPosition(LocAdapterBase* adapter,
                                            UlpLocation &loc,
                                            GpsLocationExtended &locExtended,
                                            void* locExt,
                                            enum loc_sess_status st,
                                            LocPosTechMask technology) :
-    LocMsg(), mLocEng(locEng), mLocation(loc),
+    LocMsg(), mAdapter(adapter), mLocation(loc),
     mLocationExtended(locExtended),
-    mLocationExt(((loc_eng_data_s_type*)mLocEng)->location_ext_parser(locExt)),
+    mLocationExt(((loc_eng_data_s_type*)
+                  ((LocEngAdapter*)
+                   (mAdapter))->getOwner())->location_ext_parser(locExt)),
     mStatus(st), mTechMask(technology)
 {
     locallog();
 }
 void LocEngReportPosition::proc() const {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*) mLocEng;
+    LocEngAdapter* adapter = (LocEngAdapter*)mAdapter;
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)adapter->getOwner();
 
     if (locEng->mute_session_state != LOC_MUTE_SESS_IN_SESSION) {
         bool reported = false;
@@ -768,24 +765,26 @@ void LocEngReportPosition::log() const {
     locallog();
 }
 void LocEngReportPosition::send() const {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    locEng->adapter->sendMsg(this);
+    mAdapter->sendMsg(this);
 }
 
 
 //        case LOC_ENG_MSG_REPORT_SV:
-LocEngReportSv::LocEngReportSv(void* locEng,
+LocEngReportSv::LocEngReportSv(LocAdapterBase* adapter,
                                GpsSvStatus &sv,
                                GpsLocationExtended &locExtended,
                                void* svExt) :
-    LocMsg(), mLocEng(locEng), mSvStatus(sv),
+    LocMsg(), mAdapter(adapter), mSvStatus(sv),
     mLocationExtended(locExtended),
-    mSvExt(((loc_eng_data_s_type*)mLocEng)->sv_ext_parser(svExt))
+    mSvExt(((loc_eng_data_s_type*)
+            ((LocEngAdapter*)
+             (mAdapter))->getOwner())->sv_ext_parser(svExt))
 {
     locallog();
 }
 void LocEngReportSv::proc() const {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*) mLocEng;
+    LocEngAdapter* adapter = (LocEngAdapter*)mAdapter;
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)adapter->getOwner();
 
     if (locEng->mute_session_state != LOC_MUTE_SESS_IN_SESSION)
     {
@@ -819,8 +818,7 @@ inline void LocEngReportSv::log() const {
     locallog();
 }
 void LocEngReportSv::send() const {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    locEng->adapter->sendMsg(this);
+    mAdapter->sendMsg(this);
 }
 
 //        case LOC_ENG_MSG_REPORT_STATUS:
@@ -1405,8 +1403,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
-                 LOC_API_ADAPTER_EVENT_MASK_T event,
-                  void (*loc_external_msg_sender) (void*, void*))
+                 LOC_API_ADAPTER_EVENT_MASK_T event)
 
 {
     int ret_val = 0;
@@ -1423,6 +1420,10 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
                 "instance already initialized", return 0);
 
     memset(&loc_eng_data, 0, sizeof (loc_eng_data));
+
+    if (NULL != callbacks->set_capabilities_cb) {
+        callbacks->set_capabilities_cb(gps_conf.CAPABILITIES);
+    }
 
     // Save callbacks
     loc_eng_data.location_cb  = callbacks->location_cb;
@@ -1455,7 +1456,6 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
 
     loc_eng_data.adapter =
         new LocEngAdapter(event, &loc_eng_data,
-                          loc_external_msg_sender,
                           (MsgTask::tCreate)callbacks->create_thread_cb);
 
     LOC_LOGD("loc_eng_init created client, id = %p\n",
@@ -1563,13 +1563,6 @@ void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data)
 
 #if 0 // can't afford to actually clean up, for many reason.
 
-    // De-initialize ulp
-    if (locEngUlpInf != NULL)
-    {
-        locEngUlpInf = NULL;
-        msg_q_destroy( &loc_eng_data.ulp_q);
-    }
-
     LOC_LOGD("loc_eng_init: client opened. close it now.");
     delete loc_eng_data.adapter;
     loc_eng_data.adapter = NULL;
@@ -1604,15 +1597,9 @@ int loc_eng_start(loc_eng_data_s_type &loc_eng_data)
    ENTRY_LOG_CALLFLOW();
    INIT_CHECK(loc_eng_data.adapter, return -1);
 
-   if(loc_eng_data.ulp_q)
+   if(! loc_eng_data.adapter->getUlpProxy()->sendStartFix())
    {
-       //Pass the start messgage to ULP if present & activated
-       loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_START_FIX));
-       msg_q_snd(loc_eng_data.ulp_q, msg, loc_eng_free_msg);
-   }
-   else
-   {
-       loc_eng_data.adapter->sendMsg(new LocEngStartFix(&loc_eng_data));
+       loc_eng_data.adapter->sendMsg(new LocEngStartFix(loc_eng_data.adapter));
    }
 
    EXIT_LOG(%d, 0);
@@ -1660,15 +1647,9 @@ int loc_eng_stop(loc_eng_data_s_type &loc_eng_data)
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
 
-    if(loc_eng_data.ulp_q)
+    if(! loc_eng_data.adapter->getUlpProxy()->sendStopFix())
     {
-        //Pass the start messgage to ULP if present & activated
-        loc_eng_msg *msg(new loc_eng_msg(&loc_eng_data, LOC_ENG_MSG_STOP_FIX));
-        msg_q_snd(loc_eng_data.ulp_q, msg, loc_eng_free_msg);
-    }
-    else
-    {
-        loc_eng_data.adapter->sendMsg(new LocEngStopFix(&loc_eng_data));
+        loc_eng_data.adapter->sendMsg(new LocEngStopFix(loc_eng_data.adapter));
     }
 
     EXIT_LOG(%d, 0);
@@ -1739,17 +1720,8 @@ int loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
 {
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
-    loc_eng_msg_position_mode *msg(
-        new loc_eng_msg_position_mode(&loc_eng_data, params));
 
-    if(loc_eng_data.ulp_q)
-    {
-        loc_eng_msg_position_mode *msg(
-            new loc_eng_msg_position_mode(&loc_eng_data, params));
-        //Pass the start messgage to ULP if present & activated
-        msg_q_snd(loc_eng_data.ulp_q, msg, loc_eng_free_msg);
-    }
-    else
+    if(! loc_eng_data.adapter->getUlpProxy()->sendFixMode(params))
     {
         LocEngAdapter* adapter = loc_eng_data.adapter;
         adapter->sendMsg(new LocEngPositionMode(adapter, params));
@@ -1781,8 +1753,10 @@ int loc_eng_inject_time(loc_eng_data_s_type &loc_eng_data, GpsUtcTime time,
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
     LocEngAdapter* adapter = loc_eng_data.adapter;
-    adapter->sendMsg(new LocEngSetTime(adapter, time, timeReference,
-                                       uncertainty));
+    if (adapter->mAgpsEnabled) {
+        adapter->sendMsg(new LocEngSetTime(adapter, time, timeReference,
+                                           uncertainty));
+    }
     EXIT_LOG(%d, 0);
     return 0;
 }
@@ -2466,41 +2440,6 @@ static int set_sched_policy(int tid, SchedPolicy policy)
     return 0;
 }
 #endif /* USE_GLIB */
-
-/*===========================================================================
-FUNCTION loc_eng_ulp_init
-
-DESCRIPTION
-   This function dynamically loads the libulp.so and calls
-   its init function to start up the ulp module
-
-DEPENDENCIES
-   None
-
-RETURN VALUE
-   0: no error
-   -1: errors
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int loc_eng_ulp_init(loc_eng_data_s_type &loc_eng_data, const ulpInterface * loc_eng_ulpInf)
-{
-    ENTRY_LOG();
-    int ret_val=-1;
-    if((loc_eng_ulpInf != NULL) && (((ulpInterface *)loc_eng_ulpInf)->init != NULL))
-    {
-        // Initialize the ULP interface
-        ((ulpInterface *)loc_eng_ulpInf)->init(loc_eng_data);
-        loc_eng_data.ulp_q = (void*)msg_q_init2();
-        ret_val = 0;
-    }
-    else
-        LOC_LOGE("ulp not initialized. NULL parameter");
-    EXIT_LOG(%d, ret_val);
-    return ret_val;
-}
 
 /*===========================================================================
 FUNCTION    loc_eng_read_config
