@@ -1454,6 +1454,13 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
         loc_eng_data.generateNmea = false;
     }
 
+    //Disable AGPS if capabilities are not present
+    if(!(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) &&
+       !(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA)) {
+        event &= ~(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST |
+                   LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST);
+    }
+
     loc_eng_data.adapter =
         new LocEngAdapter(event, &loc_eng_data,
                           (MsgTask::tCreate)callbacks->create_thread_cb);
@@ -1950,6 +1957,17 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
         EXIT_LOG(%s, VOID_RET);
         return;
     }
+
+    //Proceed to create AGPS framework only if MSA or MSB capabilities
+    //are present. If the target is an APQ, these masks are
+    //cleared in get_gps_interface()
+    if(!(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) &&
+       !(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB) ) {
+        LOC_LOGD("%s:%d]: No AGPS capabilities found. Returning\n",
+                 __func__, __LINE__);
+        return;
+    }
+
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 
     loc_eng_data.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
