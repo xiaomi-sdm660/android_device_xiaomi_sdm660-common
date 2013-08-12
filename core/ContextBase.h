@@ -45,12 +45,11 @@ protected:
     const MsgTask* mMsgTask;
     LocApiBase* mLocApi;
 
-protected:
+public:
     ContextBase(const MsgTask* msgTask,
                 LOC_API_ADAPTER_EVENT_MASK_T exMask);
     inline virtual ~ContextBase() { delete mLocApi; }
 
-public:
     static void* getIzatLibHandle();
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     inline LocApiBase* getLocApi() { return mLocApi; }

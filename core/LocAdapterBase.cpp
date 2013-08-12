@@ -68,14 +68,6 @@ LocAdapterBase::LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
     sendMsg(new LocOpenMsg(this, mLocApi));
 }
 
-// This will be overridden by the individual adapters
-// if necessary.
-#define DEFAULT_IMPL(rtv)                                     \
-{                                                             \
-    LOC_LOGW("%s: default implementation invoked", __func__); \
-    return rtv;                                               \
-}
-
 void LocAdapterBase::
     handleEngineDownEvent()
 DEFAULT_IMPL()

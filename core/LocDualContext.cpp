@@ -70,6 +70,15 @@ const MsgTask* LocDualContext::getMsgTask(MsgTask::tCreate tCreator,
     return mMsgTask;
 }
 
+const MsgTask* LocDualContext::getMsgTask(MsgTask::tAssociate tAssociate,
+                                          const char* name)
+{
+    if (NULL == mMsgTask) {
+        mMsgTask = new MsgTask(tAssociate, name);
+    }
+    return mMsgTask;
+}
+
 ContextBase* LocDualContext::getLocFgContext(MsgTask::tCreate tCreator,
                                              const char* name)
 {
@@ -79,6 +88,18 @@ ContextBase* LocDualContext::getLocFgContext(MsgTask::tCreate tCreator,
                                         mFgExclMask);
     }
     return mFgContext;
+}
+
+ContextBase* LocDualContext::getLocFgContext(MsgTask::tAssociate tAssociate,
+                                        const char* name)
+{
+    if (NULL == mFgContext) {
+        const MsgTask* msgTask = getMsgTask(tAssociate, name);
+        mFgContext = new LocDualContext(msgTask,
+                                        mFgExclMask);
+    }
+    return mFgContext;
+
 }
 
 ContextBase* LocDualContext::getLocBgContext(MsgTask::tCreate tCreator,
@@ -92,6 +113,18 @@ ContextBase* LocDualContext::getLocBgContext(MsgTask::tCreate tCreator,
     return mBgContext;
 }
 
+ContextBase* LocDualContext::getLocBgContext(MsgTask::tAssociate tAssociate,
+                                             const char* name)
+{
+    if (NULL == mBgContext) {
+        const MsgTask* msgTask = getMsgTask(tAssociate, name);
+        mBgContext = new LocDualContext(msgTask,
+                                        mBgExclMask);
+    }
+    return mBgContext;
+}
+
+
 bool LocDualContext::hasAgpsExt()
 {
     if (0xff == mHasAgpsExt) {
@@ -99,8 +132,8 @@ bool LocDualContext::hasAgpsExt()
         void* handle = ContextBase::getIzatLibHandle();
         if (NULL != handle) {
             bool(*getter)() = (bool(*)())dlsym(handle, "hasAgpsExt");
-            if (NULL != getter && (*getter)()) {
-                mHasAgpsExt = 1;
+            if (NULL != getter) {
+                mHasAgpsExt = (*getter)();
             }
         }
     }
