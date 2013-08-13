@@ -161,7 +161,6 @@ typedef struct loc_gps_cfg_s
 {
     unsigned long  INTERMEDIATE_POS;
     unsigned long  ACCURACY_THRES;
-    unsigned long  ENABLE_WIPER;
     unsigned long  SUPL_VER;
     unsigned long  CAPABILITIES;
     unsigned long  QUIPC_ENABLED;
