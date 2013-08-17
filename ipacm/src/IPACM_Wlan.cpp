@@ -910,6 +910,13 @@ int IPACM_Wlan::handle_wlan_client_down_evt(uint8_t *mac_addr)
 		return IPACM_SUCCESS;
 	}
 
+	/* First reset nat rules and then route rules */
+	if(get_client_memptr(wlan_client, clt_indx)->ipv4_set == true)
+	{
+	        IPACMDBG("Deleting Nat Rules\n");
+	        Nat_App->UpdatePwrSaveIf(get_client_memptr(wlan_client, clt_indx)->v4_addr);
+ 	}	
+	
 	if (delete_default_qos_rtrules(clt_indx, IPA_IP_v4))
 	{
 		IPACMERR("unbale to delete v4 default qos route rules\n");
