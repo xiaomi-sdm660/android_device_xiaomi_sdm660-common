@@ -85,8 +85,10 @@ unsigned int get_target(void)
 {
     unsigned int target = TARGET_DEFAULT;
 
-    char hw_platform[]      = "/sys/devices/system/soc/soc0/hw_platform";
-    char id[]               = "/sys/devices/system/soc/soc0/id";
+    char hw_platform[]      = "/sys/devices/soc0/hw_platform";
+    char id[]               = "/sys/devices/soc0/soc_id";
+    char hw_platform_dep[]  = "/sys/devices/system/soc/soc0/hw_platform";
+    char id_dep[]               = "/sys/devices/system/soc/soc0/id";
     char mdm[]              = "/dev/mdm"; // No such file or directory
 
     char rd_hw_platform[LINE_LEN];
@@ -95,8 +97,16 @@ unsigned int get_target(void)
     char baseband[LINE_LEN];
 
     property_get("ro.baseband", baseband, "");
-    read_a_line(hw_platform, rd_hw_platform, LINE_LEN);
-    read_a_line( id, rd_id, LINE_LEN);
+    if (!access(hw_platform, F_OK)) {
+        read_a_line(hw_platform, rd_hw_platform, LINE_LEN);
+    } else {
+        read_a_line(hw_platform_dep, rd_hw_platform, LINE_LEN);
+    }
+    if (!access(id, F_OK)) {
+        read_a_line(id, rd_id, LINE_LEN);
+    } else {
+        read_a_line(id_dep, rd_id, LINE_LEN);
+    }
 
     if( !memcmp(baseband, STR_APQ, LENGTH(STR_APQ)) ){
         if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1))
