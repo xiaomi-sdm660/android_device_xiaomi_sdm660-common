@@ -96,7 +96,6 @@ static loc_param_s_type loc_parameter_table[] =
 {
   {"INTERMEDIATE_POS",               &gps_conf.INTERMEDIATE_POS,               NULL, 'n'},
   {"ACCURACY_THRES",                 &gps_conf.ACCURACY_THRES,                 NULL, 'n'},
-  {"ENABLE_WIPER",                   &gps_conf.ENABLE_WIPER,                   NULL, 'n'},
   {"NMEA_PROVIDER",                  &gps_conf.NMEA_PROVIDER,                  NULL, 'n'},
   {"SUPL_VER",                       &gps_conf.SUPL_VER,                       NULL, 'n'},
   {"CAPABILITIES",                   &gps_conf.CAPABILITIES,                   NULL, 'n'},
@@ -126,7 +125,6 @@ static void loc_default_parameters(void)
    /* defaults */
    gps_conf.INTERMEDIATE_POS = 0;
    gps_conf.ACCURACY_THRES = 0;
-   gps_conf.ENABLE_WIPER = 0;
    gps_conf.NMEA_PROVIDER = 0;
    gps_conf.SUPL_VER = 0x10000;
    gps_conf.CAPABILITIES = 0x7;
