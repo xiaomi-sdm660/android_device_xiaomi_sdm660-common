@@ -209,7 +209,7 @@ inline
 bool LocEngAdapter::requestTime()
 {
     if (mAgpsEnabled) {
-        sendMsg(new LocEngRequestXtra(mOwner));
+        sendMsg(new LocEngRequestTime(mOwner));
     }
     return mAgpsEnabled;
 }
