@@ -90,6 +90,11 @@ LocEngAdapter::~LocEngAdapter()
 
 void LocEngAdapter::setUlpProxy(UlpProxyBase* ulp)
 {
+    if (ulp == mUlp) {
+        //This takes care of the case when double initalization happens
+        //and we get the same object back for UlpProxyBase . Do nothing
+        return;
+    }
     delete mUlp;
     LOC_LOGV("%s] %p", __func__, ulp);
     if (NULL == ulp) {
