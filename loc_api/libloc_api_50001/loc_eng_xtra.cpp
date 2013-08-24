@@ -137,7 +137,9 @@ int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
                              char* data, int length)
 {
     LocEngAdapter* adapter = loc_eng_data.adapter;
-    adapter->sendMsg(new LocEngInjectXtraData(adapter, data, length));
+    if (adapter->mAgpsEnabled) {
+        adapter->sendMsg(new LocEngInjectXtraData(adapter, data, length));
+    }
 
     return 0;
 }
