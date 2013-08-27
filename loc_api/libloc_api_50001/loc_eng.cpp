@@ -188,7 +188,7 @@ static int loc_eng_stop_handler(loc_eng_data_s_type &loc_eng_data);
 static void deleteAidingData(loc_eng_data_s_type &logEng);
 static AgpsStateMachine*
 getAgpsStateMachine(loc_eng_data_s_type& logEng, AGpsExtType agpsType);
-
+static int dataCallCb(void *cb_data);
 static void update_aiding_data_for_deletion(loc_eng_data_s_type& loc_eng_data) {
     if (loc_eng_data.engine_status != GPS_STATUS_ENGINE_ON &&
         loc_eng_data.aiding_data_for_deletion != 0)
@@ -1372,6 +1372,29 @@ inline void LocEngUp::log() const {
     locallog();
 }
 
+struct LocEngDataClientInit : public LocMsg {
+    loc_eng_data_s_type* mLocEng;
+    inline LocEngDataClientInit(loc_eng_data_s_type* locEng) :
+        LocMsg(), mLocEng(locEng) {
+        locallog();
+    }
+    virtual void proc() const {
+        loc_eng_data_s_type *locEng = (loc_eng_data_s_type *)mLocEng;
+        if(!locEng->adapter->initDataServiceClient()) {
+            locEng->ds_nif = new DSStateMachine(servicerTypeExt,
+                                               (void *)dataCallCb,
+                                               locEng->adapter);
+        }
+    }
+    void locallog() const {
+        LOC_LOGV("LocEngDataClientInit\n");
+    }
+    virtual void log() const {
+        locallog();
+    }
+};
+
+
 /*********************************************************************
  * Initialization checking macros
  *********************************************************************/
@@ -1982,13 +2005,7 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                  (void *)loc_eng_data.agps_status_cb,
                                                  AGPS_TYPE_WIFI,
                                                  true);
-    if(!loc_eng_data.adapter->initDataServiceClient()) {
-        LOC_LOGD("%s:%d]: Creating new ds state machine\n", __func__, __LINE__);
-        loc_eng_data.ds_nif = new DSStateMachine(servicerTypeExt,
-                                                 (void *)dataCallCb,
-                                                 loc_eng_data.adapter);
-        LOC_LOGD("%s:%d]: Created new ds state machine\n", __func__, __LINE__);
-    }
+    loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
 
     loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
                                                    NULL, NULL, &loc_eng_data);
