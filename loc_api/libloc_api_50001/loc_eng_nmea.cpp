@@ -29,7 +29,10 @@
 
 #define LOG_NDDEBUG 0
 #define LOG_TAG "LocSvc_eng_nmea"
-
+#define GPS_PRN_START 1
+#define GPS_PRN_END   32
+#define GLONASS_PRN_START 65
+#define GLONASS_PRN_END   96
 #include <loc_eng.h>
 #include <loc_eng_nmea.h>
 #include <math.h>
@@ -605,12 +608,33 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
     char* pMarker = sentence;
     int lengthRemaining = sizeof(sentence);
     int length = 0;
+    int svCount = svStatus.num_svs;
+    int sentenceCount = 0;
+    int sentenceNumber = 1;
+    int svNumber = 1;
+    int gpsCount = 0;
+    int glnCount = 0;
+
+    //Count GPS SVs for saparating GPS from GLONASS and throw others
+
+    for(svNumber=1; svNumber <= svCount; svNumber++) {
+        if( (svStatus.sv_list[svNumber-1].prn >= GPS_PRN_START)&&
+            (svStatus.sv_list[svNumber-1].prn <= GPS_PRN_END) )
+        {
+            gpsCount++;
+        }
+        else if( (svStatus.sv_list[svNumber-1].prn >= GLONASS_PRN_START) &&
+                 (svStatus.sv_list[svNumber-1].prn <= GLONASS_PRN_END) )
+        {
+            glnCount++;
+        }
+    }
 
     // ------------------
     // ------$GPGSV------
     // ------------------
 
-    if (svStatus.num_svs <= 0)
+    if (gpsCount <= 0)
     {
         // no svs in view, so just send a blank $GPGSV sentence
         strlcpy(sentence, "$GPGSV,1,1,0,", sizeof(sentence));
@@ -619,12 +643,9 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
     }
     else
     {
-        int svCount = svStatus.num_svs;
-        int sentenceCount = svCount / 4;
-        if (svStatus.num_svs % 4)
-            sentenceCount++;
-        int sentenceNumber = 1;
-        int svNumber = 1;
+        svNumber = 1;
+        sentenceNumber = 1;
+        sentenceCount = gpsCount/4 + (gpsCount % 4 != 0);
 
         while (sentenceNumber <= sentenceCount)
         {
@@ -642,25 +663,15 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
             pMarker += length;
             lengthRemaining -= length;
 
-            for (int i=0; (svNumber <= svCount) && (i < 4); i++, svNumber++)
+            for (int i=0; (svNumber <= svCount) && (i < 4);  svNumber++)
             {
-                length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
+                if( (svStatus.sv_list[svNumber-1].prn >= GPS_PRN_START) &&
+                    (svStatus.sv_list[svNumber-1].prn <= GPS_PRN_END) )
+                {
+                    length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
                                   svStatus.sv_list[svNumber-1].prn,
                                   (int)(0.5 + svStatus.sv_list[svNumber-1].elevation), //float to int
                                   (int)(0.5 + svStatus.sv_list[svNumber-1].azimuth)); //float to int
-
-                if (length < 0 || length >= lengthRemaining)
-                {
-                    LOC_LOGE("NMEA Error in string formatting");
-                    return;
-                }
-                pMarker += length;
-                lengthRemaining -= length;
-
-                if (svStatus.sv_list[svNumber-1].snr > 0)
-                {
-                    length = snprintf(pMarker, lengthRemaining,"%02d",
-                                     (int)(0.5 + svStatus.sv_list[svNumber-1].snr)); //float to int
 
                     if (length < 0 || length >= lengthRemaining)
                     {
@@ -669,15 +680,111 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
                     }
                     pMarker += length;
                     lengthRemaining -= length;
-                }
+
+                    if (svStatus.sv_list[svNumber-1].snr > 0)
+                    {
+                        length = snprintf(pMarker, lengthRemaining,"%02d",
+                                         (int)(0.5 + svStatus.sv_list[svNumber-1].snr)); //float to int
+
+                        if (length < 0 || length >= lengthRemaining)
+                        {
+                            LOC_LOGE("NMEA Error in string formatting");
+                            return;
+                        }
+                        pMarker += length;
+                        lengthRemaining -= length;
+                    }
+
+                    i++;
+               }
+
             }
 
             length = loc_eng_nmea_put_checksum(sentence, sizeof(sentence));
             loc_eng_nmea_send(sentence, length, loc_eng_data_p);
             sentenceNumber++;
 
-        }
+        }  //while
+
+    } //if
+
+    // ------------------
+    // ------$GLGSV------
+    // ------------------
+
+    if (glnCount <= 0)
+    {
+        // no svs in view, so just send a blank $GLGSV sentence
+        strlcpy(sentence, "$GLGSV,1,1,0,", sizeof(sentence));
+        length = loc_eng_nmea_put_checksum(sentence, sizeof(sentence));
+        loc_eng_nmea_send(sentence, length, loc_eng_data_p);
     }
+    else
+    {
+        svNumber = 1;
+        sentenceNumber = 1;
+        sentenceCount = glnCount/4 + (glnCount % 4 != 0);
+
+        while (sentenceNumber <= sentenceCount)
+        {
+            pMarker = sentence;
+            lengthRemaining = sizeof(sentence);
+
+            length = snprintf(pMarker, lengthRemaining, "$GLGSV,%d,%d,%02d",
+                          sentenceCount, sentenceNumber, svCount);
+
+            if (length < 0 || length >= lengthRemaining)
+            {
+                LOC_LOGE("NMEA Error in string formatting");
+                return;
+            }
+            pMarker += length;
+            lengthRemaining -= length;
+
+            for (int i=0; (svNumber <= svCount) && (i < 4);  svNumber++)
+            {
+                if( (svStatus.sv_list[svNumber-1].prn >= GLONASS_PRN_START) &&
+                    (svStatus.sv_list[svNumber-1].prn <= GLONASS_PRN_END) )      {
+
+                    length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
+                                  svStatus.sv_list[svNumber-1].prn,
+                                  (int)(0.5 + svStatus.sv_list[svNumber-1].elevation), //float to int
+                                  (int)(0.5 + svStatus.sv_list[svNumber-1].azimuth)); //float to int
+
+                    if (length < 0 || length >= lengthRemaining)
+                    {
+                        LOC_LOGE("NMEA Error in string formatting");
+                        return;
+                    }
+                    pMarker += length;
+                    lengthRemaining -= length;
+
+                    if (svStatus.sv_list[svNumber-1].snr > 0)
+                    {
+                        length = snprintf(pMarker, lengthRemaining,"%02d",
+                                         (int)(0.5 + svStatus.sv_list[svNumber-1].snr)); //float to int
+
+                        if (length < 0 || length >= lengthRemaining)
+                        {
+                            LOC_LOGE("NMEA Error in string formatting");
+                            return;
+                        }
+                        pMarker += length;
+                        lengthRemaining -= length;
+                    }
+
+                    i++;
+               }
+
+            }
+
+            length = loc_eng_nmea_put_checksum(sentence, sizeof(sentence));
+            loc_eng_nmea_send(sentence, length, loc_eng_data_p);
+            sentenceNumber++;
+
+        }  //while
+
+    }//if
 
     if (svStatus.used_in_fix_mask == 0)
     {   // No sv used, so there will be no position report, so send
