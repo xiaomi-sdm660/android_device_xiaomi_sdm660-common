@@ -180,6 +180,20 @@ public:
     virtual void closeDataCall();
 
     inline virtual void setInSession(bool inSession) {}
+
+    /*Values for lock
+      1 = Do not lock any position sessions
+      2 = Lock MI position sessions
+      3 = Lock MT position sessions
+      4 = Lock all position sessions
+     */
+    virtual int setGpsLock(unsigned int lock);
+    /*
+      Returns
+      Current value of GPS Lock on success
+      -1 on failure
+     */
+    virtual int getGpsLock(void);
 };
 
 typedef LocApiBase* (getLocApi_t)(const MsgTask* msgTask,

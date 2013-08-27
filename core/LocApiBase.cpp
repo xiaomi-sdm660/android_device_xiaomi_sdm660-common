@@ -425,5 +425,11 @@ void LocApiBase::
     closeDataCall()
 DEFAULT_IMPL()
 
+int LocApiBase::
+    setGpsLock(unsigned int lock)
+DEFAULT_IMPL(-1)
 
+int LocApiBase::
+    getGpsLock()
+DEFAULT_IMPL(-1)
 } // namespace loc_core

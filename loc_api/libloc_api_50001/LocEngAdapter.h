@@ -266,6 +266,26 @@ public:
     { return mNavigating; }
     inline void setInSession(bool inSession)
     { mNavigating = inSession; mLocApi->setInSession(inSession); }
+
+    /*Values for lock
+      1 = Do not lock any position sessions
+      2 = Lock MI position sessions
+      3 = Lock MT position sessions
+      4 = Lock all position sessions
+    */
+    inline int setGpsLock(unsigned int lock)
+    {
+        return mLocApi->setGpsLock(lock);
+    }
+    /*
+      Returns
+      Current value of GPS lock on success
+      -1 on failure
+     */
+    inline int getGpsLock()
+    {
+        return mLocApi->getGpsLock();
+    }
 };
 
 #endif //LOC_API_ENG_ADAPTER_H

@@ -1391,3 +1391,55 @@ LocApiBase* getLocApi(const MsgTask* msgTask,
                       LOC_API_ADAPTER_EVENT_MASK_T exMask) {
     return new LocApiRpc(msgTask, exMask);
 }
+
+/*Values for lock
+  1 = Do not lock any position sessions
+  2 = Lock MI position sessions
+  3 = Lock MT position sessions
+  4 = Lock all position sessions
+*/
+int LocApiRpc::setGpsLock(unsigned int lock)
+{
+    rpc_loc_ioctl_data_u_type    ioctl_data;
+    boolean ret_val;
+    LOC_LOGD("%s:%d]: lock: %d\n", __func__, __LINE__, lock);
+    ioctl_data.rpc_loc_ioctl_data_u_type_u.engine_lock = (rpc_loc_lock_e_type)lock;
+    ioctl_data.disc = RPC_LOC_IOCTL_SET_ENGINE_LOCK;
+    ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
+                            RPC_LOC_IOCTL_SET_ENGINE_LOCK,
+                            &ioctl_data,
+                            LOC_IOCTL_DEFAULT_TIMEOUT,
+                            NULL /* No output information is expected*/);
+
+    LOC_LOGD("%s:%d]: ret_val: %d\n", __func__, __LINE__, (int)ret_val);
+    return (ret_val == TRUE ? 0 : -1);
+}
+
+/*
+  Returns
+  Current value of GPS lock on success
+  -1 on failure
+*/
+int LocApiRpc :: getGpsLock()
+{
+    rpc_loc_ioctl_data_u_type    ioctl_data;
+    rpc_loc_ioctl_callback_s_type callback_payload;
+    boolean ret_val;
+    int ret=0;
+    LOC_LOGD("%s:%d]: Enter\n", __func__, __LINE__);
+    ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
+                            RPC_LOC_IOCTL_GET_ENGINE_LOCK,
+                            &ioctl_data,
+                            LOC_IOCTL_DEFAULT_TIMEOUT,
+                            &callback_payload);
+    if(ret_val == TRUE) {
+        ret = (int)callback_payload.data.engine_lock;
+        LOC_LOGD("%s:%d]: Lock type: %d\n", __func__, __LINE__, ret);
+    }
+    else {
+        LOC_LOGE("%s:%d]: Ioctl failed", __func__, __LINE__);
+        ret = -1;
+    }
+    LOC_LOGD("%s:%d]: Exit\n", __func__, __LINE__);
+    return ret;
+}
