@@ -164,7 +164,7 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-const GpsInterface* gps_get_hardware_interface ()
+extern "C" const GpsInterface* gps_get_hardware_interface ()
 {
     ENTRY_LOG_CALLFLOW();
     const GpsInterface* ret_val;
