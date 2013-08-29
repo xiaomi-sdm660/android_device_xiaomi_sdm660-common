@@ -123,7 +123,11 @@ bool LocApiBase::isInSession()
 {
     bool inSession = false;
 
-    TO_ALL_LOCADAPTERS(inSession = mLocAdapters[i]->isInSession());
+    for (int i = 0;
+         !inSession && i < MAX_ADAPTERS && NULL != mLocAdapters[i];
+         i++) {
+        inSession = mLocAdapters[i]->isInSession();
+    }
 
     return inSession;
 }
