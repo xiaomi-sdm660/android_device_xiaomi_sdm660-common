@@ -49,6 +49,10 @@
 
 #ifdef _ANDROID
 #include <cutils/sched_policy.h>
+#include <cutils/properties.h>
+#else
+#include "fake_sched_policy.h"
+#include "fake_property_service.h"
 #endif
 
 #ifndef USE_GLIB
@@ -56,12 +60,6 @@
 #include <utils/Log.h>
 #endif /* USE_GLIB */
 
-#ifndef _ANDROID
-typedef enum {
-    SP_BACKGROUND = 0,
-    SP_FOREGROUND = 1,
-} SchedPolicy;
-#endif
 
 #ifdef USE_GLIB
 #include <glib.h>
@@ -82,12 +80,6 @@ typedef enum {
 #include "platform_lib_includes.h"
 #include "loc_core_log.h"
 #include "loc_eng_log.h"
-
-#ifdef _ANDROID
-#include <cutils/properties.h>
-#else
-#include "fake_property_service.h"
-#endif
 
 #define SUCCESS TRUE
 #define FAILURE FALSE
@@ -2554,29 +2546,6 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
     }
     EXIT_LOG(%s, VOID_RET);
 }
-
-#ifdef USE_GLIB
-/*===========================================================================
-FUNCTION set_sched_policy
-
-DESCRIPTION
-   Local copy of this function which bypasses android set_sched_policy
-
-DEPENDENCIES
-   None
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static int set_sched_policy(int tid, SchedPolicy policy)
-{
-    return 0;
-}
-#endif /* USE_GLIB */
 
 /*===========================================================================
 FUNCTION    loc_eng_read_config

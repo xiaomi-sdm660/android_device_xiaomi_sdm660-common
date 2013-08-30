@@ -5,7 +5,7 @@ AM_CFLAGS = \
      -fno-short-enums \
      -DFEATURE_GNSS_BIT_API
 
-libloc_adapter_so_la_SOURCES = loc_eng_log.cpp LocEngAdapter.cpp ../fake_property_service.c
+libloc_adapter_so_la_SOURCES = loc_eng_log.cpp LocEngAdapter.cpp ../fake_property_service.c ../fake_sched_policy.c
 
 if USE_GLIB
 libloc_adapter_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
