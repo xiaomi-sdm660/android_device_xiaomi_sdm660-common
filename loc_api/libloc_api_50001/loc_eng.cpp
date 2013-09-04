@@ -929,10 +929,10 @@ void LocEngReqRelBIT::proc() const {
 }
 inline void LocEngReqRelBIT::locallog() const {
     LOC_LOGV("LocEngRequestBIT - ipv4: %d.%d.%d.%d, ipv6: %s",
-             (unsigned char)(mIPv4Addr>>24),
-             (unsigned char)(mIPv4Addr>>16),
-             (unsigned char)(mIPv4Addr>>8),
              (unsigned char)mIPv4Addr,
+             (unsigned char)(mIPv4Addr>>8),
+             (unsigned char)(mIPv4Addr>>16),
+             (unsigned char)(mIPv4Addr>>24),
              NULL != mIPv6Addr ? mIPv6Addr : "");
 }
 inline void LocEngReqRelBIT::log() const {
@@ -1988,7 +1988,7 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                  __func__, __LINE__);
         return;
     }
-
+    LocEngAdapter* adapter = loc_eng_data.adapter;
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 
     loc_eng_data.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
@@ -2005,9 +2005,10 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                  true);
     loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
 
-    loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
-                                                   NULL, NULL, &loc_eng_data);
-
+    if (adapter->mAgpsEnabled) {
+        loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
+                                               NULL, NULL, &loc_eng_data);
+    }
     loc_eng_agps_reinit(loc_eng_data);
     EXIT_LOG(%s, VOID_RET);
 }
