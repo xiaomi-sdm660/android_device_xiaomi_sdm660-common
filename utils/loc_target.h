@@ -34,6 +34,7 @@
 #define TARGET_APQ_SA        TARGET_SET(GNSS_GSS, NO_SSC)
 #define TARGET_MPQ           TARGET_SET(GNSS_NONE,NO_SSC)
 #define TARGET_MSM_NO_SSC    TARGET_SET(GNSS_MSM, NO_SSC)
+#define TARGET_UNKNOWN       TARGET_SET(GNSS_UNKNOWN, NO_SSC)
 #define getTargetGnssType(target)  (target>>1)
 
 #ifdef __cplusplus
