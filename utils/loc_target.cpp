@@ -58,6 +58,7 @@
 #define GPS_CHECK_NO_GPS_HW 1
 
 static int gss_fd = 0;
+static unsigned int gTarget = TARGET_UNKNOWN;
 
 static int read_a_line(const char * file_path, char * line, int line_size)
 {
@@ -83,7 +84,8 @@ static int read_a_line(const char * file_path, char * line, int line_size)
 
 unsigned int get_target(void)
 {
-    unsigned int target = TARGET_DEFAULT;
+    if (gTarget != TARGET_UNKNOWN)
+        return gTarget;
 
     char hw_platform[]      = "/sys/devices/soc0/hw_platform";
     char id[]               = "/sys/devices/soc0/soc_id";
@@ -111,9 +113,9 @@ unsigned int get_target(void)
     if( !memcmp(baseband, STR_APQ, LENGTH(STR_APQ)) ){
         if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1))
             && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
-            target = TARGET_MPQ;
+            gTarget = TARGET_MPQ;
         else
-            target = TARGET_APQ_SA;
+            gTarget = TARGET_APQ_SA;
     }
     else {
         if( (!memcmp(rd_hw_platform, STR_LIQUID, LENGTH(STR_LIQUID))
@@ -124,13 +126,13 @@ unsigned int get_target(void)
              && IS_STR_END(rd_hw_platform[LENGTH(STR_MTP)]))) {
 
             if (!read_a_line( mdm, rd_mdm, LINE_LEN))
-                target = TARGET_MDM;
+                gTarget = TARGET_MDM;
         }
         else if( (!memcmp(rd_id, MSM8930_ID_1, LENGTH(MSM8930_ID_1))
                    && IS_STR_END(rd_id[LENGTH(MSM8930_ID_1)])) ||
                   (!memcmp(rd_id, MSM8930_ID_2, LENGTH(MSM8930_ID_2))
                    && IS_STR_END(rd_id[LENGTH(MSM8930_ID_2)])) )
-             target = TARGET_MSM_NO_SSC;
+             gTarget = TARGET_MSM_NO_SSC;
     }
-    return target;
+    return gTarget;
 }

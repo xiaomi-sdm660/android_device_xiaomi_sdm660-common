@@ -978,8 +978,10 @@ LocEngSuplEsOpened::LocEngSuplEsOpened(void* locEng) :
 }
 void LocEngSuplEsOpened::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    AgpsStateMachine* sm = locEng->ds_nif;
-    sm->onRsrcEvent(RSRC_GRANTED);
+    if (locEng->ds_nif) {
+        AgpsStateMachine* sm = locEng->ds_nif;
+        sm->onRsrcEvent(RSRC_GRANTED);
+    }
 }
 void LocEngSuplEsOpened::locallog() const {
     LOC_LOGV("LocEngSuplEsOpened");
@@ -995,8 +997,10 @@ LocEngSuplEsClosed::LocEngSuplEsClosed(void* locEng) :
 }
 void LocEngSuplEsClosed::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    AgpsStateMachine* sm = locEng->ds_nif;
-    sm->onRsrcEvent(RSRC_RELEASED);
+    if (locEng->ds_nif) {
+        AgpsStateMachine* sm = locEng->ds_nif;
+        sm->onRsrcEvent(RSRC_RELEASED);
+    }
 }
 void LocEngSuplEsClosed::locallog() const {
     LOC_LOGV("LocEngSuplEsClosed");
@@ -1013,9 +1017,13 @@ LocEngRequestSuplEs::LocEngRequestSuplEs(void* locEng, int id) :
 }
 void LocEngRequestSuplEs::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    AgpsStateMachine* sm = locEng->ds_nif;
-    DSSubscriber s(sm, mID);
-    sm->subscribeRsrc((Subscriber*)&s);
+    if (locEng->ds_nif) {
+        AgpsStateMachine* sm = locEng->ds_nif;
+        DSSubscriber s(sm, mID);
+        sm->subscribeRsrc((Subscriber*)&s);
+    } else {
+        locEng->adapter->atlOpenStatus(mID, 0, NULL, -1, -1);
+    }
 }
 inline void LocEngRequestSuplEs::locallog() const {
     LOC_LOGV("LocEngRequestSuplEs");
@@ -1034,11 +1042,15 @@ void LocEngRequestATL::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
     AgpsStateMachine* sm = (AgpsStateMachine*)
                            getAgpsStateMachine(*locEng, mType);
-    ATLSubscriber s(mID,
-                    sm,
-                    locEng->adapter,
-                    AGPS_TYPE_INVALID == mType);
-    sm->subscribeRsrc((Subscriber*)&s);
+    if (sm) {
+        ATLSubscriber s(mID,
+                        sm,
+                        locEng->adapter,
+                        AGPS_TYPE_INVALID == mType);
+        sm->subscribeRsrc((Subscriber*)&s);
+    } else {
+        locEng->adapter->atlOpenStatus(mID, 0, NULL, -1, mType);
+    }
 }
 inline void LocEngRequestATL::locallog() const {
     LOC_LOGV("LocEngRequestATL");
@@ -1054,28 +1066,38 @@ LocEngReleaseATL::LocEngReleaseATL(void* locEng, int id) :
 }
 void LocEngReleaseATL::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    ATLSubscriber s1(mID, locEng->agnss_nif, locEng->adapter, false);
-    if (locEng->agnss_nif->unsubscribeRsrc((Subscriber*)&s1)) {
-        LOC_LOGD("%s:%d]: Unsubscribed from agnss_nif",
-                 __func__, __LINE__);
-    } else {
+
+   if (locEng->agnss_nif) {
+        ATLSubscriber s1(mID, locEng->agnss_nif, locEng->adapter, false);
+        if (locEng->agnss_nif->unsubscribeRsrc((Subscriber*)&s1)) {
+            LOC_LOGD("%s:%d]: Unsubscribed from agnss_nif",
+                     __func__, __LINE__);
+            return;
+        }
+    }
+
+    if (locEng->internet_nif) {
         ATLSubscriber s2(mID, locEng->internet_nif, locEng->adapter, false);
         if (locEng->internet_nif->unsubscribeRsrc((Subscriber*)&s2)) {
             LOC_LOGD("%s:%d]: Unsubscribed from internet_nif",
                      __func__, __LINE__);
-        } else {
-            DSSubscriber s3(locEng->ds_nif, mID);
-            if(locEng->ds_nif->unsubscribeRsrc((Subscriber*)&s3)) {
-                LOC_LOGD("%s:%d]: Unsubscribed from ds_nif",
-                         __func__, __LINE__);
-            } else {
-                LOC_LOGW("%s:%d]: Could not release ATL. "
-                         "No subscribers found\n",
-                         __func__, __LINE__);
-                locEng->adapter->atlCloseStatus(mID, 0);
-            }
+            return;
         }
     }
+
+    if (locEng->ds_nif) {
+        DSSubscriber s3(locEng->ds_nif, mID);
+        if (locEng->ds_nif->unsubscribeRsrc((Subscriber*)&s3)) {
+            LOC_LOGD("%s:%d]: Unsubscribed from ds_nif",
+                     __func__, __LINE__);
+            return;
+        }
+    }
+
+    LOC_LOGW("%s:%d]: Could not release ATL. "
+             "No subscribers found\n",
+             __func__, __LINE__);
+    locEng->adapter->atlCloseStatus(mID, 0);
 }
 inline void LocEngReleaseATL::locallog() const {
     LOC_LOGV("LocEngReleaseATL");
@@ -1109,11 +1131,15 @@ LocEngReqRelWifi::~LocEngReqRelWifi() {
 }
 void LocEngReqRelWifi::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    WIFISubscriber s(locEng->wifi_nif, mSSID, mPassword, mSenderId);
-    if (mIsReq) {
-        locEng->wifi_nif->subscribeRsrc((Subscriber*)&s);
+    if (locEng->wifi_nif) {
+        WIFISubscriber s(locEng->wifi_nif, mSSID, mPassword, mSenderId);
+        if (mIsReq) {
+            locEng->wifi_nif->subscribeRsrc((Subscriber*)&s);
+        } else {
+            locEng->wifi_nif->unsubscribeRsrc((Subscriber*)&s);
+        }
     } else {
-        locEng->wifi_nif->unsubscribeRsrc((Subscriber*)&s);
+        locEng->adapter->atlOpenStatus(mSenderId, 0, NULL, -1, mType);
     }
 }
 inline void LocEngReqRelWifi::locallog() const {
@@ -1477,13 +1503,6 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
         loc_eng_data.generateNmea = false;
     }
 
-    //Disable AGPS if capabilities are not present
-    if(!(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) &&
-       !(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB)) {
-        event &= ~(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST |
-                   LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST);
-    }
-
     loc_eng_data.adapter =
         new LocEngAdapter(event, &loc_eng_data,
                           (MsgTask::tCreate)callbacks->create_thread_cb);
@@ -1751,6 +1770,13 @@ int loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
 
+    // The position mode for APQ target can only be standalone
+    bool isAPQ = (getTargetGnssType(get_target()) == GNSS_GSS);
+    if (isAPQ && params.mode != LOC_POSITION_MODE_STANDALONE) {
+        params.mode = LOC_POSITION_MODE_STANDALONE;
+        LOC_LOGD("Position mode changed to standalone for APQ target.");
+    }
+
     if(! loc_eng_data.adapter->getUlpProxy()->sendFixMode(params))
     {
         LocEngAdapter* adapter = loc_eng_data.adapter;
@@ -1975,28 +2001,14 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
     STATE_CHECK((NULL == loc_eng_data.agps_status_cb),
                 "agps instance already initialized",
                 return);
-    if(callbacks == NULL) {
+    if (callbacks == NULL) {
         LOC_LOGE("loc_eng_agps_init: bad parameters cb %p", callbacks);
         EXIT_LOG(%s, VOID_RET);
-        return;
-    }
-
-    //Proceed to create AGPS framework only if MSA or MSB capabilities
-    //are present. If the target is an APQ, these masks are
-    //cleared in get_gps_interface()
-    if(!(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) &&
-       !(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB) ) {
-        LOC_LOGD("%s:%d]: No AGPS capabilities found. Returning\n",
-                 __func__, __LINE__);
         return;
     }
     LocEngAdapter* adapter = loc_eng_data.adapter;
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 
-    loc_eng_data.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
-                                                  (void *)loc_eng_data.agps_status_cb,
-                                                  AGPS_TYPE_SUPL,
-                                                  false);
     loc_eng_data.internet_nif = new AgpsStateMachine(servicerTypeAgps,
                                                      (void *)loc_eng_data.agps_status_cb,
                                                      AGPS_TYPE_WWAN_ANY,
@@ -2005,13 +2017,23 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                  (void *)loc_eng_data.agps_status_cb,
                                                  AGPS_TYPE_WIFI,
                                                  true);
-    loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
 
-    if (adapter->mAgpsEnabled) {
-        loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
-                                               NULL, NULL, &loc_eng_data);
+    bool isAPQ = (getTargetGnssType(get_target()) == GNSS_GSS);
+    if (!isAPQ) {
+        loc_eng_data.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
+                                                      (void *)loc_eng_data.agps_status_cb,
+                                                      AGPS_TYPE_SUPL,
+                                                      false);
+
+        loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
+
+        if (adapter->mAgpsEnabled) {
+            loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
+                                                   NULL, NULL, &loc_eng_data);
+        }
+        loc_eng_agps_reinit(loc_eng_data);
     }
-    loc_eng_agps_reinit(loc_eng_data);
+
     EXIT_LOG(%s, VOID_RET);
 }
 
@@ -2436,8 +2458,10 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
     loc_eng_reinit(loc_eng_data);
 
     if (loc_eng_data.agps_status_cb != NULL) {
-        loc_eng_data.agnss_nif->dropAllSubscribers();
-        loc_eng_data.internet_nif->dropAllSubscribers();
+        if (loc_eng_data.agnss_nif)
+            loc_eng_data.agnss_nif->dropAllSubscribers();
+        if (loc_eng_data.internet_nif)
+            loc_eng_data.internet_nif->dropAllSubscribers();
 
         loc_eng_agps_reinit(loc_eng_data);
     }
