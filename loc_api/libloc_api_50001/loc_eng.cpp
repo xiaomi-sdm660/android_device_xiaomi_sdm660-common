@@ -1479,7 +1479,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
 
     //Disable AGPS if capabilities are not present
     if(!(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) &&
-       !(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA)) {
+       !(gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB)) {
         event &= ~(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST |
                    LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST);
     }
