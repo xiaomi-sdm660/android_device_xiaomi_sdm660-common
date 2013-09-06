@@ -1781,10 +1781,10 @@ int loc_eng_inject_time(loc_eng_data_s_type &loc_eng_data, GpsUtcTime time,
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
     LocEngAdapter* adapter = loc_eng_data.adapter;
-    if (adapter->mAgpsEnabled) {
-        adapter->sendMsg(new LocEngSetTime(adapter, time, timeReference,
-                                           uncertainty));
-    }
+
+    adapter->sendMsg(new LocEngSetTime(adapter, time, timeReference,
+                                       uncertainty));
+
     EXIT_LOG(%d, 0);
     return 0;
 }
