@@ -1163,10 +1163,12 @@ LocEngRequestTime::LocEngRequestTime(void* locEng) :
 }
 void LocEngRequestTime::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    if (locEng->request_utc_time_cb != NULL) {
-        locEng->request_utc_time_cb();
-    } else {
-        LOC_LOGE("Callback function for request time is NULL");
+    if (gps_conf.CAPABILITIES & GPS_CAPABILITY_ON_DEMAND_TIME) {
+        if (locEng->request_utc_time_cb != NULL) {
+            locEng->request_utc_time_cb();
+        } else {
+            LOC_LOGE("Callback function for request time is NULL");
+        }
     }
 }
 inline void LocEngRequestTime::locallog() const {
