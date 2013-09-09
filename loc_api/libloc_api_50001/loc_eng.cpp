@@ -700,7 +700,8 @@ void LocEngReportPosition::proc() const {
             //   2.2.3 the inaccuracy exceeds our tolerance
             else if ((LOC_SESS_SUCCESS == mStatus &&
                       ((LOC_POS_TECH_MASK_SATELLITE |
-                        LOC_POS_TECH_MASK_SENSORS) &
+                        LOC_POS_TECH_MASK_SENSORS   |
+                        LOC_POS_TECH_MASK_HYBRID) &
                        mTechMask)) ||
                      (LOC_SESS_INTERMEDIATE == locEng->intermediateFix &&
                       !((mLocation.gpsLocation.flags &
