@@ -40,21 +40,22 @@
 
 namespace loc_core {
 
-
-IzatProxyBase* ContextBase::getIzatProxy(const char* libName)
+LBSProxyBase* ContextBase::getLBSProxy(const char* libName)
 {
-    IzatProxyBase* proxy = NULL;
+    LBSProxyBase* proxy = NULL;
+    LOC_LOGD("%s:%d]: getLBSProxy libname: %s\n", __func__, __LINE__, libName);
     void* lib = dlopen(libName, RTLD_NOW);
 
     if ((void*)NULL != lib) {
-        getIzatProxy_t* getter = (getIzatProxy_t*)dlsym(lib, "getIzatProxy");
+        getLBSProxy_t* getter = (getLBSProxy_t*)dlsym(lib, "getLBSProxy");
         if (NULL != getter) {
             proxy = (*getter)();
         }
     }
     if (NULL == proxy) {
-        proxy = new IzatProxyBase();
+        proxy = new LBSProxyBase();
     }
+    LOC_LOGD("%s:%d]: Exiting\n", __func__, __LINE__);
     return proxy;
 }
 
@@ -64,7 +65,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
 
     // first if can not be MPQ
     if (TARGET_MPQ != get_target()) {
-        if (NULL == (locApi = mIzatProxy->getLocApi(mMsgTask, exMask))) {
+        if (NULL == (locApi = mLBSProxy->getLocApi(mMsgTask, exMask))) {
             // only RPC is the option now
             void* handle = dlopen("libloc_api-rpc-qc.so", RTLD_NOW);
             if (NULL != handle) {
@@ -88,7 +89,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
 ContextBase::ContextBase(const MsgTask* msgTask,
                          LOC_API_ADAPTER_EVENT_MASK_T exMask,
                          const char* libName) :
-    mIzatProxy(getIzatProxy(libName)),
+    mLBSProxy(getLBSProxy(libName)),
     mMsgTask(msgTask),
     mLocApi(createLocApi(exMask))
 {
