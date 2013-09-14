@@ -296,6 +296,11 @@ void LocApiBase::requestNiNotify(GpsNiNotification &notify, const void* data)
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestNiNotify(notify, data));
 }
 
+void* LocApiBase :: getSibling()
+    DEFAULT_IMPL(NULL)
+void* LocApiBase :: getSibling2()
+    DEFAULT_IMPL(NULL)
+
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
