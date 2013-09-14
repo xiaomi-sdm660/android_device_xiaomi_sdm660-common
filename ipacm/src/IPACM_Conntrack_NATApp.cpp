@@ -458,7 +458,7 @@ void NatApp::UpdateUDPTimeStamp()
 
 			if(cache[cnt].timestamp == ts)
 			{
-				IPACMERR("No Change in Time Stamp: cahce:%d, ipahw:%d\n",
+				IPACMDBG("No Change in Time Stamp: cahce:%d, ipahw:%d\n",
 								                  cache[cnt].timestamp, ts);
 				continue;
 			}

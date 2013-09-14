@@ -273,7 +273,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 						Nat_App->ResetPwrSaveIf(get_client_memptr(wlan_client, wlan_index)->v4_addr);
 				    }				
 
-				    if(get_client_memptr(wlan_client, wlan_index)->ipv6_set == true) /* for ipv6 */
+				    if(get_client_memptr(wlan_client, wlan_index)->ipv6_set != 0) /* for ipv6 */
 				    {
 					    handle_wlan_client_route_rule(data->mac_addr, IPA_IP_v6);
 				    }
