@@ -414,7 +414,7 @@ void ParseCTMessage(struct nf_conntrack *ct)
 
 	 if(IPS_DST_NAT & status)
 	 {
-			IPACMDBG("IPS_SRC_NAT set\n");
+			IPACMDBG("IPS_DST_NAT set\n");
 	 }
 
 	 if(IPS_SRC_NAT_DONE & status)
@@ -474,12 +474,58 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 u_int8_t tcp_state;
 	 uint32_t status = 0;
 	 NatApp *na = NULL;
+	 uint32_t orig_src_ip, orig_dst_ip;
 
 	 status = nfct_get_attr_u32(ct, ATTR_STATUS);
 
 	 if(IPS_DST_NAT & status)
 	 {
-			IPACMDBG("Destination nat flag set\n");
+		 status = IPS_DST_NAT;
+	 }
+	 else if(IPS_SRC_NAT & status)
+	 {
+		 status = IPS_SRC_NAT;
+	 }
+	 else
+	 {
+		 IPACMDBG("Neither Destination nor Source nat flag reset\n");
+		 orig_src_ip = nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC); 
+		 orig_src_ip = ntohl(orig_src_ip);
+		 if(orig_src_ip == 0)
+		 {
+			 IPACMERR("unable to retrieve orig src ip address\n");
+			 return;
+		 }
+
+		 orig_dst_ip = nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_DST);
+		 orig_dst_ip = ntohl(orig_dst_ip);
+		 if(orig_dst_ip == 0)
+		 {
+			 IPACMERR("unable to retrieve orig dst ip address\n");
+			 return;
+		 }
+
+		 if(orig_src_ip == wan_ipaddr)
+		 {
+			 IPACMDBG("orig src ip: equal to wan ip\n",orig_src_ip);
+			 status = IPS_SRC_NAT;
+		 }
+		 else if(orig_dst_ip == wan_ipaddr)
+		 {
+			 IPACMDBG("orig Dst IP: equal to wan ip\n",orig_dst_ip);
+			 status = IPS_DST_NAT;
+		 }
+		 else
+		 {
+			 IPACMDBG("Neither orig src ip:%d Nor orig Dst IP:%d equal to wan ip:%d\n",
+						orig_src_ip, orig_dst_ip, wan_ipaddr);
+			 return;
+		 }
+	 }
+
+	 if(IPS_DST_NAT == status)
+	 {
+			IPACMDBG("Destination NAT\n");
 			rule.dst_nat = true;
 
 			IPACMDBG("Parse reply tuple\n");
@@ -513,9 +559,9 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 				 IPACMDBG("unable to retrieve private port\n");
 			}
 	 }
-	 else
+	 else if(IPS_SRC_NAT == status)
 	 {
-			IPACMDBG("destination nat flag reset\n");
+			IPACMDBG("Source NAT\n");
 			rule.dst_nat = false;
 
 			/* Retriev target/dst ip address */
@@ -558,9 +604,18 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 				 IPACMDBG("unable to retrieve private port\n");
 			}
 	 }
+	 else
+	 {
+		 IPACMDBG("Neither source Nor destination nat\n");
+		 goto IGNORE;
+		 return;
+	 }
+
 	 /* Retrieve Protocol */
 	 rule.protocol = nfct_get_attr_u8(ct, ATTR_REPL_L4PROTO);
 
+	 if(rule.private_ip != wan_ipaddr)
+	 {
 	 int cnt;
 	 for(cnt = 0; cnt <MAX_NAT_IFACES; cnt++)
 	 {
@@ -578,9 +633,10 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 
 	 if(cnt == MAX_NAT_IFACES)
 	 {
-		 IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): ignoring nat rule with private ip",
-																		rule.private_ip);
+			 IPACMDBG("Not mtaching with nat ifaces\n")
+			 goto IGNORE;
 		 return;
+	 }
 	 }
 	 
 	 IPACMDBG("Nat Entry with below information will be added\n");
@@ -643,6 +699,17 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 }
 
 	 return;
+
+IGNORE:
+	IPACMDBG("ignoring below Nat Entry\n");
+	IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
+	IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
+	IPACM_ConntrackClient::iptodot("private ip or src ip", rule.private_ip);
+	IPACMDBG("private port or src port: 0x%x, Decimal:%d\n", rule.private_port, rule.private_port);
+	IPACMDBG("public port or reply dst port: 0x%x, Decimal:%d\n", rule.public_port, rule.public_port);
+	IPACMDBG("Protocol: %d, destination nat flag: %d\n", rule.protocol, rule.dst_nat);
+
+	return;
 }
 
 
