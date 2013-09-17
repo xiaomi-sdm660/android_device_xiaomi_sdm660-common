@@ -413,6 +413,10 @@ enum loc_api_adapter_err LocApiBase::
     setAGLONASSProtocol(unsigned long aGlonassProtocol)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
+enum loc_api_adapter_err LocApiBase::
+   getZppFix(GpsLocation & zppLoc)
+DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+
 int LocApiBase::
     initDataServiceClient()
 DEFAULT_IMPL(-1)
