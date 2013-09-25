@@ -58,6 +58,7 @@ public:
     virtual void reportSv(GpsSvStatus &svStatus,
                           GpsLocationExtended &locationExtended,
                           void* svExt);
+    virtual void reportStatus(GpsStatusValue status);
     virtual void setPositionModeInt(LocPosMode& posMode);
     virtual void startFixInt();
     virtual void stopFixInt();
