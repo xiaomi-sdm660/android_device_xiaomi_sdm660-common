@@ -77,8 +77,7 @@ AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 AC_CONFIG_FILES([ \
         Makefile \
         utils/Makefile \
-        loc_api/libloc_api_50001/Makefile \
-        loc_api/loc_api_v02/Makefile \
+        loc_api/Makefile \
         loc-api.pc \
         ])
 
