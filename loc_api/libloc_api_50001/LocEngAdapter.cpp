@@ -157,10 +157,16 @@ void LocEngAdapter::reportSv(GpsSvStatus &svStatus,
     }
 }
 
-inline
+void LocInternalAdapter::reportStatus(GpsStatusValue status)
+{
+    sendMsg(new LocEngReportStatus(mLocEngAdapter, status));
+}
+
 void LocEngAdapter::reportStatus(GpsStatusValue status)
 {
-    sendMsg(new LocEngReportStatus(mOwner, status));
+    if (!mUlp->reportStatus(status)) {
+        mInternalAdapter->reportStatus(status);
+    }
 }
 
 inline

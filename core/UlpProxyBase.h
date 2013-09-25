@@ -54,6 +54,9 @@ public:
                                  void* svExt) {
         return false;
     }
+    inline virtual bool reportStatus(GpsStatusValue status) {
+        return false;
+    }
     inline virtual void setAdapter(LocAdapterBase* adapter) {}
     inline virtual void setCapabilities(unsigned long capabilities) {}
 };

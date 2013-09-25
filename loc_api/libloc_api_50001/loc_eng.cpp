@@ -821,15 +821,16 @@ void LocEngReportSv::send() const {
 }
 
 //        case LOC_ENG_MSG_REPORT_STATUS:
-LocEngReportStatus::LocEngReportStatus(void* locEng,
+LocEngReportStatus::LocEngReportStatus(LocAdapterBase* adapter,
                                        GpsStatusValue engineStatus) :
-    LocMsg(),  mLocEng(locEng), mStatus(engineStatus)
+    LocMsg(),  mAdapter(adapter), mStatus(engineStatus)
 {
     locallog();
 }
 inline void LocEngReportStatus::proc() const
 {
-    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*) mLocEng;
+    LocEngAdapter* adapter = (LocEngAdapter*)mAdapter;
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)adapter->getOwner();
 
     loc_eng_report_status(*locEng, mStatus);
     update_aiding_data_for_deletion(*locEng);
