@@ -234,8 +234,9 @@ bool LocEngAdapter::requestNiNotify(GpsNiNotification &notif, const void* data)
 inline
 bool LocEngAdapter::requestSuplES(int connHandle)
 {
-    sendMsg(new LocEngRequestSuplEs(mOwner, connHandle));
-    return true;
+    if (mAgpsEnabled)
+        sendMsg(new LocEngRequestSuplEs(mOwner, connHandle));
+    return mAgpsEnabled;
 }
 
 inline
