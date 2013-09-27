@@ -1455,7 +1455,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
-                 LOC_API_ADAPTER_EVENT_MASK_T event)
+                 LOC_API_ADAPTER_EVENT_MASK_T event, ContextBase* context)
 
 {
     int ret_val = 0;
@@ -1507,12 +1507,11 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     }
 
     loc_eng_data.adapter =
-        new LocEngAdapter(event, &loc_eng_data,
+        new LocEngAdapter(event, &loc_eng_data, context,
                           (MsgTask::tCreate)callbacks->create_thread_cb);
 
     LOC_LOGD("loc_eng_init created client, id = %p\n",
              loc_eng_data.adapter);
-
     loc_eng_data.adapter->sendMsg(new LocEngInit(&loc_eng_data));
 
     EXIT_LOG(%d, ret_val);

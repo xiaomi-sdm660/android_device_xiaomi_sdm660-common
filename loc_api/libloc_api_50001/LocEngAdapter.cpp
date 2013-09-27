@@ -67,12 +67,15 @@ void LocInternalAdapter::setUlpProxy(UlpProxyBase* ulp) {
 }
 
 LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
-                             void* owner,
+                             void* owner, ContextBase* context,
                              MsgTask::tCreate tCreator) :
     LocAdapterBase(mask,
-                   LocDualContext::getLocFgContext(
-                         tCreator,
-                         LocDualContext::mLocationHalName)),
+                   //Get the AFW context if VzW context has not already been intialized in
+                   //loc_ext
+                   context == NULL?
+                   LocDualContext::getLocFgContext(tCreator,
+                                                   LocDualContext::mLocationHalName)
+                   :context),
     mOwner(owner), mInternalAdapter(new LocInternalAdapter(this)),
     mUlp(new UlpProxyBase()), mNavigating(false),
     mAgpsEnabled(false)

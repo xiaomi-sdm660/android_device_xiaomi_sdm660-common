@@ -274,7 +274,7 @@ static int loc_init(GpsCallbacks* callbacks)
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
 
-    retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event);
+    retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event, NULL);
     loc_afw_data.adapter->requestUlp(gps_conf.CAPABILITIES);
     loc_afw_data.adapter->mAgpsEnabled = !loc_afw_data.adapter->hasAgpsExt();
 
