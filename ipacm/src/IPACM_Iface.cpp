@@ -76,6 +76,7 @@ IPACM_Iface::IPACM_Iface(int iface_index)
 	memset(software_routing_fl_rule_hdl, 0, sizeof(software_routing_fl_rule_hdl));
 	memset(ipv6_addr, 0, sizeof(ipv6_addr));
 
+	flt_rule_count = 0;
 	query_iface_property();
 	IPACMDBG(" create iface-index(%d) constructor\n", ipa_if_num);
 	return;
@@ -304,6 +305,12 @@ int IPACM_Iface::iface_ipa_index_query
 	int i = 0;
 	struct ifreq ifr;
 
+	
+	if(IPACM_Iface::ipacmcfg->iface_table == NULL)
+	{
+		IPACMERR("Iface table in IPACM_Config is not available.\n");
+		return link;
+	}
 
 	/* Search known linux interface-index and map to IPA interface-index*/
 	for (i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_ipa_interfaces; i++)
@@ -481,7 +488,7 @@ int IPACM_Iface::query_iface_property(void)
 
 	}
 
-	if (iface_query->num_rx_props > 0)
+		if (iface_query->num_rx_props > 0)
 	{
 		rx_prop = (struct ipa_ioc_query_intf_rx_props *)
 			 calloc(1, sizeof(struct ipa_ioc_query_intf_rx_props) +
@@ -624,6 +631,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		/* Configuring Fragment Filtering Rule */
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
+		flt_rule_entry.rule.retain_hdr = 1;
 		flt_rule_entry.at_rear = true;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
@@ -658,6 +666,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		}
 		else
 		{
+			flt_rule_count += IPV4_DEFAULT_FILTERTING_RULES;
 			/* copy filter hdls */
 			for (int i = 0; i < IPV4_DEFAULT_FILTERTING_RULES; i++)
 			{
@@ -693,6 +702,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
+		flt_rule_entry.rule.retain_hdr = 1;
 		flt_rule_entry.at_rear = true;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
@@ -744,6 +754,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		}
 		else
 		{
+			flt_rule_count += IPV6_DEFAULT_FILTERTING_RULES;
 			/* copy filter hdls */
 			for (int i = 0;
 					 i < IPV6_DEFAULT_FILTERTING_RULES;

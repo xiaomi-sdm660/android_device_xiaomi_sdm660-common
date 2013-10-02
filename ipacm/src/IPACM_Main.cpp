@@ -54,6 +54,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 #include <sys/inotify.h>
 #include <stdlib.h>
+#include <signal.h>
+
+#define __stringify_1(x...)	#x
+#define __stringify(x...)	__stringify_1(x)
 
 #include "IPACM_CmdQueue.h"
 #include "IPACM_EvtDispatcher.h"
@@ -64,6 +68,36 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPACM_ConntrackListener.h"
 
+const char *ipacm_event_name[] = {
+	__stringify(IPA_LINK_UP_EVENT),
+	__stringify(IPA_LINK_DOWN_EVENT),
+	__stringify(IPA_ADDR_ADD_EVENT),
+	__stringify(IPA_ADDR_DEL_EVENT),
+	__stringify(IPA_ROUTE_ADD_EVENT),
+	__stringify(IPA_ROUTE_DEL_EVENT),
+	__stringify(IPA_FIREWALL_CHANGE_EVENT),
+	__stringify(IPA_WLAN_AP_LINK_UP_EVENT),
+	__stringify(IPA_WLAN_STA_LINK_UP_EVENT),
+	__stringify(IPA_WLAN_CLIENT_ADD_EVENT),
+	__stringify(IPA_WLAN_CLIENT_DEL_EVENT),
+	__stringify(IPA_WLAN_CLIENT_POWER_SAVE_EVENT),
+	__stringify(IPA_WLAN_CLIENT_RECOVER_EVENT),
+	__stringify(IPA_NEW_NEIGH_EVENT),
+	__stringify(IPA_DEL_NEIGH_EVENT),
+	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT),
+	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT),
+	__stringify(IPA_SW_ROUTING_ENABLE),
+	__stringify(IPA_SW_ROUTING_DISABLE),
+	__stringify(IPA_PROCESS_CT_MESSAGE),
+	__stringify(IPA_HANDLE_WAN_UP),
+	__stringify(IPA_HANDLE_WAN_DOWN),
+	__stringify(IPA_HANDLE_WLAN_UP),
+	__stringify(IPA_HANDLE_LAN_UP),
+	__stringify(IPA_WLAN_CLIENT_ADD_EVENT_EX),
+	__stringify(IPA_HANDLE_WAN_UP_V6),
+	__stringify(IPA_HANDLE_WAN_DOWN_V6),
+};
+
 #define IPA_DRIVER  "/dev/ipa"
 
 #define IPACM_DIR_NAME     "/etc"
@@ -72,9 +106,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
 #define INOTIFY_BUF_LEN     (INOTIFY_EVENT_SIZE + 2*sizeof(IPACM_FILE_NAME))
 
-#define IPA_DRIVER_WLAN_EVENT_SIZE  (sizeof(struct ipa_wlan_msg))
+#define IPA_DRIVER_WLAN_EVENT_SIZE  (sizeof(struct ipa_wlan_msg_ex))
 #define IPA_DRIVER_WLAN_META_MSG    (sizeof(struct ipa_msg_meta))
 #define IPA_DRIVER_WLAN_BUF_LEN     (IPA_DRIVER_WLAN_EVENT_SIZE + IPA_DRIVER_WLAN_META_MSG)
+
+uint32_t ipacm_event_stats[IPACM_EVENT_MAX];
+bool ipacm_logging = true;
 
 int ipa_get_if_index(char *if_name, int *if_index);
 
@@ -166,14 +203,16 @@ void* firewall_monitor(void *param)
 /* start IPACM WLAN-driver notifier */
 void* ipa_driver_wlan_notifier(void *param)
 {
-	int length, fd;
+	int length, fd, cnt;
 	char buffer[IPA_DRIVER_WLAN_BUF_LEN];
 	struct ipa_msg_meta *event_hdr = NULL;
 	struct ipa_wlan_msg *event = NULL;
+	struct ipa_wlan_msg_ex *event_ex = NULL;
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
-        ipacm_event_data_fid *data_fid = NULL;
+    ipacm_event_data_fid *data_fid = NULL;
+	ipacm_event_data_wlan_ex *data_ex;
 
 	fd = open(IPA_DRIVER, O_RDWR);
 	if (fd == 0)
@@ -202,7 +241,14 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		if (event_hdr->msg_len > 0)
 		{
-			event = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
+			if(event_hdr->msg_type == WLAN_CLIENT_CONNECT_EX)
+			{
+				event_ex = (struct ipa_wlan_msg_ex *)(buffer + sizeof(struct ipa_msg_meta));
+			}
+			else
+			{
+				event = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
+			}
 		}
 
 		/* Insert WLAN_DRIVER_EVENT to command queue */
@@ -283,7 +329,6 @@ void* ipa_driver_wlan_notifier(void *param)
 			evt_data.evt_data = data_fid;
 			break;
 						
-			
 		case WLAN_CLIENT_CONNECT:
 			IPACMDBG("Received WLAN_CLIENT_CONNECT\n");
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -301,6 +346,43 @@ void* ipa_driver_wlan_notifier(void *param)
 			ipa_get_if_index(event->name, &(data->if_index));
 		        evt_data.event = IPA_WLAN_CLIENT_ADD_EVENT;
 			evt_data.evt_data = data;
+			break;
+
+		case WLAN_CLIENT_CONNECT_EX:
+			IPACMDBG("Received WLAN_CLIENT_CONNECT_EX\n");
+		    data_ex = (ipacm_event_data_wlan_ex *)malloc(sizeof(ipacm_event_data_wlan_ex) + event_ex->num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val));
+		    if (data_ex == NULL)
+		    {
+				IPACMERR("unable to allocate memory for event data\n");
+		    	return NULL;
+		    }
+
+			data_ex->num_of_attribs = event_ex->num_of_attribs;
+
+			memcpy(data_ex->attribs,
+						event_ex->attribs,
+						event_ex->num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val));
+			for(cnt = 0; cnt < event_ex->num_of_attribs; cnt++)
+			{
+				if(event_ex->attribs[cnt].attrib_type == WLAN_HDR_ATTRIB_MAC_ADDR)
+				{
+					IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+								 event_ex->attribs[cnt].u.mac_addr[0], event_ex->attribs[cnt].u.mac_addr[1], event_ex->attribs[cnt].u.mac_addr[2],
+								 event_ex->attribs[cnt].u.mac_addr[3], event_ex->attribs[cnt].u.mac_addr[4], event_ex->attribs[cnt].u.mac_addr[5]);
+				}
+				else if(event_ex->attribs[cnt].attrib_type == WLAN_HDR_ATTRIB_STA_ID)
+				{
+					IPACMDBG("Wlan client id %d\n",event_ex->attribs[cnt].u.sta_id);
+				}
+				else
+				{
+					IPACMDBG("Wlan message has unexpected type!\n");
+				}
+			}
+
+			ipa_get_if_index(event_ex->name, &(data_ex->if_index));
+		    evt_data.event = IPA_WLAN_CLIENT_ADD_EVENT_EX;
+			evt_data.evt_data = data_ex;
 			break;
 			
 		case WLAN_CLIENT_DISCONNECT:
@@ -375,6 +457,44 @@ void* ipa_driver_wlan_notifier(void *param)
 	return NULL;
 }
 
+void IPACM_Sig_Handler(int sig)
+{
+	int cnt = 0;
+	char evt_name[30] = {0};
+
+	printf("Received Signal: %d\n", sig);
+
+	switch(sig)
+	{
+		case SIGUSR1:
+			for (cnt=1; cnt<IPACM_EVENT_MAX; cnt++)
+			{
+				printf("Event[%d:%30s]: %d\n", 
+					 cnt, ipacm_event_name[cnt-1], ipacm_event_stats[cnt]);
+			}
+			break;
+
+	case SIGUSR2:
+		if(ipacm_logging) {
+			printf("Disabling logging\n");
+			ipacm_logging = false;
+		}
+		else {
+			printf("Enabling logging\n");
+			ipacm_logging = true;
+		}
+			break;
+
+	}
+}
+
+void RegisterForSignals(void)
+{
+	
+	signal(SIGUSR1, IPACM_Sig_Handler);
+	signal(SIGUSR2, IPACM_Sig_Handler);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -389,6 +509,8 @@ int main(int argc, char **argv)
 	IPACMDBG("ipa_cmdq_successful\n");
 
 
+	RegisterForSignals();
+	
 	if (IPACM_SUCCESS == cmd_queue_thread)
 	{
 		ret = pthread_create(&cmd_queue_thread, NULL, MessageQueue::Process, NULL);

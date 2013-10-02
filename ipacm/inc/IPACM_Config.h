@@ -62,6 +62,15 @@ typedef struct _ipa_rm_client
     bool rx_bypass_ipa;          /* support WLAN may not register RX-property, should not add dependency */    
 }ipa_rm_client;
 
+#define MAX_NUM_EXT_PROPS 10
+
+/* used to hold extended properties */
+typedef struct 
+{
+	uint8_t num_ext_props;
+	ipa_ioc_ext_intf_prop prop[MAX_NUM_EXT_PROPS];
+} ipacm_ext_prop;
+
 /* iface */
 class IPACM_Config
 {
@@ -101,6 +110,7 @@ public:
 
 	/* IPACM routing table name for v4/v6 */
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan_v4, rt_tbl_wan_v4, rt_tbl_default_v4, rt_tbl_v6, rt_tbl_wan_v6;
+	struct ipa_ioc_get_rt_tbl rt_tbl_wan_dl;
 
 	/* To return the instance */
 	static IPACM_Config* GetInstance();
@@ -131,14 +141,32 @@ public:
 	int AddNatIfaces(char *dev_name);
 
 	int DelNatIfaces(char *dev_name);
+
+	inline void SetQmapId(uint8_t id)
+	{
+		qmap_id = id;
+	}
+
+	inline uint8_t GetQmapId()
+	{
+		return qmap_id;
+	}
+
+	int SetExtProp(ipa_ioc_query_intf_ext_props *prop);
+
+	ipacm_ext_prop* GetExtProp(ipa_ip_type ip_type);
 	
+	int DelExtProp(ipa_ip_type ip_type);
+
 private:
 	static IPACM_Config *pInstance;
 	static const char *DEVICE_NAME;
 	IPACM_Config(void);
 	int Init(void);
 	int m_fd; /* File descriptor of the IPA device node /dev/ipa */
-
+	uint8_t qmap_id;
+	ipacm_ext_prop ext_prop_v4;
+	ipacm_ext_prop ext_prop_v6;
 };
 
 #endif /* IPACM_CONFIG */

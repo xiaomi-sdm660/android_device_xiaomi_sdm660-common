@@ -81,11 +81,11 @@ static int ipa_nl_open_socket
 	optlen = sizeof(sendbuff);
 	res = getsockopt(*p_sk_fd, SOL_SOCKET, SO_SNDBUF, &sendbuff, &optlen);
 
-	if(res == -1)
+	if(res == -1) {
 		IPACMDBG("Error getsockopt one");
-	else
+	} else {
 		IPACMDBG("orignal send buffer size = %d\n", sendbuff);
-
+	}
 	IPACMDBG("sets the send buffer to %d\n", buf_size);
 	if (setsockopt(*p_sk_fd, SOL_SOCKET, SO_RCVBUF, &buf_size, sizeof(int)) == -1) {
     IPACMERR("Error setting socket opts\n");

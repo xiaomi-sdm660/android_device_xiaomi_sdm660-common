@@ -73,13 +73,6 @@ typedef struct _ipa_wlan_client
 	wlan_client_rt_hdl wifi_rt_hdl[0]; /* depends on number of tx properties */
 }ipa_wlan_client;
 
-typedef struct _wlan_ampdu_flt_rules
-{
-	uint32_t hdl[IPA_MAX_NUM_AMPDU_RULE];
-	ipa_ip_type ip[IPA_MAX_NUM_AMPDU_RULE];
-	int num_rules;
-}wlan_ampdu_flt_rules;
-
 
 
 /* wlan iface */
@@ -102,7 +95,6 @@ private:
 
 	int header_name_count; 
 	int num_wifi_client;
-	wlan_ampdu_flt_rules wlan_ampdu_flt_rule;
 
 	NatApp *Nat_App;
 
@@ -208,8 +200,8 @@ private:
 		return IPACM_SUCCESS;
 	}
 
-	/* handle wifi client initial,copy all partial headers (tx property) */
-	int handle_wlan_client_init(uint8_t *mac_addr);
+	/* for handle wifi client initial,copy all partial headers (tx property) */
+	int handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data);
 
 	/*handle wifi client */
 	int handle_wlan_client_ipaddr(ipacm_event_data_all *data);
@@ -222,27 +214,6 @@ private:
 
 	/*handle wifi client del mode*/
 	int handle_wlan_client_down_evt(uint8_t *mac_addr);
-
-	/*duplicate ampdu filter rules for private subnet configuration*/
-	int handle_private_subnet(ipa_ip_type iptype);
-
-	/*duplicate ampdu filter rules for initial iface configuration*/
-	int init_fl_rule(ipa_ip_type iptype);
-
-	/*duplicate ampdu filter rules for new_address event*/
-	int handle_addr_evt(ipacm_event_data_addr *data);
-
-	/*duplicate ampdu filter rules for wan_up event*/
-	int handle_wan_up(void);
-
-	/*delete ampdu filter rules for wan_down event*/
-	int handle_wan_down(void);
-
-	/*duplicate ampdu filter rules for software_routing event*/
-	int handle_software_routing_enable(void);
-
-	/*delete ampdu filter rules for disabling software_routing event*/
-	int handle_software_routing_disable(void);
 
 	/*handle wlan iface down event*/
 	int handle_down_evt();
