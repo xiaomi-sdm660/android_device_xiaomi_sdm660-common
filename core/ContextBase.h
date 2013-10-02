@@ -33,17 +33,17 @@
 #include <ctype.h>
 #include <MsgTask.h>
 #include <LocApiBase.h>
-#include <IzatProxyBase.h>
+#include <LBSProxyBase.h>
 
 namespace loc_core {
 
 class LocAdapterBase;
 
 class ContextBase {
-    static IzatProxyBase* getIzatProxy(const char* libName);
+    static LBSProxyBase* getLBSProxy(const char* libName);
     LocApiBase* createLocApi(LOC_API_ADAPTER_EVENT_MASK_T excludedMask);
 protected:
-    const IzatProxyBase* mIzatProxy;
+    const LBSProxyBase* mLBSProxy;
     const MsgTask* mMsgTask;
     LocApiBase* mLocApi;
 
@@ -51,14 +51,14 @@ public:
     ContextBase(const MsgTask* msgTask,
                 LOC_API_ADAPTER_EVENT_MASK_T exMask,
                 const char* libName);
-    inline virtual ~ContextBase() { delete mLocApi; delete mIzatProxy; }
+    inline virtual ~ContextBase() { delete mLocApi; delete mLBSProxy; }
 
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     inline LocApiBase* getLocApi() { return mLocApi; }
-    inline bool hasAgpsExt() { return mIzatProxy->hasAgpsExt(); }
+    inline bool hasAgpsExt() { return mLBSProxy->hasAgpsExt(); }
     inline void requestUlp(LocAdapterBase* adapter,
                            unsigned long capabilities) {
-        mIzatProxy->requestUlp(adapter, capabilities);
+        mLBSProxy->requestUlp(adapter, capabilities);
     }
 };
 

@@ -28,7 +28,6 @@
  */
 #ifndef IZAT_PROXY_BASE_H
 #define IZAT_PROXY_BASE_H
-
 #include <gps_extended.h>
 #include <MsgTask.h>
 
@@ -37,7 +36,7 @@ namespace loc_core {
 class LocApiBase;
 class LocAdapterBase;
 
-class IzatProxyBase {
+class LBSProxyBase {
     friend class ContextBase;
     inline virtual LocApiBase*
         getLocApi(const MsgTask* msgTask,
@@ -45,15 +44,15 @@ class IzatProxyBase {
         return NULL;
     }
 protected:
-    inline IzatProxyBase() {}
+    inline LBSProxyBase() {}
 public:
-    inline virtual ~IzatProxyBase() {}
+    inline virtual ~LBSProxyBase() {}
     inline virtual void requestUlp(LocAdapterBase* adapter,
                                    unsigned long capabilities) const {}
     inline virtual bool hasAgpsExt() const { return false; }
 };
 
-typedef IzatProxyBase* (getIzatProxy_t)();
+typedef LBSProxyBase* (getLBSProxy_t)();
 
 } // namespace loc_core
 

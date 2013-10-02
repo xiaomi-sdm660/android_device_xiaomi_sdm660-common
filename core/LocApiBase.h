@@ -33,7 +33,7 @@
 #include <ctype.h>
 #include <gps_extended.h>
 #include <MsgTask.h>
-
+#include <log_util.h>
 namespace loc_core {
 
 int hexcode(char *hexstring, int string_size,
@@ -77,8 +77,6 @@ protected:
     bool isInSession();
 
 public:
-    inline virtual void* getSibling() { return NULL; }
-
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
@@ -111,6 +109,9 @@ public:
     // downward calls
     // All below functions are to be defined by adapter specific modules:
     // RPC, QMI, etc.  The default implementation is empty.
+
+    virtual void* getSibling();
+    virtual void* getSibling2();
     virtual enum loc_api_adapter_err
         startFix(const LocPosMode& posMode);
     virtual enum loc_api_adapter_err
