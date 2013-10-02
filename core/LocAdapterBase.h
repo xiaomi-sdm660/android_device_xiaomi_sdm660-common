@@ -73,6 +73,7 @@ public:
     inline virtual void setPositionModeInt(LocPosMode& posMode) {}
     virtual void startFixInt() {}
     virtual void stopFixInt() {}
+    virtual void getZppInt() {}
     virtual void reportPosition(UlpLocation &location,
                                 GpsLocationExtended &locationExtended,
                                 void* locationExt,

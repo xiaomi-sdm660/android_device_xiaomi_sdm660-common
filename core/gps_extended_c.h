@@ -56,6 +56,8 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_HYBRID   0x0001
 /** Position source is GNSS only */
 #define ULP_LOCATION_IS_FROM_GNSS   0x0002
+/** Position source is ZPP only */
+#define ULP_LOCATION_IS_FROM_ZPP 0x0004
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
