@@ -895,7 +895,7 @@ void LocEngReportXtraServer::proc() const {
 inline void LocEngReportXtraServer::locallog() const {
     LOC_LOGV("LocEngReportXtraServers: server1: %s\n  server2: %s\n"
              "  server3: %s\n",
-             mServers, &mServers[mMaxLen], &mServers[mMaxLen<<1]);
+             mServers, &mServers[mMaxLen+1], &mServers[(mMaxLen+1)<<1]);
 }
 inline void LocEngReportXtraServer::log() const {
     locallog();
