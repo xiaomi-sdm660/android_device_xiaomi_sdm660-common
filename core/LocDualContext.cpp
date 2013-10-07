@@ -58,7 +58,7 @@ ContextBase* LocDualContext::mBgContext = NULL;
 
 // the name must be shorter than 15 chars
 const char* LocDualContext::mLocationHalName = "Loc_hal_worker";
-const char* LocDualContext::mIzatLibName = "libizat_core.so";
+const char* LocDualContext::mIzatLibName = "liblbs_core.so";
 
 const MsgTask* LocDualContext::getMsgTask(MsgTask::tCreate tCreator,
                                           const char* name)
