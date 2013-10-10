@@ -161,7 +161,8 @@ typedef enum loc_server_type {
 } LocServerType;
 
 typedef enum loc_position_mode_type {
-    LOC_POSITION_MODE_STANDALONE,
+    LOC_POSITION_MODE_INVALID = -1,
+    LOC_POSITION_MODE_STANDALONE = 0,
     LOC_POSITION_MODE_MS_BASED,
     LOC_POSITION_MODE_MS_ASSISTED,
     LOC_POSITION_MODE_RESERVED_1,
@@ -169,6 +170,7 @@ typedef enum loc_position_mode_type {
     LOC_POSITION_MODE_RESERVED_3,
     LOC_POSITION_MODE_RESERVED_4,
     LOC_POSITION_MODE_RESERVED_5
+
 } LocPositionMode;
 
 #define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
