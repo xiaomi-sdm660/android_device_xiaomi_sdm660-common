@@ -264,8 +264,7 @@ public:
     {return mFixCriteria;}
     inline virtual bool isInSession()
     { return mNavigating; }
-    inline void setInSession(bool inSession)
-    { mNavigating = inSession; mLocApi->setInSession(inSession); }
+    void setInSession(bool inSession);
 
     /*Values for lock
       1 = Do not lock any position sessions

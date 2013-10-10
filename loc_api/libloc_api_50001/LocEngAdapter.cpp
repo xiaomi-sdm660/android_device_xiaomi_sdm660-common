@@ -78,6 +78,7 @@ LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
     mAgpsEnabled(false)
 {
     memset(&mFixCriteria, 0, sizeof(mFixCriteria));
+    mFixCriteria.mode = LOC_POSITION_MODE_INVALID;
     LOC_LOGD("LocEngAdapter created");
 }
 
@@ -101,6 +102,12 @@ void LocEngAdapter::setUlpProxy(UlpProxyBase* ulp)
         ulp = new UlpProxyBase();
     }
     mUlp = ulp;
+
+    if (LOC_POSITION_MODE_INVALID != mFixCriteria.mode) {
+        // need to send this mode and start msg to ULP
+        mUlp->sendFixMode(mFixCriteria);
+        mUlp->sendStartFix();
+    }
 }
 
 void LocInternalAdapter::reportPosition(UlpLocation &location,
@@ -154,6 +161,15 @@ void LocEngAdapter::reportSv(GpsSvStatus &svStatus,
     // any modifications
     if (! mUlp->reportSv(svStatus, locationExtended, svExt)) {
         mInternalAdapter->reportSv(svStatus, locationExtended, svExt);
+    }
+}
+
+void LocEngAdapter::setInSession(bool inSession)
+{
+    mNavigating = inSession;
+    mLocApi->setInSession(inSession);
+    if (!mNavigating) {
+        mFixCriteria.mode = LOC_POSITION_MODE_INVALID;
     }
 }
 
