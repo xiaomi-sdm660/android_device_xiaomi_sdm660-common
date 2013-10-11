@@ -294,6 +294,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					return;
 				}
 				handle_wlan_client_route_rule(data->mac_addr, data->iptype);
+				if (data->iptype == IPA_IP_v4)
+				{
+					Nat_App->ResetPwrSaveIf(data->ipv4_addr);
+				}
 			}
 		}
 		break;
