@@ -475,6 +475,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 uint32_t status = 0;
 	 NatApp *na = NULL;
 
+	 IPACMDBG("Received type:%d with proto:%d", type, l4proto);
 	 status = nfct_get_attr_u32(ct, ATTR_STATUS);
 
 	 if(IPS_DST_NAT & status)
@@ -606,9 +607,11 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 				 IPACMDBG("TCP state TCP_CONNTRACK_ESTABLISHED(%d)\n", tcp_state);
 				 na->AddEntry(&rule);
 			}
-			else if(TCP_CONNTRACK_FIN_WAIT == tcp_state)
+			else if(TCP_CONNTRACK_FIN_WAIT == tcp_state ||
+			        type == NFCT_T_DESTROY)
 			{
-				 IPACMDBG("TCP state TCP_CONNTRACK_FIN_WAIT(%d)\n", tcp_state);
+				 IPACMDBG("TCP state TCP_CONNTRACK_FIN_WAIT(%d) "
+						"or type NFCT_T_DESTROY(%d)\n", tcp_state, type);
 				 na->DeleteEntry(&rule);
 			}
 			else

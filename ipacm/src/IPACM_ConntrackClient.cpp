@@ -474,7 +474,8 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 		return NULL;
 	}
 
-	pClient->tcp_hdl = nfct_open(CONNTRACK, NF_NETLINK_CONNTRACK_UPDATE);
+	pClient->tcp_hdl = nfct_open(CONNTRACK, 
+						(NF_NETLINK_CONNTRACK_UPDATE |NF_NETLINK_CONNTRACK_DESTROY));
 	if(pClient->tcp_hdl == NULL)
 	{
 		PERROR("nfct_open\n");
@@ -510,7 +511,9 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 
 	/* Register callback with netfilter handler */
 	IPACMDBG("tcp handle:%p, fd:%d\n", pClient->tcp_hdl, nfct_fd(pClient->tcp_hdl));
-	nfct_callback_register(pClient->tcp_hdl, NFCT_T_UPDATE, IPAConntrackEventCB, NULL);
+	nfct_callback_register(pClient->tcp_hdl, 
+				(NFCT_T_UPDATE | NFCT_T_DESTROY), 
+						IPAConntrackEventCB, NULL);
 
 	/* Block to catch events from net filter connection track */
 	/* nfct_catch() receives conntrack events from kernel-space, by default it 
@@ -556,7 +559,7 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 	}
 
 	pClient->udp_hdl = nfct_open(CONNTRACK,
-															 NF_NETLINK_CONNTRACK_NEW | NF_NETLINK_CONNTRACK_DESTROY);
+					(NF_NETLINK_CONNTRACK_NEW | NF_NETLINK_CONNTRACK_DESTROY));
 	if(pClient->udp_hdl == NULL)
 	{
 		PERROR("nfct_open\n");
