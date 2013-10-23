@@ -103,6 +103,27 @@ struct LocSsrMsg : public LocMsg {
     }
 };
 
+struct LocOpenMsg : public LocMsg {
+    LocApiBase* mLocApi;
+    LOC_API_ADAPTER_EVENT_MASK_T mMask;
+    inline LocOpenMsg(LocApiBase* locApi,
+                      LOC_API_ADAPTER_EVENT_MASK_T mask) :
+        LocMsg(), mLocApi(locApi), mMask(mask)
+    {
+        locallog();
+    }
+    inline virtual void proc() const {
+        mLocApi->open(mMask);
+    }
+    inline void locallog() {
+        LOC_LOGV("%s:%d]: LocOpen Mask: %x\n",
+                 __func__, __LINE__, mMask);
+    }
+    inline virtual void log() {
+        locallog();
+    }
+};
+
 LocApiBase::LocApiBase(const MsgTask* msgTask,
                        LOC_API_ADAPTER_EVENT_MASK_T excludedMask) :
     mExcludedMask(excludedMask), mMsgTask(msgTask), mMask(0)
@@ -137,7 +158,8 @@ void LocApiBase::addAdapter(LocAdapterBase* adapter)
     for (int i = 0; i < MAX_ADAPTERS && mLocAdapters[i] != adapter; i++) {
         if (mLocAdapters[i] == NULL) {
             mLocAdapters[i] = adapter;
-            open(mMask | (adapter->getEvtMask() & ~mExcludedMask));
+            mMsgTask->sendMsg(new LocOpenMsg(this,
+                                             (adapter->getEvtMask())));
             break;
         }
     }
@@ -173,7 +195,7 @@ void LocApiBase::removeAdapter(LocAdapterBase* adapter)
                 close();
             } else {
                 // else we need to remove the bit
-                open(getEvtMask() & ~mExcludedMask);
+                mMsgTask->sendMsg(new LocOpenMsg(this, getEvtMask()));
             }
         }
     }
@@ -298,7 +320,8 @@ void LocApiBase::requestNiNotify(GpsNiNotification &notify, const void* data)
 
 void* LocApiBase :: getSibling()
     DEFAULT_IMPL(NULL)
-void* LocApiBase :: getSibling2()
+
+LocApiProxyBase* LocApiBase :: getLocApiProxy()
     DEFAULT_IMPL(NULL)
 
 enum loc_api_adapter_err LocApiBase::

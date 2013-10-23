@@ -36,26 +36,6 @@
 
 namespace loc_core {
 
-struct LocOpenMsg : public LocMsg {
-    LocAdapterBase* mLocAdapter;
-    LocApiBase* mLocApi;
-    inline LocOpenMsg(LocAdapterBase* locAdapter,
-                      LocApiBase* locApi) :
-        LocMsg(), mLocAdapter(locAdapter), mLocApi(locApi)
-    {
-        locallog();
-    }
-    inline virtual void proc() const {
-        mLocApi->addAdapter(mLocAdapter);
-    }
-    inline void locallog() {
-        LOC_LOGV("LocOpen");
-    }
-    inline virtual void log() {
-        locallog();
-    }
-};
-
 // This is the top level class, so the constructor will
 // always gets called. Here we prepare for the default.
 // But if getLocApi(targetEnumType target) is overriden,
@@ -65,7 +45,7 @@ LocAdapterBase::LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
     mEvtMask(mask), mContext(context),
     mLocApi(context->getLocApi()), mMsgTask(context->getMsgTask())
 {
-    sendMsg(new LocOpenMsg(this, mLocApi));
+    mLocApi->addAdapter(this);
 }
 
 void LocAdapterBase::
