@@ -34,6 +34,7 @@
 #include <gps_extended.h>
 #include <MsgTask.h>
 #include <log_util.h>
+
 namespace loc_core {
 
 int hexcode(char *hexstring, int string_size,
@@ -51,14 +52,23 @@ int decodeAddress(char *addr_string, int string_size,
 #define TO_1ST_HANDLING_ADAPTER(adapters, call)                              \
     for (int i = 0; i <MAX_ADAPTERS && NULL != (adapters)[i] && !(call); i++);
 
-
 class LocAdapterBase;
 struct LocSsrMsg;
+struct LocOpenMsg;
+
+class LocApiProxyBase {
+public:
+    inline LocApiProxyBase() {}
+    inline virtual ~LocApiProxyBase() {}
+    inline virtual void* getSibling2() { return NULL; }
+};
 
 class LocApiBase {
     friend struct LocSsrMsg;
+    //LocOpenMsg calls open() which makes it necessary to declare
+    //it as a friend
+    friend struct LocOpenMsg;
     friend class ContextBase;
-    const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
     const MsgTask* mMsgTask;
 
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
@@ -68,13 +78,13 @@ protected:
         open(LOC_API_ADAPTER_EVENT_MASK_T mask);
     virtual enum loc_api_adapter_err
         close();
-
     LOC_API_ADAPTER_EVENT_MASK_T getEvtMask();
     LOC_API_ADAPTER_EVENT_MASK_T mMask;
     LocApiBase(const MsgTask* msgTask,
                LOC_API_ADAPTER_EVENT_MASK_T excludedMask);
     inline virtual ~LocApiBase() { close(); }
     bool isInSession();
+    const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
 
 public:
     void addAdapter(LocAdapterBase* adapter);
@@ -111,7 +121,7 @@ public:
     // RPC, QMI, etc.  The default implementation is empty.
 
     virtual void* getSibling();
-    virtual void* getSibling2();
+    virtual LocApiProxyBase* getLocApiProxy();
     virtual enum loc_api_adapter_err
         startFix(const LocPosMode& posMode);
     virtual enum loc_api_adapter_err

@@ -91,7 +91,8 @@ ContextBase::ContextBase(const MsgTask* msgTask,
                          const char* libName) :
     mLBSProxy(getLBSProxy(libName)),
     mMsgTask(msgTask),
-    mLocApi(createLocApi(exMask))
+    mLocApi(createLocApi(exMask)),
+    mLocApiProxy(mLocApi->getLocApiProxy())
 {
 }
 
