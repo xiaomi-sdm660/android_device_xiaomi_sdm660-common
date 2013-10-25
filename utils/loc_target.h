@@ -34,6 +34,7 @@
 #define TARGET_APQ_SA        TARGET_SET(GNSS_GSS, NO_SSC)
 #define TARGET_MPQ           TARGET_SET(GNSS_NONE,NO_SSC)
 #define TARGET_MSM_NO_SSC    TARGET_SET(GNSS_MSM, NO_SSC)
+#define TARGET_QCA1530       TARGET_SET(GNSS_QCA1530, NO_SSC)
 #define TARGET_UNKNOWN       TARGET_SET(GNSS_UNKNOWN, NO_SSC)
 #define getTargetGnssType(target)  (target>>1)
 
@@ -42,14 +43,16 @@ extern "C"
 {
 #endif
 
-unsigned int get_target(void);
+unsigned int loc_get_target(void);
 
+/* Please remember to update 'target_name' in loc_log.cpp,
+   if do any changes to this enum. */
 typedef enum {
     GNSS_NONE = 0,
     GNSS_MSM,
     GNSS_GSS,
     GNSS_MDM,
-    GNSS_GRIFFON,
+    GNSS_QCA1530,
     GNSS_UNKNOWN
 }GNSS_TARGET;
 

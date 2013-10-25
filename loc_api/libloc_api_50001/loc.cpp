@@ -140,7 +140,7 @@ static const AGpsRilInterface sLocEngAGpsRilInterface =
 };
 
 static loc_eng_data_s_type loc_afw_data;
-static int gss_fd = 0;
+static int gss_fd = -1;
 
 /*===========================================================================
 FUNCTION    gps_get_hardware_interface
@@ -190,10 +190,14 @@ extern "C" const GpsInterface* get_gps_interface()
     unsigned int target = TARGET_DEFAULT;
     loc_eng_read_config();
 
-    target = get_target();
+    target = loc_get_target();
     LOC_LOGD("Target name check returned %s", loc_get_target_name(target));
+
+    int gnssType = getTargetGnssType(target);
+    switch (gnssType)
+    {
+    case GNSS_GSS:
         //APQ8064
-        if( getTargetGnssType(target) == GNSS_GSS ) {
         gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
         gss_fd = open("/dev/gss", O_RDONLY);
         if (gss_fd < 0) {
@@ -203,11 +207,16 @@ extern "C" const GpsInterface* get_gps_interface()
             LOC_LOGD("GSS open success! CAPABILITIES %0lx\n",
                      gps_conf.CAPABILITIES);
         }
-    }
-    //MPQ8064
-        else if( getTargetGnssType(target) == GNSS_NONE) {
-        LOC_LOGE("No GPS HW on this target (MPQ8064). Not returning interface");
+        break;
+    case GNSS_NONE:
+        //MPQ8064
+        LOC_LOGE("No GPS HW on this target. Not returning interface.");
         return NULL;
+    case GNSS_QCA1530:
+        // qca1530 chip is present
+        gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
+        LOC_LOGD("qca1530 present: CAPABILITIES %0lx\n", gps_conf.CAPABILITIES);
+        break;
     }
     return &sLocEngInterface;
 }
@@ -297,13 +306,14 @@ static void loc_cleanup()
     gps_loc_cb = NULL;
     gps_sv_cb = NULL;
 
-    /*
-     * if (get_target() == TARGET_NAME_APQ8064_STANDALONE)
-     * {
-     *     close(gss_fd);
-     *     LOC_LOGD("GSS shutdown.\n");
-     * }
-     */
+/*
+    if (gss_fd >= 0)
+    {
+        close(gss_fd);
+        gss_fd = -1;
+        LOC_LOGD("GSS shutdown.\n");
+    }
+*/
 
     EXIT_LOG(%s, VOID_RET);
 }
