@@ -258,15 +258,17 @@ bool LocEngAdapter::requestSuplES(int connHandle)
 inline
 bool LocEngAdapter::reportDataCallOpened()
 {
-    sendMsg(new LocEngSuplEsOpened(mOwner));
-    return true;
+    if(mAgpsEnabled)
+        sendMsg(new LocEngSuplEsOpened(mOwner));
+    return mAgpsEnabled;
 }
 
 inline
 bool LocEngAdapter::reportDataCallClosed()
 {
-    sendMsg(new LocEngSuplEsClosed(mOwner));
-    return true;
+    if(mAgpsEnabled)
+        sendMsg(new LocEngSuplEsClosed(mOwner));
+    return mAgpsEnabled;
 }
 
 inline
