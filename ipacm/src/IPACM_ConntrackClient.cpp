@@ -290,16 +290,16 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 															NFCT_FILTER_LOGIC_NEGATIVE);
 
 				nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
-			}
-		}
 
-		IPACMDBG("ignore connections orignated to interface %s\n", item->ifr_name);
+				IPACMDBG("ignore connections orignated from interface %s\n", item->ifr_name);
 		IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
 		nfct_filter_set_logic(filter,
 													NFCT_FILTER_SRC_IPV4,
 													NFCT_FILTER_LOGIC_NEGATIVE);
 
 		nfct_filter_add_attr(filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
+			}
+		}
 
 		/* Find broadcast address for non lo interfaces */
 		if(strncmp(LO_NAME, item->ifr_name, 2) != 0)
