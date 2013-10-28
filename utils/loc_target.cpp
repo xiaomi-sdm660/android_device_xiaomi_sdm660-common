@@ -56,9 +56,11 @@
 #define LENGTH(s) (sizeof(s) - 1)
 #define GPS_CHECK_NO_ERROR 0
 #define GPS_CHECK_NO_GPS_HW 1
+#define QCA1530_DETECT_TIMEOUT 30
+#define QCA1530_DETECT_PRESENT "yes"
+#define QCA1530_DETECT_PROGRESS "detect"
 
-static int gss_fd = 0;
-static unsigned int gTarget = TARGET_UNKNOWN;
+static unsigned int gTarget = (unsigned int)-1;
 
 static int read_a_line(const char * file_path, char * line, int line_size)
 {
@@ -82,21 +84,84 @@ static int read_a_line(const char * file_path, char * line, int line_size)
     return result;
 }
 
-unsigned int get_target(void)
+/*!
+ * \brief Checks if QCA1530 is avalable.
+ *
+ * Function verifies if qca1530 SoC is configured on the device. The test is
+ * based on property value. For 1530 scenario, the value shall be one of the
+ * following: "yes", "no", "detect". All other values are treated equally to
+ * "no". When the value is "detect" the system waits for SoC detection to
+ * finish before returning result.
+ *
+ * \retval true - QCA1530 is available.
+ * \retval false - QCA1530 is not available.
+ */
+static bool is_qca1530(void)
 {
-    if (gTarget != TARGET_UNKNOWN)
+    static const char qca1530_property_name[] = "persist.qca1530";
+    bool res = false;
+    int ret, i;
+    char buf[PROPERTY_VALUE_MAX];
+
+    memset(buf, 0, sizeof(buf));
+
+    for (i = 0; i < QCA1530_DETECT_TIMEOUT; ++i)
+    {
+        ret = property_get(qca1530_property_name, buf, NULL);
+        if (ret < 0)
+        {
+            LOC_LOGV( "qca1530: property %s is not accessible, ret=%d",
+                  qca1530_property_name,
+                  ret);
+
+            break;
+        }
+
+        LOC_LOGV( "qca1530: property %s is set to %s",
+                  qca1530_property_name,
+                  buf);
+
+        if (!memcmp(buf, QCA1530_DETECT_PRESENT,
+                    sizeof(QCA1530_DETECT_PRESENT)))
+        {
+            res = true;
+            break;
+        }
+        if (!memcmp(buf, QCA1530_DETECT_PROGRESS,
+                    sizeof(QCA1530_DETECT_PROGRESS)))
+        {
+            LOC_LOGV("qca1530: SoC detection is in progress.");
+            sleep(1);
+            continue;
+        }
+        break;
+    }
+
+    LOC_LOGD("qca1530: detected=%s", res ? "true" : "false");
+    return res;
+}
+
+unsigned int loc_get_target(void)
+{
+    if (gTarget != (unsigned int)-1)
         return gTarget;
 
-    char hw_platform[]      = "/sys/devices/soc0/hw_platform";
-    char id[]               = "/sys/devices/soc0/soc_id";
-    char hw_platform_dep[]  = "/sys/devices/system/soc/soc0/hw_platform";
-    char id_dep[]               = "/sys/devices/system/soc/soc0/id";
-    char mdm[]              = "/dev/mdm"; // No such file or directory
+    static const char hw_platform[]      = "/sys/devices/soc0/hw_platform";
+    static const char id[]               = "/sys/devices/soc0/soc_id";
+    static const char hw_platform_dep[]  =
+        "/sys/devices/system/soc/soc0/hw_platform";
+    static const char id_dep[]           = "/sys/devices/system/soc/soc0/id";
+    static const char mdm[]              = "/dev/mdm"; // No such file or directory
 
     char rd_hw_platform[LINE_LEN];
     char rd_id[LINE_LEN];
     char rd_mdm[LINE_LEN];
     char baseband[LINE_LEN];
+
+    if (is_qca1530()) {
+        gTarget = TARGET_QCA1530;
+        goto detected;
+    }
 
     property_get("ro.baseband", baseband, "");
     if (!access(hw_platform, F_OK)) {
@@ -133,6 +198,11 @@ unsigned int get_target(void)
                   (!memcmp(rd_id, MSM8930_ID_2, LENGTH(MSM8930_ID_2))
                    && IS_STR_END(rd_id[LENGTH(MSM8930_ID_2)])) )
              gTarget = TARGET_MSM_NO_SSC;
+        else
+             gTarget = TARGET_UNKNOWN;
     }
+
+detected:
+    LOC_LOGD("HAL: %s returned %d", __FUNCTION__, gTarget);
     return gTarget;
 }

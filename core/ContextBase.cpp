@@ -64,7 +64,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
     LocApiBase* locApi = NULL;
 
     // first if can not be MPQ
-    if (TARGET_MPQ != get_target()) {
+    if (TARGET_MPQ != loc_get_target()) {
         if (NULL == (locApi = mLBSProxy->getLocApi(mMsgTask, exMask))) {
             // only RPC is the option now
             void* handle = dlopen("libloc_api-rpc-qc.so", RTLD_NOW);

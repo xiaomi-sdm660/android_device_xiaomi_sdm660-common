@@ -1772,11 +1772,14 @@ int loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
 
-    // The position mode for APQ target can only be standalone
-    bool isAPQ = (getTargetGnssType(get_target()) == GNSS_GSS);
-    if (isAPQ && params.mode != LOC_POSITION_MODE_STANDALONE) {
+    int gnssType = getTargetGnssType(loc_get_target());
+
+    // The position mode for GSS/QCA1530 can only be standalone
+    bool is1530 = gnssType == GNSS_QCA1530;
+    bool isAPQ = gnssType == GNSS_GSS;
+    if ((isAPQ || is1530) && params.mode != LOC_POSITION_MODE_STANDALONE) {
         params.mode = LOC_POSITION_MODE_STANDALONE;
-        LOC_LOGD("Position mode changed to standalone for APQ target.");
+        LOC_LOGD("Position mode changed to standalone for target with GSS/qca1530.");
     }
 
     if(! loc_eng_data.adapter->getUlpProxy()->sendFixMode(params))
@@ -2020,8 +2023,10 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                  AGPS_TYPE_WIFI,
                                                  true);
 
-    bool isAPQ = (getTargetGnssType(get_target()) == GNSS_GSS);
-    if (!isAPQ) {
+    int gnssType = getTargetGnssType(loc_get_target());
+    bool isAPQ = (gnssType == GNSS_GSS);
+    bool is1530 = (gnssType == GNSS_QCA1530);
+    if (!isAPQ && !is1530) {
         loc_eng_data.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
                                                       (void *)loc_eng_data.agps_status_cb,
                                                       AGPS_TYPE_SUPL,
