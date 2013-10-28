@@ -119,9 +119,9 @@ struct LocEngReportSv : public LocMsg {
 };
 
 struct LocEngReportStatus : public LocMsg {
-    void* mLocEng;
+    LocAdapterBase* mAdapter;
     const GpsStatusValue mStatus;
-    LocEngReportStatus(void* locEng,
+    LocEngReportStatus(LocAdapterBase* adapter,
                        GpsStatusValue engineStatus);
     virtual void proc() const;
     void locallog() const;
