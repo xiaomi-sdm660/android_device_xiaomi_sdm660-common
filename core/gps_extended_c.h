@@ -68,6 +68,9 @@ extern "C" {
 /*Emergency SUPL*/
 #define GPS_NI_TYPE_EMERGENCY_SUPL    4
 
+#define AGPS_CERTIFICATE_MAX_LENGTH 2000
+#define AGPS_CERTIFICATE_MAX_SLOTS 10
+
 typedef struct {
     /** set to sizeof(UlpLocation) */
     size_t          size;

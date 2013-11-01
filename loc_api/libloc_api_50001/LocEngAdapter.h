@@ -257,6 +257,12 @@ public:
         return mLocApi->getBestAvailableZppFix(zppLoc, tech_mask);
     }
     enum loc_api_adapter_err setXtraVersionCheck(int check);
+    inline virtual void installAGpsCert(const DerEncodedCertificate* pData,
+                                        size_t length,
+                                        uint32_t slotBitMask)
+    {
+        mLocApi->installAGpsCert(pData, length, slotBitMask);
+    }
     virtual void handleEngineDownEvent();
     virtual void handleEngineUpEvent();
     virtual void reportPosition(UlpLocation &location,

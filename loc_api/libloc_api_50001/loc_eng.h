@@ -147,6 +147,7 @@ typedef struct loc_gps_cfg_s
     uint8_t        NMEA_PROVIDER;
     unsigned long  A_GLONASS_POS_PROTOCOL_SELECT;
     unsigned long  XTRA_VERSION_CHECK;
+    unsigned long  AGPS_CERT_WRITABLE_MASK;
 } loc_gps_cfg_s_type;
 
 typedef struct
@@ -210,9 +211,11 @@ int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
                       const char* apn, AGpsBearerType bearerType);
 int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType);
 int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType);
-
 void loc_eng_agps_ril_update_network_availability(loc_eng_data_s_type &loc_eng_data,
                                                   int avaiable, const char* apn);
+int loc_eng_agps_install_certificates(loc_eng_data_s_type &loc_eng_data,
+                                      const DerEncodedCertificate* certificates,
+                                      size_t length);
 
 //loc_eng_xtra functions
 int  loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
@@ -231,6 +234,7 @@ extern void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
                                    const GpsNiNotification *notif,
                                    const void* passThrough);
 extern void loc_eng_ni_reset_on_engine_restart(loc_eng_data_s_type &loc_eng_data);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

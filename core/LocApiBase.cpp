@@ -478,6 +478,12 @@ int LocApiBase::
     setGpsLock(unsigned int lock)
 DEFAULT_IMPL(-1)
 
+void LocApiBase::
+    installAGpsCert(const DerEncodedCertificate* pData,
+                    size_t length,
+                    uint32_t slotBitMask)
+DEFAULT_IMPL()
+
 int LocApiBase::
     getGpsLock()
 DEFAULT_IMPL(-1)
