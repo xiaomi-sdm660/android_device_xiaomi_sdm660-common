@@ -44,12 +44,10 @@ protected:
 
     inline LocAdapterBase(const MsgTask* msgTask) :
         mEvtMask(0), mContext(NULL), mLocApi(NULL), mMsgTask(msgTask) {}
-
+public:
+    inline virtual ~LocAdapterBase() { mLocApi->removeAdapter(this); }
     LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
                    ContextBase* context);
-    inline virtual ~LocAdapterBase() { mLocApi->removeAdapter(this); }
-
-public:
     inline LOC_API_ADAPTER_EVENT_MASK_T
         checkMask(LOC_API_ADAPTER_EVENT_MASK_T mask) const {
         return mEvtMask & mask;

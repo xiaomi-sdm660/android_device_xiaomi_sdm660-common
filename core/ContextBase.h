@@ -46,7 +46,7 @@ protected:
     const LBSProxyBase* mLBSProxy;
     const MsgTask* mMsgTask;
     LocApiBase* mLocApi;
-
+    LocApiProxyBase *mLocApiProxy;
 public:
     ContextBase(const MsgTask* msgTask,
                 LOC_API_ADAPTER_EVENT_MASK_T exMask,
@@ -55,6 +55,7 @@ public:
 
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     inline LocApiBase* getLocApi() { return mLocApi; }
+    inline LocApiProxyBase* getLocApiProxy() { return mLocApiProxy; }
     inline bool hasAgpsExt() { return mLBSProxy->hasAgpsExt(); }
     inline void requestUlp(LocAdapterBase* adapter,
                            unsigned long capabilities) {
