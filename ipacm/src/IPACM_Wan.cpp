@@ -1393,13 +1393,13 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
                                     if(firewall_config.rule_action_accept == true)
 			            {
 			                flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+					flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.hdl;
 			            }
 			            else
 			            {
 					flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
                                     } 										
 					
-		    			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.hdl;
 					memcpy(&flt_rule_entry.rule.attrib,
 								 &firewall_config.extd_firewall_entries[i].attrib,
 								 sizeof(struct ipa_rule_attrib));
