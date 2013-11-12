@@ -875,6 +875,7 @@ LocEngReportXtraServer::LocEngReportXtraServer(void* locEng,
     LocMsg(), mLocEng(locEng), mMaxLen(maxlength),
     mServers(new char[3*(mMaxLen+1)])
 {
+    memset(mServers, 0, 3*(mMaxLen+1));
     strlcpy(mServers, url1, mMaxLen);
     strlcpy(&(mServers[mMaxLen+1]), url2, mMaxLen);
     strlcpy(&(mServers[(mMaxLen+1)<<1]), url3, mMaxLen);
