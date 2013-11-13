@@ -64,7 +64,9 @@ static int ipa_nl_open_socket
 	 )
 {
 	int *p_sk_fd;
+	int buf_size = 6669999, sendbuff=0, res;
 	struct sockaddr_nl *p_sk_addr_loc;
+	socklen_t optlen;
 
 	p_sk_fd = &(sk_info->sk_fd);
 	p_sk_addr_loc = &(sk_info->sk_addr_loc);
@@ -76,6 +78,20 @@ static int ipa_nl_open_socket
 		return IPACM_FAILURE;
 	}
 
+	optlen = sizeof(sendbuff);
+	res = getsockopt(*p_sk_fd, SOL_SOCKET, SO_SNDBUF, &sendbuff, &optlen);
+
+	if(res == -1)
+		IPACMDBG("Error getsockopt one");
+	else
+		IPACMDBG("orignal send buffer size = %d\n", sendbuff);
+
+	IPACMDBG("sets the send buffer to %d\n", buf_size);
+	if (setsockopt(*p_sk_fd, SOL_SOCKET, SO_RCVBUF, &buf_size, sizeof(int)) == -1) {
+    IPACMERR("Error setting socket opts\n");
+	}
+	
+	
 	/* Initialize socket addresses to null */
 	memset(p_sk_addr_loc, 0, sizeof(struct sockaddr_nl));
 
