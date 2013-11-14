@@ -1845,8 +1845,11 @@ int loc_eng_inject_location(loc_eng_data_s_type &loc_eng_data, double latitude,
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
     LocEngAdapter* adapter = loc_eng_data.adapter;
-    adapter->sendMsg(new LocEngInjectLocation(adapter, latitude, longitude,
-                                              accuracy));
+    if(!adapter->mCPIEnabled)
+    {
+        adapter->sendMsg(new LocEngInjectLocation(adapter, latitude, longitude,
+                                                  accuracy));
+    }
 
     EXIT_LOG(%d, 0);
     return 0;

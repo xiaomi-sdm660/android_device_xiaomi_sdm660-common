@@ -76,6 +76,7 @@ class LocEngAdapter : public LocAdapterBase {
 
 public:
     bool mAgpsEnabled;
+    bool mCPIEnabled;
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
                   void* owner,ContextBase* context,
@@ -90,6 +91,7 @@ public:
     inline UlpProxyBase* getUlpProxy() { return mUlp; }
     inline void* getOwner() { return mOwner; }
     inline bool hasAgpsExt() { return mContext->hasAgpsExt(); }
+    inline bool hasCPIExt() { return mContext->hasCPIExt(); }
     inline const MsgTask* getMsgTask() { return mMsgTask; }
 
     inline enum loc_api_adapter_err

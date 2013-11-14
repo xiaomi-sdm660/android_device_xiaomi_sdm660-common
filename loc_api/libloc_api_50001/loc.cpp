@@ -277,7 +277,7 @@ static int loc_init(GpsCallbacks* callbacks)
     retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event, NULL);
     loc_afw_data.adapter->requestUlp(gps_conf.CAPABILITIES);
     loc_afw_data.adapter->mAgpsEnabled = !loc_afw_data.adapter->hasAgpsExt();
-
+    loc_afw_data.adapter->mCPIEnabled = !loc_afw_data.adapter->hasCPIExt();
 
     EXIT_LOG(%d, retVal);
     return retVal;
@@ -463,6 +463,7 @@ static int loc_inject_location(double latitude, double longitude, float accuracy
 {
     static bool initialized = false;
     static bool enable_cpi = true;
+    accuracy = 1000;
     ENTRY_LOG();
 
     if(!initialized)
