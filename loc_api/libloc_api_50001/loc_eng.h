@@ -178,7 +178,8 @@ extern loc_sap_cfg_s_type sap_conf;
 
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,
                   LocCallbacks* callbacks,
-                  LOC_API_ADAPTER_EVENT_MASK_T event);
+                  LOC_API_ADAPTER_EVENT_MASK_T event,
+                  ContextBase* context);
 int  loc_eng_start(loc_eng_data_s_type &loc_eng_data);
 int  loc_eng_stop(loc_eng_data_s_type &loc_eng_data);
 void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data);

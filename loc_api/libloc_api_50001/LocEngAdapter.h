@@ -78,7 +78,7 @@ public:
     bool mAgpsEnabled;
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
-                  void* owner,
+                  void* owner,ContextBase* context,
                   MsgTask::tCreate tCreator);
     virtual ~LocEngAdapter();
 
