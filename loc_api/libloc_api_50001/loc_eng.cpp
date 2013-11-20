@@ -857,7 +857,9 @@ void LocEngReportNmea::proc() const {
     gettimeofday(&tv, (struct timezone *) NULL);
     int64_t now = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
     CALLBACK_LOG_CALLFLOW("nmea_cb", %d, mLen);
-    locEng->nmea_cb(now, mNmea, mLen);
+
+    if (locEng->nmea_cb != NULL)
+        locEng->nmea_cb(now, mNmea, mLen);
 }
 inline void LocEngReportNmea::locallog() const {
     LOC_LOGV("LocEngReportNmea");
