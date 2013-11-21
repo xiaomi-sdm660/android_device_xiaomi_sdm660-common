@@ -57,6 +57,7 @@ public:
     inline LocApiBase* getLocApi() { return mLocApi; }
     inline LocApiProxyBase* getLocApiProxy() { return mLocApiProxy; }
     inline bool hasAgpsExt() { return mLBSProxy->hasAgpsExt(); }
+    inline bool hasCPIExt() { return mLBSProxy->hasCPIExt(); }
     inline void requestUlp(LocAdapterBase* adapter,
                            unsigned long capabilities) {
         mLBSProxy->requestUlp(adapter, capabilities);
