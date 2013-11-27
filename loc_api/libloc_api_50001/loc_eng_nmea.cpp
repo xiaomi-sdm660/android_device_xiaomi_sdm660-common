@@ -60,7 +60,8 @@ void loc_eng_nmea_send(char *pNmea, int length, loc_eng_data_s_type *loc_eng_dat
     gettimeofday(&tv, (struct timezone *) NULL);
     int64_t now = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
     CALLBACK_LOG_CALLFLOW("nmea_cb", %p, pNmea);
-    loc_eng_data_p->nmea_cb(now, pNmea, length);
+    if (loc_eng_data_p->nmea_cb != NULL)
+        loc_eng_data_p->nmea_cb(now, pNmea, length);
     LOC_LOGD("NMEA <%s", pNmea);
 }
 
