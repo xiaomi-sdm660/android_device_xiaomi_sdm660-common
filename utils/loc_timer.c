@@ -34,124 +34,153 @@
 #include<time.h>
 #include<errno.h>
 
-#define MAX_DELAY_RETRIES 3
+enum timer_state {
+    READY = 100,
+    WAITING,
+    DONE,
+    ABORT
+};
 
 typedef struct {
     loc_timer_callback callback_func;
     void *user_data;
     unsigned int time_msec;
+    pthread_cond_t timer_cond;
+    pthread_mutex_t timer_mutex;
+    enum timer_state state;
 }timer_data;
 
 static void *timer_thread(void *thread_data)
 {
-    int ret;
-    unsigned char retries=0;
+    int ret = -ETIMEDOUT;
     struct timespec ts;
     struct timeval tv;
-    timer_data t;
-    t.callback_func = ((timer_data *)thread_data)->callback_func;
-    t.user_data = ((timer_data *)thread_data)->user_data;
-    t.time_msec = ((timer_data *)thread_data)->time_msec;
-    pthread_cond_t timer_cond;
-    pthread_mutex_t timer_mutex;
+    timer_data* t = (timer_data*)thread_data;
 
-    LOC_LOGD("%s:%d]: Enter. Delay = %d\n", __func__, __LINE__, t.time_msec);
-    //Copied over all info into local variable. Do not need allocated struct
-    free(thread_data);
+    LOC_LOGD("%s:%d]: Enter. Delay = %d\n", __func__, __LINE__, t->time_msec);
 
-    if(pthread_cond_init(&timer_cond, NULL)) {
-        LOC_LOGE("%s:%d]: Pthread cond init failed\n", __func__, __LINE__);
-        ret = -1;
-        goto err;
+    gettimeofday(&tv, NULL);
+    clock_gettime(CLOCK_REALTIME, &ts);
+    if(t->time_msec >= 1000) {
+        ts.tv_sec += t->time_msec/1000;
+        t->time_msec = t->time_msec % 1000;
     }
-    if(pthread_mutex_init(&timer_mutex, NULL)) {
-        LOC_LOGE("%s:%d]: Pthread mutex init failed\n", __func__, __LINE__);
-        ret = -1;
-        goto mutex_err;
+    if(t->time_msec)
+        ts.tv_nsec += t->time_msec * 1000000;
+    if(ts.tv_nsec > 999999999) {
+        LOC_LOGD("%s:%d]: Large nanosecs\n", __func__, __LINE__);
+        ts.tv_sec += 1;
+        ts.tv_nsec -= 1000000000;
     }
-    while(retries < MAX_DELAY_RETRIES) {
-        gettimeofday(&tv, NULL);
-        clock_gettime(CLOCK_REALTIME, &ts);
-        if(t.time_msec >= 1000) {
-            ts.tv_sec += t.time_msec/1000;
-            t.time_msec = t.time_msec % 1000;
-        }
-        if(t.time_msec)
-            ts.tv_nsec += t.time_msec * 1000000;
-        if(ts.tv_nsec > 999999999) {
-            LOC_LOGD("%s:%d]: Large nanosecs\n", __func__, __LINE__);
-            ts.tv_sec += 1;
-            ts.tv_nsec -= 1000000000;
-        }
-        LOC_LOGD("%s:%d]: ts.tv_sec:%d; ts.tv_nsec:%d\n",
-                 __func__, __LINE__, (int)ts.tv_sec, (int)ts.tv_nsec);
-        LOC_LOGD("%s:%d]: Current time: %d sec; %d nsec\n",
-                 __func__, __LINE__, (int)tv.tv_sec, (int)tv.tv_usec*1000);
-        pthread_mutex_lock(&(timer_mutex));
-        ret = pthread_cond_timedwait(&timer_cond, &timer_mutex, &ts);
-        pthread_mutex_unlock(&(timer_mutex));
-        if(ret != ETIMEDOUT) {
-            LOC_LOGE("%s:%d]: Call to pthread timedwait failed; ret=%d\n",
-                     __func__, __LINE__,ret);
-            ret = -1;
-            retries++;
-        }
-        else {
-            ret = 0;
-            break;
-        }
+    LOC_LOGD("%s:%d]: ts.tv_sec:%d; ts.tv_nsec:%d\n"
+             "\t Current time: %d sec; %d nsec",
+             __func__, __LINE__, (int)ts.tv_sec, (int)ts.tv_nsec,
+             (int)tv.tv_sec, (int)tv.tv_usec*1000);
+
+    pthread_mutex_lock(&(t->timer_mutex));
+    if (READY == t->state) {
+        t->state = WAITING;
+        ret = pthread_cond_timedwait(&t->timer_cond, &t->timer_mutex, &ts);
+        t->state = DONE;
+    }
+    pthread_mutex_unlock(&(t->timer_mutex));
+
+    switch (ret) {
+    case ETIMEDOUT:
+        LOC_LOGV("%s:%d]: loc_timer timed out",  __func__, __LINE__);
+        break;
+    case 0:
+        LOC_LOGV("%s:%d]: loc_timer stopped",  __func__, __LINE__);
+        break;
+    case -ETIMEDOUT:
+        LOC_LOGV("%s:%d]: loc_timer cancelled",  __func__, __LINE__);
+        break;
+    default:
+        LOC_LOGE("%s:%d]: Call to pthread timedwait failed; ret=%d\n",
+                 __func__, __LINE__, ret);
+        break;
     }
 
-    pthread_mutex_destroy(&timer_mutex);
-mutex_err:
-    pthread_cond_destroy(&timer_cond);
-err:
-    if(!ret)
-        t.callback_func(t.user_data, ret);
+    pthread_mutex_destroy(&t->timer_mutex);
+    pthread_cond_destroy(&t->timer_cond);
+
+    if(ETIMEDOUT == ret)
+        t->callback_func(t->user_data, ret);
+
+    free(t);
     LOC_LOGD("%s:%d]: Exit\n", __func__, __LINE__);
     return NULL;
 }
 
-int loc_timer_start(unsigned int msec, loc_timer_callback cb_func,
-                    void* caller_data)
+void* loc_timer_start(unsigned int msec, loc_timer_callback cb_func,
+                      void* caller_data)
 {
-    int ret=0;
     timer_data *t=NULL;
     pthread_attr_t tattr;
     pthread_t id;
     LOC_LOGD("%s:%d]: Enter\n", __func__, __LINE__);
     if(cb_func == NULL || msec == 0) {
         LOC_LOGE("%s:%d]: Error: Wrong parameters\n", __func__, __LINE__);
-        ret = -1;
-        goto err;
+        goto _err;
     }
     t = (timer_data *)calloc(1, sizeof(timer_data));
     if(t == NULL) {
         LOC_LOGE("%s:%d]: Could not allocate memory. Failing.\n",
                  __func__, __LINE__);
-        ret = -1;
-        goto err;
+        goto _err;
+    }
+
+    if(pthread_cond_init(&(t->timer_cond), NULL)) {
+        LOC_LOGE("%s:%d]: Pthread cond init failed\n", __func__, __LINE__);
+        goto t_err;
+    }
+    if(pthread_mutex_init(&(t->timer_mutex), NULL)) {
+        LOC_LOGE("%s:%d]: Pthread mutex init failed\n", __func__, __LINE__);
+        goto cond_err;
     }
 
     t->callback_func = cb_func;
     t->user_data = caller_data;
     t->time_msec = msec;
+    t->state = READY;
 
-    pthread_attr_init(&tattr);
+    if (pthread_attr_init(&tattr)) {
+        LOC_LOGE("%s:%d]: Pthread mutex init failed\n", __func__, __LINE__);
+        goto mutex_err;
+    }
     pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+
     if(pthread_create(&(id), &tattr, timer_thread, (void *)t)) {
         LOC_LOGE("%s:%d]: Could not create thread\n", __func__, __LINE__);
-        ret = -1;
         goto attr_err;
     }
-    else {
-        LOC_LOGD("%s:%d]: Created thread with id: %d\n",
-                 __func__, __LINE__, (int)id);
-    }
+
+    LOC_LOGD("%s:%d]: Created thread with id: %d\n",
+             __func__, __LINE__, (int)id);
+    goto _err;
 
 attr_err:
     pthread_attr_destroy(&tattr);
-err:
+mutex_err:
+    pthread_mutex_destroy(&t->timer_mutex);
+cond_err:
+    pthread_cond_destroy(&t->timer_cond);
+t_err:
+    free(t);
+_err:
     LOC_LOGD("%s:%d]: Exit\n", __func__, __LINE__);
-    return ret;
+    return t;
+}
+
+void loc_timer_stop(void* handle) {
+    timer_data* t = (timer_data*)handle;
+
+    if (NULL != t && (READY == t->state || WAITING == t->state)) {
+        pthread_mutex_lock(&(t->timer_mutex));
+        if (READY == t->state || WAITING == t->state) {
+            pthread_cond_signal(&t->timer_cond);
+            t->state = ABORT;
+        }
+        pthread_mutex_unlock(&(t->timer_mutex));
+    }
 }
