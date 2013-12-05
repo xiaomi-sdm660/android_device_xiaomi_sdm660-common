@@ -27,6 +27,10 @@
 			   <Category>UNKNOWN</Category>
 			</Iface>			
 			<Iface>
+			   <Name>eth0</Name>
+			   <Category>ETH</Category>
+			</Iface>
+			<Iface>
 			   <Name>bridge0</Name>
 			   <Category>VIRTUAL</Category>
 		    </Iface>

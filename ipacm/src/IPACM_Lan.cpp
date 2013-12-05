@@ -54,6 +54,10 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 {
 	num_uni_rt = 0;
         ipv6_set = 0;
+	ipv4_header_set = false;
+	ipv6_header_set = false;
+	int ret = IPACM_SUCCESS;
+
 	rt_rule_len = sizeof(struct ipa_lan_rt_rule) + (iface_query->num_tx_props * sizeof(uint32_t));
 	route_rule = (struct ipa_lan_rt_rule *)calloc(IPA_MAX_NUM_UNICAST_ROUTE_RULES, rt_rule_len);
 	if (route_rule == NULL)
@@ -273,6 +277,19 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_all *data = (ipacm_event_data_all *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
+
+			IPACMDBG("check iface %s category: %d\n",IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat);
+			if ((ipa_interface_index == ipa_if_num) && (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ETH_IF))
+			{
+				IPACMDBG("ETH iface got v4-ip \n");
+				/* first construc ETH full header */
+				if ((ipv4_header_set == false) && (ipv6_header_set == false))
+				{
+					handle_eth_hdr_init(data->mac_addr);
+					IPACMDBG("construct ETH header and route rules \n");
+				}
+			}
+
 			if ((ipa_interface_index == ipa_if_num) && (data->iptype == IPA_IP_v6))
 			{
 				IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT for ipv6\n");
@@ -295,7 +312,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
                                 data2->ipv4_addr = data->ipv4_addr;
                                 data2->ipv4_addr_mask = 0xFFFFFFFF;
 				IPACMDBG("IPv4 address:0x%x, mask:0x%x\n",
-										 data2->iptype, data2->ipv4_addr_mask);
+										 data2->ipv4_addr, data2->ipv4_addr_mask);
                                 handle_route_add_evt(data2);
 				free(data2);
 			}	
@@ -483,6 +500,10 @@ int IPACM_Lan::handle_route_add_evt_v6(ipacm_event_data_all *data)
 		       	   	rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
 		       	   }
 
+				   /* Replace v6 header in ETH interface */
+				   if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ETH_IF)
+						rt_rule_entry->rule.hdr_hdl = ETH_hdr_hdl_v6;
+
 		           /* Downlink traffic from Wan iface, directly through IPA */
 		       	   rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
 		       	   memcpy(&rt_rule_entry->rule.attrib,
@@ -632,6 +653,11 @@ int IPACM_Lan::handle_route_add_evt(ipacm_event_data_addr *data)
 
 				rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
 			}
+
+			/* Replace the v4 header in ETH interface */
+			if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ETH_IF)
+				rt_rule_entry->rule.hdr_hdl = ETH_hdr_hdl_v4;
+
 			rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
 			memcpy(&rt_rule_entry->rule.attrib,
 						 &tx_prop->tx[tx_index].attrib,
@@ -1159,6 +1185,7 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 	return IPACM_SUCCESS;
 }
 
+
 /* for STA mode wan up:  configure filter rule for wan_up event*/
 int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 {
@@ -1339,6 +1366,184 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype)
 	return ret;
 }
 
+/* handle ETH client initial, construct full headers (tx property) */
+int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
+{
+	int res = IPACM_SUCCESS, len = 0;
+	struct ipa_ioc_copy_hdr sCopyHeader;
+	struct ipa_ioc_add_hdr *pHeaderDescriptor = NULL;
+    uint32_t cnt;
+
+	IPACMDBG("Received Client MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+					 mac_addr[0], mac_addr[1], mac_addr[2],
+					 mac_addr[3], mac_addr[4], mac_addr[5]);
+
+	/* add header to IPA */
+	if(tx_prop != NULL)
+	{
+		len = sizeof(struct ipa_ioc_add_hdr) + (1 * sizeof(struct ipa_hdr_add));
+		pHeaderDescriptor = (struct ipa_ioc_add_hdr *)calloc(1, len);
+		if (pHeaderDescriptor == NULL)
+		{
+			IPACMERR("calloc failed to allocate pHeaderDescriptor\n");
+			return IPACM_FAILURE;
+		}
+
+		/* copy partial header for v4*/
+		for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+		{
+				 if(tx_prop->tx[cnt].ip==IPA_IP_v4)
+				 {
+								IPACMDBG("Got partial v4-header name from %d tx props\n", cnt);
+								memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+								memcpy(sCopyHeader.name,
+											 tx_prop->tx[cnt].hdr_name,
+											 sizeof(sCopyHeader.name));
+
+								IPACMDBG("header name: %s in tx:%d\n", sCopyHeader.name,cnt);
+								if (m_header.CopyHeader(&sCopyHeader) == false)
+								{
+									PERROR("ioctl copy header failed");
+									res = IPACM_FAILURE;
+									goto fail;
+								}
+
+								IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+								IPACMDBG("header eth2_ofst_valid: %d, eth2_ofst: %d\n", sCopyHeader.is_eth2_ofst_valid, sCopyHeader.eth2_ofst);
+								if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
+								{
+									IPACMERR("header oversize\n");
+									res = IPACM_FAILURE;
+									goto fail;
+								}
+								else
+								{
+									memcpy(pHeaderDescriptor->hdr[0].hdr,
+												 sCopyHeader.hdr, 
+												 sCopyHeader.hdr_len);
+								}
+
+								/* copy client mac_addr to partial header */
+								if (sCopyHeader.is_eth2_ofst_valid)
+								{
+									memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst],
+											 mac_addr,
+											 IPA_MAC_ADDR_SIZE);								
+								}
+
+								pHeaderDescriptor->commit = true;
+								pHeaderDescriptor->num_hdrs = 1;
+
+								memset(pHeaderDescriptor->hdr[0].name, 0,
+											 sizeof(pHeaderDescriptor->hdr[0].name));
+
+								strncat(pHeaderDescriptor->hdr[0].name,
+												IPA_ETH_HDR_NAME_v4,
+												sizeof(IPA_ETH_HDR_NAME_v4));
+
+								pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
+								pHeaderDescriptor->hdr[0].hdr_hdl = -1;
+								pHeaderDescriptor->hdr[0].is_partial = 0;
+								pHeaderDescriptor->hdr[0].status = -1;
+
+					 if (m_header.AddHeader(pHeaderDescriptor) == false ||
+							pHeaderDescriptor->hdr[0].status != 0)
+					 {
+						IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", pHeaderDescriptor->hdr[0].status);
+						res = IPACM_FAILURE;
+						goto fail;
+					 }
+
+					ETH_hdr_hdl_v4 = pHeaderDescriptor->hdr[0].hdr_hdl;
+					ipv4_header_set = true ;
+					IPACMDBG(" ETH v4 full header name:%s header handle:(0x%x)\n",
+										 pHeaderDescriptor->hdr[0].name,
+												 ETH_hdr_hdl_v4);
+					break;  
+				 }
+		}
+
+
+		/* copy partial header for v6*/
+		for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+		{
+			if(tx_prop->tx[cnt].ip==IPA_IP_v6)
+			{
+
+				IPACMDBG("Got partial v6-header name from %d tx props\n", cnt);
+				memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+				memcpy(sCopyHeader.name,
+						tx_prop->tx[cnt].hdr_name,
+							sizeof(sCopyHeader.name));
+
+				IPACMDBG("header name: %s in tx:%d\n", sCopyHeader.name,cnt);
+				if (m_header.CopyHeader(&sCopyHeader) == false)
+				{
+					PERROR("ioctl copy header failed");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+
+				IPACMDBG("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+				IPACMDBG("header eth2_ofst_valid: %d, eth2_ofst: %d\n", sCopyHeader.is_eth2_ofst_valid, sCopyHeader.eth2_ofst);
+				if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
+				{
+					IPACMERR("header oversize\n");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+				else
+				{
+					memcpy(pHeaderDescriptor->hdr[0].hdr,
+							sCopyHeader.hdr,
+								sCopyHeader.hdr_len);
+				}
+
+				/* copy client mac_addr to partial header */
+				if (sCopyHeader.is_eth2_ofst_valid)
+				{				
+					memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst],
+						mac_addr,
+						IPA_MAC_ADDR_SIZE);
+				}
+				pHeaderDescriptor->commit = true;
+				pHeaderDescriptor->num_hdrs = 1;
+
+				memset(pHeaderDescriptor->hdr[0].name, 0,
+					 sizeof(pHeaderDescriptor->hdr[0].name));
+
+				strncat(pHeaderDescriptor->hdr[0].name,
+						IPA_ETH_HDR_NAME_v6,
+						sizeof(IPA_ETH_HDR_NAME_v6));
+
+				pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
+				pHeaderDescriptor->hdr[0].hdr_hdl = -1;
+				pHeaderDescriptor->hdr[0].is_partial = 0;
+				pHeaderDescriptor->hdr[0].status = -1;
+
+				if (m_header.AddHeader(pHeaderDescriptor) == false ||
+						pHeaderDescriptor->hdr[0].status != 0)
+				{
+					IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", pHeaderDescriptor->hdr[0].status);
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+
+				ETH_hdr_hdl_v6 = pHeaderDescriptor->hdr[0].hdr_hdl;
+				ipv6_header_set = true ;
+				IPACMDBG(" ETH v4 full header name:%s header handle:(0x%x)\n",
+									 pHeaderDescriptor->hdr[0].name,
+											 ETH_hdr_hdl_v6);	
+				break;  
+
+			}
+		}
+	}
+fail:
+	free(pHeaderDescriptor);
+
+	return res;
+}
 
 /*handle wlan iface down event*/
 int IPACM_Lan::handle_down_evt()
@@ -1347,6 +1552,37 @@ int IPACM_Lan::handle_down_evt()
 	uint32_t tx_index;
 	int res = IPACM_SUCCESS;
 
+	
+	if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ETH_IF)
+	{
+		
+		/* delete full header */
+		if (ipv4_header_set)
+		{
+			if (m_header.DeleteHeaderHdl(ETH_hdr_hdl_v4)
+					== false)
+			{
+					IPACMDBG("ETH ipv4 header delete fail\n");
+					res = IPACM_FAILURE;
+					goto fail;
+			}
+			IPACMDBG("ETH ipv4 header delete success\n");
+		}
+
+		if (ipv6_header_set)
+		{
+			if (m_header.DeleteHeaderHdl(ETH_hdr_hdl_v6)
+					== false)
+			{
+				IPACMDBG("ETH ipv6 header delete fail\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+			IPACMDBG("ETH ipv6 header delete success\n");
+		}
+	}
+	
+	
 	/* no iface address up, directly close iface*/
 	if (ip_type == IPACM_IP_NULL)
 	{
@@ -1481,6 +1717,12 @@ int IPACM_Lan::handle_down_evt()
 fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
 	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);	
+	IPACMDBG("Finished delete dependency \n ");
+
+	if (route_rule != NULL)
+	{
+		free(route_rule);
+	}
 
 	if (tx_prop != NULL)
 	{

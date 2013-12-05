@@ -55,11 +55,15 @@ extern "C"
 #define IPA_ALG_PROTOCOL_NAME_LEN  10
 
 #define IPA_WLAN_PARTIAL_HDR_OFFSET  0 // dst mac first then src mac
+//#define IPA_ETH_PARTIAL_HDR_OFFSET  8 // dst mac first then src mac
 #define IPA_VIRTUAL_IFACE_NAME "bridge0"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_v4"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v6  "IEEE802_3_v6"
 #define IPA_WAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_STA_v4"
 #define IPA_WAN_PARTIAL_HDR_NAME_v6  "IEEE802_3_STA_v6"
+#define IPA_ETH_HDR_NAME_v4  "IPACM_ETH_v4"
+#define IPA_ETH_HDR_NAME_v6  "IPACM_ETH_v6"
+
 #define IPA_MAX_IFACE_ENTRIES 15
 #define IPA_MAX_PRIVATE_SUBNET_ENTRIES 3
 #define IPA_MAX_ALG_ENTRIES 10
@@ -133,6 +137,7 @@ typedef enum
 	WLAN_IF,
 	WAN_IF,
 	VIRTUAL_IF,
+	ETH_IF,
 	UNKNOWN_IF
 } ipacm_iface_type;
 

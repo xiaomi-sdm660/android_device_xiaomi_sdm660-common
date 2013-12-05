@@ -148,6 +148,22 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
 			}
 			break;
 
+		case ETH_IF:
+			{
+					IPACMDBG("Creating ETH interface in router mode\n");
+					IPACM_Lan *ETH = new IPACM_Lan(ipa_interface_index);
+					IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, ETH);
+					IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, ETH);
+					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, ETH);
+					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, ETH);
+					IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, ETH);
+					IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", ETH->dev_name, ETH->ipa_if_num);
+					registr(ipa_interface_index, ETH);
+					/* solve the new_addr comes earlier issue */
+					IPACM_Iface::iface_addr_query(if_index);
+			}
+			break;
+
 		case WLAN_IF:
 			{
 				IPACMDBG("Creating WLan interface\n");
