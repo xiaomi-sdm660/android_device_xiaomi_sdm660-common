@@ -44,6 +44,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 
 IPACM_Config *IPACM_Config::pInstance = NULL;
+const char *IPACM_Config::DEVICE_NAME = "/dev/ipa";
 
 IPACM_Config::IPACM_Config()
 {
@@ -79,6 +80,12 @@ int IPACM_Config::Init(void)
 	uint32_t subnet_addr;
 	uint32_t subnet_mask;
 	int i, ret = IPACM_SUCCESS;
+
+	m_fd = open(DEVICE_NAME, O_RDWR);
+   if (0 > m_fd)
+   {
+   	IPACMERR("Failed opening %s.\n", DEVICE_NAME);
+   }
 
 	strncpy(IPACM_config_file, "/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
 
@@ -325,15 +332,7 @@ int IPACM_Config::DelNatIfaces(char *dev_name)
 void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa)
 {
    int retval = 0;
-   int m_fd = 0; /* File descriptor of the IPA device node /dev/ipa */
    struct ipa_ioc_rm_dependency dep;
-   const char *DEVICE_NAME = "/dev/ipa";
-
-   m_fd = open(DEVICE_NAME, O_RDWR);
-   if (0 == m_fd)
-   {
-   	IPACMERR("Failed opening %s.\n", DEVICE_NAME);
-   }
 
    /* ipa_rm_a2_check: IPA_RM_RESOURCE_A2_CONS*/
    if(rm1 == IPA_RM_RESOURCE_A2_CONS)
@@ -434,7 +433,6 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa)
        
 	   }	 
    }
-
    return ;
 }
 
@@ -444,15 +442,7 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa)
 void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 {
    int retval = 0;
-   int m_fd = 0; /* File descriptor of the IPA device node /dev/ipa */
    struct ipa_ioc_rm_dependency dep;
-   const char *DEVICE_NAME = "/dev/ipa";
-
-   m_fd = open(DEVICE_NAME, O_RDWR);
-   if (0 == m_fd)
-   {
-   	IPACMERR("Failed opening %s.\n", DEVICE_NAME);
-   }
 
    /* ipa_rm_a2_check: IPA_RM_RESOURCE_A2_CONS*/
    if(rm1 == IPA_RM_RESOURCE_A2_CONS)
@@ -548,6 +538,5 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
  	         ipa_rm_tbl[i].consumer1_up = false;		 
 	}	 
    }
-
    return ;
 }
