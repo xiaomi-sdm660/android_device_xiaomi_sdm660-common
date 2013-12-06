@@ -1655,10 +1655,30 @@ int IPACM_Wan::handle_down_evt()
 	}
 
 fail:
-	free(tx_prop);
-	free(rx_prop);
-	free(iface_query);
-
+	if (tx_prop != NULL)
+	{
+		free(tx_prop); 
+	}
+	if (rx_prop != NULL)
+	{
+		free(rx_prop);
+	}
+	if (iface_query != NULL)
+	{
+		free(iface_query);
+	}
+	if (wan_route_rule_v4_hdl != NULL)
+	{
+		free(wan_route_rule_v4_hdl);
+	}
+	if (wan_route_rule_v6_hdl != NULL)
+	{
+		free(wan_route_rule_v6_hdl);
+	}
+	if (wan_route_rule_v6_hdl_a5 != NULL)
+	{
+		free(wan_route_rule_v6_hdl_a5);
+	}
 	return res;
 }
 

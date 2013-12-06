@@ -1338,6 +1338,11 @@ fail:
 	{
 		free(iface_query);
 	}
+	if (route_rule != NULL)
+	{
+		free(route_rule);
+	}
+
 	
 	return res;
 }
