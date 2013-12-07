@@ -187,6 +187,8 @@ public:
         setAGLONASSProtocol(unsigned long aGlonassProtocol);
     virtual enum loc_api_adapter_err
         getZppFix(GpsLocation & zppLoc);
+    virtual enum loc_api_adapter_err
+        getZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask);
     virtual int initDataServiceClient();
     virtual int openAndStartDataCall();
     virtual void stopDataCall();
