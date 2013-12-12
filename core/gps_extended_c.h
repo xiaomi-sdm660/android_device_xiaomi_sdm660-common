@@ -56,6 +56,8 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_HYBRID   0x0001
 /** Position source is GNSS only */
 #define ULP_LOCATION_IS_FROM_GNSS   0x0002
+/** Position source is ZPP only */
+#define ULP_LOCATION_IS_FROM_ZPP 0x0004
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
@@ -175,6 +177,22 @@ typedef enum loc_position_mode_type {
 
 #define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
 
+/** GpsLocationExtended has valid latitude and longitude. */
+#define GPS_LOCATION_EXTENDED_HAS_LAT_LONG   (1U<<0)
+/** GpsLocationExtended has valid altitude. */
+#define GPS_LOCATION_EXTENDED_HAS_ALTITUDE   (1U<<1)
+/** GpsLocationExtended has valid speed. */
+#define GPS_LOCATION_EXTENDED_HAS_SPEED      (1U<<2)
+/** GpsLocationExtended has valid bearing. */
+#define GPS_LOCATION_EXTENDED_HAS_BEARING    (1U<<4)
+/** GpsLocationExtended has valid accuracy. */
+#define GPS_LOCATION_EXTENDED_HAS_ACCURACY   (1U<<8)
+
+/** GPS extended supports geofencing */
+#define GPS_EXTENDED_CAPABILITY_GEOFENCE     0x0000001
+/** GPS extended supports batching */
+#define GPS_EXTENDED_CAPABILITY_BATCHING     0x0000002
+
 /** Flags to indicate which values are valid in a GpsLocationExtended. */
 typedef uint16_t GpsLocationExtendedFlags;
 /** GpsLocationExtended has valid pdop, hdop, vdop. */
@@ -246,7 +264,7 @@ typedef enum {
 // if necessary.
 #define DEFAULT_IMPL(rtv)                                     \
 {                                                             \
-    LOC_LOGW("%s: default implementation invoked", __func__); \
+    LOC_LOGD("%s: default implementation invoked", __func__); \
     return rtv;                                               \
 }
 
@@ -286,6 +304,8 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_PEDOMETER_CTRL,            //
     LOC_API_ADAPTER_MOTION_CTRL,               //
     LOC_API_ADAPTER_REQUEST_WIFI_AP_DATA,      // Wifi ap data
+    LOC_API_ADAPTER_BATCH_FULL,                // Batching on full
+    LOC_API_ADAPTER_BATCHED_POSITION_REPORT,   // Batching on fix
 
     LOC_API_ADAPTER_EVENT_MAX
 };
@@ -309,6 +329,8 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_PEDOMETER_CTRL           (1<<LOC_API_ADAPTER_PEDOMETER_CTRL)
 #define LOC_API_ADAPTER_BIT_MOTION_CTRL              (1<<LOC_API_ADAPTER_MOTION_CTRL)
 #define LOC_API_ADAPTER_BIT_REQUEST_WIFI_AP_DATA     (1<<LOC_API_ADAPTER_REQUEST_WIFI_AP_DATA)
+#define LOC_API_ADAPTER_BIT_BATCH_FULL               (1<<LOC_API_ADAPTER_BATCH_FULL)
+#define LOC_API_ADAPTER_BIT_BATCHED_POSITION_REPORT  (1<<LOC_API_ADAPTER_BATCHED_POSITION_REPORT)
 
 typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
 

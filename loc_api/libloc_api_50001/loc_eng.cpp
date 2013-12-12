@@ -182,6 +182,7 @@ static void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data) ;
 
 static int loc_eng_start_handler(loc_eng_data_s_type &loc_eng_data);
 static int loc_eng_stop_handler(loc_eng_data_s_type &loc_eng_data);
+static int loc_eng_get_zpp_handler(loc_eng_data_s_type &loc_eng_data);
 
 static void deleteAidingData(loc_eng_data_s_type &logEng);
 static AgpsStateMachine*
@@ -297,6 +298,28 @@ inline void LocEngPositionMode::log() const {
     mPosMode.logv();
 }
 void LocEngPositionMode::send() const {
+    mAdapter->sendMsg(this);
+}
+
+LocEngGetZpp::LocEngGetZpp(LocEngAdapter* adapter) :
+    LocMsg(), mAdapter(adapter)
+{
+    locallog();
+}
+inline void LocEngGetZpp::proc() const
+{
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mAdapter->getOwner();
+    loc_eng_get_zpp_handler(*locEng);
+}
+inline void LocEngGetZpp::locallog() const
+{
+    LOC_LOGV("LocEngGetZpp");
+}
+inline void LocEngGetZpp::log() const
+{
+    locallog();
+}
+void LocEngGetZpp::send() const {
     mAdapter->sendMsg(this);
 }
 
@@ -1918,6 +1941,32 @@ static void loc_inform_gps_status(loc_eng_data_s_type &loc_eng_data, GpsStatusVa
     }
 
     EXIT_LOG(%s, VOID_RET);
+}
+
+static int loc_eng_get_zpp_handler(loc_eng_data_s_type &loc_eng_data)
+{
+   ENTRY_LOG();
+   int ret_val = LOC_API_ADAPTER_ERR_SUCCESS;
+   UlpLocation location;
+   LocPosTechMask tech_mask = LOC_POS_TECH_MASK_DEFAULT;
+   GpsLocationExtended locationExtended;
+   memset(&locationExtended, 0, sizeof (GpsLocationExtended));
+   locationExtended.size = sizeof(locationExtended);
+   memset(&location, 0, sizeof location);
+
+   ret_val = loc_eng_data.adapter->getZpp(location.gpsLocation, tech_mask);
+  //Mark the location source as from ZPP
+  location.gpsLocation.flags |= LOCATION_HAS_SOURCE_INFO;
+  location.position_source = ULP_LOCATION_IS_FROM_ZPP;
+
+  loc_eng_data.adapter->getUlpProxy()->reportPosition(location,
+                                     locationExtended,
+                                     NULL,
+                                     LOC_SESS_SUCCESS,
+                                     tech_mask);
+
+  EXIT_LOG(%d, ret_val);
+  return ret_val;
 }
 
 /*

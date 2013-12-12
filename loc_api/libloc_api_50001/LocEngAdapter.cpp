@@ -49,6 +49,9 @@ void LocInternalAdapter::startFixInt() {
 void LocInternalAdapter::stopFixInt() {
     sendMsg(new LocEngStopFix(mLocEngAdapter));
 }
+void LocInternalAdapter::getZppInt() {
+    sendMsg(new LocEngGetZpp(mLocEngAdapter));
+}
 void LocInternalAdapter::setUlpProxy(UlpProxyBase* ulp) {
     struct LocSetUlpProxy : public LocMsg {
         LocAdapterBase* mAdapter;
