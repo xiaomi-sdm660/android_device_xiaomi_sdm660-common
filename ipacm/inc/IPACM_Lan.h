@@ -47,10 +47,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Iface.h"
 #include "IPACM_Routing.h"
 #include "IPACM_Filtering.h"
+#include "IPACM_Config.h"
 
 #define IPA_MAX_NUM_UNICAST_ROUTE_RULES  6
 #define IPA_WAN_DEFAULT_FILTER_RULE_HANDLES  1
 #define IPA_PRIV_SUBNET_FILTER_RULE_HANDLES  3
+#define MAX_WAN_UL_FILTER_RULES 20
 
 /* store each lan-iface unicast routing rule and its handler*/
 struct ipa_lan_rt_rule
@@ -80,17 +82,27 @@ public:
 	void event_callback(ipa_cm_event_id event,
 											void *data);
 
+	virtual int handle_wan_up(ipa_ip_type ip_type);
+											
 	/* configure filter rule for wan_up event*/
-	virtual int handle_wan_up(void);
+	virtual int handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype);
 
 	/* delete filter rule for wan_down event*/
-	virtual int handle_wan_down(void);
+	virtual int handle_wan_down(bool is_sta_mode);
+	
+	/* delete filter rule for wan_down event*/
+	virtual int handle_wan_down_v6(bool is_sta_mode);
 
 	/* configure private subnet filter rules*/
 	virtual int handle_private_subnet(ipa_ip_type iptype);
 
 	/* handle new_address event*/
 	int handle_addr_evt(ipacm_event_data_addr *data);
+
+	/* install UL filter rule from Q6 */
+	int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
+
+
 
 private:
 
@@ -127,6 +139,14 @@ private:
 	/*handle wlan iface down event*/
 	int handle_down_evt();
 
+	/* store ipv4 UL filter rule handlers from Q6*/
+	uint32_t wan_ul_fl_rule_hdl_v4[MAX_WAN_UL_FILTER_RULES];
+
+	/* store ipv6 UL filter rule handlers from Q6*/
+	uint32_t wan_ul_fl_rule_hdl_v6[MAX_WAN_UL_FILTER_RULES];
+
+	int num_wan_ul_fl_rule_v4;
+	int num_wan_ul_fl_rule_v6;
 };
 
 #endif /* IPACM_LAN_H */

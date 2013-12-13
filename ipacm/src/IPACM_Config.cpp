@@ -66,6 +66,12 @@ IPACM_Config::IPACM_Config()
 	memset(&rt_tbl_wan_v4, 0, sizeof(rt_tbl_wan_v4));
 	memset(&rt_tbl_v6, 0, sizeof(rt_tbl_v6));
 	memset(&rt_tbl_wan_v6, 0, sizeof(rt_tbl_wan_v6));
+	memset(&rt_tbl_wan_dl, 0, sizeof(rt_tbl_wan_dl));
+
+	memset(&ext_prop_v4, 0, sizeof(ext_prop_v4));
+	memset(&ext_prop_v6, 0, sizeof(ext_prop_v6));
+
+	qmap_id = ~0;
 
 	IPACMDBG(" create IPACM_Config constructor\n");
 	return;
@@ -169,12 +175,16 @@ int IPACM_Config::Init(void)
 
 	rt_tbl_wan_v4.ip = IPA_IP_v4;
 	strncpy(rt_tbl_wan_v4.name, V4_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v4.name));
-
+	
 	rt_tbl_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_v6.name, V6_COMMON_ROUTE_TABLE_NAME, sizeof(rt_tbl_v6.name));
 
 	rt_tbl_wan_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_wan_v6.name, V6_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v6.name));
+
+	rt_tbl_wan_dl.ip = IPA_IP_MAX;
+	strncpy(rt_tbl_wan_dl.name, WAN_DL_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_dl.name));
+
 
 	/* Construct IPACM ipa_client map to rm_resource table */
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC1_PROD]= IPA_RM_RESOURCE_HSIC_PROD;
@@ -539,4 +549,77 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	}	 
    }
    return ;
+}
+
+int IPACM_Config::SetExtProp(ipa_ioc_query_intf_ext_props *prop)
+{
+	int i, num;
+
+	if(prop == NULL || prop->num_ext_props <= 0)
+	{
+		IPACMERR("There is no extended property!\n");
+		return IPACM_FAILURE;
+	}
+
+	num = prop->num_ext_props;
+	for(i=0; i<num; i++)
+	{
+		if(prop->ext[i].ip == IPA_IP_v4)
+		{
+			if(ext_prop_v4.num_ext_props >= MAX_NUM_EXT_PROPS)
+			{
+				IPACMDBG("IPv4 extended property table is full!\n");
+				continue;
+			}
+			memcpy(&ext_prop_v4.prop[ext_prop_v4.num_ext_props], &prop->ext[i], sizeof(struct ipa_ioc_ext_intf_prop));
+			ext_prop_v4.num_ext_props++;
+		}
+		else if(prop->ext[i].ip == IPA_IP_v6)
+		{
+			if(ext_prop_v6.num_ext_props >= MAX_NUM_EXT_PROPS)
+			{
+				IPACMDBG("IPv6 extended property table is full!\n");
+				continue;
+			}
+			memcpy(&ext_prop_v6.prop[ext_prop_v6.num_ext_props], &prop->ext[i], sizeof(struct ipa_ioc_ext_intf_prop));
+			ext_prop_v6.num_ext_props++;
+		}
+		else
+		{
+			IPACMERR("The IP type is not expected!\n");
+			return IPACM_FAILURE;
+		}
+	}
+
+	IPACMDBG("Set extended property succeeded.\n");
+
+	return IPACM_SUCCESS;
+}
+
+ipacm_ext_prop* IPACM_Config::GetExtProp(ipa_ip_type ip_type)
+{
+	if(ip_type == IPA_IP_v4)
+		return &ext_prop_v4;
+	else if(ip_type == IPA_IP_v6)
+		return &ext_prop_v6;
+	else
+	{
+		IPACMERR("Failed to get extended property: the IP version is neither IPv4 nor IPv6!\n");
+		return NULL;
+	}
+}
+
+int IPACM_Config::DelExtProp(ipa_ip_type ip_type)
+{
+	if(ip_type != IPA_IP_v6)
+	{
+		memset(&ext_prop_v4, 0, sizeof(ext_prop_v4));
+	}
+	
+	if(ip_type != IPA_IP_v4) 
+	{
+		memset(&ext_prop_v6, 0, sizeof(ext_prop_v6));
+	}
+
+	return IPACM_SUCCESS;
 }

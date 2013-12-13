@@ -45,6 +45,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <linux/msm_ipa.h>
 #include <IPACM_Defs.h>
+#include <linux/rmnet_ipa_fd_ioctl.h>
 
 class IPACM_Filtering
 {
@@ -60,9 +61,14 @@ public:
 													 ipa_ip_type ip,
 													 uint8_t num_rules);
 
+	bool AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *rule_table_v4, struct ipa_ioc_add_flt_rule const * rule_table_v6, uint8_t mux_id);
+	bool SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req_msg_v01* table);
+	ipa_filter_action_enum_v01 GetQmiFilterAction(ipa_flt_action action);
+
 private:
 	static const char *DEVICE_NAME;
 	int fd; /* File descriptor of the IPA device node /dev/ipa */
+	int fd_wwan_ioctl;
 };
 
 #endif //IPACM_FILTERING_H

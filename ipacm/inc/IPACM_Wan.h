@@ -50,6 +50,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <IPACM_Xml.h>
 
 #define IPA_NUM_DEFAULT_WAN_FILTER_RULES 2
+#define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV4 2
+#define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 3
 
 /* wan iface */
 class IPACM_Wan : public IPACM_Iface
@@ -58,8 +60,9 @@ class IPACM_Wan : public IPACM_Iface
 public:
 
 	static bool wan_up;
+	static bool wan_up_v6;
 
-	IPACM_Wan(int iface_index);
+	IPACM_Wan(int iface_index, bool is_sta_mode);
 	~IPACM_Wan();
 
 	static bool isWanUP()
@@ -67,8 +70,23 @@ public:
 		return wan_up;
 	}
 
+	static bool isWanUP_V6()
+	{
+		return wan_up_v6;
+	}
+
+
 	void event_callback(ipa_cm_event_id event,
 											void *data);
+
+	static struct ipa_flt_rule_add flt_rule_v4[IPA_MAX_FLT_RULE];
+	static struct ipa_flt_rule_add flt_rule_v6[IPA_MAX_FLT_RULE];
+
+	static int num_v4_flt_rule;
+	static int num_v6_flt_rule;
+	
+	bool m_is_sta_mode;
+	static bool backhaul_is_sta_mode;
 
 private:
 	uint32_t *wan_route_rule_v4_hdl;
@@ -97,21 +115,50 @@ private:
 	/* wan default route/filter rule configuration */
 	int handle_route_add_evt(ipa_ip_type iptype);
 
-	/* wan default route/filter rule delete */	
-	int handle_route_del_evt(ipa_ip_type iptype);
-
 	/* construct complete ethernet header */
 	int handle_header_add_evt(uint8_t mac_addr[6]);
 
-	/* configure the initial firewall filter rules */
 	int config_dft_firewall_rules(ipa_ip_type iptype);
-
-	/*clean firewall filter rules */
+	
+	int handle_route_del_evt(ipa_ip_type iptype);
+	
 	int del_dft_firewall_rules(ipa_ip_type iptype);
-
-	/*handle wan-iface down event */
+	
 	int handle_down_evt();
 
+	
+	
+	/*handle wan-iface down event */
+	int handle_down_evt_ex();
+
+	/* wan default route/filter rule delete */	
+	int handle_route_del_evt_ex(ipa_ip_type iptype);
+
+	/* configure the initial firewall filter rules */
+	int config_dft_firewall_rules_ex(struct ipa_flt_rule_add* rules, int rule_offset, 
+		ipa_ip_type iptype);
+
+	/* init filtering rule in wan dl filtering table */
+	int init_fl_rule_ex(ipa_ip_type iptype);
+
+	/* add ICMP and ALG rules in wan dl filtering table */
+	int add_icmp_alg_rules(struct ipa_flt_rule_add* rules, int rule_offset, ipa_ip_type iptype);
+
+	/* query extended property */
+	int query_ext_prop();
+
+	ipa_ioc_query_intf_ext_props *ext_prop;
+
+	int config_wan_firewall_rule(ipa_ip_type iptype);
+
+	int del_wan_firewall_rule(ipa_ip_type iptype);
+
+	int add_dft_filtering_rule(struct ipa_flt_rule_add* rules, int rule_offset, ipa_ip_type iptype);
+
+	int install_wan_filtering_rule();
+
+	int m_fd_ipa;
+	
 };
 
 #endif /* IPACM_WAN_H */

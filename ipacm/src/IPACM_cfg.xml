@@ -7,11 +7,11 @@
 			   <Category>LAN</Category>
 			</Iface>
 			<Iface>
-			   <Name>rmnet0</Name>
+			   <Name>rmnet_data0</Name>
 			   <Category>WAN</Category>
 			</Iface>
 			<Iface>
-			   <Name>rmnet1</Name>
+			   <Name>rmnet_data1</Name>
 			   <Category>WAN</Category>
 			</Iface>			
 			<Iface>

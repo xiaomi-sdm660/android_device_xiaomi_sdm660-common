@@ -134,7 +134,9 @@ int ipacm_read_cfg_xml(char *xml_file, IPACM_conf_t *config)
 	ret_val = ipacm_cfg_xml_parse_tree(root, config);
 
 	if (ret_val != IPACM_SUCCESS) 
+	{
 		IPACMDBG("IPACM_xml_parse: ipacm_cfg_xml_parse_tree returned parse error!\n");
+	}
 
 	/* Free up the libxml's parse tree */
 	xmlFreeDoc(doc);
@@ -647,6 +649,7 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[1]=ntohl(config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[1]);								 
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[2]=ntohl(config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[2]);								 
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[3]=ntohl(config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[3]);									 			 
+
 						IPACMDBG("\n ipv6 source addr is %d \n ",
 										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[0]);
 					}

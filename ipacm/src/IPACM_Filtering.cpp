@@ -45,21 +45,30 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPACM_Filtering.h"
 #include <IPACM_Log.h>
+#include "IPACM_Defs.h"
+
 
 const char *IPACM_Filtering::DEVICE_NAME = "/dev/ipa";
 
 IPACM_Filtering::IPACM_Filtering()
 {
 	fd = open(DEVICE_NAME, O_RDWR);
-	if (0 == fd)
+	if (fd < 0)
 	{
 		IPACMERR("Failed opening %s.\n", DEVICE_NAME);
+	}
+
+	fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
+	if(fd_wwan_ioctl < 0)
+	{
+		IPACMERR("Failed to open %s.\n",WWAN_QMI_IOCTL_DEVICE_NAME);
 	}
 }
 
 IPACM_Filtering::~IPACM_Filtering()
 {
 	close(fd);
+	close(fd_wwan_ioctl);
 }
 
 bool IPACM_Filtering::DeviceNodeIsOpened()
@@ -222,5 +231,136 @@ fail:
 	free(flt_rule);
 
 	return res;
+}
+
+bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *rule_table_v4, struct ipa_ioc_add_flt_rule const * rule_table_v6, uint8_t mux_id)
+{
+	int ret = 0, cnt, num_rules = 0, pos = 0;
+	ipa_install_fltr_rule_req_msg_v01 qmi_rule_msg;
+
+	if(fd_wwan_ioctl < 0)
+	{
+		IPACMERR("WWAN ioctl is not open.\n");
+		return false;
+	}
+	else
+	{
+		IPACMDBG("WWAN ioctl is open.\n");
+	}
+   
+
+	if(rule_table_v4 != NULL)
+	{
+		num_rules += rule_table_v4->num_rules;
+		IPACMDBG("Get %d WAN DL IPv4 filtering rules.\n", rule_table_v4->num_rules);
+	}
+	if(rule_table_v6 != NULL)
+	{
+		num_rules += rule_table_v6->num_rules;
+		IPACMDBG("Get %d WAN DL IPv6 filtering rules.\n", rule_table_v6->num_rules);
+	}
+
+	if(num_rules > QMI_IPA_MAX_FILTERS_V01)
+	{
+		IPACMERR("The number of filtering rules exceed limit.\n");
+		return false;
+	}
+	else
+	{
+		memset(&qmi_rule_msg, 0, sizeof(qmi_rule_msg));
+
+		qmi_rule_msg.filter_spec_list_valid = 1;
+		qmi_rule_msg.filter_spec_list_len = num_rules;
+		qmi_rule_msg.source_pipe_index_valid = 0;
+
+		IPACMDBG("Get %d WAN DL filtering rules in total.\n", num_rules);
+		
+		if(rule_table_v4 != NULL)
+		{
+			for(cnt = rule_table_v4->num_rules - 1; cnt >= 0; cnt--)
+			{
+				qmi_rule_msg.filter_spec_list[pos].filter_spec_identifier = pos;
+				qmi_rule_msg.filter_spec_list[pos].ip_type = QMI_IPA_IP_TYPE_V4_V01;
+				qmi_rule_msg.filter_spec_list[pos].filter_action = GetQmiFilterAction(rule_table_v4->rules[cnt].rule.action);
+				qmi_rule_msg.filter_spec_list[pos].is_routing_table_index_valid = 1;
+				qmi_rule_msg.filter_spec_list[pos].route_table_index = rule_table_v4->rules[cnt].rule.rt_tbl_idx;
+				qmi_rule_msg.filter_spec_list[pos].is_mux_id_valid = 1;
+				qmi_rule_msg.filter_spec_list[pos].mux_id = mux_id;
+
+				memcpy(&qmi_rule_msg.filter_spec_list[pos].filter_rule, &rule_table_v4->rules[cnt].rule.eq_attrib, 
+					sizeof(struct ipa_filter_rule_type_v01));
+				pos++;
+			}
+		}
+
+		if(rule_table_v6 != NULL)
+		{
+			for(cnt = rule_table_v6->num_rules - 1; cnt >= 0; cnt--)
+			{
+				qmi_rule_msg.filter_spec_list[pos].filter_spec_identifier = pos;
+				qmi_rule_msg.filter_spec_list[pos].ip_type = QMI_IPA_IP_TYPE_V6_V01;
+				qmi_rule_msg.filter_spec_list[pos].filter_action = GetQmiFilterAction(rule_table_v6->rules[cnt].rule.action);
+				qmi_rule_msg.filter_spec_list[pos].is_routing_table_index_valid = 1;
+				qmi_rule_msg.filter_spec_list[pos].route_table_index = rule_table_v6->rules[cnt].rule.rt_tbl_idx;
+				qmi_rule_msg.filter_spec_list[pos].is_mux_id_valid = 1;
+				qmi_rule_msg.filter_spec_list[pos].mux_id = mux_id;
+
+				memcpy(&qmi_rule_msg.filter_spec_list[pos].filter_rule, &rule_table_v6->rules[cnt].rule.eq_attrib, 
+					sizeof(struct ipa_filter_rule_type_v01));
+				pos++;
+			}
+		}
+
+		ret = ioctl(fd_wwan_ioctl, WAN_IOC_ADD_FLT_RULE, &qmi_rule_msg);
+		if (ret != 0)
+		{
+			IPACMERR("Failed adding Filtering rule %p with ret %d\n ", &qmi_rule_msg, ret);
+			return false;
+		}
+	}
+	IPACMDBG("Added Filtering rule %p\n", &qmi_rule_msg);
+	return true;
+}
+
+bool IPACM_Filtering::SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req_msg_v01* table)
+{
+	int ret = 0;
+
+	if(fd_wwan_ioctl < 0)
+	{
+		IPACMERR("WWAN ioctl is not open.\n");
+		return false;
+	}
+
+	ret = ioctl(fd_wwan_ioctl, WAN_IOC_ADD_FLT_RULE_INDEX, table);
+	if (ret != 0)
+	{
+		IPACMERR("Failed adding filtering rule index %p with ret %d\n", table, ret);
+		return false;
+	}
+
+	IPACMDBG("Added Filtering rule index %p\n", table);
+	return true;
+}
+
+ipa_filter_action_enum_v01 IPACM_Filtering::GetQmiFilterAction(ipa_flt_action action)
+{
+	switch(action)
+	{
+	case IPA_PASS_TO_ROUTING:
+		return QMI_IPA_FILTER_ACTION_ROUTING_V01;
+
+	case IPA_PASS_TO_SRC_NAT:
+		return QMI_IPA_FILTER_ACTION_SRC_NAT_V01;
+
+	case IPA_PASS_TO_DST_NAT:
+		return QMI_IPA_FILTER_ACTION_DST_NAT_V01;
+
+	case IPA_PASS_TO_EXCEPTION:
+		return QMI_IPA_FILTER_ACTION_EXCEPTION_V01;
+
+	default:
+		return IPA_FILTER_ACTION_ENUM_MAX_ENUM_VAL_V01;
+	}
 }
 

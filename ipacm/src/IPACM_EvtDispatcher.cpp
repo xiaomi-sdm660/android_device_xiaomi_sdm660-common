@@ -48,6 +48,7 @@ extern pthread_mutex_t mutex;
 extern pthread_cond_t  cond_var;
 
 cmd_evts *IPACM_EvtDispatcher::head = NULL;
+extern uint32_t ipacm_event_stats[IPACM_EVENT_MAX];
 
 int IPACM_EvtDispatcher::PostEvt
 (
@@ -121,6 +122,7 @@ void IPACM_EvtDispatcher::ProcessEvt(ipacm_cmd_q_data *data)
 	        memcpy(&tmp1, tmp, sizeof(tmp1));
 		if(data->event == tmp1.event)
 		{
+			ipacm_event_stats[data->event]++;
 			tmp1.obj->event_callback(data->event, data->evt_data);
 			IPACMDBG(" Find matched registered events\n");
 		}

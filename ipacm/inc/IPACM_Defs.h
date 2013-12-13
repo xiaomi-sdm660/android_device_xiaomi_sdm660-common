@@ -68,8 +68,13 @@ extern "C"
 #define V4_DEFAULT_ROUTE_TABLE_NAME  "ipa_dflt_rt"
 #define V4_LAN_ROUTE_TABLE_NAME  "COMRTBLLANv4"
 #define V4_WAN_ROUTE_TABLE_NAME  "WANRTBLv4"
+#define WAN_DL_ROUTE_TABLE_NAME "ipa_dflt_wan_rt"
 #define V6_COMMON_ROUTE_TABLE_NAME  "COMRTBLv6"
 #define V6_WAN_ROUTE_TABLE_NAME  "WANRTBLv6"
+
+#define WWAN_QMI_IOCTL_DEVICE_NAME "/dev/wwan_ioctl"
+#define IPA_DEVICE_NAME "/dev/ipa"
+#define IPA_MAX_FLT_RULE 36
 
 
 
@@ -83,7 +88,7 @@ extern "C"
 #define IPACM_IP_NULL (ipa_ip_type)0xFF
 #define IPACM_INVALID_INDEX (ipa_ip_type)0xFF
 
-#define IPA_MAX_NUM_WIFI_CLIENTS  15
+#define IPA_MAX_NUM_WIFI_CLIENTS  32
 #define IPA_MAX_NUM_AMPDU_RULE  15
 #define IPA_MAC_ADDR_SIZE  6
 
@@ -115,7 +120,11 @@ typedef enum
 	IPA_HANDLE_WAN_UP,                        /* 21 ipacm_event_iface_up  */
 	IPA_HANDLE_WAN_DOWN,                      /* 22 unsigned long  */
 	IPA_HANDLE_WLAN_UP,                       /* 23 ipacm_event_iface_up */
-	IPA_HANDLE_LAN_UP                         /* 24 ipacm_event_iface_up */
+	IPA_HANDLE_LAN_UP,                        /* 24 ipacm_event_iface_up */
+	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 25 ipacm_event_data_wlan_ex */
+	IPA_HANDLE_WAN_UP_V6,					  /* 26 NULL */
+	IPA_HANDLE_WAN_DOWN_V6,					  /* 27 NULL */
+	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
 typedef enum
@@ -177,11 +186,20 @@ typedef struct _ipacm_event_data_mac
 	uint8_t mac_addr[6];
 } ipacm_event_data_mac;
 
+typedef struct
+{
+	int if_index;
+	uint8_t num_of_attribs;
+	struct ipa_wlan_hdr_attrib_val attribs[0];
+} ipacm_event_data_wlan_ex;
+
 typedef struct _ipacm_event_iface_up
 {
 	char ifname[IPA_IFACE_NAME_LEN];
 	uint32_t ipv4_addr;
 	uint32_t addr_mask;
 }ipacm_event_iface_up;
+
+
 
 #endif /* IPA_CM_DEFS_H */

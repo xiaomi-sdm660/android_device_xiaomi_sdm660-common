@@ -59,7 +59,7 @@ extern "C"
 #include "IPACM_Defs.h"
 
 #define MAX_NUM_OF_FD 10
-#define IPA_NL_MSG_MAX_LEN (1024)
+#define IPA_NL_MSG_MAX_LEN (2048)
 #define IF_NAME_LEN 16
 
 
