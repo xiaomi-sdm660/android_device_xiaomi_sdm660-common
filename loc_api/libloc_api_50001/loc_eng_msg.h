@@ -280,6 +280,14 @@ struct LocEngUp : public LocMsg {
     virtual void log() const;
 };
 
+struct LocEngGetZpp : public LocMsg {
+    LocEngAdapter* mAdapter;
+    LocEngGetZpp(LocEngAdapter* adapter);
+    virtual void proc() const;
+    void locallog() const;
+    virtual void log() const;
+    void send() const;
+};
 
 #ifdef __cplusplus
 }

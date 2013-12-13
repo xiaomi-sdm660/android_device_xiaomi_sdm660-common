@@ -62,6 +62,7 @@ public:
     virtual void setPositionModeInt(LocPosMode& posMode);
     virtual void startFixInt();
     virtual void stopFixInt();
+    virtual void getZppInt();
     virtual void setUlpProxy(UlpProxyBase* ulp);
 };
 
@@ -238,6 +239,11 @@ public:
     inline virtual void closeDataCall()
     {
         mLocApi->closeDataCall();
+    }
+    inline enum loc_api_adapter_err
+        getZpp(GpsLocation &zppLoc, LocPosTechMask &tech_mask)
+    {
+        return mLocApi->getZppFix(zppLoc, tech_mask);
     }
 
     virtual void handleEngineDownEvent();
