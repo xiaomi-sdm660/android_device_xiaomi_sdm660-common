@@ -120,21 +120,23 @@ public:
     /*Query the IPA endpoint property */
     int query_iface_property(void);
 
-		/*Configure the initial filter rules */
-		virtual int init_fl_rule(ipa_ip_type iptype);
+	/*Configure the initial filter rules */
+	virtual int init_fl_rule(ipa_ip_type iptype);
 
-		static IPACM_Routing m_routing;
-		static IPACM_Filtering m_filtering;
-		static IPACM_Header m_header;
+	static IPACM_Routing m_routing;
+	static IPACM_Filtering m_filtering;
+	static IPACM_Header m_header;
 
-		/* software routing enable */
-		virtual int handle_software_routing_enable(void);
+	/* software routing enable */
+	virtual int handle_software_routing_enable(void);
 
-		/* software routing disable */
-		virtual int handle_software_routing_disable(void);
+	/* software routing disable */
+	virtual int handle_software_routing_disable(void);
 
 	/* used to get filtering rule index in table */
-	int flt_rule_count;
+	int flt_rule_count_v4;
+	
+	int flt_rule_count_v6;
 
 
 private:

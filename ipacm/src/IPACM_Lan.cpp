@@ -870,6 +870,8 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 		return IPACM_FAILURE;
 	}
 
+	flt_rule_count_v4 = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+	
 	if(is_sta_mode == false)
 	{
 		if (m_filtering.DeleteFilteringHdls(wan_ul_fl_rule_hdl_v4, 
@@ -1145,10 +1147,11 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			return IPACM_FAILURE;
 		}
 
+		flt_rule_count_v4 += IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		
 		/* copy filter rule hdls */
 		for (i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
 		{
-
 			private_fl_rule_hdl[i] = m_pFilteringTable->rules[i].flt_rule_hdl;
 		}
 		free(m_pFilteringTable);
@@ -1581,12 +1584,19 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptyp
 		flt_rule_entry.rule.rt_tbl_idx = prop->prop[cnt].rt_tbl_idx;
 		memcpy(&pFilteringTable->rules[cnt], &flt_rule_entry, sizeof(flt_rule_entry));
 
-		flt_index.filter_index_list[cnt].filter_index = flt_rule_count;
+		if(iptype == IPA_IP_v4)
+		{
+			IPACMDBG("Filtering rule %d has index %d\n", cnt, flt_rule_count_v4);
+			flt_index.filter_index_list[cnt].filter_index = flt_rule_count_v4;
+			flt_rule_count_v4++;
+		}
+		if(iptype == IPA_IP_v6)
+		{
+			IPACMDBG("Filtering rule %d has index %d\n", cnt, flt_rule_count_v6);
+			flt_index.filter_index_list[cnt].filter_index = flt_rule_count_v6;
+			flt_rule_count_v6++;
+		}
 		flt_index.filter_index_list[cnt].filter_handle = prop->prop[cnt].filter_hdl;
-		
-		IPACMDBG("Filtering rule %d, index %d\n", cnt, flt_index.filter_index_list[cnt].filter_index);
-
-		flt_rule_count++;
 	}
 
 	if(false == m_filtering.SendFilteringRuleIndex(&flt_index))
@@ -1645,6 +1655,8 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 		return IPACM_FAILURE;
 	}
 
+	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES;
+	
 	if(is_sta_mode == false)
 	{
 		if (m_filtering.DeleteFilteringHdls(wan_ul_fl_rule_hdl_v6, 
