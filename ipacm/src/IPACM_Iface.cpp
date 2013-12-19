@@ -76,7 +76,8 @@ IPACM_Iface::IPACM_Iface(int iface_index)
 	memset(software_routing_fl_rule_hdl, 0, sizeof(software_routing_fl_rule_hdl));
 	memset(ipv6_addr, 0, sizeof(ipv6_addr));
 
-	flt_rule_count = 0;
+	flt_rule_count_v4 = 0;
+	flt_rule_count_v6 = 0;
 	query_iface_property();
 	IPACMDBG(" create iface-index(%d) constructor\n", ipa_if_num);
 	return;
@@ -666,7 +667,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		}
 		else
 		{
-			flt_rule_count += IPV4_DEFAULT_FILTERTING_RULES;
+			flt_rule_count_v4 += IPV4_DEFAULT_FILTERTING_RULES;
 			/* copy filter hdls */
 			for (int i = 0; i < IPV4_DEFAULT_FILTERTING_RULES; i++)
 			{
@@ -754,7 +755,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		}
 		else
 		{
-			flt_rule_count += IPV6_DEFAULT_FILTERTING_RULES;
+			flt_rule_count_v6 += IPV6_DEFAULT_FILTERTING_RULES;
 			/* copy filter hdls */
 			for (int i = 0;
 					 i < IPV6_DEFAULT_FILTERTING_RULES;
