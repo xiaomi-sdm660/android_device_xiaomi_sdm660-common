@@ -74,8 +74,7 @@ LOCAL_SHARED_LIBRARIES := \
     libloc_eng \
     libloc_core \
     libgps.utils \
-    libdl \
-    libandroid_runtime
+    libdl
 
 LOCAL_SRC_FILES += \
     loc.cpp \
