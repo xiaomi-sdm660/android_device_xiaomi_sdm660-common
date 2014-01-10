@@ -1582,6 +1582,28 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		return IPACM_FAILURE;
 	}
 
+	/* default firewall is disable and the rule action is drop */
+	memset(&firewall_config, 0, sizeof(firewall_config));
+	strncpy(firewall_config.firewall_config_file, "/etc/mobileap_firewall.xml", sizeof(firewall_config.firewall_config_file));
+
+	if (firewall_config.firewall_config_file)
+	{
+		IPACMDBG("Firewall XML file is %s \n", firewall_config.firewall_config_file);
+		if (IPACM_SUCCESS == IPACM_read_firewall_xml(firewall_config.firewall_config_file, &firewall_config))
+		{
+			IPACMDBG("QCMAP Firewall XML read OK \n");
+		}
+		else
+		{
+			IPACMERR("QCMAP Firewall XML read failed, no that file, use default configuration \n");
+		}
+	}
+	else
+	{
+		IPACMERR("No firewall xml mentioned \n");
+		return IPACM_FAILURE;
+	}
+		
 	if (iptype == IPA_IP_v4)
 	{
 		original_num_rules = IPACM_Wan::num_v4_flt_rule;
