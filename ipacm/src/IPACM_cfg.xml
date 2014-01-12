@@ -3,6 +3,10 @@
 	<IPACM>
 		<IPACMIface>
 			<Iface>
+			   <Name>rndis0</Name>
+			   <Category>LAN</Category>
+			</Iface>
+			<Iface>
 			   <Name>ecm0</Name>
 			   <Category>LAN</Category>
 			</Iface>

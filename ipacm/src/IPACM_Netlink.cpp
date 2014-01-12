@@ -1571,7 +1571,7 @@ static int ipa_nl_decode_nlmsg
 		    	data_all->ipv4_addr = ntohl(data_all->ipv4_addr);
 		    	data_all->iptype = IPA_IP_v4;
 		    }
-		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == 0)
+		    else
 		    {
 		        data_all->iptype = IPA_IP_v6;
 		    }
@@ -1664,7 +1664,7 @@ static int ipa_nl_decode_nlmsg
 					data_all->ipv4_addr = ntohl(data_all->ipv4_addr);
 					data_all->iptype = IPA_IP_v4;
 				}
-		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == 0)
+		    else
 		    {
 		        data_all->iptype = IPA_IP_v6;
 		    }
