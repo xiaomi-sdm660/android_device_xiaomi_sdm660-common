@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -2086,9 +2086,9 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                       AGPS_TYPE_SUPL,
                                                       false);
 
-        loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
-
         if (adapter->mAgpsEnabled) {
+            loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
+
             loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
                                                    NULL, NULL, &loc_eng_data);
         }
