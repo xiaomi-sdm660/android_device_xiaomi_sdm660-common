@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -44,7 +44,13 @@
 #include <errno.h>
 #include <LocDualContext.h>
 #include <cutils/properties.h>
-
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+#include <mdm_detect.h>
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 using namespace loc_core;
 
 //Globals defns
@@ -120,6 +126,9 @@ const GpsNiInterface sLocEngNiInterface =
    loc_ni_init,
    loc_ni_respond,
 };
+
+// For shutting down MDM in fusion devices
+static int mdm_fd = -1;
 
 static void loc_agps_ril_init( AGpsRilCallbacks* callbacks );
 static void loc_agps_ril_set_ref_location(const AGpsRefLocation *agps_reflocation, size_t sz_struct);
@@ -241,6 +250,7 @@ SIDE EFFECTS
 static int loc_init(GpsCallbacks* callbacks)
 {
     int retVal = -1;
+    int i = 0;
     ENTRY_LOG();
     LOC_API_ADAPTER_EVENT_MASK_T event;
 
@@ -279,6 +289,43 @@ static int loc_init(GpsCallbacks* callbacks)
     loc_afw_data.adapter->mAgpsEnabled = !loc_afw_data.adapter->hasAgpsExt();
     loc_afw_data.adapter->mCPIEnabled = !loc_afw_data.adapter->hasCPIExt();
 
+    if(retVal) {
+        LOC_LOGE("loc_eng_init() fail!");
+        goto err;
+    }
+
+    LOC_LOGD("loc_eng_init() success!");
+    if (mdm_fd < 0) {
+        struct dev_info modem_info;
+        memset(&modem_info, 0, sizeof(struct dev_info));
+        if(get_system_info(&modem_info) != RET_SUCCESS) {
+            LOC_LOGE("%s:%d]: Error: get_system_info returned error\n",
+                     __func__, __LINE__);
+            goto err;
+        }
+        for(i=0; i<modem_info.num_modems; i++) {
+            if((modem_info.mdm_list[i].type == MDM_TYPE_EXTERNAL) &&
+               (modem_info.mdm_list[i].powerup_node)) {
+                LOC_LOGD("%s:%d]: powerup_node: %s", __func__, __LINE__,
+                         modem_info.mdm_list[i].powerup_node);
+                mdm_fd = open(modem_info.mdm_list[i].powerup_node, O_RDONLY);
+                if (mdm_fd < 0) {
+                    LOC_LOGE("Error: %s open failed: %s\n",
+                             modem_info.mdm_list[i].powerup_node, strerror(errno));
+                } else {
+                    LOC_LOGD("%s opens success!", modem_info.mdm_list[i].powerup_node);
+                }
+            }
+            else {
+                LOC_LOGD("%s:%d]: powerup_node not present in mdm %d",
+                         __func__, __LINE__, i);
+            }
+        }
+    } else {
+        LOC_LOGD("powerup_node has been opened before");
+    }
+
+err:
     EXIT_LOG(%d, retVal);
     return retVal;
 }
@@ -306,14 +353,14 @@ static void loc_cleanup()
     gps_loc_cb = NULL;
     gps_sv_cb = NULL;
 
-/*
-    if (gss_fd >= 0)
-    {
-        close(gss_fd);
-        gss_fd = -1;
-        LOC_LOGD("GSS shutdown.\n");
+    if (mdm_fd >= 0) {
+        LOC_LOGD("closing the powerup node");
+        close(mdm_fd);
+        mdm_fd = -1;
+        LOC_LOGD("finished closing the powerup node");
+    } else {
+        LOC_LOGD("powerup node has not been opened yet.");
     }
-*/
 
     EXIT_LOG(%s, VOID_RET);
 }
