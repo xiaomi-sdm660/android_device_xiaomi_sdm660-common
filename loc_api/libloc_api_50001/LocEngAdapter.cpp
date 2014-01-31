@@ -65,7 +65,7 @@ LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
                    :context),
     mOwner(owner), mInternalAdapter(new LocInternalAdapter(this)),
     mUlp(new UlpProxyBase()), mNavigating(false),
-    mAgpsEnabled(false), mCPIEnabled(false)
+    mSupportsAgpsExtendedCapabilities(false), mSupportsCPIExtendedCapabilities(false)
 {
     memset(&mFixCriteria, 0, sizeof(mFixCriteria));
     mFixCriteria.mode = LOC_POSITION_MODE_INVALID;
@@ -210,84 +210,84 @@ bool LocEngAdapter::reportXtraServer(const char* url1,
                                         const char* url3,
                                         const int maxlength)
 {
-    if (mAgpsEnabled) {
+    if (mSupportsAgpsExtendedCapabilities) {
         sendMsg(new LocEngReportXtraServer(mOwner, url1,
                                            url2, url3, maxlength));
     }
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::requestATL(int connHandle, AGpsType agps_type)
 {
-    if (mAgpsEnabled) {
+    if (mSupportsAgpsExtendedCapabilities) {
         sendMsg(new LocEngRequestATL(mOwner,
                                      connHandle, agps_type));
     }
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::releaseATL(int connHandle)
 {
-    if (mAgpsEnabled) {
+    if (mSupportsAgpsExtendedCapabilities) {
         sendMsg(new LocEngReleaseATL(mOwner, connHandle));
     }
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::requestXtraData()
 {
-    if (mAgpsEnabled) {
+    if (mSupportsAgpsExtendedCapabilities) {
         sendMsg(new LocEngRequestXtra(mOwner));
     }
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::requestTime()
 {
-    if (mAgpsEnabled) {
+    if (mSupportsAgpsExtendedCapabilities) {
         sendMsg(new LocEngRequestTime(mOwner));
     }
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::requestNiNotify(GpsNiNotification &notif, const void* data)
 {
-    if (mAgpsEnabled) {
+    if (mSupportsAgpsExtendedCapabilities) {
         notif.size = sizeof(notif);
         notif.timeout = LOC_NI_NO_RESPONSE_TIME;
 
         sendMsg(new LocEngRequestNi(mOwner, notif, data));
     }
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::requestSuplES(int connHandle)
 {
-    if (mAgpsEnabled)
+    if (mSupportsAgpsExtendedCapabilities)
         sendMsg(new LocEngRequestSuplEs(mOwner, connHandle));
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::reportDataCallOpened()
 {
-    if(mAgpsEnabled)
+    if(mSupportsAgpsExtendedCapabilities)
         sendMsg(new LocEngSuplEsOpened(mOwner));
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
 bool LocEngAdapter::reportDataCallClosed()
 {
-    if(mAgpsEnabled)
+    if(mSupportsAgpsExtendedCapabilities)
         sendMsg(new LocEngSuplEsClosed(mOwner));
-    return mAgpsEnabled;
+    return mSupportsAgpsExtendedCapabilities;
 }
 
 inline
