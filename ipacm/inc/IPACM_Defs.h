@@ -54,7 +54,7 @@ extern "C"
 #define IPA_IFACE_NAME_LEN 16
 #define IPA_ALG_PROTOCOL_NAME_LEN  10
 
-#define IPA_WLAN_PARTIAL_HDR_OFFSET  12 // dst mac first then src mac
+#define IPA_WLAN_PARTIAL_HDR_OFFSET  0 // dst mac first then src mac
 #define IPA_VIRTUAL_IFACE_NAME "bridge0"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_v4"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v6  "IEEE802_3_v6"
@@ -198,6 +198,7 @@ typedef struct _ipacm_event_iface_up
 	char ifname[IPA_IFACE_NAME_LEN];
 	uint32_t ipv4_addr;
 	uint32_t addr_mask;
+	bool is_sta;
 }ipacm_event_iface_up;
 
 

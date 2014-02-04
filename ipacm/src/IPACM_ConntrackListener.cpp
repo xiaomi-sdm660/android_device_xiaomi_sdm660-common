@@ -258,6 +258,7 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 
 	 IPACM_ConntrackClient::iptodot("public ip address", wanup_data->ipv4_addr);
 	 isWanUp = true;
+	 isStaMode = wanup_data->is_sta;
 
 	 wan_ipaddr = wanup_data->ipv4_addr;
 	 memcpy(wan_ifname, wanup_data->ifname, sizeof(wan_ifname));
@@ -489,7 +490,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 }
 	 else
 	 {
-		 IPACMDBG("Neither Destination nor Source nat flag reset\n");
+		 IPACMDBG("Neither Destination nor Source nat flag Set\n");
 		 orig_src_ip = nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC); 
 		 orig_src_ip = ntohl(orig_src_ip);
 		 if(orig_src_ip == 0)
@@ -640,7 +641,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 }
 	 }
 	 
-	 IPACMDBG("Nat Entry with below information will be added\n");
+	 IPACMDBG("Nat Entry with below information will either be added or deleted\n");
 	 IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
 	 IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
 	 IPACM_ConntrackClient::iptodot("private ip or src ip", rule.private_ip);
@@ -650,7 +651,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 
 	 if(IPPROTO_TCP == rule.protocol)
 	 {
-		        na = NatApp::GetInstance();
+		  na = NatApp::GetInstance();
 			if(na == NULL)
 			{
 				IPACMERR("unable to get nat app instance");
