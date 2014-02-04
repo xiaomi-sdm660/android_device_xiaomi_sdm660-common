@@ -1,4 +1,4 @@
-/* Copyright (c) 2009,2011 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009,2011,2014 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -34,6 +34,7 @@
 
 #define LOC_NI_NO_RESPONSE_TIME            20                      /* secs */
 #define LOC_NI_NOTIF_KEY_ADDRESS           "Address"
+#define GPS_NI_RESPONSE_IGNORE             4
 
 typedef struct {
     pthread_t               thread;            /* NI thread */
