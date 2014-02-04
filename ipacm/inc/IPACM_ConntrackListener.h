@@ -70,6 +70,7 @@ private:
 public:
 	 char wan_ifname[IPA_IFACE_NAME_LEN];
 	 uint32_t wan_ipaddr;
+	 bool isStaMode;
 
 	 IPACM_ConntrackListener();
 	 void event_callback(ipa_cm_event_id, void *data);

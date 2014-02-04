@@ -185,7 +185,12 @@ bool NatApp::ChkForDup(const nat_table_entry *rule)
 			 cache[cnt].target_port == rule->target_port &&
 			 cache[cnt].protocol == rule->protocol)
 		{
-			IPACMDBG("Duplicate Rule\n");
+			IPACMDBG("Duplicate Rule, ignore\n");
+			IPACMDBG("Received below nat entry for deletion\n");
+			IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
+			IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+			IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
+			IPACMDBG("protocolcol: %d\n", rule->protocol);
 			return true;
 		}
 	}
@@ -224,21 +229,15 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 					return -1;
 				}
 
-				IPACMDBG("Deleted below Nat entry Successfully\n");
+				IPACMDBG("Deleted Nat entry Successfully\n");
 			}
 			else
 			{
-				IPACMDBG("Deleted below Nat entry only from cache\n");
+				IPACMDBG("Deleted Nat entry only from cache\n");
 			}
 			
 			memset(&cache[cnt], 0, sizeof(cache[cnt]));
 			curCnt--;
-			
-			IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-			IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
-			IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
-			IPACMDBG("protocolcol: %d\n", rule->protocol);
-			
 			break; 
 		}
 	}
@@ -256,6 +255,12 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 
 	CHK_TBL_HDL();
 
+	IPACMDBG("Received below nat entry for deletion\n");
+	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
+	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+	IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
+	IPACMDBG("protocolcol: %d\n", rule->protocol);
+
 	if(isAlgPort(rule->protocol, rule->private_port) ||
 		 isAlgPort(rule->protocol, rule->target_port))
 	{
@@ -270,11 +275,6 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 		 rule->protocol == 0)
 	{
 		IPACMERR("Invalid Connection, ignoring it\n");
-		IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-		IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
-		IPACMDBG("Private Port:%d \t Target Port: %d\t", rule->private_port, rule->target_port);
-		IPACMDBG("Public Port:%d\n", rule->public_port);
-		IPACMDBG("protocol: %d\n", rule->protocol);
 		return 0;
 	}
 
@@ -345,12 +345,7 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 
 	if(cache[cnt].enabled == true)
 	{
-		IPACMDBG("Added below rule successfully\n");
-		IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-		IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
-		IPACMDBG("Private Port:%d \t Target Port: %d\t", rule->private_port, rule->target_port);
-		IPACMDBG("Public Port:%d\n", rule->public_port);
-		IPACMDBG("protocol: %d\n", rule->protocol);
+		IPACMDBG("Added rule successfully\n");
 	}
 
 	return 0;

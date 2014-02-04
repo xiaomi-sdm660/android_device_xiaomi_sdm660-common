@@ -717,6 +717,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 
 		memcpy(wanup_data->ifname, dev_name, sizeof(wanup_data->ifname));
 		wanup_data->ipv4_addr = wan_v4_addr;
+		wanup_data->is_sta = IPACM_Wan::backhaul_is_sta_mode;
 		IPACMDBG("Posting IPA_HANDLE_WAN_UP with below information:\n");
 		IPACMDBG("if_name:%s, ipv4_address:0x%x\n",
 						 wanup_data->ifname, wanup_data->ipv4_addr);
