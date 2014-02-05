@@ -194,26 +194,26 @@ int IPACM_Config::Init(void)
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC5_PROD]= IPA_RM_RESOURCE_HSIC_PROD;
 	ipa_client_rm_map_tbl[IPA_CLIENT_USB_PROD]= IPA_RM_RESOURCE_USB_PROD;
 	ipa_client_rm_map_tbl[IPA_CLIENT_A5_WLAN_AMPDU_PROD]= IPA_RM_RESOURCE_HSIC_PROD;
-	ipa_client_rm_map_tbl[IPA_CLIENT_A2_EMBEDDED_PROD]= IPA_RM_RESOURCE_A2_PROD;
-	ipa_client_rm_map_tbl[IPA_CLIENT_A2_TETHERED_PROD]= IPA_RM_RESOURCE_A2_PROD;
+//	ipa_client_rm_map_tbl[IPA_CLIENT_A2_EMBEDDED_PROD]= IPA_RM_RESOURCE_A2_PROD;
+//	ipa_client_rm_map_tbl[IPA_CLIENT_A2_TETHERED_PROD]= IPA_RM_RESOURCE_A2_PROD;
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC1_CONS]= IPA_RM_RESOURCE_HSIC_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC2_CONS]= IPA_RM_RESOURCE_HSIC_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC3_CONS]= IPA_RM_RESOURCE_HSIC_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC4_CONS]= IPA_RM_RESOURCE_HSIC_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_HSIC5_CONS]= IPA_RM_RESOURCE_HSIC_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_USB_CONS]= IPA_RM_RESOURCE_USB_CONS;
-	ipa_client_rm_map_tbl[IPA_CLIENT_A2_EMBEDDED_CONS]= IPA_RM_RESOURCE_A2_CONS;
-	ipa_client_rm_map_tbl[IPA_CLIENT_A2_TETHERED_CONS]= IPA_RM_RESOURCE_A2_CONS;	
+//	ipa_client_rm_map_tbl[IPA_CLIENT_A2_EMBEDDED_CONS]= IPA_RM_RESOURCE_A2_CONS;
+//	ipa_client_rm_map_tbl[IPA_CLIENT_A2_TETHERED_CONS]= IPA_RM_RESOURCE_A2_CONS;	
 
 	/* Create the entries which IPACM wants to add dependencies on */ 
 	ipa_rm_tbl[0].producer_rm1 = IPA_RM_RESOURCE_HSIC_PROD;
-	ipa_rm_tbl[0].consumer_rm1 = IPA_RM_RESOURCE_A2_CONS;
-	ipa_rm_tbl[0].producer_rm2 = IPA_RM_RESOURCE_A2_PROD;
+//	ipa_rm_tbl[0].consumer_rm1 = IPA_RM_RESOURCE_A2_CONS;
+//	ipa_rm_tbl[0].producer_rm2 = IPA_RM_RESOURCE_A2_PROD;
 	ipa_rm_tbl[0].consumer_rm2 = IPA_RM_RESOURCE_HSIC_CONS;
 	
 	ipa_rm_tbl[1].producer_rm1 = IPA_RM_RESOURCE_USB_PROD;
-	ipa_rm_tbl[1].consumer_rm1 = IPA_RM_RESOURCE_A2_CONS;
-	ipa_rm_tbl[1].producer_rm2 = IPA_RM_RESOURCE_A2_PROD;
+//	ipa_rm_tbl[1].consumer_rm1 = IPA_RM_RESOURCE_A2_CONS;
+//	ipa_rm_tbl[1].producer_rm2 = IPA_RM_RESOURCE_A2_PROD;
 	ipa_rm_tbl[1].consumer_rm2 = IPA_RM_RESOURCE_USB_CONS;
 
 	ipa_rm_tbl[2].producer_rm1 = IPA_RM_RESOURCE_HSIC_PROD;
@@ -345,11 +345,11 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa)
    struct ipa_ioc_rm_dependency dep;
 
    /* ipa_rm_a2_check: IPA_RM_RESOURCE_A2_CONS*/
-   if(rm1 == IPA_RM_RESOURCE_A2_CONS)
-   {
-     ipa_rm_a2_check+=1;
-	 IPACMDBG("got %d times default RT routing from A2 \n", ipa_rm_a2_check);
-   }
+//   if(rm1 == IPA_RM_RESOURCE_A2_CONS)
+//   {
+//     ipa_rm_a2_check+=1;
+//	 IPACMDBG("got %d times default RT routing from A2 \n", ipa_rm_a2_check);
+//   }
    
    for(int i=0;i<IPA_MAX_PRIVATE_SUBNET_ENTRIES;i++)
    {
@@ -455,11 +455,11 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
    struct ipa_ioc_rm_dependency dep;
 
    /* ipa_rm_a2_check: IPA_RM_RESOURCE_A2_CONS*/
-   if(rm1 == IPA_RM_RESOURCE_A2_CONS)
-   {
-     ipa_rm_a2_check-=1;
-	 IPACMDBG("Left %d times default RT routing from A2 \n", ipa_rm_a2_check);
-   }   
+//   if(rm1 == IPA_RM_RESOURCE_A2_CONS)
+//   {
+//     ipa_rm_a2_check-=1;
+//	 IPACMDBG("Left %d times default RT routing from A2 \n", ipa_rm_a2_check);
+//   }   
    
    for(int i=0;i<IPA_MAX_PRIVATE_SUBNET_ENTRIES;i++)
    {
@@ -506,11 +506,11 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	 {
 	 
 	         /* ipa_rm_a2_check: IPA_RM_RESOURCE_A2_CONS*/
-                 if(ipa_rm_tbl[i].consumer_rm1 == IPA_RM_RESOURCE_A2_CONS && ipa_rm_a2_check == 1)
-                 {
-	               IPACMDBG(" still have %d default RT routing from A2 \n", ipa_rm_a2_check);
-                       continue;
-                 }  	 
+//                 if(ipa_rm_tbl[i].consumer_rm1 == IPA_RM_RESOURCE_A2_CONS && ipa_rm_a2_check == 1)
+//                 {
+//	               IPACMDBG(" still have %d default RT routing from A2 \n", ipa_rm_a2_check);
+//                       continue;
+//                 }  	 
 	 
 	         if(ipa_rm_tbl[i].rm_set == true)
 		 {
