@@ -579,6 +579,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	
 	if(m_is_sta_mode == true)
 	{
+		IPACMDBG(" WAN instance is in STA mode \n");
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
 			if(iptype != tx_prop->tx[tx_index].ip)
@@ -663,6 +664,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	}
 
 	/* add a catch-all rule in wan dl routing table */
+	
+	if (iptype == IPA_IP_v6) 
+	{
     strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
     memset(rt_rule_entry, 0, sizeof(struct ipa_rt_rule_add));
 	rt_rule_entry->at_rear = true;
@@ -688,6 +692,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 				wan_route_rule_v6_hdl_a5[0],
 		        0,
 		        iptype);
+	}
 
 	ipacm_event_iface_up *wanup_data;
 	wanup_data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
@@ -2718,13 +2723,21 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 					return IPACM_FAILURE;
 				}
 			   
+			}
+		}
+		
+		/* Delete the default wan route*/		
+		
+		if (iptype == IPA_IP_v6)
+		{
+		   	IPACMDBG("ip-type %d: default v6 wan RT-rule deleted\n",iptype);		
+		   
 				if (m_routing.DeleteRoutingHdl(wan_route_rule_v6_hdl_a5[0], IPA_IP_v6) == false)
 				{
-					IPACMDBG("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n",IPA_IP_v6,wan_route_rule_v6_hdl_a5[tx_index],tx_index);
+				IPACMDBG("IP-family:%d, Routing rule(hdl:0x%x) deletion failed!\n",IPA_IP_v6,wan_route_rule_v6_hdl_a5[0]);
 					return IPACM_FAILURE;
 				}			   
 			}
-		}
 			
 		ipacm_event_iface_up *wandown_data;
 		wandown_data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
@@ -2790,6 +2803,19 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 
 		/* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete IPV4/V6 RT-rule */
 		IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);	
+
+		/* Delete the default route*/		
+		
+			if (iptype == IPA_IP_v6)
+			{
+		    	IPACMDBG("ip-type %d: default v6 wan RT-rule deleted\n",iptype);		
+			   
+				if (m_routing.DeleteRoutingHdl(wan_route_rule_v6_hdl_a5[0], IPA_IP_v6) == false)
+				{
+					IPACMDBG("IP-family:%d, Routing rule(hdl:0x%x) deletion failed!\n",IPA_IP_v6,wan_route_rule_v6_hdl_a5[0]);
+					return IPACM_FAILURE;
+				}			   
+			}
 
 		ipacm_event_iface_up *wandown_data;
 		wandown_data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
