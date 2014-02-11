@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -44,6 +44,13 @@ extern "C"
 #endif
 
 unsigned int loc_get_target(void);
+
+/*The character array passed to this function should have length
+  of atleast PROPERTY_VALUE_MAX*/
+void loc_get_target_baseband(char *baseband, int array_length);
+/*The character array passed to this function should have length
+  of atleast PROPERTY_VALUE_MAX*/
+void loc_get_platform_name(char *platform_name, int array_length);
 
 /* Please remember to update 'target_name' in loc_log.cpp,
    if do any changes to this enum. */
