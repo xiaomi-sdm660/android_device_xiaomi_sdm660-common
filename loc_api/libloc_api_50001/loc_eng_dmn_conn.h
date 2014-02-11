@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2012,2014 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -33,11 +33,11 @@
 
 #ifdef _ANDROID_
 
-#define GPSONE_LOC_API_Q_PATH "/data/misc/gpsone_d/gpsone_loc_api_q"
-#define GPSONE_LOC_API_RESP_Q_PATH "/data/misc/gpsone_d/gpsone_loc_api_resp_q"
-#define QUIPC_CTRL_Q_PATH "/data/misc/gpsone_d/quipc_ctrl_q"
-#define MSAPM_CTRL_Q_PATH "/data/misc/gpsone_d/msapm_ctrl_q"
-#define MSAPU_CTRL_Q_PATH "/data/misc/gpsone_d/msapu_ctrl_q"
+#define GPSONE_LOC_API_Q_PATH "/data/misc/location/gpsone_d/gpsone_loc_api_q"
+#define GPSONE_LOC_API_RESP_Q_PATH "/data/misc/location/gpsone_d/gpsone_loc_api_resp_q"
+#define QUIPC_CTRL_Q_PATH "/data/misc/location/gpsone_d/quipc_ctrl_q"
+#define MSAPM_CTRL_Q_PATH "/data/misc/location/gpsone_d/msapm_ctrl_q"
+#define MSAPU_CTRL_Q_PATH "/data/misc/location/gpsone_d/msapu_ctrl_q"
 
 #else
 
