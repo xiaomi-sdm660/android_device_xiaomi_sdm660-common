@@ -404,7 +404,8 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setSensorControlConfig(int sensorUsage)
+    setSensorControlConfig(int sensorUsage,
+                           int sensorProvider)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
