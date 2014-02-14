@@ -158,7 +158,7 @@ public:
     virtual enum loc_api_adapter_err
         setLPPConfig(uint32_t profile);
     virtual enum loc_api_adapter_err
-        setSensorControlConfig(int sensorUsage);
+        setSensorControlConfig(int sensorUsage, int sensorProvider);
     virtual enum loc_api_adapter_err
         setSensorProperties(bool gyroBiasVarianceRandomWalk_valid,
                             float gyroBiasVarianceRandomWalk,
