@@ -21,10 +21,13 @@ LOCAL_SRC_FILES += \
     loc_timer.c \
     ../platform_lib_abstractions/elapsed_millis_since_boot.cpp
 
-
 LOCAL_CFLAGS += \
      -fno-short-enums \
      -D_ANDROID_
+
+ifeq ($(TARGET_BUILD_VARIANT),user)
+   LOCAL_CFLAGS += -DTARGET_BUILD_VARIANT_USER
+endif
 
 LOCAL_LDFLAGS += -Wl,--export-dynamic
 
@@ -44,7 +47,6 @@ LOCAL_COPY_HEADERS:= \
    ../platform_lib_abstractions/platform_lib_includes.h \
    ../platform_lib_abstractions/platform_lib_time.h \
    ../platform_lib_abstractions/platform_lib_macros.h
-
 
 LOCAL_MODULE := libgps.utils
 
