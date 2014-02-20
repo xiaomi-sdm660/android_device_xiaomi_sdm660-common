@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -96,24 +96,34 @@ extern char* get_timestamp(char* str, unsigned long buf_size);
   if that value remains unchanged, it means gps.conf did not
   provide a value and we default to the initial value to use
   Android's logging levels*/
+#define IF_LOC_LOGE if((loc_logger.DEBUG_LEVEL >= 1) && (loc_logger.DEBUG_LEVEL <= 5))
+
+#define IF_LOC_LOGW if((loc_logger.DEBUG_LEVEL >= 2) && (loc_logger.DEBUG_LEVEL <= 5))
+
+#define IF_LOC_LOGI if((loc_logger.DEBUG_LEVEL >= 3) && (loc_logger.DEBUG_LEVEL <= 5))
+
+#define IF_LOC_LOGD if((loc_logger.DEBUG_LEVEL >= 4) && (loc_logger.DEBUG_LEVEL <= 5))
+
+#define IF_LOC_LOGV if((loc_logger.DEBUG_LEVEL >= 5) && (loc_logger.DEBUG_LEVEL <= 5))
+
 #define LOC_LOGE(...) \
-if ((loc_logger.DEBUG_LEVEL >= 1) && (loc_logger.DEBUG_LEVEL <= 5)) { ALOGE("W/"__VA_ARGS__); } \
-else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGE("W/"__VA_ARGS__); }
+IF_LOC_LOGE { ALOGE("E/"__VA_ARGS__); } \
+else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGE("E/"__VA_ARGS__); }
 
 #define LOC_LOGW(...) \
-if ((loc_logger.DEBUG_LEVEL >= 2) && (loc_logger.DEBUG_LEVEL <= 5)) { ALOGE("W/"__VA_ARGS__); }  \
+IF_LOC_LOGW { ALOGE("W/"__VA_ARGS__); }  \
 else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGW("W/"__VA_ARGS__); }
 
 #define LOC_LOGI(...) \
-if ((loc_logger.DEBUG_LEVEL >= 3) && (loc_logger.DEBUG_LEVEL <= 5)) { ALOGE("I/"__VA_ARGS__); }   \
+IF_LOC_LOGI { ALOGE("I/"__VA_ARGS__); }   \
 else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGI("I/"__VA_ARGS__); }
 
 #define LOC_LOGD(...) \
-if ((loc_logger.DEBUG_LEVEL >= 4) && (loc_logger.DEBUG_LEVEL <= 5)) { ALOGE("D/"__VA_ARGS__); }   \
+IF_LOC_LOGD { ALOGE("D/"__VA_ARGS__); }   \
 else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGD("D/"__VA_ARGS__); }
 
 #define LOC_LOGV(...) \
-if ((loc_logger.DEBUG_LEVEL >= 5) && (loc_logger.DEBUG_LEVEL <= 5)) { ALOGE("V/"__VA_ARGS__); }   \
+IF_LOC_LOGV { ALOGE("V/"__VA_ARGS__); }   \
 else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGV("V/"__VA_ARGS__); }
 
 #else /* DEBUG_DMN_LOC_API */
