@@ -185,9 +185,9 @@ public:
         return mLocApi->setLPPConfig(profile);
     }
     inline enum loc_api_adapter_err
-        setSensorControlConfig(int sensorUsage)
+        setSensorControlConfig(int sensorUsage, int sensorProvider)
     {
-        return mLocApi->setSensorControlConfig(sensorUsage);
+        return mLocApi->setSensorControlConfig(sensorUsage, sensorProvider);
     }
     inline enum loc_api_adapter_err
         setSensorProperties(bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
