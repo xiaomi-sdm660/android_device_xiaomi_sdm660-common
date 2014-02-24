@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -65,13 +65,13 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
 
     // first if can not be MPQ
     if (TARGET_MPQ != loc_get_target()) {
-        if (NULL == (locApi = mLBSProxy->getLocApi(mMsgTask, exMask))) {
+        if (NULL == (locApi = mLBSProxy->getLocApi(mMsgTask, exMask, this))) {
             // only RPC is the option now
             void* handle = dlopen("libloc_api-rpc-qc.so", RTLD_NOW);
             if (NULL != handle) {
                 getLocApi_t* getter = (getLocApi_t*)dlsym(handle, "getLocApi");
                 if (NULL != getter) {
-                    locApi = (*getter)(mMsgTask, exMask);
+                    locApi = (*getter)(mMsgTask, exMask, this);
                 }
             }
         }
@@ -80,7 +80,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
     // locApi could still be NULL at this time
     // we would then create a dummy one
     if (NULL == locApi) {
-        locApi = new LocApiBase(mMsgTask, exMask);
+        locApi = new LocApiBase(mMsgTask, exMask, this);
     }
 
     return locApi;

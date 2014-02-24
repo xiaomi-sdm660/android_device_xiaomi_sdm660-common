@@ -143,7 +143,6 @@ typedef struct loc_gps_cfg_s
     unsigned long  ACCURACY_THRES;
     unsigned long  SUPL_VER;
     unsigned long  CAPABILITIES;
-    unsigned long  QUIPC_ENABLED;
     unsigned long  LPP_PROFILE;
     uint8_t        NMEA_PROVIDER;
     unsigned long  A_GLONASS_POS_PROTOCOL_SELECT;
