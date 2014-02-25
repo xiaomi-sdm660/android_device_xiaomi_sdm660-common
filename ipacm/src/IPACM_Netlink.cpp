@@ -47,13 +47,70 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_EvtDispatcher.h"
 #include "IPACM_Log.h"
 
-char dev_pre_name[IF_NAME_LEN];
-struct sockaddr_storage  dst_pre_addr;
-
 int ipa_get_if_name(char *if_name, int if_index);
 int find_mask(int ip_v4_last, int *mask_value);
 
+#ifdef FEATURE_IPA_ANDROID
+
+#define IPACM_NL_COPY_ADDR( event_info, element )                                        \
+        memcpy( &event_info->attr_info.element.__data,                                   \
+                RTA_DATA(rtah),                                                          \
+                sizeof(event_info->attr_info.element.__data) );
+
+#define IPACM_EVENT_COPY_ADDR_v6( event_data, element)                                   \
+        memcpy( event_data, element.__data, sizeof(event_data));
+
+#define IPACM_EVENT_COPY_ADDR_v4( event_data, element)                                   \
+        memcpy( &event_data, element.__data, sizeof(event_data));
+
+#define IPACM_NL_REPORT_ADDR( prefix, addr )                                             \
+        if( AF_INET6 == (addr).ss_family ) {                                             \
+          IPACM_LOG_IPV6_ADDR( prefix, addr.__data);                                    \
+        } else {                                                                         \
+          IPACM_LOG_IPV4_ADDR( prefix, (*(unsigned int*)&(addr).__data) );               \
+        }
+
+#else/* defined(FEATURE_IPA_ANDROID) */
+
+#define IPACM_NL_COPY_ADDR( event_info, element )                                        \
+        memcpy( &event_info->attr_info.element.__ss_padding,                             \
+                RTA_DATA(rtah),                                                          \
+                sizeof(event_info->attr_info.element.__ss_padding) );
+
+#define IPACM_EVENT_COPY_ADDR_v6( event_data, element)                                   \
+        memcpy( event_data, element.__ss_padding, sizeof(event_data));
+
+#define IPACM_EVENT_COPY_ADDR_v4( event_data, element)                                   \
+        memcpy( &event_data, element.__ss_padding, sizeof(event_data));
+
+#define IPACM_NL_REPORT_ADDR( prefix, addr )                                             \
+        if( AF_INET6 == (addr).ss_family ) {                                             \
+          IPACM_LOG_IPV6_ADDR( prefix, addr.__ss_padding);                               \
+        } else {                                                                         \
+          IPACM_LOG_IPV4_ADDR( prefix, (*(unsigned int*)&(addr).__ss_padding) );         \
+        }
+#endif /* defined(FEATURE_IPA_ANDROID)*/
+
 #define NDA_RTA(r)  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndmsg))))
+#define IPACM_LOG_IPV6_ADDR(prefix, ip_addr)                            \
+        IPACMDBG(prefix);                                               \
+		IPACMDBG(" IPV6 Address %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x\n", \
+                  (int)ip_addr[0],  (int)ip_addr[1],                                                        \
+                  (int)ip_addr[2],  (int)ip_addr[3],                                                        \
+                  (int)ip_addr[4],  (int)ip_addr[5],                                                        \
+                  (int)ip_addr[6],  (int)ip_addr[7],                                                        \
+                  (int)ip_addr[8],  (int)ip_addr[9],                                                        \
+                  (int)ip_addr[10], (int)ip_addr[11],                                                       \
+                  (int)ip_addr[12], (int)ip_addr[13],                                                       \
+                  (int)ip_addr[14], (int)ip_addr[15]);
+
+#define IPACM_LOG_IPV4_ADDR(prefix, ip_addr)                            \
+        IPACMDBG(prefix);                                               \
+        IPACMDBG(" IPV4 Address %d.%d.%d.%d\n",                         \
+                    (unsigned char)(ip_addr),                               \
+                    (unsigned char)(ip_addr >> 8),                          \
+                    (unsigned char)(ip_addr >> 16) ,                        \
+                    (unsigned char)(ip_addr >> 24));
 
 /* Opens a netlink socket*/
 static int ipa_nl_open_socket
@@ -118,25 +175,23 @@ static int ipa_nl_open_socket
 /* Add fd to fdmap array and store read handler function ptr (up to MAX_NUM_OF_FD).*/
 static int ipa_nl_addfd_map
 (
-	 ipa_nl_sk_fd_set_info_t *fd_set,
+	 ipa_nl_sk_fd_set_info_t *info,
 	 int fd,
 	 ipa_sock_thrd_fd_read_f read_f
 	 )
 {
-	if(fd_set->num_fd < MAX_NUM_OF_FD)
+	if(info->num_fd < MAX_NUM_OF_FD)
 	{
-		FD_SET(fd, &(fd_set->fdset));
+		FD_SET(fd, &info->fdset);
 
 		/* Add fd to fdmap array and store read handler function ptr */
-		fd_set->sk_fds[fd_set->num_fd].sk_fd = fd;
-		fd_set->sk_fds[fd_set->num_fd].read_func = read_f;
+		info->sk_fds[info->num_fd].sk_fd = fd;
+		info->sk_fds[info->num_fd].read_func = read_f;
 
 		/* Increment number of fds stored in fdmap */
-		fd_set->num_fd++;
-		if(fd_set->max_fd < fd)
-		{
-			fd_set->max_fd = fd;
-		}
+		info->num_fd++;
+		if(info->max_fd < fd)
+			info->max_fd = fd;
 	}
 	else
 	{
@@ -395,9 +450,7 @@ static int ipa_nl_decode_rtm_addr
 
 		case IFA_ADDRESS:
 			addr_info->attr_info.prefix_addr.ss_family = addr_info->metainfo.ifa_family;
-			memcpy(&addr_info->attr_info.prefix_addr.__ss_padding,
-						 RTA_DATA(rtah),
-						 sizeof(addr_info->attr_info.prefix_addr.__ss_padding));
+			IPACM_NL_COPY_ADDR( addr_info, prefix_addr );
 			addr_info->attr_info.param_mask |= IPA_NLA_PARAM_PREFIXADDR;
 			break;
 
@@ -439,9 +492,7 @@ static int ipa_nl_decode_rtm_neigh
 
 		case NDA_DST:
 			neigh_info->attr_info.local_addr.ss_family = neigh_info->metainfo.ndm_family;
-			memcpy(&neigh_info->attr_info.local_addr.__ss_padding,
-						 RTA_DATA(rtah),
-						 sizeof(neigh_info->attr_info.local_addr.__ss_padding));
+			IPACM_NL_COPY_ADDR( neigh_info, local_addr );
 			break;
 
 		case NDA_LLADDR:
@@ -486,40 +537,20 @@ static int ipa_nl_decode_rtm_route
 		{
 
 		case RTA_DST:
-			if((route_info->metainfo.rtm_type == RTN_UNICAST) &&
-				 (route_info->metainfo.rtm_protocol == RTPROT_BOOT) &&
-				 (route_info->metainfo.rtm_scope == RT_SCOPE_LINK) &&
-				 (route_info->metainfo.rtm_table == RT_TABLE_MAIN))
-			{
-				route_info->metainfo.rtm_type = RTN_BROADCAST;
-				memcpy(&route_info->attr_info.dst_addr.__ss_padding,
-							 dst_pre_addr.__ss_padding,
-							 sizeof(route_info->attr_info.dst_addr.__ss_padding));
-				route_info->attr_info.param_mask |= IPA_RTA_PARAM_DST;
-			}
-			else
-			{
 				route_info->attr_info.dst_addr.ss_family = route_info->metainfo.rtm_family;
-				memcpy(&route_info->attr_info.dst_addr.__ss_padding,
-							 RTA_DATA(rtah),
-							 sizeof(route_info->attr_info.dst_addr.__ss_padding));
+				IPACM_NL_COPY_ADDR( route_info, dst_addr );
 				route_info->attr_info.param_mask |= IPA_RTA_PARAM_DST;
-			}
 			break;
 
 		case RTA_SRC:
 			route_info->attr_info.src_addr.ss_family = route_info->metainfo.rtm_family;
-			memcpy(&route_info->attr_info.src_addr.__ss_padding,
-						 RTA_DATA(rtah),
-						 sizeof(route_info->attr_info.src_addr.__ss_padding));
+			IPACM_NL_COPY_ADDR( route_info, src_addr );
 			route_info->attr_info.param_mask |= IPA_RTA_PARAM_SRC;
 			break;
 
 		case RTA_GATEWAY:
 			route_info->attr_info.gateway_addr.ss_family = route_info->metainfo.rtm_family;
-			memcpy(&route_info->attr_info.gateway_addr.__ss_padding,
-						 RTA_DATA(rtah),
-						 sizeof(route_info->attr_info.gateway_addr.__ss_padding));
+			IPACM_NL_COPY_ADDR( route_info, gateway_addr );
 			route_info->attr_info.param_mask |= IPA_RTA_PARAM_GATEWAY;
 			break;
 
@@ -747,20 +778,8 @@ static int ipa_nl_decode_nlmsg
 				if(AF_INET6 == msg_ptr->nl_addr_info.attr_info.prefix_addr.ss_family)
 				{
 					data_addr->iptype = IPA_IP_v6;
-					IPACMDBG("IFA_ADDRESS:IPV6 %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding)[1] >> 48)));
-
-					memcpy(data_addr->ipv6_addr,
-								 msg_ptr->nl_addr_info.attr_info.prefix_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr));
-
+					IPACM_NL_REPORT_ADDR( "IFA_ADDRESS:", msg_ptr->nl_addr_info.attr_info.prefix_addr );
+					IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_addr_info.attr_info.prefix_addr);
 					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
 					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
@@ -769,15 +788,8 @@ static int ipa_nl_decode_nlmsg
 				else
 				{
 					data_addr->iptype = IPA_IP_v4;
-					IPACMDBG("IFA_ADDRESS:IPV4 %d.%d.%d.%d\n",
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_addr_info.attr_info.prefix_addr).__ss_padding >> 24));
-					
-					memcpy(&data_addr->ipv4_addr,
-								 msg_ptr->nl_addr_info.attr_info.prefix_addr.__ss_padding,
-								 sizeof(data_addr->ipv4_addr));
+					IPACM_NL_REPORT_ADDR( "IFA_ADDRESS:", msg_ptr->nl_addr_info.attr_info.prefix_addr );
+					IPACM_EVENT_COPY_ADDR_v4( data_addr->ipv4_addr, msg_ptr->nl_addr_info.attr_info.prefix_addr);
 					data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);
          
 				}
@@ -814,104 +826,12 @@ static int ipa_nl_decode_nlmsg
 
 			IPACMDBG("In case RTM_NEWROUTE\n");
 			IPACMDBG("rtm_type: %d\n", msg_ptr->nl_route_info.metainfo.rtm_type);
-			IPACMDBG("ss_padding: %d\n", ((unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24)));
 			IPACMDBG("rtm_type: %d\n", msg_ptr->nl_route_info.metainfo.rtm_type);
 			IPACMDBG("protocol: %d\n", msg_ptr->nl_route_info.metainfo.rtm_protocol);
 			IPACMDBG("rtm_scope: %d\n", msg_ptr->nl_route_info.metainfo.rtm_scope);
-      IPACMDBG("rtm_table: %d\n", msg_ptr->nl_route_info.metainfo.rtm_table);
+			IPACMDBG("rtm_table: %d\n", msg_ptr->nl_route_info.metainfo.rtm_table);
 			IPACMDBG("rtm_family: %d\n", msg_ptr->nl_route_info.metainfo.rtm_family);
 			IPACMDBG("param_mask: 0x%x\n", msg_ptr->nl_route_info.attr_info.param_mask);
-
-			/* ipv4 interface route and its subnet mask	*/
-			if((msg_ptr->nl_route_info.metainfo.rtm_type == RTN_BROADCAST) && 
-				 ((unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24)) != 0)
-			{
-				if(IPACM_SUCCESS != 
-					 find_mask((unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24), &mask_value))
-				{
-					IPACMERR("Failed to decode rtm_addroute message\n");
-				}
-				else
-				{
-					IPACMDBG("\n GOT useful RTM_NEWROUTE event\n");
-
-					/* take care of subnet mask */
-					if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_DST)
-					{
-						IPACMDBG("DST_ADDRESS:IPV4 %d.%d.%d.0\n",
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16));
-						IPACMDBG("MASK:IPV4 255.255.255.%d\n", mask_value);
-						ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_route_info.attr_info.oif_index);
-						if(ret_val != IPACM_SUCCESS)
-						{
-							IPACMERR("Error while getting interface name");
-						}
-						IPACMDBG("RTA_OIF, output Interface %s \n", dev_name);
-						memcpy(&dst_pre_addr.__ss_padding,
-									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(dst_pre_addr.__ss_padding));
-						memcpy(&dev_pre_name,
-									 dev_name,
-									 sizeof(dev_pre_name));
-						IPACMDBG("save pre_DST_ADDRESS:IPV4 %d.%d.%d.%d %s\n",
-										 (unsigned char)(*(unsigned int *)&(dst_pre_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(dst_pre_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(dst_pre_addr).__ss_padding >> 16),
-										 (unsigned char)(*(unsigned int *)&(dst_pre_addr).__ss_padding >> 24), dev_pre_name);
-					}
-
-					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
-					if(data_addr == NULL)
-					{
-						IPACMERR("unable to allocate memory for event data_addr\n");
-						return IPACM_FAILURE;
-					}
-
-					if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_PRIORITY)
-					{
-						IPACMDBG("route add -net %d.%d.%d.0 netmask 255.255.255.%d dev %s  metric %d \n",
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16),
-										 mask_value,
-										 dev_pre_name,
-										 msg_ptr->nl_route_info.attr_info.priority);
-					}
-					else
-					{
-						IPACMDBG("route add -net %d.%d.%d.0 netmask 255.255.255.%d dev %s \n",
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16),
-										 mask_value,
-										 dev_name);
-					}
-
-					memcpy(&if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(if_ipv4_addr));
-					if_ipv4_addr = (if_ipv4_addr << 8) >> 8;
-					temp = (-1) << 8;
-					temp = temp | mask_value;
-
-					/* insert to command queue */
-					evt_data.event = IPA_ROUTE_ADD_EVENT;
-
-					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
-					data_addr->iptype = IPA_IP_v4;
-					data_addr->ipv4_addr = ntohl(if_ipv4_addr);
-					data_addr->ipv4_addr_mask = ntohl(if_ipipv4_addr_mask);
-
-					IPACMDBG("Posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv4 address 0x%x\n",
-									 data_addr->if_index,
-									 data_addr->ipv4_addr);
-					evt_data.evt_data = data_addr;
-					IPACM_EvtDispatcher::PostEvt(&evt_data);
-					/* finish command queue */
-				}
-			}
-
 			
 			/* take care of route add default route & uniroute */
 			if((msg_ptr->nl_route_info.metainfo.rtm_type == RTN_UNICAST) && 
@@ -929,21 +849,11 @@ static int ipa_nl_decode_nlmsg
 						IPACMERR("Error while getting interface name\n");
 					}
 
-					IPACMDBG("route add -host %d.%d.%d.%d gw %d.%d.%d.%d dev %s\n",
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 24),
-									 dev_name
-									 );
-
+					IPACM_NL_REPORT_ADDR( "route add -host", msg_ptr->nl_route_info.attr_info.dst_addr );				 
+					IPACM_NL_REPORT_ADDR( "gw", msg_ptr->nl_route_info.attr_info.gateway_addr );				 
+					IPACMDBG("dev %s\n",dev_name );
 					/* insert to command queue */
-					memcpy(&if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(if_ipv4_addr));
+					IPACM_EVENT_COPY_ADDR_v4( if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 					temp = (-1);
 
 					evt_data.event = IPA_ROUTE_ADD_EVENT;
@@ -997,18 +907,12 @@ static int ipa_nl_decode_nlmsg
 							IPACMDBG("ip -6 route add default dev %s\n", dev_name);
 						}
 
-						memcpy(data_addr->ipv6_addr,
-									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(data_addr->ipv6_addr));
-
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 						data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
 						data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 						data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
 						data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
-
-						memcpy(data_addr->ipv6_addr_mask, 
-									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(data_addr->ipv6_addr_mask));
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
 
 						data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
 						data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
@@ -1028,17 +932,9 @@ static int ipa_nl_decode_nlmsg
 					}
 					else
 					{
-						IPACMDBG("route add default gw %d.%d.%d.%d dev %s dstIP: %d.%d.%d.%d\n",
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 16),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 24),
-										 dev_name,
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24)
-										 );
+						IPACM_NL_REPORT_ADDR( "route add default gw", msg_ptr->nl_route_info.attr_info.gateway_addr );
+						IPACMDBG("dev %s", dev_name);
+						IPACM_NL_REPORT_ADDR( "dstIP:", msg_ptr->nl_route_info.attr_info.dst_addr );
 
 						/* insert to command queue */
 						data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
@@ -1048,10 +944,8 @@ static int ipa_nl_decode_nlmsg
 							return IPACM_FAILURE;
 						}
 
-						memcpy(&if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(if_ipv4_addr));
-						memcpy(&if_ipipv4_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(if_ipipv4_addr_mask));
+						IPACM_EVENT_COPY_ADDR_v4( if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr);			 
+						IPACM_EVENT_COPY_ADDR_v4( if_ipipv4_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);			 
 
 						evt_data.event = IPA_ROUTE_ADD_EVENT;
 						data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
@@ -1086,19 +980,12 @@ static int ipa_nl_decode_nlmsg
 
 				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_DST)
 				{
-					IPACMDBG("Route ADD IPV6 DST: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x/%d, metric %d, dev %s\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1] >> 48)),
+					IPACM_NL_REPORT_ADDR( "Route ADD DST:", msg_ptr->nl_route_info.attr_info.dst_addr );
+					IPACMDBG("%d, metric %d, dev %s\n",
 									 msg_ptr->nl_route_info.metainfo.rtm_dst_len,
 									 msg_ptr->nl_route_info.attr_info.priority,
 									 dev_name);
-
+					
 					/* insert to command queue */
 					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
 					if(data_addr == NULL)
@@ -1107,9 +994,7 @@ static int ipa_nl_decode_nlmsg
 						return IPACM_FAILURE;
 					}
 
-					memcpy(data_addr->ipv6_addr, 
-								 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr));
+					 IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 
 					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
 					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
@@ -1155,18 +1040,11 @@ static int ipa_nl_decode_nlmsg
 				}
 				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_GATEWAY)
 				{
-					IPACMDBG("Route ADD ::/0  Next Hop: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x, metric %d, dev %s\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding)[1] >> 48)),
+					IPACM_NL_REPORT_ADDR( "Route ADD ::/0  Next Hop:", msg_ptr->nl_route_info.attr_info.gateway_addr );
+					IPACMDBG(" metric %d, dev %s\n",
 									 msg_ptr->nl_route_info.attr_info.priority,
 									 dev_name);
-
+					
 					/* insert to command queue */
 					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
 					if(data_addr == NULL)
@@ -1175,16 +1053,14 @@ static int ipa_nl_decode_nlmsg
 						return IPACM_FAILURE;
 					}
 
-					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr));
+					IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 
                     data_addr->ipv6_addr[0]=ntohl(data_addr->ipv6_addr[0]);								 
                     data_addr->ipv6_addr[1]=ntohl(data_addr->ipv6_addr[1]);								 
                     data_addr->ipv6_addr[2]=ntohl(data_addr->ipv6_addr[2]);								 
                     data_addr->ipv6_addr[3]=ntohl(data_addr->ipv6_addr[3]);								 
 
-					memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr_mask));
+					IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
 
 					data_addr->ipv6_addr_mask[0]=ntohl(data_addr->ipv6_addr_mask[0]);								 
                     data_addr->ipv6_addr_mask[1]=ntohl(data_addr->ipv6_addr_mask[1]);								 
@@ -1210,78 +1086,6 @@ static int ipa_nl_decode_nlmsg
 				IPACMERR("Failed to decode rtm route message\n");
 				return IPACM_FAILURE;
 			}
-
-			if((msg_ptr->nl_route_info.metainfo.rtm_type == RTN_BROADCAST) && 
-				 ((unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24)) != 0)
-			{
-				if(IPACM_SUCCESS != find_mask((unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24), &mask_value))
-				{
-					IPACMERR("Failed to decode rtm_delroute message\n");
-				}
-				else
-				{
-					IPACMDBG("\n GOT useful RTM_DELROUTE event\n");
-
-					/* take care of subnet mask */
-					if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_DST)
-					{
-							 IPACMDBG("DST_ADDRESS:IPV4 %d.%d.%d.0\n",
-												(unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-												(unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-												(unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16));
-						IPACMDBG("MASK:IPV4 255.255.255.%d\n", mask_value);
-						ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_route_info.attr_info.oif_index);
-						if(ret_val != IPACM_SUCCESS)
-						{
-							IPACMERR("Error while getting interface name\n");
-						}
-						IPACMDBG("RTA_OIF, output Interface %s \n", dev_name);
-					}
-					IPACMDBG("route del -net %d.%d.%d.0 netmask 255.255.255.%d dev %s \n",
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16),
-									 mask_value,
-									 dev_name);
-
-					/* post event to command queue */
-					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
-					if(data_addr == NULL)
-					{
-						IPACMERR("unable to allocate memory for event data_addr\n");
-						return IPACM_FAILURE;
-					}
-
-					if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_PRIORITY)
-					{
-						IPACMDBG("Priority %d \n",
-										 msg_ptr->nl_route_info.attr_info.priority);
-					}
-					else;
-
-					memcpy(&if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(if_ipv4_addr));
-					if_ipv4_addr = (if_ipv4_addr << 8) >> 8;
-					temp = (-1) << 8;
-					temp = temp | mask_value;
-					if_ipipv4_addr_mask = ntohl(temp);
-
-					evt_data.event = IPA_ROUTE_DEL_EVENT;
-					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
-					data_addr->iptype = IPA_IP_v4;
-					data_addr->ipv4_addr = ntohl(if_ipv4_addr);
-					data_addr->ipv4_addr_mask = ntohl(if_ipipv4_addr_mask);
-
-					IPACMDBG("Posting IPA_ROUTE_DEL_EVENT with ifindex:%d, ipv4 address 0x%x, mask:0x%x\n",
-									 data_addr->if_index,
-									 data_addr->ipv4_addr,
-									 data_addr->ipv4_addr_mask);
-					evt_data.evt_data = data_addr;
-					IPACM_EvtDispatcher::PostEvt(&evt_data);
-					/* finish command queue */
-				}
-			}
-
 			/* take care of route delete of default route & uniroute */
 			if((msg_ptr->nl_route_info.metainfo.rtm_type == RTN_UNICAST) && 
 				 (msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_BOOT) && 
@@ -1296,17 +1100,9 @@ static int ipa_nl_decode_nlmsg
 					{
 						IPACMERR("Error while getting interface name\n");
 					}
-					IPACMDBG("route del -host %d.%d.%d.%d gw %d.%d.%d.%d dev %s\n",
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding >> 24),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 24),
-									 dev_name
-									 );
+					IPACM_NL_REPORT_ADDR( "route del -host ", msg_ptr->nl_route_info.attr_info.dst_addr);
+					IPACM_NL_REPORT_ADDR( " gw ", msg_ptr->nl_route_info.attr_info.gateway_addr);
+					IPACMDBG("dev %s\n", dev_name);
 
 					/* insert to command queue */
 					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
@@ -1315,8 +1111,7 @@ static int ipa_nl_decode_nlmsg
 						IPACMERR("unable to allocate memory for event data_addr\n");
 						return IPACM_FAILURE;
 					}
-					memcpy(&if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(if_ipv4_addr));
+					IPACM_EVENT_COPY_ADDR_v4( if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 					temp = (-1);
 					if_ipipv4_addr_mask = ntohl(temp);
 
@@ -1362,16 +1157,14 @@ static int ipa_nl_decode_nlmsg
 						{
 							IPACMDBG("ip -6 route del default dev %s\n", dev_name);
 						}
-						memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(data_addr->ipv6_addr));
+						 IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 
 						data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
 						data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 						data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
 						data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);								 
 
-						memcpy(data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(data_addr->ipv6_addr_mask));
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
 
 						data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
 						data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
@@ -1381,21 +1174,13 @@ static int ipa_nl_decode_nlmsg
 					}
 					else
 					{
-						IPACMDBG("route del default gw %d.%d.%d.%d dev %s\n",
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 8),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 16),
-										 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_route_info.attr_info.gateway_addr).__ss_padding >> 24),
-										 dev_name);
+						IPACM_NL_REPORT_ADDR( "route del default gw", msg_ptr->nl_route_info.attr_info.gateway_addr);				 
+						IPACMDBG("dev %s\n", dev_name);
 
-						memcpy(&data_addr->ipv4_addr,
-									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(data_addr->ipv4_addr));
+						IPACM_EVENT_COPY_ADDR_v4( data_addr->ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 						data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);
 
-						memcpy(&data_addr->ipv4_addr_mask,
-									 msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-									 sizeof(data_addr->ipv4_addr_mask));
+						IPACM_EVENT_COPY_ADDR_v4( data_addr->ipv4_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
 						data_addr->ipv4_addr_mask = ntohl(data_addr->ipv4_addr_mask);
 
 						data_addr->iptype = IPA_IP_v4;
@@ -1427,15 +1212,8 @@ static int ipa_nl_decode_nlmsg
 
 				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_DST)
 				{
-					IPACMDBG("DEL IPV6 DST: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x/%d, metric %d, dev %s\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_route_info.attr_info.dst_addr).__ss_padding)[1] >> 48)),
+					IPACM_NL_REPORT_ADDR( "DEL", msg_ptr->nl_route_info.attr_info.dst_addr);
+					IPACMDBG("/%d, metric %d, dev %s\n",
 									 msg_ptr->nl_route_info.metainfo.rtm_dst_len,
 									 msg_ptr->nl_route_info.attr_info.priority,
 									 dev_name);
@@ -1448,8 +1226,7 @@ static int ipa_nl_decode_nlmsg
 						return IPACM_FAILURE;
 					}
 
-					memcpy(data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr.__ss_padding,
-								 sizeof(data_addr->ipv6_addr));
+					IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 
 					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
 					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
@@ -1536,19 +1313,8 @@ static int ipa_nl_decode_nlmsg
 		    memset(data_all, 0, sizeof(ipacm_event_data_all));				
 		    if(msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET6)
 		    {
-		    	IPACMDBG("IPV6 %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n",
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0])),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 16)),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 32)),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 48)),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1])),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 16)),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 32)),
-		    					 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 48)));									 
-		    					 
-		    	memcpy(data_all->ipv6_addr, 
-		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
-		    				 sizeof(data_all->ipv6_addr));
+				IPACM_NL_REPORT_ADDR( " ", msg_ptr->nl_neigh_info.attr_info.local_addr);
+				IPACM_EVENT_COPY_ADDR_v6( data_all->ipv6_addr, msg_ptr->nl_neigh_info.attr_info.local_addr);
                   
                       data_all->ipv6_addr[0]=ntohl(data_all->ipv6_addr[0]);								 
                       data_all->ipv6_addr[1]=ntohl(data_all->ipv6_addr[1]);								 
@@ -1558,16 +1324,8 @@ static int ipa_nl_decode_nlmsg
 		    }
 		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET)
 		    {
-		    	IPACMDBG("IPV4 %d.%d.%d.%d\n",
-		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding),
-		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 8),
-		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 16),
-		    					 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 24));
-                  
-																						 
-		    	memcpy(&data_all->ipv4_addr, 
-		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
-		    				 sizeof(data_all->ipv4_addr));
+   				IPACM_NL_REPORT_ADDR( " ", msg_ptr->nl_neigh_info.attr_info.local_addr);  
+				IPACM_EVENT_COPY_ADDR_v4( data_all->ipv4_addr, msg_ptr->nl_neigh_info.attr_info.local_addr);
 		    	data_all->ipv4_addr = ntohl(data_all->ipv4_addr);
 		    	data_all->iptype = IPA_IP_v4;
 		    }
@@ -1629,19 +1387,8 @@ static int ipa_nl_decode_nlmsg
 		    memset(data_all, 0, sizeof(ipacm_event_data_all));				
 		    if(msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET6)
 				{
-					IPACMDBG("IPV6 %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 48)));
-
-					memcpy(data_all->ipv6_addr, 
-								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
-								 sizeof(data_all->ipv6_addr));
+					IPACM_NL_REPORT_ADDR( " ", msg_ptr->nl_neigh_info.attr_info.local_addr);  	
+					IPACM_EVENT_COPY_ADDR_v6( data_all->ipv6_addr, msg_ptr->nl_neigh_info.attr_info.local_addr);
 
 					data_all->ipv6_addr[0] = ntohl(data_all->ipv6_addr[0]);
 					data_all->ipv6_addr[1] = ntohl(data_all->ipv6_addr[1]);
@@ -1651,16 +1398,8 @@ static int ipa_nl_decode_nlmsg
 				}
 		    else if (msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family == AF_INET)
 				{
-					IPACMDBG("IPV4 %d.%d.%d.%d\n",
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 24));
-
-
-					memcpy(&data_all->ipv4_addr, 
-								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
-								 sizeof(data_all->ipv4_addr));
+					IPACM_NL_REPORT_ADDR( " ", msg_ptr->nl_neigh_info.attr_info.local_addr);  
+					IPACM_EVENT_COPY_ADDR_v4( data_all->ipv4_addr, msg_ptr->nl_neigh_info.attr_info.local_addr);
 					data_all->ipv4_addr = ntohl(data_all->ipv4_addr);
 					data_all->iptype = IPA_IP_v4;
 				}
@@ -1693,93 +1432,6 @@ static int ipa_nl_decode_nlmsg
 				/* finish command queue */
 			break;
 
-#if 0
-			if(IPACM_SUCCESS != ipa_nl_decode_rtm_neigh(buffer, buflen, &(msg_ptr->nl_neigh_info)))
-			{
-				IPACMERR("Failed to decode rtm neighbor message\n");
-				return IPACM_FAILURE;
-			}
-
-			if((NUD_PERMANENT | NUD_STALE) & (msg_ptr->nl_neigh_info.metainfo.ndm_state))
-			{
-				IPACMDBG("\n GOT RTM_DELNEIGH event\n");
-				/* insert to command queue */
-				data_all = (ipacm_event_data_all *)malloc(sizeof(ipacm_event_data_all));
-				if(data_all == NULL)
-				{
-					IPACMERR("unable to allocate memory for event data_all\n");
-					return IPACM_FAILURE;
-				}
-
-				if(AF_INET6 == msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family)
-				{
-					IPACMDBG("IPV6 %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x\n",
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[0] >> 48)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1])),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 16)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 32)),
-									 (uint16_t)(ntohs(((uint64_t *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding)[1] >> 48)));
-
-					memcpy(data_all->ipv6_addr, 
-								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
-								 sizeof(data_all->ipv6_addr));
-
-					data_all->ipv6_addr[0] = ntohl(data_all->ipv6_addr[0]);
-					data_all->ipv6_addr[1] = ntohl(data_all->ipv6_addr[1]);
-					data_all->ipv6_addr[2] = ntohl(data_all->ipv6_addr[2]);
-					data_all->ipv6_addr[3] = ntohl(data_all->ipv6_addr[3]);	
-					data_all->iptype = IPA_IP_v6;
-				}
-				else
-				{
-					IPACMDBG("IPV4 %d.%d.%d.%d\n",
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 8),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 16),
-									 (unsigned char)(*(unsigned int *)&(msg_ptr->nl_neigh_info.attr_info.local_addr).__ss_padding >> 24));
-
-
-					memcpy(&data_all->ipv4_addr, 
-								 msg_ptr->nl_neigh_info.attr_info.local_addr.__ss_padding,
-								 sizeof(data_all->ipv4_addr));
-					data_all->iptype = IPA_IP_v4;
-				}
-
-				memcpy(data_all->mac_addr,
-							 msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr.sa_data,
-							 sizeof(data_all->mac_addr));
-				evt_data.event = IPA_DEL_NEIGH_EVENT;
-				data_all->if_index = msg_ptr->nl_neigh_info.metainfo.ndm_ifindex;
-
-				IPACMDBG("posting IPA_DEL_NEIGH_EVENT with if index:%d\n",
-								 data_all->if_index);
-				evt_data.evt_data = data_all;
-				IPACM_EvtDispatcher::PostEvt(&evt_data);
-				/* finish command queue */
-
-				IPACMDBG("NDA_LLADDR:MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[0],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[1],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[2],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[3],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[4],
-								 (unsigned char)(msg_ptr->nl_neigh_info.attr_info.lladdr_hwaddr).sa_data[5]);
-
-				ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_neigh_info.metainfo.ndm_ifindex);
-				if(ret_val != IPACM_SUCCESS)
-				{
-					//IPACM_LOG_MSG("Error while getting interface index");
-				}
-				else
-				{
-					IPACMDBG("Interface %s \n", dev_name);
-				}
-			}
-			break;
-#endif
 		default:
 			IPACMDBG(" ignore NL event %d!!!\n ", nlh->nlmsg_type);
 			break;
