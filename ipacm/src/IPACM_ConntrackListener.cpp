@@ -128,6 +128,29 @@ void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 	int fd = 0, len = 0, cnt, i, j;
 	struct ifreq ifr;
 
+	/* existing nat-entry needs to be clean */
+	if(del == true)
+	{
+		if(data->ipv4_addr == 0 || data->iptype != IPA_IP_v4)
+		{
+			IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT EVENT\n");
+			return;
+		}
+		IPACMDBG("Received interface index %d with ip type:%d", data->if_index, data->iptype);
+		IPACMDBG("Entering NAT entry deletion checking\n");
+		for(j = 0; j < MAX_NAT_IFACES; j++)
+		{
+			if(nat_iface_ipv4_addr[j] == data->ipv4_addr)
+			{
+				/* Reset */
+				IPACMDBG("Reseting ct filters of Interface (%d), entry (%d)\n", data->if_index, j);
+				IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
+				nat_iface_ipv4_addr[j] = 0;
+			}
+		}
+		return;
+	}
+
 	if(del == false)
 	{
 		if(data->ipv4_addr == 0 || data->iptype != IPA_IP_v4)
@@ -210,30 +233,19 @@ void IPACM_ConntrackListener::HandleNeighIpAddrEvt(void *in_param, bool del)
 			{
 				for(j = 0; j < MAX_NAT_IFACES; j++)
 				{
-					if(nat_iface_ipv4_addr[j] == 0)
+					/* check if duplicate NAT ip */
+					if(nat_iface_ipv4_addr[j] == data->ipv4_addr)
 					{
+						break;
+					}
+					if(nat_iface_ipv4_addr[j] == 0)
+				{
 						nat_iface_ipv4_addr[j] = data->ipv4_addr;
 						break;
 					}
 				}
-				IPACMDBG("Nating connections of Interface (%s)\n", pNatIfaces[i].iface_name);
+				IPACMDBG("Nating connections of Interface (%s), entry (%d)\n", pNatIfaces[i].iface_name, j);
 				IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
-			}
-			else
-			{
-				for(j = 0; j < MAX_NAT_IFACES; j++)
-				{
-					if(nat_iface_ipv4_addr[j] == data->ipv4_addr)
-				{
-						/* Reset */
-						IPACMDBG("Reseting ct filters of Interface (%s)\n", pNatIfaces[i].iface_name);
-						IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
-
-						nat_iface_ipv4_addr[j] = 0;
-						break;
-					}
-				}
-
 			}
 			break;
 		}
@@ -626,6 +638,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 			 if(rule.private_ip == nat_iface_ipv4_addr[cnt] ||
 					rule.target_ip == nat_iface_ipv4_addr[cnt])
 			 {
+				IPACMDBG("matched nat_iface_ipv4_addr entry(%d)\n", cnt);
 				IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): Nat entry match with ip addr", 
 				                       nat_iface_ipv4_addr[cnt]);
 				 break;
