@@ -1877,7 +1877,7 @@ int loc_eng_inject_location(loc_eng_data_s_type &loc_eng_data, double latitude,
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return -1);
     LocEngAdapter* adapter = loc_eng_data.adapter;
-    if(!adapter->mCPIEnabled)
+    if(!adapter->mSupportsCPIExtendedCapabilities)
     {
         adapter->sendMsg(new LocEngInjectLocation(adapter, latitude, longitude,
                                                   accuracy));
@@ -2093,7 +2093,7 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                       AGPS_TYPE_SUPL,
                                                       false);
 
-        if (adapter->mAgpsEnabled) {
+        if (adapter->mSupportsAgpsExtendedCapabilities) {
             loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
 
             loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
