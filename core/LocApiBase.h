@@ -70,7 +70,6 @@ class LocApiBase {
     friend struct LocOpenMsg;
     friend class ContextBase;
     const MsgTask* mMsgTask;
-
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
 
 protected:
@@ -87,6 +86,10 @@ protected:
     const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
 
 public:
+    inline void sendMsg(const LocMsg* msg) const {
+        mMsgTask->sendMsg(msg);
+    }
+
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
