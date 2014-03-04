@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -61,6 +61,8 @@ extern "C" {
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
+/*Emergency SUPL*/
+#define GPS_NI_TYPE_EMERGENCY_SUPL    4
 
 typedef struct {
     /** set to sizeof(UlpLocation) */
