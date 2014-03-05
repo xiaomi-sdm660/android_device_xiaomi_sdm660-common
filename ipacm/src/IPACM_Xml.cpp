@@ -370,7 +370,9 @@ int IPACM_read_firewall_xml(char *xml_file, IPACM_firewall_conf_t *config)
 	ret_val = IPACM_firewall_xml_parse_tree(root, config);
 
 	if (ret_val != IPACM_SUCCESS) 
+	{
 		IPACMDBG("IPACM_xml_parse: ipacm_firewall_xml_parse_tree returned parse error!\n");
+	}
 
 	/* free the tree */
     xmlFreeDoc(doc);

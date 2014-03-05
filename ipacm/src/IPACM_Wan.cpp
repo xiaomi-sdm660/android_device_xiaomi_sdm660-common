@@ -1971,7 +1971,7 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		IPACMDBG("Routing table %s has index %d\n", rt_tbl_idx.name, rt_tbl_idx.idx);
 		
 		memcpy(&flt_rule_entry.rule.attrib,
-			&rx_prop->rx[0].attrib,
+			&rx_prop->rx[1].attrib,
 			sizeof(struct ipa_rule_attrib));
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0x00000000;
@@ -2250,9 +2250,9 @@ int IPACM_Wan::add_icmp_alg_rules(struct ipa_flt_rule_add *rules, int rule_offse
 
 		/* Configuring ICMP filtering rule */
 		memcpy(&flt_rule_entry.rule.attrib,
-					 &rx_prop->rx[0].attrib,
+					 &rx_prop->rx[1].attrib,
 					 sizeof(flt_rule_entry.rule.attrib));
-		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_PROTOCOL;
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_NEXT_HDR;
 		flt_rule_entry.rule.attrib.u.v6.next_hdr = (uint8_t)IPACM_FIREWALL_IPPROTO_ICMP6;
 
 		memset(&flt_eq, 0, sizeof(flt_eq));
@@ -2313,6 +2313,8 @@ int IPACM_Wan::query_ext_prop()
 			return ret;
 		}
 		
+		IPACMDBG("Wan interface has %d tx props, %d rx props and %d ext props\n", iface_query->num_tx_props, iface_query->num_rx_props, iface_query->num_ext_props);
+
 		for (cnt = 0; cnt < ext_prop->num_ext_props; cnt++)
 		{
 			IPACMDBG("Ex(%d): ip-type: %d, mux_id: %d, flt_action: %d\n, rt_tbl_idx: %d, flt_hdr: %d \n",
