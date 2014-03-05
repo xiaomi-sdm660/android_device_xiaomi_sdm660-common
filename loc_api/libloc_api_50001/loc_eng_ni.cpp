@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -218,6 +218,8 @@ static void* ni_thread_proc(void *args)
              "pthread_cond_timedwait = %d\n",rc );
     loc_eng_ni_data_p->respRecvd = FALSE; /* Reset the user response flag for the next session*/
 
+    LOC_LOGD("loc_eng_ni_data_p->resp is %d\n",loc_eng_ni_data_p->resp);
+
     // adding this check to support modem restart, in which case, we need the thread
     // to exit without calling sending data. We made sure that rawRequest is NULL in
     // loc_eng_ni_reset_on_engine_restart()
@@ -225,9 +227,14 @@ static void* ni_thread_proc(void *args)
     LocEngInformNiResponse *msg = NULL;
 
     if (NULL != loc_eng_ni_data_p->rawRequest) {
-        msg = new LocEngInformNiResponse(adapter,
-                                         loc_eng_ni_data_p->resp,
-                                         loc_eng_ni_data_p->rawRequest);
+        if (loc_eng_ni_data_p->resp != GPS_NI_RESPONSE_IGNORE) {
+            LOC_LOGD("loc_eng_ni_data_p->resp != GPS_NI_RESPONSE_IGNORE \n");
+            msg = new LocEngInformNiResponse(adapter,
+                                             loc_eng_ni_data_p->resp,
+                                             loc_eng_ni_data_p->rawRequest);
+        } else {
+            LOC_LOGD("this is the ignore reply for SUPL ES\n");
+        }
         loc_eng_ni_data_p->rawRequest = NULL;
     }
     pthread_mutex_unlock(&loc_eng_ni_data_p->tLock);
@@ -236,6 +243,7 @@ static void* ni_thread_proc(void *args)
     loc_eng_ni_data_p->reqID++;
 
     if (NULL != msg) {
+        LOC_LOGD("ni_thread_proc: adapter->sendMsg(msg)\n");
         adapter->sendMsg(msg);
     }
 
