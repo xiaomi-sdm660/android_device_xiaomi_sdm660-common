@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -161,7 +161,8 @@ static loc_name_val_s_type loc_eng_ni_types[] =
 {
     NAME_VAL( GPS_NI_TYPE_VOICE ),
     NAME_VAL( GPS_NI_TYPE_UMTS_SUPL ),
-    NAME_VAL( GPS_NI_TYPE_UMTS_CTRL_PLANE )
+    NAME_VAL( GPS_NI_TYPE_UMTS_CTRL_PLANE ),
+    NAME_VAL( GPS_NI_TYPE_EMERGENCY_SUPL )
 };
 static int loc_eng_ni_type_num = sizeof(loc_eng_ni_types) / sizeof(loc_name_val_s_type);
 
