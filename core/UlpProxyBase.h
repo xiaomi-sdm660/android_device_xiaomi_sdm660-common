@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,11 +37,19 @@ class LocAdapterBase;
 
 class UlpProxyBase {
 public:
-    inline UlpProxyBase() {}
+    LocPosMode mPosMode;
+    bool mFixSet;
+    inline UlpProxyBase() {
+        mPosMode.mode = LOC_POSITION_MODE_INVALID;
+        mFixSet = false;
+    }
     inline virtual ~UlpProxyBase() {}
-    inline virtual bool sendStartFix() { return false;}
-    inline virtual bool sendStopFix() { return false;}
-    inline virtual bool sendFixMode(LocPosMode &params) { return false;}
+    inline virtual bool sendStartFix() { mFixSet = true; return false; }
+    inline virtual bool sendStopFix() { mFixSet = false; return false; }
+    inline virtual bool sendFixMode(LocPosMode &params) {
+        mPosMode = params;
+        return false;
+    }
     inline virtual bool reportPosition(UlpLocation &location,
                                        GpsLocationExtended &locationExtended,
                                        void* locationExt,
