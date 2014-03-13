@@ -653,6 +653,13 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 		 return;
 	 }
 	 }
+	 else
+	 {
+		 IPACMDBG("For embedded connections add dummy nat rule\n");
+                 IPACMDBG("Change private port %d to %d\n",
+				rule.private_port, rule.public_port);
+		 rule.private_port = rule.public_port;
+	 }
 	 
 	 IPACMDBG("Nat Entry with below information will either be added or deleted\n");
 	 IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
