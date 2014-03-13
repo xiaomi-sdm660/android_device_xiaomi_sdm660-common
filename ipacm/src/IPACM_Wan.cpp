@@ -380,9 +380,6 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						del_dft_firewall_rules(IPA_IP_v4);
 						handle_route_del_evt(IPA_IP_v4);
 					}
-					
-					IPACM_Wan::wan_up = false;
-					IPACM_Wan::rx_prop = NULL;
 				}
 				else if ((data->iptype == IPA_IP_v6) && (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == true))
 				{
@@ -399,9 +396,6 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						del_dft_firewall_rules(IPA_IP_v6);
 						handle_route_del_evt(IPA_IP_v6);
 					}
-					
-					IPACM_Wan::wan_up_v6 = false;
-					IPACM_Wan::rx_prop = NULL;
 				}
 			}
 		}
@@ -2752,7 +2746,6 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 
 		if (iptype == IPA_IP_v4)
 		{
-		
 			wandown_data->ipv4_addr = wan_v4_addr;
 			evt_data.event = IPA_HANDLE_WAN_DOWN;
 			evt_data.evt_data = (void *)wandown_data;
@@ -2761,12 +2754,10 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			IPACM_EvtDispatcher::PostEvt(&evt_data);
 			IPACMDBG("setup wan_up/active_v4= false \n"); 
 			IPACM_Wan::wan_up = false;
-			IPACM_Wan::rx_prop = NULL;
 			active_v4 = false;
 		}
 		else
 		{
-		
 			evt_data.event = IPA_HANDLE_WAN_DOWN_V6;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
@@ -2775,7 +2766,6 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			
 			IPACMDBG("setup wan_up_v6/active_v6= false \n"); 
 			IPACM_Wan::wan_up_v6 = false;
-			IPACM_Wan::rx_prop = NULL;
 			active_v6 = false;
 		}
 	}
@@ -2830,7 +2820,6 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 		
 		if (iptype == IPA_IP_v4)
 		{
-		
 			wandown_data->ipv4_addr = wan_v4_addr;
 			evt_data.event = IPA_HANDLE_WAN_DOWN;
 			evt_data.evt_data = (void *)wandown_data;
