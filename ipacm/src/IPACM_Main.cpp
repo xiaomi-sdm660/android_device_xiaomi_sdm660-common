@@ -145,7 +145,7 @@ void* firewall_monitor(void *param)
 	char buffer[INOTIFY_BUF_LEN];
 	int inotify_fd;
 	ipacm_cmd_q_data evt_data;
-	uint32_t mask = IN_MODIFY;
+	uint32_t mask = IN_MODIFY | IN_MOVE;
 
 	inotify_fd = inotify_init();
 	if (inotify_fd < 0)
@@ -172,7 +172,7 @@ void* firewall_monitor(void *param)
 
 		if (event->len > 0)
 		{
-			if (event->mask & IN_MODIFY)
+			if ( (event->mask & IN_MODIFY) || (event->mask & IN_MOVE))
 			{
 				if (event->mask & IN_ISDIR)
 				{
