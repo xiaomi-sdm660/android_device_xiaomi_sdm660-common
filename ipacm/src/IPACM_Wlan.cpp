@@ -1220,7 +1220,7 @@ int IPACM_Wlan::handle_down_evt()
 
 fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */ 
-	IPACM_Iface::ipacmcfg->DelRmDepend(IPA_RM_RESOURCE_HSIC_PROD);
+	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
 
 	free(wlan_client);
 	if (tx_prop != NULL)
