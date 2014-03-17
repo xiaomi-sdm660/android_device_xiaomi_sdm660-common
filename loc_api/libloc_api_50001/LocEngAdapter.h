@@ -74,13 +74,19 @@ class LocEngAdapter : public LocAdapterBase {
     UlpProxyBase* mUlp;
     LocPosMode mFixCriteria;
     bool mNavigating;
+    // mPowerVote is encoded as
+    // mPowerVote & 0x20 -- powerVoteRight
+    // mPowerVote & 0x10 -- power On / Off
+    unsigned int mPowerVote;
+    static const unsigned int POWER_VOTE_RIGHT = 0x20;
+    static const unsigned int POWER_VOTE_VALUE = 0x10;
 
 public:
     bool mSupportsAgpsExtendedCapabilities;
     bool mSupportsCPIExtendedCapabilities;
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
-                  void* owner,ContextBase* context,
+                  void* owner, ContextBase* context,
                   MsgTask::tCreate tCreator);
     virtual ~LocEngAdapter();
 
@@ -278,6 +284,26 @@ public:
     inline virtual bool isInSession()
     { return mNavigating; }
     void setInSession(bool inSession);
+
+    // Permit/prohibit power voting
+    inline void setPowerVoteRight(bool powerVoteRight) {
+        mPowerVote = powerVoteRight ? (mPowerVote | POWER_VOTE_RIGHT) :
+                                      (mPowerVote & ~POWER_VOTE_RIGHT);
+    }
+    inline bool getPowerVoteRight() const {
+        return (mPowerVote & POWER_VOTE_RIGHT) != 0 ;
+    }
+    // Set the power voting up/down and do actual operation if permitted
+    inline void setPowerVote(bool powerOn) {
+        mPowerVote = powerOn ? (mPowerVote | POWER_VOTE_VALUE) :
+                               (mPowerVote & ~POWER_VOTE_VALUE);
+        requestPowerVote();
+    }
+    inline bool getPowerVote() const {
+        return (mPowerVote & POWER_VOTE_VALUE) != 0 ;
+    }
+    // Do power voting according to last settings if permitted
+    void requestPowerVote();
 
     /*Values for lock
       1 = Do not lock any position sessions

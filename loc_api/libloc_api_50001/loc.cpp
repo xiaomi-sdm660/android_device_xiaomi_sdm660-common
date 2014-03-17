@@ -294,6 +294,9 @@ static int loc_init(GpsCallbacks* callbacks)
         goto err;
     }
 
+    loc_afw_data.adapter->setPowerVoteRight(loc_get_target() == TARGET_QCA1530);
+    loc_afw_data.adapter->setPowerVote(true);
+
     LOC_LOGD("loc_eng_init() success!");
     if (mdm_fd < 0) {
         struct dev_info modem_info;
@@ -349,6 +352,9 @@ SIDE EFFECTS
 static void loc_cleanup()
 {
     ENTRY_LOG();
+
+    loc_afw_data.adapter->setPowerVote(false);
+
     loc_eng_cleanup(loc_afw_data);
     gps_loc_cb = NULL;
     gps_sv_cb = NULL;

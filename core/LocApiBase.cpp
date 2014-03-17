@@ -126,7 +126,7 @@ struct LocOpenMsg : public LocMsg {
 
 LocApiBase::LocApiBase(const MsgTask* msgTask,
                        LOC_API_ADAPTER_EVENT_MASK_T excludedMask) :
-    mExcludedMask(excludedMask), mMsgTask(msgTask), mMask(0)
+    mMsgTask(msgTask), mExcludedMask(excludedMask), mMask(0)
 {
     memset(mLocAdapters, 0, sizeof(mLocAdapters));
 }
