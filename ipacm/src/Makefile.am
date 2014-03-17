@@ -22,15 +22,18 @@ ipacm_SOURCES =	IPACM_Main.cpp \
 		IPACM_IfaceManager.cpp \
 		IPACM_Neighbor.cpp \
 		IPACM_Netlink.cpp \
-		IPACM_Xml.cpp		
-		
+		IPACM_Xml.cpp \
+		IPACM_LanToLan.cpp
+
 bin_PROGRAMS  =  ipacm
 
 requiredlibs =  ${LIBXML_LIB} -lxml2 -lpthread -lnetfilter_conntrack -lnfnetlink\
                ../../ipanat/src/libipanat.la
-			   
+
 ipacm_LDADD =  $(requiredlibs)
-			 
+
+AM_CPPFLAGS += "-std=c++0x"
+
 LOCAL_MODULE := libipanat
 LOCAL_PRELINK_MODULE := false
 include $(BUILD_SHARED_LIBRARY)

@@ -68,6 +68,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPACM_ConntrackListener.h"
 
+#include "IPACM_LanToLan.h"
+
 const char *ipacm_event_name[] = {
 	__stringify(IPA_LINK_UP_EVENT),
 	__stringify(IPA_LINK_DOWN_EVENT),
@@ -492,7 +494,6 @@ void* ipa_driver_wlan_notifier(void *param)
 void IPACM_Sig_Handler(int sig)
 {
 	int cnt = 0;
-	char evt_name[30] = {0};
 
 	printf("Received Signal: %d\n", sig);
 
@@ -539,6 +540,7 @@ int main(int argc, char **argv)
 
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
+	IPACM_LanToLan* lan2lan = new IPACM_LanToLan();
 
 	IPACMDBG("Staring IPA main\n");
 	IPACMDBG("ipa_cmdq_successful\n");

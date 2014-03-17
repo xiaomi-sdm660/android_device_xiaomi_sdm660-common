@@ -185,6 +185,11 @@ int IPACM_Config::Init(void)
 	rt_tbl_wan_dl.ip = IPA_IP_MAX;
 	strncpy(rt_tbl_wan_dl.name, WAN_DL_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_dl.name));
 
+	rt_tbl_lan2lan_v4.ip = IPA_IP_v4;
+	strncpy(rt_tbl_lan2lan_v4.name, V4_LAN_TO_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan2lan_v4.name));
+
+	rt_tbl_lan2lan_v6.ip = IPA_IP_v6;
+	strncpy(rt_tbl_lan2lan_v6.name, V6_LAN_TO_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan2lan_v6.name));
 
 	/* Construct IPACM ipa_client map to rm_resource table */
 	ipa_client_rm_map_tbl[IPA_CLIENT_WLAN1_PROD]= IPA_RM_RESOURCE_WLAN_PROD;

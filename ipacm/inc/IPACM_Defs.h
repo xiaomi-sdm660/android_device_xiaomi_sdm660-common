@@ -77,12 +77,21 @@ extern "C"
 #define WAN_DL_ROUTE_TABLE_NAME "ipa_dflt_wan_rt"
 #define V6_COMMON_ROUTE_TABLE_NAME  "COMRTBLv6"
 #define V6_WAN_ROUTE_TABLE_NAME  "WANRTBLv6"
+#define V4_LAN_TO_LAN_ROUTE_TABLE_NAME "LANTOLANRTBLv4"
+#define V6_LAN_TO_LAN_ROUTE_TABLE_NAME "LANTOLANRTBLv6"
 
 #define WWAN_QMI_IOCTL_DEVICE_NAME "/dev/wwan_ioctl"
 #define IPA_DEVICE_NAME "/dev/ipa"
 #define IPA_MAX_FLT_RULE 36
 
-
+#define MAX_OFFLOAD_PAIR 3
+#define MAX_NUM_PROP 8
+#define IPA_LAN_TO_LAN_USB_HDR_NAME_V4 "Lan2Lan_USB_v4"
+#define IPA_LAN_TO_LAN_USB_HDR_NAME_V6 "Lan2Lan_USB_v6"
+#define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4 "Lan2Lan_Wlan_v4"
+#define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6 "Lan2Lan_Wlan_v6"
+#define IPA_LAN_TO_LAN_MAX_WLAN_CLIENT 32
+#define IPA_LAN_TO_LAN_MAX_USB_CLIENT 1
 
 /*---------------------------------------------------------------------------
 										Return values indicating error status
@@ -131,8 +140,22 @@ typedef enum
 	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 25 ipacm_event_data_wlan_ex */
 	IPA_HANDLE_WAN_UP_V6,					  /* 26 NULL */
 	IPA_HANDLE_WAN_DOWN_V6,					  /* 27 NULL */
+	IPA_LAN_CLIENT_ACTIVE,					  /* 28 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_INACTIVE,				  /* 29 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_DISCONNECT,				  /* 30 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_SAVE,				  /* 31 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_RECOVER,			  /* 32 ipacm_event_lan_client*/
+	IPA_LAN_TO_LAN_NEW_CONNECTION,			  /* 33 ipacm_event_connection */
+	IPA_LAN_TO_LAN_DEL_CONNECTION,			  /* 34 ipacm_event_connection */
+	IPA_LAN_DELETE_SELF,					  /* 35 ipacm_event_data_fid */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
+
+typedef struct
+{
+	uint8_t num_rule;
+	uint32_t rule_hdl[MAX_NUM_PROP];
+} lan_to_lan_rt_rule_hdl;
 
 typedef enum
 {
@@ -172,6 +195,26 @@ typedef struct _ipacm_event_data_all
 	uint32_t  ipv6_addr[4];
 	uint8_t mac_addr[6];
 } ipacm_event_data_all;
+
+class IPACM_Lan;
+
+typedef struct
+{
+	ipa_ip_type iptype;
+	uint32_t ipv4_addr;
+	uint32_t ipv6_addr[4];
+	uint8_t mac_addr[6];
+	IPACM_Lan* p_iface;
+} ipacm_event_lan_client;
+
+typedef struct
+{
+	ipa_ip_type iptype;
+	uint32_t src_ipv4_addr;
+	uint32_t dst_ipv4_addr;
+	uint32_t src_ipv6_addr[4];
+	uint32_t dst_ipv6_addr[4];
+} ipacm_event_connection;
 
 typedef struct _ipacm_event_data_fid
 {
