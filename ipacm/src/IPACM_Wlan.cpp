@@ -151,6 +151,27 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
+	case IPA_PRIVATE_SUBNET_CHANGE_EVENT:
+		{
+			ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
+			/* internel event: data->if_index is ipa_if_index */
+			if (data->if_index == ipa_if_num)
+			{
+				IPACMDBG("Received IPA_PRIVATE_SUBNET_CHANGE_EVENT from itself posting, ignore\n");
+				return;
+			}
+			else
+			{
+				IPACMDBG("Received IPA_PRIVATE_SUBNET_CHANGE_EVENT from other LAN iface \n");
+#ifdef FEATURE_IPA_ANDROID
+				handle_private_subnet_android(IPA_IP_v4);
+#endif
+				IPACMDBG(" delete old private subnet rules, use new sets \n");
+				return;
+			}
+		}
+		break;
+
 	case IPA_LAN_DELETE_SELF:
 	{
 		ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
@@ -220,7 +241,12 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					{
 						return;
 					}
+#ifdef FEATURE_IPA_ANDROID
+					add_dummy_private_subnet_flt_rule(data->iptype);
+					handle_private_subnet_android(data->iptype);
+#else
 					handle_private_subnet(data->iptype);
+#endif
 
 					if (IPACM_Wan::isWanUP())
 					{
@@ -546,6 +572,10 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
 								+ NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
 #endif
+
+#ifdef FEATURE_IPA_ANDROID
+		offset = offset + wlan_ap_index * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
 		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPV4_DEFAULT_FILTERTING_RULES * sizeof(struct ipa_flt_rule_mdfy));
 		pFilteringTable = (struct ipa_ioc_mdfy_flt_rule *)calloc(1, len);
 		if (!pFilteringTable)
@@ -740,6 +770,9 @@ int IPACM_Wlan::add_dummy_lan2lan_flt_rule(ipa_ip_type iptype)
 						+ NUM_TCP_CTL_FLT_RULE;
 #endif
 
+#ifdef FEATURE_IPA_ANDROID
+		offset = offset + wlan_ap_index * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
 		for (int i = 0; i < MAX_OFFLOAD_PAIR; i++)
 		{
 			lan2lan_flt_rule_hdl_v4[i].rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v4[offset+i];
@@ -957,6 +990,10 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 		offset = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #else
 		offset = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
+
+#ifdef FEATURE_IPA_ANDROID
+		offset = offset + 2 * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #endif
 	}
 	else
@@ -1804,6 +1841,17 @@ int IPACM_Wlan::handle_down_evt()
 
 		IPACMDBG("Delete private v4 filter rules\n");
 		/* delete private-ipv4 filter rules */
+#ifdef FEATURE_IPA_ANDROID
+		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+		{
+			if(reset_to_dummy_flt_rule(IPA_IP_v4, private_fl_rule_hdl[i]) == IPACM_FAILURE)
+			{
+				IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+		}
+#else
 		for(i=0; i<IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
 		{
 			if(reset_to_dummy_flt_rule(IPA_IP_v4, private_fl_rule_hdl[i]) == IPACM_FAILURE)
@@ -1813,6 +1861,7 @@ int IPACM_Wlan::handle_down_evt()
 				goto fail;
 			}
 		}
+#endif
 	}
 
 	/* Delete v6 filtering rules */
@@ -1947,6 +1996,19 @@ int IPACM_Wlan::handle_down_evt()
 
 	/* free the wlan clients cache */
 	IPACMDBG("Free wlan clients cache\n");
+
+	/* Delete private subnet*/
+#ifdef FEATURE_IPA_ANDROID
+	if (ip_type != IPA_IP_v6)
+	{
+		IPACMDBG("current IPACM private subnet_addr number(%d)\n", IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+		IPACMDBG(" Delete IPACM private subnet_addr as: 0x%x \n", if_ipv4_subnet);
+		if(IPACM_Iface::ipacmcfg->DelPrivateSubnet(if_ipv4_subnet, ipa_if_num) == false)
+		{
+			IPACMERR(" can't Delete IPACM private subnet_addr as: 0x%x \n", if_ipv4_subnet);
+		}
+	}
+#endif /* defined(FEATURE_IPA_ANDROID)*/
 
 fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */
@@ -2352,6 +2414,11 @@ void IPACM_Wlan::add_dummy_flt_rule()
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR);
 #endif
+
+#ifdef FEATURE_IPA_ANDROID
+		num_v4_dummy_rule = num_v4_dummy_rule - 2* IPACM_Iface::ipacmcfg->ipa_num_private_subnet + 2 * IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+#endif
+
 		IPACM_Wlan::dummy_flt_rule_hdl_v4 = (uint32_t*)malloc(num_v4_dummy_rule * sizeof(uint32_t));
 		if(IPACM_Wlan::dummy_flt_rule_hdl_v4 == NULL)
 		{
@@ -2533,6 +2600,11 @@ void IPACM_Wlan::del_dummy_flt_rule()
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR);
 #endif
+
+#ifdef FEATURE_IPA_ANDROID
+		num_v4_dummy_rule = num_v4_dummy_rule - 2* IPACM_Iface::ipacmcfg->ipa_num_private_subnet + 2 * IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+#endif
+
 		if(m_filtering.DeleteFilteringHdls(IPACM_Wlan::dummy_flt_rule_hdl_v4, IPA_IP_v4, num_v4_dummy_rule) == false)
 		{
 			IPACMERR("Failed to delete ipv4 dummy flt rules.\n");
@@ -2572,6 +2644,9 @@ void IPACM_Wlan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
 			return;
 		}
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#ifdef FEATURE_IPA_ANDROID
+		offset = offset + wlan_ap_index * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
 	}
 	else
 	{
@@ -2686,3 +2761,39 @@ fail:
 	return;
 }
 
+int IPACM_Wlan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
+{
+	if(rx_prop == NULL)
+	{
+		IPACMDBG("There is no rx_prop for iface %s, not able to add dummy lan2lan filtering rule.\n", dev_name);
+		return IPACM_FAILURE;
+	}
+
+	int offset;
+	if(iptype == IPA_IP_v4)
+	{
+		if(IPACM_Wlan::dummy_flt_rule_hdl_v4 == NULL)
+		{
+			IPACMERR("Dummy ipv4 flt rule has not been installed.\n");
+			return IPACM_FAILURE;
+		}
+
+#ifndef CT_OPT
+		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
+						+ IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR;
+#else
+		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
+						+ IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_TCP_CTL_FLT_RULE;
+#endif
+
+#ifdef FEATURE_IPA_ANDROID
+		offset = offset + wlan_ap_index * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
+		for (int i = 0; i < IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+		{
+			private_fl_rule_hdl[i] = IPACM_Wlan::dummy_flt_rule_hdl_v4[offset+i];
+			IPACMDBG("Private subnet v4 flt rule %d hdl:0x%x\n", i, private_fl_rule_hdl[i]);
+		}
+	}
+	return IPACM_SUCCESS;
+}

@@ -42,7 +42,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPACM_Defs.h"
 #include "IPACM_Xml.h"
-
+#include "IPACM_EvtDispatcher.h"
 
 typedef struct
 {
@@ -177,6 +177,82 @@ public:
 
 		return false;
 	}
+#ifdef FEATURE_IPA_ANDROID
+	inline bool AddPrivateSubnet(uint32_t ip_addr, int ipa_if_index)
+	{
+		ipacm_cmd_q_data evt_data;
+		ipacm_event_data_fid *data_fid;
+		uint32_t subnet_mask = ~0;
+		for(int cnt=0; cnt<ipa_num_private_subnet; cnt++)
+		{
+			if(private_subnet_table[cnt].subnet_addr == ip_addr)
+			{
+				IPACMDBG("Already has private subnet_addr as: 0x%x in entry(%d) \n", ip_addr, cnt);
+				return true;
+			}
+		}
+
+		if(ipa_num_private_subnet < IPA_MAX_PRIVATE_SUBNET_ENTRIES)
+		{
+			IPACMDBG("Add IPACM private subnet_addr as: 0x%x in entry(%d) \n", ip_addr, ipa_num_private_subnet);
+			private_subnet_table[ipa_num_private_subnet].subnet_addr = ip_addr;
+			private_subnet_table[ipa_num_private_subnet].subnet_mask = (subnet_mask >> 8) << 8;
+			ipa_num_private_subnet++;
+
+			/* IPACM private subnet set changes */
+			data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+			if(data_fid == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_fid\n");
+				return IPACM_FAILURE;
+			}
+			data_fid->if_index = ipa_if_index; // already ipa index, not fid index
+			evt_data.event = IPA_PRIVATE_SUBNET_CHANGE_EVENT;
+			evt_data.evt_data = data_fid;
+
+			/* Insert IPA_PRIVATE_SUBNET_CHANGE_EVENT to command queue */
+			IPACM_EvtDispatcher::PostEvt(&evt_data);
+			return true;
+		}
+		IPACMERR("IPACM private subnet_addr overflow, total entry(%d)\n", ipa_num_private_subnet);
+		return false;
+	}
+
+	inline bool DelPrivateSubnet(uint32_t ip_addr, int ipa_if_index)
+	{
+		ipacm_cmd_q_data evt_data;
+		ipacm_event_data_fid *data_fid;
+		for(int cnt=0; cnt<ipa_num_private_subnet; cnt++)
+		{
+			if(private_subnet_table[cnt].subnet_addr == ip_addr)
+			{
+				IPACMDBG("Found private subnet_addr as: 0x%x in entry(%d) \n", ip_addr, cnt);
+				for (; cnt < ipa_num_private_subnet - 1; cnt++)
+				{
+					private_subnet_table[cnt].subnet_addr = private_subnet_table[cnt+1].subnet_addr;
+				}
+				ipa_num_private_subnet = ipa_num_private_subnet - 1;
+
+				/* IPACM private subnet set changes */
+				data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+				if(data_fid == NULL)
+				{
+					IPACMERR("unable to allocate memory for event data_fid\n");
+					return IPACM_FAILURE;
+				}
+				data_fid->if_index = ipa_if_index; // already ipa index, not fid index
+				evt_data.event = IPA_PRIVATE_SUBNET_CHANGE_EVENT;
+				evt_data.evt_data = data_fid;
+
+				/* Insert IPA_PRIVATE_SUBNET_CHANGE_EVENT to command queue */
+				IPACM_EvtDispatcher::PostEvt(&evt_data);
+				return true;
+			}
+		}
+		IPACMDBG("can't find private subnet_addr as: 0x%x \n", ip_addr);
+		return false;
+	}
+#endif /* defined(FEATURE_IPA_ANDROID)*/
 
 private:
 	static IPACM_Config *pInstance;

@@ -245,6 +245,8 @@ private:
 
 	virtual int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
 
+	virtual int add_dummy_private_subnet_flt_rule(ipa_ip_type iptype);
+
 	/*configure private subnet filter rules*/
 	virtual int handle_private_subnet(ipa_ip_type iptype);
 

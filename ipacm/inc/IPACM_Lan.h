@@ -112,7 +112,7 @@ public:
 	uint32_t lan_wan_fl_rule_hdl[IPA_WAN_DEFAULT_FILTER_RULE_HANDLES];
 
 	/* store private-subnet filter rule handlers */
-	uint32_t private_fl_rule_hdl[IPA_PRIV_SUBNET_FILTER_RULE_HANDLES];
+	uint32_t private_fl_rule_hdl[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
 
 	/* LAN-iface's callback function */
 	void event_callback(ipa_cm_event_id event,
@@ -155,6 +155,10 @@ protected:
 
 	virtual int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
 
+	virtual int add_dummy_private_subnet_flt_rule(ipa_ip_type iptype);
+
+	int handle_private_subnet_android(ipa_ip_type iptype);
+
 	int reset_to_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl);
 
 	/*handle lan2lan client active*/
@@ -186,6 +190,8 @@ protected:
 	int num_wan_ul_fl_rule_v6;
 
 	bool is_active;
+
+	uint32_t if_ipv4_subnet;
 
 private:
 

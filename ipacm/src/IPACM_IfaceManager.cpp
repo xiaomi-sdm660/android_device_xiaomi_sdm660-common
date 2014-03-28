@@ -163,7 +163,8 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, lan);
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, lan);
-				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, lan); 		// register for IPA_CFG_CHANGE event
+				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, lan); 				// register for IPA_CFG_CHANGE event
+				IPACM_EvtDispatcher::registr(IPA_PRIVATE_SUBNET_CHANGE_EVENT, lan); 	// register for IPA_PRIVATE_SUBNET_CHANGE_EVENT event
 				IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", lan->dev_name, lan->ipa_if_num);
 				registr(ipa_interface_index, lan);
 				/* solve the new_addr comes earlier issue */
@@ -207,6 +208,7 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, wl);
 				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, wl);
+				IPACM_EvtDispatcher::registr(IPA_PRIVATE_SUBNET_CHANGE_EVENT, wl); 	// register for IPA_PRIVATE_SUBNET_CHANGE_EVENT event
 				IPACMDBG("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
 				registr(ipa_interface_index, wl);
 				/* solve the new_addr comes earlier issue */

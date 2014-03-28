@@ -452,7 +452,6 @@ static int ipa_nl_decode_rtm_addr
 			IPACM_NL_COPY_ADDR( addr_info, prefix_addr );
 			addr_info->attr_info.param_mask |= IPA_NLA_PARAM_PREFIXADDR;
 			break;
-
 		default:
 			break;
 

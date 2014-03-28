@@ -107,10 +107,11 @@ const char *ipacm_event_name[] = {
 	__stringify(IPA_LAN_CLIENT_POWER_RECOVER),			   /* 33 ipacm_event_lan_client*/
 	__stringify(IPA_LAN_TO_LAN_NEW_CONNECTION),			   /* 34 ipacm_event_connection */
 	__stringify(IPA_LAN_TO_LAN_DEL_CONNECTION),			   /* 35 ipacm_event_connection */
-	__stringify(IPA_LAN_DELETE_SELF),		                   /* 36 ipacm_event_data_fid */
-	__stringify(IPA_WLAN_LINK_DOWN_EVENT),                             /* 37 ipacm_event_data_mac */
-	__stringify(IPA_USB_LINK_UP_EVENT),                                /* 38 ipacm_event_data_fid */
-        __stringify(IPA_PROCESS_CT_MESSAGE_V6),				  /* 39 ipacm_ct_evt_data */
+	__stringify(IPA_LAN_DELETE_SELF),		               /* 36 ipacm_event_data_fid */
+	__stringify(IPA_WLAN_LINK_DOWN_EVENT),                 /* 37 ipacm_event_data_mac */
+	__stringify(IPA_USB_LINK_UP_EVENT),                    /* 38 ipacm_event_data_fid */
+    __stringify(IPA_PROCESS_CT_MESSAGE_V6),			       /* 39 ipacm_ct_evt_data */
+	__stringify(IPA_PRIVATE_SUBNET_CHANGE_EVENT),		   /* 40 ipacm_event_data_fid */
 };
 
 #define IPA_DRIVER  "/dev/ipa"

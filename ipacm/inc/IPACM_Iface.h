@@ -74,8 +74,8 @@ public:
 	/* IPACM interface id */
 	int ipa_if_num;
 
-		/* IPACM interface category */
-		int ipa_if_cate;
+	/* IPACM interface category */
+	int ipa_if_cate;
 
 	/* IPACM interface name */
 	char dev_name[IF_NAME_LEN];

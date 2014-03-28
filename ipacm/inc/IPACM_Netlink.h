@@ -150,6 +150,10 @@ typedef struct ipa_nl_addr_info_s {
 		unsigned int                  param_mask;
 		unsigned char                 label_name[IF_NAME_LEN];
 		struct sockaddr_storage       prefix_addr;
+		struct sockaddr_storage       local_addr;
+		struct sockaddr_storage       bcast_addr;
+		struct sockaddr_storage       acast_addr;
+		struct sockaddr_storage       mcast_addr;
 	} attr_info;
 } ipa_nl_addr_info_t;
 
