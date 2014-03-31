@@ -65,7 +65,8 @@ LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
                    :context),
     mOwner(owner), mInternalAdapter(new LocInternalAdapter(this)),
     mUlp(new UlpProxyBase()), mNavigating(false),
-    mSupportsAgpsExtendedCapabilities(false), mSupportsCPIExtendedCapabilities(false)
+    mSupportsAgpsExtendedCapabilities(false),
+    mSupportsCPIExtendedCapabilities(false), mPowerVote(0)
 {
     memset(&mFixCriteria, 0, sizeof(mFixCriteria));
     mFixCriteria.mode = LOC_POSITION_MODE_INVALID;
@@ -121,6 +122,40 @@ void LocEngAdapter::setUlpProxy(UlpProxyBase* ulp)
 
     delete mUlp;
     mUlp = ulp;
+}
+
+void LocEngAdapter::requestPowerVote()
+{
+    struct LocEngAdapterVotePower : public LocMsg {
+        LocEngAdapter* mAdapter;
+        const bool mPowerUp;
+        inline LocEngAdapterVotePower(LocEngAdapter* adapter, bool powerUp) :
+            LocMsg(), mAdapter(adapter), mPowerUp(powerUp)
+        {
+            locallog();
+        }
+        inline virtual void proc() const {
+            /* Power voting without engine lock:
+             * 101: vote down, 102-104 - vote up
+             * These codes are used not to confuse with actual engine lock
+             * functionality, that can't be used in SSR scenario, as it
+             * conflicts with initialization sequence.
+             */
+            int mode = mPowerUp ? 103 : 101;
+            mAdapter->setGpsLock(mode);
+        }
+        inline  void locallog() const {
+            LOC_LOGV("LocEngAdapterVotePower - Vote Power: %d",
+                     (int)mPowerUp);
+        }
+        inline virtual void log() const {
+            locallog();
+        }
+    };
+
+    if (getPowerVoteRight()) {
+        sendMsg(new LocEngAdapterVotePower(this, getPowerVote()));
+    }
 }
 
 void LocInternalAdapter::reportPosition(UlpLocation &location,

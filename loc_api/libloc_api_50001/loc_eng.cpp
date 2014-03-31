@@ -2525,6 +2525,8 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
     ENTRY_LOG();
     loc_eng_reinit(loc_eng_data);
 
+    loc_eng_data.adapter->requestPowerVote();
+
     if (loc_eng_data.agps_status_cb != NULL) {
         if (loc_eng_data.agnss_nif)
             loc_eng_data.agnss_nif->dropAllSubscribers();
