@@ -30,6 +30,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ipa_nat_drv.h"
 #include "ipa_nat_drvi.h"
 
+#define IPANAT_DUMMY_USE(element) element++;
 struct ipa_nat_cache ipv4_nat_cache;
 
 /* ------------------------------------------
@@ -172,27 +173,7 @@ uint32_t Read32BitFieldValue(uint32_t param,
  */
 int CreateNatDevice(struct ipa_ioc_nat_alloc_mem *mem)
 {
-
-#define EVENT_SIZE  (sizeof (struct inotify_event))
-#define FILE_NAME_LENGTH (sizeof(NAT_DEV_NAME)*2 + 1)
-#define BUF_LEN     (EVENT_SIZE + FILE_NAME_LENGTH)
-
-  int length;
-  int wd;
-  char buffer[BUF_LEN];
-  int ret, inotify_fd;
-
-  inotify_fd = inotify_init();
-  if (inotify_fd < 0)
-  {
-    perror("inotify_init");
-    return -1;
-  }
-
-  IPADBG("Waiting for nofications in dir %s\n", NAT_DEV_DIR);
-  wd = inotify_add_watch(inotify_fd,
-                         NAT_DEV_DIR,
-                         IN_CREATE);
+  int ret;
   
   ret = ioctl(ipv4_nat_cache.ipa_fd, IPA_IOC_ALLOC_NAT_MEM, mem);
   if (ret != 0)
@@ -203,33 +184,6 @@ int CreateNatDevice(struct ipa_ioc_nat_alloc_mem *mem)
     return -1;
   }
   IPADBG("posted IPA_IOC_ALLOC_NAT_MEM to kernel successfully \n");
-
-  length = read(inotify_fd, buffer, BUF_LEN );  
-
-  if (length < 0)
-  {
-    perror("inotify read");
-    return -1;
-  }
-
-  struct inotify_event *event = (struct inotify_event *)buffer;
-  if(event->len)
-  {
-    if(event->mask & IN_CREATE)
-    {
-      if( event->mask & IN_ISDIR)
-      {
-        IPADBG("The directory %s was created.\n", event->name);       
-      }
-      else
-      {
-        IPADBG("The file %s was created.\n", event->name);
-      }
-    }
-  }
-
-  (void) inotify_rm_watch(inotify_fd, wd);
-  (void) close(inotify_fd);
   return 0;
 }
 
@@ -802,9 +756,9 @@ int ipa_nati_alloc_table(uint16_t number_of_entries,
 
   /* Calclate the memory size for both table and index table entries */
   mem->size = (IPA_NAT_TABLE_ENTRY_SIZE * total_entries);
-	IPADBG("Nat Table size: %d\n", mem->size);
+  IPADBG("Nat Table size: %d\n", mem->size);
   mem->size += (IPA_NAT_INDEX_TABLE_ENTRY_SIZE * total_entries);
-	IPADBG("Nat Base and Index Table size: %d\n", mem->size);
+  IPADBG("Nat Base and Index Table size: %d\n", mem->size);
   
   if (!ipv4_nat_cache.ipa_fd)
   {
@@ -2329,17 +2283,19 @@ void ipa_nati_print_rule(struct ipa_nat_rule *param, uint32_t rule_id)
   IPADUMP("TS:0x%x  Proto:0x%x  ", sw_rule.time_stamp, sw_rule.protocol);
   IPADUMP("Prv-indx:%d  Tcp-udp-cksum-delta:0x%x", sw_rule.prev_index, sw_rule.tcp_udp_chksum);
   IPADUMP("\n");
+  IPANAT_DUMMY_USE(rule_id);
   return;
 }
 
 void ipa_nati_print_index_rule(struct ipa_nat_indx_tbl_rule *param, uint32_t rule_id)
 {
-	struct ipa_nat_sw_indx_tbl_rule sw_rule;
-	memcpy(&sw_rule, param, sizeof(sw_rule));
+  struct ipa_nat_sw_indx_tbl_rule sw_rule;
+  memcpy(&sw_rule, param, sizeof(sw_rule));
 
   IPADUMP("rule-id:%d  Table_entry:%d  Next_index:%d",
 					        rule_id, sw_rule.tbl_entry, sw_rule.next_index);
   IPADUMP("\n");
+  IPANAT_DUMMY_USE(rule_id);
   return;
 }
 

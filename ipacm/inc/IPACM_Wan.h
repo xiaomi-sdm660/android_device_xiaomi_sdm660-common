@@ -63,7 +63,7 @@ public:
 	static bool wan_up_v6;
 
 	IPACM_Wan(int iface_index, bool is_sta_mode);
-	~IPACM_Wan();
+	virtual ~IPACM_Wan();
 
 	static bool isWanUP()
 	{

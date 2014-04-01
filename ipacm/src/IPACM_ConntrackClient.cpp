@@ -26,7 +26,6 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <iostream>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -285,9 +284,7 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 			{
 				IPACMDBG("ignore connections destinated to interface %s\n", item->ifr_name);
 				IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
-				nfct_filter_set_logic(filter,
-															NFCT_FILTER_DST_IPV4,
-															NFCT_FILTER_LOGIC_NEGATIVE);
+				nfct_filter_set_logic(filter, NFCT_FILTER_DST_IPV4, NFCT_FILTER_LOGIC_NEGATIVE);
 
 				nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
 
@@ -504,8 +501,7 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	}
 
 	/* Attach the filter to net filter handler */
-	ret = nfct_filter_attach(nfct_fd(pClient->tcp_hdl),
-													 pClient->tcp_filter);
+	ret = nfct_filter_attach(nfct_fd(pClient->tcp_hdl), pClient->tcp_filter);
 	if(ret == -1)
 	{
 		IPACMDBG("unable to attach TCP filter\n");
@@ -515,7 +511,7 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	/* Register callback with netfilter handler */
 	IPACMDBG("tcp handle:%p, fd:%d\n", pClient->tcp_hdl, nfct_fd(pClient->tcp_hdl));
 	nfct_callback_register(pClient->tcp_hdl, 
-				(NFCT_T_UPDATE | NFCT_T_DESTROY), 
+			(nf_conntrack_msg_type)	(NFCT_T_UPDATE | NFCT_T_DESTROY), 
 						IPAConntrackEventCB, NULL);
 
 	/* Block to catch events from net filter connection track */
@@ -601,7 +597,7 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 	/* Register callback with netfilter handler */
 	IPACMDBG("udp handle:%p, fd:%d\n", pClient->udp_hdl, nfct_fd(pClient->udp_hdl));
 	nfct_callback_register(pClient->udp_hdl,
-												 (nf_conntrack_msg_type)(NFCT_T_NEW | NFCT_T_DESTROY),
+				(nf_conntrack_msg_type)(NFCT_T_NEW | NFCT_T_DESTROY),
 												 IPAConntrackEventCB,
 												 NULL);
 

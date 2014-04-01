@@ -29,10 +29,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <unistd.h>
 
 #include "IPACM_ConntrackListener.h"
 #include "IPACM_ConntrackClient.h"
 #include "IPACM_EvtDispatcher.h"
+
 
 IPACM_ConntrackListener::IPACM_ConntrackListener()
 {
@@ -347,34 +349,9 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 
 			isCTReg = true;
 	 }
-
-	 //pthread_join(tcp_thread, NULL);
-	 //pthread_join(udp_thread, NULL);
-	 //pthread_join(udpcto_thread, NULL);
-
 	 return 0;
 
 error:
-	 if(tcp_thread)
-	 {
-			pthread_cancel(tcp_thread);
-	 }
-
-	 if(udp_thread)
-	 {
-			pthread_cancel(tcp_thread);
-	 }
-
-	 if(udpcto_thread)
-	 {
-			pthread_cancel(udpcto_thread);
-	 }
-
-	 if(to_monitor_thread)
-	 {
-		 pthread_cancel(to_monitor_thread);
-	 }
-
 	 return -1;
 }
 

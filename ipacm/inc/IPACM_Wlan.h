@@ -82,12 +82,11 @@ class IPACM_Wlan : public IPACM_Lan
 public:
 
 	IPACM_Wlan(int iface_index);
-	~IPACM_Wlan(void);
+	virtual ~IPACM_Wlan(void);
 
 	static int total_num_wifi_clients;
 
-	void event_callback(ipa_cm_event_id event,
-											void *data);
+	void event_callback(ipa_cm_event_id event, void *data);
 
 private:
 	int wlan_client_len;
