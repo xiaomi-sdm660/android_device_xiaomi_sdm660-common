@@ -74,7 +74,7 @@ static int  loc_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence re
                                   uint32_t min_interval, uint32_t preferred_accuracy,
                                   uint32_t preferred_time);
 static const void* loc_get_extension(const char* name);
-
+static void loc_close_mdm_node();
 // Defines the GpsInterface in gps.h
 static const GpsInterface sLocEngInterface =
 {
@@ -279,7 +279,8 @@ static int loc_init(GpsCallbacks* callbacks)
                                     callbacks->create_thread_cb, /* create_thread_cb */
                                     NULL, /* location_ext_parser */
                                     NULL, /* sv_ext_parser */
-                                    callbacks->request_utc_time_cb /* request_utc_time_cb */};
+                                    callbacks->request_utc_time_cb, /* request_utc_time_cb */
+                                    loc_close_mdm_node  /*loc_shutdown_cb*/};
 
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
@@ -334,6 +335,37 @@ err:
 }
 
 /*===========================================================================
+FUNCTION    loc_close_mdm_node
+
+DESCRIPTION
+   closes mdm_fd which is the modem powerup node obtained in loc_init
+
+DEPENDENCIES
+   None
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_close_mdm_node()
+{
+    ENTRY_LOG();
+    if (mdm_fd >= 0) {
+        LOC_LOGD("closing the powerup node");
+        close(mdm_fd);
+        mdm_fd = -1;
+        LOC_LOGD("finished closing the powerup node");
+    } else {
+        LOC_LOGD("powerup node has not been opened yet.");
+    }
+
+    EXIT_LOG(%s, VOID_RET);
+}
+
+/*===========================================================================
 FUNCTION    loc_cleanup
 
 DESCRIPTION
@@ -356,17 +388,9 @@ static void loc_cleanup()
     loc_afw_data.adapter->setPowerVote(false);
 
     loc_eng_cleanup(loc_afw_data);
+    loc_close_mdm_node();
     gps_loc_cb = NULL;
     gps_sv_cb = NULL;
-
-    if (mdm_fd >= 0) {
-        LOC_LOGD("closing the powerup node");
-        close(mdm_fd);
-        mdm_fd = -1;
-        LOC_LOGD("finished closing the powerup node");
-    } else {
-        LOC_LOGD("powerup node has not been opened yet.");
-    }
 
     EXIT_LOG(%s, VOID_RET);
 }

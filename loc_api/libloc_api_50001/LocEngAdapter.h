@@ -64,6 +64,7 @@ public:
     virtual void stopFixInt();
     virtual void getZppInt();
     virtual void setUlpProxy(UlpProxyBase* ulp);
+    virtual void shutdown();
 };
 
 typedef void (*loc_msg_sender)(void* loc_eng_data_p, void* msgp);
