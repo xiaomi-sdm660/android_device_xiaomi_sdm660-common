@@ -100,6 +100,7 @@ public:
     virtual bool requestNiNotify(GpsNiNotification &notify,
                                  const void* data);
     inline virtual bool isInSession() { return false; }
+    virtual void shutdown();
 };
 
 } // namespace loc_core
