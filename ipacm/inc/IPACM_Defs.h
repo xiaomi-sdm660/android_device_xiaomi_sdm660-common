@@ -120,7 +120,7 @@ typedef enum
 	IPA_SW_ROUTING_DISABLE,                   /* 19 NULL */
 	IPA_PROCESS_CT_MESSAGE,                   /* 20 ipacm_ct_evt_data */
 	IPA_HANDLE_WAN_UP,                        /* 21 ipacm_event_iface_up  */
-	IPA_HANDLE_WAN_DOWN,                      /* 22 unsigned long  */
+	IPA_HANDLE_WAN_DOWN,                      /* 22 ipacm_event_iface_up  */
 	IPA_HANDLE_WLAN_UP,                       /* 23 ipacm_event_iface_up */
 	IPA_HANDLE_LAN_UP,                        /* 24 ipacm_event_iface_up */
 	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 25 ipacm_event_data_wlan_ex */

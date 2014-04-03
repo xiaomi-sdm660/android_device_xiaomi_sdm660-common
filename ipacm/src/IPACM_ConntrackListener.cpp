@@ -60,7 +60,7 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 																						 void *data)
 {
-	 uint32_t *pub_addr = NULL;
+	 ipacm_event_iface_up *wan_down = NULL;
 
 	 if(data == NULL)
 	 {
@@ -85,10 +85,10 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 
 	 case IPA_HANDLE_WAN_DOWN:
 			IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
-			pub_addr = (uint32_t *)data;
+			wan_down = (ipacm_event_iface_up *)data;
 			if(isWanUp == true)
 			{
-				TriggerWANDown(*pub_addr);
+				TriggerWANDown(wan_down->ipv4_addr);
 			}
 			break;
 
