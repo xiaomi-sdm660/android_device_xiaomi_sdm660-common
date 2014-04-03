@@ -2824,7 +2824,7 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 			evt_data.event = IPA_HANDLE_WAN_DOWN;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
-			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv4 \n");
+			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv4 with address: 0x%x\n", wan_v4_addr);
 			IPACM_EvtDispatcher::PostEvt(&evt_data);
 
 			IPACMDBG("setup wan_up/active_v4= false \n"); 

@@ -255,7 +255,7 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 
 	CHK_TBL_HDL();
 
-	IPACMDBG("Received below nat entry for deletion\n");
+	IPACMDBG("Received below nat entry for addition\n");
 	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
 	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
