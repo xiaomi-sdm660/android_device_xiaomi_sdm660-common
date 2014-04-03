@@ -116,28 +116,45 @@ void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
     ENTRY_LOG();
     char lcs_addr[32]; // Decoded LCS address for UMTS CP NI
     loc_eng_ni_data_s_type* loc_eng_ni_data_p = &loc_eng_data.loc_eng_ni_data;
+    loc_eng_ni_session_s_type* pSession = NULL;
 
     if (NULL == loc_eng_data.ni_notify_cb) {
         EXIT_LOG(%s, "loc_eng_ni_init hasn't happened yet.");
         return;
     }
 
-    /* If busy, use default or deny */
-    if (NULL != loc_eng_ni_data_p->rawRequest)
-    {
-        /* XXX Consider sending a NO RESPONSE reply or queue the request */
-        LOC_LOGW("loc_eng_ni_request_handler, notification in progress, new NI request ignored, type: %d",
-                 notif->ni_type);
-        if (NULL != passThrough) {
-            free((void*)passThrough);
+    if (notif->ni_type == GPS_NI_TYPE_EMERGENCY_SUPL) {
+        if (NULL != loc_eng_ni_data_p->sessionEs.rawRequest) {
+            LOC_LOGW("loc_eng_ni_request_handler, supl es NI in progress, new supl es NI ignored, type: %d",
+                     notif->ni_type);
+            if (NULL != passThrough) {
+                free((void*)passThrough);
+            }
+        } else {
+            pSession = &loc_eng_ni_data_p->sessionEs;
+        }
+    } else {
+        if (NULL != loc_eng_ni_data_p->session.rawRequest ||
+            NULL != loc_eng_ni_data_p->sessionEs.rawRequest) {
+            LOC_LOGW("loc_eng_ni_request_handler, supl NI in progress, new supl NI ignored, type: %d",
+                     notif->ni_type);
+            if (NULL != passThrough) {
+                free((void*)passThrough);
+            }
+        } else {
+            pSession = &loc_eng_ni_data_p->session;
         }
     }
-    else {
+
+
+    if (pSession) {
         /* Save request */
-        loc_eng_ni_data_p->rawRequest = (void*)passThrough;
+        pSession->rawRequest = (void*)passThrough;
+        pSession->reqID = ++loc_eng_ni_data_p->reqIDCounter;
+        pSession->adapter = loc_eng_data.adapter;
 
         /* Fill in notification */
-        ((GpsNiNotification*)notif)->notification_id = loc_eng_ni_data_p->reqID;
+        ((GpsNiNotification*)notif)->notification_id = pSession->reqID;
 
         if (notif->notify_flags == GPS_NI_PRIVACY_OVERRIDE)
         {
@@ -156,16 +173,16 @@ void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
         /* For robustness, spawn a thread at this point to timeout to clear up the notification status, even though
          * the OEM layer in java does not do so.
          **/
-        loc_eng_ni_data_p->respTimeLeft = 5 + (notif->timeout != 0 ? notif->timeout : LOC_NI_NO_RESPONSE_TIME);
-        LOC_LOGI("Automatically sends 'no response' in %d seconds (to clear status)\n", loc_eng_ni_data_p->respTimeLeft);
+        pSession->respTimeLeft = 5 + (notif->timeout != 0 ? notif->timeout : LOC_NI_NO_RESPONSE_TIME);
+        LOC_LOGI("Automatically sends 'no response' in %d seconds (to clear status)\n", pSession->respTimeLeft);
 
         int rc = 0;
-        rc = pthread_create(&loc_eng_ni_data_p->thread, NULL, ni_thread_proc, &loc_eng_data);
+        rc = pthread_create(&pSession->thread, NULL, ni_thread_proc, pSession);
         if (rc)
         {
             LOC_LOGE("Loc NI thread is not created.\n");
         }
-        rc = pthread_detach(loc_eng_ni_data_p->thread);
+        rc = pthread_detach(pSession->thread);
         if (rc)
         {
             LOC_LOGE("Loc NI thread is not detached.\n");
@@ -186,61 +203,61 @@ static void* ni_thread_proc(void *args)
 {
     ENTRY_LOG();
 
-    loc_eng_data_s_type* loc_eng_data_p = (loc_eng_data_s_type*)args;
-    loc_eng_ni_data_s_type* loc_eng_ni_data_p = &loc_eng_data_p->loc_eng_ni_data;
+    loc_eng_ni_session_s_type* pSession = (loc_eng_ni_session_s_type*)args;
     int rc = 0;          /* return code from pthread calls */
 
     struct timeval present_time;
     struct timespec expire_time;
 
     LOC_LOGD("Starting Loc NI thread...\n");
-    pthread_mutex_lock(&loc_eng_ni_data_p->tLock);
+    pthread_mutex_lock(&pSession->tLock);
     /* Calculate absolute expire time */
     gettimeofday(&present_time, NULL);
-    expire_time.tv_sec  = present_time.tv_sec + loc_eng_ni_data_p->respTimeLeft;
+    expire_time.tv_sec  = present_time.tv_sec + pSession->respTimeLeft;
     expire_time.tv_nsec = present_time.tv_usec * 1000;
     LOC_LOGD("ni_thread_proc-Time out set for abs time %ld with delay %d sec\n",
-             (long) expire_time.tv_sec, loc_eng_ni_data_p->respTimeLeft );
+             (long) expire_time.tv_sec, pSession->respTimeLeft );
 
-    while (!loc_eng_ni_data_p->respRecvd)
+    while (!pSession->respRecvd)
     {
-        rc = pthread_cond_timedwait(&loc_eng_ni_data_p->tCond,
-                                    &loc_eng_ni_data_p->tLock,
+        rc = pthread_cond_timedwait(&pSession->tCond,
+                                    &pSession->tLock,
                                     &expire_time);
         if (rc == ETIMEDOUT)
         {
-            loc_eng_ni_data_p->resp = GPS_NI_RESPONSE_NORESP;
+            pSession->resp = GPS_NI_RESPONSE_NORESP;
             LOC_LOGD("ni_thread_proc-Thread time out after valting for specified time. Ret Val %d\n",rc );
             break;
         }
     }
     LOC_LOGD("ni_thread_proc-Java layer has sent us a user response and return value from "
              "pthread_cond_timedwait = %d\n",rc );
-    loc_eng_ni_data_p->respRecvd = FALSE; /* Reset the user response flag for the next session*/
+    pSession->respRecvd = FALSE; /* Reset the user response flag for the next session*/
 
-    LOC_LOGD("loc_eng_ni_data_p->resp is %d\n",loc_eng_ni_data_p->resp);
+    LOC_LOGD("pSession->resp is %d\n",pSession->resp);
 
     // adding this check to support modem restart, in which case, we need the thread
     // to exit without calling sending data. We made sure that rawRequest is NULL in
     // loc_eng_ni_reset_on_engine_restart()
-    LocEngAdapter* adapter = loc_eng_data_p->adapter;
+    LocEngAdapter* adapter = pSession->adapter;
     LocEngInformNiResponse *msg = NULL;
 
-    if (NULL != loc_eng_ni_data_p->rawRequest) {
-        if (loc_eng_ni_data_p->resp != GPS_NI_RESPONSE_IGNORE) {
-            LOC_LOGD("loc_eng_ni_data_p->resp != GPS_NI_RESPONSE_IGNORE \n");
+    if (NULL != pSession->rawRequest) {
+        if (pSession->resp != GPS_NI_RESPONSE_IGNORE) {
+            LOC_LOGD("pSession->resp != GPS_NI_RESPONSE_IGNORE \n");
             msg = new LocEngInformNiResponse(adapter,
-                                             loc_eng_ni_data_p->resp,
-                                             loc_eng_ni_data_p->rawRequest);
+                                             pSession->resp,
+                                             pSession->rawRequest);
         } else {
             LOC_LOGD("this is the ignore reply for SUPL ES\n");
+            free(pSession->rawRequest);
         }
-        loc_eng_ni_data_p->rawRequest = NULL;
+        pSession->rawRequest = NULL;
     }
-    pthread_mutex_unlock(&loc_eng_ni_data_p->tLock);
+    pthread_mutex_unlock(&pSession->tLock);
 
-    loc_eng_ni_data_p->respTimeLeft = 0;
-    loc_eng_ni_data_p->reqID++;
+    pSession->respTimeLeft = 0;
+    pSession->reqID = 0;
 
     if (NULL != msg) {
         LOC_LOGD("ni_thread_proc: adapter->sendMsg(msg)\n");
@@ -262,16 +279,28 @@ void loc_eng_ni_reset_on_engine_restart(loc_eng_data_s_type &loc_eng_data)
     }
 
     // only if modem has requested but then died.
-    if (NULL != loc_eng_ni_data_p->rawRequest) {
-        free(loc_eng_ni_data_p->rawRequest);
-        loc_eng_ni_data_p->rawRequest = NULL;
+    if (NULL != loc_eng_ni_data_p->sessionEs.rawRequest) {
+        free(loc_eng_ni_data_p->sessionEs.rawRequest);
+        loc_eng_ni_data_p->sessionEs.rawRequest = NULL;
 
-        pthread_mutex_lock(&loc_eng_ni_data_p->tLock);
+        pthread_mutex_lock(&loc_eng_ni_data_p->sessionEs.tLock);
         // the goal is to wake up ni_thread_proc
         // and let it exit.
-        loc_eng_ni_data_p->respRecvd = TRUE;
-        pthread_cond_signal(&loc_eng_ni_data_p->tCond);
-        pthread_mutex_unlock(&loc_eng_ni_data_p->tLock);
+        loc_eng_ni_data_p->sessionEs.respRecvd = TRUE;
+        pthread_cond_signal(&loc_eng_ni_data_p->sessionEs.tCond);
+        pthread_mutex_unlock(&loc_eng_ni_data_p->sessionEs.tLock);
+    }
+
+    if (NULL != loc_eng_ni_data_p->session.rawRequest) {
+        free(loc_eng_ni_data_p->session.rawRequest);
+        loc_eng_ni_data_p->session.rawRequest = NULL;
+
+        pthread_mutex_lock(&loc_eng_ni_data_p->session.tLock);
+        // the goal is to wake up ni_thread_proc
+        // and let it exit.
+        loc_eng_ni_data_p->session.respRecvd = TRUE;
+        pthread_cond_signal(&loc_eng_ni_data_p->session.tCond);
+        pthread_mutex_unlock(&loc_eng_ni_data_p->session.tLock);
     }
 
     EXIT_LOG(%s, VOID_RET);
@@ -305,12 +334,19 @@ void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data, GpsNiExtCallbacks *callb
         EXIT_LOG(%s, "loc_eng_ni_init: already inited.");
     } else {
         loc_eng_ni_data_s_type* loc_eng_ni_data_p = &loc_eng_data.loc_eng_ni_data;
-        loc_eng_ni_data_p->respTimeLeft = 0;
-        loc_eng_ni_data_p->respRecvd = FALSE;
-        loc_eng_ni_data_p->rawRequest = NULL;
-        loc_eng_ni_data_p->reqID = 0;
-        pthread_cond_init(&loc_eng_ni_data_p->tCond, NULL);
-        pthread_mutex_init(&loc_eng_ni_data_p->tLock, NULL);
+        loc_eng_ni_data_p->sessionEs.respTimeLeft = 0;
+        loc_eng_ni_data_p->sessionEs.respRecvd = FALSE;
+        loc_eng_ni_data_p->sessionEs.rawRequest = NULL;
+        loc_eng_ni_data_p->sessionEs.reqID = 0;
+        pthread_cond_init(&loc_eng_ni_data_p->sessionEs.tCond, NULL);
+        pthread_mutex_init(&loc_eng_ni_data_p->sessionEs.tLock, NULL);
+
+        loc_eng_ni_data_p->session.respTimeLeft = 0;
+        loc_eng_ni_data_p->session.respRecvd = FALSE;
+        loc_eng_ni_data_p->session.rawRequest = NULL;
+        loc_eng_ni_data_p->session.reqID = 0;
+        pthread_cond_init(&loc_eng_ni_data_p->session.tCond, NULL);
+        pthread_mutex_init(&loc_eng_ni_data_p->session.tLock, NULL);
 
         loc_eng_data.ni_notify_cb = callbacks->notify_cb;
         EXIT_LOG(%s, VOID_RET);
@@ -338,25 +374,40 @@ void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,
 {
     ENTRY_LOG_CALLFLOW();
     loc_eng_ni_data_s_type* loc_eng_ni_data_p = &loc_eng_data.loc_eng_ni_data;
+    loc_eng_ni_session_s_type* pSession = NULL;
 
     if (NULL == loc_eng_data.ni_notify_cb) {
         EXIT_LOG(%s, "loc_eng_ni_init hasn't happened yet.");
         return;
     }
 
-    if (notif_id == loc_eng_ni_data_p->reqID &&
-        NULL != loc_eng_ni_data_p->rawRequest)
-    {
+    if (notif_id == loc_eng_ni_data_p->sessionEs.reqID &&
+        NULL != loc_eng_ni_data_p->sessionEs.rawRequest) {
+        pSession = &loc_eng_ni_data_p->sessionEs;
+        // ignore any SUPL NI non-Es session if a SUPL NI ES is accepted
+        if (user_response == GPS_NI_RESPONSE_ACCEPT &&
+            NULL != loc_eng_ni_data_p->session.rawRequest) {
+                pthread_mutex_lock(&loc_eng_ni_data_p->session.tLock);
+                loc_eng_ni_data_p->session.resp = GPS_NI_RESPONSE_IGNORE;
+                loc_eng_ni_data_p->session.respRecvd = TRUE;
+                pthread_cond_signal(&loc_eng_ni_data_p->session.tCond);
+                pthread_mutex_unlock(&loc_eng_ni_data_p->session.tLock);
+        }
+    } else if (notif_id == loc_eng_ni_data_p->session.reqID &&
+        NULL != loc_eng_ni_data_p->session.rawRequest) {
+        pSession = &loc_eng_ni_data_p->session;
+    }
+
+    if (pSession) {
         LOC_LOGI("loc_eng_ni_respond: send user response %d for notif %d", user_response, notif_id);
-        pthread_mutex_lock(&loc_eng_ni_data_p->tLock);
-        loc_eng_ni_data_p->resp = user_response;
-        loc_eng_ni_data_p->respRecvd = TRUE;
-        pthread_cond_signal(&loc_eng_ni_data_p->tCond);
-        pthread_mutex_unlock(&loc_eng_ni_data_p->tLock);
+        pthread_mutex_lock(&pSession->tLock);
+        pSession->resp = user_response;
+        pSession->respRecvd = TRUE;
+        pthread_cond_signal(&pSession->tCond);
+        pthread_mutex_unlock(&pSession->tLock);
     }
     else {
-        LOC_LOGE("loc_eng_ni_respond: reqID %d and notif_id %d mismatch or rawRequest %p, response: %d",
-                 loc_eng_ni_data_p->reqID, notif_id, loc_eng_ni_data_p->rawRequest, user_response);
+        LOC_LOGE("loc_eng_ni_respond: notif_id %d not an active session", notif_id);
     }
 
     EXIT_LOG(%s, VOID_RET);
