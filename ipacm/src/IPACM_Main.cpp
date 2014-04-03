@@ -102,6 +102,8 @@ const char *ipacm_event_name[] = {
 
 #define IPACM_DIR_NAME     "/etc"
 #define IPACM_FILE_NAME    "mobileap_firewall.xml"
+#define IPACM_PID_FILE "/etc/ipacm.pid"
+#define IPACM_NAME "ipacm"
 
 #define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
 #define INOTIFY_BUF_LEN     (INOTIFY_EVENT_SIZE + 2*sizeof(IPACM_FILE_NAME))
@@ -113,6 +115,7 @@ const char *ipacm_event_name[] = {
 uint32_t ipacm_event_stats[IPACM_EVENT_MAX];
 bool ipacm_logging = true;
 
+void ipa_is_ipacm_running(void);
 int ipa_get_if_index(char *if_name, int *if_index);
 
 /* start netlink socket monitor*/
@@ -531,6 +534,9 @@ int main(int argc, char **argv)
 	pthread_t netlink_thread = 0, monitor_thread = 0, ipa_driver_thread = 0;
 	pthread_t cmd_queue_thread = 0;
 
+	/* check if ipacm is already running or not */
+	ipa_is_ipacm_running();
+
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
 
@@ -592,6 +598,85 @@ int main(int argc, char **argv)
 	return IPACM_SUCCESS;
 }
 
+/*===========================================================================
+		FUNCTION  ipa_is_ipacm_running
+===========================================================================*/
+/*!
+@brief
+  Determine if IPACM process exists from its previous Process ID
+
+@return
+	None
+
+@note
+
+- Dependencies
+		- None
+
+- Side Effects
+		- None
+*/
+/*=========================================================================*/
+
+void ipa_is_ipacm_running(void) {
+
+	FILE *fp = NULL;
+	pid_t ipacm_pid =0;
+	char string[IPA_MAX_FILE_LEN];
+
+	/* find the latest pid of executed IPACM */
+	fp = fopen(IPACM_PID_FILE, "r");
+	if ( fp == NULL )
+	{
+		IPACMDBG("1st IPACM running \n");
+	}
+	else if (fscanf(fp, "%d", &ipacm_pid) != 1)
+	{
+		IPACMERR("Error reading ipacm_pid file \n");
+		ipacm_pid = 0;
+		fclose(fp);
+	}
+	else
+	{
+		IPACMDBG("Primary IPACM PID = %d\n",ipacm_pid);
+		fclose(fp);
+		if (0 == kill(ipacm_pid, 0)) /* Process exists */
+		{
+			/* check that process is IPACM */
+			memset(string, 0, IPA_MAX_FILE_LEN);
+			snprintf(string, IPA_MAX_FILE_LEN, "/proc/%d/cmdline", ipacm_pid);
+			IPACMDBG("open pid file %s \n",string);
+			fp = fopen(string, "r");
+			if ( fp == NULL )
+			{
+				IPACMDBG("open pid file failed \n");
+			}
+			else if (fgets(string, IPA_MAX_FILE_LEN, fp) != NULL)
+			{
+				IPACMDBG("get pid process name (%s)\n",string);
+				if( strcmp(string, IPACM_NAME) == 0)
+				{
+					if(ipacm_pid != getpid())
+					{
+						IPACMDBG("found IPACM already in PID (%d), new PID(%d) exit(0)\n",ipacm_pid, getpid());
+			exit(0);
+		}
+					IPACMDBG("same IPACM PID(%d) is running\n", getpid());
+				}
+			}
+			fclose(fp);
+		}
+	}
+	ipacm_pid = getpid();
+	fp = fopen(IPACM_PID_FILE, "w");
+	if ( fp != NULL )
+	{
+		IPACMDBG(" IPACM current PID: %d \n",ipacm_pid);
+		fprintf(fp, "%d", ipacm_pid);
+		fclose(fp);
+	}
+	return;
+}
 
 /*===========================================================================
 		FUNCTION  ipa_get_if_index
