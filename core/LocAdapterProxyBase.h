@@ -46,6 +46,9 @@ protected:
     inline virtual ~LocAdapterProxyBase() {
         delete mLocAdapterBase;
     }
+    ContextBase* getContext() const {
+        return mLocAdapterBase->getContext();
+    }
 public:
     inline virtual void handleEngineUpEvent() {};
     inline virtual void handleEngineDownEvent() {};
