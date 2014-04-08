@@ -89,6 +89,7 @@ if (!(a)) {                                             \
 #define WLANIF_TAG                           "WLAN"
 #define VIRTUALIF_TAG                        "VIRTUAL"
 #define UNKNOWNIF_TAG                        "UNKNOWN"
+#define ETHIF_TAG                            "ETH"
 #define IPACMALG_TAG                         "IPACMALG"
 #define ALG_TAG                              "ALG"
 #define Protocol_TAG                         "Protocol"

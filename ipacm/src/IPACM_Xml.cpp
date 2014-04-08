@@ -116,7 +116,7 @@ int ipacm_read_cfg_xml(char *xml_file, IPACM_conf_t *config)
 {
 	xmlDocPtr doc = NULL;
 	xmlNode* root = NULL;
-	int ret_val;
+	int ret_val = IPACM_SUCCESS;
 
 	/* Invoke the XML parser and obtain the parse tree */
 	doc = xmlReadFile(xml_file, "UTF-8", XML_PARSE_NOBLANKS);
@@ -257,6 +257,11 @@ static int ipacm_cfg_xml_parse_tree
 							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat = UNKNOWN_IF;
 							IPACMDBG("Category %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat);
 						}
+						else  if (0 == strncasecmp(content_buf, ETHIF_TAG, str_size))
+						{
+							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat = ETH_IF;
+							IPACMDBG("Category %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_cat);
+						}						
 					}
 				}
 				else if (IPACM_util_icmp_string((char*)xml_node->name,

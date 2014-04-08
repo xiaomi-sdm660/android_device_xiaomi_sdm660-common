@@ -115,6 +115,12 @@ private:
 
         int ipv6_set;
 
+	uint32_t ETH_hdr_hdl_v4, ETH_hdr_hdl_v6;
+	
+	bool ipv4_header_set;
+	
+	bool ipv6_header_set;	
+		
 	/* store the number of lan-iface's unicast routing rule */
 	int num_uni_rt;
 
@@ -136,6 +142,9 @@ private:
 	/* handle unicast routing rule del event for ipv6 */
 	int handle_route_del_evt_v6(ipacm_event_data_all *data);
 
+	/* handle ETH client initial, construct full headers (tx property) */
+	int handle_eth_hdr_init(uint8_t *mac_addr);
+	
 	/*handle wlan iface down event*/
 	int handle_down_evt();
 
