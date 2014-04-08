@@ -95,6 +95,7 @@ extern "C"
 #define IPACM_INVALID_INDEX (ipa_ip_type)0xFF
 
 #define IPA_MAX_NUM_WIFI_CLIENTS  32
+#define IPA_MAX_NUM_ETH_CLIENTS  15
 #define IPA_MAX_NUM_AMPDU_RULE  15
 #define IPA_MAC_ADDR_SIZE  6
 

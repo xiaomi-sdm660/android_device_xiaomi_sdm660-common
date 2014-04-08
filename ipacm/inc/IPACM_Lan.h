@@ -48,8 +48,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Routing.h"
 #include "IPACM_Filtering.h"
 #include "IPACM_Config.h"
+#include "IPACM_Conntrack_NATApp.h"
 
-#define IPA_MAX_NUM_UNICAST_ROUTE_RULES  6
 #define IPA_WAN_DEFAULT_FILTER_RULE_HANDLES  1
 #define IPA_PRIV_SUBNET_FILTER_RULE_HANDLES  3
 #define MAX_WAN_UL_FILTER_RULES 20
@@ -63,6 +63,30 @@ struct ipa_lan_rt_rule
 	uint32_t v6_addr[4];
 	uint32_t rt_rule_hdl[0];
 };
+
+/* Support multiple eth client */
+typedef struct _eth_client_rt_hdl
+{
+	uint32_t eth_rt_rule_hdl_v4;
+	uint32_t eth_rt_rule_hdl_v6[IPV6_NUM_ADDR];
+	uint32_t eth_rt_rule_hdl_v6_wan[IPV6_NUM_ADDR];
+}eth_client_rt_hdl;
+
+typedef struct _ipa_eth_client
+{
+	uint8_t mac[IPA_MAC_ADDR_SIZE];
+	uint32_t v4_addr;
+	uint32_t v6_addr[IPV6_NUM_ADDR][4];
+	uint32_t hdr_hdl_v4;
+	uint32_t hdr_hdl_v6;
+	bool route_rule_set_v4;
+	int route_rule_set_v6;
+	bool ipv4_set;
+	int ipv6_set;
+	bool ipv4_header_set;
+	bool ipv6_header_set;
+	eth_client_rt_hdl eth_rt_hdl[0]; /* depends on number of tx properties */
+}ipa_eth_client;
 
 /* lan iface */
 class IPACM_Lan : public IPACM_Iface
@@ -107,45 +131,131 @@ public:
 private:
 
 	/* dynamically allocate lan iface's unicast routing rule structure */
-	int rt_rule_len;
-
-	ipa_lan_rt_rule *route_rule;
-
-	uint32_t v6_addr[IPV6_NUM_ADDR][4];
-
-        int ipv6_set;
-
-	uint32_t ETH_hdr_hdl_v4, ETH_hdr_hdl_v6;
 	
-	bool ipv4_header_set;
-	
-	bool ipv6_header_set;	
-		
-	/* store the number of lan-iface's unicast routing rule */
-	int num_uni_rt;
+	int eth_client_len;
 
-	inline ipa_lan_rt_rule* get_rt_ruleptr(ipa_lan_rt_rule *param, int cnt)
+	ipa_eth_client *eth_client;
+	
+	int header_name_count; 
+
+	int num_eth_client;
+
+	NatApp *Nat_App;
+
+	inline ipa_eth_client* get_client_memptr(ipa_eth_client *param, int cnt)
 	{
-	    char *ret = ((char *)param) + (rt_rule_len * cnt);
-	    return (ipa_lan_rt_rule *)ret;
+	    char *ret = ((char *)param) + (eth_client_len * cnt);
+		return (ipa_eth_client *)ret;
+	}	
+
+	inline int get_eth_client_index(uint8_t *mac_addr)
+	{
+		int cnt;
+		int num_eth_client_tmp = num_eth_client;
+
+		IPACMDBG("Passed MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+						 mac_addr[0], mac_addr[1], mac_addr[2],
+						 mac_addr[3], mac_addr[4], mac_addr[5]);
+
+		for(cnt = 0; cnt < num_eth_client_tmp; cnt++)
+		{
+			IPACMDBG("stored MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+							 get_client_memptr(eth_client, cnt)->mac[0],
+							 get_client_memptr(eth_client, cnt)->mac[1],
+							 get_client_memptr(eth_client, cnt)->mac[2],
+							 get_client_memptr(eth_client, cnt)->mac[3],
+							 get_client_memptr(eth_client, cnt)->mac[4],
+							 get_client_memptr(eth_client, cnt)->mac[5]);
+
+			if(memcmp(get_client_memptr(eth_client, cnt)->mac,
+								mac_addr,
+								sizeof(get_client_memptr(eth_client, cnt)->mac)) == 0)
+			{
+				IPACMDBG("Matched client index: %d\n", cnt);
+				return cnt;
+			}
+		}
+
+		return IPACM_INVALID_INDEX;
+	}
+	
+	inline int delete_eth_rtrules(int clt_indx, ipa_ip_type iptype)
+	{
+		uint32_t tx_index;
+		uint32_t rt_hdl;
+		int num_v6;
+
+		if(iptype == IPA_IP_v4)
+		{
+		    for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+		    {
+		        if((tx_prop->tx[tx_index].ip == IPA_IP_v4) && (get_client_memptr(eth_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
+				{
+					IPACMDBG("Delete client index %d ipv4 RT-rules for tx:%d \n", clt_indx,tx_index);
+					rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v4;
+
+					if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v4) == false)
+					{
+						return IPACM_FAILURE;
+					}
+				}
+		    } /* end of for loop */
+
+		     /* clean the ipv4 RT rules for eth-client:clt_indx */
+		     if(get_client_memptr(eth_client, clt_indx)->route_rule_set_v4==true) /* for ipv4 */
+		     {
+				get_client_memptr(eth_client, clt_indx)->route_rule_set_v4 = false;
+		     }
+		}
+
+		if(iptype == IPA_IP_v6)
+		{
+		    for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+		    {
+		    		
+		            if((tx_prop->tx[tx_index].ip == IPA_IP_v6) && (get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 != 0)) /* for ipv6 */
+		            {
+		    	        for(num_v6 =0;num_v6 < get_client_memptr(eth_client, clt_indx)->route_rule_set_v6;num_v6++)	
+		    	        {
+ 		    	            IPACMDBG("Delete client index %d ipv6 RT-rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
+		    	        	rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6[num_v6];                        
+		    	        	if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
+							{
+		    	        		return IPACM_FAILURE;
+		    	        	}
+
+							rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6_wan[num_v6];
+							if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
+							{
+								return IPACM_FAILURE;
+							}
+						}
+                    }
+		    } /* end of for loop */
+		
+		    /* clean the ipv6 RT rules for eth-client:clt_indx */
+		    if(get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 != 0) /* for ipv6 */
+		    {
+		        get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 = 0;
+            }
+		}
+		
+		return IPACM_SUCCESS;
 	}
 
-	/* handle unicast routing rule add event for ipv4 */
-	int handle_route_add_evt(ipacm_event_data_addr *data);
-
-	/* handle unicast routing rule add event for ipv6 */
-	int handle_route_add_evt_v6(ipacm_event_data_all *data);
-
-	/* handle unicast routing rule del event for ipv4 */
-	int handle_route_del_evt(ipacm_event_data_addr *data);
-
-	/* handle unicast routing rule del event for ipv6 */
-	int handle_route_del_evt_v6(ipacm_event_data_all *data);
-
-	/* handle ETH client initial, construct full headers (tx property) */
+	/* handle eth client initial, construct full headers (tx property) */
 	int handle_eth_hdr_init(uint8_t *mac_addr);
+
+	/* handle eth client ip-address */
+	int handle_eth_client_ipaddr(ipacm_event_data_all *data);
+
+	/* handle eth client routing rule*/
+	int handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptype);	
+
+	/*handle eth client del mode*/
+	int handle_eth_client_down_evt(uint8_t *mac_addr);
 	
-	/*handle wlan iface down event*/
+	/*handle lan iface down event*/
 	int handle_down_evt();
 
 	/* store ipv4 UL filter rule handlers from Q6*/
