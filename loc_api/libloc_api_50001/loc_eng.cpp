@@ -1374,7 +1374,7 @@ struct LocEngAtlOpenSuccess : public LocMsg {
         mStateMachine->onRsrcEvent(RSRC_GRANTED);
     }
     inline void locallog() const {
-        LOC_LOGV("LocEngAtlClosed agps type: %s\n  apn: %s\n"
+        LOC_LOGV("LocEngAtlOpenSuccess agps type: %s\n  apn: %s\n"
                  "  bearer type: %s",
                  loc_get_agps_type_name(mStateMachine->getType()),
                  mAPN,
