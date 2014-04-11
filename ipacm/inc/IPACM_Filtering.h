@@ -63,6 +63,7 @@ public:
 
 	bool AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *rule_table_v4, struct ipa_ioc_add_flt_rule const * rule_table_v6, uint8_t mux_id);
 	bool SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req_msg_v01* table);
+	bool ModifyFilteringRule(struct ipa_ioc_mdfy_flt_rule* ruleTable);
 	ipa_filter_action_enum_v01 GetQmiFilterAction(ipa_flt_action action);
 
 private:

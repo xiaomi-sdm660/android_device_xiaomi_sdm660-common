@@ -364,3 +364,34 @@ ipa_filter_action_enum_v01 IPACM_Filtering::GetQmiFilterAction(ipa_flt_action ac
 	}
 }
 
+bool IPACM_Filtering::ModifyFilteringRule(struct ipa_ioc_mdfy_flt_rule* ruleTable)
+{
+	int i, ret = 0;
+
+	IPACMDBG("Printing filtering add attributes\n");
+	IPACMDBG("IP type: %d Number of rules: %d commit value: %d\n", ruleTable->ip, ruleTable->num_rules, ruleTable->commit);
+
+	for (i=0; i<ruleTable->num_rules; i++)
+	{
+		IPACMDBG("Filter rule:%d attrib mask: 0x%x\n", i, ruleTable->rules[i].rule.attrib.attrib_mask);
+	}
+
+	ret = ioctl(fd, IPA_IOC_MDFY_FLT_RULE, ruleTable);
+	if (ret != 0)
+	{
+		IPACMERR("Failed modifying filtering rule %p\n", ruleTable);
+
+		for (i = 0; i < ruleTable->num_rules; i++)
+		{
+			if (ruleTable->rules[i].status != 0)
+			{
+				IPACMERR("Modifying filter rule %d failed\n", i);
+			}
+		}
+		return false;
+	}
+
+	IPACMDBG("Modified filtering rule %p\n", ruleTable);
+	return true;
+}
+

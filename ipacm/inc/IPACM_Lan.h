@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -88,6 +88,18 @@ typedef struct _ipa_eth_client
 	eth_client_rt_hdl eth_rt_hdl[0]; /* depends on number of tx properties */
 }ipa_eth_client;
 
+struct lan2lan_flt_rule_hdl
+{
+	uint32_t rule_hdl;
+	bool valid;
+};
+
+struct lan2lan_hdr_hdl
+{
+	uint32_t hdr_hdl;
+	bool valid;
+};
+
 /* lan iface */
 class IPACM_Lan : public IPACM_Iface
 {
@@ -107,13 +119,13 @@ public:
 											void *data);
 
 	virtual int handle_wan_up(ipa_ip_type ip_type);
-											
+
 	/* configure filter rule for wan_up event*/
 	virtual int handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype);
 
 	/* delete filter rule for wan_down event*/
 	virtual int handle_wan_down(bool is_sta_mode);
-	
+
 	/* delete filter rule for wan_down event*/
 	virtual int handle_wan_down_v6(bool is_sta_mode);
 
@@ -126,17 +138,50 @@ public:
 	/* install UL filter rule from Q6 */
 	int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
 
+	int add_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t src_v4_addr, uint32_t dst_v4_addr, uint32_t* src_v6_addr, uint32_t* dst_v6_addr, uint32_t* rule_hdl);
 
+	int del_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl);
+
+	virtual int add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* dst_mac, uint32_t* hdr_hdl);
+
+	int add_lan2lan_rt_rule(ipa_ip_type iptype, uint32_t src_v4_addr, uint32_t dst_v4_addr,
+								uint32_t* src_v6_addr, uint32_t* dst_v6_addr, uint32_t hdr_hdl, lan_to_lan_rt_rule_hdl* rule_hdl);
+
+	int del_lan2lan_rt_rule(ipa_ip_type iptype, lan_to_lan_rt_rule_hdl);
+
+	int del_lan2lan_hdr(ipa_ip_type iptype, uint32_t hdr_hdl);
+
+protected:
+
+	int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
+
+	int reset_lan2lan_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl);
+
+	/*handle lan2lan client active*/
+	int handle_lan2lan_client_active(ipacm_event_data_all *data, ipa_cm_event_id event);
+
+	void post_del_self_evt();
+
+	lan2lan_flt_rule_hdl lan2lan_flt_rule_hdl_v4[MAX_OFFLOAD_PAIR];
+	lan2lan_flt_rule_hdl lan2lan_flt_rule_hdl_v6[MAX_OFFLOAD_PAIR];
+
+	uint8_t num_lan2lan_flt_rule_v4;
+	uint8_t num_lan2lan_flt_rule_v6;
+
+	lan2lan_hdr_hdl lan2lan_hdr_hdl_v4[MAX_OFFLOAD_PAIR];
+	lan2lan_hdr_hdl lan2lan_hdr_hdl_v6[MAX_OFFLOAD_PAIR];
+
+	bool is_active;
 
 private:
 
 	/* dynamically allocate lan iface's unicast routing rule structure */
-	
+
 	int eth_client_len;
 
 	ipa_eth_client *eth_client;
-	
-	int header_name_count; 
+
+	int header_name_count;
 
 	int num_eth_client;
 
@@ -146,7 +191,7 @@ private:
 	{
 	    char *ret = ((char *)param) + (eth_client_len * cnt);
 		return (ipa_eth_client *)ret;
-	}	
+	}
 
 	inline int get_eth_client_index(uint8_t *mac_addr)
 	{
@@ -178,7 +223,7 @@ private:
 
 		return IPACM_INVALID_INDEX;
 	}
-	
+
 	inline int delete_eth_rtrules(int clt_indx, ipa_ip_type iptype)
 	{
 		uint32_t tx_index;
@@ -191,7 +236,7 @@ private:
 		    {
 		        if((tx_prop->tx[tx_index].ip == IPA_IP_v4) && (get_client_memptr(eth_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
 				{
-					IPACMDBG("Delete client index %d ipv4 RT-rules for tx:%d \n", clt_indx,tx_index);
+					IPACMDBG("Delete client index %d ipv4 RT-rules for tx:%d\n",clt_indx,tx_index);
 					rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v4;
 
 					if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v4) == false)
@@ -210,19 +255,18 @@ private:
 
 		if(iptype == IPA_IP_v6)
 		{
-		    for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
-		    {
-		    		
-		            if((tx_prop->tx[tx_index].ip == IPA_IP_v6) && (get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 != 0)) /* for ipv6 */
-		            {
-		    	        for(num_v6 =0;num_v6 < get_client_memptr(eth_client, clt_indx)->route_rule_set_v6;num_v6++)	
-		    	        {
- 		    	            IPACMDBG("Delete client index %d ipv6 RT-rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
-		    	        	rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6[num_v6];                        
-		    	        	if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
+			for(tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+			{
+				if((tx_prop->tx[tx_index].ip == IPA_IP_v6) && (get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 != 0)) /* for ipv6 */
+				{
+					for(num_v6 =0;num_v6 < get_client_memptr(eth_client, clt_indx)->route_rule_set_v6;num_v6++)
+					{
+						IPACMDBG("Delete client index %d ipv6 RT-rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
+						rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6[num_v6];
+						if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
 							{
-		    	        		return IPACM_FAILURE;
-		    	        	}
+								return IPACM_FAILURE;
+							}
 
 							rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6_wan[num_v6];
 							if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
@@ -232,14 +276,14 @@ private:
 						}
                     }
 		    } /* end of for loop */
-		
+
 		    /* clean the ipv6 RT rules for eth-client:clt_indx */
 		    if(get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 != 0) /* for ipv6 */
 		    {
 		        get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 = 0;
             }
 		}
-		
+
 		return IPACM_SUCCESS;
 	}
 
@@ -250,11 +294,11 @@ private:
 	int handle_eth_client_ipaddr(ipacm_event_data_all *data);
 
 	/* handle eth client routing rule*/
-	int handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptype);	
+	int handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptype);
 
 	/*handle eth client del mode*/
 	int handle_eth_client_down_evt(uint8_t *mac_addr);
-	
+
 	/*handle lan iface down event*/
 	int handle_down_evt();
 
@@ -263,6 +307,8 @@ private:
 
 	/* store ipv6 UL filter rule handlers from Q6*/
 	uint32_t wan_ul_fl_rule_hdl_v6[MAX_WAN_UL_FILTER_RULES];
+
+	void post_lan2lan_client_disconnect_msg();
 
 	int num_wan_ul_fl_rule_v4;
 	int num_wan_ul_fl_rule_v6;
