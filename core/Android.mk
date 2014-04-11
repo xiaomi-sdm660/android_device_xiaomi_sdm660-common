@@ -1,3 +1,4 @@
+ifeq (, $(filter aarch64 arm64, $(TARGET_ARCH)))
 ifneq ($(BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE),)
 ifneq ($(BUILD_TINY_ANDROID),true)
 
@@ -51,3 +52,4 @@ include $(BUILD_SHARED_LIBRARY)
 
 endif # not BUILD_TINY_ANDROID
 endif # BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE
+endif # not aarch64
