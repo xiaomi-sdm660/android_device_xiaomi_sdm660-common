@@ -69,6 +69,21 @@ MsgTask::~MsgTask() {
     msg_q_unblock((void*)mQ);
 }
 
+void MsgTask::associate(tAssociate tAssociator) const {
+    struct LocAssociateMsg : public LocMsg {
+        tAssociate mAssociator;
+        inline LocAssociateMsg(tAssociate associator) :
+            LocMsg(), mAssociator(associator) {}
+        inline virtual void proc() const {
+            if (mAssociator) {
+                LOC_LOGD("MsgTask::associate");
+                mAssociator();
+            }
+        }
+    };
+    sendMsg(new LocAssociateMsg(tAssociator));
+}
+
 void MsgTask::createPThread(const char* threadName) {
     pthread_attr_t attr;
     pthread_attr_init(&attr);
