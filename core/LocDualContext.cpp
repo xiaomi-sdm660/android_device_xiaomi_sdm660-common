@@ -74,6 +74,8 @@ const MsgTask* LocDualContext::getMsgTask(MsgTask::tAssociate tAssociate,
 {
     if (NULL == mMsgTask) {
         mMsgTask = new MsgTask(tAssociate, name);
+    } else if (tAssociate) {
+        mMsgTask->associate(tAssociate);
     }
     return mMsgTask;
 }
