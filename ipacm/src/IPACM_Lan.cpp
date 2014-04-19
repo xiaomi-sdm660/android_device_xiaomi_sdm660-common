@@ -289,6 +289,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG("ETH iface got client \n");
 				/* first construc ETH full header */
 					handle_eth_hdr_init(data->mac_addr);
+					handle_lan2lan_client_active(data, IPA_LAN_CLIENT_ACTIVE);
 					IPACMDBG("construct ETH header and route rules \n");
 				/* Associate with IP and construct RT-rule */
 				if (handle_eth_client_ipaddr(data) == IPACM_FAILURE)
@@ -296,7 +297,6 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 					return;
 				}
 				handle_eth_client_route_rule(data->mac_addr, data->iptype);
-				handle_lan2lan_client_active(data, IPA_LAN_CLIENT_ACTIVE);
 				return;
 			}
 		}
