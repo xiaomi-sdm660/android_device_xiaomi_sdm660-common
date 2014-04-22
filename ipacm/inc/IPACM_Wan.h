@@ -157,6 +157,8 @@ private:
 
 	int install_wan_filtering_rule();
 
+	void change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib);
+
 	int m_fd_ipa;
 	
 };

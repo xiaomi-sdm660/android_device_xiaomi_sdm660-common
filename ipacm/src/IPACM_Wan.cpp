@@ -1661,6 +1661,8 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 					flt_rule_entry.rule.attrib.meta_data_mask = rx_prop->rx[0].attrib.meta_data_mask;
 					flt_rule_entry.rule.attrib.meta_data = rx_prop->rx[0].attrib.meta_data;
 
+					change_to_network_order(IPA_IP_v4, &flt_rule_entry.rule.attrib);
+
 					/* check if the rule is define as TCP_UDP, split into 2 rules, 1 for TCP and 1 UDP */
 					if (firewall_config.extd_firewall_entries[i].attrib.u.v4.protocol == IPACM_FIREWALL_IPPROTO_TCP_UDP)
 					{
@@ -1777,9 +1779,7 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		}
 		flt_rule_entry.rule.rt_tbl_idx = rt_tbl_idx.idx;
 
-//		IPACMDBG("Routing table %s has index %d\n", rt_tbl_idx.name, rt_tbl_idx.idx);
-		IPACMDBG("The action for dft wan dl flt rule is %d\n", flt_rule_entry.rule.action);
-		IPACMDBG("The rt tbl idx used for dft wan dl flt rule is %d\n", flt_rule_entry.rule.rt_tbl_idx);
+		IPACMDBG("Routing table %s has index %d\n", rt_tbl_idx.name, rt_tbl_idx.idx);
 		
 		memcpy(&flt_rule_entry.rule.attrib,
 			&rx_prop->rx[0].attrib,
@@ -1787,6 +1787,8 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v4.dst_addr = 0x00000000;
+
+		change_to_network_order(IPA_IP_v4, &flt_rule_entry.rule.attrib);
 
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
@@ -1854,9 +1856,12 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 					memcpy(&flt_rule_entry.rule.attrib,
 						&firewall_config.extd_firewall_entries[i].attrib,
 						sizeof(struct ipa_rule_attrib));
+
 					flt_rule_entry.rule.attrib.attrib_mask |= rx_prop->rx[0].attrib.attrib_mask;
 					flt_rule_entry.rule.attrib.meta_data_mask = rx_prop->rx[0].attrib.meta_data_mask;
 					flt_rule_entry.rule.attrib.meta_data = rx_prop->rx[0].attrib.meta_data;
+
+					change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
 
 					/* check if the rule is define as TCP/UDP */
 					if (firewall_config.extd_firewall_entries[i].attrib.u.v6.next_hdr == IPACM_FIREWALL_IPPROTO_TCP_UDP)
@@ -1976,6 +1981,8 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
+
+		change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
 
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
@@ -2428,6 +2435,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = 0xF0000000;
 		flt_rule_entry.rule.attrib.u.v4.dst_addr = 0xE0000000;
 
+		change_to_network_order(IPA_IP_v4, &flt_rule_entry.rule.attrib);
+
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
 		flt_eq.ip = iptype;
@@ -2446,6 +2455,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		/* Configuring Broadcast Filtering Rule */
 		flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
 		flt_rule_entry.rule.attrib.u.v4.dst_addr = 0xFFFFFFFF;
+
+		change_to_network_order(IPA_IP_v4, &flt_rule_entry.rule.attrib);
 
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
@@ -2505,6 +2516,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0x00000000;
 
+		change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
+
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
 		flt_eq.ip = iptype;
@@ -2529,6 +2542,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0x00000000;
+
+		change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
 
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
@@ -2555,6 +2570,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0x00000000;
+
+		change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
 
 		memset(&flt_eq, 0, sizeof(flt_eq));
 		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
@@ -3198,3 +3215,38 @@ int IPACM_Wan::install_wan_filtering_rule()
 	free(pFilteringTable_v6);
 	return IPACM_SUCCESS;
 }
+
+void IPACM_Wan::change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib)
+{
+	if(attrib == NULL)
+	{
+		IPACMERR("Attribute pointer is NULL.\n");
+		return;
+	}
+
+	if(iptype == IPA_IP_v4)
+	{
+		attrib->u.v4.src_addr = htonl(attrib->u.v4.src_addr);
+		attrib->u.v4.src_addr_mask = htonl(attrib->u.v4.src_addr_mask);
+		attrib->u.v4.dst_addr = htonl(attrib->u.v4.dst_addr);
+		attrib->u.v4.dst_addr_mask = htonl(attrib->u.v4.dst_addr_mask);
+	}
+	else if(iptype == IPA_IP_v6)
+	{
+		int i;
+		for(i=0; i<4; i++)
+		{
+			attrib->u.v6.src_addr[i] = htonl(attrib->u.v6.src_addr[i]);
+			attrib->u.v6.src_addr_mask[i] = htonl(attrib->u.v6.src_addr_mask[i]);
+			attrib->u.v6.dst_addr[i] = htonl(attrib->u.v6.dst_addr[i]);
+			attrib->u.v6.dst_addr_mask[i] = htonl(attrib->u.v6.dst_addr_mask[i]);
+		}
+	}
+	else
+	{
+		IPACMERR("IP type is not expected: %d\n", iptype);
+	}
+
+	return;
+}
+
