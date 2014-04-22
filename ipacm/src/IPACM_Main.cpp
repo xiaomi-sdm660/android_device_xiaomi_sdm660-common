@@ -103,12 +103,13 @@ const char *ipacm_event_name[] = {
 #define IPA_DRIVER  "/dev/ipa"
 
 #define IPACM_DIR_NAME     "/etc"
-#define IPACM_FILE_NAME    "mobileap_firewall.xml"
+#define IPACM_FIREWALL_FILE_NAME    "mobileap_firewall.xml"
+#define IPACM_CFG_FILE_NAME    "IPACM_cfg.xml"
 #define IPACM_PID_FILE "/etc/ipacm.pid"
 #define IPACM_NAME "ipacm"
 
 #define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
-#define INOTIFY_BUF_LEN     (INOTIFY_EVENT_SIZE + 2*sizeof(IPACM_FILE_NAME))
+#define INOTIFY_BUF_LEN     (INOTIFY_EVENT_SIZE + 2*sizeof(IPACM_FIREWALL_FILE_NAME))
 
 #define IPA_DRIVER_WLAN_EVENT_SIZE  (sizeof(struct ipa_wlan_msg_ex))
 #define IPA_DRIVER_WLAN_META_MSG    (sizeof(struct ipa_msg_meta))
@@ -183,12 +184,23 @@ void* firewall_monitor(void *param)
 				{
 					IPACMDBG("The directory %s was 0x%x\n", event->name, event->mask);
 				}
-				else if (!strncmp(event->name, IPACM_FILE_NAME, event->len))
+				else if (!strncmp(event->name, IPACM_FIREWALL_FILE_NAME, event->len)) // firewall_rule change
 				{
 					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
-					IPACMDBG("The interested file %s .\n", IPACM_FILE_NAME);
+					IPACMDBG("The interested file %s .\n", IPACM_FIREWALL_FILE_NAME);
 
 					evt_data.event = IPA_FIREWALL_CHANGE_EVENT;
+					evt_data.evt_data = NULL;
+
+					/* Insert IPA_FIREWALL_CHANGE_EVENT to command queue */
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+				}
+				else if (!strncmp(event->name, IPACM_CFG_FILE_NAME, event->len)) // IPACM_configuration change
+				{
+					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
+					IPACMDBG("The interested file %s .\n", IPACM_CFG_FILE_NAME);
+
+					evt_data.event = IPA_CFG_CHANGE_EVENT;
 					evt_data.evt_data = NULL;
 
 					/* Insert IPA_FIREWALL_CHANGE_EVENT to command queue */
@@ -460,7 +472,7 @@ void* ipa_driver_wlan_notifier(void *param)
 				return NULL;
 			}
 			data_fid->if_index = event_ecm->ifindex;
-			evt_data.event = IPA_LINK_UP_EVENT;
+			evt_data.event = IPA_USB_LINK_UP_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 

@@ -681,12 +681,12 @@ static int ipa_nl_decode_nlmsg
 					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
 				
 				        ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
-				        IPACMDBG("Got a ECM new link event (Interface %s) \n", dev_name);
+				        IPACMDBG("Got a ECM link_up event (Interface %s) \n", dev_name);
                   
                                         /*--------------------------------------------------------------------------
                                            Post LAN iface (ECM) link up event
                                          ---------------------------------------------------------------------------*/
-                                        evt_data.event = IPA_LINK_UP_EVENT;
+                                        evt_data.event = IPA_USB_LINK_UP_EVENT;
 					evt_data.evt_data = data_fid;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
                                 }				
@@ -701,7 +701,7 @@ static int ipa_nl_decode_nlmsg
 					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
 
 					ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
-         		                IPACMDBG("Got a ECM new link event (Interface %s) \n", dev_name);
+         		                IPACMDBG("Got a ECM link_down event (Interface %s) \n", dev_name);
 
                                         /*--------------------------------------------------------------------------
                                            Post LAN iface (ECM) link down event

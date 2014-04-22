@@ -113,42 +113,44 @@ extern "C"
 ===========================================================================*/
 typedef enum
 {
-	IPA_LINK_UP_EVENT = 1,                    /* 1 ipacm_event_data_fid */
-	IPA_LINK_DOWN_EVENT,                      /* 2 ipacm_event_data_fid */
-	IPA_ADDR_ADD_EVENT,                       /* 3 ipacm_event_data_addr */
-	IPA_ADDR_DEL_EVENT,                       /* 4 no use */
-	IPA_ROUTE_ADD_EVENT,                      /* 5 ipacm_event_data_addr */
-	IPA_ROUTE_DEL_EVENT,                      /* 6 ipacm_event_data_addr */
-	IPA_FIREWALL_CHANGE_EVENT,                /* 7 NULL */
-	IPA_WLAN_AP_LINK_UP_EVENT,                /* 8 ipacm_event_data_mac */
-	IPA_WLAN_STA_LINK_UP_EVENT,               /* 9 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_ADD_EVENT,                /* 10 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_DEL_EVENT,                /* 11 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_POWER_SAVE_EVENT,         /* 12 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_RECOVER_EVENT,            /* 13 ipacm_event_data_mac */
-	IPA_NEW_NEIGH_EVENT,                      /* 14 ipacm_event_data_all */
-	IPA_DEL_NEIGH_EVENT,                      /* 15 ipacm_event_data_all */
-	IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT,       /* 16 ipacm_event_data_all */
-	IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT,       /* 17 ipacm_event_data_all */
-	IPA_SW_ROUTING_ENABLE,                    /* 18 NULL */
-	IPA_SW_ROUTING_DISABLE,                   /* 19 NULL */
-	IPA_PROCESS_CT_MESSAGE,                   /* 20 ipacm_ct_evt_data */
-	IPA_HANDLE_WAN_UP,                        /* 21 ipacm_event_iface_up  */
-	IPA_HANDLE_WAN_DOWN,                      /* 22 ipacm_event_iface_up  */
-	IPA_HANDLE_WLAN_UP,                       /* 23 ipacm_event_iface_up */
-	IPA_HANDLE_LAN_UP,                        /* 24 ipacm_event_iface_up */
-	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 25 ipacm_event_data_wlan_ex */
-	IPA_HANDLE_WAN_UP_V6,					  /* 26 NULL */
-	IPA_HANDLE_WAN_DOWN_V6,					  /* 27 NULL */
-	IPA_LAN_CLIENT_ACTIVE,					  /* 28 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_INACTIVE,				  /* 29 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_DISCONNECT,				  /* 30 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_POWER_SAVE,				  /* 31 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_POWER_RECOVER,			  /* 32 ipacm_event_lan_client*/
-	IPA_LAN_TO_LAN_NEW_CONNECTION,			  /* 33 ipacm_event_connection */
-	IPA_LAN_TO_LAN_DEL_CONNECTION,			  /* 34 ipacm_event_connection */
-	IPA_LAN_DELETE_SELF,					  /* 35 ipacm_event_data_fid */
-	IPA_WLAN_LINK_DOWN_EVENT,                 /* 36 ipacm_event_data_mac */
+	IPA_CFG_CHANGE_EVENT = 1,                 /* 1 NULL */
+	IPA_LINK_UP_EVENT,                        /* 2 ipacm_event_data_fid */
+	IPA_LINK_DOWN_EVENT,                      /* 3 ipacm_event_data_fid */
+	IPA_ADDR_ADD_EVENT,                       /* 4 ipacm_event_data_addr */
+	IPA_ADDR_DEL_EVENT,                       /* 5 no use */
+	IPA_ROUTE_ADD_EVENT,                      /* 6 ipacm_event_data_addr */
+	IPA_ROUTE_DEL_EVENT,                      /* 7 ipacm_event_data_addr */
+	IPA_FIREWALL_CHANGE_EVENT,                /* 8 NULL */
+	IPA_WLAN_AP_LINK_UP_EVENT,                /* 9 ipacm_event_data_mac */
+	IPA_WLAN_STA_LINK_UP_EVENT,               /* 10 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_ADD_EVENT,                /* 11 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_DEL_EVENT,                /* 12 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_POWER_SAVE_EVENT,         /* 13 ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_RECOVER_EVENT,            /* 14 ipacm_event_data_mac */
+	IPA_NEW_NEIGH_EVENT,                      /* 15 ipacm_event_data_all */
+	IPA_DEL_NEIGH_EVENT,                      /* 16 ipacm_event_data_all */
+	IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT,       /* 17 ipacm_event_data_all */
+	IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT,       /* 18 ipacm_event_data_all */
+	IPA_SW_ROUTING_ENABLE,                    /* 19 NULL */
+	IPA_SW_ROUTING_DISABLE,                   /* 20 NULL */
+	IPA_PROCESS_CT_MESSAGE,                   /* 21 ipacm_ct_evt_data */
+	IPA_HANDLE_WAN_UP,                        /* 22 ipacm_event_iface_up  */
+	IPA_HANDLE_WAN_DOWN,                      /* 23 ipacm_event_iface_up  */
+	IPA_HANDLE_WLAN_UP,                       /* 24 ipacm_event_iface_up */
+	IPA_HANDLE_LAN_UP,                        /* 25 ipacm_event_iface_up */
+	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 26 ipacm_event_data_wlan_ex */
+	IPA_HANDLE_WAN_UP_V6,					  /* 27 NULL */
+	IPA_HANDLE_WAN_DOWN_V6,					  /* 28 NULL */
+	IPA_LAN_CLIENT_ACTIVE,					  /* 29 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_INACTIVE,				  /* 30 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_DISCONNECT,				  /* 31 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_SAVE,				  /* 32 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_RECOVER,			  /* 33 ipacm_event_lan_client*/
+	IPA_LAN_TO_LAN_NEW_CONNECTION,			  /* 34 ipacm_event_connection */
+	IPA_LAN_TO_LAN_DEL_CONNECTION,			  /* 35 ipacm_event_connection */
+	IPA_LAN_DELETE_SELF,					  /* 36 ipacm_event_data_fid */
+	IPA_WLAN_LINK_DOWN_EVENT,                 /* 37 ipacm_event_data_mac */
+	IPA_USB_LINK_UP_EVENT,                    /* 38 ipacm_event_data_fid */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 

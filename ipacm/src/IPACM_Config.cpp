@@ -50,7 +50,6 @@ IPACM_Config::IPACM_Config()
 {
 	iface_table = NULL;
 	alg_table = NULL;
-	memset(&private_subnet_table, 0, sizeof(private_subnet_table));
 	memset(&ipa_client_rm_map_tbl, 0, sizeof(ipa_client_rm_map_tbl));
 	memset(&ipa_rm_tbl, 0, sizeof(ipa_rm_tbl));
         ipa_rm_a2_check=0;
@@ -110,6 +109,12 @@ int IPACM_Config::Init(void)
 
 	/* Construct IPACM Iface table */
 	ipa_num_ipa_interfaces = cfg->iface_config.num_iface_entries;
+	if (iface_table != NULL)
+	{
+		free(iface_table);
+		iface_table = NULL;
+		IPACMDBG("RESET IPACM_Config::iface_table\n");
+	}
 	iface_table = (ipa_ifi_dev_name_t *)calloc(ipa_num_ipa_interfaces,
 																						 sizeof(ipa_ifi_dev_name_t));
 
@@ -121,6 +126,7 @@ int IPACM_Config::Init(void)
 	}
 
 	/* Construct IPACM Private_Subnet table */
+	memset(&private_subnet_table, 0, sizeof(private_subnet_table));
 	ipa_num_private_subnet = cfg->private_subnet_config.num_subnet_entries;
 
 	for (i = 0; i < cfg->private_subnet_config.num_subnet_entries; i++)
@@ -144,6 +150,12 @@ int IPACM_Config::Init(void)
 
 	/* Construct IPACM ALG table */
 	ipa_num_alg_ports = cfg->alg_config.num_alg_entries;
+	if (alg_table != NULL)
+	{
+		free(alg_table);
+		alg_table = NULL;
+		IPACMDBG("RESET IPACM_Config::alg_table \n");
+	}
 	alg_table = (ipacm_alg *)calloc(ipa_num_alg_ports,
 																sizeof(ipacm_alg));
 
@@ -158,6 +170,12 @@ int IPACM_Config::Init(void)
 	IPACMDBG("Nat Maximum Entries %d\n", ipa_nat_max_entries);
 
 	/* Allocate more non-nat entries if the monitored iface dun have Tx/Rx properties */
+	if (pNatIfaces != NULL)
+	{
+		free(pNatIfaces);
+		pNatIfaces = NULL;
+		IPACMDBG("RESET IPACM_Config::pNatIfaces \n");
+	}
 	pNatIfaces = (NatIfaces *)calloc(ipa_num_ipa_interfaces, sizeof(NatIfaces));
 	if (pNatIfaces == NULL)
 	{
@@ -224,7 +242,11 @@ int IPACM_Config::Init(void)
 	ipa_rm_tbl[2].consumer_rm2 = IPA_RM_RESOURCE_WLAN_CONS;
 	
 fail:
-	free(cfg);
+	if (cfg != NULL)
+	{
+		free(cfg);
+		cfg = NULL;
+	}
 
 	return ret;
 }

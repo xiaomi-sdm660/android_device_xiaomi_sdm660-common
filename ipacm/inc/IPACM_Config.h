@@ -159,11 +159,12 @@ public:
 	
 	int DelExtProp(ipa_ip_type ip_type);
 
+	int Init(void);
+
 private:
 	static IPACM_Config *pInstance;
 	static const char *DEVICE_NAME;
 	IPACM_Config(void);
-	int Init(void);
 	int m_fd; /* File descriptor of the IPA device node /dev/ipa */
 	uint8_t qmap_id;
 	ipacm_ext_prop ext_prop_v4;
