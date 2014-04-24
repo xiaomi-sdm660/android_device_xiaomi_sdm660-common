@@ -303,7 +303,7 @@ void* ipa_driver_wlan_notifier(void *param)
 				return NULL;
 			}			
 			ipa_get_if_index(event_wlan->name, &(data_fid->if_index));
-			evt_data.event = IPA_LINK_DOWN_EVENT;
+			evt_data.event = IPA_WLAN_LINK_DOWN_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 		case WLAN_STA_CONNECT:
@@ -334,7 +334,7 @@ void* ipa_driver_wlan_notifier(void *param)
 				return NULL;
 			}			
 			ipa_get_if_index(event_wlan->name, &(data_fid->if_index));
-			evt_data.event = IPA_LINK_DOWN_EVENT;
+			evt_data.event = IPA_WLAN_LINK_DOWN_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 						

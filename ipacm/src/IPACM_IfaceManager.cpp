@@ -183,7 +183,7 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP_V6, wl);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, wl);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, wl);
-				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, wl);
+				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, wl);
 				IPACMDBG("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
 				registr(ipa_interface_index, wl);
@@ -204,6 +204,7 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, w);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, w);
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
+				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
 				IPACMDBG("ipa_WAN (%s):ipa_index (%d) instance open/registr ok\n", w->dev_name, w->ipa_if_num);
 				registr(ipa_interface_index, w);
 				/* solve the new_addr comes earlier issue */

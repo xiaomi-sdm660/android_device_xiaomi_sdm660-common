@@ -115,6 +115,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 
 	int ipa_interface_index;
 	ipacm_ext_prop* ext_prop;
+	ipacm_event_iface_up* data_wan;
 
 	switch (event)
 	{
@@ -238,7 +239,14 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 	case IPA_HANDLE_WAN_UP:
 		IPACMDBG("Received IPA_HANDLE_WAN_UP event\n");
 
-		if(IPACM_Wan::backhaul_is_sta_mode == false)
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(data_wan->is_sta == false)
 		{
 			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
 			{
@@ -255,7 +263,14 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 	case IPA_HANDLE_WAN_UP_V6:
 		IPACMDBG("Received IPA_HANDLE_WAN_UP_V6 event\n");
 
-		if(IPACM_Wan::backhaul_is_sta_mode == false)
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(data_wan->is_sta == false)
 		{
 			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 			{
@@ -271,12 +286,26 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 
 	case IPA_HANDLE_WAN_DOWN:
 		IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
-		handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		handle_wan_down(data_wan->is_sta);
 		break;
 
 	case IPA_HANDLE_WAN_DOWN_V6:
-		IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
-		handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
+		IPACMDBG("Received IPA_HANDLE_WAN_DOWN_V6 event\n");
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		handle_wan_down_v6(data_wan->is_sta);
 		break;
 
 	case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
@@ -288,9 +317,9 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG("ETH iface got client \n");
 				/* first construc ETH full header */
-					handle_eth_hdr_init(data->mac_addr);
-					handle_lan2lan_client_active(data, IPA_LAN_CLIENT_ACTIVE);
-					IPACMDBG("construct ETH header and route rules \n");
+				handle_eth_hdr_init(data->mac_addr);
+				handle_lan2lan_client_active(data, IPA_LAN_CLIENT_ACTIVE);
+				IPACMDBG("construct ETH header and route rules \n");
 				/* Associate with IP and construct RT-rule */
 				if (handle_eth_client_ipaddr(data) == IPACM_FAILURE)
 				{

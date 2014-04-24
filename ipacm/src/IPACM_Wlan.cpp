@@ -97,17 +97,18 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 	int ipa_interface_index;
 	int wlan_index;
 	ipacm_ext_prop* ext_prop;
+	ipacm_event_iface_up* data_wan;
 
 	switch (event)
 	{
 
-	case IPA_LINK_DOWN_EVENT:
+	case IPA_WLAN_LINK_DOWN_EVENT:
 		{
 			ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
 			if (ipa_interface_index == ipa_if_num)
 			{
-				IPACMDBG("Received IPA_LINK_DOWN_EVENT\n");
+				IPACMDBG("Received IPA_WLAN_LINK_DOWN_EVENT\n");
 				handle_down_evt();
 				/* reset the AP-iface category to unknown */
 				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat=UNKNOWN_IF;
@@ -223,7 +224,14 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 	{
 		IPACMDBG("Received IPA_HANDLE_WAN_UP event\n");
 
-		if(IPACM_Wan::backhaul_is_sta_mode == false)
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(data_wan->is_sta == false)
 		{
 			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
 			{
@@ -241,7 +249,14 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 	case IPA_HANDLE_WAN_UP_V6:
 		IPACMDBG("Received IPA_HANDLE_WAN_UP_V6 event\n");
 
-		if(IPACM_Wan::backhaul_is_sta_mode == false)
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(data_wan->is_sta == false)
 		{
 			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 			{
@@ -257,16 +272,29 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 
 	case IPA_HANDLE_WAN_DOWN:
 		IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		if (rx_prop != NULL)
 		{
-			IPACM_Lan::handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
+			IPACM_Lan::handle_wan_down(data_wan->is_sta);
 		}
-
 		break;
 
 	case IPA_HANDLE_WAN_DOWN_V6:
 		IPACMDBG("Received IPA_HANDLE_WAN_DOWN_V6 event\n");
-		handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
+		data_wan = (ipacm_event_iface_up*)param;
+		if(data_wan == NULL)
+		{
+			IPACMERR("No event data is found.\n");
+			return;
+		}
+		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		handle_wan_down_v6(data_wan->is_sta);
 		break;
 
 	case IPA_WLAN_CLIENT_ADD_EVENT_EX:

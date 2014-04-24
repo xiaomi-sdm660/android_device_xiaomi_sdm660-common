@@ -148,6 +148,7 @@ typedef enum
 	IPA_LAN_TO_LAN_NEW_CONNECTION,			  /* 33 ipacm_event_connection */
 	IPA_LAN_TO_LAN_DEL_CONNECTION,			  /* 34 ipacm_event_connection */
 	IPA_LAN_DELETE_SELF,					  /* 35 ipacm_event_data_fid */
+	IPA_WLAN_LINK_DOWN_EVENT,                 /* 36 ipacm_event_data_mac */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
