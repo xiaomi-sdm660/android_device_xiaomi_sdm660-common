@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@ met:
   with the distribution.
 * Neither the name of The Linux Foundation nor the names of its
   contributors may be used to endorse or promote products derived
-  from this software without specific prior written permission.																																
+  from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -45,6 +45,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.Z
 #include <IPACM_Lan.h>
 #include <IPACM_Wan.h>
 #include <IPACM_Wlan.h>
+#include <ifaddrs.h>
 
 const char *IPACM_Iface::DEVICE_NAME = "/dev/ipa";
 IPACM_Routing IPACM_Iface::m_routing;
@@ -93,7 +94,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 	IPACMDBG("\n");
 	if (softwarerouting_act == true)
 	{
-		IPACMDBG("already setup software_routing rule for (%s)iface ip-family %d\n", 
+		IPACMDBG("already setup software_routing rule for (%s)iface ip-family %d\n",
 						     IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
 		return IPACM_SUCCESS;
 	}
@@ -179,11 +180,11 @@ int IPACM_Iface::handle_software_routing_enable(void)
 	}
 	else
 	{
-		if (ip_type == IPA_IP_v4) 
+		if (ip_type == IPA_IP_v4)
 		{
 			m_pFilteringTable->ip = IPA_IP_v4;
 		}
-		else 
+		else
 		{
 			m_pFilteringTable->ip = IPA_IP_v6;
 		}
@@ -203,11 +204,11 @@ int IPACM_Iface::handle_software_routing_enable(void)
 
 		IPACMDBG("soft-routing flt rule hdl0=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl);
 		/* copy filter hdls */
-		if (ip_type == IPA_IP_v4) 
+		if (ip_type == IPA_IP_v4)
 		{
 			software_routing_fl_rule_hdl[0] = m_pFilteringTable->rules[0].flt_rule_hdl;
 		}
-		else 
+		else
 		{
 			software_routing_fl_rule_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
 		}
@@ -232,12 +233,12 @@ int IPACM_Iface::handle_software_routing_disable(void)
 		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
 		return IPACM_SUCCESS;
 	}
-	
+
 	if (softwarerouting_act == false)
 	{
 		IPACMDBG("already delete AMPDU software_routing rule for (%s)iface ip-family %d\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
 		return IPACM_SUCCESS;
-	}	
+	}
 
 	if (ip_type == IPA_IP_MAX)
 	{
@@ -305,7 +306,7 @@ int IPACM_Iface::iface_ipa_index_query
 	int i = 0;
 	struct ifreq ifr;
 
-	
+
 	if(IPACM_Iface::ipacmcfg->iface_table == NULL)
 	{
 		IPACMERR("Iface table in IPACM_Config is not available.\n");
@@ -350,11 +351,11 @@ int IPACM_Iface::iface_ipa_index_query
 	IPACMDBG("Received interface name %s\n", ifr.ifr_name);
 	for (i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_ipa_interfaces; i++)
 	{
-		if (strncmp(ifr.ifr_name, 
+		if (strncmp(ifr.ifr_name,
 								IPACM_Iface::ipacmcfg->iface_table[i].iface_name,
 								sizeof(IPACM_Iface::ipacmcfg->iface_table[i].iface_name)) == 0)
 		{
-			IPACMDBG("Interface (%s) linux(%d) mapped to ipa(%d) \n", ifr.ifr_name, 
+			IPACMDBG("Interface (%s) linux(%d) mapped to ipa(%d) \n", ifr.ifr_name,
 							 IPACM_Iface::ipacmcfg->iface_table[i].netlink_interface_index, i);
 
 			link = i;
@@ -374,11 +375,12 @@ void IPACM_Iface::iface_addr_query
 {
 	int fd;
 	struct ifreq ifr;
+	struct ifaddrs *myaddrs, *ifa;
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_addr *data_addr;
 	struct in_addr iface_ipv4;
-	
-	/* Search/Configure linux interface-index and map it to IPA interface-index */
+
+	/* use linux interface-index to find interface name */
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		PERROR("get interface name socket create failed");
@@ -396,41 +398,91 @@ void IPACM_Iface::iface_addr_query
 		close(fd);
 		return ;
 	}
-	//close(fd);	
-	
-	ifr.ifr_addr.sa_family = AF_INET;	
 	IPACMDBG("Interface index %d name: %s\n", interface_index,ifr.ifr_name);
-
-	if (ioctl(fd, SIOCGIFADDR, &ifr) < 0)
-	{
-		PERROR("call_ioctl_on_dev: ioctl failed:");
-		close(fd);
-		return ;
-	}
 	close(fd);
 
-	IPACMDBG("GOT interface (%s) address %s\n", ifr.ifr_name,inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
-    iface_ipv4 = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
-	
-    data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
-    if(data_addr == NULL)
+	/* query ipv4/v6 address */
+    if(getifaddrs(&myaddrs) != 0)
+	{
+        IPACMERR("getifaddrs");
+		return ;
+	}
+
+    for (ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
     {
-    	IPACMERR("unable to allocate memory for event data_addr\n");
-    	return ;
-    }						
-    data_addr->iptype = IPA_IP_v4;
-	data_addr->if_index = interface_index;
-	data_addr->ipv4_addr = 	iface_ipv4.s_addr;
-    data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);	
-				   
-	IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
-			 data_addr->if_index,
-			 data_addr->ipv4_addr);
+        if (ifa->ifa_addr == NULL)
+            continue;
+        if (!(ifa->ifa_flags & IFF_UP))
+            continue;
 
-	evt_data.event = IPA_ADDR_ADD_EVENT;
-    evt_data.evt_data = data_addr;
-	IPACM_EvtDispatcher::PostEvt(&evt_data);												
+		if(strcmp(ifr.ifr_name,ifa->ifa_name) == 0) // find current iface
+		{
+			IPACMDBG("Internal post new_addr event for iface %s\n", ifa->ifa_name);
+			switch (ifa->ifa_addr->sa_family)
+			{
+				case AF_INET:
+				{
+					struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
+					IPACMDBG("ipv4 address %s\n",inet_ntoa(s4->sin_addr));
+					iface_ipv4 = s4->sin_addr;
+					/* post new_addr event to command queue */
+					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
+					if(data_addr == NULL)
+					{
+						IPACMERR("unable to allocate memory for event data_addr\n");
+						freeifaddrs(myaddrs);
+						return ;
+					}
+					data_addr->iptype = IPA_IP_v4;
+					data_addr->if_index = interface_index;
+					data_addr->ipv4_addr = 	iface_ipv4.s_addr;
+					data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);
+					IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
+						data_addr->if_index,
+						data_addr->ipv4_addr);
 
+					evt_data.event = IPA_ADDR_ADD_EVENT;
+					evt_data.evt_data = data_addr;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+					break;
+				}
+
+				case AF_INET6:
+				{
+					struct sockaddr_in6 *s6 = (struct sockaddr_in6 *)ifa->ifa_addr;
+					/* post new_addr event to command queue */
+					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
+					if(data_addr == NULL)
+					{
+						IPACMERR("unable to allocate memory for event data_addr\n");
+						freeifaddrs(myaddrs);
+						return ;
+					}
+					data_addr->iptype = IPA_IP_v6;
+					data_addr->if_index = interface_index;
+					memcpy(data_addr->ipv6_addr,
+									&s6->sin6_addr,
+									sizeof(data_addr->ipv6_addr));
+					data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
+					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
+					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
+					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
+					IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv6 addr:0x%x:%x:%x:%x\n",
+							data_addr->if_index,
+							data_addr->ipv6_addr[0], data_addr->ipv6_addr[1], data_addr->ipv6_addr[2], data_addr->ipv6_addr[3]);
+
+					evt_data.event = IPA_ADDR_ADD_EVENT;
+					evt_data.evt_data = data_addr;
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
+					break;
+				}
+
+				default:
+					continue;
+			}
+		}
+	}
+    freeifaddrs(myaddrs);
 	return ;
 }
 
@@ -520,8 +572,8 @@ int IPACM_Iface::query_iface_property(void)
 	{
 		IPACMDBG(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
         IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name);
-	}		
-	
+	}
+
 	close(fd);
 	return res;
 }
@@ -542,20 +594,20 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)
 	{
-	
+
 		if ((ip_type == IPA_IP_v4) || (ip_type == IPA_IP_MAX))
 		{
 			IPACMDBG(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
 			return res;
 		}
-	
-		if (ip_type == IPA_IP_v6) 
+
+		if (ip_type == IPA_IP_v6)
 		{
 			ip_type = IPA_IP_MAX;
 		}
-		else 
+		else
 		{
-			ip_type = IPA_IP_v4; 
+			ip_type = IPA_IP_v4;
 		}
 
 		IPACMDBG(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
@@ -568,12 +620,12 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 			IPACMDBG(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
 			return res;
 		}
-	
-		if (ip_type == IPA_IP_v4) 
+
+		if (ip_type == IPA_IP_v4)
 		{
 			ip_type = IPA_IP_MAX;
 		}
-		else 
+		else
 		{
 			ip_type = IPA_IP_v6;
 		}
@@ -592,17 +644,17 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	     /* only wlan may take software-path, not register Rx-property*/
 	        if(strcmp(dev_name,dev_wlan0) == 0 || strcmp(dev_name,dev_wlan1) == 0)
 	  {
-	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD,true);	
+	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD,true);
 		    IPACMDBG(" add producer dependency from %s without registered rx-prop \n", dev_name);
 	     }
-		 
+
 	     if(strcmp(dev_name,dev_ecm0) == 0)
 	     {
-	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_USB_PROD,true);	
+	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_USB_PROD,true);
 		    IPACMDBG(" add producer dependency from %s without registered rx-prop \n", dev_name);
 	  }
 	}
-	
+
 	if (rx_prop == NULL)
 	{
 		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
@@ -733,8 +785,8 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
 		memcpy(&(m_pFilteringTable->rules[1]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
-		
-		/* Configuring fec0::/10 Reserved by IETF Filtering Rule */		
+
+		/* Configuring fec0::/10 Reserved by IETF Filtering Rule */
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0XFFC00000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0x00000000;
@@ -744,8 +796,8 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x00000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
 		memcpy(&(m_pFilteringTable->rules[2]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
-		
-		
+
+
 		if (m_filtering.AddFilteringRule(m_pFilteringTable) == false)
 		{
 			IPACMERR("Error Adding Filtering rule, aborting...\n");
