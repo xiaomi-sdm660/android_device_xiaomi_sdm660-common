@@ -136,7 +136,7 @@ public:
 	int handle_addr_evt(ipacm_event_data_addr *data);
 
 	/* install UL filter rule from Q6 */
-	int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
+	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
 
 	int add_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t src_v4_addr, uint32_t dst_v4_addr, uint32_t* src_v6_addr, uint32_t* dst_v6_addr, uint32_t* rule_hdl);
 
@@ -153,9 +153,9 @@ public:
 
 protected:
 
-	int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
+	virtual int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
 
-	int reset_lan2lan_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl);
+	int reset_to_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl);
 
 	/*handle lan2lan client active*/
 	int handle_lan2lan_client_active(ipacm_event_data_all *data, ipa_cm_event_id event);
@@ -170,6 +170,15 @@ protected:
 
 	lan2lan_hdr_hdl lan2lan_hdr_hdl_v4[MAX_OFFLOAD_PAIR];
 	lan2lan_hdr_hdl lan2lan_hdr_hdl_v6[MAX_OFFLOAD_PAIR];
+
+	/* store ipv4 UL filter rule handlers from Q6*/
+	uint32_t wan_ul_fl_rule_hdl_v4[MAX_WAN_UL_FILTER_RULES];
+
+	/* store ipv6 UL filter rule handlers from Q6*/
+	uint32_t wan_ul_fl_rule_hdl_v6[MAX_WAN_UL_FILTER_RULES];
+
+	int num_wan_ul_fl_rule_v4;
+	int num_wan_ul_fl_rule_v6;
 
 	bool is_active;
 
@@ -302,16 +311,7 @@ private:
 	/*handle lan iface down event*/
 	int handle_down_evt();
 
-	/* store ipv4 UL filter rule handlers from Q6*/
-	uint32_t wan_ul_fl_rule_hdl_v4[MAX_WAN_UL_FILTER_RULES];
-
-	/* store ipv6 UL filter rule handlers from Q6*/
-	uint32_t wan_ul_fl_rule_hdl_v6[MAX_WAN_UL_FILTER_RULES];
-
 	void post_lan2lan_client_disconnect_msg();
-
-	int num_wan_ul_fl_rule_v4;
-	int num_wan_ul_fl_rule_v6;
 };
 
 #endif /* IPACM_LAN_H */

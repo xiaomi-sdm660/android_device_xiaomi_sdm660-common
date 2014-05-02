@@ -87,7 +87,8 @@ public:
 
 	static int total_num_wifi_clients;
 
-	void event_callback(ipa_cm_event_id event, void *data);
+	void event_callback(ipa_cm_event_id event,
+											void *data);
 
 	virtual int add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* dst_mac, uint32_t* hdr_hdl);
 
@@ -97,6 +98,13 @@ private:
 
 	int header_name_count;
 	int num_wifi_client;
+
+	int wlan_ap_index;
+
+	static uint32_t* dummy_flt_rule_hdl_v4;
+	static uint32_t* dummy_flt_rule_hdl_v6;
+
+	static int num_wlan_ap_iface;
 
 	NatApp *Nat_App;
 
@@ -149,7 +157,7 @@ private:
 		     {
 		        if((tx_prop->tx[tx_index].ip == IPA_IP_v4) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
 			{
-				IPACMDBG("Delete client index %d ipv4 Qos rules for tx:%d \n", clt_indx,tx_index);
+				IPACMDBG("Delete client index %d ipv4 Qos rules for tx:%d \n",clt_indx,tx_index);
 				rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4;
 
 				if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v4) == false)
@@ -222,6 +230,26 @@ private:
 
 	/*handle wlan iface down event*/
 	int handle_down_evt();
+
+	/* add dummy filtering rules for WLAN AP-AP mode support */
+	void add_dummy_flt_rule();
+
+	/* install dummy filtering rules for WLAN AP-AP mode support */
+	int install_dummy_flt_rule(ipa_ip_type iptype, int num_rule);
+
+	/* delete dummy flt rule for WLAN AP-AP mode support*/
+	void del_dummy_flt_rule();
+
+	/*Configure the initial filter rules */
+	virtual int init_fl_rule(ipa_ip_type iptype);
+
+	virtual int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
+
+	/*configure private subnet filter rules*/
+	virtual int handle_private_subnet(ipa_ip_type iptype);
+
+	/* install UL filter rule from Q6 */
+	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
 };
 
 

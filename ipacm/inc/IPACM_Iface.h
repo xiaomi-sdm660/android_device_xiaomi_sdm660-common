@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -64,61 +64,60 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define INVALID_IFACE -1
 
 /* iface */
-class IPACM_Iface : public IPACM_Listener
+class IPACM_Iface :public IPACM_Listener
 {
 public:
 
-    /* Static class for reading IPACM configuration from XML file*/
-    static IPACM_Config *ipacmcfg;
+	/* Static class for reading IPACM configuration from XML file*/
+	static IPACM_Config *ipacmcfg;
 
-		/* IPACM interface id */
-		int ipa_if_num;
+	/* IPACM interface id */
+	int ipa_if_num;
 
-		/* IPACM interface name */
-		char dev_name[IF_NAME_LEN];
+	/* IPACM interface name */
+	char dev_name[IF_NAME_LEN];
 
-		/* IPACM interface iptype v4, v6 or both */
-		ipa_ip_type ip_type;
+	/* IPACM interface iptype v4, v6 or both */
+	ipa_ip_type ip_type;
 
-		/* IPACM interface v6 ip-address*/
-		uint32_t ipv6_addr[MAX_DEFAULT_v6_ROUTE_RULES][4];
-		
-		uint32_t header_hdl;
+	/* IPACM interface v6 ip-address*/
+	uint32_t ipv6_addr[MAX_DEFAULT_v6_ROUTE_RULES][4];
 
-		uint32_t software_routing_fl_rule_hdl[MAX_SOFTWAREROUTING_FILTERTING_RULES];
+	uint32_t header_hdl;
 
-		bool softwarerouting_act;
+	uint32_t software_routing_fl_rule_hdl[MAX_SOFTWAREROUTING_FILTERTING_RULES];
 
-		/* IPACM number of default route rules for ipv6*/
-		int num_dft_rt_v6;
+	bool softwarerouting_act;
 
-		uint32_t dft_v4fl_rule_hdl[IPV4_DEFAULT_FILTERTING_RULES];
-		uint32_t dft_v6fl_rule_hdl[IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES];
-		/* create additional set of v6 RT-rules in Wanv6RT table*/
-		uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+2*MAX_DEFAULT_v6_ROUTE_RULES];
+	/* IPACM number of default route rules for ipv6*/
+	int num_dft_rt_v6;
 
-		ipa_ioc_query_intf *iface_query;
-		ipa_ioc_query_intf_tx_props *tx_prop;
-		ipa_ioc_query_intf_rx_props *rx_prop;
+	uint32_t dft_v4fl_rule_hdl[IPV4_DEFAULT_FILTERTING_RULES];
+	uint32_t dft_v6fl_rule_hdl[IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES];
+	/* create additional set of v6 RT-rules in Wanv6RT table*/
+	uint32_t dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES+2*MAX_DEFAULT_v6_ROUTE_RULES];
 
-		virtual int handle_down_evt() = 0;
+	ipa_ioc_query_intf *iface_query;
+	ipa_ioc_query_intf_tx_props *tx_prop;
+	ipa_ioc_query_intf_rx_props *rx_prop;
 
-		virtual int handle_addr_evt(ipacm_event_data_addr *data) = 0;
+	virtual int handle_down_evt() = 0;
 
-		IPACM_Iface(int iface_index);
+	virtual int handle_addr_evt(ipacm_event_data_addr *data) = 0;
 
-		virtual void event_callback(ipa_cm_event_id event,
-																void *data) = 0;
+	IPACM_Iface(int iface_index);
 
-	
-    /* Query ipa_interface_index by given linux interface_index */
-  	static int iface_ipa_index_query(int interface_index);
-	  
-    /* Query ipa_interface ipv4_addr by given linux interface_index */
-  	static void iface_addr_query(int interface_index);
+	virtual void event_callback(ipa_cm_event_id event,
+															void *data) = 0;
 
-    /*Query the IPA endpoint property */
-    int query_iface_property(void);
+	/* Query ipa_interface_index by given linux interface_index */
+	static int iface_ipa_index_query(int interface_index);
+
+	/* Query ipa_interface ipv4_addr by given linux interface_index */
+	static void iface_addr_query(int interface_index);
+
+	/*Query the IPA endpoint property */
+	int query_iface_property(void);
 
 	/*Configure the initial filter rules */
 	virtual int init_fl_rule(ipa_ip_type iptype);
@@ -135,13 +134,12 @@ public:
 
 	/* used to get filtering rule index in table */
 	int flt_rule_count_v4;
-	
-	int flt_rule_count_v6;
 
+	int flt_rule_count_v6;
 
 private:
 
-		static const char *DEVICE_NAME;
+	static const char *DEVICE_NAME;
 };
 
 #endif /* IPACM_IFACE_H */
