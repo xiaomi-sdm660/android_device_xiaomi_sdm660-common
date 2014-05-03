@@ -179,7 +179,11 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 					}
 
-					IPACM_Lan::handle_addr_evt(data);
+					if(IPACM_Lan::handle_addr_evt(data)==IPACM_FAILURE)
+					{
+						return;
+					}
+
 					IPACM_Lan::handle_private_subnet(data->iptype);
 
 					if (IPACM_Wan::isWanUP())

@@ -169,7 +169,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt_v6!=MAX_DEFAULT_v6_ROUTE_RULES)))
 				{
 				  IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt_v6);
-					handle_addr_evt(data);
+					if(handle_addr_evt(data)==IPACM_FAILURE)
+					{
+						return;
+					}
+
 					handle_private_subnet(data->iptype);
 
 					if (IPACM_Wan::isWanUP())
@@ -487,7 +491,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	           (ipv6_addr[num_ipv6_addr][2] == data->ipv6_addr[2]) &&
 	           (ipv6_addr[num_ipv6_addr][3] == data->ipv6_addr[3]))
             {
-				return IPACM_SUCCESS;
+				return IPACM_FAILURE;
 				break;
 	        }
 	    }
@@ -843,7 +847,13 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype)
 		close(fd);
 	}
 
-	ret = handle_uplink_filter_rule(ext_prop, iptype);
+	/* check only add static UL filter rule once */
+	if ((num_dft_rt_v6 ==1 && iptype ==IPA_IP_v6) ||
+			(iptype ==IPA_IP_v4))
+	{
+		IPACMDBG("num_dft_rt_v6 %d iptype %d\n", num_dft_rt_v6,iptype);
+		ret = handle_uplink_filter_rule(ext_prop, iptype);
+	}
 	return ret;
 }
 

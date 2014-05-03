@@ -87,6 +87,7 @@ public:
 	
 	bool m_is_sta_mode;
 	static bool backhaul_is_sta_mode;
+	static bool is_ext_prop_set;
 
 private:
 	uint32_t *wan_route_rule_v4_hdl;
@@ -160,7 +161,7 @@ private:
 	void change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib);
 
 	int m_fd_ipa;
-	
+
 };
 
 #endif /* IPACM_WAN_H */

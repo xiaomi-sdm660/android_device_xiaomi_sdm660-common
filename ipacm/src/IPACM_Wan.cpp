@@ -59,6 +59,7 @@ struct ipa_flt_rule_add IPACM_Wan::flt_rule_v4[IPA_MAX_FLT_RULE];
 struct ipa_flt_rule_add IPACM_Wan::flt_rule_v6[IPA_MAX_FLT_RULE];
 
 bool IPACM_Wan::backhaul_is_sta_mode = false;
+bool IPACM_Wan::is_ext_prop_set = false;
 
 IPACM_Wan::IPACM_Wan(int iface_index, bool is_sta_mode) : IPACM_Iface(iface_index)
 {
@@ -2334,7 +2335,11 @@ int IPACM_Wan::query_ext_prop()
 		}
 			
 		IPACM_Iface::ipacmcfg->SetQmapId(ext_prop->ext[0].mux_id);
+		if(is_ext_prop_set == false)
+		{
 		IPACM_Iface::ipacmcfg->SetExtProp(ext_prop);
+			is_ext_prop_set = true;
+		}
 		free(ext_prop);
 	}
 	return IPACM_SUCCESS;
@@ -3161,14 +3166,13 @@ fail:
 		free(wan_route_rule_v6_hdl_a5);
 	}
 
-	IPACM_Iface::ipacmcfg->DelExtProp(ip_type);
 	close(m_fd_ipa);
 	return res;
 }
 
 int IPACM_Wan::install_wan_filtering_rule()
 {
-	int len;
+	int len, res;
 	uint8_t mux_id;
 	ipa_ioc_add_flt_rule *pFilteringTable_v4 = NULL;
 	ipa_ioc_add_flt_rule *pFilteringTable_v6 = NULL;
@@ -3221,14 +3225,20 @@ int IPACM_Wan::install_wan_filtering_rule()
 	if(false == m_filtering.AddWanDLFilteringRule(pFilteringTable_v4, pFilteringTable_v6, mux_id))
 	{
 		IPACMERR("Failed to install WAN DL filtering table.\n");
-		free(pFilteringTable_v4);
-		free(pFilteringTable_v6);
-		return IPACM_FAILURE;
+		res = IPACM_FAILURE;
+		goto fail;
 	}
 
+fail:
+	if(pFilteringTable_v4 != NULL)
+	{
 	free(pFilteringTable_v4);
+	}
+	if(pFilteringTable_v6 != NULL)
+	{
 	free(pFilteringTable_v6);
-	return IPACM_SUCCESS;
+	}
+	return res;
 }
 
 void IPACM_Wan::change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib)
