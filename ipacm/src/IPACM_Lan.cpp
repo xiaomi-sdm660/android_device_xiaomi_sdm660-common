@@ -395,6 +395,9 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 			return IPACM_FAILURE;
 		}
 
+		memset(wan_ul_fl_rule_hdl_v4, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
+		num_wan_ul_fl_rule_v4 = 0;
+
 		memset(&flt_index, 0, sizeof(flt_index));
 		flt_index.source_pipe_index = ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, rx_prop->rx[0].src_pipe);
 		flt_index.install_status = IPA_QMI_RESULT_SUCCESS_V01;
@@ -412,9 +415,6 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 			close(fd);
 			return IPACM_FAILURE;
 		}
-
-		memset(wan_ul_fl_rule_hdl_v4, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
-		num_wan_ul_fl_rule_v4 = 0;
 	}
 	else
 	{
@@ -1880,6 +1880,9 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 			return IPACM_FAILURE;
 		}
 
+		memset(wan_ul_fl_rule_hdl_v6, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
+		num_wan_ul_fl_rule_v6 = 0;
+
 		memset(&flt_index, 0, sizeof(flt_index));
 		flt_index.source_pipe_index = ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, rx_prop->rx[0].src_pipe);
 		flt_index.install_status = IPA_QMI_RESULT_SUCCESS_V01;
@@ -1897,9 +1900,6 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 			close(fd);
 			return IPACM_FAILURE;
 		}
-
-		memset(wan_ul_fl_rule_hdl_v6, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
-		num_wan_ul_fl_rule_v6 = 0;
 	}
 	else
 	{
