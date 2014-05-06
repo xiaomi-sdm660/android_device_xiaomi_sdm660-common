@@ -169,11 +169,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt_v6!=MAX_DEFAULT_v6_ROUTE_RULES)))
 				{
 				  IPACMDBG("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt_v6);
-					if(handle_addr_evt(data)==IPACM_FAILURE)
+					if(handle_addr_evt(data) == IPACM_FAILURE)
 					{
 						return;
 					}
-
 					handle_private_subnet(data->iptype);
 
 					if (IPACM_Wan::isWanUP())
@@ -478,7 +477,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
         IPACMDBG("ipv4 iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);
 		/* initial multicast/broadcast/fragment filter rule */
-		IPACM_Iface::init_fl_rule(data->iptype);
+		init_fl_rule(data->iptype);
 		add_dummy_lan2lan_flt_rule(data->iptype);
 	}
 	else
@@ -565,7 +564,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		if (num_dft_rt_v6 == 0)
 		{
 			/* initial multicast/broadcast/fragment filter rule */
-			IPACM_Iface::init_fl_rule(data->iptype);
+			init_fl_rule(data->iptype);
 			add_dummy_lan2lan_flt_rule(data->iptype);
 		}
 		num_dft_rt_v6++;
@@ -851,7 +850,7 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype)
 	if ((num_dft_rt_v6 ==1 && iptype ==IPA_IP_v6) ||
 			(iptype ==IPA_IP_v4))
 	{
-		IPACMDBG("num_dft_rt_v6 %d iptype %d\n", num_dft_rt_v6,iptype);
+		IPACMDBG("num_dft_rt_v6 %d iptype %d\n", num_dft_rt_v6, iptype);
 		ret = handle_uplink_filter_rule(ext_prop, iptype);
 	}
 	return ret;
@@ -1517,7 +1516,6 @@ int IPACM_Lan::handle_eth_client_down_evt(uint8_t *mac_addr)
 int IPACM_Lan::handle_down_evt()
 {
 	int i;
-	uint32_t tx_index;
 	int res = IPACM_SUCCESS;
 
 	/* no iface address up, directly close iface*/
@@ -2321,7 +2319,7 @@ int IPACM_Lan::del_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
 			if(lan2lan_flt_rule_hdl_v4[i].rule_hdl == rule_hdl)
 			{
 				assert(lan2lan_flt_rule_hdl_v4[i].valid == true);
-				if(reset_lan2lan_dummy_flt_rule(IPA_IP_v4, rule_hdl) == IPACM_FAILURE)
+				if(reset_to_dummy_flt_rule(IPA_IP_v4, rule_hdl) == IPACM_FAILURE)
 				{
 					IPACMERR("Failed to delete lan2lan v4 flt rule %d\n", rule_hdl);
 					return IPACM_FAILURE;
@@ -2346,7 +2344,7 @@ int IPACM_Lan::del_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
 			if(lan2lan_flt_rule_hdl_v6[i].rule_hdl == rule_hdl)
 			{
 				assert(lan2lan_flt_rule_hdl_v6[i].valid == true);
-				if(reset_lan2lan_dummy_flt_rule(IPA_IP_v6, rule_hdl) == IPACM_FAILURE)
+				if(reset_to_dummy_flt_rule(IPA_IP_v6, rule_hdl) == IPACM_FAILURE)
 				{
 					IPACMERR("Failed to delete lan2lan v6 flt rule %d\n", rule_hdl);
 					return IPACM_FAILURE;
@@ -2373,7 +2371,7 @@ int IPACM_Lan::del_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
 	return IPACM_SUCCESS;
 }
 
-int IPACM_Lan::reset_lan2lan_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
+int IPACM_Lan::reset_to_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
 {
 	int len, res = IPACM_SUCCESS;
 	struct ipa_flt_rule_mdfy flt_rule;
@@ -2385,7 +2383,7 @@ int IPACM_Lan::reset_lan2lan_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hd
 
 	if (pFilteringTable == NULL)
 	{
-		IPACMERR("Error allocate lan2lan flt rule memory...\n");
+		IPACMERR("Error allocate flt rule memory...\n");
 		return IPACM_FAILURE;
 	}
 	memset(pFilteringTable, 0, len);
@@ -2403,7 +2401,7 @@ int IPACM_Lan::reset_lan2lan_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hd
 
 	if(iptype == IPA_IP_v4)
 	{
-		IPACMDBG("Reset IPv4 lan2lan flt rule to dummy\n");
+		IPACMDBG("Reset IPv4 flt rule to dummy\n");
 
 		flt_rule.rule.attrib.attrib_mask = IPA_FLT_SRC_ADDR | IPA_FLT_DST_ADDR;
 		flt_rule.rule.attrib.u.v4.dst_addr = ~0;
@@ -2426,7 +2424,7 @@ int IPACM_Lan::reset_lan2lan_dummy_flt_rule(ipa_ip_type iptype, uint32_t rule_hd
 	}
 	else if(iptype == IPA_IP_v6)
 	{
-		IPACMDBG("Reset IPv6 lan2lan flt rule to dummy\n");
+		IPACMDBG("Reset IPv6 flt rule to dummy\n");
 
 		flt_rule.rule.attrib.attrib_mask = IPA_FLT_SRC_ADDR | IPA_FLT_DST_ADDR;
 		flt_rule.rule.attrib.u.v6.src_addr[0] = ~0;

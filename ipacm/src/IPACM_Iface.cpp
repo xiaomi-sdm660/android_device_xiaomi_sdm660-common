@@ -39,6 +39,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.Z
 */
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <ifaddrs.h>
 
 #include <IPACM_Netlink.h>
 #include <IPACM_Iface.h>
