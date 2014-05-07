@@ -205,7 +205,7 @@ static loc_name_val_s_type loc_eng_agps_bears[] =
 {
     NAME_VAL( AGPS_APN_BEARER_INVALID ),
     NAME_VAL( AGPS_APN_BEARER_IPV4 ),
-    NAME_VAL( AGPS_APN_BEARER_IPV4 ),
+    NAME_VAL( AGPS_APN_BEARER_IPV6 ),
     NAME_VAL( AGPS_APN_BEARER_IPV4V6 )
 };
 static int loc_eng_agps_bears_num = sizeof(loc_eng_agps_bears) / sizeof(loc_name_val_s_type);
