@@ -50,23 +50,31 @@ extern "C"
 #include <string.h>
 #include <syslog.h>
 
-#define PERROR(fmt)   printf("%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
+#define MAX_BUF_LEN 256
+#define IPACMLOG_FILE "/etc/ipacm_log_file"
+
+typedef struct ipacm_log_buffer_s {
+	char	user_data[MAX_BUF_LEN];
+} ipacm_log_buffer_t;
+
+void ipacm_log_send( void * user_data);
+
+static char buffer_send[MAX_BUF_LEN];
+
+#define PERROR(fmt)   memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+					  snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
+					  ipacm_log_send (buffer_send); \
                       perror(fmt);
 
-#define IPACMERR(fmt, ...) syslog(LOG_ERR, "ERROR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-                           printf("ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
-
-#ifdef DEBUG
-#define IPACMDBG(fmt, ...) syslog(LOG_DEBUG, "%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-                           printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
-
-#define IPACMLOG(fmt, ...) syslog(LOG_DEBUG, fmt, ##__VA_ARGS__);\
-                           printf(fmt, ##__VA_ARGS__);
-#else
-#define IPACMDBG(fmt, ...)
-#define IPACMLOG(fmt, ...)
-#endif
-
+#define IPACMERR(fmt, ...)	memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+							snprintf(buffer_send,MAX_BUF_LEN,"ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+							ipacm_log_send (buffer_send);
+#define IPACMDBG(fmt, ...)	memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+							snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+							ipacm_log_send (buffer_send);
+#define IPACMLOG(fmt, ...)      memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+                                                        snprintf(buffer_send,MAX_BUF_LEN, fmt, ##__VA_ARGS__);\
+                                                        ipacm_log_send (buffer_send);
 
 #ifdef __cplusplus
 }
