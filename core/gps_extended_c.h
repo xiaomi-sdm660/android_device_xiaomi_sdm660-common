@@ -60,6 +60,8 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_ZPP      0x0004
 /** Position is from a Geofence Breach Event */
 #define ULP_LOCATION_IS_FROM_GEOFENCE 0X0008
+/** Positioin is from Hardware FLP */
+#define ULP_LOCATION_IS_FROM_HW_FLP   0x0010
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
@@ -110,6 +112,14 @@ typedef struct {
     gps_create_thread create_thread_cb;
     gps_request_utc_time request_utc_time_cb;
 } GpsExtCallbacks;
+
+/** GPS extended batch options */
+typedef struct {
+    double max_power_allocation_mW;
+    uint32_t sources_to_use;
+    uint32_t flags;
+    int64_t period_ns;
+} GpsExtBatchOptions;
 
 /** Callback to report the xtra server url to the client.
  *  The client should use this url when downloading xtra unless overwritten
@@ -233,6 +243,19 @@ typedef struct {
     /** speed uncertainty in m/s */
     float           speed_unc;
 } GpsLocationExtended;
+
+typedef struct GpsExtLocation_s {
+    size_t          size;
+    uint16_t        flags;
+    double          latitude;
+    double          longitude;
+    double          altitude;
+    float           speed;
+    float           bearing;
+    float           accuracy;
+    int64_t         timestamp;
+    uint32_t        sources_used;
+} GpsExtLocation;
 
 enum loc_sess_status {
     LOC_SESS_SUCCESS,
