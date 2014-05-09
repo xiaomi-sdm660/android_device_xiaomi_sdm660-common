@@ -31,6 +31,7 @@
 #define LOC_ENG_NI_H
 
 #include <stdbool.h>
+#include <LocEngAdapter.h>
 
 #define LOC_NI_NO_RESPONSE_TIME            20                      /* secs */
 #define LOC_NI_NOTIF_KEY_ADDRESS           "Address"
@@ -45,6 +46,13 @@ typedef struct {
     GpsUserResponseType     resp;
     pthread_cond_t          tCond;
     pthread_mutex_t         tLock;
+    LocEngAdapter*          adapter;
+} loc_eng_ni_session_s_type;
+
+typedef struct {
+    loc_eng_ni_session_s_type session;    /* SUPL NI Session */
+    loc_eng_ni_session_s_type sessionEs;  /* Emergency SUPL NI Session */
+    int reqIDCounter;
 } loc_eng_ni_data_s_type;
 
 
