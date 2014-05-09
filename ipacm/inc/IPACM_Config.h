@@ -161,6 +161,20 @@ public:
 
 	int Init(void);
 
+	inline bool isPrivateSubnet(uint32_t ip_addr)
+	{
+		for(int cnt=0; cnt<ipa_num_private_subnet; cnt++)
+		{
+			if(private_subnet_table[cnt].subnet_addr ==
+				 (private_subnet_table[cnt].subnet_mask & ip_addr))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 private:
 	static IPACM_Config *pInstance;
 	static const char *DEVICE_NAME;

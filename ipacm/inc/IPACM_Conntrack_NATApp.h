@@ -42,6 +42,8 @@ extern "C"
 #include <ipa_nat_drv.h>
 }
 
+#define MAX_TEMP_ENTRIES 25
+
 typedef struct _nat_table_entry
 {
 	uint32_t private_ip;
@@ -70,6 +72,7 @@ private:
 	static NatApp *pInstance;
 
 	nat_table_entry *cache;
+	nat_table_entry temp[MAX_TEMP_ENTRIES];
 	uint32_t pub_ip_addr;
 	uint32_t nat_table_hdl;
 
@@ -111,6 +114,10 @@ public:
 	int ResetPwrSaveIf(uint32_t);
 
 	void UpdateTcpUdpTo(uint32_t, int proto);
+
+	void AddTempEntry(const nat_table_entry *);
+	void DeleteTempEntry(const nat_table_entry *);
+	void FlushTempEntries(uint32_t, bool);
 };
 
 

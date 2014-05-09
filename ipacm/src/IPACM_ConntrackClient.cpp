@@ -45,7 +45,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern IPACM_EvtDispatcher cm_dis;
 
 IPACM_ConntrackClient *IPACM_ConntrackClient::pInstance = IPACM_ConntrackClient::GetInstance();
-IPACM_ConntrackListener *ct = new IPACM_ConntrackListener();
+IPACM_ConntrackListener *CtList = new IPACM_ConntrackListener();
 
 /* ================================
 		 Local Function Definitions
@@ -106,6 +106,7 @@ IPACM_ConntrackClient* IPACM_ConntrackClient::GetInstance()
 	return pInstance;
 }
 
+extern void ParseCTMessage(struct nf_conntrack *ct);
 int IPACM_ConntrackClient::IPAConntrackEventCB
 (
 	 enum nf_conntrack_msg_type type,
@@ -118,11 +119,24 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 
 	IPACMDBG("Event callback called with msgtype: %d\n",type);
 
+	if(!CtList->isWanUp())
+	{
+#ifdef IPACM_DEBUG
+		char buf[1024];
+		nfct_snprintf(buf, sizeof(buf), ct,
+									type, NFCT_O_PLAIN, NFCT_OF_TIME);
+	  IPACMDBG("%s\n", buf);
+	  IPACMDBG("\n");
+		ParseCTMessage(ct);
+#endif
+		goto IGNORE;
+	}
+
 	ct_data = (ipacm_ct_evt_data *)malloc(sizeof(ipacm_ct_evt_data));
 	if(ct_data == NULL)
 	{
 		IPACMERR("unable to allocate memory \n");
-		return -1;
+		goto IGNORE;
 	}
 
 	ct_data->ct = ct;
@@ -135,15 +149,17 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 	{
 		IPACMERR("Error sending Conntrack message to processing thread!\n");
 		free(ct_data);
+		goto IGNORE;
 	}
 
-#if 0
-	IPACMDBG("Posted message to Cmd Queue\n");
-#endif
-
-	/* NFCT_CB_STOLEN means that the conntrack object is not released after the
+/* NFCT_CB_STOLEN means that the conntrack object is not released after the
 	 callback That must be manually done later when the object is no longer needed. */
 	return NFCT_CB_STOLEN;
+
+IGNORE:
+	nfct_destroy(ct);
+	return NFCT_CB_STOLEN;
+
 }
 
 int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Bridge_Addrs
@@ -246,6 +262,7 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 	if(ioctl(sck, SIOCGIFCONF, &ifc) < 0)
 	{
 		PERROR("ioctl(SIOCGIFCONF)");
+		close(sck);
 		return -1;
 	}
 
@@ -277,18 +294,22 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 			 ntohl(inet_addr(inet_ntoa(((struct sockaddr_in *)&item->ifr_addr)->sin_addr)));
 		filter_ipv4.mask = 0xffffffff;
 
-		/* ignore whatever is destined to or originates from local interfaces */
 		if(item->ifr_name != NULL)
 		{
-			if(strncmp(ct->wan_ifname, item->ifr_name, strlen(item->ifr_name)) != 0)
+			/* check whether interface is non wan iface */
+			if(strncmp(CtList->wan_ifname, item->ifr_name, strlen(item->ifr_name)) != 0)
 			{
+				/* ignore whatever is destined to local interfaces */
 				IPACMDBG("ignore connections destinated to interface %s\n", item->ifr_name);
 				IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
-				nfct_filter_set_logic(filter, NFCT_FILTER_DST_IPV4, NFCT_FILTER_LOGIC_NEGATIVE);
+				nfct_filter_set_logic(filter,
+															NFCT_FILTER_DST_IPV4,
+															NFCT_FILTER_LOGIC_NEGATIVE);
 
 				nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
 
-        if(!ct->isStaMode) {
+				/* In AP+STA mode only listen to connections orignated from local interface */
+        if(!CtList->isStaMode) {
 					IPACMDBG("ignore connections orignated from interface %s\n", item->ifr_name);
 					IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
 					nfct_filter_set_logic(filter,
@@ -308,6 +329,7 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 			if(ioctl(sck, SIOCGIFBRDADDR, item) < 0)
 			{
 				PERROR("broadcast address error: ioctl(SIOCGIFBRDADDR)");
+				close(sck);
 				return -1;
 			}
 
@@ -442,13 +464,21 @@ int IPACM_ConntrackClient::IPA_Conntrack_UDP_Filter_Init(void)
 void* IPACM_ConntrackClient::UDPConnTimeoutUpdate(void *ptr)
 {
 
+	NatApp *nat_inst = NULL;
 #ifdef IPACM_DEBUG
 	IPACMDBG("\n");
 #endif
 
+	nat_inst = NatApp::GetInstance();
+	if(nat_inst == NULL)
+	{
+		IPACMERR("unable to create nat instance\n");
+		return NULL;
+	}
+
 	while(1)
 	{
-		NatApp::GetInstance()->UpdateUDPTimeStamp();
+		nat_inst->UpdateUDPTimeStamp();
 		sleep(UDP_TIMEOUT_UPDATE);
 	} /* end of while(1) loop */
 
@@ -501,7 +531,8 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	}
 
 	/* Attach the filter to net filter handler */
-	ret = nfct_filter_attach(nfct_fd(pClient->tcp_hdl), pClient->tcp_filter);
+	ret = nfct_filter_attach(nfct_fd(pClient->tcp_hdl),
+													 pClient->tcp_filter);
 	if(ret == -1)
 	{
 		IPACMDBG("unable to attach TCP filter\n");
@@ -511,8 +542,7 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	/* Register callback with netfilter handler */
 	IPACMDBG("tcp handle:%p, fd:%d\n", pClient->tcp_hdl, nfct_fd(pClient->tcp_hdl));
 	nfct_callback_register(pClient->tcp_hdl, 
-			(nf_conntrack_msg_type)	(NFCT_T_UPDATE | NFCT_T_DESTROY), 
-						IPAConntrackEventCB, NULL);
+				(NFCT_T_UPDATE | NFCT_T_DESTROY), IPAConntrackEventCB, NULL);
 
 	/* Block to catch events from net filter connection track */
 	/* nfct_catch() receives conntrack events from kernel-space, by default it 
@@ -565,19 +595,6 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 		return NULL;
 	}
 
-	/* Add filter */
-	//struct nfct_filter *udp_filter = NULL;
-
-	/* Allocate new filter */
-	#if 0
-	pClient->udp_filter = nfct_filter_create();
-	if(pClient->udp_filter == NULL)
-	{
-		IPACMERR("unable to create UDP filter\n");
-		return NULL;
-	}
-	#endif
-
 	/* Initialize Filter */
 	ret = IPA_Conntrack_UDP_Filter_Init();
 	if(-1 == ret)
@@ -597,20 +614,25 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 	/* Register callback with netfilter handler */
 	IPACMDBG("udp handle:%p, fd:%d\n", pClient->udp_hdl, nfct_fd(pClient->udp_hdl));
 	nfct_callback_register(pClient->udp_hdl,
-				(nf_conntrack_msg_type)(NFCT_T_NEW | NFCT_T_DESTROY),
+												 (nf_conntrack_msg_type)(NFCT_T_NEW | NFCT_T_DESTROY),
 												 IPAConntrackEventCB,
 												 NULL);
 
 	/* Block to catch events from net filter connection track */
+	ctcatch:
 	ret = nfct_catch(pClient->udp_hdl);
 	if(ret == -1)
 	{
 		IPACMDBG("(%d)(%s)\n", ret, strerror(errno));
 		return NULL;
 	}
+	else
+	{
+		IPACMDBG("ctcatch ret:%d\n", ret);
+		goto ctcatch;
+	}
 
-
-	IPACMDBG("Exit from udp thread\n");
+	IPACMDBG("Exit from udp thread with ret: %d\n", ret);
 
 	/* destroy the filter.. this will not detach the filter */
 	nfct_filter_destroy(pClient->udp_filter);
@@ -782,6 +804,14 @@ void IPACM_ConntrackClient::Read_TcpUdp_Timeout(char *in, int len)
 	FILE *fd = NULL;
 	char to_str[10];
 	uint32_t value;
+	NatApp *nat_inst = NULL;
+
+	nat_inst = NatApp::GetInstance();
+	if(nat_inst == NULL)
+	{
+		IPACMERR("unable to create nat instance\n");
+		return NULL;
+	}
 
 	if(!strncmp(in, IPACM_TCP_FILE_NAME, len))
 	{
@@ -813,7 +843,7 @@ void IPACM_ConntrackClient::Read_TcpUdp_Timeout(char *in, int len)
 	fgets(to_str, sizeof(to_str), fd);
 	value = atoi(to_str);
 	IPACMDBG("Protocol %d file \"%s\" value: %d\n", proto, in, value);
-	NatApp::GetInstance()->UpdateTcpUdpTo(value, proto);
+	nat_inst->UpdateTcpUdpTo(value, proto);
 
 	fclose(fd);
 	return;
@@ -823,12 +853,20 @@ void *IPACM_ConntrackClient::TCPUDP_Timeout_monitor(void *)
 {
   int length;
 	int wd;
-	char buffer[INOTIFY_BUF_LEN];
+	char buffer[INOTIFY_BUFFER_LEN];
 	int inotify_fd;
 	uint32_t mask = IN_MODIFY;
 	FILE *to_fd = NULL;
 	char to_str[10];
 	uint32_t value=0;
+	NatApp *nat_inst = NULL;
+
+	nat_inst = NatApp::GetInstance();
+	if(nat_inst == NULL)
+	{
+		IPACMERR("unable to create nat instance\n");
+		return NULL;
+	}
 	
 	to_fd = fopen(IPACM_TCP_FULL_FILE_NAME, "r");
 	if(to_fd < 0)
@@ -840,7 +878,7 @@ void *IPACM_ConntrackClient::TCPUDP_Timeout_monitor(void *)
 	fgets(to_str, sizeof(to_str), to_fd);
 	value = atoi(to_str);
 	IPACMDBG("ip conntrack tcp timeout initial value:%d\n", value);
-	NatApp::GetInstance()->UpdateTcpUdpTo(value, IPPROTO_TCP);
+	nat_inst->UpdateTcpUdpTo(value, IPPROTO_TCP);
 	fclose(to_fd);
 	
 	to_fd = fopen(IPACM_UDP_FULL_FILE_NAME, "r");
@@ -853,7 +891,7 @@ void *IPACM_ConntrackClient::TCPUDP_Timeout_monitor(void *)
 	fgets(to_str, sizeof(to_str), to_fd);
 	value = atoi(to_str);
 	IPACMDBG("ip conntrack udp timeout:%d\n", value);
-	NatApp::GetInstance()->UpdateTcpUdpTo(value, IPPROTO_UDP);
+	nat_inst->UpdateTcpUdpTo(value, IPPROTO_UDP);
 	fclose(to_fd);
 
 	inotify_fd = inotify_init();
@@ -864,15 +902,15 @@ void *IPACM_ConntrackClient::TCPUDP_Timeout_monitor(void *)
 	}
 
 	IPACMDBG("Waiting for nofications in dir %s with mask: 0x%x\n",
-					              IPACM_DIR_NAME, mask);
+					              IPACM_TCP_UDP_DIR_NAME, mask);
 
 	wd = inotify_add_watch(inotify_fd,
-												 IPACM_DIR_NAME,
+												 IPACM_TCP_UDP_DIR_NAME,
 												 mask);
 
 	while (1)
 	{
-		length = read(inotify_fd, buffer, INOTIFY_BUF_LEN);
+		length = read(inotify_fd, buffer, INOTIFY_BUFFER_LEN);
 		struct inotify_event *event = (struct inotify_event *)buffer;
 
 		if (length < 0)
