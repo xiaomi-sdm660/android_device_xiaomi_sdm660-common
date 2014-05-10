@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -51,58 +51,77 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 iface_instances *IPACM_IfaceManager::head = NULL;
 
-IPACM_IfaceManager::IPACM_IfaceManager() 
+IPACM_IfaceManager::IPACM_IfaceManager()
 {
-	IPACM_EvtDispatcher::registr(IPA_LINK_UP_EVENT, this);         
+	IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, this); 		// register for IPA_CFG_CHANGE event
+	IPACM_EvtDispatcher::registr(IPA_LINK_UP_EVENT, this);
 	IPACM_EvtDispatcher::registr(IPA_WLAN_AP_LINK_UP_EVENT, this);  // register for wlan AP-iface
 	IPACM_EvtDispatcher::registr(IPA_WLAN_STA_LINK_UP_EVENT, this); // register for wlan STA-iface
+	IPACM_EvtDispatcher::registr(IPA_USB_LINK_UP_EVENT, this); // register for wlan STA-iface
 	return;
 }
 
 void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 {
-  int ipa_interface_index;
+	int ipa_interface_index;
 	ipacm_event_data_fid *evt_data = (ipacm_event_data_fid *)param;
 	switch(event)
 	{
+		case IPA_CFG_CHANGE_EVENT:
+				IPACMDBG(" RESET IPACM_cfg \n");
+				IPACM_Iface::ipacmcfg->Init();
+			break;
+		case IPA_LINK_UP_EVENT:
+			IPACMDBG("link up %d: \n", evt_data->if_index);
+			create_iface_instance(evt_data->if_index, false);
+			break;
 
-	case IPA_LINK_UP_EVENT:
-		IPACMDBG("link up %d: \n", evt_data->if_index);
-		create_iface_instance(evt_data->if_index, false);
-		break;
-
-	case IPA_WLAN_AP_LINK_UP_EVENT:
-	    ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
-		/* change iface category from unknown to WLAN_IF */
-		if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == UNKNOWN_IF)
-		{  
-		  IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WLAN_IF; 
-		  IPACMDBG("WLAN AP (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);		
-		  create_iface_instance(evt_data->if_index, false);
-		}
-		else
-		{
-		  IPACMDBG("iface %s already up and act as %d mode: \n",IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);		
-		}
-		break;
-
-	case IPA_WLAN_STA_LINK_UP_EVENT:
-	    ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
-		/* change iface category from unknown to WAN_IF */
-		if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat==UNKNOWN_IF)
-		{  
-		  IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WAN_IF; 
-		  IPACMDBG("WLAN STA (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);		
-		  create_iface_instance(evt_data->if_index, true);
-		}
-		else
-		{
-		  IPACMDBG("iface %s already up and act as %d mode: \n",IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);		
-		}
-		break;
+		case IPA_USB_LINK_UP_EVENT:
+			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
+			/* check if it's WAN_IF */
+			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == WAN_IF)
+			{
+			IPACMDBG("WAN-usb (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
+			create_iface_instance(evt_data->if_index, true);
+			}
+			else
+			{
+			create_iface_instance(evt_data->if_index, false);
+			}
+			break;
 		
-	default:
-		break;
+		case IPA_WLAN_AP_LINK_UP_EVENT:
+			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
+			/* change iface category from unknown to WLAN_IF */
+			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == UNKNOWN_IF)
+			{
+			IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WLAN_IF;
+			IPACMDBG("WLAN AP (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
+			create_iface_instance(evt_data->if_index, false);
+			}
+			else
+			{
+			IPACMDBG("iface %s already up and act as %d mode: \n",IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);
+			}
+			break;
+
+		case IPA_WLAN_STA_LINK_UP_EVENT:
+			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
+			/* change iface category from unknown to WAN_IF */
+			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat==UNKNOWN_IF)
+			{
+			IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WAN_IF;
+			IPACMDBG("WLAN STA (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
+			create_iface_instance(evt_data->if_index, true);
+			}
+			else
+			{
+			IPACMDBG("iface %s already up and act as %d mode: \n",IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat);
+			}
+			break;
+
+		default:
+			break;
 	}
 	return;
 }
@@ -117,7 +136,7 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
 			IPACMDBG("Unhandled interface received, fid: %d\n",if_index);
 			return IPACM_SUCCESS;
 	}
-	
+
 	/* check if duplicate instance*/
 	if(SearchInstance(ipa_interface_index) == IPA_INSTANCE_NOT_FOUND)
 	{
