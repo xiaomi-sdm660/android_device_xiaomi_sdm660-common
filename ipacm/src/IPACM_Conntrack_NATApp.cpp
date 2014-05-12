@@ -48,6 +48,8 @@ NatApp::NatApp()
 
 	ct = NULL;
 	ct_hdl = NULL;
+
+	memset(temp, 0, sizeof(temp));
 }
 
 int NatApp::Init(void)
@@ -185,8 +187,7 @@ bool NatApp::ChkForDup(const nat_table_entry *rule)
 			 cache[cnt].target_port == rule->target_port &&
 			 cache[cnt].protocol == rule->protocol)
 		{
-			IPACMDBG("Duplicate Rule, ignore\n");
-			IPACMDBG("Received below nat entry for deletion\n");
+			IPACMDBG("Duplicate Rule\n");
 			IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
 			IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
 			IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
@@ -628,3 +629,84 @@ uint32_t NatApp::GetTableHdl(uint32_t in_ip_addr)
 	return -1;
 }
 
+void NatApp::AddTempEntry(const nat_table_entry *new_entry)
+{
+	int cnt;
+
+	IPACMDBG("Received below nat entry\n");
+	IPACM_ConntrackClient::iptodot("Private IP", new_entry->private_ip);
+	IPACM_ConntrackClient::iptodot("Target IP", new_entry->target_ip);
+	IPACMDBG("Private Port: %d\t Target Port: %d\t", new_entry->private_port, new_entry->target_port);
+	IPACMDBG("protocolcol: %d\n", new_entry->protocol);
+
+	for(cnt=0; cnt<MAX_TEMP_ENTRIES; cnt++)
+	{
+		if(temp[cnt].private_ip == 0 &&
+			 temp[cnt].target_ip == 0)
+		{
+			memcpy(&temp[cnt], new_entry, sizeof(nat_table_entry));
+			IPACMDBG("Added Temp Entry\n");
+			return;
+		}
+	}
+
+	IPACMDBG("unable to add temp entry, cache full\n");
+	return;
+}
+
+void NatApp::DeleteTempEntry(const nat_table_entry *entry)
+{
+	int cnt;
+
+	IPACMDBG("Received below nat entry\n");
+	IPACM_ConntrackClient::iptodot("Private IP", entry->private_ip);
+	IPACM_ConntrackClient::iptodot("Target IP", entry->target_ip);
+	IPACMDBG("Private Port: %d\t Target Port: %d\t", entry->private_port, entry->target_port);
+	IPACMDBG("protocolcol: %d\n", entry->protocol);
+
+	for(cnt=0; cnt<MAX_TEMP_ENTRIES; cnt++)
+	{
+		if(temp[cnt].private_ip == entry->private_ip &&
+			 temp[cnt].target_ip == entry->target_ip &&
+			 temp[cnt].private_port ==  entry->private_port  &&
+			 temp[cnt].target_port == entry->target_port &&
+			 temp[cnt].protocol == entry->protocol)
+		{
+			memset(&temp[cnt], 0, sizeof(nat_table_entry));
+			IPACMDBG("Delete Temp Entry\n");
+			return;
+		}
+	}
+
+	IPACMDBG("No Such Entry exists\n");
+	return;
+}
+
+void NatApp::FlushTempEntries(uint32_t ip_addr, bool isAdd)
+{
+	int cnt;
+	int ret;
+
+	IPACMDBG("Received below with isAdd:%d\n", isAdd);
+	IPACM_ConntrackClient::iptodot("IP Address:", ip_addr);
+
+	for(cnt=0; cnt<MAX_TEMP_ENTRIES; cnt++)
+	{
+		if(temp[cnt].private_ip == ip_addr ||
+			 temp[cnt].target_ip == ip_addr)
+		{
+			if(isAdd)
+			{
+				ret = AddEntry(&temp[cnt]);
+				if(ret)
+				{
+					IPACMERR("unable to add temp entry: %d\n", ret);
+					continue;
+				}
+			}
+			memset(&temp[cnt], 0, sizeof(nat_table_entry));
+		}
+	}
+
+	return;
+}
