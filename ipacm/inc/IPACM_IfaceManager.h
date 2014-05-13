@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -67,23 +67,23 @@ class IPACM_IfaceManager : public IPACM_Listener
 
 public:
 
-  IPACM_IfaceManager(); 
-  
+  IPACM_IfaceManager();
+
   void event_callback(ipa_cm_event_id event,
                       void *data);
 
   /* api for all iface instances to de-register instances */
   static int deregistr(IPACM_Listener *param);
 
-					  
-private:
-	int create_iface_instance(int if_index, bool is_sta_mode);
 
-    /* api to register instances */	
+private:
+	int create_iface_instance(int if_index, int is_sta_mode);
+
+    /* api to register instances */
 	int registr(int ipa_if_index, IPACM_Listener *obj);
-		
+
 	int SearchInstance(int ipa_if_index);
-	
+
 	static iface_instances *head;
 
 };

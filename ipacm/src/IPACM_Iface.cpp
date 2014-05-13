@@ -47,6 +47,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.Z
 #include <IPACM_Wan.h>
 #include <IPACM_Wlan.h>
 #include <ifaddrs.h>
+#include <string.h>
 
 const char *IPACM_Iface::DEVICE_NAME = "/dev/ipa";
 IPACM_Routing IPACM_Iface::m_routing;
@@ -61,6 +62,7 @@ IPACM_Iface::IPACM_Iface(int iface_index)
 	num_dft_rt_v6 = 0;
 	softwarerouting_act = false;
 	ipa_if_num = iface_index;
+	ipa_if_cate = IPACM_Iface::ipacmcfg->iface_table[iface_index].if_cat;
 
 	iface_query = NULL;
 	tx_prop = NULL;
@@ -831,4 +833,38 @@ fail:
 	free(m_pFilteringTable);
 
 	return res;
+}
+
+
+/*  get ipa interface name */
+int IPACM_Iface::ipa_get_if_index
+(
+  char * if_name,
+  int * if_index
+)
+{
+  int fd;
+  struct ifreq ifr;
+
+  if((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+  {
+    IPACMERR("get interface index socket create failed \n");
+    return IPACM_FAILURE;
+  }
+
+  memset(&ifr, 0, sizeof(struct ifreq));
+  (void)strncpy(ifr.ifr_name, if_name, sizeof(ifr.ifr_name));
+  IPACMDBG("interface name %s\n", ifr.ifr_name);
+
+  if (ioctl(fd,SIOCGIFINDEX , &ifr) < 0)
+  {
+    IPACMERR("call_ioctl_on_dev: ioctl failed:\n");
+    close(fd);
+    return IPACM_FAILURE;
+  }
+
+  *if_index = ifr.ifr_ifindex;
+  IPACMDBG("Interface index %d\n", *if_index);
+  close(fd);
+  return IPACM_SUCCESS;
 }

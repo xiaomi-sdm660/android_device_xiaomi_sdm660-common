@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ public:
 	static bool wan_up;
 	static bool wan_up_v6;
 
-	IPACM_Wan(int iface_index, bool is_sta_mode);
+	IPACM_Wan(int iface_index, int is_sta_mode);
 	virtual ~IPACM_Wan();
 
 	static bool isWanUP()
@@ -84,8 +84,8 @@ public:
 
 	static int num_v4_flt_rule;
 	static int num_v6_flt_rule;
-	
-	bool m_is_sta_mode;
+
+	int m_is_sta_mode;
 	static bool backhaul_is_sta_mode;
 	static bool is_ext_prop_set;
 
@@ -120,23 +120,22 @@ private:
 	int handle_header_add_evt(uint8_t mac_addr[6]);
 
 	int config_dft_firewall_rules(ipa_ip_type iptype);
-	
+
 	int handle_route_del_evt(ipa_ip_type iptype);
-	
+
 	int del_dft_firewall_rules(ipa_ip_type iptype);
-	
+
 	int handle_down_evt();
 
-	
-	
+
 	/*handle wan-iface down event */
 	int handle_down_evt_ex();
 
-	/* wan default route/filter rule delete */	
+	/* wan default route/filter rule delete */
 	int handle_route_del_evt_ex(ipa_ip_type iptype);
 
 	/* configure the initial firewall filter rules */
-	int config_dft_firewall_rules_ex(struct ipa_flt_rule_add* rules, int rule_offset, 
+	int config_dft_firewall_rules_ex(struct ipa_flt_rule_add* rules, int rule_offset,
 		ipa_ip_type iptype);
 
 	/* init filtering rule in wan dl filtering table */

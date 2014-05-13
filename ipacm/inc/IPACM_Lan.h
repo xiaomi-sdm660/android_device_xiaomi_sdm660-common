@@ -191,6 +191,8 @@ private:
 
 	/* dynamically allocate lan iface's unicast routing rule structure */
 
+	bool is_mode_switch; /* indicate mode switch, need post internal up event */
+
 	int eth_client_len;
 
 	ipa_eth_client *eth_client;

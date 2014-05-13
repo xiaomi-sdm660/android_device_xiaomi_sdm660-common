@@ -73,6 +73,9 @@ public:
 	/* IPACM interface id */
 	int ipa_if_num;
 
+		/* IPACM interface category */
+		int ipa_if_cate;
+
 	/* IPACM interface name */
 	char dev_name[IF_NAME_LEN];
 
@@ -120,6 +123,9 @@ public:
 
 	/*Configure the initial filter rules */
 	virtual int init_fl_rule(ipa_ip_type iptype);
+
+	/* Get interface index */
+	virtual int ipa_get_if_index(char * if_name, int * if_index);
 
 	static IPACM_Routing m_routing;
 	static IPACM_Filtering m_filtering;
