@@ -35,12 +35,14 @@ namespace loc_core {
 
 class LocApiBase;
 class LocAdapterBase;
+class ContextBase;
 
 class LBSProxyBase {
     friend class ContextBase;
     inline virtual LocApiBase*
         getLocApi(const MsgTask* msgTask,
-                  LOC_API_ADAPTER_EVENT_MASK_T exMask) const {
+                  LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                  ContextBase* context) const {
         return NULL;
     }
 protected:
@@ -51,6 +53,7 @@ public:
                                    unsigned long capabilities) const {}
     inline virtual bool hasAgpsExtendedCapabilities() const { return false; }
     inline virtual bool hasCPIExtendedCapabilities() const { return false; }
+    virtual void injectFeatureConfig(ContextBase* context) const {}
 };
 
 typedef LBSProxyBase* (getLBSProxy_t)();

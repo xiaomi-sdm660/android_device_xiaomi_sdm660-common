@@ -62,6 +62,7 @@ public:
                            unsigned long capabilities) {
         mLBSProxy->requestUlp(adapter, capabilities);
     }
+    inline void sendMsg(const LocMsg *msg) { getMsgTask()->sendMsg(msg); }
 };
 
 } // namespace loc_core

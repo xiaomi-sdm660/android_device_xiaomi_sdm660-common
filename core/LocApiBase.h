@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,6 +36,7 @@
 #include <log_util.h>
 
 namespace loc_core {
+class ContextBase;
 
 int hexcode(char *hexstring, int string_size,
             const char *data, int data_size);
@@ -70,6 +71,7 @@ class LocApiBase {
     friend struct LocOpenMsg;
     friend class ContextBase;
     const MsgTask* mMsgTask;
+    ContextBase *mContext;
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
 
 protected:
@@ -80,7 +82,8 @@ protected:
     LOC_API_ADAPTER_EVENT_MASK_T getEvtMask();
     LOC_API_ADAPTER_EVENT_MASK_T mMask;
     LocApiBase(const MsgTask* msgTask,
-               LOC_API_ADAPTER_EVENT_MASK_T excludedMask);
+               LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
+               ContextBase* context = NULL);
     inline virtual ~LocApiBase() { close(); }
     bool isInSession();
     const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
@@ -189,9 +192,11 @@ public:
     virtual enum loc_api_adapter_err
         setAGLONASSProtocol(unsigned long aGlonassProtocol);
     virtual enum loc_api_adapter_err
-        getZppFix(GpsLocation & zppLoc);
+        getWwanZppFix(GpsLocation & zppLoc);
     virtual enum loc_api_adapter_err
-        getZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask);
+        getBestAvailableZppFix(GpsLocation & zppLoc);
+    virtual enum loc_api_adapter_err
+        getBestAvailableZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask);
     virtual int initDataServiceClient();
     virtual int openAndStartDataCall();
     virtual void stopDataCall();
@@ -215,7 +220,8 @@ public:
 };
 
 typedef LocApiBase* (getLocApi_t)(const MsgTask* msgTask,
-                                  LOC_API_ADAPTER_EVENT_MASK_T exMask);
+                                  LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                                  ContextBase *context);
 
 } // namespace loc_core
 

@@ -254,7 +254,7 @@ public:
     inline enum loc_api_adapter_err
         getZpp(GpsLocation &zppLoc, LocPosTechMask &tech_mask)
     {
-        return mLocApi->getZppFix(zppLoc, tech_mask);
+        return mLocApi->getBestAvailableZppFix(zppLoc, tech_mask);
     }
 
     virtual void handleEngineDownEvent();

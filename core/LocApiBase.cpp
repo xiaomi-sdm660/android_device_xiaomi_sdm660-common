@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -33,6 +33,7 @@
 #include <LocApiBase.h>
 #include <LocAdapterBase.h>
 #include <log_util.h>
+#include <LocDualContext.h>
 
 namespace loc_core {
 
@@ -125,8 +126,9 @@ struct LocOpenMsg : public LocMsg {
 };
 
 LocApiBase::LocApiBase(const MsgTask* msgTask,
-                       LOC_API_ADAPTER_EVENT_MASK_T excludedMask) :
-    mMsgTask(msgTask), mExcludedMask(excludedMask), mMask(0)
+                       LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
+                       ContextBase* context) :
+    mExcludedMask(excludedMask), mMsgTask(msgTask), mMask(0), mContext(context)
 {
     memset(mLocAdapters, 0, sizeof(mLocAdapters));
 }
@@ -205,6 +207,8 @@ void LocApiBase::handleEngineUpEvent()
 {
     // This will take care of renegotiating the loc handle
     mMsgTask->sendMsg(new LocSsrMsg(this));
+
+    LocDualContext::injectFeatureConfig(mContext);
 
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->handleEngineUpEvent());
@@ -443,11 +447,15 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-   getZppFix(GpsLocation & zppLoc)
+   getWwanZppFix(GpsLocation & zppLoc)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-   getZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask)
+   getBestAvailableZppFix(GpsLocation & zppLoc)
+DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+
+enum loc_api_adapter_err LocApiBase::
+   getBestAvailableZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 int LocApiBase::

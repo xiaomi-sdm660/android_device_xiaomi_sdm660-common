@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -134,8 +134,9 @@ const rpc_loc_event_mask_type LocApiRpc::locBits[] =
 
 // constructor
 LocApiRpc::LocApiRpc(const MsgTask* msgTask,
-                     LOC_API_ADAPTER_EVENT_MASK_T exMask) :
-    LocApiBase(msgTask, exMask),
+                     LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                     ContextBase* context) :
+    LocApiBase(msgTask, exMask, context),
     client_handle(RPC_LOC_CLIENT_HANDLE_INVALID),
     dataEnableLastSet(-1)
 {
@@ -1388,8 +1389,9 @@ GpsNiEncodingType LocApiRpc::convertNiEncodingType(int loc_encoding)
 }
 
 LocApiBase* getLocApi(const MsgTask* msgTask,
-                      LOC_API_ADAPTER_EVENT_MASK_T exMask) {
-    return new LocApiRpc(msgTask, exMask);
+                      LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                      ContextBase *context) {
+    return new LocApiRpc(msgTask, exMask, context);
 }
 
 /*Values for lock
