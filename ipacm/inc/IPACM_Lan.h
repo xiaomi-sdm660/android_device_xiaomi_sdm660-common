@@ -177,6 +177,11 @@ protected:
 	/* store ipv6 UL filter rule handlers from Q6*/
 	uint32_t wan_ul_fl_rule_hdl_v6[MAX_WAN_UL_FILTER_RULES];
 
+	virtual void install_tcp_ctl_flt_rule(ipa_ip_type iptype);
+
+	uint32_t tcp_ctl_flt_rule_hdl_v4[NUM_TCP_CTL_FLT_RULE];
+	uint32_t tcp_ctl_flt_rule_hdl_v6[NUM_TCP_CTL_FLT_RULE];
+
 	int num_wan_ul_fl_rule_v4;
 	int num_wan_ul_fl_rule_v6;
 

@@ -49,7 +49,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_EvtDispatcher.h"
 #include "IPACM_Xml.h"
 #include "IPACM_Log.h"
-#include "IPACM_Netlink.h"
 #include "IPACM_Config.h"
 #include "IPACM_Defs.h"
 

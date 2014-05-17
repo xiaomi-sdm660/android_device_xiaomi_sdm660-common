@@ -43,6 +43,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_CmdQueue.h"
 #include "IPACM_Conntrack_NATApp.h"
 #include "IPACM_Listener.h"
+#ifdef CT_OPT
+#include "IPACM_LanToLan.h"
+#endif
 
 #define MAX_NAT_IFACES 50
 
@@ -53,6 +56,7 @@ class IPACM_ConntrackListener : public IPACM_Listener
 
 private:
 	 bool isCTReg;
+	 bool isNatThreadStart;
 	 bool WanUp;
 	 NatApp *nat_inst;
 
@@ -61,15 +65,23 @@ private:
 	 uint32_t nat_iface_ipv4_addr[MAX_NAT_IFACES];
 	 uint32_t nonnat_iface_ipv4_addr[MAX_NAT_IFACES];
 	 IPACM_Config *pConfig;
+#ifdef CT_OPT
+	 IPACM_LanToLan *p_lan2lan;
+#endif
 	 
-	 void ProcessCTMessage(void *data);
-	 void ProcessTCPorUDPMsg(struct nf_conntrack *, enum nf_conntrack_msg_type, u_int8_t);
+	 void ProcessCTMessage(void *);
+	 void ProcessTCPorUDPMsg(struct nf_conntrack *,
+			enum nf_conntrack_msg_type, u_int8_t);
 	 void TriggerWANUp(void *);
 	 void TriggerWANDown(uint32_t);
 	 int  CreateNatThreads(void);
+	 int  CreateConnTrackThreads(void);
 
 	 void HandleNeighIpAddrAddEvt(void *);
 	 void HandleNeighIpAddrDelEvt(void *);
+#ifdef CT_OPT
+	 void ProcessCTV6Message(void *);
+#endif
 
 public:
 	 char wan_ifname[IPA_IFACE_NAME_LEN];
@@ -80,8 +92,10 @@ public:
 	 void event_callback(ipa_cm_event_id, void *data);
 	 inline bool isWanUp()
 	 {
-			return WanUp;
+		return WanUp;
 	 }
 };
+
+extern IPACM_ConntrackListener *CtList;
 
 #endif /* IPACM_CONNTRACK_LISTENER */

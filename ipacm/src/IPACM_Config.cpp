@@ -263,6 +263,7 @@ IPACM_Config* IPACM_Config::GetInstance()
 		if (res != IPACM_SUCCESS)
 		{
 			delete pInstance;
+			IPACMERR("unable to initialize config instance\n");
 			return NULL;
 		}
 	}

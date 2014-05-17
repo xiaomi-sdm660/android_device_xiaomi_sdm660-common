@@ -59,8 +59,12 @@ extern "C"
 #ifdef DEBUG
 #define IPACMDBG(fmt, ...) syslog(LOG_DEBUG, "%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
                            printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+
+#define IPACMLOG(fmt, ...) syslog(LOG_DEBUG, fmt, ##__VA_ARGS__);\
+                           printf(fmt, ##__VA_ARGS__);
 #else
 #define IPACMDBG(fmt, ...)
+#define IPACMLOG(fmt, ...)
 #endif
 
 

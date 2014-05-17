@@ -97,12 +97,19 @@ public:
 		IPACM_LanToLan();
 		~IPACM_LanToLan();
 
+		void handle_new_connection(ipacm_event_connection* new_conn);
+		void handle_del_connection(ipacm_event_connection* del_conn);
+
+		static IPACM_LanToLan* getLan2LanInstance();
+
 private:
 
 		uint8_t num_offload_pair_v4_;
 		uint8_t num_offload_pair_v6_;
 		client_table_v4 client_info_v4_;
 		client_table_v6 client_info_v6_;
+
+		static IPACM_LanToLan* p_instance;
 
 		void event_callback(ipa_cm_event_id event, void* param);
 
@@ -131,17 +138,20 @@ private:
 		int add_flt_rules(ipa_ip_type iptype, client_info* client);
 
 //the following are for connections
-		void handle_new_connection(ipacm_event_connection* data);
+
+		void handle_new_lan2lan_connection(ipacm_event_connection* data);
 
 		bool add_connection(client_info* src_client, client_info* dst_client);
 
-		void handle_del_connection(ipacm_event_connection* data);
+		void handle_del_lan2lan_connection(ipacm_event_connection* data);
 
 		bool remove_connection(client_info* src_client, client_info* dst_client);
 
 		void erase_offload_link(ipa_ip_type iptype, client_info* src_client, client_info* dst_client);
 
 		void generate_new_connection(ipa_ip_type iptype, client_info* client);
+
+		bool is_lan2lan_connection(ipacm_event_connection* data);
 
 };
 

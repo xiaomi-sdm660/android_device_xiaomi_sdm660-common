@@ -188,8 +188,8 @@ bool NatApp::ChkForDup(const nat_table_entry *rule)
 			 cache[cnt].protocol == rule->protocol)
 		{
 			IPACMDBG("Duplicate Rule\n");
-			IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-			IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+			iptodot("Private IP", rule->private_ip);
+			iptodot("Target IP", rule->target_ip);
 			IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
 			IPACMDBG("protocolcol: %d\n", rule->protocol);
 			return true;
@@ -208,8 +208,8 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 	CHK_TBL_HDL();
 
   IPACMDBG("Received below nat entry for deletion\n");
-	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+	iptodot("Private IP", rule->private_ip);
+	iptodot("Target IP", rule->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
 	IPACMDBG("protocolcol: %d\n", rule->protocol);
 
@@ -257,8 +257,8 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 	CHK_TBL_HDL();
 
 	IPACMDBG("Received below nat entry for addition\n");
-	IPACM_ConntrackClient::iptodot("Private IP", rule->private_ip);
-	IPACM_ConntrackClient::iptodot("Target IP", rule->target_ip);
+	iptodot("Private IP", rule->private_ip);
+	iptodot("Target IP", rule->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", rule->private_port, rule->target_port);
 	IPACMDBG("protocolcol: %d\n", rule->protocol);
 
@@ -356,8 +356,8 @@ void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
 {
 	int ret;
 
-	IPACM_ConntrackClient::iptodot("Private IP:", rule->private_ip);
-	IPACM_ConntrackClient::iptodot("Target IP:",  rule->target_ip);
+	iptodot("Private IP:", rule->private_ip);
+	iptodot("Target IP:",  rule->target_ip);
 	IPACMDBG("Private Port: %d, Target Port: %d\n", rule->private_port, rule->target_port);
 
 	if(!ct_hdl)
@@ -413,8 +413,8 @@ void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
 		IPACMDBG("dst nat is set\n");
 	}
 
-	IPACM_ConntrackClient::iptodot("Source IP:", nfct_get_attr_u32(ct, ATTR_IPV4_SRC));
-	IPACM_ConntrackClient::iptodot("Destination IP:",  nfct_get_attr_u32(ct, ATTR_IPV4_DST));
+	iptodot("Source IP:", nfct_get_attr_u32(ct, ATTR_IPV4_SRC));
+	iptodot("Destination IP:",  nfct_get_attr_u32(ct, ATTR_IPV4_DST));
 	IPACMDBG("Source Port: %d, Destination Port: %d\n",
 					 nfct_get_attr_u16(ct, ATTR_PORT_SRC), nfct_get_attr_u16(ct, ATTR_PORT_DST)); 
 	
@@ -593,8 +593,8 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 			cache[cnt].enabled = true;
 
 			IPACMDBG("On power reset added below rule successfully\n");
-			IPACM_ConntrackClient::iptodot("Private IP", nat_rule.private_ip);
-			IPACM_ConntrackClient::iptodot("Target IP", nat_rule.target_ip);
+			iptodot("Private IP", nat_rule.private_ip);
+			iptodot("Target IP", nat_rule.target_ip);
 			IPACMDBG("Private Port:%d \t Target Port: %d\t", nat_rule.private_port, nat_rule.target_port);
 			IPACMDBG("Public Port:%d\n", nat_rule.public_port);
 			IPACMDBG("protocol: %d\n", nat_rule.protocol);
@@ -634,8 +634,8 @@ void NatApp::AddTempEntry(const nat_table_entry *new_entry)
 	int cnt;
 
 	IPACMDBG("Received below nat entry\n");
-	IPACM_ConntrackClient::iptodot("Private IP", new_entry->private_ip);
-	IPACM_ConntrackClient::iptodot("Target IP", new_entry->target_ip);
+	iptodot("Private IP", new_entry->private_ip);
+	iptodot("Target IP", new_entry->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", new_entry->private_port, new_entry->target_port);
 	IPACMDBG("protocolcol: %d\n", new_entry->protocol);
 
@@ -659,8 +659,8 @@ void NatApp::DeleteTempEntry(const nat_table_entry *entry)
 	int cnt;
 
 	IPACMDBG("Received below nat entry\n");
-	IPACM_ConntrackClient::iptodot("Private IP", entry->private_ip);
-	IPACM_ConntrackClient::iptodot("Target IP", entry->target_ip);
+	iptodot("Private IP", entry->private_ip);
+	iptodot("Target IP", entry->target_ip);
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", entry->private_port, entry->target_port);
 	IPACMDBG("protocolcol: %d\n", entry->protocol);
 
@@ -688,7 +688,7 @@ void NatApp::FlushTempEntries(uint32_t ip_addr, bool isAdd)
 	int ret;
 
 	IPACMDBG("Received below with isAdd:%d\n", isAdd);
-	IPACM_ConntrackClient::iptodot("IP Address:", ip_addr);
+	iptodot("IP Address:", ip_addr);
 
 	for(cnt=0; cnt<MAX_TEMP_ENTRIES; cnt++)
 	{

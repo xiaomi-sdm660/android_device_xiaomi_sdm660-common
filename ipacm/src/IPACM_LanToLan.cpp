@@ -43,12 +43,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_LanToLan.h"
 #include "IPACM_Wlan.h"
 
+IPACM_LanToLan* IPACM_LanToLan::p_instance = NULL;
+
 IPACM_LanToLan::IPACM_LanToLan()
 {
 	num_offload_pair_v4_ = 0;
 	num_offload_pair_v6_ = 0;
 	client_info_v4_.reserve(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT);
 	client_info_v6_.reserve(3*(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT));
+
+	p_instance = this;
 
 	IPACM_EvtDispatcher::registr(IPA_LAN_CLIENT_ACTIVE, this);
 	IPACM_EvtDispatcher::registr(IPA_LAN_CLIENT_INACTIVE, this);
@@ -115,7 +119,7 @@ void IPACM_LanToLan::event_callback(ipa_cm_event_id event, void* param)
 		{
 			IPACMDBG("Get IPA_LAN_TO_LAN_NEW_CONNECTION event.\n");
 			ipacm_event_connection* data = (ipacm_event_connection*)param;
-			handle_new_connection(data);
+			handle_new_lan2lan_connection(data);
 			break;
 		}
 
@@ -123,7 +127,7 @@ void IPACM_LanToLan::event_callback(ipa_cm_event_id event, void* param)
 		{
 			IPACMDBG("Get IPA_LAN_TO_LAN_DEL_CONNECTION event.\n");
 			ipacm_event_connection* data = (ipacm_event_connection*)param;
-			handle_del_connection(data);
+			handle_del_lan2lan_connection(data);
 			break;
 		}
 		case IPA_LAN_CLIENT_POWER_SAVE:
@@ -205,7 +209,7 @@ void IPACM_LanToLan::handle_client_active(ipacm_event_lan_client* data)
 		client_ptr->is_powersave = false;
 		client_ptr->p_iface = data->p_iface;
 
-		generate_new_connection(data->iptype, client_ptr); //code review: remember of remove this once listening to real connection evt
+		generate_new_connection(data->iptype, client_ptr);
 	}
 	else	//the client is found
 	{
@@ -700,20 +704,9 @@ void IPACM_LanToLan::handle_client_power_save(ipacm_event_lan_client* data)
 	return;
 }
 
-void IPACM_LanToLan::handle_new_connection(ipacm_event_connection* data)
+void IPACM_LanToLan::handle_new_lan2lan_connection(ipacm_event_connection* data)
 {
-	if(data == NULL)
-	{
-		IPACMERR("No connection info is found.\n");
-		return;
-	}
-	if(data->iptype != IPA_IP_v4 && data->iptype != IPA_IP_v6)
-	{
-		IPACMERR("IP type is not expected: %d.\n", data->iptype);
-		return;
-	}
-
-	IPACMDBG("New connection info: IP type: %d, src_v4_addr: 0x%08x, dst_v4_addr: 0x%08x\n", data->iptype, data->src_ipv4_addr, data->dst_ipv4_addr);
+	IPACMDBG("New lan2lan connection info: IP type: %d, src_v4_addr: 0x%08x, dst_v4_addr: 0x%08x\n", data->iptype, data->src_ipv4_addr, data->dst_ipv4_addr);
 	IPACMDBG("src_v6_addr: 0x%08x%08x%08x%08x, dst_v6_addr: 0x%08x%08x%08x%08x", data->src_ipv6_addr[0], data->src_ipv6_addr[1], data->src_ipv6_addr[2],
 				data->src_ipv6_addr[3], data->dst_ipv6_addr[0], data->dst_ipv6_addr[1], data->dst_ipv6_addr[2], data->dst_ipv6_addr[3]);
 
@@ -834,20 +827,9 @@ bool IPACM_LanToLan::add_connection(client_info* src_client, client_info* dst_cl
 	return ret;
 }
 
-void IPACM_LanToLan::handle_del_connection(ipacm_event_connection* data)
+void IPACM_LanToLan::handle_del_lan2lan_connection(ipacm_event_connection* data)
 {
-	if(data == NULL)
-	{
-		IPACMERR("No connection info is found.\n");
-		return;
-	}
-	if(data->iptype != IPA_IP_v4 && data->iptype != IPA_IP_v6)
-	{
-		IPACMERR("IP type is not expected: %d.\n", data->iptype)
-		return;
-	}
-
-	IPACMDBG("Del connection info: IP type: %d, src_v4_addr: 0x%08x, dst_v4_addr: 0x%08x\n", data->iptype, data->src_ipv4_addr, data->dst_ipv4_addr);
+	IPACMDBG("Del lan2lan connection info: IP type: %d, src_v4_addr: 0x%08x, dst_v4_addr: 0x%08x\n", data->iptype, data->src_ipv4_addr, data->dst_ipv4_addr);
 	IPACMDBG("src_v6_addr: 0x%08x%08x%08x%08x, dst_v6_addr: 0x%08x%08x%08x%08x", data->src_ipv6_addr[0], data->src_ipv6_addr[1], data->src_ipv6_addr[2],
 				data->src_ipv6_addr[3], data->dst_ipv6_addr[0], data->dst_ipv6_addr[1], data->dst_ipv6_addr[2], data->dst_ipv6_addr[3]);
 
@@ -956,7 +938,7 @@ bool IPACM_LanToLan::remove_connection(client_info* src_client, client_info* dst
 			IPACMDBG("Find dst client entry in src peer list, connection count: %d\n", it->num_connection);
 			if(it->num_connection == 0)
 			{
-				IPACMDBG("Need to remove dst entry in src peer list");
+				IPACMDBG("Need to remove dst entry in src peer list.\n");
 				ret = true;
 			}
 			break;
@@ -976,7 +958,7 @@ bool IPACM_LanToLan::remove_connection(client_info* src_client, client_info* dst
 			IPACMDBG("Find src client entry in dst peer list, connection count: %d\n", it->num_connection);
 			if(it->num_connection == 0)
 			{
-				IPACMDBG("Need to remove src entry in dst peer list");
+				IPACMDBG("Need to remove src entry in dst peer list.\n");
 				ret = true;
 			}
 			break;
@@ -1042,6 +1024,7 @@ void IPACM_LanToLan::erase_offload_link(ipa_ip_type iptype, client_info* src_cli
 
 void IPACM_LanToLan::generate_new_connection(ipa_ip_type iptype, client_info* client)
 {
+#ifndef CT_OPT
 	if(client == NULL)
 	{
 		IPACMERR("Client is NULL.\n");
@@ -1121,6 +1104,7 @@ void IPACM_LanToLan::generate_new_connection(ipa_ip_type iptype, client_info* cl
 		IPACMERR("IP type is not expected.\n");
 	}
 	IPACMDBG("Generate %d new connection events in total.\n", num);
+#endif
 	return;
 }
 
@@ -1284,3 +1268,129 @@ int IPACM_LanToLan::add_flt_rules(ipa_ip_type iptype, client_info* client)
 	return IPACM_SUCCESS;
 }
 
+void IPACM_LanToLan::handle_new_connection(ipacm_event_connection* new_conn)
+{
+#ifdef CT_OPT
+	if(new_conn == NULL)
+	{
+		IPACMERR("No connection info is found.\n");
+		return;
+	}
+	if(new_conn->iptype != IPA_IP_v4 && new_conn->iptype != IPA_IP_v6)
+	{
+		IPACMERR("IP type is not expected: %d.\n", new_conn->iptype);
+		return;
+	}
+
+	IPACMDBG("New connection info: IP type: %d, src_v4_addr: 0x%08x, dst_v4_addr: 0x%08x\n", new_conn->iptype, new_conn->src_ipv4_addr, new_conn->dst_ipv4_addr);
+	IPACMDBG("src_v6_addr: 0x%08x%08x%08x%08x, dst_v6_addr: 0x%08x%08x%08x%08x", new_conn->src_ipv6_addr[0], new_conn->src_ipv6_addr[1], new_conn->src_ipv6_addr[2],
+				new_conn->src_ipv6_addr[3], new_conn->dst_ipv6_addr[0], new_conn->dst_ipv6_addr[1], new_conn->dst_ipv6_addr[2], new_conn->dst_ipv6_addr[3]);
+
+	if(is_lan2lan_connection(new_conn) == false)
+	{
+		IPACMDBG("The connection is not lan2lan connection.\n");
+		return;
+	}
+
+	ipacm_cmd_q_data evt;
+	ipacm_event_connection* conn;
+
+	conn = (ipacm_event_connection*)malloc(sizeof(ipacm_event_connection));
+	if(conn == NULL)
+	{
+		IPACMERR("Failed to allocate memory for new_connection event.\n");
+		return;
+	}
+	memcpy(conn, new_conn, sizeof(ipacm_event_connection));
+
+	memset(&evt, 0, sizeof(evt));
+	evt.event = IPA_LAN_TO_LAN_NEW_CONNECTION;
+	evt.evt_data = (void*)conn;
+	IPACM_EvtDispatcher::PostEvt(&evt);
+#endif
+	return;
+}
+
+void IPACM_LanToLan::handle_del_connection(ipacm_event_connection* new_conn)
+{
+#ifdef CT_OPT
+	if(new_conn == NULL)
+	{
+		IPACMERR("No connection info is found.\n");
+		return;
+	}
+	if(new_conn->iptype != IPA_IP_v4 && new_conn->iptype != IPA_IP_v6)
+	{
+		IPACMERR("IP type is not expected: %d.\n", new_conn->iptype);
+		return;
+	}
+
+	IPACMDBG("Del connection info: IP type: %d, src_v4_addr: 0x%08x, dst_v4_addr: 0x%08x\n", new_conn->iptype, new_conn->src_ipv4_addr, new_conn->dst_ipv4_addr);
+	IPACMDBG("src_v6_addr: 0x%08x%08x%08x%08x, dst_v6_addr: 0x%08x%08x%08x%08x", new_conn->src_ipv6_addr[0], new_conn->src_ipv6_addr[1], new_conn->src_ipv6_addr[2],
+				new_conn->src_ipv6_addr[3], new_conn->dst_ipv6_addr[0], new_conn->dst_ipv6_addr[1], new_conn->dst_ipv6_addr[2], new_conn->dst_ipv6_addr[3]);
+
+	if(is_lan2lan_connection(new_conn) == false)
+	{
+		IPACMDBG("The connection is not lan2lan connection.\n");
+		return;
+	}
+
+	ipacm_cmd_q_data evt;
+	ipacm_event_connection* conn;
+
+	conn = (ipacm_event_connection*)malloc(sizeof(ipacm_event_connection));
+	if(conn == NULL)
+	{
+		IPACMERR("Failed to allocate memory for del_connection event.\n");
+		return;
+	}
+	memcpy(conn, new_conn, sizeof(ipacm_event_connection));
+
+	memset(&evt, 0, sizeof(evt));
+	evt.event = IPA_LAN_TO_LAN_DEL_CONNECTION;
+	evt.evt_data = (void*)conn;
+	IPACM_EvtDispatcher::PostEvt(&evt);
+#endif
+	return;
+}
+
+bool IPACM_LanToLan::is_lan2lan_connection(ipacm_event_connection* data)
+{
+	if(data->iptype == IPA_IP_v4)
+	{
+		if(client_info_v4_.count(data->src_ipv4_addr) == 0 || client_info_v4_.count(data->dst_ipv4_addr) == 0)
+		{
+			IPACMDBG("Either source or destination is not in client table\n");
+			return false;
+		}
+
+		ipacm_iface_type src_type, dst_type;
+		src_type = IPACM_Iface::ipacmcfg->iface_table[client_info_v4_[data->src_ipv4_addr].p_iface->ipa_if_num].if_cat;
+		dst_type = IPACM_Iface::ipacmcfg->iface_table[client_info_v4_[data->dst_ipv4_addr].p_iface->ipa_if_num].if_cat;
+
+		return (src_type != dst_type);
+	}
+	else
+	{
+		uint64_t src_v6_addr, dst_v6_addr;
+		memcpy(&src_v6_addr, &(data->src_ipv6_addr[2]), sizeof(uint64_t));
+		memcpy(&dst_v6_addr, &(data->dst_ipv6_addr[2]), sizeof(uint64_t));
+
+		if(client_info_v6_.count(src_v6_addr) == 0 || client_info_v6_.count(dst_v6_addr) == 0)
+		{
+			IPACMDBG("Either source or destination is not in client table\n");
+			return false;
+		}
+
+		ipacm_iface_type src_type, dst_type;
+		src_type = IPACM_Iface::ipacmcfg->iface_table[client_info_v6_[src_v6_addr].p_iface->ipa_if_num].if_cat;
+		dst_type = IPACM_Iface::ipacmcfg->iface_table[client_info_v6_[dst_v6_addr].p_iface->ipa_if_num].if_cat;
+
+		return (src_type != dst_type);
+	}
+}
+
+IPACM_LanToLan* IPACM_LanToLan::getLan2LanInstance()
+{
+	return p_instance;
+}
