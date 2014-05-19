@@ -43,31 +43,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LO_NAME "lo"
 
 extern IPACM_EvtDispatcher cm_dis;
+extern void ParseCTMessage(struct nf_conntrack *ct);
 
-IPACM_ConntrackClient *IPACM_ConntrackClient::pInstance = IPACM_ConntrackClient::GetInstance();
-IPACM_ConntrackListener *CtList = new IPACM_ConntrackListener();
+IPACM_ConntrackClient *IPACM_ConntrackClient::pInstance = NULL;
+IPACM_ConntrackListener *CtList = NULL;
 
 /* ================================
 		 Local Function Definitions
 		 =================================
 */
-#ifdef IPACM_DEBUG
-void IPACM_ConntrackClient::iptodot(const char *type, uint32_t ipAddr)
-{
-	int i;
-	unsigned char octet[4] = { 0 };
-	IPACMDBG("Received IPv4 addr: 0x%x\n", ipAddr);
-
-	for(i = 0; i < 4; i++)
-	{
-		octet[i] = (ipAddr >> (i * 8)) & 0xFF;
-	}
-
-	IPACMDBG("%s:", type);
-	IPACMDBG("%d.%d.%d.%d\n", octet[3], octet[2], octet[1], octet[0]);
-}
-#endif
-
 IPACM_ConntrackClient::IPACM_ConntrackClient()
 {
 	IPACMDBG("\n");
@@ -106,7 +90,6 @@ IPACM_ConntrackClient* IPACM_ConntrackClient::GetInstance()
 	return pInstance;
 }
 
-extern void ParseCTMessage(struct nf_conntrack *ct);
 int IPACM_ConntrackClient::IPAConntrackEventCB
 (
 	 enum nf_conntrack_msg_type type,
@@ -116,21 +99,34 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 {
 	ipacm_cmd_q_data evt_data;
 	ipacm_ct_evt_data *ct_data;
+	uint8_t ip_type = 0;
 
 	IPACMDBG("Event callback called with msgtype: %d\n",type);
+
+	/* Retrieve ip type */
+	ip_type = nfct_get_attr_u8(ct, ATTR_REPL_L3PROTO);
+
+#ifndef CT_OPT
+	if(AF_INET6 == ip_type)
+	{
+		IPACMDBG("Ignoring ipv6(%d) connections\n", ip_type);
+		goto IGNORE;
+	}
 
 	if(!CtList->isWanUp())
 	{
 #ifdef IPACM_DEBUG
+		IPACMDBG("Wan is not up, ignoring below connections\n");
 		char buf[1024];
 		nfct_snprintf(buf, sizeof(buf), ct,
 									type, NFCT_O_PLAIN, NFCT_OF_TIME);
-	  IPACMDBG("%s\n", buf);
-	  IPACMDBG("\n");
+		IPACMDBG("%s\n", buf);
+		IPACMDBG("\n");
 		ParseCTMessage(ct);
 #endif
 		goto IGNORE;
 	}
+#endif
 
 	ct_data = (ipacm_ct_evt_data *)malloc(sizeof(ipacm_ct_evt_data));
 	if(ct_data == NULL)
@@ -144,6 +140,13 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 
 	evt_data.event = IPA_PROCESS_CT_MESSAGE;
 	evt_data.evt_data = (void *)ct_data;
+
+#ifdef CT_OPT
+	if(AF_INET6 == ip_type)
+	{
+		evt_data.event = IPA_PROCESS_CT_MESSAGE_V6;
+	}
+#endif
 
 	if(0 != IPACM_EvtDispatcher::PostEvt(&evt_data))
 	{
@@ -215,6 +218,56 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Bridge_Addrs
   return 0;
 }
 
+int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Iface
+(
+	 struct nfct_filter *filter,
+	 ipacm_event_iface_up *param
+)
+{
+	struct nfct_filter_ipv4 filter_ipv4;
+
+	filter_ipv4.addr = param->ipv4_addr;
+	filter_ipv4.mask = 0xffffffff;
+
+	/* ignore whatever is destined to local interfaces */
+	IPACMDBG("Ignore connections destinated to interface %s", param->ifname);
+	iptodot("with ipv4 address", param->ipv4_addr);
+	nfct_filter_set_logic(filter,
+												NFCT_FILTER_DST_IPV4,
+												NFCT_FILTER_LOGIC_NEGATIVE);
+
+	nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
+
+	IPACMDBG("Ignore connections orignated from interface %s", param->ifname);
+	iptodot("with ipv4 address", filter_ipv4.addr);
+	nfct_filter_set_logic(filter,
+												NFCT_FILTER_SRC_IPV4,
+												NFCT_FILTER_LOGIC_NEGATIVE);
+
+	nfct_filter_add_attr(filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
+
+	/* Retrieve broadcast address */
+	/* Intialize with 255.255.255.255 */
+	uint32_t bc_ip_addr = 0xFFFFFFFF;
+
+	/* calculate broadcast address from addr and addr_mask */
+	bc_ip_addr = (bc_ip_addr & (~param->addr_mask));
+	bc_ip_addr = (bc_ip_addr | (param->ipv4_addr & param->addr_mask));
+
+	/* netfitler expecting in host-byte order */
+	filter_ipv4.addr = bc_ip_addr;
+	filter_ipv4.mask = 0xffffffff;
+
+	iptodot("with broadcast address", filter_ipv4.addr);
+	nfct_filter_set_logic(filter,
+												NFCT_FILTER_DST_IPV4,
+												NFCT_FILTER_LOGIC_NEGATIVE);
+
+	nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
+
+	return 0;
+}
+
 /* Function which sets up filters to ignore
 		 connections to and from local interfaces */
 int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
@@ -222,10 +275,6 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 	 struct nfct_filter *filter
 )
 {
-	char   buf[1024];
-	struct ifconf ifc;
-	struct ifreq *ifr;
-	int    i, sck, nInterfaces;
 	struct nfct_filter_ipv4 filter_ipv4;
 
 	/* ignore whatever is destined to or originates from broadcast ip address */
@@ -244,124 +293,6 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Local_Addrs
 
 	nfct_filter_add_attr(filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
 
-
-
-	/* Get a socket handle. */
-	sck = socket(AF_INET, SOCK_DGRAM, 0);
-	if(sck < 0)
-	{
-		PERROR("socket");
-		return -1;
-	}
-
-	/* Query available interfaces. */
-	ifc.ifc_len = sizeof(buf);
-	ifc.ifc_buf = buf;
-
-	/* get iface list */
-	if(ioctl(sck, SIOCGIFCONF, &ifc) < 0)
-	{
-		PERROR("ioctl(SIOCGIFCONF)");
-		close(sck);
-		return -1;
-	}
-
-	/* Iterate through the list of interfaces. */
-	ifr         = ifc.ifc_req;
-	nInterfaces = ifc.ifc_len / sizeof(struct ifreq);
-
-#ifdef IPACM_DEBUG
-	IPACMDBG("====Printing Local Interfaces=====\n");
-#endif
-
-	for(i = 0; i < nInterfaces; i++)
-	{
-		/* Interface request structure */
-		struct ifreq *item = &ifr[i];
-
-#ifdef IPACM_DEBUG
-		/* Show the device name and IP address */
-		if(item->ifr_name != NULL)
-		{
-			IPACMDBG("%s: IP %s\n",
-							 item->ifr_name,
-							 inet_ntoa(((struct sockaddr_in *)&item->ifr_addr)->sin_addr));
-		}
-#endif
-
-		/* Convert data to host-byte order */
-		filter_ipv4.addr =
-			 ntohl(inet_addr(inet_ntoa(((struct sockaddr_in *)&item->ifr_addr)->sin_addr)));
-		filter_ipv4.mask = 0xffffffff;
-
-		if(item->ifr_name != NULL)
-		{
-			/* check whether interface is non wan iface */
-			if(strncmp(CtList->wan_ifname, item->ifr_name, strlen(item->ifr_name)) != 0)
-			{
-				/* ignore whatever is destined to local interfaces */
-				IPACMDBG("ignore connections destinated to interface %s\n", item->ifr_name);
-				IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
-				nfct_filter_set_logic(filter,
-															NFCT_FILTER_DST_IPV4,
-															NFCT_FILTER_LOGIC_NEGATIVE);
-
-				nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
-
-				/* In AP+STA mode only listen to connections orignated from local interface */
-        if(!CtList->isStaMode) {
-					IPACMDBG("ignore connections orignated from interface %s\n", item->ifr_name);
-					IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
-					nfct_filter_set_logic(filter,
-																NFCT_FILTER_SRC_IPV4,
-																NFCT_FILTER_LOGIC_NEGATIVE);
-
-					nfct_filter_add_attr(filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
-				}
-
-			}
-		}
-
-		/* Find broadcast address for non lo interfaces */
-		if(strncmp(LO_NAME, item->ifr_name, 2) != 0)
-		{
-			/* Get the broadcast address */
-			if(ioctl(sck, SIOCGIFBRDADDR, item) < 0)
-			{
-				PERROR("broadcast address error: ioctl(SIOCGIFBRDADDR)");
-				close(sck);
-				return -1;
-			}
-
-#ifdef IPACM_DEBUG
-			/* Show the device name and IP address */
-			if(item->ifr_name != NULL)
-			{
-				IPACMDBG("%s: BroadCast IP %s\n",
-								 item->ifr_name,
-								 inet_ntoa(((struct sockaddr_in *)&item->ifr_broadaddr)->sin_addr));
-			}
-#endif
-
-			/* Convert data to host-byte order */
-			filter_ipv4.addr =
-				 ntohl(inet_addr(inet_ntoa(((struct sockaddr_in *)&item->ifr_broadaddr)->sin_addr)));
-			filter_ipv4.mask = 0xffffffff;
-			
-			IPACMDBG("ignore connections destinated to interface %s broadcast\n", item->ifr_name);
-			IPACM_ConntrackClient::iptodot("with ipv4 address:", filter_ipv4.addr);
-			nfct_filter_set_logic(filter,
-														NFCT_FILTER_DST_IPV4,
-														NFCT_FILTER_LOGIC_NEGATIVE);
-
-			nfct_filter_add_attr(filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
-		}
-
-	}
-
-	close(sck);
-	IPA_Conntrack_Filters_Ignore_Bridge_Addrs(filter);
-
 	return 0;
 } /* IPA_Conntrack_Filters_Ignore_Local_Addrs() */
 
@@ -377,13 +308,6 @@ int IPACM_ConntrackClient::IPA_Conntrack_TCP_Filter_Init(void)
 	if(pClient == NULL)
 	{
 		IPACMERR("unable to get conntrack client instance\n");
-		return -1;
-	}
-
-	ret = IPA_Conntrack_Filters_Ignore_Local_Addrs(pClient->tcp_filter);
-	if(ret == -1)
-	{
-		IPACMERR("Unable to set local addr filters\n");
 		return -1;
 	}
 
@@ -440,11 +364,9 @@ int IPACM_ConntrackClient::IPA_Conntrack_UDP_Filter_Init(void)
 {
 	int ret = 0;
 	IPACM_ConntrackClient *pClient = IPACM_ConntrackClient::GetInstance();
-
-	ret = IPA_Conntrack_Filters_Ignore_Local_Addrs(pClient->udp_filter);
-	if(ret == -1)
+	if(pClient == NULL)
 	{
-		IPACMERR("Unable to set local addr filters\n");
+		IPACMERR("unable to get conntrack client instance\n");
 		return -1;
 	}
 
@@ -494,6 +416,7 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 {
 	int ret;
 	IPACM_ConntrackClient *pClient;
+	unsigned subscrips = 0;
 
 	IPACMDBG("\n");
 
@@ -504,23 +427,17 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 		return NULL;
 	}
 
-	pClient->tcp_hdl = nfct_open(CONNTRACK, 
-						(NF_NETLINK_CONNTRACK_UPDATE |NF_NETLINK_CONNTRACK_DESTROY));
+	subscrips = (NF_NETLINK_CONNTRACK_UPDATE | NF_NETLINK_CONNTRACK_DESTROY);
+#ifdef CT_OPT
+	subscrips |= NF_NETLINK_CONNTRACK_NEW;
+#endif
+
+	pClient->tcp_hdl = nfct_open(CONNTRACK, subscrips);
 	if(pClient->tcp_hdl == NULL)
 	{
 		PERROR("nfct_open\n");
 		return NULL;
 	}
-
-	/* Allocate new filter */
-	#if 0
-	pClient->tcp_filter = nfct_filter_create();
-	if(pClient->tcp_filter == NULL)
-	{
-		IPACMERR("unable to create TCP filter\n");
-		return NULL;
-	}
-	#endif
 
 	/* Initialize the filter */
 	ret = IPA_Conntrack_TCP_Filter_Init();
@@ -531,8 +448,7 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 	}
 
 	/* Attach the filter to net filter handler */
-	ret = nfct_filter_attach(nfct_fd(pClient->tcp_hdl),
-													 pClient->tcp_filter);
+	ret = nfct_filter_attach(nfct_fd(pClient->tcp_hdl), pClient->tcp_filter);
 	if(ret == -1)
 	{
 		IPACMDBG("unable to attach TCP filter\n");
@@ -541,8 +457,13 @@ void* IPACM_ConntrackClient::TCPRegisterWithConnTrack(void *)
 
 	/* Register callback with netfilter handler */
 	IPACMDBG("tcp handle:%p, fd:%d\n", pClient->tcp_hdl, nfct_fd(pClient->tcp_hdl));
+#ifndef CT_OPT
 	nfct_callback_register(pClient->tcp_hdl, 
-				(NFCT_T_UPDATE | NFCT_T_DESTROY), IPAConntrackEventCB, NULL);
+				(NFCT_T_UPDATE | NFCT_T_DESTROY | NFCT_T_NEW),
+						IPAConntrackEventCB, NULL);
+#else
+	nfct_callback_register(pClient->tcp_hdl, NFCT_T_ALL, IPAConntrackEventCB, NULL);
+#endif
 
 	/* Block to catch events from net filter connection track */
 	/* nfct_catch() receives conntrack events from kernel-space, by default it 
@@ -619,7 +540,7 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 												 NULL);
 
 	/* Block to catch events from net filter connection track */
-	ctcatch:
+ctcatch:
 	ret = nfct_catch(pClient->udp_hdl);
 	if(ret == -1)
 	{
@@ -648,20 +569,11 @@ void* IPACM_ConntrackClient::UDPRegisterWithConnTrack(void *)
 	return NULL;
 }
 
-void IPACM_ConntrackClient::UpdateUDPFilters(void *param)
+void IPACM_ConntrackClient::UpdateUDPFilters(void *param, bool isWan)
 {
+	static bool isIgnore = false;
 	int ret = 0;
-	struct nfct_filter_ipv4 filter_ipv4;
 	IPACM_ConntrackClient *pClient = NULL;
-
-	/* Intialize with 255.255.255.255 */
-	uint32_t bc_ip_addr = 0xFFFFFFFF;
-
-	uint32_t ipv4_addr = ((ipacm_event_iface_up *)param)->ipv4_addr;
-  uint32_t ipv4_addr_mask = ((ipacm_event_iface_up *)param)->addr_mask;
-
-	IPACM_ConntrackClient::iptodot("Received ipv4 address and", ipv4_addr);
-	IPACM_ConntrackClient::iptodot("ipv4 address mask", ipv4_addr_mask);
 
 	pClient = IPACM_ConntrackClient::GetInstance();
 	if(pClient == NULL)
@@ -670,43 +582,22 @@ void IPACM_ConntrackClient::UpdateUDPFilters(void *param)
 		return;
 	}
 
-	/* calculate broadcast address from addr and addr_mask */
-	bc_ip_addr = (bc_ip_addr & (~ipv4_addr_mask));
-	bc_ip_addr = (bc_ip_addr | (ipv4_addr & ipv4_addr_mask));
-
-	/* netfitler expecting in host-byte order */
-	filter_ipv4.addr = ipv4_addr;
-  filter_ipv4.mask = 0xffffffff;
-
-	IPACMDBG("ignoring interface:%s", ((ipacm_event_iface_up *)param)->ifname);
-	IPACM_ConntrackClient::iptodot("with ipv4 address", filter_ipv4.addr);
-	if(pClient->udp_filter != NULL)
+	if(pClient->udp_filter == NULL)
 	{
-		nfct_filter_set_logic(pClient->udp_filter,
-													NFCT_FILTER_DST_IPV4,
-													NFCT_FILTER_LOGIC_NEGATIVE);
-
-		nfct_filter_add_attr(pClient->udp_filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
-
-		nfct_filter_set_logic(pClient->udp_filter,
-													NFCT_FILTER_SRC_IPV4,
-													NFCT_FILTER_LOGIC_NEGATIVE);
-
-		nfct_filter_add_attr(pClient->udp_filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
+		 return;
 	}
 
-  /* netfitler expecting in host-byte order */
-	filter_ipv4.addr = bc_ip_addr;
-	filter_ipv4.mask = 0xffffffff; 
-
-	IPACM_ConntrackClient::iptodot("with broadcast address", filter_ipv4.addr);
-  if(pClient->udp_filter != NULL)
+	if(!isWan)
 	{
-		nfct_filter_set_logic(pClient->udp_filter,
-													NFCT_FILTER_DST_IPV4,
-													NFCT_FILTER_LOGIC_NEGATIVE);
+		IPA_Conntrack_Filters_Ignore_Local_Iface(pClient->udp_filter,
+																		 (ipacm_event_iface_up *)param);
 
-		nfct_filter_add_attr(pClient->udp_filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
+		if(!isIgnore)
+		{
+			IPA_Conntrack_Filters_Ignore_Bridge_Addrs(pClient->udp_filter);
+			IPA_Conntrack_Filters_Ignore_Local_Addrs(pClient->udp_filter);
+			isIgnore = true;
+		}
 	}
 
 	/* Attach the filter to udp handle */
@@ -725,15 +616,11 @@ void IPACM_ConntrackClient::UpdateUDPFilters(void *param)
 	return;
 }
 
-void IPACM_ConntrackClient::UpdateTCPFilters(void *param)
+void IPACM_ConntrackClient::UpdateTCPFilters(void *param, bool isWan)
 {
+	static bool isIgnore = false;
 	int ret = 0;
-	uint32_t ipv4_addr = ((ipacm_event_iface_up *)param)->ipv4_addr;
-  uint32_t ipv4_addr_mask = ((ipacm_event_iface_up *)param)->addr_mask;
-	struct nfct_filter_ipv4 filter_ipv4;
 	IPACM_ConntrackClient *pClient = NULL;
-	/* Intialize with 255.255.255.255 */
-	uint32_t bc_ip_addr = 0xFFFFFFFF;
 
 	pClient = IPACM_ConntrackClient::GetInstance();
 	if(pClient == NULL)
@@ -742,44 +629,20 @@ void IPACM_ConntrackClient::UpdateTCPFilters(void *param)
 		return;
 	}
 
-	/* calculate broadcast address from addr and addr_mask */
-	bc_ip_addr = (bc_ip_addr & (~ipv4_addr_mask));
-	bc_ip_addr = (bc_ip_addr | (ipv4_addr & ipv4_addr_mask));
+	if(pClient->tcp_filter == NULL)
+		return;
 
-	/* netfitler expecting in host-byte order */
-	filter_ipv4.addr = ipv4_addr;
-  filter_ipv4.mask = 0xffffffff;
-
-	IPACMDBG("ignoring interface:%s", ((ipacm_event_iface_up *)param)->ifname);
-	IPACM_ConntrackClient::iptodot("with ipv4 address", filter_ipv4.addr);
-
-  if(pClient->tcp_filter != NULL)
+	if(!isWan)
 	{
-		nfct_filter_set_logic(pClient->tcp_filter,
-													NFCT_FILTER_DST_IPV4,
-													NFCT_FILTER_LOGIC_NEGATIVE);
+		IPA_Conntrack_Filters_Ignore_Local_Iface(pClient->tcp_filter,
+																	(ipacm_event_iface_up *)param);
 
-		nfct_filter_add_attr(pClient->tcp_filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
-
-		nfct_filter_set_logic(pClient->tcp_filter,
-													NFCT_FILTER_SRC_IPV4,
-													NFCT_FILTER_LOGIC_NEGATIVE);
-
-		nfct_filter_add_attr(pClient->tcp_filter, NFCT_FILTER_SRC_IPV4, &filter_ipv4);
-	}
-
-  /* netfitler expecting in host-byte order */
-	filter_ipv4.addr = bc_ip_addr;
-	filter_ipv4.mask = 0xffffffff; 
-
-	IPACM_ConntrackClient::iptodot("with broadcast address", filter_ipv4.addr);
-  if(pClient->tcp_filter != NULL)
-	{
-		nfct_filter_set_logic(pClient->tcp_filter,
-													NFCT_FILTER_DST_IPV4,
-													NFCT_FILTER_LOGIC_NEGATIVE);
-
-		nfct_filter_add_attr(pClient->tcp_filter, NFCT_FILTER_DST_IPV4, &filter_ipv4);
+		if(!isIgnore)
+		{
+			IPA_Conntrack_Filters_Ignore_Bridge_Addrs(pClient->udp_filter);
+			IPA_Conntrack_Filters_Ignore_Local_Addrs(pClient->udp_filter);
+			isIgnore = true;
+		}
 	}
 
 	/* Attach the filter to tcp handle */
@@ -810,7 +673,7 @@ void IPACM_ConntrackClient::Read_TcpUdp_Timeout(char *in, int len)
 	if(nat_inst == NULL)
 	{
 		IPACMERR("unable to create nat instance\n");
-		return NULL;
+		return;
 	}
 
 	if(!strncmp(in, IPACM_TCP_FILE_NAME, len))
@@ -834,7 +697,7 @@ void IPACM_ConntrackClient::Read_TcpUdp_Timeout(char *in, int len)
 	{
 		fd = fopen(IPACM_UDP_FULL_FILE_NAME, "r");
 	}
-	if(fd < 0)
+	if(fd == NULL)
 	{
 		PERROR("unable to open file");
 		return;
@@ -869,7 +732,7 @@ void *IPACM_ConntrackClient::TCPUDP_Timeout_monitor(void *)
 	}
 	
 	to_fd = fopen(IPACM_TCP_FULL_FILE_NAME, "r");
-	if(to_fd < 0)
+	if(to_fd == NULL)
 	{
 	  PERROR("unable to open file \"ip_conntrack_tcp_timeout_established\" ");
 		return NULL;
@@ -882,7 +745,7 @@ void *IPACM_ConntrackClient::TCPUDP_Timeout_monitor(void *)
 	fclose(to_fd);
 	
 	to_fd = fopen(IPACM_UDP_FULL_FILE_NAME, "r");
-	if(to_fd < 0)
+	if(to_fd == NULL)
 	{
 	  PERROR("unable to open file \"ip_conntrack_udp_timeout_stream\" ");
 		return NULL;

@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 {
 	 IPACMDBG("\n");
 
+	 isNatThreadStart = false;
 	 isCTReg = false;
 	 WanUp = false;
 	 nat_inst = NatApp::GetInstance();
@@ -52,9 +53,18 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, this);
 	 IPACM_EvtDispatcher::registr(IPA_PROCESS_CT_MESSAGE, this);
+	 IPACM_EvtDispatcher::registr(IPA_PROCESS_CT_MESSAGE_V6, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WLAN_UP, this);
+	 IPACM_EvtDispatcher::registr(IPA_HANDLE_LAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, this);
 	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, this);
+
+	IPACMDBG("creating conntrack threads\n");
+	CreateConnTrackThreads();
+
+#ifdef CT_OPT
+	 p_lan2lan = IPACM_LanToLan::getLan2LanInstance();
+#endif
 }
 
 void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
@@ -74,6 +84,13 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			IPACMDBG("Received IPA_PROCESS_CT_MESSAGE event\n");
 			ProcessCTMessage(data);
 			break;
+
+#ifdef CT_OPT
+	 case IPA_PROCESS_CT_MESSAGE_V6:
+			IPACMDBG("Received IPA_PROCESS_CT_MESSAGE_V6 event\n");
+			ProcessCTV6Message(data);
+			break;
+#endif
 
 	 case IPA_HANDLE_WAN_UP:
 			IPACMDBG("Received IPA_HANDLE_WAN_UP event\n");
@@ -96,13 +113,12 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 		 tcp/udp filters to ignore local wlan or lan connections */
 	 case IPA_HANDLE_WLAN_UP:
 	 case IPA_HANDLE_LAN_UP:
-			IPACMDBG("Received event: %d\n", evt);
-			if(isWanUp())
-			{
-				 IPACM_ConntrackClient::UpdateUDPFilters(data);
-				 IPACM_ConntrackClient::UpdateTCPFilters(data);
-			}
-			break; 
+			IPACMDBG("Received event: %d with ifname: %s and address: 0x%x\n",
+							 evt, ((ipacm_event_iface_up *)data)->ifname,
+							 ((ipacm_event_iface_up *)data)->ipv4_addr);
+   		IPACM_ConntrackClient::UpdateUDPFilters(data, false);
+			IPACM_ConntrackClient::UpdateTCPFilters(data, false);
+			break;
 
 	 case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
 		 {
@@ -123,7 +139,6 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			break;
 	 }
 }
-
 void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 {
 	ipacm_event_data_all *data = (ipacm_event_data_all *)in_param;
@@ -136,8 +151,8 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 		IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT EVENT\n");
 		return;
 	}
-	IPACMDBG("Received interface index %d with ip type:%d", data->if_index, data->iptype);
-	IPACM_ConntrackClient::iptodot("and received ipv4 address", data->ipv4_addr);
+	IPACMDBG("Received interface index %d with ip type: %d", data->if_index, data->iptype);
+	iptodot(" and ipv4 address", data->ipv4_addr);
 
 	if(pConfig == NULL)
 	{
@@ -219,9 +234,16 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 				}
 			}
 
+			if(j == MAX_NAT_IFACES)
+			{
+				IPACMERR("Nat ifaces(%d) exceed maximum\n", j);
+				break;
+			}
+
+
 			isNatIface = true;
-			IPACMDBG("Nating connections of Interface (%s), entry (%d)\n", pNatIfaces[i].iface_name, j);
-			IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
+			IPACMDBG("Nating connections of Interface (%s), entry (%d) ", pNatIfaces[i].iface_name, j);
+			iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
 			break;
 		}
 	}
@@ -259,15 +281,15 @@ void IPACM_ConntrackListener::HandleNeighIpAddrDelEvt(void *in_param)
 	{
 		if(nat_iface_ipv4_addr[cnt] == data->ipv4_addr)
 		{
-			IPACMDBG("Reseting ct filters of Interface (%d), entry (%d)\n", data->if_index, cnt);
-			IPACM_ConntrackClient::iptodot("with ipv4 address", nat_iface_ipv4_addr[cnt]);
+			IPACMDBG("Reseting ct filters of Interface (%d), entry (%d) ", data->if_index, cnt);
+			iptodot("with ipv4 address", nat_iface_ipv4_addr[cnt]);
 			nat_iface_ipv4_addr[cnt] = 0;
 		}
 
 		if(nonnat_iface_ipv4_addr[cnt] == data->ipv4_addr)
 		{
-			IPACMDBG("Reseting ct filters of Interface (%d), entry (%d)\n", data->if_index, cnt);
-			IPACM_ConntrackClient::iptodot("with ipv4 address", nonnat_iface_ipv4_addr[cnt]);
+			IPACMDBG("Reseting ct filters of Interface (%d), entry (%d) ", data->if_index, cnt);
+			iptodot("with ipv4 address", nonnat_iface_ipv4_addr[cnt]);
 			nonnat_iface_ipv4_addr[cnt] = 0;
 		}
 	}
@@ -280,7 +302,7 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 {
 	 ipacm_event_iface_up *wanup_data = (ipacm_event_iface_up *)in_param;
 
-	 IPACMDBG("Recevied below informatoin during wanup:\n");
+	 IPACMDBG("Recevied below information during wanup, ");
 	 IPACMDBG("if_name:%s, ipv4_address:0x%x\n",
 						wanup_data->ifname, wanup_data->ipv4_addr);
 
@@ -290,7 +312,6 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 		 return;
 	 }
 
-	 IPACM_ConntrackClient::iptodot("public ip address", wanup_data->ipv4_addr);
 	 WanUp = true;
 	 isStaMode = wanup_data->is_sta;
 	 IPACMDBG("isStaMode: %d\n", isStaMode);
@@ -307,10 +328,10 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 	 CreateNatThreads();
 }
 
-int IPACM_ConntrackListener::CreateNatThreads(void)
+int IPACM_ConntrackListener::CreateConnTrackThreads(void)
 {
 	 int ret;
-	 pthread_t tcp_thread = 0, udp_thread = 0, udpcto_thread = 0, to_monitor_thread = 0;
+	 pthread_t tcp_thread = 0, udp_thread = 0;
 
 	 if(isCTReg == false)
 	 {
@@ -341,6 +362,32 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 IPACMDBG("created UDP conntrack event listner thread\n");
 			}
 
+			isCTReg = true;
+	 }
+
+	 return 0;
+
+error:
+	 if(tcp_thread)
+	 {
+			pthread_cancel(tcp_thread);
+	 }
+
+	 if(udp_thread)
+	 {
+			pthread_cancel(tcp_thread);
+	 }
+
+	 return -1;
+}
+int IPACM_ConntrackListener::CreateNatThreads(void)
+{
+	 int ret;
+	 pthread_t udpcto_thread = 0, to_monitor_thread = 0;
+
+	 if(isNatThreadStart == false)
+	 {
+
 			if(!udpcto_thread)
 			{
 				 ret = pthread_create(&udpcto_thread, NULL, IPACM_ConntrackClient::UDPConnTimeoutUpdate, NULL);
@@ -367,21 +414,11 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 				 IPACMDBG("created tcp/udp timeout monitor thread\n");
 			}
 
-			isCTReg = true;
+			isNatThreadStart = true;
 	 }
 	 return 0;
 
 error:
-	 if(tcp_thread)
-	 {
-			pthread_cancel(tcp_thread);
-	 }
-
-	 if(udp_thread)
-	 {
-			pthread_cancel(tcp_thread);
-	 }
-
 	 if(udpcto_thread)
 	 {
 			pthread_cancel(udpcto_thread);
@@ -397,8 +434,8 @@ error:
 
 void IPACM_ConntrackListener::TriggerWANDown(uint32_t wan_addr)
 {
-	 IPACMDBG("Deleting ipv4 nat table with ");
-	 IPACM_ConntrackClient::iptodot("public ip address", wan_addr);
+	 IPACMDBG("Deleting ipv4 nat table with");
+	 iptodot("public ip address", wan_addr);
 	 WanUp = false;
 
 	 if(nat_inst != NULL)
@@ -410,21 +447,21 @@ void IPACM_ConntrackListener::TriggerWANDown(uint32_t wan_addr)
 
 void ParseCTMessage(struct nf_conntrack *ct)
 {
-	 uint32_t status;
+	 uint32_t status, timeout;
 	 IPACMDBG("Printing conntrack parameters\n");
 
-	 IPACM_ConntrackClient::iptodot("ATTR_IPV4_SRC = ATTR_ORIG_IPV4_SRC:", nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC));
-	 IPACM_ConntrackClient::iptodot("ATTR_IPV4_DST = ATTR_ORIG_IPV4_DST:", nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_DST));
+	 iptodot("ATTR_IPV4_SRC = ATTR_ORIG_IPV4_SRC:", nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC));
+	 iptodot("ATTR_IPV4_DST = ATTR_ORIG_IPV4_DST:", nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_DST));
 	 IPACMDBG("ATTR_PORT_SRC = ATTR_ORIG_PORT_SRC: 0x%x\n", nfct_get_attr_u16(ct, ATTR_ORIG_PORT_SRC));
 	 IPACMDBG("ATTR_PORT_DST = ATTR_ORIG_PORT_DST: 0x%x\n", nfct_get_attr_u16(ct, ATTR_ORIG_PORT_DST));
 
-	 IPACM_ConntrackClient::iptodot("ATTR_REPL_IPV4_SRC:", nfct_get_attr_u32(ct, ATTR_REPL_IPV4_SRC));
-	 IPACM_ConntrackClient::iptodot("ATTR_REPL_IPV4_DST:", nfct_get_attr_u32(ct, ATTR_REPL_IPV4_DST));
+	 iptodot("ATTR_REPL_IPV4_SRC:", nfct_get_attr_u32(ct, ATTR_REPL_IPV4_SRC));
+	 iptodot("ATTR_REPL_IPV4_DST:", nfct_get_attr_u32(ct, ATTR_REPL_IPV4_DST));
 	 IPACMDBG("ATTR_REPL_PORT_SRC: 0x%x\n", nfct_get_attr_u16(ct, ATTR_REPL_PORT_SRC));
 	 IPACMDBG("ATTR_REPL_PORT_DST: 0x%x\n", nfct_get_attr_u16(ct, ATTR_REPL_PORT_DST));
 
-	 IPACM_ConntrackClient::iptodot("ATTR_SNAT_IPV4:", nfct_get_attr_u32(ct, ATTR_SNAT_IPV4));
-	 IPACM_ConntrackClient::iptodot("ATTR_DNAT_IPV4:", nfct_get_attr_u32(ct, ATTR_DNAT_IPV4));
+	 iptodot("ATTR_SNAT_IPV4:", nfct_get_attr_u32(ct, ATTR_SNAT_IPV4));
+	 iptodot("ATTR_DNAT_IPV4:", nfct_get_attr_u32(ct, ATTR_DNAT_IPV4));
 	 IPACMDBG("ATTR_SNAT_PORT: 0x%x\n", nfct_get_attr_u16(ct, ATTR_SNAT_PORT));
 	 IPACMDBG("ATTR_DNAT_PORT: 0x%x\n", nfct_get_attr_u16(ct, ATTR_DNAT_PORT));
 
@@ -434,6 +471,9 @@ void ParseCTMessage(struct nf_conntrack *ct)
 
 	 status = nfct_get_attr_u32(ct, ATTR_STATUS);
 	 IPACMDBG("ATTR_STATUS: 0x%x\n", status);
+
+	 timeout = nfct_get_attr_u32(ct, ATTR_TIMEOUT);
+	 IPACMDBG("ATTR_TIMEOUT: 0x%x\n", timeout);
 
 	 if(IPS_SRC_NAT & status)
 	 {
@@ -459,10 +499,55 @@ void ParseCTMessage(struct nf_conntrack *ct)
 	 return;
 }
 
-void IPACM_ConntrackListener::ProcessCTMessage(void *param)
+void ParseCTV6Message(struct nf_conntrack *ct)
 {
-	 ipacm_ct_evt_data *evt_data = (ipacm_ct_evt_data *)param;
-	 u_int8_t l4proto = 0; 
+	 uint32_t status, timeout, secmark;
+	 struct nfct_attr_grp_ipv6 orig_params;
+	 uint8_t l4proto, tcp_flags, tcp_state;
+
+	 IPACMDBG("Printing conntrack parameters\n");
+
+	 nfct_get_attr_grp(ct, ATTR_GRP_ORIG_IPV6, (void *)&orig_params);
+	 IPACMDBG("Orig src_v6_addr: 0x%08x%08x%08x%08x\n", orig_params.src[0], orig_params.src[1],
+                	orig_params.src[2], orig_params.src[3]);
+	IPACMDBG("Orig dst_v6_addr: 0x%08x%08x%08x%08x\n", orig_params.dst[0], orig_params.dst[1],
+                	orig_params.dst[2], orig_params.dst[3]);
+
+	 IPACMDBG("ATTR_PORT_SRC = ATTR_ORIG_PORT_SRC: 0x%x\n", nfct_get_attr_u16(ct, ATTR_ORIG_PORT_SRC));
+	 IPACMDBG("ATTR_PORT_DST = ATTR_ORIG_PORT_DST: 0x%x\n", nfct_get_attr_u16(ct, ATTR_ORIG_PORT_DST));
+
+	 IPACMDBG("ATTR_MARK: 0x%x\n", nfct_get_attr_u32(ct, ATTR_MARK));
+	 IPACMDBG("ATTR_USE: 0x%x\n", nfct_get_attr_u32(ct, ATTR_USE));
+	 IPACMDBG("ATTR_ID: 0x%x\n", nfct_get_attr_u32(ct, ATTR_ID));
+
+	 timeout = nfct_get_attr_u32(ct, ATTR_TIMEOUT);
+	 IPACMDBG("ATTR_TIMEOUT: 0x%x\n", timeout);
+
+	 status = nfct_get_attr_u32(ct, ATTR_STATUS);
+	 IPACMDBG("ATTR_STATUS: 0x%x\n", status);
+
+	 l4proto = nfct_get_attr_u8(ct, ATTR_ORIG_L4PROTO);
+	 IPACMDBG("ATTR_ORIG_L4PROTO: 0x%x\n", l4proto);
+	 if(l4proto == IPPROTO_TCP)
+	 {
+		tcp_state = nfct_get_attr_u8(ct, ATTR_TCP_STATE);
+		IPACMDBG("ATTR_TCP_STATE: 0x%x\n", tcp_state);
+
+		tcp_flags =  nfct_get_attr_u8(ct, ATTR_TCP_FLAGS_ORIG);
+		IPACMDBG("ATTR_TCP_FLAGS_ORIG: 0x%x\n", tcp_flags);
+	 }
+
+	 IPACMDBG("\n");
+	 return;
+}
+
+#ifdef CT_OPT
+void IPACM_ConntrackListener::ProcessCTV6Message(void *param)
+{
+	ipacm_ct_evt_data *evt_data = (ipacm_ct_evt_data *)param;
+	u_int8_t l4proto = 0;
+	uint32_t status = 0;
+	struct nf_conntrack *ct = evt_data->ct;
 
 #ifdef IPACM_DEBUG
 	 char buf[1024];
@@ -470,6 +555,93 @@ void IPACM_ConntrackListener::ProcessCTMessage(void *param)
 	 /* Process message and generate ioctl call to kernel thread */
 	 nfct_snprintf(buf, sizeof(buf), evt_data->ct,
 								 evt_data->type, NFCT_O_PLAIN, NFCT_OF_TIME);
+	 IPACMDBG("%s\n", buf);
+	 IPACMDBG("\n");
+	 ParseCTV6Message(ct);
+#endif
+
+	if(p_lan2lan == NULL)
+	{
+		IPACMERR("Lan2Lan Instance is null\n");
+		goto IGNORE;
+	}
+
+	status = nfct_get_attr_u32(ct, ATTR_STATUS);
+	if((IPS_DST_NAT & status) || (IPS_SRC_NAT & status))
+	{
+		IPACMDBG("Either Destination or Source nat flag Set\n");
+		goto IGNORE;
+	}
+
+	l4proto = nfct_get_attr_u8(ct, ATTR_ORIG_L4PROTO);
+	if(IPPROTO_UDP != l4proto && IPPROTO_TCP != l4proto)
+	{
+		 IPACMDBG("Received unexpected protocl %d conntrack message\n", l4proto);
+		 goto IGNORE;
+	}
+
+	IPACMDBG("Neither Destination nor Source nat flag Set\n");
+	struct nfct_attr_grp_ipv6 orig_params;
+	nfct_get_attr_grp(ct, ATTR_GRP_ORIG_IPV6, (void *)&orig_params);
+
+	ipacm_event_connection lan2lan_conn;
+	lan2lan_conn.iptype = IPA_IP_v6;
+	memcpy(lan2lan_conn.src_ipv6_addr, orig_params.src,
+				 sizeof(lan2lan_conn.src_ipv6_addr));
+    IPACMDBG("Before convert, src_v6_addr: 0x%08x%08x%08x%08x\n", lan2lan_conn.src_ipv6_addr[0], lan2lan_conn.src_ipv6_addr[1],
+                	lan2lan_conn.src_ipv6_addr[2], lan2lan_conn.src_ipv6_addr[3]);
+    for(int cnt=0; cnt<4; cnt++)
+	{
+	   lan2lan_conn.src_ipv6_addr[cnt] = ntohl(lan2lan_conn.src_ipv6_addr[cnt]);
+	}
+	IPACMDBG("After convert src_v6_addr: 0x%08x%08x%08x%08x\n", lan2lan_conn.src_ipv6_addr[0], lan2lan_conn.src_ipv6_addr[1],
+                	lan2lan_conn.src_ipv6_addr[2], lan2lan_conn.src_ipv6_addr[3]);
+
+	memcpy(lan2lan_conn.dst_ipv6_addr, orig_params.dst,
+				 sizeof(lan2lan_conn.dst_ipv6_addr));
+	IPACMDBG("Before convert, dst_ipv6_addr: 0x%08x%08x%08x%08x\n", lan2lan_conn.dst_ipv6_addr[0], lan2lan_conn.dst_ipv6_addr[1],
+                	lan2lan_conn.dst_ipv6_addr[2], lan2lan_conn.dst_ipv6_addr[3]);
+    for(int cnt=0; cnt<4; cnt++)
+	{
+	   lan2lan_conn.dst_ipv6_addr[cnt] = ntohl(lan2lan_conn.dst_ipv6_addr[cnt]);
+	}
+	IPACMDBG("After convert, dst_ipv6_addr: 0x%08x%08x%08x%08x\n", lan2lan_conn.dst_ipv6_addr[0], lan2lan_conn.dst_ipv6_addr[1],
+                	lan2lan_conn.dst_ipv6_addr[2], lan2lan_conn.dst_ipv6_addr[3]);
+
+	if(((IPPROTO_UDP == l4proto) && (NFCT_T_NEW == evt_data->type)) ||
+		 ((IPPROTO_TCP == l4proto) &&
+			(nfct_get_attr_u8(ct, ATTR_TCP_STATE) == TCP_CONNTRACK_ESTABLISHED))
+		 )
+	{
+			p_lan2lan->handle_new_connection(&lan2lan_conn);
+	}
+	else if((IPPROTO_UDP == l4proto && NFCT_T_DESTROY == evt_data->type) ||
+					(IPPROTO_TCP == l4proto &&
+					 nfct_get_attr_u8(ct, ATTR_TCP_STATE) == TCP_CONNTRACK_FIN_WAIT))
+	{
+			p_lan2lan->handle_del_connection(&lan2lan_conn);
+	}
+
+IGNORE:
+	/* Cleanup item that was allocated during the original CT callback */
+	nfct_destroy(ct);
+	return;
+}
+#endif
+
+void IPACM_ConntrackListener::ProcessCTMessage(void *param)
+{
+	 ipacm_ct_evt_data *evt_data = (ipacm_ct_evt_data *)param;
+	 u_int8_t l4proto = 0;
+
+#ifdef IPACM_DEBUG
+	 char buf[1024];
+	 unsigned int out_flags;
+
+	 /* Process message and generate ioctl call to kernel thread */
+	 out_flags = (NFCT_OF_SHOW_LAYER3 | NFCT_OF_TIME | NFCT_OF_ID);
+	 nfct_snprintf(buf, sizeof(buf), evt_data->ct,
+								 evt_data->type, NFCT_O_PLAIN, out_flags);
 	 IPACMDBG("%s\n", buf);
 	 IPACMDBG("\n");
 
@@ -505,6 +677,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 uint32_t orig_src_ip, orig_dst_ip;
 	 bool isTempEntry = false;
 
+ 	 memset(&rule, 0, sizeof(rule));
 	 pConfig = IPACM_Config::GetInstance();
 	 if(pConfig == NULL)
 	 {
@@ -513,6 +686,9 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 
 	 IPACMDBG("Received type:%d with proto:%d\n", type, l4proto);
 	 status = nfct_get_attr_u32(ct, ATTR_STATUS);
+
+	 /* Retrieve Protocol */
+	 rule.protocol = nfct_get_attr_u8(ct, ATTR_REPL_L4PROTO);
 
 	 if(IPS_DST_NAT & status)
 	 {
@@ -525,7 +701,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 	 else
 	 {
 		 IPACMDBG("Neither Destination nor Source nat flag Set\n");
-		 orig_src_ip = nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC); 
+		 orig_src_ip = nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC);
 		 orig_src_ip = ntohl(orig_src_ip);
 		 if(orig_src_ip == 0)
 		 {
@@ -556,21 +732,31 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 			 IPACMDBG("Neither orig src ip:0x%x Nor orig Dst IP:0x%x equal to wan ip:0x%x\n",
 						orig_src_ip, orig_dst_ip, wan_ipaddr);
 
-			 if(pConfig != NULL)
-			 {
-				 if(pConfig->isPrivateSubnet(orig_src_ip) &&
-						(IPS_SRC_NAT_DONE & status))
-				 {
-					 IPACMDBG("orig src ip:0x%x match private subnet\n",
-							orig_src_ip);
-					 status = IPS_SRC_NAT;
-				 }
-				 else
-				 {
-					 return;
-				 }
-			 }
+#ifdef CT_OPT
+		if(p_lan2lan == NULL)
+		{
+			IPACMERR("Lan2Lan Instance is null\n");
+			goto IGNORE;
+		}
 
+			 ipacm_event_connection lan2lan_conn = { 0 };
+			 lan2lan_conn.iptype = IPA_IP_v4;
+			 lan2lan_conn.src_ipv4_addr = orig_src_ip;
+			 lan2lan_conn.dst_ipv4_addr = orig_dst_ip;
+
+			 if(((IPPROTO_UDP == rule.protocol) && (NFCT_T_NEW == type)) ||
+					((IPPROTO_TCP == rule.protocol) && (nfct_get_attr_u8(ct, ATTR_TCP_STATE) == TCP_CONNTRACK_ESTABLISHED)))
+			 {
+				 p_lan2lan->handle_new_connection(&lan2lan_conn);
+			 }
+			 else if((IPPROTO_UDP == rule.protocol && NFCT_T_DESTROY == type) ||
+							 (IPPROTO_TCP == rule.protocol &&
+								nfct_get_attr_u8(ct, ATTR_TCP_STATE) == TCP_CONNTRACK_FIN_WAIT))
+			 {
+				 p_lan2lan->handle_del_connection(&lan2lan_conn);
+			 }
+#endif
+					 return;
 		 }
 	 }
 
@@ -661,9 +847,6 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 		 goto IGNORE;
 	 }
 
-	 /* Retrieve Protocol */
-	 rule.protocol = nfct_get_attr_u8(ct, ATTR_REPL_L4PROTO);
-
 	 if(rule.private_ip != wan_ipaddr)
 	 {
 		 int cnt;
@@ -675,7 +858,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 						rule.target_ip == nat_iface_ipv4_addr[cnt])
 				 {
 					 IPACMDBG("matched nat_iface_ipv4_addr entry(%d)\n", cnt);
-					 IPACM_ConntrackClient::iptodot("ProcessTCPorUDPMsg(): Nat entry match with ip addr",
+					 iptodot("ProcessTCPorUDPMsg(): Nat entry match with ip addr",
 																					nat_iface_ipv4_addr[cnt]);
 					 break;
 				 }
@@ -715,11 +898,11 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 				rule.private_port, rule.public_port);
 		 rule.private_port = rule.public_port;
 	 }
-	 
+
 	 IPACMDBG("Nat Entry with below information will either be added or deleted\n");
-	 IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
+	 iptodot("target ip or dst ip", rule.target_ip);
 	 IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
-	 IPACM_ConntrackClient::iptodot("private ip or src ip", rule.private_ip);
+	 iptodot("private ip or src ip", rule.private_ip);
 	 IPACMDBG("private port or src port: 0x%x, Decimal:%d\n", rule.private_port, rule.private_port);
 	 IPACMDBG("public port or reply dst port: 0x%x, Decimal:%d\n", rule.public_port, rule.public_port);
 	 IPACMDBG("Protocol: %d, destination nat flag: %d\n", rule.protocol, rule.dst_nat);
@@ -806,9 +989,9 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 
 IGNORE:
 	IPACMDBG("ignoring below Nat Entry\n");
-	IPACM_ConntrackClient::iptodot("target ip or dst ip", rule.target_ip);
+	iptodot("target ip or dst ip", rule.target_ip);
 	IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
-	IPACM_ConntrackClient::iptodot("private ip or src ip", rule.private_ip);
+	iptodot("private ip or src ip", rule.private_ip);
 	IPACMDBG("private port or src port: 0x%x, Decimal:%d\n", rule.private_port, rule.private_port);
 	IPACMDBG("public port or reply dst port: 0x%x, Decimal:%d\n", rule.public_port, rule.public_port);
 	IPACMDBG("Protocol: %d, destination nat flag: %d\n", rule.protocol, rule.dst_nat);

@@ -67,8 +67,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Log.h"
 
 #include "IPACM_ConntrackListener.h"
-
+#include "IPACM_ConntrackClient.h"
 #include "IPACM_LanToLan.h"
+#include "IPACM_Netlink.h"
 
 const char *ipacm_event_name[] = {
 	__stringify(IPA_LINK_UP_EVENT),
@@ -550,9 +551,12 @@ int main(int argc, char **argv)
 	/* check if ipacm is already running or not */
 	ipa_is_ipacm_running();
 
+	IPACMDBG("In main()\n");
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
 	IPACM_LanToLan* lan2lan = new IPACM_LanToLan();
+	IPACM_ConntrackClient *cc = IPACM_ConntrackClient::GetInstance();
+	CtList = new IPACM_ConntrackListener();
 
 	IPACMDBG("Staring IPA main\n");
 	IPACMDBG("ipa_cmdq_successful\n");

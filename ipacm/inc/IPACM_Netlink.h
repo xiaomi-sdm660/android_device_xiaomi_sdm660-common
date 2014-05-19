@@ -60,8 +60,6 @@ extern "C"
 
 #define MAX_NUM_OF_FD 10
 #define IPA_NL_MSG_MAX_LEN (2048)
-#define IF_NAME_LEN 16
-
 
 /*--------------------------------------------------------------------------- 
 	 Type representing enumeration of NetLink event indication messages

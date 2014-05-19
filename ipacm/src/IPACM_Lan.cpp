@@ -93,6 +93,9 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 
 	is_active = true;
 
+	memset(tcp_ctl_flt_rule_hdl_v4, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
+	memset(tcp_ctl_flt_rule_hdl_v6, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
+
 	return;
 }
 
@@ -382,7 +385,13 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 		return IPACM_FAILURE;
 	}
 
-	flt_rule_count_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+#ifdef CT_OPT
+	flt_rule_count_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR
+						+ NUM_TCP_CTL_FLT_RULE + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+#else
+	flt_rule_count_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR
+						IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+#endif
 
 	if(is_sta_mode == false)
 	{
@@ -477,8 +486,11 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
         IPACMDBG("ipv4 iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);
 		/* initial multicast/broadcast/fragment filter rule */
-		init_fl_rule(data->iptype);
+#ifdef CT_OPT
+		install_tcp_ctl_flt_rule(IPA_IP_v4);
+#endif
 		add_dummy_lan2lan_flt_rule(data->iptype);
+		init_fl_rule(data->iptype);
 	}
 	else
 	{
@@ -563,9 +575,12 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 
 		if (num_dft_rt_v6 == 0)
 		{
+#ifdef CT_OPT
+			install_tcp_ctl_flt_rule(IPA_IP_v6);
+#endif
+			add_dummy_lan2lan_flt_rule(data->iptype);
 			/* initial multicast/broadcast/fragment filter rule */
 			init_fl_rule(data->iptype);
-			add_dummy_lan2lan_flt_rule(data->iptype);
 		}
 		num_dft_rt_v6++;
 	}
@@ -1605,15 +1620,20 @@ int IPACM_Lan::handle_down_evt()
 	/* delete default filter rules */
 	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
-		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl,
-																				IPA_IP_v4,
-																				IPV4_DEFAULT_FILTERTING_RULES) == false)
+		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
 		{
-			IPACMERR("Error Adding Filtering Rule, aborting...\n");
+			IPACMERR("Error deleting default filtering Rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
-
+#ifdef CT_OPT
+		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v4, IPA_IP_v4, NUM_TCP_CTL_FLT_RULE) == false)
+		{
+			IPACMERR("Error deleting default filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#endif
 		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
 		{
 			if(m_filtering.DeleteFilteringHdls(&(lan2lan_flt_rule_hdl_v4[i].rule_hdl), IPA_IP_v4, 1) == false)
@@ -1626,10 +1646,7 @@ int IPACM_Lan::handle_down_evt()
 		IPACMDBG("Deleted lan2lan IPv4 flt rules.\n");
 
 		/* free private-subnet ipv4 filter rules */
-		if (m_filtering.DeleteFilteringHdls(
-					private_fl_rule_hdl,
-					IPA_IP_v4,
-					IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
+		if (m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
 		{
 			IPACMERR("Error Deleting RuleTable(1) to Filtering, aborting...\n");
 			res = IPACM_FAILURE;
@@ -1649,7 +1666,14 @@ int IPACM_Lan::handle_down_evt()
 			res = IPACM_FAILURE;
 			goto fail;
 		}
-
+#ifdef CT_OPT
+		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v6, IPA_IP_v6, NUM_TCP_CTL_FLT_RULE) == false)
+		{
+			IPACMERR("Error deleting default filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#endif
 		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
 		{
 			if(m_filtering.DeleteFilteringHdls(&(lan2lan_flt_rule_hdl_v6[i].rule_hdl), IPA_IP_v6, 1) == false)
@@ -1866,7 +1890,11 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 		return IPACM_FAILURE;
 	}
 
+#ifdef CT_OPT
+	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
+#else
 	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR;
+#endif
 
 	if(is_sta_mode == false)
 	{
@@ -2982,5 +3010,105 @@ void IPACM_Lan::post_lan2lan_client_disconnect_msg()
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
 			}
 	} /* end of for loop */
+	return;
+}
+
+void IPACM_Lan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
+{
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return;
+	}
+
+	int len, i;
+	struct ipa_flt_rule_add flt_rule;
+	ipa_ioc_add_flt_rule* pFilteringTable;
+
+	len = sizeof(struct ipa_ioc_add_flt_rule) +	NUM_TCP_CTL_FLT_RULE * sizeof(struct ipa_flt_rule_add);
+
+	pFilteringTable = (struct ipa_ioc_add_flt_rule *)malloc(len);
+	if (pFilteringTable == NULL)
+	{
+		IPACMERR("Error allocate flt table memory...\n");
+		return;
+	}
+	memset(pFilteringTable, 0, len);
+
+	pFilteringTable->commit = 1;
+	pFilteringTable->ip = iptype;
+	pFilteringTable->ep = rx_prop->rx[0].src_pipe;
+	pFilteringTable->global = false;
+	pFilteringTable->num_rules = NUM_TCP_CTL_FLT_RULE;
+
+	memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_add));
+
+	flt_rule.at_rear = true;
+	flt_rule.flt_rule_hdl = -1;
+	flt_rule.status = -1;
+
+	flt_rule.rule.retain_hdr = 1;
+	flt_rule.rule.to_uc = 0;
+	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+	flt_rule.rule.eq_attrib_type = 1;
+
+	flt_rule.rule.eq_attrib.rule_eq_bitmap = 0;
+
+	flt_rule.rule.eq_attrib.rule_eq_bitmap |= (1<<14);
+	flt_rule.rule.eq_attrib.metadata_meq32_present = 1;
+	flt_rule.rule.eq_attrib.metadata_meq32.offset = 0;
+	flt_rule.rule.eq_attrib.metadata_meq32.value = rx_prop->rx[0].attrib.meta_data;
+	flt_rule.rule.eq_attrib.metadata_meq32.mask = rx_prop->rx[0].attrib.meta_data_mask;
+
+	flt_rule.rule.eq_attrib.rule_eq_bitmap |= (1<<1);
+	flt_rule.rule.eq_attrib.protocol_eq_present = 1;
+	flt_rule.rule.eq_attrib.protocol_eq = IPACM_FIREWALL_IPPROTO_TCP;
+
+	flt_rule.rule.eq_attrib.rule_eq_bitmap |= (1<<8);
+	flt_rule.rule.eq_attrib.num_ihl_offset_meq_32 = 1;
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].offset = 12;
+
+	/* add TCP FIN rule*/
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_FIN_SHIFT);
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_FIN_SHIFT);
+	memcpy(&(pFilteringTable->rules[0]), &flt_rule, sizeof(struct ipa_flt_rule_add));
+
+	/* add TCP SYN rule*/
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_SYN_SHIFT);
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_SYN_SHIFT);
+	memcpy(&(pFilteringTable->rules[1]), &flt_rule, sizeof(struct ipa_flt_rule_add));
+
+	/* add TCP RST rule*/
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_RST_SHIFT);
+	flt_rule.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_RST_SHIFT);
+	memcpy(&(pFilteringTable->rules[2]), &flt_rule, sizeof(struct ipa_flt_rule_add));
+
+	if (false == m_filtering.AddFilteringRule(pFilteringTable))
+	{
+		IPACMERR("Error adding tcp control flt rule\n");
+		goto fail;
+	}
+	else
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			for(i=0; i<NUM_TCP_CTL_FLT_RULE; i++)
+			{
+				flt_rule_count_v4++;
+				tcp_ctl_flt_rule_hdl_v4[i] = pFilteringTable->rules[i].flt_rule_hdl;
+			}
+		}
+		else
+		{
+			for(i=0; i<NUM_TCP_CTL_FLT_RULE; i++)
+			{
+				flt_rule_count_v6++;
+				tcp_ctl_flt_rule_hdl_v6[i] = pFilteringTable->rules[i].flt_rule_hdl;
+			}
+		}
+	}
+
+fail:
+	free(pFilteringTable);
 	return;
 }

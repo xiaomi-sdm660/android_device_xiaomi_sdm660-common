@@ -250,6 +250,8 @@ private:
 
 	/* install UL filter rule from Q6 */
 	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
+
+	virtual void install_tcp_ctl_flt_rule(ipa_ip_type iptype);
 };
 
 

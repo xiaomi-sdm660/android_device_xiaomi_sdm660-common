@@ -51,7 +51,7 @@ extern "C"
 #include <libnetfilter_conntrack/libnetfilter_conntrack_tcp.h>
 }
 
-
+#define IF_NAME_LEN 16
 #define IPA_MAX_FILE_LEN  64
 #define IPA_IFACE_NAME_LEN 16
 #define IPA_ALG_PROTOCOL_NAME_LEN  10
@@ -92,6 +92,10 @@ extern "C"
 #define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6 "Lan2Lan_Wlan_v6"
 #define IPA_LAN_TO_LAN_MAX_WLAN_CLIENT 32
 #define IPA_LAN_TO_LAN_MAX_USB_CLIENT 1
+#define TCP_FIN_SHIFT 16
+#define TCP_SYN_SHIFT 17
+#define TCP_RST_SHIFT 18
+#define NUM_TCP_CTL_FLT_RULE 3
 
 /*---------------------------------------------------------------------------
 										Return values indicating error status
@@ -151,6 +155,7 @@ typedef enum
 	IPA_LAN_DELETE_SELF,					  /* 36 ipacm_event_data_fid */
 	IPA_WLAN_LINK_DOWN_EVENT,                 /* 37 ipacm_event_data_mac */
 	IPA_USB_LINK_UP_EVENT,                    /* 38 ipacm_event_data_fid */
+	IPA_PROCESS_CT_MESSAGE_V6,				  /* 39 ipacm_ct_evt_data */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
