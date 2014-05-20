@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@ met:
 			with the distribution.
 		* Neither the name of The Linux Foundation nor the names of its
 			contributors may be used to endorse or promote products derived
-			from this software without specific prior written permission.																								
+			from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -72,33 +72,45 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Netlink.h"
 
 const char *ipacm_event_name[] = {
-	__stringify(IPA_LINK_UP_EVENT),
-	__stringify(IPA_LINK_DOWN_EVENT),
-	__stringify(IPA_ADDR_ADD_EVENT),
-	__stringify(IPA_ADDR_DEL_EVENT),
-	__stringify(IPA_ROUTE_ADD_EVENT),
-	__stringify(IPA_ROUTE_DEL_EVENT),
-	__stringify(IPA_FIREWALL_CHANGE_EVENT),
-	__stringify(IPA_WLAN_AP_LINK_UP_EVENT),
-	__stringify(IPA_WLAN_STA_LINK_UP_EVENT),
-	__stringify(IPA_WLAN_CLIENT_ADD_EVENT),
-	__stringify(IPA_WLAN_CLIENT_DEL_EVENT),
-	__stringify(IPA_WLAN_CLIENT_POWER_SAVE_EVENT),
-	__stringify(IPA_WLAN_CLIENT_RECOVER_EVENT),
-	__stringify(IPA_NEW_NEIGH_EVENT),
-	__stringify(IPA_DEL_NEIGH_EVENT),
-	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT),
-	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT),
-	__stringify(IPA_SW_ROUTING_ENABLE),
-	__stringify(IPA_SW_ROUTING_DISABLE),
-	__stringify(IPA_PROCESS_CT_MESSAGE),
-	__stringify(IPA_HANDLE_WAN_UP),
-	__stringify(IPA_HANDLE_WAN_DOWN),
-	__stringify(IPA_HANDLE_WLAN_UP),
-	__stringify(IPA_HANDLE_LAN_UP),
-	__stringify(IPA_WLAN_CLIENT_ADD_EVENT_EX),
-	__stringify(IPA_HANDLE_WAN_UP_V6),
-	__stringify(IPA_HANDLE_WAN_DOWN_V6),
+	__stringify(IPA_CFG_CHANGE_EVENT),                     /* 1 NULL */
+	__stringify(IPA_LINK_UP_EVENT),                        /* 2 ipacm_event_data_fid */
+	__stringify(IPA_LINK_DOWN_EVENT),                      /* 3 ipacm_event_data_fid */
+	__stringify(IPA_ADDR_ADD_EVENT),                       /* 4 ipacm_event_data_addr */
+	__stringify(IPA_ADDR_DEL_EVENT),                       /* 5 no use */
+	__stringify(IPA_ROUTE_ADD_EVENT),                      /* 6 ipacm_event_data_addr */
+	__stringify(IPA_ROUTE_DEL_EVENT),                      /* 7 ipacm_event_data_addr */
+	__stringify(IPA_FIREWALL_CHANGE_EVENT),                /* 8 NULL */
+	__stringify(IPA_WLAN_AP_LINK_UP_EVENT),                /* 9 ipacm_event_data_mac */
+	__stringify(IPA_WLAN_STA_LINK_UP_EVENT),               /* 10 ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_ADD_EVENT),                /* 11 ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_DEL_EVENT),                /* 12 ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_POWER_SAVE_EVENT),         /* 13 ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_RECOVER_EVENT),            /* 14 ipacm_event_data_mac */
+	__stringify(IPA_NEW_NEIGH_EVENT),                      /* 15 ipacm_event_data_all */
+	__stringify(IPA_DEL_NEIGH_EVENT),                      /* 16 ipacm_event_data_all */
+	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT),       /* 17 ipacm_event_data_all */
+	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT),       /* 18 ipacm_event_data_all */
+	__stringify(IPA_SW_ROUTING_ENABLE),                    /* 19 NULL */
+	__stringify(IPA_SW_ROUTING_DISABLE),                   /* 20 NULL */
+	__stringify(IPA_PROCESS_CT_MESSAGE),                   /* 21 ipacm_ct_evt_data */
+	__stringify(IPA_HANDLE_WAN_UP),                        /* 22 ipacm_event_iface_up  */
+	__stringify(IPA_HANDLE_WAN_DOWN),                      /* 23 ipacm_event_iface_up  */
+	__stringify(IPA_HANDLE_WLAN_UP),                       /* 24 ipacm_event_iface_up */
+	__stringify(IPA_HANDLE_LAN_UP),                        /* 25 ipacm_event_iface_up */
+	__stringify(IPA_WLAN_CLIENT_ADD_EVENT_EX),             /* 26 ipacm_event_data_wlan_ex */
+	__stringify(IPA_HANDLE_WAN_UP_V6),					   /* 27 NULL */
+	__stringify(IPA_HANDLE_WAN_DOWN_V6),				   /* 28 NULL */
+	__stringify(IPA_LAN_CLIENT_ACTIVE),					   /* 29 ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_INACTIVE),				   /* 30 ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_DISCONNECT),				   /* 31 ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_POWER_SAVE),				   /* 32 ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_POWER_RECOVER),			   /* 33 ipacm_event_lan_client*/
+	__stringify(IPA_LAN_TO_LAN_NEW_CONNECTION),			   /* 34 ipacm_event_connection */
+	__stringify(IPA_LAN_TO_LAN_DEL_CONNECTION),			   /* 35 ipacm_event_connection */
+	__stringify(IPA_LAN_DELETE_SELF),		                   /* 36 ipacm_event_data_fid */
+	__stringify(IPA_WLAN_LINK_DOWN_EVENT),                             /* 37 ipacm_event_data_mac */
+	__stringify(IPA_USB_LINK_UP_EVENT),                                /* 38 ipacm_event_data_fid */
+        __stringify(IPA_PROCESS_CT_MESSAGE_V6),				  /* 39 ipacm_ct_evt_data */
 };
 
 #define IPA_DRIVER  "/dev/ipa"
@@ -169,25 +181,26 @@ void* firewall_monitor(void *param)
 	while (1)
 	{
 		length = read(inotify_fd, buffer, INOTIFY_BUF_LEN);
-		struct inotify_event *event = (struct inotify_event *)buffer;
+		struct inotify_event event;
+		memcpy(&event, buffer,sizeof(struct inotify_event));
 
 		if (length < 0)
 		{
-			IPACMERR("inotify read() error return length: %d and mask: 0x%x 0x%x\n", length, event->mask, mask);
+			IPACMERR("inotify read() error return length: %d and mask: 0x%x 0x%x\n", length, event.mask, mask);
 			return NULL;
 		}
 
-		if (event->len > 0)
+		if (event.len > 0)
 		{
-			if ( (event->mask & IN_MODIFY) || (event->mask & IN_MOVE))
+			if ( (event.mask & IN_MODIFY) || (event.mask & IN_MOVE))
 			{
-				if (event->mask & IN_ISDIR)
+				if (event.mask & IN_ISDIR)
 				{
-					IPACMDBG("The directory %s was 0x%x\n", event->name, event->mask);
+					IPACMDBG("The directory %s was 0x%x\n", event.name, event.mask);
 				}
-				else if (!strncmp(event->name, IPACM_FIREWALL_FILE_NAME, event->len)) // firewall_rule change
+				else if (!strncmp(event.name, IPACM_FIREWALL_FILE_NAME, event.len)) // firewall_rule change
 				{
-					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
+					IPACMDBG("File \"%s\" was 0x%x\n", event.name, event.mask);
 					IPACMDBG("The interested file %s .\n", IPACM_FIREWALL_FILE_NAME);
 
 					evt_data.event = IPA_FIREWALL_CHANGE_EVENT;
@@ -196,9 +209,9 @@ void* firewall_monitor(void *param)
 					/* Insert IPA_FIREWALL_CHANGE_EVENT to command queue */
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 				}
-				else if (!strncmp(event->name, IPACM_CFG_FILE_NAME, event->len)) // IPACM_configuration change
+				else if (!strncmp(event.name, IPACM_CFG_FILE_NAME, event.len)) // IPACM_configuration change
 				{
-					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
+					IPACMDBG("File \"%s\" was 0x%x\n", event.name, event.mask);
 					IPACMDBG("The interested file %s .\n", IPACM_CFG_FILE_NAME);
 
 					evt_data.event = IPA_CFG_CHANGE_EVENT;
@@ -208,7 +221,7 @@ void* firewall_monitor(void *param)
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 				}
 			}
-			IPACMDBG("Received monitoring event %s.\n", event->name);
+			IPACMDBG("Received monitoring event %s.\n", event.name);
 		}
 	}
 
@@ -223,10 +236,11 @@ void* ipa_driver_wlan_notifier(void *param)
 {
 	int length, fd, cnt;
 	char buffer[IPA_DRIVER_WLAN_BUF_LEN];
-	struct ipa_msg_meta *event_hdr = NULL;
-	struct ipa_wlan_msg_ex *event_ex = NULL;
-	struct ipa_wlan_msg *event_wlan = NULL;
-	struct ipa_ecm_msg *event_ecm = NULL;
+	struct ipa_msg_meta event_hdr;
+	struct ipa_ecm_msg event_ecm;
+	struct ipa_wlan_msg_ex event_ex_o;
+	struct ipa_wlan_msg *event_wlan=NULL;
+	struct ipa_wlan_msg_ex *event_ex= NULL;
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
@@ -238,7 +252,7 @@ void* ipa_driver_wlan_notifier(void *param)
 	{
 		IPACMERR("Failed opening %s.\n", IPA_DRIVER);
 	}
-	
+
 	while (1)
 	{
 		IPACMDBG("Waiting for nofications from IPA driver \n");
@@ -254,28 +268,12 @@ void* ipa_driver_wlan_notifier(void *param)
 			return NULL;
 		}
 
-		event_hdr = (struct ipa_msg_meta *)buffer;
-		IPACMDBG("Message type: %d\n", event_hdr->msg_type);
-		IPACMDBG("Event header length received: %d\n",event_hdr->msg_len);
-
-		if (event_hdr->msg_len > 0)
-		{
-			if(event_hdr->msg_type == WLAN_CLIENT_CONNECT_EX)
-			{
-				event_ex = (struct ipa_wlan_msg_ex *)(buffer + sizeof(struct ipa_msg_meta));
-			}
-			else if (event_hdr->msg_type < IPA_WLAN_EVENT_MAX)
-			{
-				event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));	
-			}
-			else
-			{
-				event_ecm = (struct ipa_ecm_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			}
-		}
+		memcpy(&event_hdr, buffer,sizeof(struct ipa_msg_meta));
+		IPACMDBG("Message type: %d\n", event_hdr.msg_type);
+		IPACMDBG("Event header length received: %d\n",event_hdr.msg_len);
 
 		/* Insert WLAN_DRIVER_EVENT to command queue */
-		switch (event_hdr->msg_type)
+		switch (event_hdr.msg_type)
 		{
 
 		case SW_ROUTING_ENABLE:
@@ -289,73 +287,78 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case WLAN_AP_CONNECT:
+			event_wlan = (struct ipa_wlan_msg *) (buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Received WLAN_AP_CONNECT name: %s\n",event_wlan->name);
 			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_wlan data_fid\n");
 				return NULL;
-			}			
+			}
 			ipa_get_if_index(event_wlan->name, &(data_fid->if_index));
 			evt_data.event = IPA_WLAN_AP_LINK_UP_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 
 		case WLAN_AP_DISCONNECT:
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Received WLAN_AP_DISCONNECT name: %s\n",event_wlan->name);
 			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_wlan data_fid\n");
 				return NULL;
-			}			
+			}
 			ipa_get_if_index(event_wlan->name, &(data_fid->if_index));
 			evt_data.event = IPA_WLAN_LINK_DOWN_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 		case WLAN_STA_CONNECT:
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Received WLAN_STA_CONNECT name: %s\n",event_wlan->name);
 			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_wlan data_fid\n");
 				return NULL;
-			}			
+			}
 			ipa_get_if_index(event_wlan->name, &(data_fid->if_index));
 			evt_data.event = IPA_WLAN_STA_LINK_UP_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 
 		case WLAN_STA_DISCONNECT:
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Received WLAN_STA_DISCONNECT name: %s\n",event_wlan->name);
 			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_wlan data_fid\n");
 				return NULL;
-			}			
+			}
 			ipa_get_if_index(event_wlan->name, &(data_fid->if_index));
 			evt_data.event = IPA_WLAN_LINK_DOWN_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
-						
+
 		case WLAN_CLIENT_CONNECT:
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Received WLAN_CLIENT_CONNECT\n");
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
 		        if (data == NULL)
 		        {
@@ -372,13 +375,22 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case WLAN_CLIENT_CONNECT_EX:
 			IPACMDBG("Received WLAN_CLIENT_CONNECT_EX\n");
-		    data_ex = (ipacm_event_data_wlan_ex *)malloc(sizeof(ipacm_event_data_wlan_ex) + event_ex->num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val));
+			memcpy(&event_ex_o, buffer + sizeof(struct ipa_msg_meta),sizeof(struct ipa_wlan_msg_ex));
+			length = sizeof(ipa_wlan_msg_ex)+ event_ex_o.num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val);
+			IPACMDBG("num_of_attribs %d, length %d\n", event_ex_o.num_of_attribs, length);
+			event_ex = (ipa_wlan_msg_ex *)malloc(length);
+			if(event_ex == NULL )
+			{
+				IPACMERR("Unable to allocate memory\n");
+				return NULL;
+			}
+			memcpy(event_ex, buffer + sizeof(struct ipa_msg_meta), length);
+			data_ex = (ipacm_event_data_wlan_ex *)malloc(sizeof(ipacm_event_data_wlan_ex) + event_ex_o.num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val));
 		    if (data_ex == NULL)
 		    {
 				IPACMERR("unable to allocate memory for event data\n");
 		    	return NULL;
 		    }
-
 			data_ex->num_of_attribs = event_ex->num_of_attribs;
 
 			memcpy(data_ex->attribs,
@@ -405,32 +417,15 @@ void* ipa_driver_wlan_notifier(void *param)
 			ipa_get_if_index(event_ex->name, &(data_ex->if_index));
 		    evt_data.event = IPA_WLAN_CLIENT_ADD_EVENT_EX;
 			evt_data.evt_data = data_ex;
-			break;
-			
-		case WLAN_CLIENT_DISCONNECT:
-			IPACMDBG("Received WLAN_CLIENT_DISCONNECT\n");
-			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
-							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
-		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
-		        if (data == NULL)
-		        {
-		    	        IPACMERR("unable to allocate memory for event_wlan data\n");
-		    	        return NULL;
-		        }				 
-			memcpy(data->mac_addr,
-						 event_wlan->mac_addr,
-						 sizeof(event_wlan->mac_addr));
-			ipa_get_if_index(event_wlan->name, &(data->if_index));
-			evt_data.event = IPA_WLAN_CLIENT_DEL_EVENT;
-			evt_data.evt_data = data;			
+			free(event_ex);
 			break;
 
-		case WLAN_CLIENT_POWER_SAVE_MODE:
-			IPACMDBG("Received WLAN_CLIENT_POWER_SAVE_MODE\n");
+		case WLAN_CLIENT_DISCONNECT:
+			IPACMDBG("Received WLAN_CLIENT_DISCONNECT\n");
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
 		        if (data == NULL)
 		        {
@@ -439,7 +434,27 @@ void* ipa_driver_wlan_notifier(void *param)
 		        }
 			memcpy(data->mac_addr,
 						 event_wlan->mac_addr,
-						 sizeof(event_wlan->mac_addr));			
+						 sizeof(event_wlan->mac_addr));
+			ipa_get_if_index(event_wlan->name, &(data->if_index));
+			evt_data.event = IPA_WLAN_CLIENT_DEL_EVENT;
+			evt_data.evt_data = data;
+			break;
+
+		case WLAN_CLIENT_POWER_SAVE_MODE:
+			IPACMDBG("Received WLAN_CLIENT_POWER_SAVE_MODE\n");
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
+			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
+		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
+		        if (data == NULL)
+		        {
+		    	        IPACMERR("unable to allocate memory for event_wlan data\n");
+		    	        return NULL;
+		        }
+			memcpy(data->mac_addr,
+						 event_wlan->mac_addr,
+						 sizeof(event_wlan->mac_addr));
 			ipa_get_if_index(event_wlan->name, &(data->if_index));
 			evt_data.event = IPA_WLAN_CLIENT_POWER_SAVE_EVENT;
 			evt_data.evt_data = data;
@@ -447,9 +462,10 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case WLAN_CLIENT_NORMAL_MODE:
 			IPACMDBG("Received WLAN_CLIENT_NORMAL_MODE\n");
+			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
 			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
-							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]); 
+							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
 		        if (data == NULL)
 		        {
@@ -465,32 +481,34 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case ECM_CONNECT:
-			IPACMDBG("Received ECM_CONNECT name: %s\n",event_ecm->name);
+			memcpy(&event_ecm, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_ecm_msg));
+			IPACMDBG("Received ECM_CONNECT name: %s\n",event_ecm.name);
             data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_ecm data_fid\n");
 				return NULL;
 			}
-			data_fid->if_index = event_ecm->ifindex;
+			data_fid->if_index = event_ecm.ifindex;
 			evt_data.event = IPA_USB_LINK_UP_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 
 		case ECM_DISCONNECT:
-			IPACMDBG("Received ECM_DISCONNECT name: %s\n",event_ecm->name);
+			memcpy(&event_ecm, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_ecm_msg));
+			IPACMDBG("Received ECM_DISCONNECT name: %s\n",event_ecm.name);
 			data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_ecm data_fid\n");
 				return NULL;
 			}
-			data_fid->if_index = event_ecm->ifindex;
+			data_fid->if_index = event_ecm.ifindex;
 			evt_data.event = IPA_LINK_DOWN_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
 		default:
-			IPACMDBG("Unhandled message type: %d\n", event_hdr->msg_type);
+			IPACMDBG("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;
 
 		}
@@ -515,7 +533,7 @@ void IPACM_Sig_Handler(int sig)
 		case SIGUSR1:
 			for (cnt=1; cnt<IPACM_EVENT_MAX; cnt++)
 			{
-				printf("Event[%d:%30s]: %d\n", 
+				printf("Event[%d:%30s]: %d\n",
 					 cnt, ipacm_event_name[cnt-1], ipacm_event_stats[cnt]);
 			}
 			break;
@@ -536,7 +554,7 @@ void IPACM_Sig_Handler(int sig)
 
 void RegisterForSignals(void)
 {
-	
+
 	signal(SIGUSR1, IPACM_Sig_Handler);
 	signal(SIGUSR2, IPACM_Sig_Handler);
 }
@@ -563,7 +581,7 @@ int main(int argc, char **argv)
 
 
 	RegisterForSignals();
-	
+
 	if (IPACM_SUCCESS == cmd_queue_thread)
 	{
 		ret = pthread_create(&cmd_queue_thread, NULL, MessageQueue::Process, NULL);
@@ -668,6 +686,7 @@ void ipa_is_ipacm_running(void) {
 			if ( fp == NULL )
 			{
 				IPACMDBG("open pid file failed \n");
+				return;
 			}
 			else if (fgets(string, IPA_MAX_FILE_LEN, fp) != NULL)
 			{

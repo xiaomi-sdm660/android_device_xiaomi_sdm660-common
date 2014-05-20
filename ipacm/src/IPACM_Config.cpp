@@ -82,6 +82,11 @@ int IPACM_Config::Init(void)
 	char	IPACM_config_file[IPA_MAX_FILE_LEN];
 	IPACM_conf_t	*cfg;
 	cfg = (IPACM_conf_t *)malloc(sizeof(IPACM_conf_t));
+	if(cfg == NULL)
+	{
+		IPACMERR("Unable to allocate cfg memory.\n");
+		return IPACM_FAILURE;
+	}
 	uint32_t subnet_addr;
 	uint32_t subnet_mask;
 	int i, ret = IPACM_SUCCESS;
@@ -117,6 +122,12 @@ int IPACM_Config::Init(void)
 	}
 	iface_table = (ipa_ifi_dev_name_t *)calloc(ipa_num_ipa_interfaces,
 																						 sizeof(ipa_ifi_dev_name_t));
+	if(iface_table == NULL)
+	{
+		IPACMERR("Unable to allocate iface_table memory.\n");
+		ret = IPACM_FAILURE;
+		goto fail;;
+	}
 
 	for (i = 0; i < cfg->iface_config.num_iface_entries; i++)
 	{
@@ -158,7 +169,13 @@ int IPACM_Config::Init(void)
 	}
 	alg_table = (ipacm_alg *)calloc(ipa_num_alg_ports,
 																sizeof(ipacm_alg));
-
+	if(alg_table == NULL)
+	{
+		IPACMERR("Unable to allocate alg_table memory.\n");
+		ret = IPACM_FAILURE;
+		free(iface_table);
+		goto fail;;
+	}
 	for (i = 0; i < cfg->alg_config.num_alg_entries; i++)
 	{
 		alg_table[i].protocol = cfg->alg_config.alg_entries[i].protocol;
@@ -181,6 +198,8 @@ int IPACM_Config::Init(void)
 	{
 		IPACMERR("unable to allocate nat ifaces\n");
 		ret = IPACM_FAILURE;
+		free(iface_table);
+		free(alg_table);
 		goto fail;
 	}
 

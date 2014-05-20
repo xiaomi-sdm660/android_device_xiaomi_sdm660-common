@@ -83,14 +83,17 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 	num_wifi_client = 0;
 	header_name_count = 0;
 
-	wlan_client_len = (sizeof(ipa_wlan_client)) + (iface_query->num_tx_props * sizeof(wlan_client_rt_hdl));
-	wlan_client = (ipa_wlan_client *)calloc(IPA_MAX_NUM_WIFI_CLIENTS, wlan_client_len);
-	if (wlan_client == NULL)
+	if(iface_query != NULL)
 	{
-		IPACMERR("unable to allocate memory\n");
-		return;
+		wlan_client_len = (sizeof(ipa_wlan_client)) + (iface_query->num_tx_props * sizeof(wlan_client_rt_hdl));
+		wlan_client = (ipa_wlan_client *)calloc(IPA_MAX_NUM_WIFI_CLIENTS, wlan_client_len);
+		if (wlan_client == NULL)
+		{
+			IPACMERR("unable to allocate memory\n");
+			return;
+		}
+		IPACMDBG("index:%d constructor: Tx properties:%d\n", iface_index, iface_query->num_tx_props);
 	}
-
 	Nat_App = NatApp::GetInstance();
 	if (Nat_App == NULL)
 	{
@@ -103,7 +106,6 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 	IPACMDBG("Now the number of wlan AP iface is %d\n", IPACM_Wlan::num_wlan_ap_iface);
 	add_dummy_flt_rule();
 
-	IPACMDBG("index:%d constructor: Tx properties:%d\n", iface_index, iface_query->num_tx_props);
 	return;
 }
 
@@ -521,6 +523,12 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 	{
 	    IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe],false);
 		IPACMDBG("Add producer dependency from %s with registered rx-prop\n", dev_name);
+	}
+	else
+	{
+		/* Adding the check if no Rx property registered, no filter rules will be added */
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
 	}
 
 	/* construct ipa_ioc_add_flt_rule with default filter rules */
@@ -1122,15 +1130,23 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 				memset(pHeaderDescriptor->hdr[0].name, 0,
 							 sizeof(pHeaderDescriptor->hdr[0].name));
 
-				sprintf(index, "%d", ipa_if_num);
-				strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", ipa_if_num);
+				strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
 
-				strncat(pHeaderDescriptor->hdr[0].name,
-								IPA_WLAN_PARTIAL_HDR_NAME_v4,
-								sizeof(IPA_WLAN_PARTIAL_HDR_NAME_v4));
+				if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WLAN_PARTIAL_HDR_NAME_v4, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+				snprintf(index,sizeof(index), "%d", header_name_count);
+				if (strlcat(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
-				sprintf(index, "%d", header_name_count);
-								strncat(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
 
 				pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeaderDescriptor->hdr[0].hdr_hdl = -1;
@@ -1219,15 +1235,22 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 				memset(pHeaderDescriptor->hdr[0].name, 0,
 							 sizeof(pHeaderDescriptor->hdr[0].name));
 
-				sprintf(index, "%d", ipa_if_num);
-				strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", ipa_if_num);
+				strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
+				if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WLAN_PARTIAL_HDR_NAME_v6, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
-				strncat(pHeaderDescriptor->hdr[0].name,
-								IPA_WLAN_PARTIAL_HDR_NAME_v6,
-								sizeof(IPA_WLAN_PARTIAL_HDR_NAME_v6));
-
-				sprintf(index, "%d", header_name_count);
-				strncat(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", header_name_count);
+				if (strlcat(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
 				pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeaderDescriptor->hdr[0].hdr_hdl = -1;
@@ -1927,7 +1950,11 @@ int IPACM_Wlan::handle_down_evt()
 
 fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */
+	if (rx_prop != NULL)
+	{
 	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
+		free(rx_prop);
+	}
 
 	for (i = 0; i < num_wifi_client; i++)
 	{
@@ -1938,10 +1965,7 @@ fail:
 	{
 		free(tx_prop);
 	}
-	if (rx_prop != NULL)
-	{
-		free(rx_prop);
-	}
+
 	if (iface_query != NULL)
 	{
 		free(iface_query);
@@ -2137,7 +2161,7 @@ int IPACM_Wlan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* d
 				pHeader->num_hdrs = 1;
 
 				memset(pHeader->hdr[0].name, 0, sizeof(pHeader->hdr[0].name));
-				strncpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4, sizeof(IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4));
+				strlcpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4, sizeof(pHeader->hdr[0].name));
 
 				for(j=0; j<MAX_OFFLOAD_PAIR; j++)
 				{
@@ -2154,8 +2178,14 @@ int IPACM_Wlan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* d
 					goto fail;
 				}
 				lan2lan_hdr_hdl_v4[j].valid = true;
-				sprintf(index, "%d", j);
-				strncat(pHeader->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", j);
+
+				if (strlcat(pHeader->hdr[0].name, index, sizeof(pHeader->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeader->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
 				pHeader->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeader->hdr[0].is_partial = 0;
@@ -2248,7 +2278,8 @@ int IPACM_Wlan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* d
 				pHeader->num_hdrs = 1;
 
 				memset(pHeader->hdr[0].name, 0, sizeof(pHeader->hdr[0].name));
-				strncpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6, sizeof(IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6));
+				strlcpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6, sizeof(pHeader->hdr[0].name));
+
 
 				for(j=0; j<MAX_OFFLOAD_PAIR; j++)
 				{
@@ -2265,9 +2296,14 @@ int IPACM_Wlan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* d
 					goto fail;
 				}
 				lan2lan_hdr_hdl_v6[j].valid = true;
-				sprintf(index, "%d", j);
-				strncat(pHeader->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", j);
 
+				if (strlcat(pHeader->hdr[0].name, index, sizeof(pHeader->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeader->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 				pHeader->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeader->hdr[0].is_partial = 0;
 				pHeader->hdr[0].hdr_hdl = -1;

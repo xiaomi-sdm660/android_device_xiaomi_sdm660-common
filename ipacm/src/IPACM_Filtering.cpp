@@ -279,6 +279,8 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 		{
 			for(cnt = rule_table_v4->num_rules - 1; cnt >= 0; cnt--)
 			{
+				if (pos < QMI_IPA_MAX_FILTERS_V01)
+				{
 				qmi_rule_msg.filter_spec_list[pos].filter_spec_identifier = pos;
 				qmi_rule_msg.filter_spec_list[pos].ip_type = QMI_IPA_IP_TYPE_V4_V01;
 				qmi_rule_msg.filter_spec_list[pos].filter_action = GetQmiFilterAction(rule_table_v4->rules[cnt].rule.action);
@@ -291,12 +293,19 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 					sizeof(struct ipa_filter_rule_type_v01));
 				pos++;
 			}
+				else
+				{
+					IPACMERR(" QMI only support max %d rules, current (%d)\n ",QMI_IPA_MAX_FILTERS_V01, pos);
+				}
+			}
 		}
 
 		if(rule_table_v6 != NULL)
 		{
 			for(cnt = rule_table_v6->num_rules - 1; cnt >= 0; cnt--)
 			{
+				if (pos < QMI_IPA_MAX_FILTERS_V01)
+				{
 				qmi_rule_msg.filter_spec_list[pos].filter_spec_identifier = pos;
 				qmi_rule_msg.filter_spec_list[pos].ip_type = QMI_IPA_IP_TYPE_V6_V01;
 				qmi_rule_msg.filter_spec_list[pos].filter_action = GetQmiFilterAction(rule_table_v6->rules[cnt].rule.action);
@@ -308,6 +317,11 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 				memcpy(&qmi_rule_msg.filter_spec_list[pos].filter_rule, &rule_table_v6->rules[cnt].rule.eq_attrib, 
 					sizeof(struct ipa_filter_rule_type_v01));
 				pos++;
+			}
+				else
+				{
+					IPACMERR(" QMI only support max %d rules, current (%d)\n ",QMI_IPA_MAX_FILTERS_V01, pos);
+				}
 			}
 		}
 
