@@ -61,7 +61,7 @@ struct ipa_flt_rule_add IPACM_Wan::flt_rule_v6[IPA_MAX_FLT_RULE];
 bool IPACM_Wan::backhaul_is_sta_mode = false;
 bool IPACM_Wan::is_ext_prop_set = false;
 
-IPACM_Wan::IPACM_Wan(int iface_index, bool is_sta_mode) : IPACM_Iface(iface_index)
+IPACM_Wan::IPACM_Wan(int iface_index, int is_sta_mode) : IPACM_Iface(iface_index)
 {
 	num_firewall_v4 = 0;
 	num_firewall_v6 = 0;
@@ -81,7 +81,7 @@ IPACM_Wan::IPACM_Wan(int iface_index, bool is_sta_mode) : IPACM_Iface(iface_inde
 	hdr_hdl_sta_v4 = 0;
 	hdr_hdl_sta_v6 = 0;
 
-	if(m_is_sta_mode == false)
+	if(m_is_sta_mode == 0)
 	{
 		IPACMDBG("The new WAN interface is modem.\n");
 		query_ext_prop();
@@ -198,7 +198,7 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 
         if (num_dft_rt_v6 == 0)
 	    {
-			if(m_is_sta_mode == false)
+			if(m_is_sta_mode == 0)
 			{
 				init_fl_rule_ex(data->iptype);
 			}
@@ -249,7 +249,7 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
         IPACMDBG("ipv4 wan iface rt-rule hdll=0x%x\n", dft_rt_rule_hdl[0]);
 			/* initial multicast/broadcast/fragment filter rule */
 
-		if(m_is_sta_mode == false)
+		if(m_is_sta_mode == 0)
 		{
 			init_fl_rule_ex(data->iptype);
 		}
@@ -278,7 +278,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 	{
 	case IPA_WLAN_LINK_DOWN_EVENT:
 		{
-			if(m_is_sta_mode == true)
+			if(m_is_sta_mode == 1)
 			{
 				ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
 				ipa_interface_index = iface_ipa_index_query(data->if_index);
@@ -297,9 +297,44 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
+	case IPA_CFG_CHANGE_EVENT:
+		{
+			if ( (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != ipa_if_cate) &&
+					(m_is_sta_mode ==2))
+			{
+				IPACMDBG("Received IPA_CFG_CHANGE_EVENT and category changed(sta_mode:%d)\n", m_is_sta_mode);
+				/* posting link-up event for cradle use-case */
+				ipacm_cmd_q_data evt_data;
+				memset(&evt_data, 0, sizeof(evt_data));
+
+				ipacm_event_data_fid *data_fid = NULL;
+				data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+				if(data_fid == NULL)
+				{
+					IPACMERR("unable to allocate memory for IPA_USB_LINK_UP_EVENT data_fid\n");
+					return NULL;
+				}
+				if(IPACM_Iface::ipa_get_if_index(dev_name, &(data_fid->if_index)))
+				{
+					IPACMERR("Error while getting interface index for %s device", dev_name);
+				}
+				evt_data.event = IPA_USB_LINK_UP_EVENT;
+				evt_data.evt_data = data_fid;
+				IPACMDBG("Posting event:%d\n", evt_data.event);
+				IPACM_EvtDispatcher::PostEvt(&evt_data);
+
+				/* delete previous instance */
+				handle_down_evt();
+				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
+				delete this;
+				return;
+			}
+		}
+		break;
+
 	case IPA_LINK_DOWN_EVENT:
 		{
-			if(m_is_sta_mode == false)
+			if(m_is_sta_mode == 0)
 			{
 				ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
 				ipa_interface_index = iface_ipa_index_query(data->if_index);
@@ -383,7 +418,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					IPACMDBG("get del default v4 route (dst:0.0.0.0)\n");
 
-					if(m_is_sta_mode == false)
+					if(m_is_sta_mode == 0)
 					{
 						del_wan_firewall_rule(IPA_IP_v4);
 						install_wan_filtering_rule();
@@ -399,7 +434,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					IPACMDBG("get del default v6 route (dst:00.00.00.00)\n");
 
-					if(m_is_sta_mode == false)
+					if(m_is_sta_mode == 0)
 					{
 						del_wan_firewall_rule(IPA_IP_v6);
 						install_wan_filtering_rule();
@@ -442,7 +477,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 	case IPA_FIREWALL_CHANGE_EVENT:
 		IPACMDBG("Received IPA_FIREWALL_CHANGE_EVENT\n");
 
-		if(m_is_sta_mode == false)
+		if(m_is_sta_mode == 0)
 		{
 			if(ip_type == IPA_IP_v4)
 			{
@@ -517,7 +552,22 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		return IPACM_SUCCESS;
 	}
 
-	IPACM_Wan::backhaul_is_sta_mode	= m_is_sta_mode;
+	if (m_is_sta_mode !=0)
+	{
+		IPACM_Wan::backhaul_is_sta_mode	= true;
+		if((iptype==IPA_IP_v4) && (header_set_v4 != true))
+		{
+			header_partial_default_wan_v4 = true;
+			IPACMDBG("STA ipv4-header haven't constructed \n");
+			return IPACM_SUCCESS;
+		}
+		else if((iptype==IPA_IP_v6) && (header_set_v6 != true))
+		{
+			header_partial_default_wan_v6 = true;
+			IPACMDBG("STA ipv6-header haven't constructed \n");
+			return IPACM_SUCCESS;
+		}
+	}
 
     for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
 	{
@@ -584,7 +634,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	rt_rule_entry = &rt_rule->rules[0];
 	rt_rule_entry->at_rear = true;
 
-	if(m_is_sta_mode == true)
+	if(m_is_sta_mode != 0)
 	{
 		IPACMDBG(" WAN instance is in STA mode \n");
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
@@ -715,7 +765,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	    IPACM_Wan::wan_up = true;
 		active_v4 = true;
 
-		if(m_is_sta_mode == false)
+		if(m_is_sta_mode == 0)
 		{
 			config_wan_firewall_rule(IPA_IP_v4);
 			install_wan_filtering_rule();
@@ -727,7 +777,14 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 
 		memcpy(wanup_data->ifname, dev_name, sizeof(wanup_data->ifname));
 		wanup_data->ipv4_addr = wan_v4_addr;
-		wanup_data->is_sta = m_is_sta_mode;
+		if (m_is_sta_mode!=0)
+		{
+			wanup_data->is_sta = true;
+		}
+		else
+		{
+			wanup_data->is_sta = false;
+		}
 		IPACMDBG("Posting IPA_HANDLE_WAN_UP with below information:\n");
 		IPACMDBG("if_name:%s, ipv4_address:0x%x, is sta mode:%d\n",
 			wanup_data->ifname, wanup_data->ipv4_addr,  wanup_data->is_sta);
@@ -741,7 +798,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		IPACM_Wan::wan_up_v6 = true;
 		active_v6 = true;
 
-		if(m_is_sta_mode == false)
+		if(m_is_sta_mode == 0)
 		{
 			config_wan_firewall_rule(IPA_IP_v6);
 			install_wan_filtering_rule();
@@ -752,7 +809,15 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		}
 
 		memcpy(wanup_data->ifname, dev_name, sizeof(wanup_data->ifname));
-		wanup_data->is_sta = m_is_sta_mode;
+		if (m_is_sta_mode!=0)
+		{
+			wanup_data->is_sta = true;
+		}
+		else
+		{
+			wanup_data->is_sta = false;
+		}
+
 		IPACMDBG("Posting IPA_HANDLE_WAN_UP_V6 with below information:\n");
 		IPACMDBG("if_name:%s, is sta mode: %d\n", wanup_data->ifname, wanup_data->is_sta);
 
@@ -2772,7 +2837,14 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 		if (iptype == IPA_IP_v4)
 		{
 			wandown_data->ipv4_addr = wan_v4_addr;
-			wandown_data->is_sta = m_is_sta_mode;
+			if (m_is_sta_mode!=0)
+			{
+				wandown_data->is_sta = true;
+			}
+			else
+			{
+				wandown_data->is_sta = false;
+			}
 			evt_data.event = IPA_HANDLE_WAN_DOWN;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
@@ -2784,7 +2856,14 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 		}
 		else
 		{
-			wandown_data->is_sta = m_is_sta_mode;
+			if (m_is_sta_mode!=0)
+			{
+				wandown_data->is_sta = true;
+			}
+			else
+			{
+				wandown_data->is_sta = false;
+			}
 			evt_data.event = IPA_HANDLE_WAN_DOWN_V6;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
@@ -2845,7 +2924,14 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 		if (iptype == IPA_IP_v4)
 		{
 			wandown_data->ipv4_addr = wan_v4_addr;
-			wandown_data->is_sta = m_is_sta_mode;
+			if (m_is_sta_mode!=0)
+			{
+				wandown_data->is_sta = true;
+			}
+			else
+			{
+				wandown_data->is_sta = false;
+			}
 			evt_data.event = IPA_HANDLE_WAN_DOWN;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
@@ -2858,7 +2944,14 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 		}
 		else
 		{
-			wandown_data->is_sta = m_is_sta_mode;
+			if (m_is_sta_mode!=0)
+			{
+				wandown_data->is_sta = true;
+			}
+			else
+			{
+				wandown_data->is_sta = false;
+			}
 			evt_data.event = IPA_HANDLE_WAN_DOWN_V6;
 			evt_data.evt_data = (void *)wandown_data;
 			IPACMDBG("posting IPA_HANDLE_WAN_DOWN_V6 for IPv6 \n");

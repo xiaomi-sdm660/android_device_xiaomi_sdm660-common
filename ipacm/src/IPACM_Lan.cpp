@@ -92,10 +92,9 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(lan2lan_hdr_hdl_v6, 0, MAX_OFFLOAD_PAIR*sizeof(lan2lan_hdr_hdl));
 
 	is_active = true;
-
 	memset(tcp_ctl_flt_rule_hdl_v4, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
 	memset(tcp_ctl_flt_rule_hdl_v6, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
-
+	is_mode_switch = false;
 	return;
 }
 
@@ -136,6 +135,20 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
+	case IPA_CFG_CHANGE_EVENT:
+		{
+			if ( IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != ipa_if_cate)
+			{
+				IPACMDBG("Received IPA_CFG_CHANGE_EVENT and category changed\n");
+				/* delete previous instance */
+				handle_down_evt();
+				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
+				is_mode_switch = true; // need post internal usb-link up event
+				return;
+			}
+		}
+		break;
+
 	case IPA_LAN_DELETE_SELF:
 	{
 		ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
@@ -143,6 +156,29 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			IPACMDBG("Received IPA_LAN_DELETE_SELF event.\n");
 			IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+			/* posting link-up event for cradle use-case */
+			if(is_mode_switch)
+			{
+				IPACMDBG("Posting IPA_USB_LINK_UP_EVENT event for (%s)\n", dev_name);
+				ipacm_cmd_q_data evt_data;
+				memset(&evt_data, 0, sizeof(evt_data));
+
+				ipacm_event_data_fid *data_fid = NULL;
+				data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+				if(data_fid == NULL)
+				{
+					IPACMERR("unable to allocate memory for IPA_USB_LINK_UP_EVENT data_fid\n");
+					return NULL;
+				}
+				if(IPACM_Iface::ipa_get_if_index(dev_name, &(data_fid->if_index)))
+				{
+					IPACMERR("Error while getting interface index for %s device", dev_name);
+				}
+				evt_data.event = IPA_USB_LINK_UP_EVENT;
+				evt_data.evt_data = data_fid;
+				//IPACMDBG("Posting event:%d\n", evt_data.event);
+				IPACM_EvtDispatcher::PostEvt(&evt_data);
+			}
 			delete this;
 		}
 		break;

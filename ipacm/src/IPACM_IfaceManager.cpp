@@ -73,7 +73,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			break;
 		case IPA_LINK_UP_EVENT:
 			IPACMDBG("link up %d: \n", evt_data->if_index);
-			create_iface_instance(evt_data->if_index, false);
+			create_iface_instance(evt_data->if_index, 0);
 			break;
 
 		case IPA_USB_LINK_UP_EVENT:
@@ -81,15 +81,16 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			/* check if it's WAN_IF */
 			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == WAN_IF)
 			{
+				/* usb-backhaul using sta_mode 2*/
 			IPACMDBG("WAN-usb (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
-			create_iface_instance(evt_data->if_index, true);
+				create_iface_instance(evt_data->if_index, 2);
 			}
 			else
 			{
-			create_iface_instance(evt_data->if_index, false);
+				create_iface_instance(evt_data->if_index, 0);
 			}
 			break;
-		
+
 		case IPA_WLAN_AP_LINK_UP_EVENT:
 			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
 			/* change iface category from unknown to WLAN_IF */
@@ -97,7 +98,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			{
 			IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WLAN_IF;
 			IPACMDBG("WLAN AP (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
-			create_iface_instance(evt_data->if_index, false);
+			create_iface_instance(evt_data->if_index, 0);
 			}
 			else
 			{
@@ -110,9 +111,10 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			/* change iface category from unknown to WAN_IF */
 			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat==UNKNOWN_IF)
 			{
+				/* wlan-backhaul using sta_mode 1 */
 			IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WAN_IF;
 			IPACMDBG("WLAN STA (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
-			create_iface_instance(evt_data->if_index, true);
+				create_iface_instance(evt_data->if_index, 1);
 			}
 			else
 			{
@@ -126,7 +128,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 	return;
 }
 
-int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
+int IPACM_IfaceManager::create_iface_instance(int if_index, int is_sta_mode)
 {
 	int ipa_interface_index;
 	ipa_interface_index = IPACM_Iface::iface_ipa_index_query(if_index);
@@ -161,6 +163,7 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, lan);
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, lan);
+				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, lan); 		// register for IPA_CFG_CHANGE event
 				IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", lan->dev_name, lan->ipa_if_num);
 				registr(ipa_interface_index, lan);
 				/* solve the new_addr comes earlier issue */
@@ -224,6 +227,7 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, bool is_sta_mode)
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, w);
 				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
 				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
+				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, w); 		// register for IPA_CFG_CHANGE event
 				IPACMDBG("ipa_WAN (%s):ipa_index (%d) instance open/registr ok\n", w->dev_name, w->ipa_if_num);
 				registr(ipa_interface_index, w);
 				/* solve the new_addr comes earlier issue */
