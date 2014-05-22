@@ -65,6 +65,9 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	}
 
 	/* support eth multiple clients */
+	if(iface_query != NULL)
+	{
+
 	eth_client_len = (sizeof(ipa_eth_client)) + (iface_query->num_tx_props * sizeof(eth_client_rt_hdl));
 	eth_client = (ipa_eth_client *)calloc(IPA_MAX_NUM_ETH_CLIENTS, eth_client_len);
 	if (eth_client == NULL)
@@ -75,6 +78,7 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 
 	IPACMDBG(" IPACM->IPACM_Lan(%d) constructor: Tx:%d Rx:%d\n", ipa_if_num,
 					 iface_query->num_tx_props, iface_query->num_rx_props);
+	}
 
 	num_wan_ul_fl_rule_v4 = 0;
 	num_wan_ul_fl_rule_v6 = 0;
@@ -426,11 +430,17 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 						+ NUM_TCP_CTL_FLT_RULE + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 #else
 	flt_rule_count_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR
-						IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+						+ IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 #endif
 
 	if(is_sta_mode == false)
 	{
+		if (num_wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES)
+		{
+			IPACMERR("number of wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES, aborting...\n");
+			close(fd);
+			return IPACM_FAILURE;
+		}
 		if (m_filtering.DeleteFilteringHdls(wan_ul_fl_rule_hdl_v4,
 			IPA_IP_v4, num_wan_ul_fl_rule_v4) == false)
 		{
@@ -1013,15 +1023,23 @@ int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
 								memset(pHeaderDescriptor->hdr[0].name, 0,
 											 sizeof(pHeaderDescriptor->hdr[0].name));
 
-								sprintf(index, "%d", ipa_if_num);
-								strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+								snprintf(index,sizeof(index), "%d", ipa_if_num);
+								strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
 
-								strncat(pHeaderDescriptor->hdr[0].name,
-												IPA_ETH_HDR_NAME_v4,
-												sizeof(IPA_ETH_HDR_NAME_v4));
+								if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_ETH_HDR_NAME_v4, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+								{
+									IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+									res = IPACM_FAILURE;
+									goto fail;
+								}
 
-								sprintf(index, "%d", header_name_count);
-								strncat(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+								snprintf(index,sizeof(index), "%d", header_name_count);
+								if (strlcat(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+								{
+									IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+									res = IPACM_FAILURE;
+									goto fail;
+								}
 
 								pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 								pHeaderDescriptor->hdr[0].hdr_hdl = -1;
@@ -1096,15 +1114,22 @@ int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
 				memset(pHeaderDescriptor->hdr[0].name, 0,
 					 sizeof(pHeaderDescriptor->hdr[0].name));
 
-				sprintf(index, "%d", ipa_if_num);
-				strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", ipa_if_num);
+				strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
 
-				strncat(pHeaderDescriptor->hdr[0].name,
-						IPA_ETH_HDR_NAME_v6,
-						sizeof(IPA_ETH_HDR_NAME_v6));
-
-				sprintf(index, "%d", header_name_count);
-				strncat(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
+				if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_ETH_HDR_NAME_v6, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+				snprintf(index,sizeof(index), "%d", header_name_count);
+				if (strlcat(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
 				pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeaderDescriptor->hdr[0].hdr_hdl = -1;
@@ -1658,7 +1683,7 @@ int IPACM_Lan::handle_down_evt()
 	{
 		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
 		{
-			IPACMERR("Error deleting default filtering Rule, aborting...\n");
+			IPACMERR("Error Deleting Filtering Rule, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
@@ -1682,6 +1707,13 @@ int IPACM_Lan::handle_down_evt()
 		IPACMDBG("Deleted lan2lan IPv4 flt rules.\n");
 
 		/* free private-subnet ipv4 filter rules */
+		if (IPACM_Iface::ipacmcfg->ipa_num_private_subnet > IPA_PRIV_SUBNET_FILTER_RULE_HANDLES)
+		{
+			IPACMERR(" the number of rules are bigger than array, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
 		if (m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
 		{
 			IPACMERR("Error Deleting RuleTable(1) to Filtering, aborting...\n");
@@ -1742,8 +1774,12 @@ int IPACM_Lan::handle_down_evt()
 
 fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */
+	if (rx_prop != NULL)
+	{
+		free(rx_prop);
 	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
 	IPACMDBG("Finished delete dependency \n ");
+	}
 
 	if (eth_client != NULL)
 	{
@@ -1753,10 +1789,6 @@ fail:
 	if (tx_prop != NULL)
 	{
 		free(tx_prop);
-	}
-	if (rx_prop != NULL)
-	{
-		free(rx_prop);
 	}
 	if (iface_query != NULL)
 	{
@@ -1934,6 +1966,13 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 
 	if(is_sta_mode == false)
 	{
+		if (num_wan_ul_fl_rule_v6 > MAX_WAN_UL_FILTER_RULES)
+		{
+			IPACMERR(" the number of rules are bigger than array, aborting...\n");
+			close(fd);
+			return IPACM_FAILURE;
+		}
+
 		if (m_filtering.DeleteFilteringHdls(wan_ul_fl_rule_hdl_v6,
 			IPA_IP_v6, num_wan_ul_fl_rule_v6) == false)
 		{
@@ -2615,7 +2654,7 @@ int IPACM_Lan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* ds
 				pHeader->num_hdrs = 1;
 
 				memset(pHeader->hdr[0].name, 0, sizeof(pHeader->hdr[0].name));
-				strncpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_USB_HDR_NAME_V4, sizeof(IPA_LAN_TO_LAN_USB_HDR_NAME_V4));
+				strlcpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_USB_HDR_NAME_V4, sizeof(pHeader->hdr[0].name));
 
 				for(j=0; j<MAX_OFFLOAD_PAIR; j++)
 				{
@@ -2632,8 +2671,13 @@ int IPACM_Lan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* ds
 					goto fail;
 				}
 				lan2lan_hdr_hdl_v4[j].valid = true;
-				sprintf(index, "%d", j);
-				strncat(pHeader->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", j);
+				if (strlcat(pHeader->hdr[0].name, index, sizeof(pHeader->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeader->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
 				pHeader->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeader->hdr[0].is_partial = 0;
@@ -2697,7 +2741,7 @@ int IPACM_Lan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* ds
 				pHeader->num_hdrs = 1;
 
 				memset(pHeader->hdr[0].name, 0, sizeof(pHeader->hdr[0].name));
-				strncpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_USB_HDR_NAME_V6, sizeof(IPA_LAN_TO_LAN_USB_HDR_NAME_V6));
+				strlcpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_USB_HDR_NAME_V6, sizeof(pHeader->hdr[0].name));
 
 				for(j=0; j<MAX_OFFLOAD_PAIR; j++)
 				{
@@ -2714,8 +2758,13 @@ int IPACM_Lan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* ds
 					goto fail;
 				}
 				lan2lan_hdr_hdl_v6[j].valid = true;
-				sprintf(index, "%d", j);
-				strncat(pHeader->hdr[0].name, index, sizeof(index));
+				snprintf(index,sizeof(index), "%d", j);
+				if (strlcat(pHeader->hdr[0].name, index, sizeof(pHeader->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+				{
+					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeader->hdr[0].name));
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 
 				pHeader->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeader->hdr[0].is_partial = 0;

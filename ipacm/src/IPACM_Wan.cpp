@@ -66,10 +66,13 @@ IPACM_Wan::IPACM_Wan(int iface_index, int is_sta_mode) : IPACM_Iface(iface_index
 	num_firewall_v4 = 0;
 	num_firewall_v6 = 0;
 
-	wan_route_rule_v4_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
-	wan_route_rule_v6_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
-	wan_route_rule_v6_hdl_a5 = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
-
+	if(iface_query != NULL)
+	{
+		wan_route_rule_v4_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
+		wan_route_rule_v6_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
+		wan_route_rule_v6_hdl_a5 = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
+		IPACMDBG("IPACM->IPACM_Wan(%d) constructor: Tx:%d\n", ipa_if_num, iface_query->num_tx_props);
+	}
 	m_is_sta_mode = is_sta_mode;
 
 	active_v4 = false;
@@ -96,7 +99,6 @@ IPACM_Wan::IPACM_Wan(int iface_index, int is_sta_mode) : IPACM_Iface(iface_index
 	{
 		IPACMERR("Failed to open %s\n",IPA_DEVICE_NAME);
 	}
-	IPACMDBG("IPACM->IPACM_Wan(%d) constructor: Tx:%d\n", ipa_if_num, iface_query->num_tx_props);
 	return;
 }
 
@@ -906,12 +908,14 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 	memset(pHeaderDescriptor->hdr[0].name, 0,
 				 sizeof(pHeaderDescriptor->hdr[0].name));
 
-	sprintf(index, "%d", ipa_if_num);
-	strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
-
-	strncat(pHeaderDescriptor->hdr[0].name,
-					IPA_WAN_PARTIAL_HDR_NAME_v4,
-					sizeof(IPA_WAN_PARTIAL_HDR_NAME_v4));
+	snprintf(index,sizeof(index), "%d", ipa_if_num);
+	strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
+	if ( strlcat(pHeaderDescriptor->hdr[0].name, IPA_WAN_PARTIAL_HDR_NAME_v4, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+	{
+		IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+		res = IPACM_FAILURE;
+		goto fail;
+	}
 
 	pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 	pHeaderDescriptor->hdr[0].hdr_hdl = -1;
@@ -988,12 +992,14 @@ int IPACM_Wan::handle_header_add_evt(uint8_t mac_addr[6])
 	                 memset(pHeaderDescriptor->hdr[0].name, 0,
 	                 			 sizeof(pHeaderDescriptor->hdr[0].name));
 
-	                 sprintf(index, "%d", ipa_if_num);
-	                 strncpy(pHeaderDescriptor->hdr[0].name, index, sizeof(index));
-	                 strncat(pHeaderDescriptor->hdr[0].name,
-	                 				IPA_WAN_PARTIAL_HDR_NAME_v6,
-	                 				sizeof(IPA_WAN_PARTIAL_HDR_NAME_v6));
-
+					 snprintf(index,sizeof(index), "%d", ipa_if_num);
+					 strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
+					 if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WAN_PARTIAL_HDR_NAME_v6, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
+					 {
+					 	IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
+					 	res = IPACM_FAILURE;
+					 	goto fail;
+					 }
 	                 pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 	                 pHeaderDescriptor->hdr[0].hdr_hdl = -1;
 	                 pHeaderDescriptor->hdr[0].is_partial = 0;
@@ -2372,7 +2378,11 @@ int IPACM_Wan::query_ext_prop()
 		ext_prop = (struct ipa_ioc_query_intf_ext_props *)
 			 calloc(1, sizeof(struct ipa_ioc_query_intf_ext_props) +
 							iface_query->num_ext_props * sizeof(struct ipa_ioc_ext_intf_prop));
-
+		if(ext_prop == NULL)
+		{
+			IPACMERR("Unable to allocate memory.\n");
+			return IPACM_FAILURE;
+		}
 		memcpy(ext_prop->name, dev_name,
 					 sizeof(dev_name));
 		ext_prop->num_ext_props = iface_query->num_ext_props;
@@ -2710,6 +2720,11 @@ int IPACM_Wan::del_dft_firewall_rules(ipa_ip_type iptype)
 
 	if ((iptype == IPA_IP_v4) && (active_v4 == true))
 	{
+		if (num_firewall_v4 > IPACM_MAX_FIREWALL_ENTRIES)
+		{
+			IPACMERR("the number of v4 firewall entries overflow, aborting...\n");
+			return IPACM_FAILURE;
+		}
 		if (num_firewall_v4 != 0)
 		{
 			if (m_filtering.DeleteFilteringHdls(firewall_hdl_v4,
@@ -2737,6 +2752,11 @@ int IPACM_Wan::del_dft_firewall_rules(ipa_ip_type iptype)
 	/* free v6 firewall filter rule */
 	if ((iptype == IPA_IP_v6) && (active_v6 == true))
 	{
+		if (num_firewall_v6 > IPACM_MAX_FIREWALL_ENTRIES)
+		{
+			IPACMERR("the number of v6 firewall entries overflow, aborting...\n");
+			return IPACM_FAILURE;
+		}
 		if (num_firewall_v6 != 0)
 		{
 			if (m_filtering.DeleteFilteringHdls(firewall_hdl_v6,
@@ -3259,6 +3279,11 @@ int IPACM_Wan::install_wan_filtering_rule()
 	ipa_ioc_add_flt_rule *pFilteringTable_v6 = NULL;
 
 	mux_id = IPACM_Iface::ipacmcfg->GetQmapId();
+	if(rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
 
 	if(IPACM_Wan::num_v4_flt_rule > 0)
 	{
