@@ -865,11 +865,11 @@ int IPACM_Iface::ipa_get_if_index
 
   memset(&ifr, 0, sizeof(struct ifreq));
   (void)strncpy(ifr.ifr_name, if_name, sizeof(ifr.ifr_name));
-  IPACMDBG("interface name %s\n", ifr.ifr_name);
+  IPACMDBG("interface name (%s)\n", ifr.ifr_name);
 
   if (ioctl(fd,SIOCGIFINDEX , &ifr) < 0)
   {
-    IPACMERR("call_ioctl_on_dev: ioctl failed:\n");
+    IPACMERR("call_ioctl_on_dev: ioctl failed, interface name (%s):\n", ifr.ifr_name);
     close(fd);
     return IPACM_FAILURE;
   }

@@ -70,8 +70,8 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 		if (data->ipv4_addr != 0) /* not 0.0.0.0 */
 		{
 		    IPACMDBG(" Got New_Neighbor event with ipv4 address \n");
-			/* check if iface is bridge0*/
-			if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
+			/* check if iface is bridge interface*/
+			if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
 			{
 				/* searh if seen this client or not*/
 				for (i = 0; i < num_neighbor_client_temp; i++)
@@ -135,8 +135,8 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 		if ((data->ipv6_addr[0]) || (data->ipv6_addr[1]) || (data->ipv6_addr[2]) || (data->ipv6_addr[3]))
 		{
 		    IPACMDBG(" Got New_Neighbor event with ipv6 address \n");
-			/* check if iface is bridge0*/
-			if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
+			/* check if iface is bridge interface*/
+			if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
 			{
 				/* searh if seen this client or not*/
 				for (i = 0; i < num_neighbor_client_temp; i++)
@@ -200,8 +200,8 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 			    /* find the client */
 				if (memcmp(neighbor_client[i].mac_addr, data->mac_addr, sizeof(neighbor_client[i].mac_addr)) == 0)
 				{
-					/* check if iface is not bridge0*/
-					if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) != 0)
+					/* check if iface is not bridge interface*/
+					if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) != 0)
 					{
                        neighbor_client[i].iface_index = data->if_index;
 						}
@@ -211,8 +211,8 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 			/* not find client */
 			if (i == num_neighbor_client_temp)
 			{
-				/* check if iface is not bridge0*/
-				if (strcmp(IPA_VIRTUAL_IFACE_NAME, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) != 0)
+				/* check if iface is not bridge interface*/
+				if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) != 0)
 				{
 					  
 				if (num_neighbor_client_temp < IPA_MAX_NUM_NEIGHBOR_CLIENTS)

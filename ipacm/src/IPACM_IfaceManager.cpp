@@ -73,7 +73,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			break;
 		case IPA_LINK_UP_EVENT:
 			IPACMDBG("link up %d: \n", evt_data->if_index);
-			create_iface_instance(evt_data->if_index, 0);
+			create_iface_instance(evt_data->if_index, Q6_WAN);
 			break;
 
 		case IPA_USB_LINK_UP_EVENT:
@@ -81,13 +81,13 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			/* check if it's WAN_IF */
 			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == WAN_IF)
 			{
-				/* usb-backhaul using sta_mode 2*/
+				/* usb-backhaul using sta_mode ECM_WAN*/
 			IPACMDBG("WAN-usb (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
-				create_iface_instance(evt_data->if_index, 2);
+				create_iface_instance(evt_data->if_index, ECM_WAN);
 			}
 			else
 			{
-				create_iface_instance(evt_data->if_index, 0);
+				create_iface_instance(evt_data->if_index, Q6_WAN);
 			}
 			break;
 
@@ -98,7 +98,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			{
 			IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WLAN_IF;
 			IPACMDBG("WLAN AP (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
-			create_iface_instance(evt_data->if_index, 0);
+			create_iface_instance(evt_data->if_index, Q6_WAN);
 			}
 			else
 			{
@@ -111,10 +111,10 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			/* change iface category from unknown to WAN_IF */
 			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat==UNKNOWN_IF)
 			{
-				/* wlan-backhaul using sta_mode 1 */
+				/* wlan-backhaul using sta_mode WLAN_WAN */
 			IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat=WAN_IF;
 			IPACMDBG("WLAN STA (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
-				create_iface_instance(evt_data->if_index, 1);
+				create_iface_instance(evt_data->if_index, WLAN_WAN);
 			}
 			else
 			{
@@ -128,7 +128,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 	return;
 }
 
-int IPACM_IfaceManager::create_iface_instance(int if_index, int is_sta_mode)
+int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type is_sta_mode)
 {
 	int ipa_interface_index;
 	ipa_interface_index = IPACM_Iface::iface_ipa_index_query(if_index);

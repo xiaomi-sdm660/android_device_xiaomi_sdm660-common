@@ -58,7 +58,6 @@ extern "C"
 
 #define IPA_WLAN_PARTIAL_HDR_OFFSET  0 // dst mac first then src mac
 //#define IPA_ETH_PARTIAL_HDR_OFFSET  8 // dst mac first then src mac
-#define IPA_VIRTUAL_IFACE_NAME "bridge0"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_v4"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v6  "IEEE802_3_v6"
 #define IPA_WAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_STA_v4"
@@ -260,6 +259,11 @@ typedef struct _ipacm_event_iface_up
 	bool is_sta;
 }ipacm_event_iface_up;
 
-
+typedef enum
+{
+	Q6_WAN = 0,
+	WLAN_WAN,
+	ECM_WAN
+} ipacm_wan_iface_type;
 
 #endif /* IPA_CM_DEFS_H */
