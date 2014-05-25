@@ -61,6 +61,9 @@ struct ipa_flt_rule_add IPACM_Wan::flt_rule_v6[IPA_MAX_FLT_RULE];
 bool IPACM_Wan::backhaul_is_sta_mode = false;
 bool IPACM_Wan::is_ext_prop_set = false;
 
+int IPACM_Wan::num_ipv4_modem_pdn = 0;
+int IPACM_Wan::num_ipv6_modem_pdn = 0;
+
 IPACM_Wan::IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode) : IPACM_Iface(iface_index)
 {
 	num_firewall_v4 = 0;
@@ -87,6 +90,7 @@ IPACM_Wan::IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode) : IPACM_
 	if(m_is_sta_mode == Q6_WAN)
 	{
 		IPACMDBG("The new WAN interface is modem.\n");
+		is_default_gateway = false;
 		query_ext_prop();
 	}
 	else
@@ -202,6 +206,9 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	    {
 			if(m_is_sta_mode == m_is_sta_mode)
 			{
+				modem_ipv6_pdn_index = num_ipv6_modem_pdn;
+				num_ipv6_modem_pdn++;
+				IPACMDBG("Now the number of modem ipv6 pdn is %d.\n", num_ipv6_modem_pdn);
 				init_fl_rule_ex(data->iptype);
 			}
 			else
@@ -253,6 +260,9 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 
 		if(m_is_sta_mode == m_is_sta_mode)
 		{
+			modem_ipv4_pdn_index = num_ipv4_modem_pdn;
+			num_ipv4_modem_pdn++;
+			IPACMDBG("Now the number of modem ipv4 pdn is %d.\n", num_ipv4_modem_pdn);
 			init_fl_rule_ex(data->iptype);
 		}
 		else
@@ -481,6 +491,12 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 
 		if(m_is_sta_mode == Q6_WAN)
 		{
+			if(is_default_gateway == false)
+			{
+				IPACMDBG("Interface %s is not default gw, return.\n", dev_name);
+				return;
+			}
+
 			if(ip_type == IPA_IP_v4)
 			{
 				del_wan_firewall_rule(IPA_IP_v4);
@@ -553,6 +569,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		IPACMDBG("No tx properties, ignore default route setting\n");
 		return IPACM_SUCCESS;
 	}
+
+	is_default_gateway = true;
+	IPACMDBG("Default route is added to iface %s.\n", dev_name);
 
 	if (m_is_sta_mode !=Q6_WAN)
 	{
@@ -2158,11 +2177,17 @@ int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 
 	if(iptype == IPA_IP_v4)
 	{
+		if(modem_ipv4_pdn_index == 0)	//install ipv4 default modem DL filtering rules only once
+		{
 		add_dft_filtering_rule(flt_rule_v4, IPACM_Wan::num_v4_flt_rule, IPA_IP_v4);
+	}
 	}
 	else if(iptype == IPA_IP_v6)
 	{
+		if(modem_ipv6_pdn_index == 0)	//install ipv6 default modem DL filtering rules only once
+		{
 		add_dft_filtering_rule(flt_rule_v6, IPACM_Wan::num_v6_flt_rule, IPA_IP_v6);
+	}
 	}
 	else
 	{
@@ -2425,6 +2450,7 @@ int IPACM_Wan::config_wan_firewall_rule(ipa_ip_type iptype)
 
 	if(iptype == IPA_IP_v4)
 	{
+		IPACM_Wan::num_v4_flt_rule = IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV4;
 		if(IPACM_FAILURE == add_icmp_alg_rules(flt_rule_v4, IPACM_Wan::num_v4_flt_rule, IPA_IP_v4))
 		{
 			IPACMERR("Failed to add ICMP and ALG port filtering rules.\n");
@@ -2443,6 +2469,7 @@ int IPACM_Wan::config_wan_firewall_rule(ipa_ip_type iptype)
 	}
 	else if(iptype == IPA_IP_v6)
 	{
+		IPACM_Wan::num_v6_flt_rule = IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6;
 		if(IPACM_FAILURE == add_icmp_alg_rules(flt_rule_v6, IPACM_Wan::num_v6_flt_rule, IPA_IP_v6))
 		{
 			IPACMERR("Failed to add ICMP and ALG port filtering rules.\n");
@@ -2519,6 +2546,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		memcpy(&flt_rule_entry.rule.attrib,
 					 &rx_prop->rx[0].attrib,
 					 sizeof(flt_rule_entry.rule.attrib));
+		/* remove meta data mask since we only install default flt rules once for all modem PDN*/
+		flt_rule_entry.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = 0xF0000000;
 		flt_rule_entry.rule.attrib.u.v4.dst_addr = 0xE0000000;
@@ -2594,6 +2623,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 		memcpy(&flt_rule_entry.rule.attrib,
 					 &rx_prop->rx[0].attrib,
 					 sizeof(flt_rule_entry.rule.attrib));
+		/* remove meta data mask since we only install default flt rules once for all modem PDN*/
+		flt_rule_entry.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0xFF000000;
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
@@ -2797,6 +2828,9 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 		return IPACM_SUCCESS;
 	}
 
+	is_default_gateway = false;
+	IPACMDBG("Default route is deleted to iface %s.\n", dev_name);
+
 	if (((iptype == IPA_IP_v4) && (active_v4 == true)) ||
 			((iptype == IPA_IP_v6) && (active_v6 == true)))
 	{
@@ -2913,6 +2947,9 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 		IPACMDBG("No tx properties, ignore delete default route setting\n");
 		return IPACM_SUCCESS;
 	}
+
+	is_default_gateway = false;
+	IPACMDBG("Default route is deleted to iface %s.\n", dev_name);
 
 	if (((iptype == IPA_IP_v4) && (active_v4 == true)) ||
 		((iptype == IPA_IP_v6) && (active_v6 == true)))
@@ -3154,11 +3191,25 @@ int IPACM_Wan::handle_down_evt_ex()
 
 	if(ip_type == IPA_IP_v4)
 	{
+		num_ipv4_modem_pdn--;
+		IPACMDBG("Now the number of ipv4 modem pdn is %d.\n", num_ipv4_modem_pdn);
+		/* only when default gw goes down we post WAN_DOWN event*/
+		if(is_default_gateway == true)
+		{
 		IPACM_Wan::wan_up = 0;
+			del_wan_firewall_rule(IPA_IP_v4);
+			install_wan_filtering_rule();
+			handle_route_del_evt_ex(IPA_IP_v4);
+		}
+
+		/* only when the last ipv4 modem interface goes down, delete ipv4 default flt rules*/
+		if(num_ipv4_modem_pdn == 0)
+		{
+			IPACMDBG("Now the number of modem ipv4 interface is 0, delete default flt rules.\n");
 		IPACM_Wan::num_v4_flt_rule = 0;
 		memset(IPACM_Wan::flt_rule_v4, 0, IPA_MAX_FLT_RULE * sizeof(struct ipa_flt_rule_add));
 		install_wan_filtering_rule();
-		handle_route_del_evt_ex(IPA_IP_v4);
+		}
 
 		if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[0], IPA_IP_v4) == false)
 		{
@@ -3169,11 +3220,25 @@ int IPACM_Wan::handle_down_evt_ex()
 	}
 	else if(ip_type == IPA_IP_v6)
 	{
+		num_ipv6_modem_pdn--;
+		IPACMDBG("Now the number of ipv6 modem pdn is %d.\n", num_ipv6_modem_pdn);
+		/* only when default gw goes down we post WAN_DOWN event*/
+		if(is_default_gateway == true)
+		{
 		IPACM_Wan::wan_up_v6 = 0;
+			del_wan_firewall_rule(IPA_IP_v6);
+			install_wan_filtering_rule();
+			handle_route_del_evt_ex(IPA_IP_v6);
+		}
+
+		/* only when the last ipv6 modem interface goes down, delete ipv6 default flt rules*/
+		if(num_ipv6_modem_pdn == 0)
+		{
+			IPACMDBG("Now the number of modem ipv6 interface is 0, delete default flt rules.\n");
 		IPACM_Wan::num_v6_flt_rule = 0;
 		memset(IPACM_Wan::flt_rule_v6, 0, IPA_MAX_FLT_RULE * sizeof(struct ipa_flt_rule_add));
 		install_wan_filtering_rule();
-		handle_route_del_evt_ex(IPA_IP_v6);
+		}
 
 		for (i = 0; i < 2*num_dft_rt_v6; i++)
 		{
@@ -3187,17 +3252,40 @@ int IPACM_Wan::handle_down_evt_ex()
 	}
 	else
 	{
+		num_ipv4_modem_pdn--;
+		IPACMDBG("Now the number of ipv4 modem pdn is %d.\n", num_ipv4_modem_pdn);
+		num_ipv6_modem_pdn--;
+		IPACMDBG("Now the number of ipv6 modem pdn is %d.\n", num_ipv6_modem_pdn);
+		/* only when default gw goes down we post WAN_DOWN event*/
+		if(is_default_gateway == true)
+		{
 		IPACM_Wan::wan_up = 0;
-		IPACM_Wan::num_v4_flt_rule = 0;
-		memset(IPACM_Wan::flt_rule_v4, 0, IPA_MAX_FLT_RULE * sizeof(struct ipa_flt_rule_add));
+			del_wan_firewall_rule(IPA_IP_v4);
 		handle_route_del_evt_ex(IPA_IP_v4);
 
 		IPACM_Wan::wan_up_v6 = 0;
+			del_wan_firewall_rule(IPA_IP_v6);
+			handle_route_del_evt_ex(IPA_IP_v6);
+
+			install_wan_filtering_rule();
+		}
+
+		/* only when the last ipv4 modem interface goes down, delete ipv4 default flt rules*/
+		if(num_ipv4_modem_pdn == 0)
+		{
+			IPACMDBG("Now the number of modem ipv4 interface is 0, delete default flt rules.\n");
+			IPACM_Wan::num_v4_flt_rule = 0;
+			memset(IPACM_Wan::flt_rule_v4, 0, IPA_MAX_FLT_RULE * sizeof(struct ipa_flt_rule_add));
+			install_wan_filtering_rule();
+		}
+		/* only when the last ipv6 modem interface goes down, delete ipv6 default flt rules*/
+		if(num_ipv6_modem_pdn == 0)
+		{
+			IPACMDBG("Now the number of modem ipv6 interface is 0, delete default flt rules.\n");
 		IPACM_Wan::num_v6_flt_rule = 0;
 		memset(IPACM_Wan::flt_rule_v6, 0, IPA_MAX_FLT_RULE * sizeof(struct ipa_flt_rule_add));
-		handle_route_del_evt_ex(IPA_IP_v6);
-
 		install_wan_filtering_rule();
+		}
 
 		if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[0], IPA_IP_v4) == false)
 		{

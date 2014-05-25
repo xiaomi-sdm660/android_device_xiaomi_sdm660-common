@@ -19,6 +19,30 @@
 			   <Category>WAN</Category>
 			</Iface>			
 			<Iface>
+			   <Name>rmnet_data2</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
+			   <Name>rmnet_data3</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
+			   <Name>rmnet_data4</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
+			   <Name>rmnet_data5</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
+			   <Name>rmnet_data6</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
+			   <Name>rmnet_data7</Name>
+			   <Category>WAN</Category>
+			</Iface>
+			<Iface>
 			   <Name>wlan0</Name>
 			   <Category>UNKNOWN</Category>
 			</Iface>			
