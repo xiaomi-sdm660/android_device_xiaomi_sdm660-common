@@ -134,6 +134,12 @@ int IPACM_Config::Init(void)
 		strncpy(iface_table[i].iface_name, cfg->iface_config.iface_entries[i].iface_name, sizeof(iface_table[i].iface_name));
 		iface_table[i].if_cat = cfg->iface_config.iface_entries[i].if_cat;
 		IPACMDBG("IPACM_Config::iface_table[%d] = %s, cat=%d\n", i, iface_table[i].iface_name, iface_table[i].if_cat);
+		/* copy bridge interface name to ipacmcfg */
+		if( iface_table[i].if_cat == VIRTUAL_IF)
+		{
+			memcpy(ipa_virtual_iface_name, iface_table[i].iface_name, sizeof(ipa_virtual_iface_name));
+			IPACMDBG("ipa_virtual_iface_name(%s) \n", ipa_virtual_iface_name);
+		}
 	}
 
 	/* Construct IPACM Private_Subnet table */
@@ -151,11 +157,11 @@ int IPACM_Config::Init(void)
 					 sizeof(cfg->private_subnet_config.private_subnet_entries[i].subnet_mask));
 
 		subnet_addr = htonl(private_subnet_table[i].subnet_addr);
-		IPACMDBG("%dst::private_subnet_table= %s \n ", i,
+		IPACMDBG("%dst::private_subnet_table= %s \n ", i+1,
 						 inet_ntoa(*(struct in_addr *)&(subnet_addr)));
 
 		subnet_mask =  htonl(private_subnet_table[i].subnet_mask);
-		IPACMDBG("%dst::private_subnet_table= %s \n ", i,
+		IPACMDBG("%dst::private_subnet_mask= %s \n ", i+1,
 						 inet_ntoa(*(struct in_addr *)&(subnet_mask)));
 	}
 

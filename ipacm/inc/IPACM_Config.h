@@ -97,6 +97,9 @@ public:
 	/* Store the non nat iface names */
 	NatIfaces *pNatIfaces; 
 
+	/* Store the bridge iface names */
+	char ipa_virtual_iface_name[IPA_IFACE_NAME_LEN];
+
 	/* Store the number of interface IPACM read from XML file */
 	int ipa_num_ipa_interfaces;
 

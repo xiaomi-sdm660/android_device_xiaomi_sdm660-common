@@ -62,7 +62,7 @@ public:
 	static bool wan_up;
 	static bool wan_up_v6;
 
-	IPACM_Wan(int iface_index, int is_sta_mode);
+	IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode);
 	virtual ~IPACM_Wan();
 
 	static bool isWanUP()
@@ -85,7 +85,7 @@ public:
 	static int num_v4_flt_rule;
 	static int num_v6_flt_rule;
 
-	int m_is_sta_mode;
+	ipacm_wan_iface_type m_is_sta_mode;
 	static bool backhaul_is_sta_mode;
 	static bool is_ext_prop_set;
 
