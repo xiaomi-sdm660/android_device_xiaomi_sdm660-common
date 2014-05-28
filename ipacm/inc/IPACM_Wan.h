@@ -107,6 +107,16 @@ private:
 	bool header_partial_default_wan_v4;
 	bool header_partial_default_wan_v6;
 
+	static int num_ipv4_modem_pdn;
+
+	static int num_ipv6_modem_pdn;
+
+	int modem_ipv4_pdn_index;
+
+	int modem_ipv6_pdn_index;
+
+	bool is_default_gateway;
+
 	/* IPACM firewall Configuration file*/
 	IPACM_firewall_conf_t firewall_config;
 
