@@ -53,7 +53,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 {
-
 	num_eth_client = 0;
 	header_name_count = 0;
 
@@ -99,6 +98,8 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(tcp_ctl_flt_rule_hdl_v4, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
 	memset(tcp_ctl_flt_rule_hdl_v6, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
 	is_mode_switch = false;
+	if_ipv4_subnet =0;
+	memset(private_fl_rule_hdl, 0, IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(uint32_t));
 	return;
 }
 
@@ -148,6 +149,27 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				handle_down_evt();
 				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
 				is_mode_switch = true; // need post internal usb-link up event
+				return;
+			}
+		}
+		break;
+
+	case IPA_PRIVATE_SUBNET_CHANGE_EVENT:
+		{
+			ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
+			/* internel event: data->if_index is ipa_if_index */
+			if (data->if_index == ipa_if_num)
+			{
+				IPACMDBG("Received IPA_PRIVATE_SUBNET_CHANGE_EVENT from itself posting, ignore\n");
+				return;
+			}
+			else
+			{
+				IPACMDBG("Received IPA_PRIVATE_SUBNET_CHANGE_EVENT from other LAN iface \n");
+#ifdef FEATURE_IPA_ANDROID
+				handle_private_subnet_android(IPA_IP_v4);
+#endif
+				IPACMDBG(" delete old private subnet rules, use new sets \n");
 				return;
 			}
 		}
@@ -216,7 +238,12 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 					{
 						return;
 					}
+#ifdef FEATURE_IPA_ANDROID
+					add_dummy_private_subnet_flt_rule(data->iptype);
+					handle_private_subnet_android(data->iptype);
+#else
 					handle_private_subnet(data->iptype);
+#endif
 
 					if (IPACM_Wan::isWanUP())
 					{
@@ -433,6 +460,10 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 						+ IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 #endif
 
+#ifdef FEATURE_IPA_ANDROID
+	flt_rule_count_v4 = flt_rule_count_v4 - IPACM_Iface::ipacmcfg->ipa_num_private_subnet + IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+#endif
+
 	if(is_sta_mode == false)
 	{
 		if (num_wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES)
@@ -494,6 +525,21 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	int res = IPACM_SUCCESS;
 
 	IPACMDBG("set route/filter rule ip-type: %d \n", data->iptype);
+
+/* Add private subnet*/
+#ifdef FEATURE_IPA_ANDROID
+if (data->iptype == IPA_IP_v4)
+{
+//	IPACMDBG("Origin IPACM private subnet_addr as: 0x%x \n", data->ipv4_addr);
+	IPACMDBG("current IPACM private subnet_addr number(%d)\n", IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+	if_ipv4_subnet = (data->ipv4_addr >> 8) << 8;
+	IPACMDBG(" Add IPACM private subnet_addr as: 0x%x \n", if_ipv4_subnet);
+	if(IPACM_Iface::ipacmcfg->AddPrivateSubnet(if_ipv4_subnet, ipa_if_num) == false)
+	{
+		IPACMERR(" can't Add IPACM private subnet_addr as: 0x%x \n", if_ipv4_subnet);
+	}
+}
+#endif /* defined(FEATURE_IPA_ANDROID)*/
 
 	if (data->iptype == IPA_IP_v4)
 	{
@@ -1714,12 +1760,21 @@ int IPACM_Lan::handle_down_evt()
 			goto fail;
 		}
 
+#ifdef FEATURE_IPA_ANDROID
+		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES) == false)
+		{
+			IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#else
 		if (m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
 		{
 			IPACMERR("Error Deleting RuleTable(1) to Filtering, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
+#endif
 	}
 
     IPACMDBG("Finished delete default iface ipv4 filtering rules \n ");
@@ -1772,6 +1827,18 @@ int IPACM_Lan::handle_down_evt()
 	/* posting ip to lan2lan module to delete RT/FILTER rules*/
 	post_lan2lan_client_disconnect_msg();
 
+/* Delete private subnet*/
+#ifdef FEATURE_IPA_ANDROID
+if (ip_type != IPA_IP_v6)
+{
+	IPACMDBG("current IPACM private subnet_addr number(%d)\n", IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+	IPACMDBG(" Delete IPACM private subnet_addr as: 0x%x \n", if_ipv4_subnet);
+	if(IPACM_Iface::ipacmcfg->DelPrivateSubnet(if_ipv4_subnet, ipa_if_num) == false)
+	{
+		IPACMERR(" can't Delete IPACM private subnet_addr as: 0x%x \n", if_ipv4_subnet);
+	}
+}
+#endif /* defined(FEATURE_IPA_ANDROID)*/
 fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */
 	if (rx_prop != NULL)
@@ -3196,4 +3263,163 @@ void IPACM_Lan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
 fail:
 	free(pFilteringTable);
 	return;
+}
+
+int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
+{
+	if(rx_prop == NULL)
+	{
+		IPACMDBG("There is no rx_prop for iface %s, not able to add dummy private subnet filtering rule.\n", dev_name);
+		return 0;
+	}
+
+	int i, len, res = IPACM_SUCCESS;
+	struct ipa_flt_rule_add flt_rule;
+	ipa_ioc_add_flt_rule* pFilteringTable;
+
+	len = sizeof(struct ipa_ioc_add_flt_rule) +	IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(struct ipa_flt_rule_add);
+
+	pFilteringTable = (struct ipa_ioc_add_flt_rule *)malloc(len);
+	if (pFilteringTable == NULL)
+	{
+		IPACMERR("Error allocate flt table memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+	pFilteringTable->commit = 1;
+	pFilteringTable->ep = rx_prop->rx[0].src_pipe;
+	pFilteringTable->global = false;
+	pFilteringTable->ip = iptype;
+	pFilteringTable->num_rules = IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+
+	memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_add));
+
+	flt_rule.rule.retain_hdr = 0;
+	flt_rule.at_rear = true;
+	flt_rule.flt_rule_hdl = -1;
+	flt_rule.status = -1;
+	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+
+	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib,
+			sizeof(flt_rule.rule.attrib));
+
+	if(iptype == IPA_IP_v4)
+	{
+		flt_rule.rule.attrib.attrib_mask = IPA_FLT_SRC_ADDR | IPA_FLT_DST_ADDR;
+		flt_rule.rule.attrib.u.v4.src_addr_mask = ~0;
+		flt_rule.rule.attrib.u.v4.src_addr = ~0;
+		flt_rule.rule.attrib.u.v4.dst_addr_mask = ~0;
+		flt_rule.rule.attrib.u.v4.dst_addr = ~0;
+
+		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+		{
+			memcpy(&(pFilteringTable->rules[i]), &flt_rule, sizeof(struct ipa_flt_rule_add));
+		}
+
+		if (false == m_filtering.AddFilteringRule(pFilteringTable))
+		{
+			IPACMERR("Error adding dummy private subnet v4 flt rule\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		else
+		{
+			flt_rule_count_v4 += IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+			/* copy filter rule hdls */
+			for (int i = 0; i < IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+			{
+				if (pFilteringTable->rules[i].status == 0)
+				{
+					private_fl_rule_hdl[i] = pFilteringTable->rules[i].flt_rule_hdl;
+					IPACMDBG("Private subnet v4 flt rule %d hdl:0x%x\n", i, private_fl_rule_hdl[i]);
+				}
+				else
+				{
+					IPACMERR("Failed adding lan2lan v4 flt rule %d\n", i);
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+			}
+		}
+	}
+fail:
+	free(pFilteringTable);
+	return res;
+}
+
+int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
+{
+	int i, len, res = IPACM_SUCCESS, offset;
+	struct ipa_flt_rule_mdfy flt_rule;
+	struct ipa_ioc_mdfy_flt_rule* pFilteringTable;
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+
+	if (iptype == IPA_IP_v4)
+	{
+		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+		{
+			reset_to_dummy_flt_rule(IPA_IP_v4, private_fl_rule_hdl[i]);
+		}
+
+		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPACM_Iface::ipacmcfg->ipa_num_private_subnet) * sizeof(struct ipa_flt_rule_mdfy);
+		pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
+		if (!pFilteringTable)
+		{
+			IPACMERR("Failed to allocate ipa_ioc_mdfy_flt_rule memory...\n");
+			return IPACM_FAILURE;
+		}
+		memset(pFilteringTable, 0, len);
+
+		pFilteringTable->commit = 1;
+		pFilteringTable->ip = iptype;
+		pFilteringTable->num_rules = (uint8_t)IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+
+		/* Make LAN-traffic always go A5, use default IPA-RT table */
+		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4))
+		{
+			IPACMERR("Failed to get routing table handle.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
+		memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_mdfy));
+		flt_rule.status = -1;
+
+		flt_rule.rule.retain_hdr = 1;
+		flt_rule.rule.to_uc = 0;
+		flt_rule.rule.action = IPA_PASS_TO_ROUTING;
+		flt_rule.rule.eq_attrib_type = 0;
+		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
+		IPACMDBG("Private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
+
+		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+
+		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
+		{
+			flt_rule.rule_hdl = private_fl_rule_hdl[i];
+			flt_rule.rule.attrib.u.v4.dst_addr_mask = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask;
+			flt_rule.rule.attrib.u.v4.dst_addr = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr;
+			memcpy(&(pFilteringTable->rules[i]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+		}
+
+		if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
+		{
+			IPACMERR("Failed to modify private subnet filtering rules.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+fail:
+	if(pFilteringTable != NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
 }
