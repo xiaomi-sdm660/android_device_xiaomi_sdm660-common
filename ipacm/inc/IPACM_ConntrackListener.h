@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef IPACM_CONNTRACK_LISTENER
 #define IPACM_CONNTRACK_LISTENER
 
-#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +67,7 @@ private:
 #ifdef CT_OPT
 	 IPACM_LanToLan *p_lan2lan;
 #endif
-	 
+
 	 void ProcessCTMessage(void *);
 	 void ProcessTCPorUDPMsg(struct nf_conntrack *,
 			enum nf_conntrack_msg_type, u_int8_t);

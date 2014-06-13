@@ -265,7 +265,6 @@ static struct msghdr* ipa_nl_alloc_msg
 	if(msgh == NULL)
 	{
 		IPACMERR("Failed malloc for msghdr\n");
-		free(msgh);
 		return NULL;
 	}
 
@@ -273,7 +272,6 @@ static struct msghdr* ipa_nl_alloc_msg
 	if(nladdr == NULL)
 	{
 		IPACMERR("Failed malloc for sockaddr\n");
-		free(nladdr);
 		free(msgh);
 		return NULL;
 	}
@@ -282,7 +280,6 @@ static struct msghdr* ipa_nl_alloc_msg
 	if(iov == NULL)
 	{
 		PERROR("Failed malloc for iovec");
-		free(iov);
 		free(nladdr);
 		free(msgh);
 		return NULL;
@@ -292,7 +289,6 @@ static struct msghdr* ipa_nl_alloc_msg
 	if(buf == NULL)
 	{
 		IPACMERR("Failed malloc for mglen\n");
-		free(buf);
 		free(iov);
 		free(nladdr);
 		free(msgh);
@@ -337,11 +333,22 @@ static void ipa_nl_release_msg
 		buf = (unsigned char *)msgh->msg_iov->iov_base;
 	}
 
+	if(buf)
+	{
 	free(buf);
+	}
+	if(iov)
+	{
 	free(iov);
+	}
+	if(nladdr)
+	{
 	free(nladdr);
+	}
+	if(msgh)
+	{
 	free(msgh);
-
+	}
 	return;
 }
 
@@ -593,7 +600,7 @@ static int ipa_nl_decode_nlmsg
 	 ipa_nl_msg_t  *msg_ptr
 	 )
 {
-	char dev_name[IF_NAME_LEN];
+	char dev_name[IF_NAME_LEN]={0};
 	int ret_val, mask_value, mask_index, mask_value_v6;
 	struct nlmsghdr *nlh = (struct nlmsghdr *)buffer;
 
@@ -607,6 +614,7 @@ static int ipa_nl_decode_nlmsg
 
 	while(NLMSG_OK(nlh, buflen))
 	{
+		memset(dev_name,0,IF_NAME_LEN);
 		IPACMDBG("Received msg:%d from netlink\n", nlh->nlmsg_type)
 		switch(nlh->nlmsg_type)
 		{
@@ -628,8 +636,13 @@ static int ipa_nl_decode_nlmsg
 
 				if(IFF_UP & msg_ptr->nl_link_info.metainfo.ifi_change)
 				{
-					IPACMDBG("\n GOT useful newlink event\n");
+					IPACMDBG("GOT useful newlink event\n");
 					ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+					if(ret_val != IPACM_SUCCESS)
+					{
+						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
+					}
 
 					data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 					if(data_fid == NULL)
@@ -645,7 +658,7 @@ static int ipa_nl_decode_nlmsg
 						/* post link up to command queue */
 						evt_data.event = IPA_LINK_UP_EVENT;
 						IPACMDBG("Posting IPA_LINK_UP_EVENT with if index: %d\n",
-										 data_fid->if_index);
+										 msg_ptr->nl_link_info.metainfo.ifi_index);
 					}
 					else
 					{
@@ -679,7 +692,12 @@ static int ipa_nl_decode_nlmsg
 					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
 
 				        ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
-				        IPACMDBG("Got a ECM link_up event (Interface %s) \n", dev_name);
+					if(ret_val != IPACM_SUCCESS)
+					{
+						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
+					}
+				    IPACMDBG("sky 8994  Got a usb link_up event (Interface %s, %d) \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
 
                                         /*--------------------------------------------------------------------------
                                            Post LAN iface (ECM) link up event
@@ -687,6 +705,8 @@ static int ipa_nl_decode_nlmsg
                                         evt_data.event = IPA_USB_LINK_UP_EVENT;
 					evt_data.evt_data = data_fid;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
+					IPACMDBG("Posting usb IPA_LINK_UP_EVENT with if index: %d\n",
+										 data_fid->if_index);
                                 }
                                 else if(!(msg_ptr->nl_link_info.metainfo.ifi_flags & IFF_LOWER_UP))
                                 {
@@ -699,7 +719,12 @@ static int ipa_nl_decode_nlmsg
 					data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
 
 					ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
-         		                IPACMDBG("Got a ECM link_down event (Interface %s) \n", dev_name);
+					if(ret_val != IPACM_SUCCESS)
+					{
+						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
+					}
+         		    IPACMDBG("Got a usb link_down event (Interface %s) \n", dev_name);
 
                     /*--------------------------------------------------------------------------
                        Post LAN iface (ECM) link down event
@@ -707,6 +732,8 @@ static int ipa_nl_decode_nlmsg
                     evt_data.event = IPA_LINK_DOWN_EVENT;
 					evt_data.evt_data = data_fid;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
+					IPACMDBG("Posting usb IPA_LINK_DOWN_EVENT with if index: %d\n",
+										 data_fid->if_index);
                                 }
 
 			}
@@ -728,6 +755,7 @@ static int ipa_nl_decode_nlmsg
 				if(ret_val != IPACM_SUCCESS)
 				{
 					IPACMERR("Error while getting interface name\n");
+					return IPACM_FAILURE;
 				}
 				IPACMDBG("Interface %s bring down \n", dev_name);
 
@@ -845,6 +873,7 @@ static int ipa_nl_decode_nlmsg
 					if(ret_val != IPACM_SUCCESS)
 					{
 						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
 					}
 
 					IPACM_NL_REPORT_ADDR( "route add -host", msg_ptr->nl_route_info.attr_info.dst_addr );
@@ -882,6 +911,7 @@ static int ipa_nl_decode_nlmsg
 					if(ret_val != IPACM_SUCCESS)
 					{
 						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
 					}
 
 					if(AF_INET6 == msg_ptr->nl_route_info.metainfo.rtm_family)
@@ -1097,6 +1127,7 @@ static int ipa_nl_decode_nlmsg
 					if(ret_val != IPACM_SUCCESS)
 					{
 						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
 					}
 					IPACM_NL_REPORT_ADDR( "route del -host ", msg_ptr->nl_route_info.attr_info.dst_addr);
 					IPACM_NL_REPORT_ADDR( " gw ", msg_ptr->nl_route_info.attr_info.gateway_addr);
@@ -1133,6 +1164,7 @@ static int ipa_nl_decode_nlmsg
 					if(ret_val != IPACM_SUCCESS)
 					{
 						IPACMERR("Error while getting interface name\n");
+						return IPACM_FAILURE;
 					}
 
 					/* insert to command queue */
@@ -1206,6 +1238,7 @@ static int ipa_nl_decode_nlmsg
 				if(ret_val != IPACM_SUCCESS)
 				{
 					IPACMERR("Error while getting interface name");
+					return IPACM_FAILURE;
 				}
 
 				if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_DST)
@@ -1471,9 +1504,15 @@ int ipa_nl_recv_msg(int fd)
 			IPACMERR("Failed to decode nl message \n");
 			goto error;
 		}
-
+		/* Release NetLink message buffer */
+		if(msghdr)
+		{
 		ipa_nl_release_msg(msghdr);
+		}
+		if(nlmsg)
+		{
 		free(nlmsg);
+	}
 	}
 
 	return IPACM_SUCCESS;
