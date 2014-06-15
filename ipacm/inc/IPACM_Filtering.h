@@ -69,7 +69,6 @@ public:
 private:
 	static const char *DEVICE_NAME;
 	int fd; /* File descriptor of the IPA device node /dev/ipa */
-	int fd_wwan_ioctl;
 };
 
 #endif //IPACM_FILTERING_H
