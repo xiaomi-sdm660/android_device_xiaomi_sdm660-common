@@ -35,7 +35,6 @@
 #include <msg_q.h>
 #include <log_util.h>
 #include <loc_log.h>
-#include <android_runtime/AndroidRuntime.h>
 
 namespace loc_core {
 
