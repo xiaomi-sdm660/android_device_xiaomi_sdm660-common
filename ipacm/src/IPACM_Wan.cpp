@@ -204,7 +204,7 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 
         if (num_dft_rt_v6 == 0)
 	    {
-			if(m_is_sta_mode == m_is_sta_mode)
+			if(m_is_sta_mode == Q6_WAN)
 			{
 				modem_ipv6_pdn_index = num_ipv6_modem_pdn;
 				num_ipv6_modem_pdn++;
@@ -258,7 +258,7 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
         IPACMDBG("ipv4 wan iface rt-rule hdll=0x%x\n", dft_rt_rule_hdl[0]);
 			/* initial multicast/broadcast/fragment filter rule */
 
-		if(m_is_sta_mode == m_is_sta_mode)
+		if(m_is_sta_mode == Q6_WAN)
 		{
 			modem_ipv4_pdn_index = num_ipv4_modem_pdn;
 			num_ipv4_modem_pdn++;
