@@ -137,7 +137,6 @@ private:
 
 	int handle_down_evt();
 
-
 	/*handle wan-iface down event */
 	int handle_down_evt_ex();
 
