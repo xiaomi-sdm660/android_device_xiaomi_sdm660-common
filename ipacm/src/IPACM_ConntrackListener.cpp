@@ -361,23 +361,12 @@ int IPACM_ConntrackListener::CreateConnTrackThreads(void)
 
 				 IPACMDBG("created UDP conntrack event listner thread\n");
 			}
-
 			isCTReg = true;
 	 }
 
 	 return 0;
 
 error:
-	 if(tcp_thread)
-	 {
-			pthread_cancel(tcp_thread);
-	 }
-
-	 if(udp_thread)
-	 {
-			pthread_cancel(tcp_thread);
-	 }
-
 	 return -1;
 }
 int IPACM_ConntrackListener::CreateNatThreads(void)
@@ -419,16 +408,6 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 	 return 0;
 
 error:
-	 if(udpcto_thread)
-	 {
-			pthread_cancel(udpcto_thread);
-	 }
-
-	 if(to_monitor_thread)
-	 {
-		 pthread_cancel(to_monitor_thread);
-	 }
-
 	 return -1;
 }
 

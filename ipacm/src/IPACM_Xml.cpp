@@ -273,13 +273,10 @@ static int ipacm_cfg_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						content_buf[MAX_XML_STR_LEN-1] = '\0';
-						if(content_buf)
-						{
 						config->private_subnet_config.private_subnet_entries[config->private_subnet_config.num_subnet_entries - 1].subnet_addr
 							 = ntohl(inet_addr(content_buf));
 						IPACMDBG("subnet_addr: %s \n", content_buf);
 					}
-				}
 				}
 				else if (IPACM_util_icmp_string((char*)xml_node->name,
 																				SUBNETMASK_TAG) == 0)
@@ -291,13 +288,10 @@ static int ipacm_cfg_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						content_buf[MAX_XML_STR_LEN-1] = '\0';
-							if(content_buf)
-							{
 						config->private_subnet_config.private_subnet_entries[config->private_subnet_config.num_subnet_entries - 1].subnet_mask
 							 = ntohl(inet_addr(content_buf));
 						IPACMDBG("subnet_mask: %s \n", content_buf);
 					}
-				}
 				}
 				else if (IPACM_util_icmp_string((char*)xml_node->name,
 																				Protocol_TAG) == 0)
@@ -525,13 +519,10 @@ static int IPACM_firewall_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						content_buf[MAX_XML_STR_LEN-1] = '\0';
-						if (content_buf)
-						{
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.src_addr
 							 = ntohl(inet_addr(content_buf));
 						IPACMDBG("IPv4 source address is: %s \n", content_buf);
 					}
-				}
 				}
 				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
 																						 IPV4SourceSubnetMask_TAG))
@@ -543,13 +534,10 @@ static int IPACM_firewall_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						content_buf[MAX_XML_STR_LEN-1] = '\0';
-							if (content_buf)
-							{
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.src_addr_mask
 							 = ntohl(inet_addr(content_buf));
 						IPACMDBG("IPv4 source subnet mask is: %s \n", content_buf);
 					}
-				}
 				}
 				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
 																						 IPV4DestinationAddress_TAG))
@@ -569,13 +557,10 @@ static int IPACM_firewall_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						content_buf[MAX_XML_STR_LEN-1] = '\0';
-							if (content_buf)
-							{
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.dst_addr
 							 = ntohl(inet_addr(content_buf));
 						IPACMDBG("IPv4 destination address is: %s \n", content_buf);
 					}
-				}
 				}
 				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
 																						 IPV4DestinationSubnetMask_TAG))

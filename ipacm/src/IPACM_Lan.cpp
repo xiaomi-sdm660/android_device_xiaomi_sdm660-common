@@ -194,7 +194,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				if(data_fid == NULL)
 				{
 					IPACMERR("unable to allocate memory for IPA_USB_LINK_UP_EVENT data_fid\n");
-					return NULL;
+					return;
 				}
 				if(IPACM_Iface::ipa_get_if_index(dev_name, &(data_fid->if_index)))
 				{
@@ -304,6 +304,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 										 info->ipv4_addr, info->addr_mask);
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 					}
+					IPACMDBG("Finish handling IPA_ADDR_ADD_EVENT for ip-family(%d)\n", data->iptype);
 				}
 			}
 		}
@@ -675,9 +676,10 @@ if (data->iptype == IPA_IP_v4)
 			init_fl_rule(data->iptype);
 		}
 		num_dft_rt_v6++;
+		IPACMDBG("number of default route rules %d\n", num_dft_rt_v6);
 	}
 
-	IPACMDBG("number of default route rules %d\n", num_dft_rt_v6);
+	IPACMDBG("finish route/filter rule ip-type: %d, res(%d)\n", data->iptype, res);
 
 fail:
 	free(rt_rule);
@@ -772,6 +774,10 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			private_fl_rule_hdl[i] = m_pFilteringTable->rules[i].flt_rule_hdl;
 		}
 		free(m_pFilteringTable);
+	}
+	else
+	{
+		IPACMDBG("No private subnet rules for ipv6 iface %s\n", dev_name);
 	}
 	return IPACM_SUCCESS;
 }
@@ -3273,6 +3279,11 @@ int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 		return 0;
 	}
 
+	if(iptype == IPA_IP_v6)
+	{
+		IPACMDBG("There is no ipv6 dummy filter rules needed for iface %s\n", dev_name);
+		return 0;
+	}
 	int i, len, res = IPACM_SUCCESS;
 	struct ipa_flt_rule_add flt_rule;
 	ipa_ioc_add_flt_rule* pFilteringTable;
@@ -3360,7 +3371,12 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 		return IPACM_SUCCESS;
 	}
 
-	if (iptype == IPA_IP_v4)
+	if(iptype == IPA_IP_v6)
+	{
+		IPACMDBG("There is no ipv6 dummy filter rules needed for iface %s\n", dev_name);
+		return 0;
+	}
+	else
 	{
 		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
 		{
@@ -3407,6 +3423,7 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 			flt_rule.rule.attrib.u.v4.dst_addr_mask = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask;
 			flt_rule.rule.attrib.u.v4.dst_addr = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr;
 			memcpy(&(pFilteringTable->rules[i]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+			IPACMDBG(" IPACM private subnet_addr as: 0x%x entry(%d)\n", flt_rule.rule.attrib.u.v4.dst_addr, i);
 		}
 
 		if (false == m_filtering.ModifyFilteringRule(pFilteringTable))

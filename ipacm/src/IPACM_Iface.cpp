@@ -39,15 +39,18 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.Z
 */
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <ifaddrs.h>
-
 #include <IPACM_Netlink.h>
 #include <IPACM_Iface.h>
 #include <IPACM_Lan.h>
 #include <IPACM_Wan.h>
 #include <IPACM_Wlan.h>
-#include <ifaddrs.h>
 #include <string.h>
+
+extern "C"
+{
+#include <ifaddrs.h>
+}
+
 
 const char *IPACM_Iface::DEVICE_NAME = "/dev/ipa";
 IPACM_Routing IPACM_Iface::m_routing;

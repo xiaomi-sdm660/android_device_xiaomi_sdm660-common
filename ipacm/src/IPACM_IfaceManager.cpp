@@ -73,7 +73,13 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			break;
 		case IPA_LINK_UP_EVENT:
 			IPACMDBG("link up %d: \n", evt_data->if_index);
+			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
+			/* LTE-backhaul */
+			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == WAN_IF)
+			{
+				IPACMDBG("WAN-LTE (%s) link up, iface: %d: \n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,evt_data->if_index);
 			create_iface_instance(evt_data->if_index, Q6_WAN);
+			}
 			break;
 
 		case IPA_USB_LINK_UP_EVENT:
@@ -161,10 +167,10 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP_V6, lan);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, lan);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, lan);
-				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
-				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, lan);
 				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, lan); 				// register for IPA_CFG_CHANGE event
 				IPACM_EvtDispatcher::registr(IPA_PRIVATE_SUBNET_CHANGE_EVENT, lan); 	// register for IPA_PRIVATE_SUBNET_CHANGE_EVENT event
+				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, lan);
+				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, lan);
 				IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", lan->dev_name, lan->ipa_if_num);
 				registr(ipa_interface_index, lan);
 				/* solve the new_addr comes earlier issue */
@@ -206,9 +212,9 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP_V6, wl);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, wl);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, wl);
+				IPACM_EvtDispatcher::registr(IPA_PRIVATE_SUBNET_CHANGE_EVENT, wl); 	// register for IPA_PRIVATE_SUBNET_CHANGE_EVENT event
 				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, wl);
-				IPACM_EvtDispatcher::registr(IPA_PRIVATE_SUBNET_CHANGE_EVENT, wl); 	// register for IPA_PRIVATE_SUBNET_CHANGE_EVENT event
 				IPACMDBG("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
 				registr(ipa_interface_index, wl);
 				/* solve the new_addr comes earlier issue */
@@ -227,9 +233,9 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, w);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, w);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, w);
-				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
-				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
 				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, w); 		// register for IPA_CFG_CHANGE event
+				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
+				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
 				IPACMDBG("ipa_WAN (%s):ipa_index (%d) instance open/registr ok\n", w->dev_name, w->ipa_if_num);
 				registr(ipa_interface_index, w);
 				/* solve the new_addr comes earlier issue */

@@ -68,8 +68,13 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPACM_ConntrackListener.h"
 #include "IPACM_ConntrackClient.h"
-#include "IPACM_LanToLan.h"
 #include "IPACM_Netlink.h"
+
+/* not defined(FEATURE_IPA_ANDROID)*/
+#ifndef FEATURE_IPA_ANDROID
+#include "IPACM_LanToLan.h"
+#endif
+
 
 const char *ipacm_event_name[] = {
 	__stringify(IPA_CFG_CHANGE_EVENT),                     /* 1 NULL */
@@ -531,7 +536,7 @@ void* ipa_driver_wlan_notifier(void *param)
 
 void IPACM_Sig_Handler(int sig)
 {
-	int cnt = 0;
+	int cnt;
 
 	printf("Received Signal: %d\n", sig);
 
@@ -579,7 +584,9 @@ int main(int argc, char **argv)
 	IPACMDBG("In main()\n");
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
+#ifndef FEATURE_IPA_ANDROID
 	IPACM_LanToLan* lan2lan = new IPACM_LanToLan();
+#endif /* defined(FEATURE_IPA_ANDROID)*/
 	IPACM_ConntrackClient *cc = IPACM_ConntrackClient::GetInstance();
 	CtList = new IPACM_ConntrackListener();
 

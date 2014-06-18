@@ -39,11 +39,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 #include "linux/msm_ipa.h"
-#include <list>
-#include <unordered_map>
 #include "IPACM_Iface.h"
 #include "IPACM_Defs.h"
 #include "IPACM_Lan.h"
+#include <unordered_map>
+
+#ifdef FEATURE_IPA_ANDROID
+#include <libxml/list.h>
+#else/* defined(FEATURE_IPA_ANDROID) */
+#include <list>
+#endif /* ndefined(FEATURE_IPA_ANDROID)*/
 
 struct client_info;
 

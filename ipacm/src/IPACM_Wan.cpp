@@ -324,7 +324,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				if(data_fid == NULL)
 				{
 					IPACMERR("unable to allocate memory for IPA_USB_LINK_UP_EVENT data_fid\n");
-					return NULL;
+					return;
 				}
 				if(IPACM_Iface::ipa_get_if_index(dev_name, &(data_fid->if_index)))
 				{

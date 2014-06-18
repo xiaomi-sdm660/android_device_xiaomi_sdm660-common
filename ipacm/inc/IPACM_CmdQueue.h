@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,13 +39,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef IPA_CONNTRACK_MESSAGE_H
 #define IPA_CONNTRACK_MESSAGE_H
 
-#include <iostream>
 #include <pthread.h>
 #include "IPACM_Defs.h"
 
 
 
-/*--------------------------------------------------------------------------- 
+/*---------------------------------------------------------------------------
 	 Event data required by IPA_CM
 ---------------------------------------------------------------------------*/
 
