@@ -188,26 +188,33 @@ void* firewall_monitor(void *param)
 	while (1)
 	{
 		length = read(inotify_fd, buffer, INOTIFY_BUF_LEN);
-		struct inotify_event event;
-		memcpy(&event, buffer,sizeof(struct inotify_event));
-
 		if (length < 0)
 		{
-			IPACMERR("inotify read() error return length: %d and mask: 0x%x 0x%x\n", length, event.mask, mask);
+			IPACMERR("inotify read() error return length: %d and mask: 0x%x\n", length, mask);
 			return NULL;
 		}
 
-		if (event.len > 0)
+		struct inotify_event* event;
+		event = (struct inotify_event*)malloc(length);
+		if(event == NULL)
 		{
-			if ( (event.mask & IN_MODIFY) || (event.mask & IN_MOVE))
+			IPACMERR("Failed to allocate memory.\n");
+			return;
+		}
+		memset(event, 0, length);
+		memcpy(event, buffer, length);
+
+		if (event->len > 0)
+		{
+			if ( (event->mask & IN_MODIFY) || (event->mask & IN_MOVE))
 			{
-				if (event.mask & IN_ISDIR)
+				if (event->mask & IN_ISDIR)
 				{
-					IPACMDBG("The directory %s was 0x%x\n", event.name, event.mask);
+					IPACMDBG("The directory %s was 0x%x\n", event->name, event->mask);
 				}
-				else if (!strncmp(event.name, IPACM_FIREWALL_FILE_NAME, event.len)) // firewall_rule change
+				else if (!strncmp(event->name, IPACM_FIREWALL_FILE_NAME, event->len)) // firewall_rule change
 				{
-					IPACMDBG("File \"%s\" was 0x%x\n", event.name, event.mask);
+					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
 					IPACMDBG("The interested file %s .\n", IPACM_FIREWALL_FILE_NAME);
 
 					evt_data.event = IPA_FIREWALL_CHANGE_EVENT;
@@ -216,9 +223,9 @@ void* firewall_monitor(void *param)
 					/* Insert IPA_FIREWALL_CHANGE_EVENT to command queue */
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 				}
-				else if (!strncmp(event.name, IPACM_CFG_FILE_NAME, event.len)) // IPACM_configuration change
+				else if (!strncmp(event->name, IPACM_CFG_FILE_NAME, event->len)) // IPACM_configuration change
 				{
-					IPACMDBG("File \"%s\" was 0x%x\n", event.name, event.mask);
+					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
 					IPACMDBG("The interested file %s .\n", IPACM_CFG_FILE_NAME);
 
 					evt_data.event = IPA_CFG_CHANGE_EVENT;
@@ -228,8 +235,9 @@ void* firewall_monitor(void *param)
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 				}
 			}
-			IPACMDBG("Received monitoring event %s.\n", event.name);
+			IPACMDBG("Received monitoring event %s.\n", event->name);
 		}
+		free(event);
 	}
 
 	(void)inotify_rm_watch(inotify_fd, wd);
