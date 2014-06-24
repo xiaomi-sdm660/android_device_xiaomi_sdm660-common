@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,33 +32,31 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * ipa_nat_add_ipv4_tbl() - create ipv4 nat table
- * @public_ip_addr: [in] public ipv4 address  
- * @number_of_entries: [in]  number of nat entries 
- * @table_handle: [out] Handle of new ipv4 nat table 
- *  
- * To create new ipv4 nat table 
+ * @public_ip_addr: [in] public ipv4 address
+ * @number_of_entries: [in]  number of nat entries
+ * @table_handle: [out] Handle of new ipv4 nat table
+ *
+ * To create new ipv4 nat table
  *
  * Returns:	0  On Success, negative on failure
  */
 int ipa_nat_add_ipv4_tbl(uint32_t public_ip_addr,
-                         uint16_t number_of_entries,
-                         uint32_t *tbl_hdl)
+		uint16_t number_of_entries,
+		uint32_t *tbl_hdl)
 {
   int ret;
-  
-  if (NULL == tbl_hdl || 0 == number_of_entries)
-  {
+
+  if (NULL == tbl_hdl || 0 == number_of_entries) {
     IPAERR("Invalid parameters \n");
-    return -1;
+    return -EINVAL;
   }
-             
+
   ret = ipa_nati_add_ipv4_tbl(public_ip_addr,
-                              number_of_entries,
-                              tbl_hdl);
-  if (ret != 0)
-  {
+								number_of_entries,
+								tbl_hdl);
+  if (ret != 0) {
     IPAERR("unable to add table \n");
-    return -1;
+    return -EINVAL;
   }
   IPADBG("Returning table handle 0x%x\n", *tbl_hdl);
 
@@ -67,19 +65,18 @@ int ipa_nat_add_ipv4_tbl(uint32_t public_ip_addr,
 
 /**
  * ipa_nat_del_ipv4_tbl() - delete ipv4 table
- * @table_handle: [in] Handle of ipv4 nat table 
- *  
- * To delete given ipv4 nat table 
+ * @table_handle: [in] Handle of ipv4 nat table
+ *
+ * To delete given ipv4 nat table
  *
  * Returns:	0  On Success, negative on failure
  */
 int ipa_nat_del_ipv4_tbl(uint32_t tbl_hdl)
 {
-  if (IPA_NAT_INVALID_NAT_ENTRY == tbl_hdl || 
-      tbl_hdl > IPA_NAT_MAX_IP4_TBLS)
-  {
+  if (IPA_NAT_INVALID_NAT_ENTRY == tbl_hdl ||
+      tbl_hdl > IPA_NAT_MAX_IP4_TBLS) {
     IPAERR("invalid table handle passed \n");
-    return -1;
+    return -EINVAL;
   }
   IPADBG("Passed Table Handle: 0x%x\n", tbl_hdl);
 
@@ -88,31 +85,30 @@ int ipa_nat_del_ipv4_tbl(uint32_t tbl_hdl)
 
 /**
  * ipa_nat_add_ipv4_rule() - to insert new ipv4 rule
- * @table_handle: [in] handle of ipv4 nat table  
- * @rule: [in]  Pointer to new rule 
- * @rule_handle: [out] Return the handle to rule 
- *  
- * To insert new ipv4 nat rule into ipv4 nat table 
+ * @table_handle: [in] handle of ipv4 nat table
+ * @rule: [in]  Pointer to new rule
+ * @rule_handle: [out] Return the handle to rule
+ *
+ * To insert new ipv4 nat rule into ipv4 nat table
  *
  * Returns:	0  On Success, negative on failure
  */
-int ipa_nat_add_ipv4_rule(uint32_t tbl_hdl, 
-                          const ipa_nat_ipv4_rule *clnt_rule,
-                          uint32_t *rule_hdl)
+int ipa_nat_add_ipv4_rule(uint32_t tbl_hdl,
+		const ipa_nat_ipv4_rule *clnt_rule,
+		uint32_t *rule_hdl)
 {
+  int result = -EINVAL;
 
-  if (IPA_NAT_INVALID_NAT_ENTRY == tbl_hdl || 
+  if (IPA_NAT_INVALID_NAT_ENTRY == tbl_hdl ||
       tbl_hdl > IPA_NAT_MAX_IP4_TBLS || NULL == rule_hdl ||
-      NULL == clnt_rule)
-  {
+      NULL == clnt_rule) {
     IPAERR("invalide table handle passed \n");
-    return -1;
+    return result;
   }
   IPADBG("Passed Table handle: 0x%x\n", tbl_hdl);
 
-  if(ipa_nati_add_ipv4_rule(tbl_hdl, clnt_rule, rule_hdl) != 0)
-	{
-		return -1;
+  if (ipa_nati_add_ipv4_rule(tbl_hdl, clnt_rule, rule_hdl) != 0) {
+		return result;
 	}
 
   IPADBG("returning rule handle 0x%x\n", *rule_hdl);
@@ -122,29 +118,29 @@ int ipa_nat_add_ipv4_rule(uint32_t tbl_hdl,
 
 /**
  * ipa_nat_del_ipv4_rule() - to delete ipv4 nat rule
- * @table_handle: [in] handle of ipv4 nat table  
+ * @table_handle: [in] handle of ipv4 nat table
  * @rule_handle: [in] ipv4 nat rule handle
- *  
- * To insert new ipv4 nat rule into ipv4 nat table 
+ *
+ * To insert new ipv4 nat rule into ipv4 nat table
  *
  * Returns:	0  On Success, negative on failure
  */
 int ipa_nat_del_ipv4_rule(uint32_t tbl_hdl,
-                          uint32_t rule_hdl)
+		uint32_t rule_hdl)
 {
+  int result = -EINVAL;
 
   if (IPA_NAT_INVALID_NAT_ENTRY == tbl_hdl ||
-      IPA_NAT_INVALID_NAT_ENTRY == rule_hdl)
-  {
+      IPA_NAT_INVALID_NAT_ENTRY == rule_hdl) {
     IPAERR("invalide parameters\n");
-    return -1;
+    return result;
   }
   IPADBG("Passed Table: 0x%x and rule handle 0x%x\n", tbl_hdl, rule_hdl);
 
-  if (-1 == ipa_nati_del_ipv4_rule(tbl_hdl, rule_hdl))
-  {
+  result = ipa_nati_del_ipv4_rule(tbl_hdl, rule_hdl);
+  if (result) {
     IPAERR("unable to delete rule from hw \n");
-    return -1;
+    return result;
   }
 
   return 0;
@@ -152,25 +148,24 @@ int ipa_nat_del_ipv4_rule(uint32_t tbl_hdl,
 
 /**
  * ipa_nat_query_timestamp() - to query timestamp
- * @table_handle: [in] handle of ipv4 nat table  
- * @rule_handle: [in] ipv4 nat rule handle 
- * @time_stamp: [out] time stamp of rule 
- *  
- * To retrieve the timestamp that lastly the 
- * nat rule was accessed 
+ * @table_handle: [in] handle of ipv4 nat table
+ * @rule_handle: [in] ipv4 nat rule handle
+ * @time_stamp: [out] time stamp of rule
+ *
+ * To retrieve the timestamp that lastly the
+ * nat rule was accessed
  *
  * Returns:	0  On Success, negative on failure
  */
 int ipa_nat_query_timestamp(uint32_t  tbl_hdl,
-                            uint32_t  rule_hdl,
-                            uint32_t  *time_stamp)
+		uint32_t  rule_hdl,
+		uint32_t  *time_stamp)
 {
 
   if (0 == tbl_hdl || tbl_hdl > IPA_NAT_MAX_IP4_TBLS ||
-      NULL == time_stamp)
-  {
+      NULL == time_stamp) {
     IPAERR("invalid parameters passed \n");
-    return -1;
+    return -EINVAL;
   }
   IPADBG("Passed Table: 0x%x and rule handle 0x%x\n", tbl_hdl, rule_hdl);
 
