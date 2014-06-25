@@ -119,14 +119,17 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
                                unsigned char generate_nmea)
 {
     ENTRY_LOG();
+    time_t utcTime(location.gpsLocation.timestamp/1000);
+    tm * pTm = gmtime(&utcTime);
+    if (NULL == pTm) {
+        LOC_LOGE("gmtime failed");
+        return;
+    }
 
     char sentence[NMEA_SENTENCE_MAX_LENGTH] = {0};
     char* pMarker = sentence;
     int lengthRemaining = sizeof(sentence);
     int length = 0;
-
-    time_t utcTime(location.gpsLocation.timestamp/1000);
-    tm * pTm = gmtime(&utcTime);
     int utcYear = pTm->tm_year % 100; // 2 digit year
     int utcMonth = pTm->tm_mon + 1; // tm_mon starts at zero
     int utcDay = pTm->tm_mday;
