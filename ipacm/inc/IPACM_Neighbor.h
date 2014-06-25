@@ -54,6 +54,8 @@ struct ipa_neighbor_client
 {
 	uint8_t mac_addr[6];
 	int iface_index;
+	uint32_t v4_addr;
+	int ipa_if_num;
 };
 
 class IPACM_Neighbor : public IPACM_Listener
