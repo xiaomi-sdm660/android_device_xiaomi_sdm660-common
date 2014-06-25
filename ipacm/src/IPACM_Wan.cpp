@@ -3443,14 +3443,7 @@ void IPACM_Wan::change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* att
 		return;
 	}
 
-	if(iptype == IPA_IP_v4)
-	{
-		attrib->u.v4.src_addr = htonl(attrib->u.v4.src_addr);
-		attrib->u.v4.src_addr_mask = htonl(attrib->u.v4.src_addr_mask);
-		attrib->u.v4.dst_addr = htonl(attrib->u.v4.dst_addr);
-		attrib->u.v4.dst_addr_mask = htonl(attrib->u.v4.dst_addr_mask);
-	}
-	else if(iptype == IPA_IP_v6)
+	if(iptype == IPA_IP_v6)
 	{
 		int i;
 		for(i=0; i<4; i++)
@@ -3463,7 +3456,7 @@ void IPACM_Wan::change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* att
 	}
 	else
 	{
-		IPACMERR("IP type is not expected: %d\n", iptype);
+		IPACMDBG("IP type is not IPv6, do nothing: %d\n", iptype);
 	}
 
 	return;
