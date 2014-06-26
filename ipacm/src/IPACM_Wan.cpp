@@ -2420,6 +2420,7 @@ int IPACM_Wan::query_ext_prop()
 			IPACMERR("ioctl IPA_IOC_QUERY_INTF_EXT_PROPS failed\n");
 			/* ext_prop memory will free when iface-down*/
 			free(ext_prop);
+			close(fd);
 			return ret;
 		}
 
@@ -2438,6 +2439,7 @@ int IPACM_Wan::query_ext_prop()
 			IPACM_Wan::is_ext_prop_set = true;
 		}
 		free(ext_prop);
+		close(fd);
 	}
 	return IPACM_SUCCESS;
 }
