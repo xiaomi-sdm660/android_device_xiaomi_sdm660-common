@@ -340,3 +340,25 @@ void LocEngAdapter::handleEngineUpEvent()
 {
     sendMsg(new LocEngUp(mOwner));
 }
+
+enum loc_api_adapter_err LocEngAdapter::setXtraVersionCheck(int check)
+{
+    enum loc_api_adapter_err ret;
+    ENTRY_LOG();
+    enum xtra_version_check eCheck;
+    switch (check) {
+    case 0:
+        eCheck = DISABLED;
+    case 1:
+        eCheck = AUTO;
+    case 2:
+        eCheck = XTRA2;
+    case 3:
+        eCheck = XTRA3;
+    defaul:
+        eCheck = DISABLED;
+    }
+    ret = mLocApi->setXtraVersionCheck(eCheck);
+    EXIT_LOG(%d, ret);
+    return ret;
+}

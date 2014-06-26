@@ -481,4 +481,8 @@ DEFAULT_IMPL(-1)
 int LocApiBase::
     getGpsLock()
 DEFAULT_IMPL(-1)
+
+enum loc_api_adapter_err LocApiBase::
+    setXtraVersionCheck(enum xtra_version_check check)
+DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 } // namespace loc_core
