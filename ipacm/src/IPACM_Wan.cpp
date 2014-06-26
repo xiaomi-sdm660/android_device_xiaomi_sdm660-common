@@ -416,6 +416,43 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				  	handle_route_add_evt(data->iptype);
 				}
 			}
+			else /* double check if current default iface is not itself */
+			{
+				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask) && (active_v4 == true))
+				{
+					IPACMDBG("Received v4 IPA_ROUTE_ADD_EVENT for other iface (%s)\n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+					IPACMDBG("ipv4 addr 0x%x\n", data->ipv4_addr);
+					IPACMDBG("ipv4 addr mask 0x%x\n", data->ipv4_addr_mask);
+					IPACMDBG("need clean default v4 route (dst:0.0.0.0) for old iface (%s)\n", dev_name);
+					if(m_is_sta_mode == Q6_WAN)
+					{
+						del_wan_firewall_rule(IPA_IP_v4);
+						install_wan_filtering_rule();
+						handle_route_del_evt_ex(IPA_IP_v4);
+					}
+					else
+					{
+						del_dft_firewall_rules(IPA_IP_v4);
+						handle_route_del_evt(IPA_IP_v4);
+					}
+				}
+				else if ((data->iptype == IPA_IP_v6) && (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == true))
+				{
+				    IPACMDBG("Received v6 IPA_ROUTE_ADD_EVENT for other iface (%s)\n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+					IPACMDBG("need clean default v6 route for old iface (%s)\n", dev_name);
+					if(m_is_sta_mode == Q6_WAN)
+					{
+						del_wan_firewall_rule(IPA_IP_v6);
+						install_wan_filtering_rule();
+						handle_route_del_evt_ex(IPA_IP_v6);
+					}
+					else
+					{
+						del_dft_firewall_rules(IPA_IP_v6);
+						handle_route_del_evt(IPA_IP_v6);
+					}
+				}
+			}
 		}
 		break;
 
@@ -588,6 +625,11 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 			IPACMDBG("STA ipv6-header haven't constructed \n");
 			return IPACM_SUCCESS;
 		}
+	}
+	else
+	{
+		IPACM_Wan::backhaul_is_sta_mode	= false;
+		IPACMDBG("reset backhaul to LTE \n");
 	}
 
     for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
@@ -2902,7 +2944,12 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			evt_data.event = IPA_HANDLE_WAN_DOWN;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
-			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv4 \n");
+			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv4 (%d.%d.%d.%d) \n",
+					(unsigned char)(wandown_data->ipv4_addr),
+					(unsigned char)(wandown_data->ipv4_addr >> 8),
+					(unsigned char)(wandown_data->ipv4_addr >> 16),
+					(unsigned char)(wandown_data->ipv4_addr >> 24));
+
 			IPACM_EvtDispatcher::PostEvt(&evt_data);
 			IPACMDBG("setup wan_up/active_v4= false \n");
 			IPACM_Wan::wan_up = false;
