@@ -50,18 +50,15 @@ extern "C"
 #include <string.h>
 #include <syslog.h>
 
-#define PERROR(fmt)   printf("%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
-                      perror(fmt);
+#define PERROR(fmt) printf("%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
+                    perror(fmt);
 
-#define IPAERR(fmt, ...) syslog(LOG_ERR, "ERROR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-										     printf("ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define IPAERR(fmt, ...)  printf("ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
 
 #ifdef DEBUG
-#define IPADBG(fmt, ...) syslog(LOG_DEBUG, "%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-	                       printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define IPADBG(fmt, ...) printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
 
-#define IPADUMP(fmt, ...) syslog(LOG_DEBUG, fmt, ##__VA_ARGS__);\
-                          printf(fmt, ##__VA_ARGS__);
+#define IPADUMP(fmt, ...) printf(fmt, ##__VA_ARGS__);
 
 #else
 #define IPADBG(fmt, ...)
