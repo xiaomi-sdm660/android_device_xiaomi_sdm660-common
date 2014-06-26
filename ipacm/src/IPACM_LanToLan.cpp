@@ -43,6 +43,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_LanToLan.h"
 #include "IPACM_Wlan.h"
 
+#define ipv6_multicast_addr 0xff000000
+#define ipv6_multicast_mask 0xff000000
+
+#define max_cache_connection 20
+
 IPACM_LanToLan* IPACM_LanToLan::p_instance = NULL;
 
 IPACM_LanToLan::IPACM_LanToLan()
@@ -209,6 +214,7 @@ void IPACM_LanToLan::handle_client_active(ipacm_event_lan_client* data)
 		client_ptr->p_iface = data->p_iface;
 
 		generate_new_connection(data->iptype, client_ptr);
+		check_cache_connection(data->iptype, client_ptr);
 	}
 	else	//the client is found
 	{
@@ -239,6 +245,7 @@ void IPACM_LanToLan::handle_client_active(ipacm_event_lan_client* data)
 				client_ptr->p_iface = data->p_iface;
 
 				generate_new_connection(data->iptype, client_ptr);
+				check_cache_connection(data->iptype, client_ptr);
 			}
 		}
 		else 	//the client is inactive
@@ -259,6 +266,7 @@ void IPACM_LanToLan::handle_client_active(ipacm_event_lan_client* data)
 
 			check_potential_link(data->iptype, client_ptr);
 			generate_new_connection(data->iptype, client_ptr);
+			check_cache_connection(data->iptype, client_ptr);
 		}
 	}
 	IPACMDBG("There are %d clients in v4 table and %d clients in v6 table.\n", client_info_v4_.size(), client_info_v6_.size());
@@ -1288,6 +1296,7 @@ void IPACM_LanToLan::handle_new_connection(ipacm_event_connection* new_conn)
 	if(is_lan2lan_connection(new_conn) == false)
 	{
 		IPACMDBG("The connection is not lan2lan connection.\n");
+		cache_new_connection(new_conn);
 		return;
 	}
 
@@ -1331,6 +1340,7 @@ void IPACM_LanToLan::handle_del_connection(ipacm_event_connection* new_conn)
 	if(is_lan2lan_connection(new_conn) == false)
 	{
 		IPACMDBG("The connection is not lan2lan connection.\n");
+		remove_cache_connection(new_conn);
 		return;
 	}
 
@@ -1392,4 +1402,204 @@ bool IPACM_LanToLan::is_lan2lan_connection(ipacm_event_connection* data)
 IPACM_LanToLan* IPACM_LanToLan::getLan2LanInstance()
 {
 	return p_instance;
+}
+
+bool IPACM_LanToLan::is_potential_lan2lan_connection(ipacm_event_connection* new_conn)
+{
+	int i, num_private_subnet;
+	bool src_is_valid = false;
+	bool dst_is_valid = false;
+
+	if(new_conn->iptype == IPA_IP_v4)
+	{
+		num_private_subnet = IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		for(i=0; i<num_private_subnet; i++)
+		{
+			if( (new_conn->src_ipv4_addr & IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask)
+				== (IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr & IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask) )
+			{
+				src_is_valid = true;
+			}
+			if( (new_conn->dst_ipv4_addr & IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask)
+				== (IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr & IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask) )
+			{
+				dst_is_valid = true;
+			}
+		}
+
+		if(src_is_valid && dst_is_valid)
+		{
+			IPACMDBG("Both src and dst are potentially in subnet.\n");
+			return true;
+		}
+	}
+	else
+	{
+		if( (new_conn->src_ipv6_addr[0] & ipv6_multicast_mask) != (ipv6_multicast_addr & ipv6_multicast_mask) )
+		{
+			src_is_valid = true;
+		}
+		if( (new_conn->dst_ipv6_addr[0] & ipv6_multicast_mask) != (ipv6_multicast_addr & ipv6_multicast_mask) )
+		{
+			dst_is_valid = true;
+		}
+
+		if(src_is_valid && dst_is_valid)
+		{
+			IPACMDBG("Both src and dst are potentially in subnet.\n");
+			return true;
+		}
+	}
+
+	IPACMDBG("This connection is not a lan2lan connection potentially.\n");
+	return false;
+}
+
+void IPACM_LanToLan::cache_new_connection(ipacm_event_connection* new_conn)
+{
+	if(is_potential_lan2lan_connection(new_conn) == true)
+	{
+		if(new_conn->iptype == IPA_IP_v4)
+		{
+			if(connection_v4_.size() == max_cache_connection)
+			{
+				IPACMDBG("Cached ipv4 connections already reach maximum, clear up the list.\n");
+				connection_v4_.clear();
+			}
+
+			connection_v4_.push_back(*new_conn);
+			IPACMDBG("Cache an ipv4 connection, now the number of ipv4 cache connection is %d.\n", connection_v4_.size());
+		}
+		else
+		{
+			if(connection_v6_.size() == max_cache_connection)
+			{
+				IPACMDBG("Cached ipv6 connections already reach maximum, clear up the list.\n");
+				connection_v6_.clear();
+			}
+
+			connection_v6_.push_back(*new_conn);
+			IPACMDBG("Cache an ipv6 connection, now the number of ipv6 cache connection is %d.\n", connection_v6_.size());
+		}
+	}
+	return;
+}
+
+void IPACM_LanToLan::remove_cache_connection(ipacm_event_connection* del_conn)
+{
+	connection_list::iterator it;
+	if(is_potential_lan2lan_connection(del_conn) == true)
+	{
+		if(del_conn->iptype == IPA_IP_v4)
+		{
+			for(it = connection_v4_.begin(); it != connection_v4_.end(); it++)
+			{
+				if(it->src_ipv4_addr == del_conn->src_ipv4_addr && it->dst_ipv4_addr == del_conn->dst_ipv4_addr)
+				{
+					IPACMDBG("Find the cached ipv4 connection, remove it from list.\n");
+					connection_v4_.erase(it);
+					IPACMDBG("Now the number of ipv4 cache connection is %d.\n", connection_v4_.size());
+					return;
+				}
+			}
+			IPACMDBG("Do not find the cached ipv4 connection, do nothing.\n");
+		}
+		else
+		{
+			for(it = connection_v6_.begin(); it != connection_v6_.end(); it++)
+			{
+				if(memcmp(it->src_ipv6_addr, del_conn->src_ipv6_addr, 4*sizeof(uint32_t)) == 0
+					&& memcmp(it->dst_ipv6_addr, del_conn->dst_ipv6_addr, 4*sizeof(uint32_t)) == 0 )
+				{
+					IPACMDBG("Find the cached ipv6 connection, remove it from list.\n");
+					connection_v6_.erase(it);
+					IPACMDBG("Now the number of ipv6 cache connection is %d.\n", connection_v6_.size());
+					return;
+				}
+			}
+			IPACMDBG("Do not find the cached ipv6 connection, do nothing.\n");
+		}
+	}
+	return;
+}
+
+void IPACM_LanToLan::check_cache_connection(ipa_ip_type iptype, client_info* client)
+{
+#ifdef CT_OPT
+	connection_list::iterator it;
+	if(iptype == IPA_IP_v4)
+	{
+		it = connection_v4_.begin();
+		while(it != connection_v4_.end())
+		{
+			if( (it->src_ipv4_addr == client->ip.ipv4_addr && client_info_v4_.count(it->dst_ipv4_addr) > 0)
+				|| (it->dst_ipv4_addr == client->ip.ipv4_addr && client_info_v4_.count(it->src_ipv4_addr) > 0) )
+			{
+				IPACMDBG("Found a cache connection for src client 0x%08x and dst client 0x%08x.\n", it->src_ipv4_addr, it->dst_ipv4_addr);
+				ipacm_cmd_q_data evt;
+				ipacm_event_connection* conn;
+
+				conn = (ipacm_event_connection*)malloc(sizeof(ipacm_event_connection));
+				if(conn == NULL)
+				{
+					IPACMERR("Failed to allocate memory for new_connection event.\n");
+					return;
+				}
+				memcpy(conn, &(*it), sizeof(ipacm_event_connection));
+
+				memset(&evt, 0, sizeof(evt));
+				evt.event = IPA_LAN_TO_LAN_NEW_CONNECTION;
+				evt.evt_data = (void*)conn;
+				IPACM_EvtDispatcher::PostEvt(&evt);
+
+				it = connection_v4_.erase(it);
+				IPACMDBG("Now the number of cache connections is %d.\n", connection_v4_.size());
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+	else
+	{
+		uint64_t src_v6_addr, dst_v6_addr;
+		it = connection_v6_.begin();
+		while(it != connection_v6_.end())
+		{
+			memcpy(&src_v6_addr, &(it->src_ipv6_addr[2]), sizeof(uint64_t));
+			memcpy(&dst_v6_addr, &(it->dst_ipv6_addr[2]), sizeof(uint64_t));
+			if( (memcmp(it->src_ipv6_addr, client->ip.ipv6_addr, 4*sizeof(uint32_t)) == 0 && client_info_v6_.count(dst_v6_addr) > 0)
+				|| (memcmp(it->dst_ipv6_addr, client->ip.ipv6_addr, 4*sizeof(uint32_t)) == 0 && client_info_v6_.count(src_v6_addr) > 0) )
+			{
+				IPACMDBG("Found a cache connection with src client 0x%08x%08x%08x%08x and dst client 0x%08x%08x%08x%08x.\n", it->src_ipv6_addr[0],
+							it->src_ipv6_addr[1], it->src_ipv6_addr[2], it->src_ipv6_addr[3], it->dst_ipv6_addr[0], it->dst_ipv6_addr[1],
+							it->dst_ipv6_addr[2], it->dst_ipv6_addr[3]);
+				ipacm_cmd_q_data evt;
+				ipacm_event_connection* conn;
+
+				conn = (ipacm_event_connection*)malloc(sizeof(ipacm_event_connection));
+				if(conn == NULL)
+				{
+					IPACMERR("Failed to allocate memory for new_connection event.\n");
+					return;
+				}
+				memcpy(conn, &(*it), sizeof(ipacm_event_connection));
+
+				memset(&evt, 0, sizeof(evt));
+				evt.event = IPA_LAN_TO_LAN_NEW_CONNECTION;
+				evt.evt_data = (void*)conn;
+				IPACM_EvtDispatcher::PostEvt(&evt);
+
+				it = connection_v6_.erase(it);
+				IPACMDBG("Now the number of cache connections is %d.\n", connection_v6_.size());
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+#endif
+	return;
 }

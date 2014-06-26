@@ -69,6 +69,7 @@ struct offload_link_info
 
 typedef list<peer_info> peer_info_list;
 typedef list<offload_link_info> offload_link_info_list;
+typedef list<ipacm_event_connection> connection_list;
 
 struct client_info
 {
@@ -114,6 +115,9 @@ private:
 		client_table_v4 client_info_v4_;
 		client_table_v6 client_info_v6_;
 
+		connection_list connection_v4_;
+		connection_list connection_v6_;
+
 		static IPACM_LanToLan* p_instance;
 
 		void event_callback(ipa_cm_event_id event, void* param);
@@ -157,6 +161,14 @@ private:
 		void generate_new_connection(ipa_ip_type iptype, client_info* client);
 
 		bool is_lan2lan_connection(ipacm_event_connection* data);
+
+		bool is_potential_lan2lan_connection(ipacm_event_connection* new_conn);
+
+		void cache_new_connection(ipacm_event_connection* new_conn);
+
+		void remove_cache_connection(ipacm_event_connection* del_conn);
+
+		void check_cache_connection(ipa_ip_type iptype, client_info* client);
 
 };
 
