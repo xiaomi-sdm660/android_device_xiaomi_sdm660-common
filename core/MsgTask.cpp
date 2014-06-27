@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,13 +29,18 @@
 #define LOG_NDDEBUG 0
 #define LOG_TAG "LocSvc_MsgTask"
 
+#ifdef _ANDROID
 #include <cutils/sched_policy.h>
+#include <android_runtime/AndroidRuntime.h>
+#else
+#include "fake_sched_policy.h"
+#endif
 #include <unistd.h>
 #include <MsgTask.h>
 #include <msg_q.h>
 #include <log_util.h>
 #include <loc_log.h>
-#include <android_runtime/AndroidRuntime.h>
+#include <platform_lib_includes.h>
 
 namespace loc_core {
 
@@ -95,7 +100,7 @@ void* MsgTask::loopMain(void* arg) {
     MsgTask* copy = (MsgTask*)arg;
 
     // make sure we do not run in background scheduling group
-    set_sched_policy(gettid(), SP_FOREGROUND);
+    set_sched_policy(GETTID_PLATFORM_LIB_ABSTRACTION, SP_FOREGROUND);
 
     if (NULL != copy->mAssociator) {
         copy->mAssociator();

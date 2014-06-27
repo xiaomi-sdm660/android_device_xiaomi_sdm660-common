@@ -1,56 +1,18 @@
 AM_CFLAGS = \
-     $(QMIF_CFLAGS) \
-     -I../utils \
-     -I../platform_lib_abstractions \
-     -I./ulp/inc \
-     -I./libloc_api_50001 \
-     -I./loc_api_v02 \
      -I./ \
+     -I../core \
+     -I./libloc_api_50001 \
+     -I../platform_lib_abstractions \
+     -I../utils \
      -fno-short-enums \
-     -DFEATURE_GNSS_BIT_API
+     -DTARGET_USES_QCOM_BSP
 
-libloc_adapter_so_la_SOURCES = \
-            libloc_api_50001/loc_eng_log.cpp \
-            libloc_api_50001/LocApiAdapter.cpp \
-            fake_property_service.c \
-            fake_sched_policy.c
-
-if USE_GLIB
-libloc_adapter_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
-libloc_adapter_so_la_LDFLAGS = -lstdc++ -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
-libloc_adapter_so_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
-else
-libloc_adapter_so_la_CFLAGS = $(AM_CFLAGS)
-libloc_adapter_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
-libloc_adapter_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
-endif
-libloc_adapter_so_la_LIBADD = -lstdc++ ../utils/libgps_utils_so.la
-
-
-libloc_api_la_SOURCES = \
-            loc_api_v02/LocApiV02Adapter.cpp \
-            loc_api_v02/loc_api_v02_log.c \
-            loc_api_v02/loc_api_v02_client.c \
-            loc_api_v02/loc_api_sync_req.c \
-            loc_api_v02/location_service_v02.c \
-            loc_api_v02/LocApiV02Adapter.h \
-            loc_api_v02/loc_util_log.h \
-            loc_api_v02/location_service_v02.h \
-            loc_api_v02/loc_api_sync_req.h \
-            loc_api_v02/loc_api_v02_client.h \
-            loc_api_v02/loc_api_v02_log.h
-
-if USE_GLIB
-libloc_api_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
-libloc_api_la_LDFLAGS = -lstdc++ -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
-libloc_api_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
-else
-libloc_api_la_CFLAGS = $(AM_CFLAGS)
-libloc_api_la_LDFLAGS = -shared -version-info 1:0:0
-libloc_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
-endif
-
-libloc_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) ../utils/libgps_utils_so.la libloc_adapter_so.la
+libloc_eng_so_la_h_sources = \
+     loc_eng_dmn_conn_glue_msg.h \
+     loc_eng_dmn_conn_glue_pipe.h \
+     loc_eng_dmn_conn.h \
+     loc_eng_dmn_conn_handler.h \
+     loc_eng_dmn_conn_thread_helper.h
 
 libloc_eng_so_la_SOURCES = \
     libloc_api_50001/loc_eng.cpp \
@@ -58,6 +20,8 @@ libloc_eng_so_la_SOURCES = \
     libloc_api_50001/loc_eng_xtra.cpp \
     libloc_api_50001/loc_eng_ni.cpp \
     libloc_api_50001/loc_eng_log.cpp \
+    libloc_api_50001/loc_eng_nmea.cpp \
+    libloc_api_50001/LocEngAdapter.cpp \
     libloc_api_50001/loc_eng_dmn_conn.cpp \
     libloc_api_50001/loc_eng_dmn_conn_handler.cpp \
     libloc_api_50001/loc_eng_dmn_conn_thread_helper.c \
@@ -65,6 +29,7 @@ libloc_eng_so_la_SOURCES = \
     libloc_api_50001/loc_eng_dmn_conn_glue_pipe.c \
     fake_property_service.c
 
+libloc_eng_so_la_SOURCES += libloc_eng_so_la_h_sources
 
 if USE_GLIB
 libloc_eng_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
@@ -76,7 +41,7 @@ libloc_eng_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
 libloc_eng_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libloc_eng_so_la_LIBADD = -lstdc++ -ldl ../utils/libgps_utils_so.la libloc_adapter_so.la libloc_api.la
+libloc_eng_so_la_LIBADD = -lstdc++ -ldl -llog ../utils/libgps_utils_so.la ../core/libloc_core.la
 
 
 libgps_default_so_la_SOURCES = \
@@ -94,28 +59,76 @@ libgps_default_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
 libgps_default_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libgps_default_so_la_LIBADD = -lstdc++ ../utils/libgps_utils_so.la -ldl libloc_eng_so.la
+libgps_default_so_la_LIBADD = -lstdc++ -llog ../utils/libgps_utils_so.la ../core/libloc_core.la -ldl libloc_eng_so.la
+
+
+libloc_ds_api_CFLAGS = \
+     $(QMIF_CFLAGS) \
+     $(QMI_CFLAGS) \
+     $(DATA_CFLAGS) \
+     -I$(WORKSPACE)/qcom-opensource/location/loc_api/ds_api
+
+libloc_ds_api_la_SOURCES = \
+     $(WORKSPACE)/qcom-opensource/location/loc_api/ds_api/ds_client.c
+
+if USE_GLIB
+libloc_ds_api_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(libloc_ds_api_CFLAGS) @GLIB_CFLAGS@
+libloc_ds_api_la_LDFLAGS = -lstdc++ -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
+libloc_ds_api_la_LDFLAGS += -Wl,--export-dynamic
+libloc_ds_api_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(libloc_ds_api_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
+else
+libloc_ds_api_la_CFLAGS = $(AM_CFLAGS) $(libloc_ds_api_CFLAGS)
+libloc_ds_api_la_LDFLAGS = -lstdc++ -lpthread -Wl,--export-dynamic -shared -version-info 1:0:0
+libloc_ds_api_la_LDFLAGS += -Wl,--export-dynamic
+libloc_ds_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_ds_api_CFLAGS)
+endif
+
+libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices -ldsi_netctrl ../utils/libgps_utils_so.la
+
+libloc_api_v02_CFLAGS = \
+     $(QMIF_CFLAGS) \
+     -I$(WORKSPACE)/qcom-opensource/location/loc_api/ds_api \
+     -I$(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02
+
+libloc_api_v02_la_SOURCES = \
+    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/LocApiV02.cpp \
+    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_v02_log.c \
+    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_v02_client.c \
+    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_sync_req.c \
+    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/location_service_v02.c
+
+if USE_GLIB
+libloc_api_v02_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(libloc_api_v02_CFLAGS) @GLIB_CFLAGS@
+libloc_api_v02_la_LDFLAGS = -lstdc++ -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
+libloc_api_v02_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(libloc_api_v02_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
+else
+libloc_api_v02_la_CFLAGS = $(AM_CFLAGS) $(libloc_api_v02_CFLAGS)
+libloc_api_v02_la_LDFLAGS = -lstdc++ -lpthread -shared -version-info 1:0:0
+libloc_api_v02_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_api_v02_CFLAGS)
+endif
+
+libloc_api_v02_la_CXXFLAGS = -std=c++0x
+libloc_api_v02_la_LIBADD = -lstdc++ -lqmi_cci -lqmi_common_so ../core/libloc_core.la ../utils/libgps_utils_so.la libloc_ds_api.la
 
 library_include_HEADERS = \
-   libloc_api_50001/LocApiAdapter.h \
+   libloc_api_50001/LocEngAdapter.h \
    libloc_api_50001/loc.h \
    libloc_api_50001/loc_eng.h \
    libloc_api_50001/loc_eng_xtra.h \
    libloc_api_50001/loc_eng_ni.h \
    libloc_api_50001/loc_eng_agps.h \
    libloc_api_50001/loc_eng_msg.h \
-   libloc_api_50001/loc_eng_msg_id.h \
    libloc_api_50001/loc_eng_log.h \
-   loc_api_v02/LocApiV02Adapter.h \
-   loc_api_v02/loc_util_log.h \
-   loc_api_v02/location_service_v02.h \
-   loc_api_v02/loc_api_sync_req.h \
-   loc_api_v02/loc_api_v02_client.h \
-   loc_api_v02/loc_api_v02_log.h \
-   ulp/inc/ulp.h \
-   fake_property_service.h
+   fake_property_service.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/ds_api/ds_client.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/location_service_v02.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_v02_log.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_v02_client.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_sync_req.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/LocApiV02.h \
+   $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_util_log.h
 
 library_includedir = $(pkgincludedir)
 
 #Create and Install libraries
-lib_LTLIBRARIES = libloc_adapter_so.la libloc_api.la libloc_eng_so.la libgps_default_so.la
+lib_LTLIBRARIES = libloc_eng_so.la libgps_default_so.la libloc_ds_api.la libloc_api_v02.la

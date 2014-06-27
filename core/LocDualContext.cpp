@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -58,7 +58,11 @@ ContextBase* LocDualContext::mBgContext = NULL;
 
 // the name must be shorter than 15 chars
 const char* LocDualContext::mLocationHalName = "Loc_hal_worker";
+#ifndef USE_GLIB
 const char* LocDualContext::mIzatLibName = "liblbs_core.so";
+#else
+const char* LocDualContext::mIzatLibName = "liblbs_core.so.1";
+#endif
 
 const MsgTask* LocDualContext::getMsgTask(MsgTask::tCreate tCreator,
                                           const char* name)
