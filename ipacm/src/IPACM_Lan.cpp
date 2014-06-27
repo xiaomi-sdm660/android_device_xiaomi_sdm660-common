@@ -42,7 +42,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <assert.h>
 #include "IPACM_Netlink.h"
 #include "IPACM_Lan.h"
 #include "IPACM_Wan.h"
@@ -247,34 +246,34 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 
 					if (IPACM_Wan::isWanUP())
 					{
+						if(data->iptype == IPA_IP_v4 || data->iptype == IPA_IP_MAX)
+						{
 						if(IPACM_Wan::backhaul_is_sta_mode == false)
 						{
-							if(data->iptype == IPA_IP_v4 || data->iptype == IPA_IP_MAX)
-							{
 								ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
 								handle_wan_up_ex(ext_prop, IPA_IP_v4);
 							}
-						}
 						else
 						{
 							handle_wan_up(IPA_IP_v4);
 						}
 					}
+					}
 
 					if(IPACM_Wan::isWanUP_V6())
 					{
+						if((data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX) && num_dft_rt_v6 == 1)
+						{
 						if(IPACM_Wan::backhaul_is_sta_mode == false)
 						{
-							if(data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX)
-							{
 								ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
 								handle_wan_up_ex(ext_prop, IPA_IP_v6);
 							}
-						}
 						else
 						{
 							handle_wan_up(IPA_IP_v6);
 						}
+					}
 					}
 
 					/* Post event to NAT */
@@ -320,17 +319,17 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			return;
 		}
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
+		{
 		if(data_wan->is_sta == false)
 		{
-			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
-			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
 				handle_wan_up_ex(ext_prop, IPA_IP_v4);
 			}
-		}
 		else
 		{
 			handle_wan_up(IPA_IP_v4);
+		}
 		}
 		break;
 
@@ -344,17 +343,17 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			return;
 		}
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+		{
 		if(data_wan->is_sta == false)
 		{
-			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
-			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
 				handle_wan_up_ex(ext_prop, IPA_IP_v6);
 			}
-		}
 		else
 		{
 			handle_wan_up(IPA_IP_v6);
+		}
 		}
 		break;
 
@@ -2494,7 +2493,6 @@ int IPACM_Lan::del_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
 		{
 			if(lan2lan_flt_rule_hdl_v4[i].rule_hdl == rule_hdl)
 			{
-				assert(lan2lan_flt_rule_hdl_v4[i].valid == true);
 				if(reset_to_dummy_flt_rule(IPA_IP_v4, rule_hdl) == IPACM_FAILURE)
 				{
 					IPACMERR("Failed to delete lan2lan v4 flt rule %d\n", rule_hdl);
@@ -2519,7 +2517,6 @@ int IPACM_Lan::del_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t rule_hdl)
 		{
 			if(lan2lan_flt_rule_hdl_v6[i].rule_hdl == rule_hdl)
 			{
-				assert(lan2lan_flt_rule_hdl_v6[i].valid == true);
 				if(reset_to_dummy_flt_rule(IPA_IP_v6, rule_hdl) == IPACM_FAILURE)
 				{
 					IPACMERR("Failed to delete lan2lan v6 flt rule %d\n", rule_hdl);

@@ -250,34 +250,34 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 
 					if (IPACM_Wan::isWanUP())
 					{
+						if(data->iptype == IPA_IP_v4 || data->iptype == IPA_IP_MAX)
+						{
 						if(IPACM_Wan::backhaul_is_sta_mode == false)
 						{
-							if(data->iptype == IPA_IP_v4 || data->iptype == IPA_IP_MAX)
-							{
 								ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
 								IPACM_Lan::handle_wan_up_ex(ext_prop, IPA_IP_v4);
 							}
-						}
 						else
 						{
 							IPACM_Lan::handle_wan_up(IPA_IP_v4);
 						}
 					}
+					}
 
 					if(IPACM_Wan::isWanUP_V6())
 					{
+						if((data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX) && num_dft_rt_v6 == 1)
+						{
 						if(IPACM_Wan::backhaul_is_sta_mode == false)
 						{
-							if(data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX)
-							{
 								ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
 								IPACM_Lan::handle_wan_up_ex(ext_prop, IPA_IP_v6);
 							}
-						}
 						else
 						{
 							IPACM_Lan::handle_wan_up(IPA_IP_v6);
 						}
+					}
 					}
 
 					IPACMDBG("posting IPA_HANDLE_WLAN_UP:Finished checking wan_up\n");
@@ -297,18 +297,18 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			return;
 		}
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
+		{
 		if(data_wan->is_sta == false)
 		{
-			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
-			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
 				IPACM_Lan::handle_wan_up_ex(ext_prop, IPA_IP_v4);
 			}
-		}
 		else
 		{
 			IPACM_Lan::handle_wan_up(IPA_IP_v4);
 		}
+	}
 	}
 		break;
 
@@ -322,17 +322,17 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			return;
 		}
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+		{
 		if(data_wan->is_sta == false)
 		{
-			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
-			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
 				IPACM_Lan::handle_wan_up_ex(ext_prop, IPA_IP_v6);
 			}
-		}
 		else
 		{
 			IPACM_Lan::handle_wan_up(IPA_IP_v6);
+		}
 		}
 		break;
 
