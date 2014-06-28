@@ -61,18 +61,18 @@ void ipacm_log_send( void * user_data);
 
 static char buffer_send[MAX_BUF_LEN];
 
-#define PERROR(fmt)   memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+#define PERROR(fmt)   memset(buffer_send, 0, MAX_BUF_LEN);\
 					  snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
 					  ipacm_log_send (buffer_send); \
                       perror(fmt);
 
-#define IPACMERR(fmt, ...)	memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+#define IPACMERR(fmt, ...)	memset(buffer_send, 0, MAX_BUF_LEN);\
 							snprintf(buffer_send,MAX_BUF_LEN,"ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
 							ipacm_log_send (buffer_send);
-#define IPACMDBG(fmt, ...)	memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+#define IPACMDBG(fmt, ...)	memset(buffer_send, 0, MAX_BUF_LEN);\
 							snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
 							ipacm_log_send (buffer_send);
-#define IPACMLOG(fmt, ...)      memset(buffer_send, 0, sizeof(MAX_BUF_LEN));\
+#define IPACMLOG(fmt, ...)      memset(buffer_send, 0, MAX_BUF_LEN);\
                                                         snprintf(buffer_send,MAX_BUF_LEN, fmt, ##__VA_ARGS__);\
                                                         ipacm_log_send (buffer_send);
 

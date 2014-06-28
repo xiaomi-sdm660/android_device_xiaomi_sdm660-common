@@ -1207,17 +1207,20 @@ int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
 
 			}
 		}
+		/* initialize wifi client*/
+		get_client_memptr(eth_client, num_eth_client)->route_rule_set_v4 = false;
+		get_client_memptr(eth_client, num_eth_client)->route_rule_set_v6 = 0;
+		get_client_memptr(eth_client, num_eth_client)->ipv4_set = false;
+		get_client_memptr(eth_client, num_eth_client)->ipv6_set = 0;
+		num_eth_client++;
+		header_name_count++; //keep increasing header_name_count
+		res = IPACM_SUCCESS;
+		IPACMDBG("eth client number: %d\n", num_eth_client);
 	}
-	/* initialize wifi client*/
-	get_client_memptr(eth_client, num_eth_client)->route_rule_set_v4 = false;
-    get_client_memptr(eth_client, num_eth_client)->route_rule_set_v6 = 0;
-	get_client_memptr(eth_client, num_eth_client)->ipv4_set = false;
-    get_client_memptr(eth_client, num_eth_client)->ipv6_set = 0;
-	num_eth_client++;
-	header_name_count++; //keep increasing header_name_count
-	res = IPACM_SUCCESS;
-	IPACMDBG("eth client number: %d\n", num_eth_client);
-
+	else
+	{
+		return res;
+	}
 fail:
 	free(pHeaderDescriptor);
 
