@@ -895,6 +895,10 @@ int IPACM_Wlan::handle_private_subnet(ipa_ip_type iptype)
 			private_fl_rule_hdl[i] = pFilteringTable->rules[i].rule_hdl;
 		}
 	}
+	else
+	{
+		return IPACM_SUCCESS;
+	}
 fail:
 	free(pFilteringTable);
 	return res;
@@ -1312,23 +1316,26 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 				break;
 			}
 		}
-	}
 
-	/* initialize wifi client*/
-	get_client_memptr(wlan_client, num_wifi_client)->route_rule_set_v4 = false;
-    get_client_memptr(wlan_client, num_wifi_client)->route_rule_set_v6 = 0;
-	get_client_memptr(wlan_client, num_wifi_client)->ipv4_set = false;
-    get_client_memptr(wlan_client, num_wifi_client)->ipv6_set = 0;
-    get_client_memptr(wlan_client, num_wifi_client)->power_save_set=false;
-	num_wifi_client++;
-	header_name_count++; //keep increasing header_name_count
-	IPACM_Wlan::total_num_wifi_clients++;
-	res = IPACM_SUCCESS;
-	IPACMDBG("Wifi client number: %d\n", num_wifi_client);
+		/* initialize wifi client*/
+		get_client_memptr(wlan_client, num_wifi_client)->route_rule_set_v4 = false;
+		get_client_memptr(wlan_client, num_wifi_client)->route_rule_set_v6 = 0;
+		get_client_memptr(wlan_client, num_wifi_client)->ipv4_set = false;
+		get_client_memptr(wlan_client, num_wifi_client)->ipv6_set = 0;
+		get_client_memptr(wlan_client, num_wifi_client)->power_save_set=false;
+		num_wifi_client++;
+		header_name_count++; //keep increasing header_name_count
+		IPACM_Wlan::total_num_wifi_clients++;
+		res = IPACM_SUCCESS;
+		IPACMDBG("Wifi client number: %d\n", num_wifi_client);
+	}
+	else
+	{
+		return res;
+	}
 
 fail:
 	free(pHeaderDescriptor);
-
 	return res;
 }
 
