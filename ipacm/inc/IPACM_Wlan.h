@@ -214,7 +214,7 @@ private:
 	int handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data);
 
 	/*handle lan2lan internal mesg posting*/
-	int handle_lan2lan_msg_post(uint8_t *mac_addr, ipa_cm_event_id event);
+	int handle_lan2lan_msg_post(uint8_t *mac_addr, ipa_cm_event_id event, ipa_ip_type iptype);
 
 	/*handle wifi client */
 	int handle_wlan_client_ipaddr(ipacm_event_data_all *data);
@@ -253,7 +253,11 @@ private:
 	/* install UL filter rule from Q6 */
 	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
 
+	/* install TCP control filter rules */
 	virtual void install_tcp_ctl_flt_rule(ipa_ip_type iptype);
+
+	/*handle reset wifi-client rt-rules */
+	int handle_wlan_client_reset_rt(ipa_ip_type iptype);
 };
 
 

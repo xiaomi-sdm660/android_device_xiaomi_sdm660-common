@@ -377,6 +377,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
+		/* clean up v6 RT rules*/
+		IPACMDBG("Received IPA_WAN_V6_DOWN in LAN-instance and need clean up client IPv6 address \n");
+		/* reset usb-client ipv6 rt-rules */
+		handle_lan_client_reset_rt(IPA_IP_v6);
+
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		handle_wan_down_v6(data_wan->is_sta);
 		break;
@@ -1833,7 +1838,8 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 	/* posting ip to lan2lan module to delete RT/FILTER rules*/
-	post_lan2lan_client_disconnect_msg();
+	post_lan2lan_client_disconnect_msg(IPA_IP_v4);
+	post_lan2lan_client_disconnect_msg(IPA_IP_v6);
 
 /* Delete private subnet*/
 #ifdef FEATURE_IPA_ANDROID
@@ -3115,7 +3121,47 @@ void IPACM_Lan::post_del_self_evt()
 	IPACM_EvtDispatcher::PostEvt(&evt);
 }
 
-void IPACM_Lan::post_lan2lan_client_disconnect_msg()
+/*handle reset usb-client rt-rules */
+int IPACM_Lan::handle_lan_client_reset_rt(ipa_ip_type iptype)
+{
+	int i, res = IPACM_SUCCESS;
+
+	/* clean eth-client routing rules */
+	IPACMDBG("left %d eth clients need to be deleted \n ", num_eth_client);
+	for (i = 0; i < num_eth_client; i++)
+	{
+		res = delete_eth_rtrules(i, iptype);
+		if (res != IPACM_SUCCESS)
+		{
+			IPACMERR("Failed to delete old iptype(%d) rules.\n", iptype);
+			return res;
+		}
+	} /* end of for loop */
+
+	/* Pass info to LAN2LAN module */
+	res = post_lan2lan_client_disconnect_msg(iptype);
+	if (res != IPACM_SUCCESS)
+	{
+		IPACMERR("Failed to posting delete old iptype(%d) address.\n", iptype);
+		return res;
+	}
+	/* Reset ip-address */
+	for (i = 0; i < num_eth_client; i++)
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			get_client_memptr(eth_client, i)->ipv4_set = false;
+		}
+		else
+		{
+			get_client_memptr(eth_client, i)->ipv6_set = 0;
+		}
+	} /* end of for loop */
+	return res;
+}
+
+/*handle lan2lan internal mesg posting*/
+int IPACM_Lan::post_lan2lan_client_disconnect_msg(ipa_ip_type iptype)
 {
 	int i, j;
 	ipacm_cmd_q_data evt_data;
@@ -3123,13 +3169,14 @@ void IPACM_Lan::post_lan2lan_client_disconnect_msg()
 
 	for (i = 0; i < num_eth_client; i++)
 	{
-			if(get_client_memptr(eth_client, i)->ipv4_set == true)
+			if((get_client_memptr(eth_client, i)->ipv4_set == true)
+				&& (iptype == IPA_IP_v4))
 			{
 				lan_client = (ipacm_event_lan_client*)malloc(sizeof(ipacm_event_lan_client));
 				if(lan_client == NULL)
 				{
 					IPACMERR("Failed to allocate memory.\n");
-					return;
+					return IPACM_FAILURE;
 				}
 				memset(lan_client, 0, sizeof(ipacm_event_lan_client));
 				lan_client->iptype = IPA_IP_v4;
@@ -3144,31 +3191,35 @@ void IPACM_Lan::post_lan2lan_client_disconnect_msg()
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
 			}
 
-			for (j = 0; j < get_client_memptr(eth_client, i)->ipv6_set; j++)
+			if((get_client_memptr(eth_client, i)->ipv6_set > 0)
+				&& (iptype == IPA_IP_v6))
 			{
-				lan_client = (ipacm_event_lan_client*)malloc(sizeof(ipacm_event_lan_client));
-				if(lan_client == NULL)
+				for (j = 0; j < get_client_memptr(eth_client, i)->ipv6_set; j++)
 				{
-					IPACMERR("Failed to allocate memory.\n");
-					return;
+					lan_client = (ipacm_event_lan_client*)malloc(sizeof(ipacm_event_lan_client));
+					if(lan_client == NULL)
+					{
+						IPACMERR("Failed to allocate memory.\n");
+						return IPACM_FAILURE;
+					}
+					memset(lan_client, 0, sizeof(ipacm_event_lan_client));
+					lan_client->iptype = IPA_IP_v6;
+					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
+					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
+					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
+					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
+					lan_client->p_iface = this;
+
+					memset(&evt_data, 0, sizeof(ipacm_cmd_q_data));
+					evt_data.evt_data = (void*)lan_client;
+					evt_data.event = IPA_LAN_CLIENT_DISCONNECT;
+
+					IPACMDBG("Posting event IPA_LAN_CLIENT_DISCONNECT\n");
+					IPACM_EvtDispatcher::PostEvt(&evt_data);
 				}
-				memset(lan_client, 0, sizeof(ipacm_event_lan_client));
-				lan_client->iptype = IPA_IP_v6;
-				lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-				lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-				lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-				lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-				lan_client->p_iface = this;
-
-				memset(&evt_data, 0, sizeof(ipacm_cmd_q_data));
-				evt_data.evt_data = (void*)lan_client;
-				evt_data.event = IPA_LAN_CLIENT_DISCONNECT;
-
-				IPACMDBG("Posting event IPA_LAN_CLIENT_DISCONNECT\n");
-				IPACM_EvtDispatcher::PostEvt(&evt_data);
 			}
 	} /* end of for loop */
-	return;
+	return IPACM_SUCCESS;
 }
 
 void IPACM_Lan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
