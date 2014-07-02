@@ -57,18 +57,11 @@ IPACM_Filtering::IPACM_Filtering()
 	{
 		IPACMERR("Failed opening %s.\n", DEVICE_NAME);
 	}
-
-	fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
-	if(fd_wwan_ioctl < 0)
-	{
-		IPACMERR("Failed to open %s.\n",WWAN_QMI_IOCTL_DEVICE_NAME);
-	}
 }
 
 IPACM_Filtering::~IPACM_Filtering()
 {
 	close(fd);
-	close(fd_wwan_ioctl);
 }
 
 bool IPACM_Filtering::DeviceNodeIsOpened()
@@ -238,16 +231,12 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 	int ret = 0, cnt, num_rules = 0, pos = 0;
 	ipa_install_fltr_rule_req_msg_v01 qmi_rule_msg;
 
+	int fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
 	if(fd_wwan_ioctl < 0)
 	{
-		IPACMERR("WWAN ioctl is not open.\n");
+		IPACMERR("Failed to open %s.\n",WWAN_QMI_IOCTL_DEVICE_NAME);
 		return false;
 	}
-	else
-	{
-		IPACMDBG("WWAN ioctl is open.\n");
-	}
-   
 
 	if(rule_table_v4 != NULL)
 	{
@@ -263,6 +252,7 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 	if(num_rules > QMI_IPA_MAX_FILTERS_V01)
 	{
 		IPACMERR("The number of filtering rules exceed limit.\n");
+		close(fd_wwan_ioctl);
 		return false;
 	}
 	else
@@ -329,20 +319,22 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 		if (ret != 0)
 		{
 			IPACMERR("Failed adding Filtering rule %p with ret %d\n ", &qmi_rule_msg, ret);
+			close(fd_wwan_ioctl);
 			return false;
 		}
 	}
 	IPACMDBG("Added Filtering rule %p\n", &qmi_rule_msg);
+	close(fd_wwan_ioctl);
 	return true;
 }
 
 bool IPACM_Filtering::SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req_msg_v01* table)
 {
 	int ret = 0;
-
+	int fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
 	if(fd_wwan_ioctl < 0)
 	{
-		IPACMERR("WWAN ioctl is not open.\n");
+		IPACMERR("Failed to open %s.\n",WWAN_QMI_IOCTL_DEVICE_NAME);
 		return false;
 	}
 
@@ -350,10 +342,12 @@ bool IPACM_Filtering::SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req
 	if (ret != 0)
 	{
 		IPACMERR("Failed adding filtering rule index %p with ret %d\n", table, ret);
+		close(fd_wwan_ioctl);
 		return false;
 	}
 
 	IPACMDBG("Added Filtering rule index %p\n", table);
+	close(fd_wwan_ioctl);
 	return true;
 }
 
