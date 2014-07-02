@@ -511,6 +511,7 @@ int IPACM_Iface::query_iface_property(void)
 	if(iface_query == NULL)
 	{
 		IPACMERR("Unable to allocate iface_query memory.\n");
+		close(fd);
 		return IPACM_FAILURE;
 	}
 	IPACMDBG("iface name %s\n", dev_name);
@@ -531,6 +532,7 @@ int IPACM_Iface::query_iface_property(void)
 		if(tx_prop == NULL)
 		{
 			IPACMERR("Unable to allocate tx_prop memory.\n");
+			close(fd);
 			return IPACM_FAILURE;
 		}
 	memcpy(tx_prop->name, dev_name, sizeof(tx_prop->name));
@@ -562,6 +564,7 @@ int IPACM_Iface::query_iface_property(void)
 		if(rx_prop == NULL)
 		{
 			IPACMERR("Unable to allocate rx_prop memory.\n");
+			close(fd);
 			return IPACM_FAILURE;
 		}
 	memcpy(rx_prop->name, dev_name,

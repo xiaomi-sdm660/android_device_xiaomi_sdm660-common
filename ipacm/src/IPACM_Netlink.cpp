@@ -210,6 +210,11 @@ static int ipa_nl_sock_listener_start
 
 	while(true)
 	{
+	    for(i = 0; i < sk_fd_set->num_fd; i++ )
+		{
+			FD_SET(sk_fd_set->sk_fds[i].sk_fd, &(sk_fd_set->fdset));
+		}
+
 		if((ret = select(sk_fd_set->max_fd + 1, &(sk_fd_set->fdset), NULL, NULL, NULL)) < 0)
 		{
 			IPACMERR("ipa_nl select failed\n");
@@ -230,6 +235,7 @@ static int ipa_nl_sock_listener_start
 											 i,
 											 sk_fd_set->sk_fds[i].sk_fd);
 						}
+						FD_CLR(sk_fd_set->sk_fds[i].sk_fd, &(sk_fd_set->fdset));
 					}
 					else
 					{
@@ -1595,6 +1601,7 @@ int ipa_nl_listener_init
 	if(ipa_nl_addfd_map(sk_fdset, sk_info.sk_fd, read_f) != IPACM_SUCCESS)
 	{
 		IPACMERR("cannot add nl routing sock for reading\n");
+		close(sk_info.sk_fd);
 		return IPACM_FAILURE;
 	}
 

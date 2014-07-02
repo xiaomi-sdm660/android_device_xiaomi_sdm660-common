@@ -959,6 +959,7 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 	if (pFilteringTable == NULL)
 	{
 		IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+		close(fd);
 		return IPACM_FAILURE;
 	}
 	memset(pFilteringTable, 0, len);
