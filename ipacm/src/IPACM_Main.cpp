@@ -199,7 +199,7 @@ void* firewall_monitor(void *param)
 		if(event == NULL)
 		{
 			IPACMERR("Failed to allocate memory.\n");
-			return;
+			return NULL;
 		}
 		memset(event, 0, length);
 		memcpy(event, buffer, length);
