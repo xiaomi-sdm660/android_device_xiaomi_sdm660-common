@@ -364,6 +364,11 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
+		/* clean up v6 RT rules*/
+		IPACMDBG("Received IPA_WAN_V6_DOWN in WLAN-instance and need clean up client IPv6 address \n");
+		/* reset wifi-client ipv6 rt-rules */
+		handle_wlan_client_reset_rt(IPA_IP_v6);
+
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		if(data_wan->is_sta == false && wlan_ap_index > 0)
 		{
@@ -396,7 +401,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG("Received IPA_WLAN_CLIENT_DEL_EVENT\n");
 				/* support lan2lan ipa-HW feature*/
-				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_DISCONNECT);
+				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_DISCONNECT, IPA_IP_v4);
+				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_DISCONNECT, IPA_IP_v6);
 				handle_wlan_client_down_evt(data->mac_addr);
 			}
 		}
@@ -410,7 +416,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG("Received IPA_WLAN_CLIENT_POWER_SAVE_EVENT\n");
 				/* support lan2lan ipa-HW feature*/
-				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_POWER_SAVE);
+				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_POWER_SAVE, IPA_IP_v4);
+				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_POWER_SAVE, IPA_IP_v6);
 				handle_wlan_client_pwrsave(data->mac_addr);
 			}
 		}
@@ -424,7 +431,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG("Received IPA_WLAN_CLIENT_RECOVER_EVENT\n");
 				/* support lan2lan ipa-HW feature*/
-				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_POWER_RECOVER);
+				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_POWER_RECOVER, IPA_IP_v4);
+				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_POWER_RECOVER, IPA_IP_v6);
 
 				wlan_index = get_wlan_client_index(data->mac_addr);
 				if ((wlan_index != IPACM_INVALID_INDEX) &&
@@ -1979,7 +1987,8 @@ int IPACM_Wlan::handle_down_evt()
 
 		IPACMDBG("Delete %d client header\n", num_wifi_client);
 
-		handle_lan2lan_msg_post(get_client_memptr(wlan_client, i)->mac, IPA_LAN_CLIENT_DISCONNECT);
+		handle_lan2lan_msg_post(get_client_memptr(wlan_client, i)->mac, IPA_LAN_CLIENT_DISCONNECT, IPA_IP_v4);
+		handle_lan2lan_msg_post(get_client_memptr(wlan_client, i)->mac, IPA_LAN_CLIENT_DISCONNECT, IPA_IP_v6);
 
         if(get_client_memptr(wlan_client, i)->ipv4_header_set == true)
         {
@@ -2047,8 +2056,45 @@ fail:
 	return res;
 }
 
+/*handle reset wifi-client rt-rules */
+int IPACM_Wlan::handle_wlan_client_reset_rt(ipa_ip_type iptype)
+{
+	int i, res = IPACM_SUCCESS;
+
+	/* clean wifi-client routing rules */
+	IPACMDBG("left %d wifi clients to reset ip-type(%d) rules \n ", num_wifi_client, iptype);
+
+	for (i = 0; i < num_wifi_client; i++)
+	{
+		/* Reset RT rules */
+		res = delete_default_qos_rtrules(i, iptype);
+		if (res != IPACM_SUCCESS)
+		{
+			IPACMERR("Failed to delete old iptype(%d) rules.\n", iptype);
+			return res;
+		}
+		/* Pass info to LAN2LAN module */
+		res = handle_lan2lan_msg_post(get_client_memptr(wlan_client, i)->mac, IPA_LAN_CLIENT_DISCONNECT, iptype);
+		if (res != IPACM_SUCCESS)
+		{
+			IPACMERR("Failed to posting delete old iptype(%d) address.\n", iptype);
+			return res;
+		}
+		/* Reset ip-address */
+		if(iptype == IPA_IP_v4)
+		{
+			get_client_memptr(wlan_client, i)->ipv4_set = false;
+		}
+		else
+		{
+			get_client_memptr(wlan_client, i)->ipv6_set = 0;
+		}
+	} /* end of for loop */
+	return res;
+}
+
 /*handle lan2lan internal mesg posting*/
-int IPACM_Wlan::handle_lan2lan_msg_post(uint8_t *mac_addr, ipa_cm_event_id event)
+int IPACM_Wlan::handle_lan2lan_msg_post(uint8_t *mac_addr, ipa_cm_event_id event,ipa_ip_type iptype)
 {
 	int client_index;
 	client_index = get_wlan_client_index(mac_addr);
@@ -2060,7 +2106,8 @@ int IPACM_Wlan::handle_lan2lan_msg_post(uint8_t *mac_addr, ipa_cm_event_id event
 
 	ipacm_event_lan_client* lan_client;
 	ipacm_cmd_q_data evt_data;
-	if(get_client_memptr(wlan_client, client_index)->ipv4_set == true) /* handle ipv4 case*/
+	if((get_client_memptr(wlan_client, client_index)->ipv4_set == true)
+		&& (iptype == IPA_IP_v4)) /* handle ipv4 case*/
 	{
 		if(ip_type != IPA_IP_v4 && ip_type != IPA_IP_MAX)
 		{
@@ -2088,7 +2135,8 @@ int IPACM_Wlan::handle_lan2lan_msg_post(uint8_t *mac_addr, ipa_cm_event_id event
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
 	}
 
-	if(get_client_memptr(wlan_client, client_index)->ipv6_set > 0) /* handle v6 case: may be multiple v6 addr */
+	if((get_client_memptr(wlan_client, client_index)->ipv6_set > 0)
+		&& (iptype == IPA_IP_v6)) /* handle v6 case: may be multiple v6 addr */
 	{
 		if(ip_type != IPA_IP_v6 && ip_type != IPA_IP_MAX)
 		{
@@ -2632,6 +2680,7 @@ void IPACM_Wlan::del_dummy_flt_rule()
 	return;
 }
 
+/* install TCP control filter rules */
 void IPACM_Wlan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
 {
 	if (rx_prop == NULL)

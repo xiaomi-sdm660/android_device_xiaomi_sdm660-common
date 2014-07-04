@@ -324,7 +324,11 @@ private:
 	/*handle lan iface down event*/
 	int handle_down_evt();
 
-	void post_lan2lan_client_disconnect_msg();
+	/*handle lan2lan internal mesg posting*/
+	int post_lan2lan_client_disconnect_msg(ipa_ip_type iptype);
+
+	/*handle reset usb-client rt-rules */
+	int handle_lan_client_reset_rt(ipa_ip_type iptype);
 };
 
 #endif /* IPACM_LAN_H */
