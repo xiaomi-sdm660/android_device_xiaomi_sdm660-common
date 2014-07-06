@@ -51,7 +51,12 @@ extern "C"
 #include <syslog.h>
 
 #define MAX_BUF_LEN 256
+
+#ifdef FEATURE_IPA_ANDROID
+#define IPACMLOG_FILE "/data/ipacm_log_file"
+#else/* defined(FEATURE_IPA_ANDROID) */
 #define IPACMLOG_FILE "/etc/ipacm_log_file"
+#endif /* defined(NOT FEATURE_IPA_ANDROID)*/
 
 typedef struct ipacm_log_buffer_s {
 	char	user_data[MAX_BUF_LEN];
