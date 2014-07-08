@@ -257,6 +257,7 @@ typedef struct _ipacm_event_iface_up
 	char ifname[IPA_IFACE_NAME_LEN];
 	uint32_t ipv4_addr;
 	uint32_t addr_mask;
+	uint32_t ipv6_prefix[2];
 	bool is_sta;
 }ipacm_event_iface_up;
 
