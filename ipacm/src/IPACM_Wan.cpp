@@ -391,6 +391,103 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
+#ifdef FEATURE_IPA_ANDROID
+	case IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT:
+		{
+			ipacm_event_data_iptype *data = (ipacm_event_data_iptype *)param;
+			ipa_interface_index = iface_ipa_index_query(data->if_index);
+			if (ipa_interface_index == ipa_if_num)
+			{
+				IPACMDBG("Received IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT (Android) for ip-type (%d)\n", data->iptype);
+				/* The special below condition is to handle default gateway */
+				if ((data->iptype == IPA_IP_v4) && (active_v4 == false))
+				{
+					IPACMDBG("adding routing table(upstream), dev (%s) ip-type(%d)\n", dev_name,data->iptype);
+					handle_route_add_evt(data->iptype);
+				}
+				else if ((data->iptype == IPA_IP_v6) && (active_v6 == false))
+				{
+					IPACMDBG("\n get default v6 route (dst:00.00.00.00) upstream\n");
+				  	handle_route_add_evt(data->iptype);
+				}
+			}
+			else /* double check if current default iface is not itself */
+			{
+				if ((data->iptype == IPA_IP_v4) && (active_v4 == true))
+				{
+					IPACMDBG("Received v4 IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT for other iface (%s)\n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+					IPACMDBG("need clean default v4 route (dst:0.0.0.0) for old iface (%s)\n", dev_name);
+					if(m_is_sta_mode == Q6_WAN)
+					{
+						del_wan_firewall_rule(IPA_IP_v4);
+						install_wan_filtering_rule();
+						handle_route_del_evt_ex(IPA_IP_v4);
+					}
+					else
+					{
+						del_dft_firewall_rules(IPA_IP_v4);
+						handle_route_del_evt(IPA_IP_v4);
+					}
+				}
+				else if ((data->iptype == IPA_IP_v6) && (active_v6 == true))
+				{
+				    IPACMDBG("Received v6 IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT for other iface (%s)\n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
+					IPACMDBG("need clean default v6 route for old iface (%s)\n", dev_name);
+					if(m_is_sta_mode == Q6_WAN)
+					{
+						del_wan_firewall_rule(IPA_IP_v6);
+						install_wan_filtering_rule();
+						handle_route_del_evt_ex(IPA_IP_v6);
+					}
+					else
+					{
+						del_dft_firewall_rules(IPA_IP_v6);
+						handle_route_del_evt(IPA_IP_v6);
+					}
+				}
+			}
+		}
+		break;
+
+	case IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT:
+		{
+			ipacm_event_data_iptype *data = (ipacm_event_data_iptype *)param;
+			ipa_interface_index = iface_ipa_index_query(data->if_index);
+			if (ipa_interface_index == ipa_if_num)
+			{
+				IPACMDBG("Received IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT\n");
+				if ((data->iptype == IPA_IP_v4) && (active_v4 == true))
+				{
+					if(m_is_sta_mode == Q6_WAN)
+					{
+						del_wan_firewall_rule(IPA_IP_v4);
+						install_wan_filtering_rule();
+						handle_route_del_evt_ex(IPA_IP_v4);
+					}
+					else
+					{
+						del_dft_firewall_rules(IPA_IP_v4);
+						handle_route_del_evt(IPA_IP_v4);
+					}
+				}
+				else if ((data->iptype == IPA_IP_v6) && (active_v6 == true))
+				{
+					if(m_is_sta_mode == Q6_WAN)
+					{
+						del_wan_firewall_rule(IPA_IP_v6);
+						install_wan_filtering_rule();
+						handle_route_del_evt_ex(IPA_IP_v6);
+					}
+					else
+					{
+						del_dft_firewall_rules(IPA_IP_v6);
+						handle_route_del_evt(IPA_IP_v6);
+					}
+				}
+			}
+		}
+		break;
+#else/* defined(FEATURE_IPA_ANDROID) */
 	case IPA_ROUTE_ADD_EVENT:
 		{
 			ipacm_event_data_addr *data = (ipacm_event_data_addr *)param;
@@ -404,8 +501,8 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				/* The special below condition is to handle default gateway */
 				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask) && (active_v4 == false))
 				{
-					IPACMDBG("adding routing table\n");
-				  handle_route_add_evt(data->iptype);
+					IPACMDBG("adding routing table, dev (%s) ip-type(%d)\n", dev_name,data->iptype);
+					handle_route_add_evt(data->iptype);
 				}
 				else if ((data->iptype == IPA_IP_v6) &&
 								 (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == false))
@@ -413,7 +510,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 					IPACMDBG("\n get default v6 route (dst:00.00.00.00)\n");
 					IPACMDBG(" IPV6 value: %08x:%08x:%08x:%08x \n",
 									 data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
-				  	handle_route_add_evt(data->iptype);
+				handle_route_add_evt(data->iptype);
 				}
 			}
 			else /* double check if current default iface is not itself */
@@ -466,7 +563,6 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask) && (active_v4 == true))
 				{
 					IPACMDBG("get del default v4 route (dst:0.0.0.0)\n");
-
 					if(m_is_sta_mode == Q6_WAN)
 					{
 						del_wan_firewall_rule(IPA_IP_v4);
@@ -481,8 +577,8 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				}
 				else if ((data->iptype == IPA_IP_v6) && (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == true))
 				{
-					IPACMDBG("get del default v6 route (dst:00.00.00.00)\n");
 
+				    IPACMDBG("get del default v6 route (dst:00.00.00.00)\n");
 					if(m_is_sta_mode == Q6_WAN)
 					{
 						del_wan_firewall_rule(IPA_IP_v6);
@@ -498,7 +594,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			}
 		}
 		break;
-
+#endif /* not defined(FEATURE_IPA_ANDROID)*/
 	case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
 		{
 			ipacm_event_data_all *data = (ipacm_event_data_all *)param;

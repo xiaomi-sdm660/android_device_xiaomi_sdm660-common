@@ -117,6 +117,8 @@ const char *ipacm_event_name[] = {
 	__stringify(IPA_USB_LINK_UP_EVENT),                    /* 38 ipacm_event_data_fid */
     __stringify(IPA_PROCESS_CT_MESSAGE_V6),			       /* 39 ipacm_ct_evt_data */
 	__stringify(IPA_PRIVATE_SUBNET_CHANGE_EVENT),		   /* 40 ipacm_event_data_fid */
+	__stringify(IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT),		   /* 41 ipacm_event_data_fid */
+	__stringify(IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT),		   /* 42 ipacm_event_data_fid */
 };
 
 #define IPA_DRIVER  "/dev/ipa"
@@ -151,7 +153,6 @@ void* netlink_start(void *param)
 {
 	ipa_nl_sk_fd_set_info_t sk_fdset;
 	int ret_val = 0;
-
 	memset(&sk_fdset, 0, sizeof(ipa_nl_sk_fd_set_info_t));
 	IPACMDBG("netlink starter memset sk_fdset succeeds\n");
 	ret_val = ipa_nl_listener_init(NETLINK_ROUTE, (RTMGRP_IPV4_ROUTE | RTMGRP_IPV6_ROUTE | RTMGRP_LINK |
@@ -258,6 +259,7 @@ void* ipa_driver_wlan_notifier(void *param)
 	char buffer[IPA_DRIVER_WLAN_BUF_LEN];
 	struct ipa_msg_meta event_hdr;
 	struct ipa_ecm_msg event_ecm;
+	struct ipa_wan_msg event_wan;
 	struct ipa_wlan_msg_ex event_ex_o;
 	struct ipa_wlan_msg *event_wlan=NULL;
 	struct ipa_wlan_msg_ex *event_ex= NULL;
@@ -265,6 +267,7 @@ void* ipa_driver_wlan_notifier(void *param)
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
     ipacm_event_data_fid *data_fid = NULL;
+	ipacm_event_data_iptype *data_iptype = NULL;
 	ipacm_event_data_wlan_ex *data_ex;
 
 	fd = open(IPA_DRIVER, O_RDWR);
@@ -532,6 +535,39 @@ void* ipa_driver_wlan_notifier(void *param)
 			evt_data.event = IPA_LINK_DOWN_EVENT;
 			evt_data.evt_data = data_fid;
 			break;
+        /* Add for 8994 Android case */
+		case WAN_UPSTREAM_ROUTE_ADD:
+			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
+			IPACMDBG("Received WAN_UPSTREAM_ROUTE_ADD name: %s\n",event_wan.name);
+            data_iptype = (ipacm_event_data_iptype *)malloc(sizeof(ipacm_event_data_iptype));
+			if(data_iptype == NULL)
+			{
+				IPACMERR("unable to allocate memory for event_ecm data_iptype\n");
+				return NULL;
+			}
+			ipa_get_if_index(event_wan.name, &(data_iptype->if_index));
+			data_iptype->iptype = event_wan.ip;
+			IPACMDBG("Received WAN_UPSTREAM_ROUTE_ADD: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
+			evt_data.event = IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT;
+			evt_data.evt_data = data_iptype;
+			break;
+		case WAN_UPSTREAM_ROUTE_DEL:
+			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
+			IPACMDBG("Received WAN_UPSTREAM_ROUTE_DEL name: %s\n",event_wan.name);
+            data_iptype = (ipacm_event_data_iptype *)malloc(sizeof(ipacm_event_data_iptype));
+			if(data_iptype == NULL)
+			{
+				IPACMERR("unable to allocate memory for event_ecm data_iptype\n");
+				return NULL;
+			}
+			ipa_get_if_index(event_wan.name, &(data_iptype->if_index));
+			data_iptype->iptype = event_wan.ip;
+			IPACMDBG("Received WAN_UPSTREAM_ROUTE_DEL: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
+			evt_data.event = IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT;
+			evt_data.evt_data = data_iptype;
+			break;
+        /* End of adding for 8994 Android case */
+
 		default:
 			IPACMDBG("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;

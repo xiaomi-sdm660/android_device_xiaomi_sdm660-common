@@ -156,6 +156,8 @@ typedef enum
 	IPA_USB_LINK_UP_EVENT,                    /* 38 ipacm_event_data_fid */
 	IPA_PROCESS_CT_MESSAGE_V6,				  /* 39 ipacm_ct_evt_data */
 	IPA_PRIVATE_SUBNET_CHANGE_EVENT,		  /* 40 ipacm_event_data_fid */
+	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,          /* 41 ipacm_event_data_fid */
+	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,          /* 42 ipacm_event_data_fid */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
@@ -208,7 +210,7 @@ class IPACM_Lan;
 
 typedef struct
 {
-	ipa_ip_type iptype;
+	enum ipa_ip_type iptype;
 	uint32_t ipv4_addr;
 	uint32_t ipv6_addr[4];
 	uint8_t mac_addr[6];
@@ -217,7 +219,7 @@ typedef struct
 
 typedef struct
 {
-	ipa_ip_type iptype;
+	enum ipa_ip_type iptype;
 	uint32_t src_ipv4_addr;
 	uint32_t dst_ipv4_addr;
 	uint32_t src_ipv6_addr[4];
@@ -228,6 +230,13 @@ typedef struct _ipacm_event_data_fid
 {
 	int if_index;
 } ipacm_event_data_fid;
+
+typedef struct _ipacm_event_data_iptype
+{
+	int if_index;
+	enum ipa_ip_type iptype;
+} ipacm_event_data_iptype;
+
 
 typedef struct _ipacm_event_data_addr
 {
