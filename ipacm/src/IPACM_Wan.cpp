@@ -431,6 +431,15 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 					return;
 				}
 			}
+			else if (m_is_sta_mode == ECM_WAN)
+			{
+				IPACMDBG("Received link-down (wan_mode:%d)\n", m_is_sta_mode);
+				/* delete previous instance */
+				handle_down_evt();
+				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
+				delete this;
+				return;
+			}
 		}
 		break;
 
