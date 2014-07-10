@@ -64,6 +64,8 @@ bool IPACM_Wan::is_ext_prop_set = false;
 int IPACM_Wan::num_ipv4_modem_pdn = 0;
 int IPACM_Wan::num_ipv6_modem_pdn = 0;
 
+uint32_t IPACM_Wan::backhaul_ipv6_prefix[2];
+
 IPACM_Wan::IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode) : IPACM_Iface(iface_index)
 {
 	num_firewall_v4 = 0;
@@ -86,6 +88,9 @@ IPACM_Wan::IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode) : IPACM_
 	header_partial_default_wan_v6 = false;
 	hdr_hdl_sta_v4 = 0;
 	hdr_hdl_sta_v6 = 0;
+	num_ipv6_dest_flt_rule = 0;
+	memset(ipv6_dest_flt_rule_hdl, 0, MAX_DEFAULT_v6_ROUTE_RULES*sizeof(uint32_t));
+	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 
 	if(m_is_sta_mode == Q6_WAN)
 	{
@@ -118,8 +123,11 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 {
 	struct ipa_ioc_add_rt_rule *rt_rule;
 	struct ipa_rt_rule_add *rt_rule_entry;
+	struct ipa_ioc_add_flt_rule *flt_rule;
+	struct ipa_flt_rule_add flt_rule_entry;
+
 	const int NUM_RULES = 1;
-	    int num_ipv6_addr;
+	int num_ipv6_addr, len;
 	int res = IPACM_SUCCESS;
 
 	if (data->iptype == IPA_IP_v6)
@@ -216,6 +224,69 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 				init_fl_rule(data->iptype);
 			}
 	    }
+
+		/* add WAN DL interface IP specific flt rule for IPv6 when backhaul is not Q6 */
+		if(m_is_sta_mode != Q6_WAN)
+		{
+			if(rx_prop != NULL && is_global_ipv6_addr(data->ipv6_addr)
+				&& num_ipv6_dest_flt_rule < MAX_DEFAULT_v6_ROUTE_RULES)
+			{
+				len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
+
+				flt_rule = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
+				if (!flt_rule)
+				{
+					IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+					return IPACM_FAILURE;
+				}
+
+				flt_rule->commit = 1;
+				flt_rule->ep = rx_prop->rx[0].src_pipe;
+				flt_rule->global = false;
+				flt_rule->ip = IPA_IP_v6;
+				flt_rule->num_rules = 1;
+
+				memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+
+				flt_rule_entry.rule.retain_hdr = 1;
+				flt_rule_entry.rule.to_uc = 0;
+				flt_rule_entry.rule.eq_attrib_type = 0;
+				flt_rule_entry.at_rear = true;
+				flt_rule_entry.flt_rule_hdl = -1;
+				flt_rule_entry.status = -1;
+				flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+
+				memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
+
+				flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+				memcpy(flt_rule_entry.rule.attrib.u.v6.dst_addr, data->ipv6_addr, sizeof(flt_rule_entry.rule.attrib.u.v6.dst_addr));
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+				flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+				memcpy(&(flt_rule->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+
+				if (m_filtering.AddFilteringRule(flt_rule) == false)
+				{
+					IPACMERR("Error Adding Filtering rule, aborting...\n");
+					free(flt_rule);
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+				else
+				{
+					ipv6_dest_flt_rule_hdl[num_ipv6_dest_flt_rule] = flt_rule->rules[0].flt_rule_hdl;
+					IPACMDBG("IPv6 dest filter rule %d HDL:0x%x\n", num_ipv6_dest_flt_rule, ipv6_dest_flt_rule_hdl[num_ipv6_dest_flt_rule]);
+					num_ipv6_dest_flt_rule++;
+					free(flt_rule);
+				}
+			}
+		}
+		/* store ipv6 prefix if the ipv6 address is not link local */
+		if(is_global_ipv6_addr(data->ipv6_addr))
+		{
+			memcpy(ipv6_prefix, data->ipv6_addr, sizeof(ipv6_prefix));
+		}
 	    num_dft_rt_v6++;
     }
 	else
@@ -705,6 +776,8 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 
 	is_default_gateway = true;
 	IPACMDBG("Default route is added to iface %s.\n", dev_name);
+	memcpy(backhaul_ipv6_prefix, ipv6_prefix, sizeof(backhaul_ipv6_prefix));
+	IPACMDBG("Setup backhaul ipv6 prefix to be 0x%08x%08x.\n", backhaul_ipv6_prefix[0], backhaul_ipv6_prefix[1]);
 
 	if (m_is_sta_mode !=Q6_WAN)
 	{
@@ -976,10 +1049,10 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		{
 			wanup_data->is_sta = false;
 		}
-
+		memcpy(wanup_data->ipv6_prefix, ipv6_prefix, sizeof(wanup_data->ipv6_prefix));
 		IPACMDBG("Posting IPA_HANDLE_WAN_UP_V6 with below information:\n");
 		IPACMDBG("if_name:%s, is sta mode: %d\n", wanup_data->ifname, wanup_data->is_sta);
-
+		IPACMDBG("ipv6 prefix: 0x%08x%08x.\n", ipv6_prefix[0], ipv6_prefix[1]);
 		memset(&evt_data, 0, sizeof(evt_data));
 		evt_data.event = IPA_HANDLE_WAN_UP_V6;
 		evt_data.evt_data = (void *)wanup_data;
@@ -3129,10 +3202,11 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			{
 				wandown_data->is_sta = false;
 			}
+			memcpy(wandown_data->ipv6_prefix, ipv6_prefix, sizeof(wandown_data->ipv6_prefix));
 			evt_data.event = IPA_HANDLE_WAN_DOWN_V6;
 			evt_data.evt_data = (void *)wandown_data;
 			/* Insert IPA_HANDLE_WAN_DOWN to command queue */
-			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv6 \n");
+			IPACMDBG("posting IPA_HANDLE_WAN_DOWN for IPv6 with prefix 0x%08x%08x\n", ipv6_prefix[0], ipv6_prefix[1]);
 			IPACM_EvtDispatcher::PostEvt(&evt_data);
 			IPACMDBG("setup wan_up_v6/active_v6= false \n");
 			IPACM_Wan::wan_up_v6 = false;
@@ -3220,9 +3294,10 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 			{
 				wandown_data->is_sta = false;
 			}
+			memcpy(wandown_data->ipv6_prefix, ipv6_prefix, sizeof(wandown_data->ipv6_prefix));
 			evt_data.event = IPA_HANDLE_WAN_DOWN_V6;
 			evt_data.evt_data = (void *)wandown_data;
-			IPACMDBG("posting IPA_HANDLE_WAN_DOWN_V6 for IPv6 \n");
+			IPACMDBG("posting IPA_HANDLE_WAN_DOWN_V6 for IPv6 with prefix 0x%08x%08x\n", ipv6_prefix[0], ipv6_prefix[1]);
 			IPACM_EvtDispatcher::PostEvt(&evt_data);
 
 			IPACMDBG("setup wan_up_v6/active_v6= false \n");
@@ -3336,6 +3411,15 @@ int IPACM_Wan::handle_down_evt()
 			goto fail;
 		}
 
+		if(num_ipv6_dest_flt_rule > 0)
+		{
+			if(m_filtering.DeleteFilteringHdls(ipv6_dest_flt_rule_hdl,  IPA_IP_v6, num_ipv6_dest_flt_rule) == false)
+			{
+				IPACMERR("Failed to delete ipv6 dest flt rules.\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+		}
 		IPACMDBG("finished delete default v6 filtering rules\n ");
 	}
 
@@ -3671,5 +3755,29 @@ void IPACM_Wan::change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* att
 	}
 
 	return;
+}
+
+bool IPACM_Wan::is_global_ipv6_addr(uint32_t* ipv6_addr)
+{
+	if(ipv6_addr == NULL)
+	{
+		IPACMERR("IPv6 address is empty.\n");
+		return false;
+	}
+	IPACMDBG("Get ipv6 address with first word 0x%08x.\n", ipv6_addr[0]);
+
+	uint32_t ipv6_link_local_prefix, ipv6_link_local_prefix_mask;
+	ipv6_link_local_prefix = 0xFE800000;
+	ipv6_link_local_prefix_mask = 0xFFC00000;
+	if((ipv6_addr[0] & ipv6_link_local_prefix_mask) == (ipv6_link_local_prefix & ipv6_link_local_prefix_mask))
+	{
+		IPACMDBG("This IPv6 address is link local.\n");
+		return false;
+	}
+	else
+	{
+		IPACMDBG("This IPv6 address is not link local.\n");
+		return true;
+	}
 }
 

@@ -88,6 +88,7 @@ public:
 	ipacm_wan_iface_type m_is_sta_mode;
 	static bool backhaul_is_sta_mode;
 	static bool is_ext_prop_set;
+	static uint32_t backhaul_ipv6_prefix[2];
 
 private:
 	uint32_t *wan_route_rule_v4_hdl;
@@ -98,6 +99,8 @@ private:
 	uint32_t firewall_hdl_v4[IPACM_MAX_FIREWALL_ENTRIES];
 	uint32_t firewall_hdl_v6[IPACM_MAX_FIREWALL_ENTRIES];
 	uint32_t dft_wan_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];
+	uint32_t ipv6_dest_flt_rule_hdl[MAX_DEFAULT_v6_ROUTE_RULES];
+	int num_ipv6_dest_flt_rule;
 	int num_firewall_v4,num_firewall_v6;
 	uint32_t wan_v4_addr;
 	bool active_v4;
@@ -116,6 +119,8 @@ private:
 	int modem_ipv6_pdn_index;
 
 	bool is_default_gateway;
+
+	uint32_t ipv6_prefix[2];
 
 	/* IPACM firewall Configuration file*/
 	IPACM_firewall_conf_t firewall_config;
@@ -167,6 +172,8 @@ private:
 	int install_wan_filtering_rule();
 
 	void change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib);
+
+	bool is_global_ipv6_addr(uint32_t* ipv6_addr);
 
 	int m_fd_ipa;
 

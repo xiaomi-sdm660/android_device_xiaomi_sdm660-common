@@ -99,6 +99,7 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	is_mode_switch = false;
 	if_ipv4_subnet =0;
 	memset(private_fl_rule_hdl, 0, IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(uint32_t));
+	memset(ipv6_prefix_flt_rule_hdl, 0, NUM_IPV6_PREFIX_FLT_RULE * sizeof(uint32_t));
 	return;
 }
 
@@ -264,6 +265,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 					{
 						if((data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX) && num_dft_rt_v6 == 1)
 						{
+							install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
 						if(IPACM_Wan::backhaul_is_sta_mode == false)
 						{
 								ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
@@ -345,6 +347,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		IPACMDBG("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 		{
+			install_ipv6_prefix_flt_rule(data_wan->ipv6_prefix);
 		if(data_wan->is_sta == false)
 		{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
@@ -2040,10 +2043,16 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 	}
 
 #ifdef CT_OPT
-	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
+	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE;
 #else
-	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR;
+	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE;
 #endif
+
+	if(m_filtering.DeleteFilteringHdls(ipv6_prefix_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE) == false)
+	{
+		close(fd);
+		return IPACM_FAILURE;
+	}
 
 	if(is_sta_mode == false)
 	{
@@ -3491,3 +3500,74 @@ fail:
 	}
 	return res;
 }
+
+int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
+{
+	if(prefix == NULL)
+	{
+		IPACMERR("IPv6 prefix is empty.\n");
+		return IPACM_FAILURE;
+	}
+	IPACMDBG("Receive IPv6 prefix: 0x%08x%08x.\n", prefix[0], prefix[1]);
+
+	int len;
+	struct ipa_ioc_add_flt_rule* flt_rule;
+	struct ipa_flt_rule_add flt_rule_entry;
+
+	if(rx_prop != NULL)
+	{
+		len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
+
+		flt_rule = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
+		if (!flt_rule)
+		{
+			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+			return IPACM_FAILURE;
+		}
+
+		flt_rule->commit = 1;
+		flt_rule->ep = rx_prop->rx[0].src_pipe;
+		flt_rule->global = false;
+		flt_rule->ip = IPA_IP_v6;
+		flt_rule->num_rules = 1;
+
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+
+		flt_rule_entry.rule.retain_hdr = 1;
+		flt_rule_entry.rule.to_uc = 0;
+		flt_rule_entry.rule.eq_attrib_type = 0;
+		flt_rule_entry.at_rear = true;
+		flt_rule_entry.flt_rule_hdl = -1;
+		flt_rule_entry.status = -1;
+		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+
+		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
+		flt_rule_entry.rule.attrib.attrib_mask = flt_rule_entry.rule.attrib.attrib_mask & ~((uint32_t)IPA_FLT_META_DATA);
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[0] = prefix[0];
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = prefix[1];
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = 0x0;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0x0;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = 0x0;
+		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0x0;
+		memcpy(&(flt_rule->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+
+		if (m_filtering.AddFilteringRule(flt_rule) == false)
+		{
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
+			free(flt_rule);
+			return IPACM_FAILURE;
+		}
+		else
+		{
+			ipv6_prefix_flt_rule_hdl[0] = flt_rule->rules[0].flt_rule_hdl;
+			IPACMDBG("IPv6 prefix filter rule HDL:0x%x\n", ipv6_prefix_flt_rule_hdl[0]);
+			flt_rule_count_v6++;
+			free(flt_rule);
+		}
+	}
+	return IPACM_SUCCESS;
+}
+
