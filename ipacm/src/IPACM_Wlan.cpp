@@ -582,11 +582,10 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 			return IPACM_FAILURE;
 		}
 #ifndef CT_OPT
-		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
-								+ MAX_OFFLOAD_PAIR;
+		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #else
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
-								+ NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
+								+ NUM_TCP_CTL_FLT_RULE;
 #endif
 
 #ifdef FEATURE_IPA_ANDROID
@@ -780,10 +779,11 @@ int IPACM_Wlan::add_dummy_lan2lan_flt_rule(ipa_ip_type iptype)
 		}
 
 #ifndef CT_OPT
-		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
+						+ IPV4_DEFAULT_FILTERTING_RULES;
 #else
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
-						+ NUM_TCP_CTL_FLT_RULE;
+						+ NUM_TCP_CTL_FLT_RULE + IPV4_DEFAULT_FILTERTING_RULES;
 #endif
 
 #ifdef FEATURE_IPA_ANDROID
