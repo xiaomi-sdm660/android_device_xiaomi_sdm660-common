@@ -241,12 +241,12 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 	if(rule_table_v4 != NULL)
 	{
 		num_rules += rule_table_v4->num_rules;
-		IPACMDBG("Get %d WAN DL IPv4 filtering rules.\n", rule_table_v4->num_rules);
+		IPACMDBG_H("Get %d WAN DL IPv4 filtering rules.\n", rule_table_v4->num_rules);
 	}
 	if(rule_table_v6 != NULL)
 	{
 		num_rules += rule_table_v6->num_rules;
-		IPACMDBG("Get %d WAN DL IPv6 filtering rules.\n", rule_table_v6->num_rules);
+		IPACMDBG_H("Get %d WAN DL IPv6 filtering rules.\n", rule_table_v6->num_rules);
 	}
 
 	if(num_rules > QMI_IPA_MAX_FILTERS_V01)
@@ -263,7 +263,7 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 		qmi_rule_msg.filter_spec_list_len = num_rules;
 		qmi_rule_msg.source_pipe_index_valid = 0;
 
-		IPACMDBG("Get %d WAN DL filtering rules in total.\n", num_rules);
+		IPACMDBG_H("Get %d WAN DL filtering rules in total.\n", num_rules);
 		
 		if(rule_table_v4 != NULL)
 		{

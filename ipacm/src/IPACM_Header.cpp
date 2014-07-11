@@ -189,7 +189,7 @@ bool IPACM_Header::DeleteHeaderHdl(uint32_t hdr_hdl)
 		goto fail;
 	}
 
-	IPACMDBG("Deleted Header hdl:(%x) successfully\n", hd_rule_entry->hdl);
+	IPACMDBG_H("Deleted Header hdl:(%x) successfully\n", hd_rule_entry->hdl);
 
 fail:
 	free(pHeaderDescriptor);

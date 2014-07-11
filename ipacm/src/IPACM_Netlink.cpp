@@ -93,8 +93,8 @@ int find_mask(int ip_v4_last, int *mask_value);
 
 #define NDA_RTA(r)  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ndmsg))))
 #define IPACM_LOG_IPV6_ADDR(prefix, ip_addr)                            \
-        IPACMDBG(prefix);                                               \
-		IPACMDBG(" IPV6 Address %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x\n", \
+        IPACMDBG_H(prefix);                                               \
+		IPACMDBG_H(" IPV6 Address %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x\n", \
                   (int)ip_addr[0],  (int)ip_addr[1],                                                        \
                   (int)ip_addr[2],  (int)ip_addr[3],                                                        \
                   (int)ip_addr[4],  (int)ip_addr[5],                                                        \
@@ -105,8 +105,8 @@ int find_mask(int ip_v4_last, int *mask_value);
                   (int)ip_addr[14], (int)ip_addr[15]);
 
 #define IPACM_LOG_IPV4_ADDR(prefix, ip_addr)                            \
-        IPACMDBG(prefix);                                               \
-        IPACMDBG(" IPV4 Address %d.%d.%d.%d\n",                         \
+        IPACMDBG_H(prefix);                                               \
+        IPACMDBG_H(" IPV4 Address %d.%d.%d.%d\n",                         \
                     (unsigned char)(ip_addr),                               \
                     (unsigned char)(ip_addr >> 8),                          \
                     (unsigned char)(ip_addr >> 16) ,                        \
@@ -660,18 +660,18 @@ static int ipa_nl_decode_nlmsg
 
 					if(msg_ptr->nl_link_info.metainfo.ifi_flags & IFF_UP)
 					{
-						IPACMDBG("Interface %s bring up with IP-family: %d \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_family);
+						IPACMDBG_H("Interface %s bring up with IP-family: %d \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_family);
 						/* post link up to command queue */
 						evt_data.event = IPA_LINK_UP_EVENT;
-						IPACMDBG("Posting IPA_LINK_UP_EVENT with if index: %d\n",
+						IPACMDBG_H("Posting IPA_LINK_UP_EVENT with if index: %d\n",
 										 msg_ptr->nl_link_info.metainfo.ifi_index);
 					}
 					else
 					{
-						IPACMDBG("Interface %s bring down with IP-family: %d \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_family);
+						IPACMDBG_H("Interface %s bring down with IP-family: %d \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_family);
 						/* post link down to command queue */
 						evt_data.event = IPA_LINK_DOWN_EVENT;
-						IPACMDBG("Posting IPA_LINK_DOWN_EVENT with if index: %d\n",
+						IPACMDBG_H("Posting IPA_LINK_DOWN_EVENT with if index: %d\n",
 										 data_fid->if_index);
 					}
 
@@ -703,7 +703,7 @@ static int ipa_nl_decode_nlmsg
 						IPACMERR("Error while getting interface name\n");
 						return IPACM_FAILURE;
 					}
-				    IPACMDBG("sky 8994  Got a usb link_up event (Interface %s, %d) \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+				    IPACMDBG("Got a usb link_up event (Interface %s, %d) \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
 
                                         /*--------------------------------------------------------------------------
                                            Post LAN iface (ECM) link up event
@@ -730,7 +730,7 @@ static int ipa_nl_decode_nlmsg
 						IPACMERR("Error while getting interface name\n");
 						return IPACM_FAILURE;
 					}
-         		    IPACMDBG("Got a usb link_down event (Interface %s) \n", dev_name);
+         		    IPACMDBG_H("Got a usb link_down event (Interface %s) \n", dev_name);
 
                     /*--------------------------------------------------------------------------
                        Post LAN iface (ECM) link down event
@@ -738,7 +738,7 @@ static int ipa_nl_decode_nlmsg
                     evt_data.event = IPA_LINK_DOWN_EVENT;
 					evt_data.evt_data = data_fid;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
-					IPACMDBG("Posting usb IPA_LINK_DOWN_EVENT with if index: %d\n",
+					IPACMDBG_H("Posting usb IPA_LINK_DOWN_EVENT with if index: %d\n",
 										 data_fid->if_index);
                                 }
 
@@ -776,7 +776,7 @@ static int ipa_nl_decode_nlmsg
 
 				data_fid->if_index = msg_ptr->nl_link_info.metainfo.ifi_index;
 
-				IPACMDBG("posting IPA_LINK_DOWN_EVENT with if idnex:%d\n",
+				IPACMDBG_H("posting IPA_LINK_DOWN_EVENT with if idnex:%d\n",
 								 data_fid->if_index);
 				evt_data.evt_data = data_fid;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -932,13 +932,13 @@ static int ipa_nl_decode_nlmsg
 
 						if(msg_ptr->nl_route_info.attr_info.param_mask & IPA_RTA_PARAM_PRIORITY)
 						{
-							IPACMDBG("ip -6 route add default dev %s metric %d\n",
+							IPACMDBG_H("ip -6 route add default dev %s metric %d\n",
 											 dev_name,
 											 msg_ptr->nl_route_info.attr_info.priority);
 						}
 						else
 						{
-							IPACMDBG("ip -6 route add default dev %s\n", dev_name);
+							IPACMDBG_H("ip -6 route add default dev %s\n", dev_name);
 						}
 
 						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
@@ -967,7 +967,7 @@ static int ipa_nl_decode_nlmsg
 					else
 					{
 						IPACM_NL_REPORT_ADDR( "route add default gw \n", msg_ptr->nl_route_info.attr_info.gateway_addr );
-						IPACMDBG("dev %s \n", dev_name);
+						IPACMDBG_H("dev %s \n", dev_name);
 						IPACM_NL_REPORT_ADDR( "dstIP:", msg_ptr->nl_route_info.attr_info.dst_addr );
 
 						/* insert to command queue */
@@ -987,7 +987,7 @@ static int ipa_nl_decode_nlmsg
 						data_addr->ipv4_addr = ntohl(if_ipv4_addr);
 						data_addr->ipv4_addr_mask = ntohl(if_ipipv4_addr_mask);
 
-            IPACMDBG("Posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv4 addr:0x%x and maxk: 0x%x\n",
+            IPACMDBG_H("Posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv4 addr:0x%x and maxk: 0x%x\n",
 										 data_addr->if_index,
 										 data_addr->ipv4_addr,
 										 data_addr->ipv4_addr_mask);
@@ -1156,7 +1156,7 @@ static int ipa_nl_decode_nlmsg
 					data_addr->ipv4_addr = ntohl(if_ipv4_addr);
 					data_addr->ipv4_addr_mask = ntohl(if_ipipv4_addr_mask);
 
-					IPACMDBG("Posting event IPA_ROUTE_DEL_EVENT with if index:%d, ipv4 address 0x%x, mask:0x%x\n",
+					IPACMDBG_H("Posting event IPA_ROUTE_DEL_EVENT with if index:%d, ipv4 address 0x%x, mask:0x%x\n",
 									 data_addr->if_index,
 									 data_addr->ipv4_addr,
 									 data_addr->ipv4_addr_mask);
@@ -1225,7 +1225,7 @@ static int ipa_nl_decode_nlmsg
 					evt_data.event = IPA_ROUTE_DEL_EVENT;
 					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
 
-					IPACMDBG("Posting IPA_ROUTE_DEL_EVENT with if index:%d\n",
+					IPACMDBG_H("Posting IPA_ROUTE_DEL_EVENT with if index:%d\n",
 									 data_addr->if_index);
 					evt_data.evt_data = data_addr;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -1312,7 +1312,7 @@ static int ipa_nl_decode_nlmsg
 					data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
 					data_addr->iptype = IPA_IP_v6;
 
-					IPACMDBG("posting event IPA_ROUTE_DEL_EVENT with if index:%d, ipv4 address\n",
+					IPACMDBG_H("posting event IPA_ROUTE_DEL_EVENT with if index:%d, ipv4 address\n",
 									 data_addr->if_index);
 					evt_data.evt_data = data_addr;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -1386,7 +1386,7 @@ static int ipa_nl_decode_nlmsg
 		    evt_data.event = IPA_NEW_NEIGH_EVENT;
 		    data_all->if_index = msg_ptr->nl_neigh_info.metainfo.ndm_ifindex;
 
-		    IPACMDBG("posting IPA_NEW_NEIGH_EVENT (%s):index:%d ip-family: %d\n",
+		    IPACMDBG_H("posting IPA_NEW_NEIGH_EVENT (%s):index:%d ip-family: %d\n",
                                  dev_name,
  		                    data_all->if_index,
 		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family);
@@ -1459,7 +1459,7 @@ static int ipa_nl_decode_nlmsg
 		    evt_data.event = IPA_DEL_NEIGH_EVENT;
 				data_all->if_index = msg_ptr->nl_neigh_info.metainfo.ndm_ifindex;
 
-		    IPACMDBG("posting IPA_DEL_NEIGH_EVENT (%s):index:%d ip-family: %d\n",
+		    IPACMDBG_H("posting IPA_DEL_NEIGH_EVENT (%s):index:%d ip-family: %d\n",
                                  dev_name,
  		                    data_all->if_index,
 		    				 msg_ptr->nl_neigh_info.attr_info.local_addr.ss_family);
@@ -1583,11 +1583,11 @@ int ipa_nl_listener_init
 	int ret_val;
 
 	memset(&sk_info, 0, sizeof(ipa_nl_sk_info_t));
-	IPACMDBG("Entering IPA NL listener init\n");
+	IPACMDBG_H("Entering IPA NL listener init\n");
 
 	if(ipa_nl_open_socket(&sk_info, nl_type, nl_groups) == IPACM_SUCCESS)
 	{
-		IPACMDBG("IPA Open netlink socket succeeds\n");
+		IPACMDBG_H("IPA Open netlink socket succeeds\n");
 	}
 	else
 	{
