@@ -259,7 +259,14 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 	{
 		memset(&qmi_rule_msg, 0, sizeof(qmi_rule_msg));
 
-		qmi_rule_msg.filter_spec_list_valid = 1;
+		if (num_rules > 0)
+		{
+			qmi_rule_msg.filter_spec_list_valid = true;
+		}
+		else
+		{
+			qmi_rule_msg.filter_spec_list_valid = false;
+		}
 		qmi_rule_msg.filter_spec_list_len = num_rules;
 		qmi_rule_msg.source_pipe_index_valid = 0;
 
