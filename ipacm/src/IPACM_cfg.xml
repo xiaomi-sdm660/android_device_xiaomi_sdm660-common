@@ -69,30 +69,76 @@
 			<ALG>
   			   <Protocol>TCP</Protocol>
   			   <Port>21</Port>
-		    </ALG>		
+			   <Description>FTP</Description>
+		    </ALG>
 			<ALG>
   			   <Protocol>TCP</Protocol>
   			   <Port>554</Port>
-		    </ALG>		
-		<ALG>
+			   <Description>RTSP</Description>
+		    </ALG>
+			<ALG>
   			   <Protocol>TCP</Protocol>
   			   <Port>5060</Port>
-		    </ALG>		
+			   <Description>SIP</Description>
+		    </ALG>
 			<ALG>
   			   <Protocol>UDP</Protocol>
   			   <Port>5060</Port>
-		    </ALG>		
+			   <Description>SIP</Description>
+		    </ALG>
 			<ALG>
   			   <Protocol>TCP</Protocol>
   			   <Port>1723</Port>
-		    </ALG>		
+			   <Description>PPTP</Description>
+		    </ALG>
 			<ALG>
   			   <Protocol>UDP</Protocol>
   			   <Port>69</Port>
-		    </ALG>		
+			   <Description>TFTP</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>53</Port>
+			   <Description>DNS</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>53</Port>
+			   <Description>DNS</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>10080</Port>
+			   <Description>AMANDA</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>1719</Port>
+			   <Description>H323</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>1720</Port>
+			   <Description>H323</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>6667</Port>
+			   <Description>IRC</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>UDP</Protocol>
+  			   <Port>137</Port>
+			   <Description>NETBIOS_NS</Description>
+		    </ALG>
+			<ALG>
+  			   <Protocol>TCP</Protocol>
+  			   <Port>6566</Port>
+			   <Description>SANE</Description>
+		    </ALG>
 		</IPACMALG>
 		<IPACMNAT>		
- 	        <MaxNatEntries>100</MaxNatEntries>
+ 	        <MaxNatEntries>500</MaxNatEntries>
 		</IPACMNAT>
 		</IPACM>
 </system>
