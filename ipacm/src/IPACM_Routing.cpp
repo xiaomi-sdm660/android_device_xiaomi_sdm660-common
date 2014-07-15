@@ -88,7 +88,7 @@ bool IPACM_Routing::AddRoutingRule(struct ipa_ioc_add_rt_rule *ruleTable)
 		return false;
 	}
 
-	IPACMDBG("Added routing rule %p\n", ruleTable);
+	IPACMDBG_H("Added routing rule %p\n", ruleTable);
 	return true;
 }
 
@@ -105,7 +105,7 @@ bool IPACM_Routing::DeleteRoutingRule(struct ipa_ioc_del_rt_rule *ruleTable)
 		return false;
 	}
 
-	IPACMDBG("Deleted routing rule %p\n", ruleTable);
+	IPACMDBG_H("Deleted routing rule %p\n", ruleTable);
 	return true;
 }
 
@@ -122,7 +122,7 @@ bool IPACM_Routing::Commit(enum ipa_ip_type ip)
 		return false;
 	}
 
-	IPACMDBG("Commited routing rules to IPA HW.\n");
+	IPACMDBG_H("Commited routing rules to IPA HW.\n");
 	return true;
 }
 
@@ -140,7 +140,7 @@ bool IPACM_Routing::Reset(enum ipa_ip_type ip)
 		return false;
 	}
 
-	IPACMDBG("Reset command issued to IPA routing block.\n");
+	IPACMDBG_H("Reset command issued to IPA routing block.\n");
 	return true;
 }
 
@@ -157,7 +157,7 @@ bool IPACM_Routing::GetRoutingTable(struct ipa_ioc_get_rt_tbl *routingTable)
 		return false;
 	}
 
-	IPACMDBG("IPA_IOCTL_GET_RT_TBL ioctl issued to IPA routing block.\n");
+	IPACMDBG_H("IPA_IOCTL_GET_RT_TBL ioctl issued to IPA routing block.\n");
 	return true;
 }
 
@@ -174,7 +174,7 @@ bool IPACM_Routing::PutRoutingTable(uint32_t routingTableHandle)
 		return false;
 	}
 
-	IPACMDBG("IPA_IOCTL_PUT_RT_TBL ioctl issued to IPA routing block.\n");
+	IPACMDBG_H("IPA_IOCTL_PUT_RT_TBL ioctl issued to IPA routing block.\n");
 	return true;
 }
 
@@ -209,7 +209,7 @@ bool IPACM_Routing::DeleteRoutingHdl(uint32_t rt_rule_hdl, ipa_ip_type ip)
 	rt_rule_entry->status = -1;
 	rt_rule_entry->hdl = rt_rule_hdl;
 
-	IPACMDBG("Deleting Route hdl:(0x%x) with ip type: %d\n", rt_rule_entry->hdl, ip);
+	IPACMDBG_H("Deleting Route hdl:(0x%x) with ip type: %d\n", rt_rule_entry->hdl, ip);
 	if ((false == DeleteRoutingRule(rt_rule)) ||
 			(rt_rule_entry->status))
 	{

@@ -85,7 +85,7 @@ IPACM_Iface::IPACM_Iface(int iface_index)
 	flt_rule_count_v4 = 0;
 	flt_rule_count_v6 = 0;
 	query_iface_property();
-	IPACMDBG(" create iface-index(%d) constructor\n", ipa_if_num);
+	IPACMDBG_H(" create iface-index(%d) constructor\n", ipa_if_num);
 	return;
 }
 
@@ -344,7 +344,7 @@ int IPACM_Iface::iface_ipa_index_query
 	memset(&ifr, 0, sizeof(struct ifreq));
 
 	ifr.ifr_ifindex = interface_index;
-	IPACMDBG("Interface index %d\n", interface_index);
+	IPACMDBG_H("Interface index %d\n", interface_index);
 
 	if (ioctl(fd, SIOCGIFNAME, &ifr) < 0)
 	{
@@ -354,14 +354,14 @@ int IPACM_Iface::iface_ipa_index_query
 	}
 	close(fd);
 
-	IPACMDBG("Received interface name %s\n", ifr.ifr_name);
+	IPACMDBG_H("Received interface name %s\n", ifr.ifr_name);
 	for (i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_ipa_interfaces; i++)
 	{
 		if (strncmp(ifr.ifr_name,
 								IPACM_Iface::ipacmcfg->iface_table[i].iface_name,
 								sizeof(IPACM_Iface::ipacmcfg->iface_table[i].iface_name)) == 0)
 		{
-			IPACMDBG("Interface (%s) linux(%d) mapped to ipa(%d) \n", ifr.ifr_name,
+			IPACMDBG_H("Interface (%s) linux(%d) mapped to ipa(%d) \n", ifr.ifr_name,
 							 IPACM_Iface::ipacmcfg->iface_table[i].netlink_interface_index, i);
 
 			link = i;
@@ -396,7 +396,7 @@ void IPACM_Iface::iface_addr_query
 	memset(&ifr, 0, sizeof(struct ifreq));
 
 	ifr.ifr_ifindex = interface_index;
-	IPACMDBG("Interface index %d\n", interface_index);
+	IPACMDBG_H("Interface index %d\n", interface_index);
 
 	if (ioctl(fd, SIOCGIFNAME, &ifr) < 0)
 	{
@@ -404,7 +404,7 @@ void IPACM_Iface::iface_addr_query
 		close(fd);
 		return ;
 	}
-	IPACMDBG("Interface index %d name: %s\n", interface_index,ifr.ifr_name);
+	IPACMDBG_H("Interface index %d name: %s\n", interface_index,ifr.ifr_name);
 	close(fd);
 
 	/* query ipv4/v6 address */
@@ -423,13 +423,13 @@ void IPACM_Iface::iface_addr_query
 
 		if(strcmp(ifr.ifr_name,ifa->ifa_name) == 0) // find current iface
 		{
-			IPACMDBG("Internal post new_addr event for iface %s\n", ifa->ifa_name);
+			IPACMDBG_H("Internal post new_addr event for iface %s\n", ifa->ifa_name);
 			switch (ifa->ifa_addr->sa_family)
 			{
 				case AF_INET:
 				{
 					struct sockaddr_in *s4 = (struct sockaddr_in *)ifa->ifa_addr;
-					IPACMDBG("ipv4 address %s\n",inet_ntoa(s4->sin_addr));
+					IPACMDBG_H("ipv4 address %s\n",inet_ntoa(s4->sin_addr));
 					iface_ipv4 = s4->sin_addr;
 					/* post new_addr event to command queue */
 					data_addr = (ipacm_event_data_addr *)malloc(sizeof(ipacm_event_data_addr));
@@ -443,7 +443,7 @@ void IPACM_Iface::iface_addr_query
 					data_addr->if_index = interface_index;
 					data_addr->ipv4_addr = 	iface_ipv4.s_addr;
 					data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);
-					IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
+					IPACMDBG_H("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
 						data_addr->if_index,
 						data_addr->ipv4_addr);
 
@@ -473,7 +473,7 @@ void IPACM_Iface::iface_addr_query
 					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
 					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
-					IPACMDBG("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv6 addr:0x%x:%x:%x:%x\n",
+					IPACMDBG_H("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv6 addr:0x%x:%x:%x:%x\n",
 							data_addr->if_index,
 							data_addr->ipv6_addr[0], data_addr->ipv6_addr[1], data_addr->ipv6_addr[2], data_addr->ipv6_addr[3]);
 
@@ -514,7 +514,7 @@ int IPACM_Iface::query_iface_property(void)
 		close(fd);
 		return IPACM_FAILURE;
 	}
-	IPACMDBG("iface name %s\n", dev_name);
+	IPACMDBG_H("iface name %s\n", dev_name);
 	memcpy(iface_query->name, dev_name, sizeof(dev_name));
 
 	if (ioctl(fd, IPA_IOC_QUERY_INTF, iface_query) < 0)
@@ -549,7 +549,7 @@ int IPACM_Iface::query_iface_property(void)
 		{
 			for (cnt = 0; cnt < tx_prop->num_tx_props; cnt++)
 			{
-				IPACMDBG("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, header: %s\n",
+				IPACMDBG_H("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, header: %s\n",
 								 cnt, tx_prop->tx[cnt].attrib.attrib_mask, tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe, tx_prop->tx[cnt].hdr_name);
 			}
 		}
@@ -582,7 +582,7 @@ int IPACM_Iface::query_iface_property(void)
 		{
 			for (cnt = 0; cnt < rx_prop->num_rx_props; cnt++)
 			{
-				IPACMDBG("Rx(%d):attrib-mask:0x%x, ip-type: %d, src_pipe: %d\n",
+				IPACMDBG_H("Rx(%d):attrib-mask:0x%x, ip-type: %d, src_pipe: %d\n",
 								 cnt, rx_prop->rx[cnt].attrib.attrib_mask, rx_prop->rx[cnt].ip, rx_prop->rx[cnt].src_pipe);
 			}
 		}
@@ -591,7 +591,7 @@ int IPACM_Iface::query_iface_property(void)
 	/* Add Natting iface to IPACM_Config if there is  Rx/Tx property */
 	if (rx_prop != NULL || tx_prop != NULL)
 	{
-		IPACMDBG(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
+		IPACMDBG_H(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
         IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name);
 	}
 
@@ -618,7 +618,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 
 		if ((ip_type == IPA_IP_v4) || (ip_type == IPA_IP_MAX))
 		{
-			IPACMDBG(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
+			IPACMDBG_H(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
 			return res;
 		}
 
@@ -631,14 +631,14 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 			ip_type = IPA_IP_v4;
 		}
 
-		IPACMDBG(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
+		IPACMDBG_H(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
 	}
 	else
 	{
 
 		if ((ip_type == IPA_IP_v6) || (ip_type == IPA_IP_MAX))
 		{
-			IPACMDBG(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
+			IPACMDBG_H(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
 			return res;
 		}
 
@@ -651,14 +651,14 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 			ip_type = IPA_IP_v6;
 		}
 
-		IPACMDBG(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
+		IPACMDBG_H(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
 	}
 
     /* ADD corresponding ipa_rm_resource_name of RX-endpoint before adding all IPV4V6 FT-rules */
 	if(rx_prop != NULL)
 	{
 	    IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe],false);
-		IPACMDBG(" add producer dependency from %s with registered rx-prop\n", dev_name);
+		IPACMDBG_H(" add producer dependency from %s with registered rx-prop\n", dev_name);
 	}
 	else
 	{
@@ -666,19 +666,19 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	        if(strcmp(dev_name,dev_wlan0) == 0 || strcmp(dev_name,dev_wlan1) == 0)
 	  {
 	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD,true);
-		    IPACMDBG(" add producer dependency from %s without registered rx-prop \n", dev_name);
+		    IPACMDBG_H(" add producer dependency from %s without registered rx-prop \n", dev_name);
 	     }
 
 	     if(strcmp(dev_name,dev_ecm0) == 0)
 	     {
 	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_USB_PROD,true);
-		    IPACMDBG(" add producer dependency from %s without registered rx-prop \n", dev_name);
+		    IPACMDBG_H(" add producer dependency from %s without registered rx-prop \n", dev_name);
 	  }
 	}
 
 	if (rx_prop == NULL)
 	{
-		IPACMDBG("No rx properties registered for iface %s\n", dev_name);
+		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
 		return IPACM_SUCCESS;
 	}
 
@@ -709,7 +709,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
-		IPACMDBG("rx property attrib mask:0x%x\n", rx_prop->rx[0].attrib.attrib_mask);
+		IPACMDBG_H("rx property attrib mask:0x%x\n", rx_prop->rx[0].attrib.attrib_mask);
 		memcpy(&flt_rule_entry.rule.attrib,
 					 &rx_prop->rx[0].attrib,
 					 sizeof(flt_rule_entry.rule.attrib));
@@ -746,7 +746,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 				if (m_pFilteringTable->rules[i].status == 0)
 				{
 					dft_v4fl_rule_hdl[i] = m_pFilteringTable->rules[i].flt_rule_hdl;
-					IPACMDBG("Default v4 filter Rule %d HDL:0x%x\n", i, dft_v4fl_rule_hdl[i]);
+					IPACMDBG_H("Default v4 filter Rule %d HDL:0x%x\n", i, dft_v4fl_rule_hdl[i]);
 				}
 				else
 				{
@@ -836,7 +836,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 				if (m_pFilteringTable->rules[i].status == 0)
 				{
 					dft_v6fl_rule_hdl[i] = m_pFilteringTable->rules[i].flt_rule_hdl;
-					IPACMDBG("Default v6 Filter Rule %d HDL:0x%x\n", i, dft_v6fl_rule_hdl[i]);
+					IPACMDBG_H("Default v6 Filter Rule %d HDL:0x%x\n", i, dft_v6fl_rule_hdl[i]);
 				}
 				else
 				{
@@ -871,7 +871,7 @@ int IPACM_Iface::ipa_get_if_index
 
   memset(&ifr, 0, sizeof(struct ifreq));
   (void)strncpy(ifr.ifr_name, if_name, sizeof(ifr.ifr_name));
-  IPACMDBG("interface name (%s)\n", ifr.ifr_name);
+  IPACMDBG_H("interface name (%s)\n", ifr.ifr_name);
 
   if (ioctl(fd,SIOCGIFINDEX , &ifr) < 0)
   {
@@ -881,7 +881,7 @@ int IPACM_Iface::ipa_get_if_index
   }
 
   *if_index = ifr.ifr_ifindex;
-  IPACMDBG("Interface index %d\n", *if_index);
+  IPACMDBG_H("Interface index %d\n", *if_index);
   close(fd);
   return IPACM_SUCCESS;
 }

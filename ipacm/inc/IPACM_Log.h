@@ -73,13 +73,14 @@ static char buffer_send[MAX_BUF_LEN];
 
 #define IPACMERR(fmt, ...)	memset(buffer_send, 0, MAX_BUF_LEN);\
 							snprintf(buffer_send,MAX_BUF_LEN,"ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-							ipacm_log_send (buffer_send);
-#define IPACMDBG(fmt, ...)	memset(buffer_send, 0, MAX_BUF_LEN);\
-							snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-							ipacm_log_send (buffer_send);
-#define IPACMLOG(fmt, ...)      memset(buffer_send, 0, MAX_BUF_LEN);\
-                                                        snprintf(buffer_send,MAX_BUF_LEN, fmt, ##__VA_ARGS__);\
-                                                        ipacm_log_send (buffer_send);
+							ipacm_log_send (buffer_send);\
+							printf("ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define IPACMDBG_H(fmt, ...) memset(buffer_send, 0, MAX_BUF_LEN);\
+							 snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+							 ipacm_log_send (buffer_send);\
+							 printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define IPACMDBG(fmt, ...)	printf("%s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define IPACMLOG(fmt, ...)  printf(fmt, ##__VA_ARGS__);
 
 #ifdef __cplusplus
 }

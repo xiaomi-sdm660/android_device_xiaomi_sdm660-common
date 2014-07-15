@@ -154,7 +154,7 @@ void* netlink_start(void *param)
 	ipa_nl_sk_fd_set_info_t sk_fdset;
 	int ret_val = 0;
 	memset(&sk_fdset, 0, sizeof(ipa_nl_sk_fd_set_info_t));
-	IPACMDBG("netlink starter memset sk_fdset succeeds\n");
+	IPACMDBG_H("netlink starter memset sk_fdset succeeds\n");
 	ret_val = ipa_nl_listener_init(NETLINK_ROUTE, (RTMGRP_IPV4_ROUTE | RTMGRP_IPV6_ROUTE | RTMGRP_LINK |
 																										RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_NEIGH |
 																										RTNLGRP_IPV6_PREFIX),
@@ -185,7 +185,7 @@ void* firewall_monitor(void *param)
 		PERROR("inotify_init");
 	}
 
-	IPACMDBG("Waiting for nofications in dir %s with mask: 0x%x\n", IPACM_DIR_NAME, mask);
+	IPACMDBG_H("Waiting for nofications in dir %s with mask: 0x%x\n", IPACM_DIR_NAME, mask);
 
 	wd = inotify_add_watch(inotify_fd,
 												 IPACM_DIR_NAME,
@@ -216,12 +216,12 @@ void* firewall_monitor(void *param)
 			{
 				if (event->mask & IN_ISDIR)
 				{
-					IPACMDBG("The directory %s was 0x%x\n", event->name, event->mask);
+					IPACMDBG_H("The directory %s was 0x%x\n", event->name, event->mask);
 				}
 				else if (!strncmp(event->name, IPACM_FIREWALL_FILE_NAME, event->len)) // firewall_rule change
 				{
-					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
-					IPACMDBG("The interested file %s .\n", IPACM_FIREWALL_FILE_NAME);
+					IPACMDBG_H("File \"%s\" was 0x%x\n", event->name, event->mask);
+					IPACMDBG_H("The interested file %s .\n", IPACM_FIREWALL_FILE_NAME);
 
 					evt_data.event = IPA_FIREWALL_CHANGE_EVENT;
 					evt_data.evt_data = NULL;
@@ -231,8 +231,8 @@ void* firewall_monitor(void *param)
 				}
 				else if (!strncmp(event->name, IPACM_CFG_FILE_NAME, event->len)) // IPACM_configuration change
 				{
-					IPACMDBG("File \"%s\" was 0x%x\n", event->name, event->mask);
-					IPACMDBG("The interested file %s .\n", IPACM_CFG_FILE_NAME);
+					IPACMDBG_H("File \"%s\" was 0x%x\n", event->name, event->mask);
+					IPACMDBG_H("The interested file %s .\n", IPACM_CFG_FILE_NAME);
 
 					evt_data.event = IPA_CFG_CHANGE_EVENT;
 					evt_data.evt_data = NULL;
@@ -241,7 +241,7 @@ void* firewall_monitor(void *param)
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 				}
 			}
-			IPACMDBG("Received monitoring event %s.\n", event->name);
+			IPACMDBG_H("Received monitoring event %s.\n", event->name);
 		}
 		free(event);
 	}
@@ -279,7 +279,7 @@ void* ipa_driver_wlan_notifier(void *param)
 
 	while (1)
 	{
-		IPACMDBG("Waiting for nofications from IPA driver \n");
+		IPACMDBG_H("Waiting for nofications from IPA driver \n");
 		memset(buffer, 0, sizeof(buffer));
 		memset(&evt_data, 0, sizeof(evt_data));
 		data = NULL;
@@ -293,27 +293,27 @@ void* ipa_driver_wlan_notifier(void *param)
 		}
 
 		memcpy(&event_hdr, buffer,sizeof(struct ipa_msg_meta));
-		IPACMDBG("Message type: %d\n", event_hdr.msg_type);
-		IPACMDBG("Event header length received: %d\n",event_hdr.msg_len);
+		IPACMDBG_H("Message type: %d\n", event_hdr.msg_type);
+		IPACMDBG_H("Event header length received: %d\n",event_hdr.msg_len);
 
 		/* Insert WLAN_DRIVER_EVENT to command queue */
 		switch (event_hdr.msg_type)
 		{
 
 		case SW_ROUTING_ENABLE:
-			IPACMDBG("Received SW_ROUTING_ENABLE\n");
+			IPACMDBG_H("Received SW_ROUTING_ENABLE\n");
 			evt_data.event = IPA_SW_ROUTING_ENABLE;
 			break;
 
 		case SW_ROUTING_DISABLE:
-			IPACMDBG("Received SW_ROUTING_DISABLE\n");
+			IPACMDBG_H("Received SW_ROUTING_DISABLE\n");
 			evt_data.event = IPA_SW_ROUTING_DISABLE;
 			break;
 
 		case WLAN_AP_CONNECT:
 			event_wlan = (struct ipa_wlan_msg *) (buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Received WLAN_AP_CONNECT name: %s\n",event_wlan->name);
-			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Received WLAN_AP_CONNECT name: %s\n",event_wlan->name);
+			IPACMDBG_H("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
@@ -329,8 +329,8 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case WLAN_AP_DISCONNECT:
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Received WLAN_AP_DISCONNECT name: %s\n",event_wlan->name);
-			IPACMDBG("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Received WLAN_AP_DISCONNECT name: %s\n",event_wlan->name);
+			IPACMDBG_H("AP Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
@@ -345,8 +345,8 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 		case WLAN_STA_CONNECT:
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Received WLAN_STA_CONNECT name: %s\n",event_wlan->name);
-			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Received WLAN_STA_CONNECT name: %s\n",event_wlan->name);
+			IPACMDBG_H("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
@@ -362,8 +362,8 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case WLAN_STA_DISCONNECT:
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Received WLAN_STA_DISCONNECT name: %s\n",event_wlan->name);
-			IPACMDBG("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Received WLAN_STA_DISCONNECT name: %s\n",event_wlan->name);
+			IPACMDBG_H("STA Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
                         data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
@@ -379,8 +379,8 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case WLAN_CLIENT_CONNECT:
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Received WLAN_CLIENT_CONNECT\n");
-			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Received WLAN_CLIENT_CONNECT\n");
+			IPACMDBG_H("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
@@ -398,7 +398,7 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case WLAN_CLIENT_CONNECT_EX:
-			IPACMDBG("Received WLAN_CLIENT_CONNECT_EX\n");
+			IPACMDBG_H("Received WLAN_CLIENT_CONNECT_EX\n");
 			memcpy(&event_ex_o, buffer + sizeof(struct ipa_msg_meta),sizeof(struct ipa_wlan_msg_ex));
 			if(event_ex_o.num_of_attribs > IPA_DRIVER_WLAN_EVENT_MAX_OF_ATTRIBS)
 			{
@@ -406,7 +406,7 @@ void* ipa_driver_wlan_notifier(void *param)
 				return NULL;
 			}
 			length = sizeof(ipa_wlan_msg_ex)+ event_ex_o.num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val);
-			IPACMDBG("num_of_attribs %d, length %d\n", event_ex_o.num_of_attribs, length);
+			IPACMDBG_H("num_of_attribs %d, length %d\n", event_ex_o.num_of_attribs, length);
 			event_ex = (ipa_wlan_msg_ex *)malloc(length);
 			if(event_ex == NULL )
 			{
@@ -429,17 +429,17 @@ void* ipa_driver_wlan_notifier(void *param)
 			{
 				if(event_ex->attribs[cnt].attrib_type == WLAN_HDR_ATTRIB_MAC_ADDR)
 				{
-					IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+					IPACMDBG_H("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 								 event_ex->attribs[cnt].u.mac_addr[0], event_ex->attribs[cnt].u.mac_addr[1], event_ex->attribs[cnt].u.mac_addr[2],
 								 event_ex->attribs[cnt].u.mac_addr[3], event_ex->attribs[cnt].u.mac_addr[4], event_ex->attribs[cnt].u.mac_addr[5]);
 				}
 				else if(event_ex->attribs[cnt].attrib_type == WLAN_HDR_ATTRIB_STA_ID)
 				{
-					IPACMDBG("Wlan client id %d\n",event_ex->attribs[cnt].u.sta_id);
+					IPACMDBG_H("Wlan client id %d\n",event_ex->attribs[cnt].u.sta_id);
 				}
 				else
 				{
-					IPACMDBG("Wlan message has unexpected type!\n");
+					IPACMDBG_H("Wlan message has unexpected type!\n");
 				}
 			}
 
@@ -450,9 +450,9 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case WLAN_CLIENT_DISCONNECT:
-			IPACMDBG("Received WLAN_CLIENT_DISCONNECT\n");
+			IPACMDBG_H("Received WLAN_CLIENT_DISCONNECT\n");
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
@@ -470,9 +470,9 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case WLAN_CLIENT_POWER_SAVE_MODE:
-			IPACMDBG("Received WLAN_CLIENT_POWER_SAVE_MODE\n");
+			IPACMDBG_H("Received WLAN_CLIENT_POWER_SAVE_MODE\n");
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
@@ -490,9 +490,9 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 
 		case WLAN_CLIENT_NORMAL_MODE:
-			IPACMDBG("Received WLAN_CLIENT_NORMAL_MODE\n");
+			IPACMDBG_H("Received WLAN_CLIENT_NORMAL_MODE\n");
 			event_wlan = (struct ipa_wlan_msg *)(buffer + sizeof(struct ipa_msg_meta));
-			IPACMDBG("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("Mac Address %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 event_wlan->mac_addr[0], event_wlan->mac_addr[1], event_wlan->mac_addr[2],
 							 event_wlan->mac_addr[3], event_wlan->mac_addr[4], event_wlan->mac_addr[5]);
 		        data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
@@ -511,7 +511,7 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case ECM_CONNECT:
 			memcpy(&event_ecm, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_ecm_msg));
-			IPACMDBG("Received ECM_CONNECT name: %s\n",event_ecm.name);
+			IPACMDBG_H("Received ECM_CONNECT name: %s\n",event_ecm.name);
             data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
@@ -525,7 +525,7 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case ECM_DISCONNECT:
 			memcpy(&event_ecm, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_ecm_msg));
-			IPACMDBG("Received ECM_DISCONNECT name: %s\n",event_ecm.name);
+			IPACMDBG_H("Received ECM_DISCONNECT name: %s\n",event_ecm.name);
 			data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
 			if(data_fid == NULL)
 			{
@@ -539,7 +539,7 @@ void* ipa_driver_wlan_notifier(void *param)
         /* Add for 8994 Android case */
 		case WAN_UPSTREAM_ROUTE_ADD:
 			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
-			IPACMDBG("Received WAN_UPSTREAM_ROUTE_ADD name: %s\n",event_wan.name);
+			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_ADD name: %s\n",event_wan.name);
             data_iptype = (ipacm_event_data_iptype *)malloc(sizeof(ipacm_event_data_iptype));
 			if(data_iptype == NULL)
 			{
@@ -548,13 +548,13 @@ void* ipa_driver_wlan_notifier(void *param)
 			}
 			ipa_get_if_index(event_wan.name, &(data_iptype->if_index));
 			data_iptype->iptype = event_wan.ip;
-			IPACMDBG("Received WAN_UPSTREAM_ROUTE_ADD: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
+			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_ADD: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
 			evt_data.event = IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT;
 			evt_data.evt_data = data_iptype;
 			break;
 		case WAN_UPSTREAM_ROUTE_DEL:
 			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
-			IPACMDBG("Received WAN_UPSTREAM_ROUTE_DEL name: %s\n",event_wan.name);
+			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_DEL name: %s\n",event_wan.name);
             data_iptype = (ipacm_event_data_iptype *)malloc(sizeof(ipacm_event_data_iptype));
 			if(data_iptype == NULL)
 			{
@@ -563,20 +563,20 @@ void* ipa_driver_wlan_notifier(void *param)
 			}
 			ipa_get_if_index(event_wan.name, &(data_iptype->if_index));
 			data_iptype->iptype = event_wan.ip;
-			IPACMDBG("Received WAN_UPSTREAM_ROUTE_DEL: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
+			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_DEL: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
 			evt_data.event = IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT;
 			evt_data.evt_data = data_iptype;
 			break;
         /* End of adding for 8994 Android case */
 
 		default:
-			IPACMDBG("Unhandled message type: %d\n", event_hdr.msg_type);
+			IPACMDBG_H("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;
 
 		}
 
 		/* finish command queue */
-		IPACMDBG("Posting event:%d\n", evt_data.event);
+		IPACMDBG_H("Posting event:%d\n", evt_data.event);
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
 	}
 
@@ -631,7 +631,7 @@ int main(int argc, char **argv)
 	/* check if ipacm is already running or not */
 	ipa_is_ipacm_running();
 
-	IPACMDBG("In main()\n");
+	IPACMDBG_H("In main()\n");
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
 #ifndef FEATURE_IPA_ANDROID
@@ -640,8 +640,8 @@ int main(int argc, char **argv)
 	IPACM_ConntrackClient *cc = IPACM_ConntrackClient::GetInstance();
 	CtList = new IPACM_ConntrackListener();
 
-	IPACMDBG("Staring IPA main\n");
-	IPACMDBG("ipa_cmdq_successful\n");
+	IPACMDBG_H("Staring IPA main\n");
+	IPACMDBG_H("ipa_cmdq_successful\n");
 
 
 	RegisterForSignals();
@@ -654,7 +654,7 @@ int main(int argc, char **argv)
 			IPACMERR("unable to command queue thread\n");
 			return ret;
 		}
-		IPACMDBG("created command queue thread\n");
+		IPACMDBG_H("created command queue thread\n");
 	}
 
 	if (IPACM_SUCCESS == netlink_thread)
@@ -665,7 +665,7 @@ int main(int argc, char **argv)
 			IPACMERR("unable to create netlink thread\n");
 			return ret;
 		}
-		IPACMDBG("created netlink thread\n");
+		IPACMDBG_H("created netlink thread\n");
 	}
 
 
@@ -677,7 +677,7 @@ int main(int argc, char **argv)
 			IPACMERR("unable to create monitor thread\n");
 			return ret;
 		}
-		IPACMDBG("created firewall monitor thread\n");
+		IPACMDBG_H("created firewall monitor thread\n");
 	}
 
 	if (IPACM_SUCCESS == ipa_driver_thread)
@@ -688,7 +688,7 @@ int main(int argc, char **argv)
 			IPACMERR("unable to create ipa_driver_wlan thread\n");
 			return ret;
 		}
-		IPACMDBG("created ipa_driver_wlan thread\n");
+		IPACMDBG_H("created ipa_driver_wlan thread\n");
 	}
 
 	pthread_join(cmd_queue_thread, NULL);
@@ -728,7 +728,7 @@ void ipa_is_ipacm_running(void) {
 	fp = fopen(IPACM_PID_FILE, "r");
 	if ( fp == NULL )
 	{
-		IPACMDBG("1st IPACM running \n");
+		IPACMDBG_H("1st IPACM running \n");
 	}
 	else if (fscanf(fp, "%d", &ipacm_pid) != 1)
 	{
@@ -738,31 +738,31 @@ void ipa_is_ipacm_running(void) {
 	}
 	else
 	{
-		IPACMDBG("Primary IPACM PID = %d\n",ipacm_pid);
+		IPACMDBG_H("Primary IPACM PID = %d\n",ipacm_pid);
 		fclose(fp);
 		if (0 == kill(ipacm_pid, 0)) /* Process exists */
 		{
 			/* check that process is IPACM */
 			memset(string, 0, IPA_MAX_FILE_LEN);
 			snprintf(string, IPA_MAX_FILE_LEN, "/proc/%d/cmdline", ipacm_pid);
-			IPACMDBG("open pid file %s \n",string);
+			IPACMDBG_H("open pid file %s \n",string);
 			fp = fopen(string, "r");
 			if ( fp == NULL )
 			{
-				IPACMDBG("open pid file failed \n");
+				IPACMDBG_H("open pid file failed \n");
 				return;
 			}
 			else if (fgets(string, IPA_MAX_FILE_LEN, fp) != NULL)
 			{
-				IPACMDBG("get pid process name (%s)\n",string);
+				IPACMDBG_H("get pid process name (%s)\n",string);
 				if( strcmp(string, IPACM_NAME) == 0)
 				{
 					if(ipacm_pid != getpid())
 					{
-						IPACMDBG("found IPACM already in PID (%d), new PID(%d) exit(0)\n",ipacm_pid, getpid());
+						IPACMDBG_H("found IPACM already in PID (%d), new PID(%d) exit(0)\n",ipacm_pid, getpid());
 			exit(0);
 		}
-					IPACMDBG("same IPACM PID(%d) is running\n", getpid());
+					IPACMDBG_H("same IPACM PID(%d) is running\n", getpid());
 				}
 			}
 			fclose(fp);
@@ -772,7 +772,7 @@ void ipa_is_ipacm_running(void) {
 	fp = fopen(IPACM_PID_FILE, "w");
 	if ( fp != NULL )
 	{
-		IPACMDBG(" IPACM current PID: %d \n",ipacm_pid);
+		IPACMDBG_H(" IPACM current PID: %d \n",ipacm_pid);
 		fprintf(fp, "%d", ipacm_pid);
 		fclose(fp);
 	}

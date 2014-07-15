@@ -98,7 +98,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 
 						/* ask for replaced iface name*/
 						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data_all->if_index);
-						IPACMDBG("Posted event %d, with %s for ipv4\n",
+						IPACMDBG_H("Posted event %d, with %s for ipv4\n",
 										 evt_data.event,
 										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 
@@ -124,7 +124,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 	                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
 	                        evt_data.evt_data = (void *)data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
-				IPACMDBG("Posted event %d with %s for ipv4\n",
+				IPACMDBG_H("Posted event %d with %s for ipv4\n",
 								 evt_data.event,
 								 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 		    }
@@ -159,7 +159,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 						/* ask for replaced iface name*/
 						ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data_all->if_index);
-						IPACMDBG("Posted event %d, with %s for ipv6\n",
+						IPACMDBG_H("Posted event %d, with %s for ipv6\n",
 										 evt_data.event,
 										 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 
@@ -185,7 +185,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 	                        memcpy(data_all, data, sizeof(ipacm_event_data_all));
 			        evt_data.evt_data = (void *)data_all;
 				IPACM_EvtDispatcher::PostEvt(&evt_data);
-				IPACMDBG("Posted event %d with %s for ipv6\n",
+				IPACMDBG_H("Posted event %d with %s for ipv6\n",
 								 evt_data.event,
 								 IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 			}
@@ -236,7 +236,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 							IPACM_EvtDispatcher::PostEvt(&evt_data);
 							/* ask for replaced iface name*/
 							ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data_all->if_index);
-							IPACMDBG("Posted event %d, with %s for ipv4 client re-connect\n",
+							IPACMDBG_H("Posted event %d, with %s for ipv4 client re-connect\n",
 											evt_data.event,
 											IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 						}
@@ -260,7 +260,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 					/* cache the network interface client associated */
 					neighbor_client[num_neighbor_client_temp].ipa_if_num = ipa_interface_index;
 					neighbor_client[num_neighbor_client_temp].v4_addr = 0;
-					IPACMDBG("Copy wlan-iface client MAC %02x:%02x:%02x:%02x:%02x:%02x\n, total client: %d\n",
+					IPACMDBG_H("Copy wlan-iface client MAC %02x:%02x:%02x:%02x:%02x:%02x\n, total client: %d\n",
 									 neighbor_client[num_neighbor_client_temp].mac_addr[0],
 									 neighbor_client[num_neighbor_client_temp].mac_addr[1],
 									 neighbor_client[num_neighbor_client_temp].mac_addr[2],

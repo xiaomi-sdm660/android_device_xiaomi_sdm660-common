@@ -119,13 +119,13 @@ private:
 		int cnt;
 		int num_wifi_client_tmp = num_wifi_client;
 
-		IPACMDBG("Passed MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+		IPACMDBG_H("Passed MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
 						 mac_addr[0], mac_addr[1], mac_addr[2],
 						 mac_addr[3], mac_addr[4], mac_addr[5]);
 
 		for(cnt = 0; cnt < num_wifi_client_tmp; cnt++)
 		{
-			IPACMDBG("stored MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+			IPACMDBG_H("stored MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
 							 get_client_memptr(wlan_client, cnt)->mac[0],
 							 get_client_memptr(wlan_client, cnt)->mac[1],
 							 get_client_memptr(wlan_client, cnt)->mac[2],
@@ -137,7 +137,7 @@ private:
 								mac_addr,
 								sizeof(get_client_memptr(wlan_client, cnt)->mac)) == 0)
 			{
-				IPACMDBG("Matched client index: %d\n", cnt);
+				IPACMDBG_H("Matched client index: %d\n", cnt);
 				return cnt;
 			}
 		}
@@ -157,7 +157,7 @@ private:
 		     {
 		        if((tx_prop->tx[tx_index].ip == IPA_IP_v4) && (get_client_memptr(wlan_client, clt_indx)->route_rule_set_v4==true)) /* for ipv4 */
 			{
-				IPACMDBG("Delete client index %d ipv4 Qos rules for tx:%d \n",clt_indx,tx_index);
+				IPACMDBG_H("Delete client index %d ipv4 Qos rules for tx:%d \n",clt_indx,tx_index);
 				rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4;
 
 				if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v4) == false)
@@ -183,7 +183,7 @@ private:
 				{
 					for(num_v6 =0;num_v6 < get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6;num_v6++)
 					{
-						IPACMDBG("Delete client index %d ipv6 Qos rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
+						IPACMDBG_H("Delete client index %d ipv6 Qos rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
 						rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[num_v6];
 						if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
 						{
