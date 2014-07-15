@@ -91,6 +91,7 @@ IPACM_Wan::IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode) : IPACM_
 	num_ipv6_dest_flt_rule = 0;
 	memset(ipv6_dest_flt_rule_hdl, 0, MAX_DEFAULT_v6_ROUTE_RULES*sizeof(uint32_t));
 	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
+	ext_prop = NULL;
 
 	if(m_is_sta_mode == Q6_WAN)
 	{
@@ -808,6 +809,20 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	{
 		IPACM_Wan::backhaul_is_sta_mode	= false;
 		IPACMDBG_H("reset backhaul to LTE \n");
+
+		if (iface_query != NULL && iface_query->num_ext_props > 0)
+		{
+			if(ext_prop == NULL)
+			{
+				IPACMERR("Extended property is empty.\n");
+				return IPACM_FAILURE;
+			}
+			else
+			{
+				IPACM_Iface::ipacmcfg->SetQmapId(ext_prop->ext[0].mux_id);
+				IPACMDBG_H("Setting up QMAP ID %d.\n", ext_prop->ext[0].mux_id);
+			}
+		}
 	}
 
     for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
@@ -2712,13 +2727,11 @@ int IPACM_Wan::query_ext_prop()
 							 cnt, ext_prop->ext[cnt].ip, ext_prop->ext[cnt].mux_id, ext_prop->ext[cnt].action, ext_prop->ext[cnt].rt_tbl_idx, ext_prop->ext[cnt].filter_hdl);
 		}
 
-		IPACM_Iface::ipacmcfg->SetQmapId(ext_prop->ext[0].mux_id);
 		if(IPACM_Wan::is_ext_prop_set == false)
 		{
 			IPACM_Iface::ipacmcfg->SetExtProp(ext_prop);
 			IPACM_Wan::is_ext_prop_set = true;
 		}
-		free(ext_prop);
 		close(fd);
 	}
 	return IPACM_SUCCESS;
@@ -3641,6 +3654,10 @@ fail:
 	if (rx_prop != NULL)
 	{
 		free(rx_prop);
+	}
+	if (ext_prop != NULL)
+	{
+		free(ext_prop);
 	}
 	if (iface_query != NULL)
 	{
