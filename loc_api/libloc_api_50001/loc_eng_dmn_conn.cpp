@@ -137,7 +137,7 @@ static int loc_api_server_proc(void *context)
         free(p_cmsgbuf);
         LOC_LOGE("%s:%d] fail receiving msg from gpsone_daemon, retry later\n", __func__, __LINE__);
         usleep(1000);
-        return 0;
+        return -1;
     }
 
     LOC_LOGD("%s:%d] received ctrl_type = %d\n", __func__, __LINE__, p_cmsgbuf->ctrl_type);
