@@ -369,7 +369,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			return;
 		}
 		IPACMDBG_H("Backhaul is sta mode?%d\n", data_wan->is_sta);
-		handle_wan_down(data_wan->is_sta);
+		if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
+		{
+			handle_wan_down(data_wan->is_sta);
+		}
 		break;
 
 	case IPA_HANDLE_WAN_DOWN_V6:
@@ -386,7 +389,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		handle_lan_client_reset_rt(IPA_IP_v6);
 
 		IPACMDBG_H("Backhaul is sta mode?%d\n", data_wan->is_sta);
-		handle_wan_down_v6(data_wan->is_sta);
+		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+		{
+			handle_wan_down_v6(data_wan->is_sta);
+		}
 		break;
 
 	case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
@@ -2042,9 +2048,9 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 	}
 
 #ifdef CT_OPT
-	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE;
+	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
 #else
-	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE;
+	flt_rule_count_v6 = IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR;
 #endif
 
 	if(m_filtering.DeleteFilteringHdls(ipv6_prefix_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE) == false)
