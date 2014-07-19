@@ -360,7 +360,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		if (rx_prop != NULL)
 		{
-			handle_wan_down(data_wan->is_sta);
+			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
+			{
+				handle_wan_down(data_wan->is_sta);
+			}
 		}
 		break;
 
@@ -385,7 +388,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		if (rx_prop != NULL)
 		{
-			handle_wan_down_v6(data_wan->is_sta);
+			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+			{
+				handle_wan_down_v6(data_wan->is_sta);
+			}
 		}
 		break;
 
