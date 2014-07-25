@@ -146,6 +146,7 @@ typedef struct loc_gps_cfg_s
     unsigned long  LPP_PROFILE;
     uint8_t        NMEA_PROVIDER;
     unsigned long  A_GLONASS_POS_PROTOCOL_SELECT;
+    unsigned long  XTRA_VERSION_CHECK;
 } loc_gps_cfg_s_type;
 
 typedef struct
@@ -177,6 +178,7 @@ typedef struct
 extern loc_gps_cfg_s_type gps_conf;
 extern loc_sap_cfg_s_type sap_conf;
 
+//loc_eng functions
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,
                   LocCallbacks* callbacks,
                   LOC_API_ADAPTER_EVENT_MASK_T event,
@@ -196,6 +198,12 @@ int  loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
                                LocPosMode &params);
 const void* loc_eng_get_extension(loc_eng_data_s_type &loc_eng_data,
                                   const char* name);
+int  loc_eng_set_server_proxy(loc_eng_data_s_type &loc_eng_data,
+                              LocServerType type, const char *hostname, int port);
+void loc_eng_mute_one_session(loc_eng_data_s_type &loc_eng_data);
+int loc_eng_read_config(void);
+
+//loc_eng_agps functions
 void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data,
                        AGpsExtCallbacks* callbacks);
 int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
@@ -203,28 +211,18 @@ int  loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
 int  loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType);
 int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType);
 
-int  loc_eng_set_server_proxy(loc_eng_data_s_type &loc_eng_data,
-                              LocServerType type, const char *hostname, int port);
-
-
 void loc_eng_agps_ril_update_network_availability(loc_eng_data_s_type &loc_eng_data,
                                                   int avaiable, const char* apn);
 
-
-bool loc_eng_inject_raw_command(loc_eng_data_s_type &loc_eng_data,
-                                char* command, int length);
-
-
-void loc_eng_mute_one_session(loc_eng_data_s_type &loc_eng_data);
-
-int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
+//loc_eng_xtra functions
+int  loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
                        GpsXtraExtCallbacks* callbacks);
-
-int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
+int  loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
                              char* data, int length);
+int  loc_eng_xtra_request_server(loc_eng_data_s_type &loc_eng_data);
+void loc_eng_xtra_version_check(loc_eng_data_s_type &loc_eng_data, int check);
 
-int loc_eng_xtra_request_server(loc_eng_data_s_type &loc_eng_data);
-
+//loc_eng_ni functions
 extern void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data,
                             GpsNiExtCallbacks *callbacks);
 extern void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,
@@ -233,8 +231,6 @@ extern void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
                                    const GpsNiNotification *notif,
                                    const void* passThrough);
 extern void loc_eng_ni_reset_on_engine_restart(loc_eng_data_s_type &loc_eng_data);
-int loc_eng_read_config(void);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
