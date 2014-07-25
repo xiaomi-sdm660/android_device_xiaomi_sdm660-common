@@ -303,11 +303,15 @@ void* ipa_driver_wlan_notifier(void *param)
 		case SW_ROUTING_ENABLE:
 			IPACMDBG_H("Received SW_ROUTING_ENABLE\n");
 			evt_data.event = IPA_SW_ROUTING_ENABLE;
+			IPACMDBG_H("Not supported anymore\n");
+			return NULL;
 			break;
 
 		case SW_ROUTING_DISABLE:
 			IPACMDBG_H("Received SW_ROUTING_DISABLE\n");
 			evt_data.event = IPA_SW_ROUTING_DISABLE;
+			IPACMDBG_H("Not supported anymore\n");
+			return NULL;
 			break;
 
 		case WLAN_AP_CONNECT:
