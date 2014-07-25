@@ -1502,6 +1502,12 @@ int ipa_nl_recv_msg(int fd)
 			goto error;
 		}
 
+		if(msghdr== NULL)
+		{
+			IPACMERR(" failed to get msghdr\n");
+			goto error;
+		}
+
 		iov = msghdr->msg_iov;
 
 		memset(nlmsg, 0, sizeof(ipa_nl_msg_t));
@@ -1513,12 +1519,12 @@ int ipa_nl_recv_msg(int fd)
 		/* Release NetLink message buffer */
 		if(msghdr)
 		{
-		ipa_nl_release_msg(msghdr);
+			ipa_nl_release_msg(msghdr);
 		}
 		if(nlmsg)
 		{
-		free(nlmsg);
-	}
+			free(nlmsg);
+		}
 	}
 
 	return IPACM_SUCCESS;

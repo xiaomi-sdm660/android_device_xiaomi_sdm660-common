@@ -871,7 +871,7 @@ int IPACM_Iface::ipa_get_if_index
 
   memset(&ifr, 0, sizeof(struct ifreq));
   (void)strncpy(ifr.ifr_name, if_name, sizeof(ifr.ifr_name));
-  IPACMDBG_H("interface name (%s)\n", ifr.ifr_name);
+  IPACMDBG_H("interface name (%s)\n", if_name);
 
   if (ioctl(fd,SIOCGIFINDEX , &ifr) < 0)
   {
