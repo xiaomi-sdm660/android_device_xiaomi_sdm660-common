@@ -823,6 +823,11 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 				IPACMDBG_H("Setting up QMAP ID %d.\n", ext_prop->ext[0].mux_id);
 			}
 		}
+		else
+		{
+			IPACMERR("iface_query is empty.\n");
+			return IPACM_FAILURE;
+		}
 	}
 
     for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
@@ -3433,7 +3438,7 @@ int IPACM_Wan::handle_down_evt()
 			goto fail;
 		}
 
-		if(num_ipv6_dest_flt_rule > 0)
+		if(num_ipv6_dest_flt_rule > 0 && num_ipv6_dest_flt_rule <= MAX_DEFAULT_v6_ROUTE_RULES)
 		{
 			if(m_filtering.DeleteFilteringHdls(ipv6_dest_flt_rule_hdl,  IPA_IP_v6, num_ipv6_dest_flt_rule) == false)
 			{
