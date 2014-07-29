@@ -56,10 +56,6 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 IPACM_EvtDispatcher::registr(IPA_PROCESS_CT_MESSAGE_V6, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WLAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_LAN_UP, this);
-	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, this);
-	 IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, this);
-
-	IPACMDBG("creating conntrack threads\n");
 
 #ifdef CT_OPT
 	 p_lan2lan = IPACM_LanToLan::getLan2LanInstance();
@@ -121,28 +117,13 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			IPACM_ConntrackClient::UpdateTCPFilters(data, false);
 			break;
 
-	 case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
-		 {
-			 IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT event\n");
-			 HandleNeighIpAddrAddEvt(data);
-		 }
-		 break;
-
-	 case IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT:
-		 {
-			 IPACMDBG("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT event\n");
-			 HandleNeighIpAddrDelEvt(data);
-		 }
-		 break;
-
 	 default:
 			IPACMDBG("Ignore cmd %d\n", evt);
 			break;
 	 }
 }
-void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
+void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(ipacm_event_data_all *data)
 {
-	ipacm_event_data_all *data = (ipacm_event_data_all *)in_param;
 	int fd = 0, len = 0, cnt, i, j;
 	struct ifreq ifr;
 	bool isNatIface = false;
@@ -152,6 +133,8 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 		IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT EVENT\n");
 		return;
 	}
+
+  IPACMDBG("\n");
 	IPACMDBG("Received interface index %d with ip type: %d", data->if_index, data->iptype);
 	iptodot(" and ipv4 address", data->ipv4_addr);
 
@@ -165,9 +148,8 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 		}
 	}
 
+
 	cnt = pConfig->GetNatIfacesCnt();
-	if(NatIfaceCnt != cnt)
-	{
 		NatIfaceCnt = cnt;
 		if(pNatIfaces != NULL)
 		{
@@ -189,9 +171,8 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 			IPACMERR("Unable to retrieve non nat ifaces\n");
 			return;
 		}
+  IPACMDBG("Update %d Nat ifaces\n", NatIfaceCnt);
 
-		IPACMDBG("Update %d Nat ifaces", NatIfaceCnt);
-	}
 
 	/* Search/Configure linux interface-index and map it to IPA interface-index */
 	if((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -265,37 +246,39 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(void *in_param)
 
 }
 
-void IPACM_ConntrackListener::HandleNeighIpAddrDelEvt(void *in_param)
+void IPACM_ConntrackListener::HandleNeighIpAddrDelEvt(uint32_t ipv4_addr)
 {
-	ipacm_event_data_all *data = (ipacm_event_data_all *)in_param;
 	int cnt;
 
-	if(data->ipv4_addr == 0 || data->iptype != IPA_IP_v4)
+	if(ipv4_addr == 0)
 	{
 		IPACMDBG("Ignoring IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT EVENT\n");
 		return;
 	}
-	IPACMDBG("Received interface index %d with ip type:%d", data->if_index, data->iptype);
+
+  IPACMDBG("\n");
+  iptodot("Received ip addr", ipv4_addr);
 	IPACMDBG("Entering NAT entry deletion checking\n");
 
 	for(cnt = 0; cnt<MAX_NAT_IFACES; cnt++)
 	{
-		if(nat_iface_ipv4_addr[cnt] == data->ipv4_addr)
+		if(nat_iface_ipv4_addr[cnt] == ipv4_addr)
 		{
-			IPACMDBG("Reseting ct filters of Interface (%d), entry (%d) ", data->if_index, cnt);
+			IPACMDBG("Reseting ct nat iface, entry (%d) ", cnt);
 			iptodot("with ipv4 address", nat_iface_ipv4_addr[cnt]);
 			nat_iface_ipv4_addr[cnt] = 0;
 		}
 
-		if(nonnat_iface_ipv4_addr[cnt] == data->ipv4_addr)
+		if(nonnat_iface_ipv4_addr[cnt] == ipv4_addr)
 		{
-			IPACMDBG("Reseting ct filters of Interface (%d), entry (%d) ", data->if_index, cnt);
+			IPACMDBG("Reseting ct filters, entry (%d) ", cnt);
 			iptodot("with ipv4 address", nonnat_iface_ipv4_addr[cnt]);
 			nonnat_iface_ipv4_addr[cnt] = 0;
 		}
 	}
 
-	nat_inst->FlushTempEntries(data->ipv4_addr, false);
+	nat_inst->FlushTempEntries(ipv4_addr, false);
+  nat_inst->DelEntriesOnClntDiscon(ipv4_addr);
 	return;
 }
 
@@ -303,7 +286,7 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 {
 	 ipacm_event_iface_up *wanup_data = (ipacm_event_iface_up *)in_param;
 
-	 IPACMDBG("Recevied below information during wanup, ");
+	 IPACMDBG("Recevied below information during wanup,\n");
 	 IPACMDBG("if_name:%s, ipv4_address:0x%x\n",
 						wanup_data->ifname, wanup_data->ipv4_addr);
 
@@ -362,6 +345,7 @@ int IPACM_ConntrackListener::CreateConnTrackThreads(void)
 
 				 IPACMDBG("created UDP conntrack event listner thread\n");
 			}
+
 			isCTReg = true;
 	 }
 

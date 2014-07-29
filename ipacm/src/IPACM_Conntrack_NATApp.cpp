@@ -714,3 +714,49 @@ void NatApp::FlushTempEntries(uint32_t ip_addr, bool isAdd)
 
 	return;
 }
+
+int NatApp::DelEntriesOnClntDiscon(uint32_t ip_addr)
+{
+ 	int cnt, tmp = curCnt;
+	IPACMDBG("Received IP address: 0x%x\n", ip_addr);
+
+	if(ip_addr == INVALID_IP_ADDR)
+	{
+		IPACMERR("Invalid ip address received\n");
+		return -1;
+	}
+
+	CHK_TBL_HDL();
+
+  for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
+  {
+    if(PwrSaveIfs[cnt] == ip_addr)
+    {
+      PwrSaveIfs[cnt] = 0;
+      IPACMDBG("Remove %d power save entry\n", cnt);
+      break;
+    }
+  }
+
+	for(cnt = 0; cnt < max_entries; cnt++)
+	{
+		if(cache[cnt].private_ip == ip_addr)
+		{
+
+      if(cache[cnt].enabled == true)
+      {
+			if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
+			{
+				IPACMERR("unable to delete the rule\n");
+				continue;
+			}
+      }
+
+			memset(&cache[cnt], 0, sizeof(cache[cnt]));
+      curCnt--;
+		}
+	}
+
+  IPACMDBG("Deleted %d entries\n", (tmp - curCnt));
+	return 0;
+}

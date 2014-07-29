@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -112,6 +112,7 @@ public:
 
 	int UpdatePwrSaveIf(uint32_t);
 	int ResetPwrSaveIf(uint32_t);
+        int DelEntriesOnClntDiscon(uint32_t);
 
 	void UpdateTcpUdpTo(uint32_t, int proto);
 

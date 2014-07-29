@@ -48,6 +48,8 @@ Skylar Chang
 #include <IPACM_Wan.h>
 #include <IPACM_Lan.h>
 #include <IPACM_IfaceManager.h>
+#include <IPACM_ConntrackListener.h>
+
 
 /* static member to store the number of total wifi clients within all APs*/
 int IPACM_Wlan::total_num_wifi_clients = 0;
@@ -496,7 +498,9 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				handle_wlan_client_route_rule(data->mac_addr, data->iptype);
 				if (data->iptype == IPA_IP_v4)
 				{
-					Nat_App->ResetPwrSaveIf(data->ipv4_addr);
+					/* Add NAT rules after ipv4 RT rules are set */
+					CtList->HandleNeighIpAddrAddEvt(data);
+//					Nat_App->ResetPwrSaveIf(data->ipv4_addr);
 				}
 			}
 		}
@@ -1407,6 +1411,8 @@ int IPACM_Wlan::handle_wlan_client_ipaddr(ipacm_event_data_all *data)
 			   else
 			   {
 			     IPACMDBG_H("ipv4 addr for client:%d is changed \n", clnt_indx);
+				 /* delete NAT rules first */
+				 CtList->HandleNeighIpAddrDelEvt(get_client_memptr(wlan_client, clnt_indx)->v4_addr);
 			     delete_default_qos_rtrules(clnt_indx,IPA_IP_v4);
 		         get_client_memptr(wlan_client, clnt_indx)->route_rule_set_v4 = false;
 			     get_client_memptr(wlan_client, clnt_indx)->v4_addr = data->ipv4_addr;
@@ -1721,19 +1727,19 @@ int IPACM_Wlan::handle_wlan_client_down_evt(uint8_t *mac_addr)
 	/* First reset nat rules and then route rules */
 	if(get_client_memptr(wlan_client, clt_indx)->ipv4_set == true)
 	{
-	        IPACMDBG_H("Deleting Nat Rules\n");
-	        Nat_App->UpdatePwrSaveIf(get_client_memptr(wlan_client, clt_indx)->v4_addr);
+	        IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(wlan_client, clt_indx)->v4_addr);
+			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(wlan_client, clt_indx)->v4_addr);
  	}
 
 	if (delete_default_qos_rtrules(clt_indx, IPA_IP_v4))
 	{
-		IPACMERR("unbale to delete v4 default qos route rules\n");
+		IPACMERR("unbale to delete v4 default qos route rules for index: %d\n", clt_indx);
 		return IPACM_FAILURE;
 	}
 
 	if (delete_default_qos_rtrules(clt_indx, IPA_IP_v6))
 	{
-		IPACMERR("unbale to delete v6 default qos route rules\n");
+		IPACMERR("unbale to delete v6 default qos route rules for indexn: %d\n", clt_indx);
 		return IPACM_FAILURE;
 	}
 
@@ -1996,8 +2002,26 @@ int IPACM_Wlan::handle_down_evt()
 
 	for (i = 0; i < num_wifi_client; i++)
 	{
-		delete_default_qos_rtrules(i, IPA_IP_v4);
-		delete_default_qos_rtrules(i, IPA_IP_v6);
+		/* First reset nat rules and then route rules */
+		if(get_client_memptr(wlan_client, i)->ipv4_set == true)
+		{
+	        IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(wlan_client, i)->v4_addr);
+			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(wlan_client, i)->v4_addr);
+		}
+
+		if (delete_default_qos_rtrules(i, IPA_IP_v4))
+		{
+			IPACMERR("unbale to delete v4 default qos route rules for index: %d\n", i);
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
+		if (delete_default_qos_rtrules(i, IPA_IP_v6))
+		{
+			IPACMERR("unbale to delete v6 default qos route rules for index: %d\n", i);
+			res = IPACM_FAILURE;
+			goto fail;
+		}
 
 		IPACMDBG_H("Delete %d client header\n", num_wifi_client);
 
