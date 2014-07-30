@@ -703,7 +703,8 @@ int main(int argc, char **argv)
 ===========================================================================*/
 /*!
 @brief
-  Determine if IPACM process exists from its previous Process ID
+  Determine whether there's already an IPACM process running, if so, terminate
+  the current one
 
 @return
 	None
@@ -720,62 +721,43 @@ int main(int argc, char **argv)
 
 void ipa_is_ipacm_running(void) {
 
-	FILE *fp = NULL;
-	pid_t ipacm_pid =0;
-	char string[IPA_MAX_FILE_LEN];
+	int fd;
+	struct flock lock;
+	int retval;
 
-	/* find the latest pid of executed IPACM */
-	fp = fopen(IPACM_PID_FILE, "r");
-	if ( fp == NULL )
+	fd = open(IPACM_PID_FILE, O_RDWR | O_CREAT, 0600);
+	if ( fd <= 0 )
 	{
-		IPACMDBG_H("1st IPACM running \n");
+		IPACMERR("Failed to open %s, error is %d - %s\n",
+				 IPACM_PID_FILE, errno, strerror(errno));
+		exit(0);
 	}
-	else if (fscanf(fp, "%d", &ipacm_pid) != 1)
+
+	/*
+	 * Getting an exclusive Write lock on the file, if it fails,
+	 * it means that another instance of IPACM is running and it
+	 * got the lock before us.
+	 */
+	memset(&lock, 0, sizeof(lock));
+	lock.l_type = F_WRLCK;
+	retval = fcntl(fd, F_SETLK, &lock);
+
+	if (retval != 0)
 	{
-		IPACMERR("Error reading ipacm_pid file \n");
-		ipacm_pid = 0;
-		fclose(fp);
+		retval = fcntl(fd, F_GETLK, &lock);
+		if (retval == 0)
+		{
+			IPACMERR("Unable to get lock on file %s (my PID %d), PID %d already has it\n",
+					 IPACM_PID_FILE, getpid(), lock.l_pid);
+			close(fd);
+			exit(0);
+		}
 	}
 	else
 	{
-		IPACMDBG_H("Primary IPACM PID = %d\n",ipacm_pid);
-		fclose(fp);
-		if (0 == kill(ipacm_pid, 0)) /* Process exists */
-		{
-			/* check that process is IPACM */
-			memset(string, 0, IPA_MAX_FILE_LEN);
-			snprintf(string, IPA_MAX_FILE_LEN, "/proc/%d/cmdline", ipacm_pid);
-			IPACMDBG_H("open pid file %s \n",string);
-			fp = fopen(string, "r");
-			if ( fp == NULL )
-			{
-				IPACMDBG_H("open pid file failed \n");
-				return;
-			}
-			else if (fgets(string, IPA_MAX_FILE_LEN, fp) != NULL)
-			{
-				IPACMDBG_H("get pid process name (%s)\n",string);
-				if( strcmp(string, IPACM_NAME) == 0)
-				{
-					if(ipacm_pid != getpid())
-					{
-						IPACMDBG_H("found IPACM already in PID (%d), new PID(%d) exit(0)\n",ipacm_pid, getpid());
-			exit(0);
-		}
-					IPACMDBG_H("same IPACM PID(%d) is running\n", getpid());
-				}
-			}
-			fclose(fp);
-		}
+		IPACMERR("PID %d is IPACM main process\n", getpid());
 	}
-	ipacm_pid = getpid();
-	fp = fopen(IPACM_PID_FILE, "w");
-	if ( fp != NULL )
-	{
-		IPACMDBG_H(" IPACM current PID: %d \n",ipacm_pid);
-		fprintf(fp, "%d", ipacm_pid);
-		fclose(fp);
-	}
+
 	return;
 }
 
