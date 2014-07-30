@@ -73,7 +73,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
                 getLocApi_t* getter = (getLocApi_t*)dlsym(handle, "getLocApi");
                 if(getter != NULL) {
                     LOC_LOGD("%s:%d]: getter is not NULL for LocApiV02", __func__, __LINE__);
-                    locApi = (*getter)(mMsgTask,exMask, this);
+                    locApi = (*getter)(mMsgTask, exMask, this);
                 }
             }
             // only RPC is the option now
