@@ -227,13 +227,15 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACMDBG_H("Creating Wan interface\n");
 				IPACM_Wan *w = new IPACM_Wan(ipa_interface_index, is_sta_mode);
 				IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, w);
-#ifdef FEATURE_IPA_ANDROID
+//#ifdef FEATURE_IPA_ANDROID
+#if 0
 				IPACM_EvtDispatcher::registr(IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT, w);
 				IPACM_EvtDispatcher::registr(IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT, w);
-#else/* defined(FEATURE_IPA_ANDROID) */
+#endif
+//#else/* defined(FEATURE_IPA_ANDROID) */
 				IPACM_EvtDispatcher::registr(IPA_ROUTE_ADD_EVENT, w);
 				IPACM_EvtDispatcher::registr(IPA_ROUTE_DEL_EVENT, w);
-#endif /* not defined(FEATURE_IPA_ANDROID)*/
+//#endif /* not defined(FEATURE_IPA_ANDROID)*/
 				IPACM_EvtDispatcher::registr(IPA_FIREWALL_CHANGE_EVENT, w);
 				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, w);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, w);

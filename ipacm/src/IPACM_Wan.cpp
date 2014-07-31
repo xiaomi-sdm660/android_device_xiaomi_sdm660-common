@@ -472,7 +472,8 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
-#ifdef FEATURE_IPA_ANDROID
+//#ifdef FEATURE_IPA_ANDROID
+#if 0
 	case IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT:
 		{
 			ipacm_event_data_iptype *data = (ipacm_event_data_iptype *)param;
@@ -568,7 +569,8 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			}
 		}
 		break;
-#else/* defined(FEATURE_IPA_ANDROID) */
+#endif
+//#else/* defined(FEATURE_IPA_ANDROID) */
 	case IPA_ROUTE_ADD_EVENT:
 		{
 			ipacm_event_data_addr *data = (ipacm_event_data_addr *)param;
@@ -675,7 +677,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			}
 		}
 		break;
-#endif /* not defined(FEATURE_IPA_ANDROID)*/
+//#endif /* not defined(FEATURE_IPA_ANDROID)*/
 	case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
 		{
 			ipacm_event_data_all *data = (ipacm_event_data_all *)param;
