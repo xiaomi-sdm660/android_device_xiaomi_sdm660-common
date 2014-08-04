@@ -142,8 +142,8 @@ int IPACM_Iface::handle_software_routing_enable(void)
 	memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
 
 	/* check iface is v4 or v6 or both*/
-	if (ip_type == IPA_IP_MAX)
-	{
+//	if (ip_type == IPA_IP_MAX)
+//	{
 		/* handle v4 */
 		m_pFilteringTable->ip = IPA_IP_v4;
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
@@ -183,6 +183,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 		/* copy filter hdls */
 		software_routing_fl_rule_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
 		softwarerouting_act = true;
+#if 0
 	}
 	else
 	{
@@ -220,6 +221,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 		}
 		softwarerouting_act = true;
 	}
+#endif
 
 fail:
 	free(m_pFilteringTable);
@@ -242,12 +244,12 @@ int IPACM_Iface::handle_software_routing_disable(void)
 
 	if (softwarerouting_act == false)
 	{
-		IPACMDBG("already delete AMPDU software_routing rule for (%s)iface ip-family %d\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
+		IPACMDBG("already delete software_routing rule for (%s)iface ip-family %d\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ip_type);
 		return IPACM_SUCCESS;
 	}
 
-	if (ip_type == IPA_IP_MAX)
-	{
+//	if (ip_type == IPA_IP_MAX)
+//	{
 		/* ipv4 case */
 		if (m_filtering.DeleteFilteringHdls(&software_routing_fl_rule_hdl[0],
 																				IPA_IP_v4, 1) == false)
@@ -266,6 +268,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 			goto fail;
 		}
 		softwarerouting_act = false;
+#if 0
 	}
 	else
 	{
@@ -296,6 +299,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 		}
 		softwarerouting_act = false;
 	}
+#endif
 
 fail:
 	return res;

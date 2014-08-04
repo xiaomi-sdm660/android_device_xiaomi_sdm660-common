@@ -591,31 +591,29 @@ void* ipa_driver_wlan_notifier(void *param)
 void IPACM_Sig_Handler(int sig)
 {
 	int cnt;
+	ipacm_cmd_q_data evt_data;
 
 	printf("Received Signal: %d\n", sig);
+	memset(&evt_data, 0, sizeof(evt_data));
 
 	switch(sig)
 	{
 		case SIGUSR1:
-			for (cnt=1; cnt<IPACM_EVENT_MAX; cnt++)
-			{
-				printf("Event[%d:%30s]: %d\n",
-					 cnt, ipacm_event_name[cnt-1], ipacm_event_stats[cnt]);
-			}
+			IPACMDBG_H("Received SW_ROUTING_ENABLE request \n");
+			evt_data.event = IPA_SW_ROUTING_ENABLE;
+			IPACM_Iface::ipacmcfg->ipa_sw_rt_enable = true;
 			break;
 
-	case SIGUSR2:
-		if(ipacm_logging) {
-			printf("Disabling logging\n");
-			ipacm_logging = false;
-		}
-		else {
-			printf("Enabling logging\n");
-			ipacm_logging = true;
-		}
+		case SIGUSR2:
+			IPACMDBG_H("Received SW_ROUTING_DISABLE request \n");
+			evt_data.event = IPA_SW_ROUTING_DISABLE;
+			IPACM_Iface::ipacmcfg->ipa_sw_rt_enable = false;
 			break;
-
 	}
+	/* finish command queue */
+	IPACMDBG_H("Posting event:%d\n", evt_data.event);
+	IPACM_EvtDispatcher::PostEvt(&evt_data);
+	return;
 }
 
 void RegisterForSignals(void)

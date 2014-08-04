@@ -169,7 +169,7 @@ private:
 
 	int add_dft_filtering_rule(struct ipa_flt_rule_add* rules, int rule_offset, ipa_ip_type iptype);
 
-	int install_wan_filtering_rule();
+	int install_wan_filtering_rule(bool is_sw_routing);
 
 	void change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib);
 

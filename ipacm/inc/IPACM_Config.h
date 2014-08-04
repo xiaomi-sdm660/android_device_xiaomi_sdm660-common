@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -52,20 +52,20 @@ typedef struct
 /* for IPACM rm dependency use*/
 typedef struct _ipa_rm_client
 {
-    ipa_rm_resource_name producer_rm1; 
+    ipa_rm_resource_name producer_rm1;
     ipa_rm_resource_name consumer_rm1;
-    ipa_rm_resource_name producer_rm2; 
+    ipa_rm_resource_name producer_rm2;
     ipa_rm_resource_name consumer_rm2;
     bool producer1_up;            /* only monitor producer_rm1, not monitor producer_rm2 */
     bool consumer1_up;            /* only monitor consumer_rm1, not monitor consumer_rm2 */
     bool rm_set;                  /* once producer1_up and consumer1_up, will add bi-directional dependency */
-    bool rx_bypass_ipa;          /* support WLAN may not register RX-property, should not add dependency */    
+    bool rx_bypass_ipa;          /* support WLAN may not register RX-property, should not add dependency */
 }ipa_rm_client;
 
 #define MAX_NUM_EXT_PROPS 10
 
 /* used to hold extended properties */
-typedef struct 
+typedef struct
 {
 	uint8_t num_ext_props;
 	ipa_ioc_ext_intf_prop prop[MAX_NUM_EXT_PROPS];
@@ -84,7 +84,7 @@ public:
 
 	/* IPACM rm_depency a2 endpoint check*/
 	int ipa_rm_a2_check;
-	
+
 	/* Store interested interface and their configuration from XML file */
 	ipa_ifi_dev_name_t *iface_table;
 
@@ -95,7 +95,7 @@ public:
 	ipa_private_subnet private_subnet_table[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
 
 	/* Store the non nat iface names */
-	NatIfaces *pNatIfaces; 
+	NatIfaces *pNatIfaces;
 
 	/* Store the bridge iface names */
 	char ipa_virtual_iface_name[IPA_IFACE_NAME_LEN];
@@ -110,6 +110,9 @@ public:
 	int ipa_nat_max_entries;
 
 	int ipa_nat_iface_entries;
+
+	/* Store SW-enable or not */
+	bool ipa_sw_rt_enable;
 
 	/* IPACM routing table name for v4/v6 */
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan_v4, rt_tbl_wan_v4, rt_tbl_default_v4, rt_tbl_v6, rt_tbl_wan_v6;
@@ -139,9 +142,9 @@ public:
 
 	/* for IPACM resource manager dependency usage */
 	void AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa);
- 
+
 	void DelRmDepend(ipa_rm_resource_name rm1);
-	
+
 	int AddNatIfaces(char *dev_name);
 
 	int DelNatIfaces(char *dev_name);
@@ -159,7 +162,7 @@ public:
 	int SetExtProp(ipa_ioc_query_intf_ext_props *prop);
 
 	ipacm_ext_prop* GetExtProp(ipa_ip_type ip_type);
-	
+
 	int DelExtProp(ipa_ip_type ip_type);
 
 	int Init(void);
