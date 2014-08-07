@@ -680,10 +680,8 @@ static int ipa_nl_decode_nlmsg
 						IPACMDBG_H("Posting IPA_LINK_DOWN_EVENT with if index: %d\n",
 										 data_fid->if_index);
 					}
-
 					evt_data.evt_data = data_fid;
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
-
 				}
 
 				/* Add IPACM support for ECM plug-in/plug_out */
@@ -746,8 +744,8 @@ static int ipa_nl_decode_nlmsg
 					IPACM_EvtDispatcher::PostEvt(&evt_data);
 					IPACMDBG_H("Posting usb IPA_LINK_DOWN_EVENT with if index: %d\n",
 										 data_fid->if_index);
-                                }
 
+                                }
 			}
 			break;
 

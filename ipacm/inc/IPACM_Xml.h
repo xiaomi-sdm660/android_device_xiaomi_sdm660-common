@@ -75,6 +75,10 @@ if (!(a)) {                                             \
   
 /* IPA Config Entries */
 #define system_TAG                           "system"
+#define ODU_TAG                              "ODUCFG"
+#define ODUMODE_TAG                          "Mode"
+#define ODU_ROUTER_TAG                       "router"
+#define ODU_BRIDGE_TAG                       "bridge"
 #define IPACMCFG_TAG                         "IPACM"
 #define IPACMIFACECFG_TAG                    "IPACMIface"
 #define IFACE_TAG                            "Iface"
@@ -89,6 +93,8 @@ if (!(a)) {                                             \
 #define WLANIF_TAG                           "WLAN"
 #define VIRTUALIF_TAG                        "VIRTUAL"
 #define UNKNOWNIF_TAG                        "UNKNOWN"
+#define ODUIF_TAG                            "ODU"
+#define EMBMSIF_TAG                          "EMBMS"
 #define ETHIF_TAG                            "ETH"
 #define IPACMALG_TAG                         "IPACMALG"
 #define ALG_TAG                              "ALG"
@@ -259,6 +265,8 @@ typedef struct  _IPACM_conf_t
   ipacm_private_subnet_conf_t private_subnet_config;
   ipacm_alg_conf_t alg_config;
 	int nat_max_entries;
+  bool odu_enable;
+  bool router_mode_enable;
 } IPACM_conf_t;  
 
 /* This function read IPACM XML configuration*/

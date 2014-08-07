@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <system xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ipacm_cfg.xsd">
+	<ODUCFG>
+		<Mode>router</Mode>
+	</ODUCFG>
 	<IPACM>
 		<IPACMIface>
 			<Iface>
@@ -49,10 +52,10 @@
 			<Iface>
 			   <Name>wlan1</Name>
 			   <Category>UNKNOWN</Category>
-			</Iface>			
+			</Iface>
 			<Iface>
 			   <Name>eth0</Name>
-			   <Category>ETH</Category>
+			   <Category>ODU</Category>
 			</Iface>
 			<Iface>
 			   <Name>bridge0</Name>

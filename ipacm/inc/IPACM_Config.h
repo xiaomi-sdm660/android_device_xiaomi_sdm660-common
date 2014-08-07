@@ -109,6 +109,10 @@ public:
 
 	int ipa_nat_max_entries;
 
+	bool ipacm_odu_router_mode;
+
+	bool ipacm_odu_enable;
+
 	int ipa_nat_iface_entries;
 
 	/* Store SW-enable or not */
@@ -118,6 +122,8 @@ public:
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan_v4, rt_tbl_wan_v4, rt_tbl_default_v4, rt_tbl_v6, rt_tbl_wan_v6;
 	struct ipa_ioc_get_rt_tbl rt_tbl_wan_dl;
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan2lan_v4, rt_tbl_lan2lan_v6;
+
+	struct ipa_ioc_get_rt_tbl rt_tbl_odu_v4, rt_tbl_odu_v6;
 
 	/* To return the instance */
 	static IPACM_Config* GetInstance();
@@ -256,6 +262,8 @@ public:
 		return false;
 	}
 #endif /* defined(FEATURE_IPA_ANDROID)*/
+
+	static const char *DEVICE_NAME_ODU;
 
 private:
 	static IPACM_Config *pInstance;

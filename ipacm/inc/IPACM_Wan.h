@@ -115,6 +115,8 @@ public:
 	static bool is_ext_prop_set;
 	static uint32_t backhaul_ipv6_prefix[2];
 
+	static bool embms_is_on;
+
 private:
 	uint32_t *wan_route_rule_v4_hdl;
 	uint32_t *wan_route_rule_v6_hdl;
@@ -126,6 +128,7 @@ private:
 	uint32_t dft_wan_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];
 	uint32_t ipv6_dest_flt_rule_hdl[MAX_DEFAULT_v6_ROUTE_RULES];
 	int num_ipv6_dest_flt_rule;
+	uint32_t ODU_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];
 	int num_firewall_v4,num_firewall_v6;
 	uint32_t wan_v4_addr;
 	bool active_v4;
@@ -273,6 +276,9 @@ private:
 	int handle_header_add_evt(uint8_t mac_addr[6]);
 
 	int config_dft_firewall_rules(ipa_ip_type iptype);
+
+	/* configure the initial firewall filter rules */
+	int config_dft_embms_rules(ipa_ioc_add_flt_rule *pFilteringTable_v4, ipa_ioc_add_flt_rule *pFilteringTable_v6);
 
 	int handle_route_del_evt(ipa_ip_type iptype);
 
