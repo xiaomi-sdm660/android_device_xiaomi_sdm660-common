@@ -1,5 +1,6 @@
 ifneq (,$(filter $(QCOM_BOARD_PLATFORMS),$(TARGET_BOARD_PLATFORM)))
 ifneq (, $(filter aarch64 arm arm64, $(TARGET_ARCH)))
+ifneq ($(TARGET_USES_AOSP),true)
 
 LOCAL_PATH := $(call my-dir)
 
@@ -76,5 +77,6 @@ endef
 IPACM_FILE_LIST := IPACM_cfg.xml
 $(foreach TEST,$(IPACM_FILE_LIST),$(eval $(call ADD_TEST,$(TEST))))
 
+endif # not (TARGET_USES_AOSP)
 endif # $(TARGET_ARCH)
 endif
