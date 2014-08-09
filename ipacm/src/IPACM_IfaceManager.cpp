@@ -56,7 +56,9 @@ IPACM_IfaceManager::IPACM_IfaceManager()
 	IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, this); 		// register for IPA_CFG_CHANGE event
 	IPACM_EvtDispatcher::registr(IPA_LINK_UP_EVENT, this);
 	IPACM_EvtDispatcher::registr(IPA_WLAN_AP_LINK_UP_EVENT, this);  // register for wlan AP-iface
+#ifndef FEATURE_IPA_ANDROID
 	IPACM_EvtDispatcher::registr(IPA_WLAN_STA_LINK_UP_EVENT, this); // register for wlan STA-iface
+#endif /* not defined(FEATURE_IPA_ANDROID)*/
 	IPACM_EvtDispatcher::registr(IPA_USB_LINK_UP_EVENT, this); // register for wlan STA-iface
 	return;
 }
@@ -241,8 +243,14 @@ int IPACM_IfaceManager::create_iface_instance(int if_index, ipacm_wan_iface_type
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, w);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, w);
 				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, w); 		// register for IPA_CFG_CHANGE event
-				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
-				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
+				if(is_sta_mode == WLAN_WAN)
+				{
+					IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
+				}
+				else
+				{
+					IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
+				}
 				IPACMDBG_H("ipa_WAN (%s):ipa_index (%d) instance open/registr ok\n", w->dev_name, w->ipa_if_num);
 				registr(ipa_interface_index, w);
 				/* solve the new_addr comes earlier issue */
