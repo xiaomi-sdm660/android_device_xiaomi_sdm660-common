@@ -165,24 +165,7 @@ uint32_t Read32BitFieldValue(uint32_t param,
  */
 int CreateNatDevice(struct ipa_ioc_nat_alloc_mem *mem)
 {
-#define EVENT_SIZE  (sizeof (struct inotify_event))
-#define FILE_NAME_LENGTH (sizeof(NAT_DEV_NAME)*2 + 1)
-#define BUF_LEN     (EVENT_SIZE + FILE_NAME_LENGTH)
-
-	int length;
-	int wd;
-	char buffer[BUF_LEN];
-	int ret, inotify_fd;
-
-	inotify_fd = inotify_init();
-	if (inotify_fd < 0) {
-		perror("inotify_init");
-		return -EINVAL;
-	}
-
-	IPADBG("Waiting for nofications in dir %s\n", NAT_DEV_DIR);
-	wd = inotify_add_watch(inotify_fd,
-			NAT_DEV_DIR, IN_CREATE);
+	int ret;
 
 	ret = ioctl(ipv4_nat_cache.ipa_fd, IPA_IOC_ALLOC_NAT_MEM, mem);
 	if (ret != 0) {
@@ -192,27 +175,6 @@ int CreateNatDevice(struct ipa_ioc_nat_alloc_mem *mem)
 		return -EINVAL;
 	}
 	IPADBG("posted IPA_IOC_ALLOC_NAT_MEM to kernel successfully\n");
-
-	length = read(inotify_fd, buffer, BUF_LEN);
-
-	if (length < 0) {
-		perror("inotify read");
-		return -EINVAL;
-	}
-
-	struct inotify_event *event = (struct inotify_event *)buffer;
-	if (event->len) {
-		if (event->mask & IN_CREATE) {
-			if (event->mask & IN_ISDIR) {
-				IPADBG("The directory %s was created.\n", event->name);
-			} else {
-				IPADBG("The file %s was created.\n", event->name);
-			}
-		}
-	}
-
-	(void) inotify_rm_watch(inotify_fd, wd);
-	(void) close(inotify_fd);
 	return 0;
 }
 
