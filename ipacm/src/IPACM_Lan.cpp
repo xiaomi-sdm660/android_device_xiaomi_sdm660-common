@@ -49,6 +49,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "linux/rmnet_ipa_fd_ioctl.h"
 #include "linux/ipa_qmi_service_v01.h"
 #include "linux/msm_ipa.h"
+#include "IPACM_ConntrackListener.h"
+
 
 IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 {
@@ -413,6 +415,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 					return;
 				}
 				handle_eth_client_route_rule(data->mac_addr, data->iptype);
+				if (data->iptype == IPA_IP_v4)
+				{
+					/* Add NAT rules after ipv4 RT rules are set */
+					CtList->HandleNeighIpAddrAddEvt(data);
+				}
 				return;
 			}
 		}
@@ -1284,11 +1291,13 @@ int IPACM_Lan::handle_eth_client_ipaddr(ipacm_event_data_all *data)
 			   }
 			   else
 			   {
-			     IPACMDBG_H("ipv4 addr for client:%d is changed \n", clnt_indx);
-			     delete_eth_rtrules(clnt_indx,IPA_IP_v4);
-		         get_client_memptr(eth_client, clnt_indx)->route_rule_set_v4 = false;
-			     get_client_memptr(eth_client, clnt_indx)->v4_addr = data->ipv4_addr;
-			}
+					IPACMDBG_H("ipv4 addr for client:%d is changed \n", clnt_indx);
+					/* delete NAT rules first */
+					CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, clnt_indx)->v4_addr);
+					delete_eth_rtrules(clnt_indx,IPA_IP_v4);
+					get_client_memptr(eth_client, clnt_indx)->route_rule_set_v4 = false;
+					get_client_memptr(eth_client, clnt_indx)->v4_addr = data->ipv4_addr;
+				}
 		}
 	}
 	else
@@ -1555,19 +1564,19 @@ int IPACM_Lan::handle_eth_client_down_evt(uint8_t *mac_addr)
 	/* First reset nat rules and then route rules */
 	if(get_client_memptr(eth_client, clt_indx)->ipv4_set == true)
 	{
-	        IPACMDBG_H("Deleting Nat Rules\n");
-	        Nat_App->UpdatePwrSaveIf(get_client_memptr(eth_client, clt_indx)->v4_addr);
+			IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(eth_client, clt_indx)->v4_addr);
+			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, clt_indx)->v4_addr);
  	}
 
 	if (delete_eth_rtrules(clt_indx, IPA_IP_v4))
 	{
-		IPACMERR("unbale to delete ecm-client v4 route rules\n");
+		IPACMERR("unbale to delete ecm-client v4 route rules for index: %d\n", clt_indx);
 		return IPACM_FAILURE;
 	}
 
 	if (delete_eth_rtrules(clt_indx, IPA_IP_v6))
 	{
-		IPACMERR("unbale to delete ecm-client v6 route rules\n");
+		IPACMERR("unbale to delete ecm-client v6 route rules for index: %d\n", clt_indx);
 		return IPACM_FAILURE;
 	}
 
@@ -1704,8 +1713,26 @@ int IPACM_Lan::handle_down_evt()
 	IPACMDBG_H("left %d eth clients need to be deleted \n ", num_eth_client);
 	for (i = 0; i < num_eth_client; i++)
 	{
-			delete_eth_rtrules(i, IPA_IP_v4);
-			delete_eth_rtrules(i, IPA_IP_v6);
+			/* First reset nat rules and then route rules */
+			if(get_client_memptr(eth_client, i)->ipv4_set == true)
+			{
+				IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(eth_client, i)->v4_addr);
+				CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, i)->v4_addr);
+			}
+
+			if (delete_eth_rtrules(i, IPA_IP_v4))
+			{
+				IPACMERR("unbale to delete ecm-client v4 route rules for index %d\n", i);
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+
+			if (delete_eth_rtrules(i, IPA_IP_v6))
+			{
+				IPACMERR("unbale to delete ecm-client v6 route rules for index %d\n", i);
+				res = IPACM_FAILURE;
+				goto fail;
+			}
 
 			IPACMDBG_H("Delete %d client header\n", num_eth_client);
 

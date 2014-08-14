@@ -76,8 +76,6 @@ private:
 	 int  CreateNatThreads(void);
 	 int  CreateConnTrackThreads(void);
 
-	 void HandleNeighIpAddrAddEvt(void *);
-	 void HandleNeighIpAddrDelEvt(void *);
 #ifdef CT_OPT
 	 void ProcessCTV6Message(void *);
 #endif
@@ -93,6 +91,9 @@ public:
 	 {
 		return WanUp;
 	 }
+
+   void HandleNeighIpAddrAddEvt(ipacm_event_data_all *);
+   void HandleNeighIpAddrDelEvt(uint32_t);
 };
 
 extern IPACM_ConntrackListener *CtList;
