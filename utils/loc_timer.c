@@ -101,11 +101,27 @@ static void *timer_thread(void *thread_data)
         break;
     }
 
-    pthread_mutex_destroy(&t->timer_mutex);
-    pthread_cond_destroy(&t->timer_cond);
-
     if(ETIMEDOUT == ret)
         t->callback_func(t->user_data, ret);
+
+    // A (should be rare) race condition is that, when the loc_time_stop is called
+    // and acquired mutex, we reach here.  pthread_mutex_destroy will fail with
+    // error code EBUSY.  We give it 6 tries in 5 seconds.  Should be eanough time
+    // for loc_timer_stop to complete.  With the 7th try, we also perform unlock
+    // prior to destroy.
+    {
+        int i;
+        for (i = 0; EBUSY == pthread_mutex_destroy(&t->timer_mutex) && i <= 5; i++) {
+            if (i < 5) {
+                sleep(1);
+            } else {
+                // nah, forget it, something is seriously wrong.  Mutex has been
+                // held too long.  Unlock the mutext here.
+                pthread_mutex_unlock(&t->timer_mutex);
+            }
+        }
+    }
+    pthread_cond_destroy(&t->timer_cond);
 
     free(t);
     LOC_LOGD("%s:%d]: Exit\n", __func__, __LINE__);
@@ -175,8 +191,8 @@ _err:
 void loc_timer_stop(void* handle) {
     timer_data* t = (timer_data*)handle;
 
-    if (NULL != t && (READY == t->state || WAITING == t->state)) {
-        pthread_mutex_lock(&(t->timer_mutex));
+    if (NULL != t && (READY == t->state || WAITING == t->state) &&
+        pthread_mutex_lock(&(t->timer_mutex)) == 0) {
         if (READY == t->state || WAITING == t->state) {
             pthread_cond_signal(&t->timer_cond);
             t->state = ABORT;
