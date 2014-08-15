@@ -51,10 +51,13 @@ extern "C" {
 
 
 #ifdef USE_GLIB
-
+#ifndef OFF_TARGET
 #define strlcat g_strlcat
 #define strlcpy g_strlcpy
-
+#else
+#define strlcat strncat
+#define strlcpy strncpy
+#endif
 #define ALOGE(format, x...) TS_PRINTF("E/%s (%d): " format , LOG_TAG, getpid(), ##x)
 #define ALOGW(format, x...) TS_PRINTF("W/%s (%d): " format , LOG_TAG, getpid(), ##x)
 #define ALOGI(format, x...) TS_PRINTF("I/%s (%d): " format , LOG_TAG, getpid(), ##x)
@@ -65,7 +68,6 @@ extern "C" {
 
 #define LOC_EXT_CREATE_THREAD_CB_PLATFORM_LIB_ABSTRACTION createPthread
 #define ELAPSED_MILLIS_SINCE_BOOT_PLATFORM_LIB_ABSTRACTION (elapsedMillisSinceBoot())
-
 
 #else
 

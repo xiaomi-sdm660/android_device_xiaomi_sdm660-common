@@ -39,7 +39,7 @@
 #include <time.h>
 #include <loc_cfg.h>
 #include <log_util.h>
-#ifdef USE_GLIB
+#if defined(USE_GLIB) && !defined(OFF_TARGET)
 #include <glib.h>
 #endif
 #include "platform_lib_includes.h"

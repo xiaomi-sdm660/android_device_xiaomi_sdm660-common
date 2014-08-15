@@ -34,7 +34,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <gps_extended_c.h>
-#ifdef USE_GLIB
+#if defined(USE_GLIB) || defined(OFF_TARGET)
 #include <string.h>
 #endif
 

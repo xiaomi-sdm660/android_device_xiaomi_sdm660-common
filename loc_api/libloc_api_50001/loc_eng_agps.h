@@ -41,7 +41,7 @@
 #include <loc_timer.h>
 #include <LocEngAdapter.h>
 
-#ifdef USE_GLIB
+#if defined(USE_GLIB) && !defined(OFF_TARGET)
 #include <glib.h>
 #endif /* USE_GLIB */
 

@@ -43,7 +43,7 @@
 #ifndef SSID_BUF_SIZE
     #define SSID_BUF_SIZE (32+1)
 #endif
-#ifdef USE_GLIB
+#if defined(USE_GLIB) && !defined(OFF_TARGET)
 
 #include <glib.h>
 
