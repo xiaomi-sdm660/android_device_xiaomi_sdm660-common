@@ -543,14 +543,14 @@ void* ipa_driver_wlan_notifier(void *param)
         /* Add for 8994 Android case */
 		case WAN_UPSTREAM_ROUTE_ADD:
 			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
-			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_ADD name: %s\n",event_wan.name);
+			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_ADD name: %s, tethered name: %s\n", event_wan.upstream_ifname, event_wan.tethered_ifname);
             data_iptype = (ipacm_event_data_iptype *)malloc(sizeof(ipacm_event_data_iptype));
 			if(data_iptype == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_ecm data_iptype\n");
 				return NULL;
 			}
-			ipa_get_if_index(event_wan.name, &(data_iptype->if_index));
+			ipa_get_if_index(event_wan.upstream_ifname, &(data_iptype->if_index));
 			data_iptype->iptype = event_wan.ip;
 			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_ADD: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
 			evt_data.event = IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT;
@@ -558,14 +558,14 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
 		case WAN_UPSTREAM_ROUTE_DEL:
 			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
-			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_DEL name: %s\n",event_wan.name);
+			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_DEL name: %s, tethered name: %s\n", event_wan.upstream_ifname, event_wan.tethered_ifname);
             data_iptype = (ipacm_event_data_iptype *)malloc(sizeof(ipacm_event_data_iptype));
 			if(data_iptype == NULL)
 			{
 				IPACMERR("unable to allocate memory for event_ecm data_iptype\n");
 				return NULL;
 			}
-			ipa_get_if_index(event_wan.name, &(data_iptype->if_index));
+			ipa_get_if_index(event_wan.upstream_ifname, &(data_iptype->if_index));
 			data_iptype->iptype = event_wan.ip;
 			IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_DEL: fid(%d) ip-type(%d)\n", data_iptype->if_index, data_iptype->iptype);
 			evt_data.event = IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT;
