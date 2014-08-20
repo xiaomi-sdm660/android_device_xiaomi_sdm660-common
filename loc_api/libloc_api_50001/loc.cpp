@@ -148,6 +148,18 @@ static const AGpsRilInterface sLocEngAGpsRilInterface =
    loc_agps_ril_update_network_availability
 };
 
+static int loc_agps_install_certificates(const DerEncodedCertificate* certificates,
+                                         size_t length);
+static int loc_agps_revoke_certificates(const Sha1CertificateFingerprint* fingerprints,
+                                        size_t length);
+
+static const SuplCertificateInterface sLocEngAGpsCertInterface =
+{
+    sizeof(SuplCertificateInterface),
+    loc_agps_install_certificates,
+    loc_agps_revoke_certificates
+};
+
 static loc_eng_data_s_type loc_afw_data;
 static int gss_fd = -1;
 
@@ -658,6 +670,10 @@ const void* loc_get_extension(const char* name)
            ret_val = get_geofence_interface();
        }
    }
+   else if (strcmp(name, SUPL_CERTIFICATE_INTERFACE) == 0)
+   {
+       ret_val = &sLocEngAGpsCertInterface;
+   }
    else
    {
       LOC_LOGE ("get_extension: Invalid interface passed in\n");
@@ -936,6 +952,24 @@ static void loc_agps_ril_update_network_availability(int available, const char* 
     ENTRY_LOG();
     loc_eng_agps_ril_update_network_availability(loc_afw_data, available, apn);
     EXIT_LOG(%s, VOID_RET);
+}
+
+static int loc_agps_install_certificates(const DerEncodedCertificate* certificates,
+                                         size_t length)
+{
+    ENTRY_LOG();
+    int ret_val = loc_eng_agps_install_certificates(loc_afw_data, certificates, length);
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+static int loc_agps_revoke_certificates(const Sha1CertificateFingerprint* fingerprints,
+                                        size_t length)
+{
+    ENTRY_LOG();
+    LOC_LOGE("%s:%d]: agps_revoke_certificates not supported");
+    int ret_val = AGPS_CERTIFICATE_ERROR_GENERIC;
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
 }
 
 static void local_loc_cb(UlpLocation* location, void* locExt)

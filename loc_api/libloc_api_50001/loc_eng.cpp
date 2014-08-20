@@ -119,6 +119,7 @@ static loc_param_s_type loc_parameter_table[] =
   {"A_GLONASS_POS_PROTOCOL_SELECT",  &gps_conf.A_GLONASS_POS_PROTOCOL_SELECT,  NULL, 'n'},
   {"SENSOR_PROVIDER",                &sap_conf.SENSOR_PROVIDER,                NULL, 'n'},
   {"XTRA_VERSION_CHECK",             &gps_conf.XTRA_VERSION_CHECK,                  NULL, 'n'},
+  {"AGPS_CERT_WRITABLE_MASK",        &gps_conf.AGPS_CERT_WRITABLE_MASK,        NULL, 'n'}
 };
 
 static void loc_default_parameters(void)
@@ -162,6 +163,9 @@ static void loc_default_parameters(void)
    sap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
    /* default provider is SSC */
    sap_conf.SENSOR_PROVIDER = 1;
+
+   /* None of the 10 slots for agps certificates are writable by default */
+   gps_conf.AGPS_CERT_WRITABLE_MASK = 0;
 }
 
 // 2nd half of init(), singled out for
@@ -1476,6 +1480,51 @@ struct LocEngDataClientInit : public LocMsg {
     }
 };
 
+struct LocEngInstallAGpsCert : public LocMsg {
+    LocEngAdapter* mpAdapter;
+    const size_t mNumberOfCerts;
+    const uint32_t mSlotBitMask;
+    DerEncodedCertificate* mpData;
+    inline LocEngInstallAGpsCert(LocEngAdapter* adapter,
+                              const DerEncodedCertificate* pData,
+                              size_t numberOfCerts,
+                              uint32_t slotBitMask) :
+        LocMsg(), mpAdapter(adapter),
+        mNumberOfCerts(numberOfCerts), mSlotBitMask(slotBitMask),
+        mpData(new DerEncodedCertificate[mNumberOfCerts])
+    {
+        for (int i=0; i < mNumberOfCerts; i++) {
+            mpData[i].data = new u_char[pData[i].length];
+            if (mpData[i].data) {
+                memcpy(mpData[i].data, (void*)pData[i].data, pData[i].length);
+                mpData[i].length = pData[i].length;
+            } else {
+                LOC_LOGE("malloc failed for cert#%d", i);
+                break;
+            }
+        }
+        locallog();
+    }
+    inline ~LocEngInstallAGpsCert()
+    {
+        for (int i=0; i < mNumberOfCerts; i++) {
+            if (mpData[i].data) {
+                delete[] mpData[i].data;
+            }
+        }
+        delete[] mpData;
+    }
+    inline virtual void proc() const {
+        mpAdapter->installAGpsCert(mpData, mNumberOfCerts, mSlotBitMask);
+    }
+    inline void locallog() const {
+        LOC_LOGV("LocEngInstallAGpsCert - certs=%u mask=%u",
+                 mNumberOfCerts, mSlotBitMask);
+    }
+    inline virtual void log() const {
+        locallog();
+    }
+};
 
 /*********************************************************************
  * Initialization checking macros
@@ -2447,6 +2496,57 @@ void loc_eng_agps_ril_update_network_availability(loc_eng_data_s_type &loc_eng_d
     }
     EXIT_LOG(%s, VOID_RET);
 }
+
+int loc_eng_agps_install_certificates(loc_eng_data_s_type &loc_eng_data,
+                                      const DerEncodedCertificate* certificates,
+                                      size_t numberOfCerts)
+{
+    ENTRY_LOG_CALLFLOW();
+    int ret_val = AGPS_CERTIFICATE_OPERATION_SUCCESS;
+
+    uint32_t slotBitMask = gps_conf.AGPS_CERT_WRITABLE_MASK;
+    uint32_t slotCount = 0;
+    for (uint32_t slotBitMaskCounter=slotBitMask; slotBitMaskCounter; slotCount++) {
+        slotBitMaskCounter &= slotBitMaskCounter - 1;
+    }
+    LOC_LOGD("SlotBitMask=%u SlotCount=%u NumberOfCerts=%u",
+             slotBitMask, slotCount, numberOfCerts);
+
+    LocEngAdapter* adapter = loc_eng_data.adapter;
+
+    if (numberOfCerts == 0) {
+        LOC_LOGE("No certs to install, since numberOfCerts is zero");
+        ret_val = AGPS_CERTIFICATE_OPERATION_SUCCESS;
+    } else if (!adapter) {
+        LOC_LOGE("adapter is null!");
+        ret_val = AGPS_CERTIFICATE_ERROR_GENERIC;
+    } else if (slotCount < numberOfCerts) {
+        LOC_LOGE("Not enough cert slots (%u) to install %u certs!",
+                 slotCount, numberOfCerts);
+        ret_val = AGPS_CERTIFICATE_ERROR_TOO_MANY_CERTIFICATES;
+    } else {
+        for (int i=0; i < numberOfCerts; ++i)
+        {
+            if (certificates[i].length > AGPS_CERTIFICATE_MAX_LENGTH) {
+                LOC_LOGE("cert#(%u) length of %u is too big! greater than %u",
+                        certificates[i].length, AGPS_CERTIFICATE_MAX_LENGTH);
+                ret_val = AGPS_CERTIFICATE_ERROR_GENERIC;
+                break;
+            }
+        }
+
+        if (ret_val == AGPS_CERTIFICATE_OPERATION_SUCCESS) {
+            adapter->sendMsg(new LocEngInstallAGpsCert(adapter,
+                                                       certificates,
+                                                       numberOfCerts,
+                                                       slotBitMask));
+        }
+    }
+
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+
 
 /*===========================================================================
 FUNCTION    loc_eng_report_status
