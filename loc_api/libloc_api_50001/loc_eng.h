@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -66,6 +66,8 @@ typedef unsigned char boolean;
 #define SUCCESS              TRUE
 #define FAILURE                 FALSE
 #define INVALID_ATL_CONNECTION_HANDLE -1
+
+#define MAX_XTRA_SERVER_URL_LENGTH 256
 
 enum loc_nmea_provider_e_type {
     NMEA_PROVIDER_AP = 0, // Application Processor Provider of NMEA
@@ -146,6 +148,9 @@ typedef struct loc_gps_cfg_s
     unsigned long  LPP_PROFILE;
     uint8_t        NMEA_PROVIDER;
     unsigned long  A_GLONASS_POS_PROTOCOL_SELECT;
+    char           XTRA_SERVER_1[MAX_XTRA_SERVER_URL_LENGTH];
+    char           XTRA_SERVER_2[MAX_XTRA_SERVER_URL_LENGTH];
+    char           XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
 } loc_gps_cfg_s_type;
 
 typedef struct
