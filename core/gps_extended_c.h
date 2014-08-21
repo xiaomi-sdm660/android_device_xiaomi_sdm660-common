@@ -308,6 +308,7 @@ enum loc_api_adapter_err {
     LOC_API_ADAPTER_ERR_PHONE_OFFLINE       = 7,
     LOC_API_ADAPTER_ERR_TIMEOUT             = 8,
     LOC_API_ADAPTER_ERR_SERVICE_NOT_PRESENT = 9,
+    LOC_API_ADAPTER_ERR_INTERNAL            = 10,
 
     /* equating engine down to phone offline, as they are the same errror */
     LOC_API_ADAPTER_ERR_ENGINE_DOWN         = LOC_API_ADAPTER_ERR_PHONE_OFFLINE,
