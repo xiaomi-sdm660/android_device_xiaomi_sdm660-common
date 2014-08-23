@@ -1769,7 +1769,7 @@ static int loc_eng_start_handler(loc_eng_data_s_type &loc_eng_data)
        if (ret_val == LOC_API_ADAPTER_ERR_SUCCESS ||
            ret_val == LOC_API_ADAPTER_ERR_ENGINE_DOWN ||
            ret_val == LOC_API_ADAPTER_ERR_PHONE_OFFLINE ||
-           ret_val == LOC_API_ADAPTER_ERR_GENERAL_FAILURE)
+           ret_val == LOC_API_ADAPTER_ERR_INTERNAL)
        {
            loc_eng_data.adapter->setInSession(TRUE);
            loc_inform_gps_status(loc_eng_data, GPS_STATUS_SESSION_BEGIN);
