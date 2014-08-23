@@ -308,6 +308,13 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 					}
 					IPACMDBG_H("Finish handling IPA_ADDR_ADD_EVENT for ip-family(%d)\n", data->iptype);
+					/* checking if SW-RT_enable */
+					if (IPACM_Iface::ipacmcfg->ipa_sw_rt_enable == true)
+					{
+						/* handle software routing enable event*/
+						IPACMDBG_H("IPA_SW_ROUTING_ENABLE for iface: %s \n",IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name);
+						handle_software_routing_enable();
+					}
 				}
 			}
 		}
