@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <LocDualContext.h>
 #include <cutils/properties.h>
+#include <pm-service.h>
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -52,6 +53,8 @@ extern "C" {
 }
 #endif /* __cplusplus */
 using namespace loc_core;
+
+#define LOC_PM_CLIENT_NAME "GPS"
 
 //Globals defns
 static gps_location_callback gps_loc_cb = NULL;
@@ -127,9 +130,21 @@ const GpsNiInterface sLocEngNiInterface =
    loc_ni_respond,
 };
 
-// For shutting down MDM in fusion devices
-static int mdm_fd = -1;
+typedef struct {
+    //MAX_NAME_LEN defined in mdm_detect.h
+    char modem_name[MAX_NAME_LEN];
+    //MAX_PATH_LEN defined in mdm_detect.h
+    char powerup_node[MAX_PATH_LEN];
+    //this handle is used by peripheral mgr
+    void *handle;
+    int mdm_fd;
+    MdmType mdm_type;
+    bool peripheral_mgr_supported;
+    bool peripheral_mgr_registered;
+}s_loc_mdm_info;
 
+static s_loc_mdm_info loc_mdm_info;
+static void loc_pm_event_notifier(void *client_data, enum pm_event event);
 static void loc_agps_ril_init( AGpsRilCallbacks* callbacks );
 static void loc_agps_ril_set_ref_location(const AGpsRefLocation *agps_reflocation, size_t sz_struct);
 static void loc_agps_ril_set_set_id(AGpsSetIDType type, const char* setid);
@@ -262,7 +277,10 @@ SIDE EFFECTS
 static int loc_init(GpsCallbacks* callbacks)
 {
     int retVal = -1;
-    int i = 0;
+    enum pm_event mdm_state;
+    static int mdm_index = -1;
+    int peripheral_mgr_ret = PM_RET_FAILED;
+
     ENTRY_LOG();
     LOC_API_ADAPTER_EVENT_MASK_T event;
 
@@ -311,7 +329,11 @@ static int loc_init(GpsCallbacks* callbacks)
     loc_afw_data.adapter->setPowerVote(true);
 
     LOC_LOGD("loc_eng_init() success!");
-    if (mdm_fd < 0) {
+
+    //if index is 0 or more, then we've looked for mdm already
+    LOC_LOGD("%s:%d]: mdm_index: %d", __func__, __LINE__,
+             mdm_index);
+    if (mdm_index < 0) {
         struct dev_info modem_info;
         memset(&modem_info, 0, sizeof(struct dev_info));
         if(get_system_info(&modem_info) != RET_SUCCESS) {
@@ -319,26 +341,76 @@ static int loc_init(GpsCallbacks* callbacks)
                      __func__, __LINE__);
             goto err;
         }
-        for(i=0; i<modem_info.num_modems; i++) {
-            if((modem_info.mdm_list[i].type == MDM_TYPE_EXTERNAL) &&
-               (modem_info.mdm_list[i].powerup_node)) {
-                LOC_LOGD("%s:%d]: powerup_node: %s", __func__, __LINE__,
-                         modem_info.mdm_list[i].powerup_node);
-                mdm_fd = open(modem_info.mdm_list[i].powerup_node, O_RDONLY);
-                if (mdm_fd < 0) {
-                    LOC_LOGE("Error: %s open failed: %s\n",
-                             modem_info.mdm_list[i].powerup_node, strerror(errno));
-                } else {
-                    LOC_LOGD("%s opens success!", modem_info.mdm_list[i].powerup_node);
-                }
-            }
-            else {
-                LOC_LOGD("%s:%d]: powerup_node not present in mdm %d",
-                         __func__, __LINE__, i);
+
+        for(mdm_index = 0;
+            mdm_index < modem_info.num_modems;
+            mdm_index++) {
+            if(modem_info.mdm_list[mdm_index].mdm_name) {
+                //Copy modem name to register with peripheral manager
+                strlcpy(loc_mdm_info.modem_name,
+                        modem_info.mdm_list[mdm_index].mdm_name,
+                        sizeof(loc_mdm_info.modem_name));
+                //copy powerup node name if we need to use mdmdetect method
+                strlcpy(loc_mdm_info.powerup_node,
+                        modem_info.mdm_list[mdm_index].powerup_node,
+                        sizeof(loc_mdm_info.powerup_node));
+                loc_mdm_info.mdm_type = modem_info.mdm_list[mdm_index].type;
+                LOC_LOGD("%s:%d]: Found modem: %s, powerup node:%s at index: %d",
+                         __func__, __LINE__, loc_mdm_info.modem_name, loc_mdm_info.powerup_node,
+                         mdm_index);
+                break;
             }
         }
-    } else {
-        LOC_LOGD("powerup_node has been opened before");
+    }
+
+    if(loc_mdm_info.peripheral_mgr_registered != true) {
+        peripheral_mgr_ret = pm_client_register(loc_pm_event_notifier,
+                                                &loc_mdm_info,
+                                                loc_mdm_info.modem_name,
+                                                LOC_PM_CLIENT_NAME,
+                                                &mdm_state,
+                                                &loc_mdm_info.handle);
+        if(peripheral_mgr_ret == PM_RET_SUCCESS) {
+            loc_mdm_info.peripheral_mgr_supported = true;
+            loc_mdm_info.peripheral_mgr_registered = true;
+            LOC_LOGD("%s:%d]: registered with peripheral mgr for %s",
+                     __func__, __LINE__, loc_mdm_info.modem_name);
+        }
+        else if(peripheral_mgr_ret == PM_RET_UNSUPPORTED) {
+            loc_mdm_info.peripheral_mgr_registered = true;
+            loc_mdm_info.peripheral_mgr_supported = false;
+            LOC_LOGD("%s:%d]: peripheral mgr unsupported for: %s",
+                     __func__, __LINE__, loc_mdm_info.modem_name);
+        }
+        else {
+            //Not setting any flags here so that we can try again the next time around
+            LOC_LOGE("%s:%d]: Error: pm_client_register returned: %d",
+                     __func__, __LINE__, peripheral_mgr_ret);
+        }
+    }
+
+    if(loc_mdm_info.peripheral_mgr_supported == false &&
+       loc_mdm_info.peripheral_mgr_registered == true) {
+        //Peripheral mgr is not supported
+        //use legacy method to open the powerup node
+        LOC_LOGD("%s:%d]: powerup_node: %s", __func__, __LINE__,
+                 loc_mdm_info.powerup_node);
+        loc_mdm_info.mdm_fd = open(loc_mdm_info.powerup_node, O_RDONLY);
+
+        if (loc_mdm_info.mdm_fd < 0) {
+            LOC_LOGE("Error: %s open failed: %s\n",
+                     loc_mdm_info.powerup_node, strerror(errno));
+        } else {
+            LOC_LOGD("%s opens success!", loc_mdm_info.powerup_node);
+        }
+    }
+    else if(loc_mdm_info.peripheral_mgr_supported == true &&
+            loc_mdm_info.peripheral_mgr_registered == true) {
+        LOC_LOGD("%s:%d]: Voting for modem power up", __func__, __LINE__);
+        pm_client_connect(loc_mdm_info.handle);
+    }
+    else {
+        LOC_LOGD("%s:%d]: Not voted for modem power up due to errors", __func__, __LINE__);
     }
 
 err:
@@ -350,7 +422,7 @@ err:
 FUNCTION    loc_close_mdm_node
 
 DESCRIPTION
-   closes mdm_fd which is the modem powerup node obtained in loc_init
+   closes loc_mdm_info.mdm_fd which is the modem powerup node obtained in loc_init
 
 DEPENDENCIES
    None
@@ -365,12 +437,17 @@ SIDE EFFECTS
 static void loc_close_mdm_node()
 {
     ENTRY_LOG();
-    if (mdm_fd >= 0) {
+    if(loc_mdm_info.peripheral_mgr_supported == true) {
+        LOC_LOGD("%s:%d]: Voting for modem power down", __func__, __LINE__);
+        pm_client_disconnect(loc_mdm_info.handle);
+    }
+    else if (loc_mdm_info.mdm_fd >= 0) {
         LOC_LOGD("closing the powerup node");
-        close(mdm_fd);
-        mdm_fd = -1;
+        close(loc_mdm_info.mdm_fd);
+        loc_mdm_info.mdm_fd = -1;
         LOC_LOGD("finished closing the powerup node");
-    } else {
+    }
+    else {
         LOC_LOGD("powerup node has not been opened yet.");
     }
 
@@ -992,5 +1069,13 @@ static void local_sv_cb(GpsSvStatus* sv_status, void* svExt)
         CALLBACK_LOG_CALLFLOW("sv_status_cb -", %d, sv_status->num_svs);
         gps_sv_cb(sv_status);
     }
+    EXIT_LOG(%s, VOID_RET);
+}
+
+static void loc_pm_event_notifier(void *client_data, enum pm_event event)
+{
+    ENTRY_LOG();
+    LOC_LOGD("%s:%d]: event: %d", __func__, __LINE__, (int)event);
+    pm_client_event_acknowledge(loc_mdm_info.handle, event);
     EXIT_LOG(%s, VOID_RET);
 }
