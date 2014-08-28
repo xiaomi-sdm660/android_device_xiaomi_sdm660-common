@@ -127,7 +127,7 @@ static const GpsXtraInterface sLocEngXTRAInterface =
 static void loc_ni_init(GpsNiCallbacks *callbacks);
 static void loc_ni_respond(int notif_id, GpsUserResponseType user_response);
 
-const GpsNiInterface sLocEngNiInterface =
+static const GpsNiInterface sLocEngNiInterface =
 {
    sizeof(GpsNiInterface),
    loc_ni_init,
@@ -179,6 +179,14 @@ static const SuplCertificateInterface sLocEngAGpsCertInterface =
     sizeof(SuplCertificateInterface),
     loc_agps_install_certificates,
     loc_agps_revoke_certificates
+};
+
+static void loc_configuration_update(const char* config_data, int32_t length);
+
+static const GnssConfigurationInterface sLocEngConfigInterface =
+{
+    sizeof(GnssConfigurationInterface),
+    loc_configuration_update
 };
 
 static loc_eng_data_s_type loc_afw_data;
@@ -761,6 +769,10 @@ const void* loc_get_extension(const char* name)
    {
        ret_val = &sLocEngAGpsCertInterface;
    }
+   else if (strcmp(name, GNSS_CONFIGURATION_INTERFACE) == 0)
+   {
+       ret_val = &sLocEngConfigInterface;
+   }
    else
    {
       LOC_LOGE ("get_extension: Invalid interface passed in\n");
@@ -1057,6 +1069,13 @@ static int loc_agps_revoke_certificates(const Sha1CertificateFingerprint* finger
     int ret_val = AGPS_CERTIFICATE_ERROR_GENERIC;
     EXIT_LOG(%d, ret_val);
     return ret_val;
+}
+
+static void loc_configuration_update(const char* config_data, int32_t length)
+{
+    ENTRY_LOG();
+    loc_eng_configuration_update(loc_afw_data, config_data, length);
+    EXIT_LOG(%s, VOID_RET);
 }
 
 static void local_loc_cb(UlpLocation* location, void* locExt)

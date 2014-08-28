@@ -56,12 +56,12 @@ static uint8_t DEBUG_LEVEL = 0xff;
 static uint8_t TIMESTAMP = 0;
 
 /* Parameter spec table */
-static loc_param_s_type loc_parameter_table[] =
+static loc_param_s_type loc_param_table[] =
 {
     {"DEBUG_LEVEL",    &DEBUG_LEVEL, NULL,    'n'},
     {"TIMESTAMP",      &TIMESTAMP,   NULL,    'n'},
 };
-int loc_param_num = sizeof(loc_parameter_table) / sizeof(loc_param_s_type);
+int loc_param_num = sizeof(loc_param_table) / sizeof(loc_param_s_type);
 
 typedef struct loc_param_v_type
 {
@@ -117,7 +117,8 @@ int loc_set_config_entry(loc_param_s_type* config_entry, loc_param_v_type* confi
                         LOC_MAX_PARAM_STRING + 1);
             }
             /* Log INI values */
-            LOC_LOGD("%s: PARAM %s = %s", __FUNCTION__, config_entry->param_name, (char*)config_entry->param_ptr);
+            LOC_LOGD("%s: PARAM %s = %s", __FUNCTION__,
+                     config_entry->param_name, (char*)config_entry->param_ptr);
 
             if(NULL != config_entry->param_set)
             {
@@ -128,7 +129,8 @@ int loc_set_config_entry(loc_param_s_type* config_entry, loc_param_v_type* confi
         case 'n':
             *((int *)config_entry->param_ptr) = config_value->param_int_value;
             /* Log INI values */
-            LOC_LOGD("%s: PARAM %s = %d", __FUNCTION__, config_entry->param_name, config_value->param_int_value);
+            LOC_LOGD("%s: PARAM %s = %d", __FUNCTION__,
+                     config_entry->param_name, config_value->param_int_value);
 
             if(NULL != config_entry->param_set)
             {
@@ -139,7 +141,8 @@ int loc_set_config_entry(loc_param_s_type* config_entry, loc_param_v_type* confi
         case 'f':
             *((double *)config_entry->param_ptr) = config_value->param_double_value;
             /* Log INI values */
-            LOC_LOGD("%s: PARAM %s = %f", __FUNCTION__, config_entry->param_name, config_value->param_double_value);
+            LOC_LOGD("%s: PARAM %s = %f", __FUNCTION__,
+                     config_entry->param_name, config_value->param_double_value);
 
             if(NULL != config_entry->param_set)
             {
@@ -148,9 +151,82 @@ int loc_set_config_entry(loc_param_s_type* config_entry, loc_param_v_type* confi
             ret = 0;
             break;
         default:
-            LOC_LOGE("%s: PARAM %s parameter type must be n, f, or s", __FUNCTION__, config_entry->param_name);
+            LOC_LOGE("%s: PARAM %s parameter type must be n, f, or s",
+                     __FUNCTION__, config_entry->param_name);
         }
     }
+    return ret;
+}
+
+/*===========================================================================
+FUNCTION loc_fill_conf_item
+
+DESCRIPTION
+   Takes a line of configuration item and sets defined values based on
+   the passed in configuration table. This table maps strings to values to
+   set along with the type of each of these values.
+
+PARAMETERS:
+   input_buf : buffer contanis config item
+   config_table: table definition of strings to places to store information
+   table_length: length of the configuration table
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   0: No config or incomplete config or invalid parameter
+   1: Filled a record
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+int loc_fill_conf_item(char* input_buf,
+                       loc_param_s_type* config_table, uint32_t table_length)
+{
+    int ret = 0;
+
+    if (input_buf && config_table) {
+        char *lasts;
+        loc_param_v_type config_value;
+        memset(&config_value, 0, sizeof(config_value));
+
+        /* Separate variable and value */
+        config_value.param_name = strtok_r(input_buf, "=", &lasts);
+        /* skip lines that do not contain "=" */
+        if (config_value.param_name) {
+            config_value.param_str_value = strtok_r(NULL, "=", &lasts);
+
+            /* skip lines that do not contain two operands */
+            if (config_value.param_str_value) {
+                /* Trim leading and trailing spaces */
+                loc_util_trim_space(config_value.param_name);
+                loc_util_trim_space(config_value.param_str_value);
+
+                /* Parse numerical value */
+                if ((strlen(config_value.param_str_value) >=3) &&
+                    (config_value.param_str_value[0] == '0') &&
+                    (tolower(config_value.param_str_value[1]) == 'x'))
+                {
+                    /* hex */
+                    config_value.param_int_value = (int) strtol(&config_value.param_str_value[2],
+                                                                (char**) NULL, 16);
+                }
+                else {
+                    config_value.param_double_value = (double) atof(config_value.param_str_value); /* float */
+                    config_value.param_int_value = atoi(config_value.param_str_value); /* dec */
+                }
+
+                for(uint32_t i = 0; NULL != config_table && i < table_length; i++)
+                {
+                    if(!loc_set_config_entry(&config_table[i], &config_value)) {
+                        ret = 1;
+                    }
+                }
+            }
+        }
+    }
+
     return ret;
 }
 
@@ -185,10 +261,6 @@ SIDE EFFECTS
 ===========================================================================*/
 int loc_read_conf_r(FILE *conf_fp, loc_param_s_type* config_table, uint32_t table_length)
 {
-    char input_buf[LOC_MAX_PARAM_LINE];  /* declare a char array */
-    char *lasts;
-    loc_param_v_type config_value;
-    uint32_t i;
     int ret=0;
 
     unsigned int num_params=table_length;
@@ -199,13 +271,16 @@ int loc_read_conf_r(FILE *conf_fp, loc_param_s_type* config_table, uint32_t tabl
     }
 
     /* Clear all validity bits */
-    for(i = 0; NULL != config_table && i < table_length; i++)
+    for(uint32_t i = 0; NULL != config_table && i < table_length; i++)
     {
         if(NULL != config_table[i].param_set)
         {
             *(config_table[i].param_set) = 0;
         }
     }
+
+    char input_buf[LOC_MAX_PARAM_LINE];  /* declare a char array */
+
     LOC_LOGD("%s:%d]: num_params: %d\n", __func__, __LINE__, num_params);
     while(num_params)
     {
@@ -214,43 +289,64 @@ int loc_read_conf_r(FILE *conf_fp, loc_param_s_type* config_table, uint32_t tabl
             break;
         }
 
-        memset(&config_value, 0, sizeof(config_value));
-
-        /* Separate variable and value */
-        config_value.param_name = strtok_r(input_buf, "=", &lasts);
-        /* skip lines that do not contain "=" */
-        if (config_value.param_name == NULL) continue;
-        config_value.param_str_value = strtok_r(NULL, "=", &lasts);
-        /* skip lines that do not contain two operands */
-        if (config_value.param_str_value == NULL) continue;
-
-        /* Trim leading and trailing spaces */
-        loc_util_trim_space(config_value.param_name);
-        loc_util_trim_space(config_value.param_str_value);
-
-        /* Parse numerical value */
-        if ((strlen(config_value.param_str_value) >=3) &&
-            (config_value.param_str_value[0] == '0') &&
-            (tolower(config_value.param_str_value[1]) == 'x'))
-        {
-            /* hex */
-            config_value.param_int_value = (int) strtol(&config_value.param_str_value[2],
-                                                        (char**) NULL, 16);
-        }
-        else {
-            config_value.param_double_value = (double) atof(config_value.param_str_value); /* float */
-            config_value.param_int_value = atoi(config_value.param_str_value); /* dec */
-        }
-
-        for(i = 0; NULL != config_table && i < table_length; i++)
-        {
-            if(!loc_set_config_entry(&config_table[i], &config_value)) {
-                num_params--;
-            }
-        }
+        num_params -= loc_fill_conf_item(input_buf, config_table, table_length);
     }
 
 err:
+    return ret;
+}
+
+/*===========================================================================
+FUNCTION loc_udpate_conf
+
+DESCRIPTION
+   Parses the passed in buffer for configuration items, and update the table
+   that is also passed in.
+
+Reads the specified configuration file and sets defined values based on
+   the passed in configuration table. This table maps strings to values to
+   set along with the type of each of these values.
+
+PARAMETERS:
+   conf_data: configuration items in bufferas a string
+   length: strlen(conf_data)
+   config_table: table definition of strings to places to store information
+   table_length: length of the configuration table
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   number of the records in the table that is updated at time of return.
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+int loc_update_conf(const char* conf_data, int32_t length,
+                    loc_param_s_type* config_table, uint32_t table_length)
+{
+    int ret = -1;
+
+    if (conf_data && length && config_table && table_length) {
+        // make a copy, so we do not tokenize the original data
+        char* conf_copy = (char*)malloc(length+1);
+        memcpy(conf_copy, conf_data, length);
+        // we hard NULL the end of string to be safe
+        conf_copy[length] = 0;
+        // start with one record off
+        uint32_t num_params = table_length - 1;
+        char* saveptr = NULL;
+        char* input_buf = strtok_r(conf_copy, "\n", &saveptr);
+        ret = 0;
+
+        LOC_LOGD("%s:%d]: num_params: %d\n", __func__, __LINE__, num_params);
+        while(num_params && input_buf) {
+            ret++;
+            num_params -= loc_fill_conf_item(input_buf, config_table, table_length);
+            input_buf = strtok_r(NULL, "\n", &saveptr);
+        }
+    }
+
     return ret;
 }
 
@@ -279,20 +375,20 @@ SIDE EFFECTS
 void loc_read_conf(const char* conf_file_name, loc_param_s_type* config_table,
                    uint32_t table_length)
 {
-    FILE *gps_conf_fp = NULL;
+    FILE *conf_fp = NULL;
     char *lasts;
     loc_param_v_type config_value;
     uint32_t i;
 
-    if((gps_conf_fp = fopen(conf_file_name, "r")) != NULL)
+    if((conf_fp = fopen(conf_file_name, "r")) != NULL)
     {
         LOC_LOGD("%s: using %s", __FUNCTION__, conf_file_name);
         if(table_length && config_table) {
-            loc_read_conf_r(gps_conf_fp, config_table, table_length);
-            rewind(gps_conf_fp);
+            loc_read_conf_r(conf_fp, config_table, table_length);
+            rewind(conf_fp);
         }
-        loc_read_conf_r(gps_conf_fp, loc_parameter_table, loc_param_num);
-        fclose(gps_conf_fp);
+        loc_read_conf_r(conf_fp, loc_param_table, loc_param_num);
+        fclose(conf_fp);
     }
     /* Initialize logging mechanism with parsed data */
     loc_logger_init(DEBUG_LEVEL, TIMESTAMP);
