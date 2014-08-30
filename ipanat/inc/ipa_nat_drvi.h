@@ -461,6 +461,8 @@ void ipa_nati_find_rule_pos(struct ipa_nat_ip4_table_cache *cache_ptr,
 				del_type *rule_pos);
 void ipa_nati_del_dead_ipv4_head_nodes(uint8_t tbl_indx);
 
+uint16_t Read16BitFieldValue(uint32_t param,
+				ipa_nat_rule_field_type fld_type);
 
 /* ========================================================
 								Debug functions
