@@ -2593,21 +2593,24 @@ void loc_eng_configuration_update (loc_eng_data_s_type &loc_eng_data,
                                    const char* config_data, int32_t length)
 {
     ENTRY_LOG_CALLFLOW();
-    INIT_CHECK(loc_eng_data.adapter, return);
 
     if (config_data && length > 0) {
         loc_gps_cfg_s_type gps_conf_old = gps_conf;
         UTIL_UPDATE_CONF(config_data, length, loc_parameter_table);
         LocEngAdapter* adapter = loc_eng_data.adapter;
-        if (gps_conf_old.SUPL_VER != gps_conf.SUPL_VER) {
-            adapter->sendMsg(new LocEngSuplVer(adapter, gps_conf.SUPL_VER));
-        }
-        if (gps_conf_old.LPP_PROFILE != gps_conf.LPP_PROFILE) {
-            adapter->sendMsg(new LocEngLppConfig(adapter, gps_conf.LPP_PROFILE));
-        }
-        if (gps_conf_old.A_GLONASS_POS_PROTOCOL_SELECT != gps_conf.A_GLONASS_POS_PROTOCOL_SELECT) {
-            adapter->sendMsg(new LocEngAGlonassProtocol(adapter,
-                                                        gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
+
+        // it is possible that HAL is not init'ed at this time
+        if (adapter) {
+            if (gps_conf_old.SUPL_VER != gps_conf.SUPL_VER) {
+                adapter->sendMsg(new LocEngSuplVer(adapter, gps_conf.SUPL_VER));
+            }
+            if (gps_conf_old.LPP_PROFILE != gps_conf.LPP_PROFILE) {
+                adapter->sendMsg(new LocEngLppConfig(adapter, gps_conf.LPP_PROFILE));
+            }
+            if (gps_conf_old.A_GLONASS_POS_PROTOCOL_SELECT != gps_conf.A_GLONASS_POS_PROTOCOL_SELECT) {
+                adapter->sendMsg(new LocEngAGlonassProtocol(adapter,
+                                                            gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
+            }
         }
     }
 
