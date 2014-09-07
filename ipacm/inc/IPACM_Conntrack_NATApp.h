@@ -112,7 +112,8 @@ public:
 
 	int UpdatePwrSaveIf(uint32_t);
 	int ResetPwrSaveIf(uint32_t);
-        int DelEntriesOnClntDiscon(uint32_t);
+	int DelEntriesOnClntDiscon(uint32_t);
+	int DelEntriesOnSTAClntDiscon(uint32_t);
 
 	void UpdateTcpUdpTo(uint32_t, int proto);
 
