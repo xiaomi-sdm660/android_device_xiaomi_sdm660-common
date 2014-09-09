@@ -1682,8 +1682,105 @@ int IPACM_Lan::handle_down_evt()
 	{
 		goto fail;
 	}
-
 	IPACMDBG_H("lan handle_down_evt\n ");
+
+	/* delete wan filter rule */
+	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
+	{
+		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
+		handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
+	}
+
+	if (IPACM_Wan::isWanUP_V6() && rx_prop != NULL)
+	{
+		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
+		handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
+	}
+
+	/* delete default filter rules */
+	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
+	{
+		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
+		{
+			IPACMERR("Error Deleting Filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#ifdef CT_OPT
+		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v4, IPA_IP_v4, NUM_TCP_CTL_FLT_RULE) == false)
+		{
+			IPACMERR("Error deleting default filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#endif
+		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
+		{
+			if(m_filtering.DeleteFilteringHdls(&(lan2lan_flt_rule_hdl_v4[i].rule_hdl), IPA_IP_v4, 1) == false)
+			{
+				IPACMERR("Error deleting lan2lan IPv4 flt rules.\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+		}
+		IPACMDBG_H("Deleted lan2lan IPv4 flt rules.\n");
+
+		/* free private-subnet ipv4 filter rules */
+		if (IPACM_Iface::ipacmcfg->ipa_num_private_subnet > IPA_PRIV_SUBNET_FILTER_RULE_HANDLES)
+		{
+			IPACMERR(" the number of rules are bigger than array, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
+#ifdef FEATURE_IPA_ANDROID
+		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES) == false)
+		{
+			IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#else
+		if (m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
+		{
+			IPACMERR("Error Deleting RuleTable(1) to Filtering, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#endif
+	}
+    IPACMDBG_H("Finished delete default iface ipv4 filtering rules \n ");
+
+	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
+	{
+		if (m_filtering.DeleteFilteringHdls(dft_v6fl_rule_hdl,
+																				IPA_IP_v6,
+																				(IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES)) == false)
+		{
+			IPACMERR("Error Adding RuleTable(1) to Filtering, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#ifdef CT_OPT
+		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v6, IPA_IP_v6, NUM_TCP_CTL_FLT_RULE) == false)
+		{
+			IPACMERR("Error deleting default filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+#endif
+		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
+		{
+			if(m_filtering.DeleteFilteringHdls(&(lan2lan_flt_rule_hdl_v6[i].rule_hdl), IPA_IP_v6, 1) == false)
+			{
+				IPACMERR("Error deleting lan2lan IPv4 flt rules.\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+		}
+		IPACMDBG_H("Deleted lan2lan IPv6 flt rules.\n");
+	}
+    IPACMDBG_H("Finished delete default iface ipv6 filtering rules \n ");
 
 	if (ip_type != IPA_IP_v6)
 	{
@@ -1695,8 +1792,7 @@ int IPACM_Lan::handle_down_evt()
 			goto fail;
 		}
 	}
-
-        IPACMDBG_H("Finished delete default iface ipv4 rules \n ");
+	IPACMDBG_H("Finished delete default iface ipv4 rules \n ");
 
 	/* delete default v6 routing rule */
 	if (ip_type != IPA_IP_v4)
@@ -1713,7 +1809,6 @@ int IPACM_Lan::handle_down_evt()
 			}
 		}
 	}
-
 
 	IPACMDBG_H("Finished delete default iface ipv6 rules \n ");
 	/* clean eth-client header, routing rules */
@@ -1771,112 +1866,10 @@ int IPACM_Lan::handle_down_evt()
 	/* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule */
 	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 
-
 	/* check software routing fl rule hdl */
 	if (softwarerouting_act == true && rx_prop != NULL)
 	{
 		handle_software_routing_disable();
-	}
-
-
-	/* delete default filter rules */
-	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
-	{
-		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
-		{
-			IPACMERR("Error Deleting Filtering Rule, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-#ifdef CT_OPT
-		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v4, IPA_IP_v4, NUM_TCP_CTL_FLT_RULE) == false)
-		{
-			IPACMERR("Error deleting default filtering Rule, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-#endif
-		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
-		{
-			if(m_filtering.DeleteFilteringHdls(&(lan2lan_flt_rule_hdl_v4[i].rule_hdl), IPA_IP_v4, 1) == false)
-			{
-				IPACMERR("Error deleting lan2lan IPv4 flt rules.\n");
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-		}
-		IPACMDBG_H("Deleted lan2lan IPv4 flt rules.\n");
-
-		/* free private-subnet ipv4 filter rules */
-		if (IPACM_Iface::ipacmcfg->ipa_num_private_subnet > IPA_PRIV_SUBNET_FILTER_RULE_HANDLES)
-		{
-			IPACMERR(" the number of rules are bigger than array, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-
-#ifdef FEATURE_IPA_ANDROID
-		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES) == false)
-		{
-			IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-#else
-		if (m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
-		{
-			IPACMERR("Error Deleting RuleTable(1) to Filtering, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-#endif
-	}
-
-    IPACMDBG_H("Finished delete default iface ipv4 filtering rules \n ");
-
-	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
-	{
-		if (m_filtering.DeleteFilteringHdls(dft_v6fl_rule_hdl,
-																				IPA_IP_v6,
-																				(IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES)) == false)
-		{
-			IPACMERR("Error Adding RuleTable(1) to Filtering, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-#ifdef CT_OPT
-		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v6, IPA_IP_v6, NUM_TCP_CTL_FLT_RULE) == false)
-		{
-			IPACMERR("Error deleting default filtering Rule, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-#endif
-		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
-		{
-			if(m_filtering.DeleteFilteringHdls(&(lan2lan_flt_rule_hdl_v6[i].rule_hdl), IPA_IP_v6, 1) == false)
-			{
-				IPACMERR("Error deleting lan2lan IPv4 flt rules.\n");
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-		}
-		IPACMDBG_H("Deleted lan2lan IPv6 flt rules.\n");
-	}
-
-        IPACMDBG_H("Finished delete default iface ipv6 filtering rules \n ");
-
-	/* delete wan filter rule */
-	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
-	{
-		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
-		handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
-	}
-
-	if (IPACM_Wan::isWanUP_V6() && rx_prop != NULL)
-	{
-		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
-		handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
 	}
 
 	/* posting ip to lan2lan module to delete RT/FILTER rules*/

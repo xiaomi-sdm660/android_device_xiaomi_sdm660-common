@@ -1844,6 +1844,20 @@ int IPACM_Wlan::handle_down_evt()
 		goto fail;
 	}
 
+	/* delete wan filter rule */
+	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
+	{
+		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
+		IPACM_Lan::handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
+	}
+
+	if (IPACM_Wan::isWanUP_V6() && rx_prop != NULL)
+	{
+		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
+		IPACM_Lan::handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
+	}
+	IPACMDBG_H("finished deleting wan filtering rules\n ");
+
 	/* Delete v4 filtering rules */
 	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
@@ -1976,23 +1990,6 @@ int IPACM_Wlan::handle_down_evt()
 		}
 	}
 	IPACMDBG_H("finished deleting default RT rules\n ");
-
-
-	/* delete wan filter rule */
-	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
-	{
-		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
-		IPACM_Lan::handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
-	}
-
-	if (IPACM_Wan::isWanUP_V6() && rx_prop != NULL)
-	{
-		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
-		IPACM_Lan::handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
-	}
-
-	IPACMDBG_H("finished deleting wan filtering rules\n ");
-
 
 	/* check software routing fl rule hdl */
 	if (softwarerouting_act == true && rx_prop != NULL )
