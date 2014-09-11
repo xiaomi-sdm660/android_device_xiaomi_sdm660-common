@@ -230,7 +230,7 @@ public:
       3 = Lock MT position sessions
       4 = Lock all position sessions
      */
-    virtual int setGpsLock(unsigned int lock);
+    virtual int setGpsLock(LOC_GPS_LOCK_MASK lock);
     /*
       Returns
       Current value of GPS Lock on success

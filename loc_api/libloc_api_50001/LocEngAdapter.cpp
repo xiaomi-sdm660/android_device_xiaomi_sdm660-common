@@ -130,37 +130,42 @@ void LocEngAdapter::setUlpProxy(UlpProxyBase* ulp)
     mUlp = ulp;
 }
 
-void LocEngAdapter::requestPowerVote()
+int LocEngAdapter::setGpsLockMsg(LOC_GPS_LOCK_MASK lockMask)
 {
-    struct LocEngAdapterVotePower : public LocMsg {
+    struct LocEngAdapterGpsLock : public LocMsg {
         LocEngAdapter* mAdapter;
-        const bool mPowerUp;
-        inline LocEngAdapterVotePower(LocEngAdapter* adapter, bool powerUp) :
-            LocMsg(), mAdapter(adapter), mPowerUp(powerUp)
+        LOC_GPS_LOCK_MASK mLockMask;
+        inline LocEngAdapterGpsLock(LocEngAdapter* adapter, LOC_GPS_LOCK_MASK lockMask) :
+            LocMsg(), mAdapter(adapter), mLockMask(lockMask)
         {
             locallog();
         }
         inline virtual void proc() const {
-            /* Power voting without engine lock:
-             * 101: vote down, 102-104 - vote up
-             * These codes are used not to confuse with actual engine lock
-             * functionality, that can't be used in SSR scenario, as it
-             * conflicts with initialization sequence.
-             */
-            int mode = mPowerUp ? 103 : 101;
-            mAdapter->setGpsLock(mode);
+            mAdapter->setGpsLock(mLockMask);
         }
         inline  void locallog() const {
-            LOC_LOGV("LocEngAdapterVotePower - Vote Power: %d",
-                     (int)mPowerUp);
+            LOC_LOGV("LocEngAdapterGpsLock - mLockMask: %x", mLockMask);
         }
         inline virtual void log() const {
             locallog();
         }
     };
+    sendMsg(new LocEngAdapterGpsLock(this, lockMask));
+    return 0;
+}
 
+void LocEngAdapter::requestPowerVote()
+{
     if (getPowerVoteRight()) {
-        sendMsg(new LocEngAdapterVotePower(this, getPowerVote()));
+        /* Power voting without engine lock:
+         * 101: vote down, 102-104 - vote up
+         * These codes are used not to confuse with actual engine lock
+         * functionality, that can't be used in SSR scenario, as it
+         * conflicts with initialization sequence.
+         */
+        bool powerUp = getPowerVote();
+        LOC_LOGV("LocEngAdapterVotePower - Vote Power: %d", (int)powerUp);
+        setGpsLock(powerUp ? 103 : 101);
     }
 }
 
