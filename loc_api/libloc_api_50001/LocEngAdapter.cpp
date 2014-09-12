@@ -70,7 +70,9 @@ LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
     mOwner(owner), mInternalAdapter(new LocInternalAdapter(this)),
     mUlp(new UlpProxyBase()), mNavigating(false),
     mSupportsAgpsRequests(false),
-    mSupportsPositionInjection(false), mPowerVote(0)
+    mSupportsPositionInjection(false),
+    mSupportsTimeInjection(false),
+    mPowerVote(0)
 {
     memset(&mFixCriteria, 0, sizeof(mFixCriteria));
     mFixCriteria.mode = LOC_POSITION_MODE_INVALID;
@@ -339,6 +341,24 @@ inline
 void LocEngAdapter::handleEngineUpEvent()
 {
     sendMsg(new LocEngUp(mOwner));
+}
+
+enum loc_api_adapter_err LocEngAdapter::setTime(GpsUtcTime time,
+                                                int64_t timeReference,
+                                                int uncertainty)
+{
+    loc_api_adapter_err result = LOC_API_ADAPTER_ERR_SUCCESS;
+
+    LOC_LOGD("%s:%d]: mSupportsTimeInjection is %d",
+             __func__, __LINE__, mSupportsTimeInjection);
+
+    if (mSupportsTimeInjection) {
+        LOC_LOGD("%s:%d]: Injecting time", __func__, __LINE__);
+        result = mLocApi->setTime(time, timeReference, uncertainty);
+    } else {
+        mSupportsTimeInjection = true;
+    }
+    return result;
 }
 
 enum loc_api_adapter_err LocEngAdapter::setXtraVersionCheck(int check)
