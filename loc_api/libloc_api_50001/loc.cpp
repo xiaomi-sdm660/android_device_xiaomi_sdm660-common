@@ -44,6 +44,8 @@
 #include <errno.h>
 #include <LocDualContext.h>
 #include <cutils/properties.h>
+
+#ifdef MODEM_POWER_VOTE
 #include <pm-service.h>
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +54,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /*MODEM_POWER_VOTE*/
+
 using namespace loc_core;
 
 #define LOC_PM_CLIENT_NAME "GPS"
@@ -130,6 +134,7 @@ const GpsNiInterface sLocEngNiInterface =
    loc_ni_respond,
 };
 
+#ifdef MODEM_POWER_VOTE
 typedef struct {
     //MAX_NAME_LEN defined in mdm_detect.h
     char modem_name[MAX_NAME_LEN];
@@ -142,9 +147,10 @@ typedef struct {
     bool peripheral_mgr_supported;
     bool peripheral_mgr_registered;
 }s_loc_mdm_info;
-
 static s_loc_mdm_info loc_mdm_info;
 static void loc_pm_event_notifier(void *client_data, enum pm_event event);
+#endif /*MODEM_POWER_VOTE*/
+
 static void loc_agps_ril_init( AGpsRilCallbacks* callbacks );
 static void loc_agps_ril_set_ref_location(const AGpsRefLocation *agps_reflocation, size_t sz_struct);
 static void loc_agps_ril_set_set_id(AGpsSetIDType type, const char* setid);
@@ -277,10 +283,11 @@ SIDE EFFECTS
 static int loc_init(GpsCallbacks* callbacks)
 {
     int retVal = -1;
+#ifdef MODEM_POWER_VOTE
     enum pm_event mdm_state;
     static int mdm_index = -1;
     int peripheral_mgr_ret = PM_RET_FAILED;
-
+#endif /*MODEM_POWER_VOTE*/
     ENTRY_LOG();
     LOC_API_ADAPTER_EVENT_MASK_T event;
 
@@ -330,6 +337,7 @@ static int loc_init(GpsCallbacks* callbacks)
 
     LOC_LOGD("loc_eng_init() success!");
 
+#ifdef MODEM_POWER_VOTE
     //if index is 0 or more, then we've looked for mdm already
     LOC_LOGD("%s:%d]: mdm_index: %d", __func__, __LINE__,
              mdm_index);
@@ -412,7 +420,7 @@ static int loc_init(GpsCallbacks* callbacks)
     else {
         LOC_LOGD("%s:%d]: Not voted for modem power up due to errors", __func__, __LINE__);
     }
-
+#endif /*MODEM_POWER_VOTE*/
 err:
     EXIT_LOG(%d, retVal);
     return retVal;
@@ -437,6 +445,7 @@ SIDE EFFECTS
 static void loc_close_mdm_node()
 {
     ENTRY_LOG();
+#ifdef MODEM_POWER_VOTE
     if(loc_mdm_info.peripheral_mgr_supported == true) {
         LOC_LOGD("%s:%d]: Voting for modem power down", __func__, __LINE__);
         pm_client_disconnect(loc_mdm_info.handle);
@@ -450,7 +459,7 @@ static void loc_close_mdm_node()
     else {
         LOC_LOGD("powerup node has not been opened yet.");
     }
-
+#endif /*MODEM_POWER_VOTE*/
     EXIT_LOG(%s, VOID_RET);
 }
 
@@ -1072,6 +1081,7 @@ static void local_sv_cb(GpsSvStatus* sv_status, void* svExt)
     EXIT_LOG(%s, VOID_RET);
 }
 
+#ifdef MODEM_POWER_VOTE
 static void loc_pm_event_notifier(void *client_data, enum pm_event event)
 {
     ENTRY_LOG();
@@ -1079,3 +1089,4 @@ static void loc_pm_event_notifier(void *client_data, enum pm_event event)
     pm_client_event_acknowledge(loc_mdm_info.handle, event);
     EXIT_LOG(%s, VOID_RET);
 }
+#endif /*MODEM_POWER_VOTE*/
