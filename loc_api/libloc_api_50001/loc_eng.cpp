@@ -1618,8 +1618,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
     }
 
     STATE_CHECK((NULL == loc_eng_data.adapter),
-                "instance already initialized",
-                return loc_eng_data.adapter->setGpsLockMsg(0));
+                "instance already initialized", return 0);
 
     memset(&loc_eng_data, 0, sizeof (loc_eng_data));
 
@@ -1761,8 +1760,6 @@ void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data)
         LOC_LOGD("loc_eng_cleanup: fix not stopped. stop it now.");
         loc_eng_stop(loc_eng_data);
     }
-
-    loc_eng_data.adapter->setGpsLockMsg(gps_conf.GPS_LOCK);
 
 #if 0 // can't afford to actually clean up, for many reason.
 
