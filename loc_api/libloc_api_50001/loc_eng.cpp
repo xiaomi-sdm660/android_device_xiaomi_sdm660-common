@@ -1972,7 +1972,6 @@ static int loc_eng_get_zpp_handler(loc_eng_data_s_type &loc_eng_data)
    GpsLocationExtended locationExtended;
    memset(&locationExtended, 0, sizeof (GpsLocationExtended));
    locationExtended.size = sizeof(locationExtended);
-   memset(&location, 0, sizeof location);
 
    ret_val = loc_eng_data.adapter->getZpp(location.gpsLocation, tech_mask);
   //Mark the location source as from ZPP
