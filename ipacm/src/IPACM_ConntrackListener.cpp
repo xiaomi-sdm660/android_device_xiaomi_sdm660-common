@@ -44,11 +44,13 @@ IPACM_ConntrackListener::IPACM_ConntrackListener()
 	 nat_inst = NatApp::GetInstance();
 
 	 NatIfaceCnt = 0;
+	 StaClntCnt = 0;
 	 pNatIfaces = NULL;
 	 pConfig = NULL;
 
 	 memset(nat_iface_ipv4_addr, 0, sizeof(nat_iface_ipv4_addr));
 	 memset(nonnat_iface_ipv4_addr, 0, sizeof(nonnat_iface_ipv4_addr));
+	 memset(sta_clnt_ipv4_addr, 0, sizeof(sta_clnt_ipv4_addr));
 
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, this);
 	 IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, this);
@@ -857,12 +859,46 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 			 goto IGNORE;
 		 }
 
-		 IPACMDBG("For embedded connections add dummy nat rule\n");
-                 IPACMDBG("Change private port %d to %d\n",
-				rule.private_port, rule.public_port);
-		 rule.private_port = rule.public_port;
+     IPACMDBG("For embedded connections add dummy nat rule\n");
+     IPACMDBG("Change private port %d to %d\n",
+              rule.private_port, rule.public_port);
+     rule.private_port = rule.public_port;
 	 }
 
+	 /* Check whether target is in STA client list or not
+      if not ignore the connection */
+	 int nCnt;
+
+	 if(!isStaMode || (StaClntCnt == 0))
+	 {
+		goto ADD;
+	 }
+
+	 if((sta_clnt_ipv4_addr[0] & 0xFFFFFF00) !=
+		 (rule.target_ip & 0xFFFFFF00))
+	 {
+		IPACMDBG("STA client subnet mask not matching\n");
+		goto ADD;
+	 }
+
+	 IPACMDBG("StaClntCnt %d\n", StaClntCnt);
+	 for(nCnt = 0; nCnt < StaClntCnt; nCnt++)
+	 {
+		IPACMDBG("Comparing trgt_ip 0x%x with sta clnt ip: 0x%x\n",
+			 rule.target_ip, sta_clnt_ipv4_addr[nCnt]);
+		if(rule.target_ip == sta_clnt_ipv4_addr[nCnt])
+		{
+			IPACMDBG("Match index %d\n", nCnt);
+			goto ADD;
+		}
+	 }
+
+	 IPACMDBG("Not matching with STA Clnt Ip Addrs 0x%x\n",
+			 rule.target_ip);
+	 goto IGNORE;
+
+
+ADD:
 	 IPACMDBG("Nat Entry with below information will either be added or deleted\n");
 	 iptodot("target ip or dst ip", rule.target_ip);
 	 IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
@@ -963,8 +999,60 @@ IGNORE:
 	return;
 }
 
+void IPACM_ConntrackListener::HandleSTAClientAddEvt(uint32_t clnt_ip_addr)
+{
+	 int cnt;
+	 IPACMDBG("Received STA client 0x%x\n", clnt_ip_addr);
 
+	 if(StaClntCnt >= MAX_STA_CLNT_IFACES)
+	 {
+		IPACMDBG("Max STA client reached, ignore 0x%x\n", clnt_ip_addr);
+		return;
+	 }
 
+	 for(cnt=0; cnt<MAX_STA_CLNT_IFACES; cnt++)
+	 {
+		if(sta_clnt_ipv4_addr[cnt] != 0 &&
+		 sta_clnt_ipv4_addr[cnt] == clnt_ip_addr)
+		{
+			IPACMDBG("Ignoring duplicate one 0x%x\n", clnt_ip_addr);
+			break;
+		}
 
+		if(sta_clnt_ipv4_addr[cnt] == 0)
+		{
+			IPACMDBG("Adding STA client 0x%x at Index: %d\n",
+					clnt_ip_addr, cnt);
+			sta_clnt_ipv4_addr[cnt] = clnt_ip_addr;
+			StaClntCnt++;
+			IPACMDBG("STA client cnt %d\n", StaClntCnt);
+			break;
+		}
 
+	 }
 
+	 return;
+}
+
+void IPACM_ConntrackListener::HandleSTAClientDelEvt(uint32_t clnt_ip_addr)
+{
+	 int cnt;
+	 IPACMDBG("Received STA client 0x%x\n", clnt_ip_addr);
+
+	 for(cnt=0; cnt<MAX_STA_CLNT_IFACES; cnt++)
+	 {
+		if(sta_clnt_ipv4_addr[cnt] != 0 &&
+		 sta_clnt_ipv4_addr[cnt] == clnt_ip_addr)
+		{
+			IPACMDBG("Deleting STA client 0x%x at index: %d\n",
+					clnt_ip_addr, cnt);
+			sta_clnt_ipv4_addr[cnt] = 0;
+			nat_inst->DelEntriesOnSTAClntDiscon(clnt_ip_addr);
+			StaClntCnt--;
+			IPACMDBG("STA client cnt %d\n", StaClntCnt);
+			break;
+		}
+	 }
+
+  return;
+}

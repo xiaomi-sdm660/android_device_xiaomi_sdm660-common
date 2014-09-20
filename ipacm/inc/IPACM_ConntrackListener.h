@@ -47,6 +47,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #define MAX_NAT_IFACES 50
+#define MAX_STA_CLNT_IFACES 10
 
 using namespace std;
 
@@ -54,46 +55,49 @@ class IPACM_ConntrackListener : public IPACM_Listener
 {
 
 private:
-	 bool isCTReg;
-	 bool isNatThreadStart;
-	 bool WanUp;
-	 NatApp *nat_inst;
+	bool isCTReg;
+	bool isNatThreadStart;
+	bool WanUp;
+	NatApp *nat_inst;
 
-	 int NatIfaceCnt;
-	 NatIfaces *pNatIfaces;
-	 uint32_t nat_iface_ipv4_addr[MAX_NAT_IFACES];
-	 uint32_t nonnat_iface_ipv4_addr[MAX_NAT_IFACES];
-	 IPACM_Config *pConfig;
+	int NatIfaceCnt;
+	int StaClntCnt;
+	NatIfaces *pNatIfaces;
+	uint32_t nat_iface_ipv4_addr[MAX_NAT_IFACES];
+	uint32_t nonnat_iface_ipv4_addr[MAX_NAT_IFACES];
+	uint32_t sta_clnt_ipv4_addr[MAX_STA_CLNT_IFACES];
+	IPACM_Config *pConfig;
 #ifdef CT_OPT
-	 IPACM_LanToLan *p_lan2lan;
+	IPACM_LanToLan *p_lan2lan;
 #endif
 
-	 void ProcessCTMessage(void *);
-	 void ProcessTCPorUDPMsg(struct nf_conntrack *,
-			enum nf_conntrack_msg_type, u_int8_t);
-	 void TriggerWANUp(void *);
-	 void TriggerWANDown(uint32_t);
-	 int  CreateNatThreads(void);
-	 int  CreateConnTrackThreads(void);
+	void ProcessCTMessage(void *);
+	void ProcessTCPorUDPMsg(struct nf_conntrack *,
+	enum nf_conntrack_msg_type, u_int8_t);
+	void TriggerWANUp(void *);
+	void TriggerWANDown(uint32_t);
+	int  CreateNatThreads(void);
+	int  CreateConnTrackThreads(void);
 
 #ifdef CT_OPT
-	 void ProcessCTV6Message(void *);
+	void ProcessCTV6Message(void *);
 #endif
 
 public:
-	 char wan_ifname[IPA_IFACE_NAME_LEN];
-	 uint32_t wan_ipaddr;
-	 bool isStaMode;
-
-	 IPACM_ConntrackListener();
-	 void event_callback(ipa_cm_event_id, void *data);
-	 inline bool isWanUp()
-	 {
+	char wan_ifname[IPA_IFACE_NAME_LEN];
+	uint32_t wan_ipaddr;
+	bool isStaMode;
+	IPACM_ConntrackListener();
+	void event_callback(ipa_cm_event_id, void *data);
+	inline bool isWanUp()
+	{
 		return WanUp;
-	 }
+	}
 
-   void HandleNeighIpAddrAddEvt(ipacm_event_data_all *);
-   void HandleNeighIpAddrDelEvt(uint32_t);
+	void HandleNeighIpAddrAddEvt(ipacm_event_data_all *);
+	void HandleNeighIpAddrDelEvt(uint32_t);
+	void HandleSTAClientAddEvt(uint32_t);
+	void HandleSTAClientDelEvt(uint32_t);
 };
 
 extern IPACM_ConntrackListener *CtList;
