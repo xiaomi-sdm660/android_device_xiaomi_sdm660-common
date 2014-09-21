@@ -326,6 +326,7 @@ static int loc_init(GpsCallbacks* callbacks)
     loc_afw_data.adapter->requestUlp(gps_conf.CAPABILITIES);
     loc_afw_data.adapter->mSupportsAgpsRequests = !loc_afw_data.adapter->hasAgpsExtendedCapabilities();
     loc_afw_data.adapter->mSupportsPositionInjection = !loc_afw_data.adapter->hasCPIExtendedCapabilities();
+    loc_afw_data.adapter->mSupportsTimeInjection = !loc_afw_data.adapter->hasCPIExtendedCapabilities();
 
     if(retVal) {
         LOC_LOGE("loc_eng_init() fail!");
