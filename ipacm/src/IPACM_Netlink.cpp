@@ -640,6 +640,12 @@ static int ipa_nl_decode_nlmsg
 				IPACMDBG("RTM_NEWLINK, ifi_index:%d\n", msg_ptr->nl_link_info.metainfo.ifi_index);
 				IPACMDBG("RTM_NEWLINK, family:%d\n", msg_ptr->nl_link_info.metainfo.ifi_family);
 
+				if (msg_ptr->nl_link_info.metainfo.ifi_family == AF_BRIDGE)
+				{
+					IPACMERR(" ignore this RTM_NEWLINK msg \n");
+					return IPACM_SUCCESS;
+				}
+
 				if(IFF_UP & msg_ptr->nl_link_info.metainfo.ifi_change)
 				{
 					IPACMDBG("GOT useful newlink event\n");
@@ -757,6 +763,18 @@ static int ipa_nl_decode_nlmsg
 			}
 			else
 			{
+				IPACMDBG("Got RTM_DELLINK with below values\n");
+				IPACMDBG("RTM_DELLINK, ifi_change:%d\n", msg_ptr->nl_link_info.metainfo.ifi_change);
+				IPACMDBG("RTM_DELLINK, ifi_flags:%d\n", msg_ptr->nl_link_info.metainfo.ifi_flags);
+				IPACMDBG("RTM_DELLINK, ifi_index:%d\n", msg_ptr->nl_link_info.metainfo.ifi_index);
+				IPACMDBG("RTM_DELLINK, family:%d\n", msg_ptr->nl_link_info.metainfo.ifi_family);
+
+				if (msg_ptr->nl_link_info.metainfo.ifi_family == AF_BRIDGE)
+				{
+					IPACMERR(" ignore this RTM_DELLINK msg \n");
+					return IPACM_SUCCESS;
+				}
+
 				ret_val = ipa_get_if_name(dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
 				if(ret_val != IPACM_SUCCESS)
 				{
