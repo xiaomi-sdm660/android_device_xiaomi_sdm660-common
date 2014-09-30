@@ -126,7 +126,7 @@ const char *ipacm_event_name[] = {
 #define IPACM_FIREWALL_FILE_NAME    "mobileap_firewall.xml"
 #define IPACM_CFG_FILE_NAME    "IPACM_cfg.xml"
 #ifdef FEATURE_IPA_ANDROID
-#define IPACM_PID_FILE "/data/ipacm.pid"
+#define IPACM_PID_FILE "/data/ipa/ipacm.pid"
 #define IPACM_DIR_NAME     "/data"
 #else/* defined(FEATURE_IPA_ANDROID) */
 #define IPACM_PID_FILE "/etc/ipacm.pid"
