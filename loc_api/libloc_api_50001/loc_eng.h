@@ -152,6 +152,7 @@ typedef struct loc_gps_cfg_s
     char           XTRA_SERVER_1[MAX_XTRA_SERVER_URL_LENGTH];
     char           XTRA_SERVER_2[MAX_XTRA_SERVER_URL_LENGTH];
     char           XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
+    unsigned long  USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
 } loc_gps_cfg_s_type;
 
 typedef struct
