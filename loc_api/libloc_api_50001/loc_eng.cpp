@@ -101,6 +101,7 @@ static loc_param_s_type loc_parameter_table[] =
   {"NMEA_PROVIDER",                  &gps_conf.NMEA_PROVIDER,                  NULL, 'n'},
   {"SUPL_VER",                       &gps_conf.SUPL_VER,                       NULL, 'n'},
   {"CAPABILITIES",                   &gps_conf.CAPABILITIES,                   NULL, 'n'},
+  {"USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL",  &gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL,          NULL, 'n'},
   {"GYRO_BIAS_RANDOM_WALK",          &sap_conf.GYRO_BIAS_RANDOM_WALK,          &sap_conf.GYRO_BIAS_RANDOM_WALK_VALID, 'f'},
   {"ACCEL_RANDOM_WALK_SPECTRAL_DENSITY",     &sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,    &sap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
   {"ANGLE_RANDOM_WALK_SPECTRAL_DENSITY",     &sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,    &sap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID, 'f'},
@@ -141,6 +142,8 @@ static void loc_default_parameters(void)
    gps_conf.A_GLONASS_POS_PROTOCOL_SELECT = 0;
    /*XTRA version check is disabled by default*/
    gps_conf.XTRA_VERSION_CHECK=0;
+   /*Use emergency PDN by default*/
+   gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL = 1;
 
    /*Defaults for sap.conf*/
    sap_conf.GYRO_BIAS_RANDOM_WALK = 0;
@@ -1108,7 +1111,17 @@ void LocEngRequestSuplEs::proc() const {
         AgpsStateMachine* sm = locEng->ds_nif;
         DSSubscriber s(sm, mID);
         sm->subscribeRsrc((Subscriber*)&s);
-    } else {
+    }
+    else if (locEng->agnss_nif) {
+        AgpsStateMachine *sm = locEng->agnss_nif;
+        ATLSubscriber s(mID,
+                        sm,
+                        locEng->adapter,
+                        false);
+        sm->subscribeRsrc((Subscriber*)&s);
+        LOC_LOGD("%s:%d]: Using regular ATL for SUPL ES", __func__, __LINE__);
+    }
+    else {
         locEng->adapter->atlOpenStatus(mID, 0, NULL, -1, -1);
     }
 }
@@ -2191,8 +2204,9 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
                                                       false);
 
         if (adapter->mSupportsAgpsRequests) {
-            loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
-
+            if(gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
+                loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
+            }
             loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
                                                    NULL, NULL, &loc_eng_data);
         }
@@ -2224,7 +2238,9 @@ getAgpsStateMachine(loc_eng_data_s_type &locEng, AGpsExtType agpsType) {
         break;
     }
     case AGPS_TYPE_SUPL_ES: {
-        stateMachine = locEng.ds_nif;
+        locEng.ds_nif ?
+            stateMachine = locEng.ds_nif:
+            stateMachine = locEng.agnss_nif;
         break;
     }
     default:

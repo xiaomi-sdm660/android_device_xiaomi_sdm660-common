@@ -33,9 +33,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define LOC_MAX_PARAM_NAME                 48
+#define LOC_MAX_PARAM_NAME                 80
 #define LOC_MAX_PARAM_STRING               80
-#define LOC_MAX_PARAM_LINE                 80
+#define LOC_MAX_PARAM_LINE    (LOC_MAX_PARAM_NAME + LOC_MAX_PARAM_STRING)
 
 #define UTIL_READ_CONF_DEFAULT(filename) \
     loc_read_conf((filename), NULL, 0);
