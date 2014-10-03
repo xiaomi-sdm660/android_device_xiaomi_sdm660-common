@@ -68,6 +68,11 @@ extern "C" {
 /*Emergency SUPL*/
 #define GPS_NI_TYPE_EMERGENCY_SUPL    4
 
+enum loc_registration_mask_status {
+    LOC_REGISTRATION_MASK_ENABLED,
+    LOC_REGISTRATION_MASK_DISABLED
+};
+
 typedef struct {
     /** set to sizeof(UlpLocation) */
     size_t          size;
@@ -365,6 +370,12 @@ enum loc_api_adapter_event_index {
 
 typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
 
+typedef enum loc_api_adapter_msg_to_check_supported {
+    LOC_API_ADAPTER_MESSAGE_LOCATION_BATCHING,               // Batching
+    LOC_API_ADAPTER_MESSAGE_BATCHED_GENFENCE_BREACH,         // Geofence Batched Breach
+
+    LOC_API_ADAPTER_MESSAGE_MAX
+} LocCheckingMessagesID;
 
 #ifdef __cplusplus
 }
