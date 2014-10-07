@@ -131,15 +131,18 @@ IPACM_Wan::IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode) : IPACM_
 
 	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == EMBMS_IF)
 	{
-		IPACMDBG(" IPACM->IPACM_Wan_eMBMS(%d) constructor: Tx:%d\n", ipa_if_num, iface_query->num_tx_props);
+		IPACMDBG(" IPACM->IPACM_Wan_eMBMS(%d)\n", ipa_if_num);
 		embms_is_on = true;
 		install_wan_filtering_rule(false);
 		/* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
-        IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
+		if(tx_prop != NULL)
+		{
+        		IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
+		}
 	}
 	else
 	{
-		IPACMDBG(" IPACM->IPACM_Wan(%d) constructor: Tx:%d\n", ipa_if_num, iface_query->num_tx_props);
+		IPACMDBG(" IPACM->IPACM_Wan(%d)\n", ipa_if_num);
 	}
 
 	return;
@@ -3993,15 +3996,14 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 
 		len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
 		pFilteringTable_v4 = (struct ipa_ioc_add_flt_rule*)malloc(len);
-		memset(pFilteringTable_v4, 0, len);
-
-		IPACMDBG_H("Total number of WAN DL filtering rule for IPv4 is 1\n");
-
 		if (pFilteringTable_v4 == NULL)
 		{
 			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 			return IPACM_FAILURE;
 		}
+		memset(pFilteringTable_v4, 0, len);
+		IPACMDBG_H("Total number of WAN DL filtering rule for IPv4 is 1\n");
+
 		pFilteringTable_v4->commit = 1;
 		pFilteringTable_v4->ep = rx_prop->rx[0].src_pipe;
 		pFilteringTable_v4->global = false;
@@ -4049,16 +4051,15 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 
 		len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
 		pFilteringTable_v6 = (struct ipa_ioc_add_flt_rule*)malloc(len);
-		memset(pFilteringTable_v6, 0, len);
-
-		IPACMDBG_H("Total number of WAN DL filtering rule for IPv6 is 1\n");
-
 		if (pFilteringTable_v6 == NULL)
 		{
 			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 			free(pFilteringTable_v4);
 			return IPACM_FAILURE;
 		}
+		memset(pFilteringTable_v6, 0, len);
+		IPACMDBG_H("Total number of WAN DL filtering rule for IPv6 is 1\n");
+
 		pFilteringTable_v6->commit = 1;
 		pFilteringTable_v6->ep = rx_prop->rx[0].src_pipe;
 		pFilteringTable_v6->global = false;
