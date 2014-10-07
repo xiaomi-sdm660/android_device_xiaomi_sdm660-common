@@ -280,7 +280,6 @@ void loc_read_conf(const char* conf_file_name, loc_param_s_type* config_table,
                    uint32_t table_length)
 {
     FILE *gps_conf_fp = NULL;
-    char input_buf[LOC_MAX_PARAM_LINE];  /* declare a char array */
     char *lasts;
     loc_param_v_type config_value;
     uint32_t i;
