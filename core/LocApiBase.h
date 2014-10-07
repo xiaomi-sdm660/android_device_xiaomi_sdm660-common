@@ -80,6 +80,7 @@ class LocApiBase {
     const MsgTask* mMsgTask;
     ContextBase *mContext;
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
+    uint64_t mSupportedMsg;
 
 protected:
     virtual enum loc_api_adapter_err
@@ -128,6 +129,7 @@ public:
     void reportDataCallOpened();
     void reportDataCallClosed();
     void requestNiNotify(GpsNiNotification &notify, const void* data);
+    void saveSupportedMsgList(uint64_t supportedMsgList);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -212,6 +214,15 @@ public:
                                  size_t length,
                                  uint32_t slotBitMask);
     inline virtual void setInSession(bool inSession) {}
+    inline bool isMessageSupported (LocCheckingMessagesID msgID) const {
+        if (msgID > (sizeof(mSupportedMsg) << 3)) {
+            return false;
+        } else {
+            uint32_t messageChecker = 1 << msgID;
+            return (messageChecker & mSupportedMsg) == messageChecker;
+        }
+    }
+    void updateEvtMask();
 
     /*Values for lock
       1 = Do not lock any position sessions

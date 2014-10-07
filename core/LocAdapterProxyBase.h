@@ -37,7 +37,7 @@ namespace loc_core {
 
 class LocAdapterProxyBase {
 private:
-    const LocAdapterBase *mLocAdapterBase;
+    LocAdapterBase *mLocAdapterBase;
 protected:
     inline LocAdapterProxyBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
                    ContextBase* context):
@@ -49,6 +49,11 @@ protected:
     ContextBase* getContext() const {
         return mLocAdapterBase->getContext();
     }
+    inline void updateEvtMask(LOC_API_ADAPTER_EVENT_MASK_T event,
+                              loc_registration_mask_status isEnabled) {
+        mLocAdapterBase->updateEvtMask(event,isEnabled);
+    }
+
 public:
     inline virtual void handleEngineUpEvent() {};
     inline virtual void handleEngineDownEvent() {};
