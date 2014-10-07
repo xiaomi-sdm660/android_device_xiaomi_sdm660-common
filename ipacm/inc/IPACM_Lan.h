@@ -52,6 +52,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define IPA_WAN_DEFAULT_FILTER_RULE_HANDLES  1
 #define IPA_PRIV_SUBNET_FILTER_RULE_HANDLES  3
+#define IPA_NUM_ODU_ROUTE_RULES 2
 #define MAX_WAN_UL_FILTER_RULES 20
 #define NUM_IPV6_PREFIX_FLT_RULE 1
 
@@ -136,6 +137,10 @@ public:
 	/* handle new_address event*/
 	int handle_addr_evt(ipacm_event_data_addr *data);
 
+	int handle_addr_evt_odu_bridge(ipacm_event_data_addr* data);
+
+	static bool odu_up;
+
 	/* install UL filter rule from Q6 */
 	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
 
@@ -213,6 +218,18 @@ private:
 	int num_eth_client;
 
 	NatApp *Nat_App;
+
+    int ipv6_set;
+
+	uint32_t ODU_hdr_hdl_v4, ODU_hdr_hdl_v6;
+
+	uint32_t *odu_route_rule_v4_hdl;
+
+	uint32_t *odu_route_rule_v6_hdl;
+
+	bool ipv4_header_set;
+
+	bool ipv6_header_set;
 
 	inline ipa_eth_client* get_client_memptr(ipa_eth_client *param, int cnt)
 	{
@@ -325,6 +342,15 @@ private:
 
 	/*handle eth client del mode*/
 	int handle_eth_client_down_evt(uint8_t *mac_addr);
+
+	/* handle odu client initial, construct full headers (tx property) */
+	int handle_odu_hdr_init(uint8_t *mac_addr);
+
+	/* handle odu default route rule configuration */
+	int handle_odu_route_add();
+
+	/* handle odu default route rule deletion */
+	int handle_odu_route_del();
 
 	/*handle lan iface down event*/
 	int handle_down_evt();

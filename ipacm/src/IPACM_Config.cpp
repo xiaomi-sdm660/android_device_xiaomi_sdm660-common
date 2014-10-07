@@ -45,6 +45,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 IPACM_Config *IPACM_Config::pInstance = NULL;
 const char *IPACM_Config::DEVICE_NAME = "/dev/ipa";
+const char *IPACM_Config::DEVICE_NAME_ODU = "/dev/odu_ipa_bridge";
 
 IPACM_Config::IPACM_Config()
 {
@@ -52,7 +53,9 @@ IPACM_Config::IPACM_Config()
 	alg_table = NULL;
 	memset(&ipa_client_rm_map_tbl, 0, sizeof(ipa_client_rm_map_tbl));
 	memset(&ipa_rm_tbl, 0, sizeof(ipa_rm_tbl));
-	ipa_rm_a2_check=0;
+    ipa_rm_a2_check=0;
+	ipacm_odu_enable = false;
+	ipacm_odu_router_mode = false;
 
 	ipa_num_ipa_interfaces = 0;
 	ipa_num_private_subnet = 0;
@@ -67,6 +70,8 @@ IPACM_Config::IPACM_Config()
 	memset(&rt_tbl_v6, 0, sizeof(rt_tbl_v6));
 	memset(&rt_tbl_wan_v6, 0, sizeof(rt_tbl_wan_v6));
 	memset(&rt_tbl_wan_dl, 0, sizeof(rt_tbl_wan_dl));
+	memset(&rt_tbl_odu_v4, 0, sizeof(rt_tbl_odu_v4));
+	memset(&rt_tbl_odu_v6, 0, sizeof(rt_tbl_odu_v6));
 
 	memset(&ext_prop_v4, 0, sizeof(ext_prop_v4));
 	memset(&ext_prop_v6, 0, sizeof(ext_prop_v6));
@@ -194,6 +199,12 @@ int IPACM_Config::Init(void)
 	ipa_nat_max_entries = cfg->nat_max_entries;
 	IPACMDBG_H("Nat Maximum Entries %d\n", ipa_nat_max_entries);
 
+	/* Find ODU is either router mode or bridge mode*/
+	ipacm_odu_enable = cfg->odu_enable;
+	ipacm_odu_router_mode = cfg->router_mode_enable;
+	IPACMDBG_H("ipacm_odu_enable %d\n", ipacm_odu_enable);
+	IPACMDBG_H("ipacm_odu_mode %d\n", ipacm_odu_router_mode);
+
 	/* Allocate more non-nat entries if the monitored iface dun have Tx/Rx properties */
 	if (pNatIfaces != NULL)
 	{
@@ -226,6 +237,12 @@ int IPACM_Config::Init(void)
 
 	rt_tbl_wan_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_wan_v6.name, V6_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v6.name));
+
+	rt_tbl_odu_v4.ip = IPA_IP_v4;
+	strncpy(rt_tbl_odu_v4.name, V4_ODU_ROUTE_TABLE_NAME, sizeof(rt_tbl_odu_v4.name));
+
+	rt_tbl_odu_v6.ip = IPA_IP_v6;
+	strncpy(rt_tbl_odu_v6.name, V6_ODU_ROUTE_TABLE_NAME, sizeof(rt_tbl_odu_v6.name));
 
 	rt_tbl_wan_dl.ip = IPA_IP_MAX;
 	strncpy(rt_tbl_wan_dl.name, WAN_DL_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_dl.name));

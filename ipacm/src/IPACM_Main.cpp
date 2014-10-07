@@ -571,6 +571,21 @@ void* ipa_driver_wlan_notifier(void *param)
 			break;
         /* End of adding for 8994 Android case */
 
+        /* Add for embms case */
+		case WAN_EMBMS_CONNECT:
+			memcpy(&event_wan, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_wan_msg));
+			IPACMDBG("Received WAN_EMBMS_CONNECT name: %s\n",event_wan.upstream_ifname);
+			data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+			if(data_fid == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_fid\n");
+				return NULL;
+			}
+			ipa_get_if_index(event_wan.upstream_ifname, &(data_fid->if_index));
+			evt_data.event = IPA_WAN_EMBMS_LINK_UP_EVENT;
+			evt_data.evt_data = data_fid;
+			break;
+
 		default:
 			IPACMDBG_H("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;
