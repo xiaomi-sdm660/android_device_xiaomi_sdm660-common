@@ -77,7 +77,7 @@ public:
 
 
 private:
-	int create_iface_instance(int if_index, ipacm_wan_iface_type is_sta_mode);
+	int create_iface_instance(ipacm_ifacemgr_data *);
 
     /* api to register instances */
 	int registr(int ipa_if_index, IPACM_Listener *obj);

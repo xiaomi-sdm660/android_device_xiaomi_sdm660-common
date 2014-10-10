@@ -87,7 +87,7 @@ public:
 	static bool wan_up;
 	static bool wan_up_v6;
 
-	IPACM_Wan(int iface_index, ipacm_wan_iface_type is_sta_mode);
+	IPACM_Wan(int, ipacm_wan_iface_type, uint8_t *);
 	virtual ~IPACM_Wan();
 
 	static bool isWanUP()
@@ -137,6 +137,9 @@ private:
 	bool header_set_v6;
 	bool header_partial_default_wan_v4;
 	bool header_partial_default_wan_v6;
+	uint8_t ext_router_mac_addr[IPA_MAC_ADDR_SIZE];
+	uint16_t eth2_ofst_v4;
+	uint16_t eth2_ofst_v6;
 
 	static int num_ipv4_modem_pdn;
 
@@ -273,7 +276,7 @@ private:
 	int handle_route_add_evt(ipa_ip_type iptype);
 
 	/* construct complete ethernet header */
-	int handle_header_add_evt(uint8_t mac_addr[6]);
+	int handle_header_add_evt(uint8_t *mac_addr);
 
 	int config_dft_firewall_rules(ipa_ip_type iptype);
 
