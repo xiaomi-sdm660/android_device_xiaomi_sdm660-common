@@ -285,6 +285,10 @@ int IPACM_Config::Init(void)
 	ipa_rm_tbl[2].producer_rm2 = IPA_RM_RESOURCE_USB_PROD;
 	ipa_rm_tbl[2].consumer_rm2 = IPA_RM_RESOURCE_WLAN_CONS;
 
+	IPACMDBG_H(" depend MAP-0 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_WLAN_PROD, IPA_RM_RESOURCE_Q6_CONS);
+	IPACMDBG_H(" depend MAP-1 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_USB_PROD, IPA_RM_RESOURCE_Q6_CONS);
+	IPACMDBG_H(" depend MAP-2 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_WLAN_PROD, IPA_RM_RESOURCE_USB_CONS);
+
 fail:
 	if (cfg != NULL)
 	{
@@ -413,6 +417,7 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa)
 	int retval = 0;
 	struct ipa_ioc_rm_dependency dep;
 
+	IPACMDBG_H(" Got rm add-depend index : %d \n", rm1);
 	/* ipa_rm_a2_check: IPA_RM_RESOURCE_Q6_CONS*/
 	if(rm1 == IPA_RM_RESOURCE_Q6_CONS)
 	{
@@ -520,6 +525,7 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 	int retval = 0;
 	struct ipa_ioc_rm_dependency dep;
 
+	IPACMDBG_H(" Got rm del-depend index : %d \n", rm1);
 	/* ipa_rm_a2_check: IPA_RM_RESOURCE_Q6_CONS*/
 	if(rm1 == IPA_RM_RESOURCE_Q6_CONS)
 	{

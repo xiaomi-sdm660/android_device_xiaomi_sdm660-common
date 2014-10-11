@@ -1495,6 +1495,8 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 	{
 
         /* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
+	IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+	IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
         IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
@@ -2080,8 +2082,10 @@ int IPACM_Lan::handle_eth_client_down_evt(uint8_t *mac_addr)
 	/* Del RM dependency */
 	if(num_eth_client == 0)
 	{
-	   /* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule*/
-	   IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+		/* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule*/
+		IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+		IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+		IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 	}
 
 	return IPACM_SUCCESS;
@@ -2317,6 +2321,8 @@ int IPACM_Lan::handle_down_evt()
 	IPACMDBG_H("Free ecm clients cache\n");
 
 	/* Delete corresponding ipa_rm_resource_name of TX-endpoint after delete all IPV4V6 RT-rule */
+	IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+	IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 
 	/* check software routing fl rule hdl */
@@ -2353,9 +2359,11 @@ fail:
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */
 	if (rx_prop != NULL)
 	{
+		IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+		IPACMDBG_H("depend Got pipe %d rm index : %d \n", rx_prop->rx[0].src_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
+		IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
+		IPACMDBG_H("Finished delete dependency \n ");
 		free(rx_prop);
-	IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
-	IPACMDBG_H("Finished delete dependency \n ");
 	}
 
 	if (eth_client != NULL)
