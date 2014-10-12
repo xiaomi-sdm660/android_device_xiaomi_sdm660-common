@@ -85,6 +85,17 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 
 	IPACMDBG_H(" IPACM->IPACM_Lan(%d) constructor: Tx:%d Rx:%d\n", ipa_if_num,
 					 iface_query->num_tx_props, iface_query->num_rx_props);
+		/* ODU routing table initilization */
+		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
+		{
+			odu_route_rule_v4_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
+			odu_route_rule_v6_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
+			if ((odu_route_rule_v4_hdl == NULL) || (odu_route_rule_v6_hdl == NULL))
+			{
+				IPACMERR("unable to allocate memory\n");
+				return;
+			}
+		}
 	}
 
 	num_wan_ul_fl_rule_v4 = 0;
@@ -114,8 +125,6 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	/* ODU routing table initilization */
 	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
 	{
-		odu_route_rule_v4_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
-		odu_route_rule_v6_hdl = (uint32_t *)calloc(iface_query->num_tx_props, sizeof(uint32_t));
 
 		/* only do one time ioctl to odu-driver to infrom in router or bridge mode*/
 		if (IPACM_Lan::odu_up != true)
@@ -1713,11 +1722,7 @@ int IPACM_Lan::handle_odu_hdr_init(uint8_t *mac_addr)
 
 								memset(pHeaderDescriptor->hdr[0].name, 0,
 											 sizeof(pHeaderDescriptor->hdr[0].name));
-
-											 strncat(pHeaderDescriptor->hdr[0].name,
-												IPA_ODU_HDR_NAME_v4,
-												sizeof(IPA_ODU_HDR_NAME_v4));
-
+								strcpy(pHeaderDescriptor->hdr[0].name, IPA_ODU_HDR_NAME_v4);
 								pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 								pHeaderDescriptor->hdr[0].hdr_hdl = -1;
 								pHeaderDescriptor->hdr[0].is_partial = 0;
@@ -1789,10 +1794,7 @@ int IPACM_Lan::handle_odu_hdr_init(uint8_t *mac_addr)
 				memset(pHeaderDescriptor->hdr[0].name, 0,
 					 sizeof(pHeaderDescriptor->hdr[0].name));
 
-				strncat(pHeaderDescriptor->hdr[0].name,
-						IPA_ODU_HDR_NAME_v6,
-						sizeof(IPA_ODU_HDR_NAME_v6));
-
+				strcpy(pHeaderDescriptor->hdr[0].name, IPA_ODU_HDR_NAME_v6);
 				pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeaderDescriptor->hdr[0].hdr_hdl = -1;
 				pHeaderDescriptor->hdr[0].is_partial = 0;
