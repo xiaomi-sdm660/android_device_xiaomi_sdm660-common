@@ -213,7 +213,7 @@ typedef struct _ipacm_event_data_all
 	int if_index;
 	uint32_t  ipv4_addr;
 	uint32_t  ipv6_addr[4];
-	uint8_t mac_addr[6];
+	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
 } ipacm_event_data_all;
 
 class IPACM_Lan;
@@ -261,7 +261,7 @@ typedef struct _ipacm_event_data_addr
 typedef struct _ipacm_event_data_mac
 {
 	int if_index;
-	uint8_t mac_addr[6];
+	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
 } ipacm_event_data_mac;
 
 typedef struct
@@ -286,5 +286,12 @@ typedef enum
 	WLAN_WAN,
 	ECM_WAN
 } ipacm_wan_iface_type;
+
+typedef struct _ipacm_ifacemgr_data
+{
+	int if_index;
+	ipacm_wan_iface_type if_type;
+	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
+}ipacm_ifacemgr_data;
 
 #endif /* IPA_CM_DEFS_H */
