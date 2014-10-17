@@ -659,27 +659,35 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 	}
 
     /* ADD corresponding ipa_rm_resource_name of RX-endpoint before adding all IPV4V6 FT-rules */
-	if(rx_prop != NULL)
+	if((IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat== WAN_IF) || (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat== EMBMS_IF))
 	{
-	    IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe],false);
-		IPACMDBG_H(" add producer dependency from %s with registered rx-prop\n", dev_name);
+		IPACMDBG_H(" NOT add producer dependency on dev %s with registered rx-prop cat:%d \n", dev_name, IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat);
 	}
 	else
 	{
-	     /* only wlan may take software-path, not register Rx-property*/
-	        if(strcmp(dev_name,dev_wlan0) == 0 || strcmp(dev_name,dev_wlan1) == 0)
-	  {
-	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD,true);
-		    IPACMDBG_H(" add producer dependency from %s without registered rx-prop \n", dev_name);
-	     }
-
-	     if(strcmp(dev_name,dev_ecm0) == 0)
-	     {
-	       IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_USB_PROD,true);
-		    IPACMDBG_H(" add producer dependency from %s without registered rx-prop \n", dev_name);
-	  }
+		if(rx_prop != NULL)
+		{
+			IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+			IPACMDBG_H("depend Got pipe %d rm index : %d \n", rx_prop->rx[0].src_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
+			IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe],false);
+		}
+		else
+		{
+			/* only wlan may take software-path, not register Rx-property*/
+			if(strcmp(dev_name,dev_wlan0) == 0 || strcmp(dev_name,dev_wlan1) == 0)
+			{
+				IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+				IPACMDBG_H("depend Got piperm index : %d \n", IPA_RM_RESOURCE_HSIC_PROD);
+				IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_HSIC_PROD,true);
+			}
+			if(strcmp(dev_name,dev_ecm0) == 0)
+			{
+				IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+				IPACMDBG_H("depend Got piperm index : %d \n", IPA_RM_RESOURCE_USB_PROD);
+				IPACM_Iface::ipacmcfg->AddRmDepend(IPA_RM_RESOURCE_USB_PROD,true);
+			}
+		}
 	}
-
 	if (rx_prop == NULL)
 	{
 		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
