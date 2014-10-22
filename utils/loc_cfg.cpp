@@ -175,8 +175,7 @@ DEPENDENCIES
    N/A
 
 RETURN VALUE
-   0: No config or incomplete config or invalid parameter
-   1: Filled a record
+   0: Number of records in the config_table filled with input_buf
 
 SIDE EFFECTS
    N/A
@@ -220,7 +219,7 @@ int loc_fill_conf_item(char* input_buf,
                 for(uint32_t i = 0; NULL != config_table && i < table_length; i++)
                 {
                     if(!loc_set_config_entry(&config_table[i], &config_value)) {
-                        ret = 1;
+                        ret += 1;
                     }
                 }
             }
