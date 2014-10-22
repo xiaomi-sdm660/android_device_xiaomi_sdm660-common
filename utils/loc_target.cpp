@@ -46,6 +46,7 @@
 #define MSM8930_ID_2 "116"
 #define APQ8030_ID_1 "157"
 #define APQ8074_ID_1 "184"
+#define PDS_ID_1     "178"
 
 #define LINE_LEN 100
 #define STR_LIQUID    "Liquid"
@@ -206,8 +207,12 @@ unsigned int loc_get_target(void)
     } else {
         read_a_line(id_dep, rd_id, LINE_LEN);
     }
-
-    if( !memcmp(baseband, STR_APQ, LENGTH(STR_APQ)) ){
+    if( !memcmp(rd_hw_platform, STR_MTP, LENGTH(STR_MTP)) ){
+        if( !memcmp(rd_id, PDS_ID_1, LENGTH(PDS_ID_1))
+            && IS_STR_END(rd_id[LENGTH(PDS_ID_1)]) )
+            gTarget = TARGET_PDS;
+    }
+    else if( !memcmp(baseband, STR_APQ, LENGTH(STR_APQ)) ){
         if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1))
             && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
             gTarget = TARGET_MPQ;
