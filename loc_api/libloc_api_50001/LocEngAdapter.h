@@ -317,10 +317,13 @@ public:
       3 = Lock MT position sessions
       4 = Lock all position sessions
     */
-    inline int setGpsLock(unsigned int lock)
+    inline int setGpsLock(LOC_GPS_LOCK_MASK lock)
     {
         return mLocApi->setGpsLock(lock);
     }
+
+    int setGpsLockMsg(LOC_GPS_LOCK_MASK lock);
+
     /*
       Returns
       Current value of GPS lock on success

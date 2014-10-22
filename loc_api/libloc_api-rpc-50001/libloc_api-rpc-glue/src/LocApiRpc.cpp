@@ -164,6 +164,20 @@ LocApiRpc::convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask)
     return newMask;
 }
 
+rpc_loc_lock_e_type
+LocApiRpc::convertGpsLockMask(LOC_GPS_LOCK_MASK lockMask)
+{
+    if (isGpsLockAll(lockMask))
+        return RPC_LOC_LOCK_ALL;
+    if (isGpsLockMO(lockMask))
+        return RPC_LOC_LOCK_MI;
+    if (isGpsLockMT(lockMask))
+        return RPC_LOC_LOCK_MT;
+    if (isGpsLockNone(lockMask))
+        return RPC_LOC_LOCK_NONE;
+    return (rpc_loc_lock_e_type)lockMask;
+}
+
 enum loc_api_adapter_err
 LocApiRpc::convertErr(int rpcErr)
 {
@@ -1400,12 +1414,12 @@ LocApiBase* getLocApi(const MsgTask* msgTask,
   3 = Lock MT position sessions
   4 = Lock all position sessions
 */
-int LocApiRpc::setGpsLock(unsigned int lock)
+int LocApiRpc::setGpsLock(LOC_GPS_LOCK_MASK lockMask)
 {
     rpc_loc_ioctl_data_u_type    ioctl_data;
     boolean ret_val;
-    LOC_LOGD("%s:%d]: lock: %d\n", __func__, __LINE__, lock);
-    ioctl_data.rpc_loc_ioctl_data_u_type_u.engine_lock = (rpc_loc_lock_e_type)lock;
+    LOC_LOGD("%s:%d]: lock: %x\n", __func__, __LINE__, lockMask);
+    ioctl_data.rpc_loc_ioctl_data_u_type_u.engine_lock = convertGpsLockMask(lockMask);
     ioctl_data.disc = RPC_LOC_IOCTL_SET_ENGINE_LOCK;
     ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
                             RPC_LOC_IOCTL_SET_ENGINE_LOCK,

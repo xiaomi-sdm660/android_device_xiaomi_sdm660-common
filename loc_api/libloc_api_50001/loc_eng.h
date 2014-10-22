@@ -90,6 +90,7 @@ typedef struct loc_eng_data_s
     agps_status_extended           agps_status_cb;
     gps_nmea_callback              nmea_cb;
     gps_ni_notify_callback         ni_notify_cb;
+    gps_set_capabilities           set_capabilities_cb;
     gps_acquire_wakelock           acquire_wakelock_cb;
     gps_release_wakelock           release_wakelock_cb;
     gps_request_utc_time           request_utc_time_cb;
@@ -152,6 +153,7 @@ typedef struct loc_gps_cfg_s
     char        XTRA_SERVER_2[MAX_XTRA_SERVER_URL_LENGTH];
     char        XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
     uint32_t       USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
+    uint8_t        GPS_LOCK;
     uint32_t       A_GLONASS_POS_PROTOCOL_SELECT;
     uint32_t       AGPS_CERT_WRITABLE_MASK;
 } loc_gps_cfg_s_type;

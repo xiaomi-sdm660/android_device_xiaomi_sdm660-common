@@ -486,7 +486,7 @@ void LocApiBase::
 DEFAULT_IMPL()
 
 int LocApiBase::
-    setGpsLock(unsigned int lock)
+    setGpsLock(LOC_GPS_LOCK_MASK lock)
 DEFAULT_IMPL(-1)
 
 void LocApiBase::
