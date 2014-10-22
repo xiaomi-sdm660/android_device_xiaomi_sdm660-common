@@ -331,10 +331,11 @@ static int loc_init(GpsCallbacks* callbacks)
     gps_sv_cb = callbacks->sv_status_cb;
 
     retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event, NULL);
-    loc_afw_data.adapter->requestUlp(gps_conf.CAPABILITIES);
     loc_afw_data.adapter->mSupportsAgpsRequests = !loc_afw_data.adapter->hasAgpsExtendedCapabilities();
     loc_afw_data.adapter->mSupportsPositionInjection = !loc_afw_data.adapter->hasCPIExtendedCapabilities();
     loc_afw_data.adapter->mSupportsTimeInjection = !loc_afw_data.adapter->hasCPIExtendedCapabilities();
+    loc_afw_data.adapter->setGpsLockMsg(0);
+    loc_afw_data.adapter->requestUlp(gps_conf.CAPABILITIES);
 
     if(retVal) {
         LOC_LOGE("loc_eng_init() fail!");
@@ -493,6 +494,7 @@ static void loc_cleanup()
     ENTRY_LOG();
 
     loc_afw_data.adapter->setPowerVote(false);
+    loc_afw_data.adapter->setGpsLockMsg(gps_conf.GPS_LOCK);
 
     loc_eng_cleanup(loc_afw_data);
     loc_close_mdm_node();
