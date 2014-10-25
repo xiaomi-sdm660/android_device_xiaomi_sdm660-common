@@ -75,12 +75,15 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	if(iface_query != NULL)
 	{
 
-	eth_client_len = (sizeof(ipa_eth_client)) + (iface_query->num_tx_props * sizeof(eth_client_rt_hdl));
-	eth_client = (ipa_eth_client *)calloc(IPA_MAX_NUM_ETH_CLIENTS, eth_client_len);
-	if (eth_client == NULL)
+	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != WLAN_IF)
 	{
-		IPACMERR("unable to allocate memory\n");
-		return;
+		eth_client_len = (sizeof(ipa_eth_client)) + (iface_query->num_tx_props * sizeof(eth_client_rt_hdl));
+		eth_client = (ipa_eth_client *)calloc(IPA_MAX_NUM_ETH_CLIENTS, eth_client_len);
+		if (eth_client == NULL)
+		{
+			IPACMERR("unable to allocate memory\n");
+			return;
+		}
 	}
 
 	IPACMDBG_H(" IPACM->IPACM_Lan(%d) constructor: Tx:%d Rx:%d\n", ipa_if_num,
