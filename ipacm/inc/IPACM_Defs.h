@@ -87,7 +87,7 @@ extern "C"
 
 #define WWAN_QMI_IOCTL_DEVICE_NAME "/dev/wwan_ioctl"
 #define IPA_DEVICE_NAME "/dev/ipa"
-#define IPA_MAX_FLT_RULE 36
+#define IPA_MAX_FLT_RULE 50
 
 #define MAX_OFFLOAD_PAIR 3
 #define MAX_NUM_PROP 8
@@ -161,8 +161,8 @@ typedef enum
 	IPA_LAN_DELETE_SELF,					  /* 36 ipacm_event_data_fid */
 	IPA_WLAN_LINK_DOWN_EVENT,                 /* 37 ipacm_event_data_mac */
 	IPA_USB_LINK_UP_EVENT,                    /* 38 ipacm_event_data_fid */
-	IPA_PROCESS_CT_MESSAGE_V6,				  /* 39 ipacm_ct_evt_data */
-	IPA_PRIVATE_SUBNET_CHANGE_EVENT,		  /* 40 ipacm_event_data_fid */
+	IPA_PROCESS_CT_MESSAGE_V6,                /* 39 ipacm_ct_evt_data */
+	IPA_PRIVATE_SUBNET_CHANGE_EVENT,          /* 40 ipacm_event_data_fid */
 	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,         /* 41 ipacm_event_data_fid */
 	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,         /* 42 ipacm_event_data_fid */
 	IPA_WAN_EMBMS_LINK_UP_EVENT,              /* 43 ipacm_event_data_mac */

@@ -1454,7 +1454,7 @@ fail:
 int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 {
 	struct ipa_flt_rule_add flt_rule_entry;
-	int i, rule_v4 = 0, rule_v6 = 0;
+	int i, rule_v4 = 0, rule_v6 = 0, len;
 
 	IPACMDBG_H("ip-family: %d; \n", iptype);
 
@@ -1500,22 +1500,52 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 	}
 
 	/* construct ipa_ioc_add_flt_rule with N firewall rules */
-	ipa_ioc_add_flt_rule *m_pFilteringTable;
+	ipa_ioc_add_flt_rule *m_pFilteringTable = NULL;
+	len = sizeof(struct ipa_ioc_add_flt_rule) + 1 * sizeof(struct ipa_flt_rule_add);
+	m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
+	if (!m_pFilteringTable)
+	{
+		IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+		return IPACM_FAILURE;
+	}
+
+	if(iptype == IPA_IP_v6 && firewall_config.firewall_enable == true)
+	{
+		m_pFilteringTable->commit = 1;
+		m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
+		m_pFilteringTable->global = false;
+		m_pFilteringTable->ip = IPA_IP_v6;
+		m_pFilteringTable->num_rules = (uint8_t)1;
+
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+		flt_rule_entry.at_rear = true;
+		flt_rule_entry.flt_rule_hdl = -1;
+		flt_rule_entry.status = -1;
+		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(struct ipa_rule_attrib));
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_NEXT_HDR;
+		flt_rule_entry.rule.attrib.u.v6.next_hdr = (uint8_t)IPACM_FIREWALL_IPPROTO_FRAG_HDR;
+
+		memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
+		{
+			IPACMERR("Error Adding RuleTable(0) to Filtering, aborting...\n");
+			free(m_pFilteringTable);
+			return IPACM_FAILURE;
+		}
+		else
+		{
+			ipv6_frag_firewall_flt_rule_hdl = m_pFilteringTable->rules[0].flt_rule_hdl;
+			IPACMDBG_H("Installed IPv6 frag firewall rule, handle %d.\n", ipv6_frag_firewall_flt_rule_hdl);
+		}
+	}
 
 	if (iptype == IPA_IP_v4)
 	{
 		if (rule_v4 == 0)
 		{
-			m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
-				 calloc(1,
-								sizeof(struct ipa_ioc_add_flt_rule) +
-								1 * sizeof(struct ipa_flt_rule_add));
+			memset(m_pFilteringTable, 0, len);
 
-			if (!m_pFilteringTable)
-			{
-				IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
-				return IPACM_FAILURE;
-			}
 			m_pFilteringTable->commit = 1;
 			m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
 			m_pFilteringTable->global = false;
@@ -1578,21 +1608,10 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 
 			/* copy filter hdls */
 			dft_wan_fl_hdl[0] = m_pFilteringTable->rules[0].flt_rule_hdl;
-			free(m_pFilteringTable);
 		}
 		else
 		{
-			m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
-				 calloc(1,
-								sizeof(struct ipa_ioc_add_flt_rule) +
-								1 * sizeof(struct ipa_flt_rule_add)
-								);
-
-			if (m_pFilteringTable == NULL)
-			{
-				IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
-				return IPACM_FAILURE;
-			}
+			memset(m_pFilteringTable, 0, len);
 
 			m_pFilteringTable->commit = 1;
 			m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
@@ -1771,7 +1790,6 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 
 			/* copy filter hdls */
 			dft_wan_fl_hdl[0] = m_pFilteringTable->rules[0].flt_rule_hdl;
-			free(m_pFilteringTable);
 		}
 
 	}
@@ -1779,17 +1797,8 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 	{
 		if (rule_v6 == 0)
 		{
-			m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
-				 calloc(1,
-								sizeof(struct ipa_ioc_add_flt_rule) +
-								1 * sizeof(struct ipa_flt_rule_add));
+			memset(m_pFilteringTable, 0, len);
 
-
-			if (!m_pFilteringTable)
-			{
-				IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
-				return IPACM_FAILURE;
-			}
 			m_pFilteringTable->commit = 1;
 			m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
 			m_pFilteringTable->global = false;
@@ -1888,21 +1897,11 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 
 			/* copy filter hdls */
 			dft_wan_fl_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
-			free(m_pFilteringTable);
 		}
 		else
 		{
-			m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
-				 calloc(1,
-								sizeof(struct ipa_ioc_add_flt_rule) +
-								1 * sizeof(struct ipa_flt_rule_add)
-								);
+			memset(m_pFilteringTable, 0, len);
 
-			if (!m_pFilteringTable)
-			{
-				IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
-				return IPACM_FAILURE;
-			}
 			m_pFilteringTable->commit = 1;
 			m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
 			m_pFilteringTable->global = false;
@@ -2093,8 +2092,12 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			}
 			/* copy filter hdls*/
 			dft_wan_fl_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
-			free(m_pFilteringTable);
 		}
+	}
+
+	if(m_pFilteringTable != NULL)
+	{
+		free(m_pFilteringTable);
 	}
 	return IPACM_SUCCESS;
 }
@@ -2143,6 +2146,57 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 	{
 		IPACMERR("No firewall xml mentioned \n");
 		return IPACM_FAILURE;
+	}
+
+	/* add IPv6 frag rule when firewall is enabled*/
+	if(iptype == IPA_IP_v6 && firewall_config.firewall_enable == true)
+	{
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+
+		flt_rule_entry.at_rear = true;
+		flt_rule_entry.flt_rule_hdl = -1;
+		flt_rule_entry.status = -1;
+
+		flt_rule_entry.rule.retain_hdr = 1;
+		flt_rule_entry.rule.to_uc = 0;
+		flt_rule_entry.rule.eq_attrib_type = 1;
+		flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+
+		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
+		rt_tbl_idx.ip = IPA_IP_v6;
+		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
+		{
+			IPACMERR("Failed to get routing table index from name\n");
+			return IPACM_FAILURE;
+		}
+		flt_rule_entry.rule.rt_tbl_idx = rt_tbl_idx.idx;
+		IPACMDBG_H("IPv6 frag flt rule uses routing table index %d\n", rt_tbl_idx.idx);
+
+		flt_rule_entry.rule.attrib.attrib_mask |= rx_prop->rx[0].attrib.attrib_mask;
+		flt_rule_entry.rule.attrib.meta_data_mask = rx_prop->rx[0].attrib.meta_data_mask;
+		flt_rule_entry.rule.attrib.meta_data = rx_prop->rx[0].attrib.meta_data;
+
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_NEXT_HDR;
+		flt_rule_entry.rule.attrib.u.v6.next_hdr = (uint8_t)IPACM_FIREWALL_IPPROTO_FRAG_HDR;
+
+		change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
+
+		memset(&flt_eq, 0, sizeof(flt_eq));
+		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
+		flt_eq.ip = IPA_IP_v6;
+		if(0 != ioctl(m_fd_ipa, IPA_IOC_GENERATE_FLT_EQ, &flt_eq))
+		{
+			IPACMERR("Failed to get eq_attrib\n");
+			return IPACM_FAILURE;
+		}
+		memcpy(&flt_rule_entry.rule.eq_attrib,
+			&flt_eq.eq_attrib,
+			sizeof(flt_rule_entry.rule.eq_attrib));
+
+		memcpy(&(rules[pos]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+		pos++;
+		IPACM_Wan::num_v6_flt_rule++;
 	}
 
 	if (iptype == IPA_IP_v4)
@@ -2350,7 +2404,7 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		num_firewall_v4++;
 		IPACM_Wan::num_v4_flt_rule++;
 
-		num_rules = IPACM_Wan::num_v4_flt_rule - original_num_rules;
+		num_rules = IPACM_Wan::num_v4_flt_rule - original_num_rules - 1;
 	}
 	else
 	{
@@ -2541,7 +2595,7 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		num_firewall_v6++;
 		IPACM_Wan::num_v6_flt_rule++;
 
-		num_rules = IPACM_Wan::num_v6_flt_rule - original_num_rules;
+		num_rules = IPACM_Wan::num_v6_flt_rule - original_num_rules - 1;
 	}
 	IPACMDBG_H("Constructed %d firewall rules for ip type %d\n", num_rules, iptype);
 	return IPACM_SUCCESS;
@@ -3236,6 +3290,10 @@ int IPACM_Wan::del_dft_firewall_rules(ipa_ip_type iptype)
 		{
 			IPACMERR("Error Deleting Filtering rules, aborting...\n");
 			return IPACM_FAILURE;
+		}
+		if (m_filtering.DeleteFilteringHdls(&ipv6_frag_firewall_flt_rule_hdl, IPA_IP_v6, 1) == false)
+		{
+			IPACMERR("Error deleting IPv6 frag filtering rules.\n");
 		}
 		num_firewall_v6 = 0;
 	}
