@@ -39,7 +39,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /******************************************************************************
 
-																																																																																																IP_MAIN.C
+                      IPCM_MAIN.C
 
 ******************************************************************************/
 
@@ -607,6 +607,18 @@ void* ipa_driver_wlan_notifier(void *param)
 			ipa_get_if_index(event_wan.upstream_ifname, &(data_fid->if_index));
 			evt_data.event = IPA_WAN_EMBMS_LINK_UP_EVENT;
 			evt_data.evt_data = data_fid;
+			break;
+
+		case WLAN_SWITCH_TO_SCC:
+			IPACMDBG_H("Received WLAN_SWITCH_TO_SCC\n");
+			IPACM_Iface::ipacmcfg->isMCC_Mode = false;
+			evt_data.event = IPA_WLAN_SWITCH_TO_SCC;
+			break;
+
+		case WLAN_SWITCH_TO_MCC:
+			IPACMDBG_H("Received WLAN_SWITCH_TO_MCC\n");
+			IPACM_Iface::ipacmcfg->isMCC_Mode = true;
+			evt_data.event = IPA_WLAN_SWITCH_TO_MCC;
 			break;
 
 		default:

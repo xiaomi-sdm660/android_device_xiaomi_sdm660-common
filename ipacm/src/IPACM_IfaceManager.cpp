@@ -236,22 +236,22 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 
 		case ETH_IF:
 			{
-					IPACMDBG_H("Creating ETH interface in router mode\n");
-					IPACM_Lan *ETH = new IPACM_Lan(ipa_interface_index);
-					IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, ETH);
-					IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, ETH);
-					IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, ETH);
-					IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, ETH);
-					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, ETH);
-					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP_V6, ETH);
-					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, ETH);
-					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, ETH);
-					IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, ETH);
-					IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, ETH);
-					IPACMDBG_H("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", ETH->dev_name, ETH->ipa_if_num);
-					registr(ipa_interface_index, ETH);
-					/* solve the new_addr comes earlier issue */
-					IPACM_Iface::iface_addr_query(if_index);
+				IPACMDBG_H("Creating ETH interface in router mode\n");
+				IPACM_Lan *ETH = new IPACM_Lan(ipa_interface_index);
+				IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, ETH);
+				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, ETH);
+				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, ETH);
+				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, ETH);
+				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, ETH);
+				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP_V6, ETH);
+				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, ETH);
+				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, ETH);
+				IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, ETH);
+				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, ETH);
+				IPACMDBG_H("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", ETH->dev_name, ETH->ipa_if_num);
+				registr(ipa_interface_index, ETH);
+				/* solve the new_addr comes earlier issue */
+				IPACM_Iface::iface_addr_query(if_index);
 			}
 			break;
 
@@ -321,6 +321,10 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 #endif
 				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, wl);
+#ifndef FEATURE_IPA_ANDROID
+				IPACM_EvtDispatcher::registr(IPA_WLAN_SWITCH_TO_SCC, wl);
+				IPACM_EvtDispatcher::registr(IPA_WLAN_SWITCH_TO_MCC, wl);
+#endif
 				IPACMDBG_H("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
 				registr(ipa_interface_index, wl);
 				/* solve the new_addr comes earlier issue */
@@ -357,15 +361,20 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 					if(is_sta_mode == WLAN_WAN)
 					{
 						IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, w); // for STA mode
+#ifndef FEATURE_IPA_ANDROI
+						IPACM_EvtDispatcher::registr(IPA_WLAN_SWITCH_TO_SCC, w);
+						IPACM_EvtDispatcher::registr(IPA_WLAN_SWITCH_TO_MCC, w);
+#endif
 					}
 					else
 					{
 						IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
 					}
+
 					IPACMDBG_H("ipa_WAN (%s):ipa_index (%d) instance open/registr ok\n", w->dev_name, w->ipa_if_num);
 					registr(ipa_interface_index, w);
 					/* solve the new_addr comes earlier issue */
-									IPACM_Iface::iface_addr_query(if_index);
+					IPACM_Iface::iface_addr_query(if_index);
 				}
 			}
 			break;

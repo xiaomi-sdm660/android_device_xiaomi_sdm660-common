@@ -715,7 +715,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				else if ((data->iptype == IPA_IP_v6) && (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == true))
 				{
 
-				    IPACMDBG_H("get del default v6 route (dst:00.00.00.00)\n");
+					IPACMDBG_H("get del default v6 route (dst:00.00.00.00)\n");
 					if(m_is_sta_mode == Q6_WAN)
 					{
 						del_wan_firewall_rule(IPA_IP_v6);
@@ -875,6 +875,44 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			}
 		}
 		break;
+
+		case IPA_WLAN_SWITCH_TO_SCC:
+			if(IPACM_Wan::backhaul_is_sta_mode == true)
+			{
+				IPACMDBG_H("Received IPA_WLAN_SWITCH_TO_SCC\n");
+				if(ip_type == IPA_IP_MAX)
+				{
+					handle_wlan_SCC_MCC_switch(true, IPA_IP_v4);
+					handle_wlan_SCC_MCC_switch(true, IPA_IP_v6);
+					handle_wan_client_SCC_MCC_switch(true, IPA_IP_v4);
+					handle_wan_client_SCC_MCC_switch(true, IPA_IP_v6);
+				}
+				else
+				{
+					handle_wlan_SCC_MCC_switch(true, ip_type);
+					handle_wan_client_SCC_MCC_switch(true, ip_type);
+				}
+			}
+			break;
+
+		case IPA_WLAN_SWITCH_TO_MCC:
+			if(IPACM_Wan::backhaul_is_sta_mode == true)
+			{
+				IPACMDBG_H("Received IPA_WLAN_SWITCH_TO_MCC\n");
+				if(ip_type == IPA_IP_MAX)
+				{
+					handle_wlan_SCC_MCC_switch(false, IPA_IP_v4);
+					handle_wlan_SCC_MCC_switch(false, IPA_IP_v6);
+					handle_wan_client_SCC_MCC_switch(false, IPA_IP_v4);
+					handle_wan_client_SCC_MCC_switch(false, IPA_IP_v6);
+				}
+				else
+				{
+					handle_wlan_SCC_MCC_switch(false, ip_type);
+					handle_wan_client_SCC_MCC_switch(false, ip_type);
+				}
+			}
+			break;
 
 	default:
 		break;
@@ -1055,7 +1093,16 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 				rt_rule_entry->rule.hdr_hdl = sRetHeader.hdl;
 			}
 
-			rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+			if(IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+			{
+				IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+						tx_prop->tx[tx_index].alt_dst_pipe);
+				rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+			}
+			else
+			{
+				rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+			}
 			memcpy(&rt_rule_entry->rule.attrib,
 						 &tx_prop->tx[tx_index].attrib,
 						 sizeof(rt_rule_entry->rule.attrib));
@@ -4746,8 +4793,8 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 	}
 
 	IPACMDBG_H("Received mac_addr MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
-					 mac_addr[0], mac_addr[1], mac_addr[2],
-					 mac_addr[3], mac_addr[4], mac_addr[5]);
+			mac_addr[0], mac_addr[1], mac_addr[2],
+			mac_addr[3], mac_addr[4], mac_addr[5]);
 
 	wan_index = get_wan_client_index(mac_addr);
 	if (wan_index == IPACM_INVALID_INDEX)
@@ -4758,31 +4805,31 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 
 	if (iptype==IPA_IP_v4) {
 		IPACMDBG_H("wan client index: %d, ip-type: %d, ipv4_set:%d, ipv4_rule_set:%d \n", wan_index, iptype,
-					 get_client_memptr(wan_client, wan_index)->ipv4_set,
-					 get_client_memptr(wan_client, wan_index)->route_rule_set_v4);
+				get_client_memptr(wan_client, wan_index)->ipv4_set,
+				get_client_memptr(wan_client, wan_index)->route_rule_set_v4);
 	} else {
 		IPACMDBG_H("wan client index: %d, ip-type: %d, ipv6_set:%d, ipv6_rule_num:%d \n", wan_index, iptype,
-					 get_client_memptr(wan_client, wan_index)->ipv6_set,
-					 get_client_memptr(wan_client, wan_index)->route_rule_set_v6);
+				get_client_memptr(wan_client, wan_index)->ipv6_set,
+				get_client_memptr(wan_client, wan_index)->route_rule_set_v6);
 	}
 
 	/* Add default routing rules if not set yet */
 	if ((iptype == IPA_IP_v4
-			 && get_client_memptr(wan_client, wan_index)->route_rule_set_v4 == false
-			 && get_client_memptr(wan_client, wan_index)->ipv4_set == true)
+				&& get_client_memptr(wan_client, wan_index)->route_rule_set_v4 == false
+				&& get_client_memptr(wan_client, wan_index)->ipv4_set == true)
 			|| (iptype == IPA_IP_v6
-		            && get_client_memptr(wan_client, wan_index)->route_rule_set_v6 < get_client_memptr(wan_client, wan_index)->ipv6_set
-					))
+				&& get_client_memptr(wan_client, wan_index)->route_rule_set_v6 < get_client_memptr(wan_client, wan_index)->ipv6_set
+			   ))
 	{
 
-        	/* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
+		/* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
 		IPACMDBG_H("dev %s add producer dependency\n", dev_name);
 		IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 		IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
-			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
-						NUM * sizeof(struct ipa_rt_rule_add));
+			calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
+					NUM * sizeof(struct ipa_rt_rule_add));
 
 		if (rt_rule == NULL)
 		{
@@ -4797,70 +4844,79 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 		{
 			if(iptype != tx_prop->tx[tx_index].ip)
-		    {
+			{
 				IPACMDBG_H("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n",
 						tx_index, tx_prop->tx[tx_index].ip,iptype);
-		   	        continue;
-		    }
+				continue;
+			}
 
 			rt_rule_entry = &rt_rule->rules[0];
 			rt_rule_entry->at_rear = 0;
 
 			if (iptype == IPA_IP_v4)
 			{
-		        IPACMDBG_H("client index(%d):ipv4 address: 0x%x\n", wan_index,
-		  		        get_client_memptr(wan_client, wan_index)->v4_addr);
+				IPACMDBG_H("client index(%d):ipv4 address: 0x%x\n", wan_index,
+						get_client_memptr(wan_client, wan_index)->v4_addr);
 
-                IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
-		  				 wan_index,
-		  				 get_client_memptr(wan_client, wan_index)->hdr_hdl_v4);
+				IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
+						wan_index,
+						get_client_memptr(wan_client, wan_index)->hdr_hdl_v4);
 				strncpy(rt_rule->rt_tbl_name,
-								IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.name,
-								sizeof(rt_rule->rt_tbl_name));
+						IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.name,
+						sizeof(rt_rule->rt_tbl_name));
 
-			    rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-			    memcpy(&rt_rule_entry->rule.attrib,
-						 &tx_prop->tx[tx_index].attrib,
-						 sizeof(rt_rule_entry->rule.attrib));
-			    rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		   	    rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, wan_index)->hdr_hdl_v4;
+				if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+				{
+					IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+							tx_prop->tx[tx_index].alt_dst_pipe);
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+				}
+				else
+				{
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+				}
+				memcpy(&rt_rule_entry->rule.attrib,
+						&tx_prop->tx[tx_index].attrib,
+						sizeof(rt_rule_entry->rule.attrib));
+				rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+				rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, wan_index)->hdr_hdl_v4;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(wan_client, wan_index)->v4_addr;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
 
-			    if (false == m_routing.AddRoutingRule(rt_rule))
+				if (false == m_routing.AddRoutingRule(rt_rule))
 				{
 					IPACMERR("Routing rule addition failed!\n");
 					free(rt_rule);
 					return IPACM_FAILURE;
 				}
 
-			    /* copy ipv4 RT hdl */
+				/* copy ipv4 RT hdl */
 				get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v4 =
-  	   	        rt_rule->rules[0].rt_rule_hdl;
-		        IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
-				get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v4, iptype);
-  	   	    } else {
+					rt_rule->rules[0].rt_rule_hdl;
+				IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
+						get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v4, iptype);
+			} else {
 
-		        for(v6_num = get_client_memptr(wan_client, wan_index)->route_rule_set_v6;v6_num < get_client_memptr(wan_client, wan_index)->ipv6_set;v6_num++)
-			    {
-                    IPACMDBG_H("client(%d): v6 header handle:(0x%x)\n",
-		  	    			 wan_index,
-		  	    			 get_client_memptr(wan_client, wan_index)->hdr_hdl_v6);
+				for(v6_num = get_client_memptr(wan_client, wan_index)->route_rule_set_v6;v6_num < get_client_memptr(wan_client, wan_index)->ipv6_set;v6_num++)
+				{
+					IPACMDBG_H("client(%d): v6 header handle:(0x%x)\n",
+							wan_index,
+							get_client_memptr(wan_client, wan_index)->hdr_hdl_v6);
 
-		            /* v6 LAN_RT_TBL */
-			    	strncpy(rt_rule->rt_tbl_name,
-			    					IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
-			    					sizeof(rt_rule->rt_tbl_name));
+					/* v6 LAN_RT_TBL */
+					strncpy(rt_rule->rt_tbl_name,
+							IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
+							sizeof(rt_rule->rt_tbl_name));
 
-		            /* Support QCMAP LAN traffic feature, send to A5 */
+					/* Support QCMAP LAN traffic feature, send to A5 */
 					rt_rule_entry->rule.dst = iface_query->excp_pipe;
-			        memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
-		   	        rt_rule_entry->rule.hdr_hdl = 0;
-			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][0];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][1];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][2];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][3];
+					memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
+					rt_rule_entry->rule.hdr_hdl = 0;
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][0];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][1];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][2];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][3];
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
@@ -4868,47 +4924,56 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 
 					if (false == m_routing.AddRoutingRule(rt_rule))
 					{
-							IPACMERR("Routing rule addition failed!\n");
-							free(rt_rule);
-							return IPACM_FAILURE;
+						IPACMERR("Routing rule addition failed!\n");
+						free(rt_rule);
+						return IPACM_FAILURE;
 					}
 
-		            get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6[v6_num] = rt_rule->rules[0].rt_rule_hdl;
-		            IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
-		            				 get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6[v6_num], iptype);
+					get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6[v6_num] = rt_rule->rules[0].rt_rule_hdl;
+					IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
+							get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6[v6_num], iptype);
 
-			        /*Copy same rule to v6 WAN RT TBL*/
+					/*Copy same rule to v6 WAN RT TBL*/
 					strncpy(rt_rule->rt_tbl_name,
-						IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
-						sizeof(rt_rule->rt_tbl_name));
+							IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
+							sizeof(rt_rule->rt_tbl_name));
 
-                    /* Downlink traffic from Wan iface, directly through IPA */
-					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-			        memcpy(&rt_rule_entry->rule.attrib,
-						 &tx_prop->tx[tx_index].attrib,
-						 sizeof(rt_rule_entry->rule.attrib));
-		   	        rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, wan_index)->hdr_hdl_v6;
-			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][0];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][1];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][2];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][3];
+					/* Downlink traffic from Wan iface, directly through IPA */
+					if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+					{
+						IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+								tx_prop->tx[tx_index].alt_dst_pipe);
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+					}
+					else
+					{
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+					}
+					memcpy(&rt_rule_entry->rule.attrib,
+							&tx_prop->tx[tx_index].attrib,
+							sizeof(rt_rule_entry->rule.attrib));
+					rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, wan_index)->hdr_hdl_v6;
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][0];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][1];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][2];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][3];
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
 
-		            if (false == m_routing.AddRoutingRule(rt_rule))
-		            {
-							IPACMERR("Routing rule addition failed!\n");
-							free(rt_rule);
-							return IPACM_FAILURE;
-		            }
+					if (false == m_routing.AddRoutingRule(rt_rule))
+					{
+						IPACMERR("Routing rule addition failed!\n");
+						free(rt_rule);
+						return IPACM_FAILURE;
+					}
 
-		            get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6_wan[v6_num] = rt_rule->rules[0].rt_rule_hdl;
+					get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6_wan[v6_num] = rt_rule->rules[0].rt_rule_hdl;
 					IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
-		            				 get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6_wan[v6_num], iptype);
-			    }
+							get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6_wan[v6_num], iptype);
+				}
 			}
 
 		} /* end of for loop */
@@ -4926,4 +4991,293 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 	}
 
 	return IPACM_SUCCESS;
+}
+
+/* TODO Handle wan client routing rules also */
+void IPACM_Wan::handle_wlan_SCC_MCC_switch(bool isSCCMode, ipa_ip_type iptype)
+{
+	struct ipa_ioc_mdfy_rt_rule *rt_rule = NULL;
+	struct ipa_rt_rule_mdfy *rt_rule_entry;
+	uint32_t tx_index = 0;
+
+	IPACMDBG("\n");
+	if (tx_prop == NULL || is_default_gateway == false)
+	{
+		IPACMDBG_H("No tx properties or no default route set yet\n");
+		return;
+	}
+
+	const int NUM = tx_prop->num_tx_props;
+
+	for (tx_index = 0; tx_index < tx_prop->num_tx_props; tx_index++)
+	{
+		if (tx_prop->tx[tx_index].ip != iptype)
+		{
+			IPACMDBG_H("Tx:%d, ip-type: %d ip-type not matching: %d Ignore\n",
+					tx_index, tx_prop->tx[tx_index].ip, iptype);
+			continue;
+		}
+
+		if (rt_rule == NULL)
+		{
+			rt_rule = (struct ipa_ioc_mdfy_rt_rule *)
+				calloc(1, sizeof(struct ipa_ioc_mdfy_rt_rule) +
+						NUM * sizeof(struct ipa_rt_rule_mdfy));
+
+			if (rt_rule == NULL)
+			{
+				IPACMERR("Unable to allocate memory for modify rt rule\n");
+				return;
+			}
+			IPACMDBG("Allocated memory for %d rules successfully\n", NUM);
+
+			rt_rule->commit = 1;
+			rt_rule->num_rules = 0;
+			rt_rule->ip = iptype;
+		}
+
+		rt_rule_entry = &rt_rule->rules[rt_rule->num_rules];
+
+		memcpy(&rt_rule_entry->rule.attrib,
+				&tx_prop->tx[tx_index].attrib,
+				sizeof(rt_rule_entry->rule.attrib));
+		rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+
+		if (iptype == IPA_IP_v4)
+		{
+			rt_rule_entry->rule.attrib.u.v4.dst_addr      = 0;
+			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0;
+			rt_rule_entry->rt_rule_hdl = wan_route_rule_v4_hdl[tx_index];
+		}
+		else
+		{
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0;
+			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
+
+			rt_rule_entry->rt_rule_hdl = wan_route_rule_v6_hdl[tx_index];
+		}
+
+		if (isSCCMode)
+		{
+			rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+		}
+		else
+		{
+			IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+					tx_prop->tx[tx_index].alt_dst_pipe);
+			rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+		}
+
+		rt_rule->num_rules++;
+	}
+
+	if (rt_rule != NULL)
+	{
+
+		if (rt_rule->num_rules > 0)
+		{
+			if (false == m_routing.ModifyRoutingRule(rt_rule))
+			{
+				IPACMERR("Routing rule modify failed!\n");
+				free(rt_rule);
+				return;
+			}
+
+			IPACMDBG("Routing rule modified successfully \n");
+		}
+
+		free(rt_rule);
+	}
+
+	return;
+}
+
+void IPACM_Wan::handle_wan_client_SCC_MCC_switch(bool isSCCMode, ipa_ip_type iptype)
+{
+	struct ipa_ioc_mdfy_rt_rule *rt_rule = NULL;
+	struct ipa_rt_rule_mdfy *rt_rule_entry;
+
+	uint32_t tx_index = 0, clnt_index =0;
+	int v6_num = 0;
+	const int NUM_RULES = 1;
+
+	int size = sizeof(struct ipa_ioc_mdfy_rt_rule) +
+		NUM_RULES * sizeof(struct ipa_rt_rule_mdfy);
+
+	IPACMDBG("\n");
+
+	if (tx_prop == NULL || is_default_gateway == false)
+	{
+		IPACMDBG_H("No tx properties or no default route set yet\n");
+		return;
+	}
+
+	rt_rule = (struct ipa_ioc_mdfy_rt_rule *)calloc(1, size);
+	if (rt_rule == NULL)
+	{
+		IPACMERR("Unable to allocate memory for modify rt rule\n");
+		return;
+	}
+
+
+	for (clnt_index = 0; clnt_index < num_wan_client; clnt_index++)
+	{
+		if (iptype == IPA_IP_v4)
+		{
+			IPACMDBG_H("wan client index: %d, ip-type: %d, ipv4_set:%d, ipv4_rule_set:%d \n",
+					clnt_index, iptype,
+					get_client_memptr(wan_client, clnt_index)->ipv4_set,
+					get_client_memptr(wan_client, clnt_index)->route_rule_set_v4);
+
+			if( get_client_memptr(wan_client, clnt_index)->route_rule_set_v4 == false ||
+					get_client_memptr(wan_client, clnt_index)->ipv4_set == false)
+			{
+				continue;
+			}
+
+			for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+			{
+				if (iptype != tx_prop->tx[tx_index].ip)
+				{
+					IPACMDBG_H("Tx:%d, ip-type: %d conflict ip-type: %d skip\n",
+							tx_index, tx_prop->tx[tx_index].ip, iptype);
+					continue;
+				}
+
+				memset(rt_rule, 0, size);
+				rt_rule->commit = 1;
+				rt_rule->num_rules = NUM_RULES;
+				rt_rule->ip = iptype;
+				rt_rule_entry = &rt_rule->rules[0];
+
+				IPACMDBG_H("client index(%d):ipv4 address: 0x%x\n", clnt_index,
+						get_client_memptr(wan_client, clnt_index)->v4_addr);
+
+				IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
+						clnt_index,
+						get_client_memptr(wan_client, clnt_index)->hdr_hdl_v4);
+
+				if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+				{
+					IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+							tx_prop->tx[tx_index].alt_dst_pipe);
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+				}
+				else
+				{
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+				}
+
+				memcpy(&rt_rule_entry->rule.attrib,
+						&tx_prop->tx[tx_index].attrib,
+						sizeof(rt_rule_entry->rule.attrib));
+				rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+
+				rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, clnt_index)->hdr_hdl_v4;
+				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(wan_client, clnt_index)->v4_addr;
+				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+
+				/* copy ipv4 RT rule hdl */
+				IPACMDBG_H("rt rule hdl=%x\n",
+						get_client_memptr(wan_client, clnt_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v4);
+
+				rt_rule_entry->rt_rule_hdl =
+					get_client_memptr(wan_client, clnt_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v4;
+
+				if (false == m_routing.ModifyRoutingRule(rt_rule))
+				{
+					IPACMERR("Routing rule modify failed!\n");
+					free(rt_rule);
+					return;
+				}
+			}
+		}
+		else
+		{
+			IPACMDBG_H("wan client index: %d, ip-type: %d, ipv6_set:%d, ipv6_rule_num:%d \n", clnt_index, iptype,
+					get_client_memptr(wan_client, clnt_index)->ipv6_set,
+					get_client_memptr(wan_client, clnt_index)->route_rule_set_v6);
+
+			if( get_client_memptr(wan_client, clnt_index)->route_rule_set_v6 == 0)
+			{
+				continue;
+			}
+
+			for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+			{
+				if (iptype != tx_prop->tx[tx_index].ip)
+				{
+					IPACMDBG_H("Tx:%d, ip-type: %d conflict ip-type: %d skip\n",
+							tx_index, tx_prop->tx[tx_index].ip, iptype);
+					continue;
+				}
+
+				memset(rt_rule, 0, size);
+				rt_rule->commit = 1;
+				rt_rule->num_rules = NUM_RULES;
+				rt_rule->ip = iptype;
+				rt_rule_entry = &rt_rule->rules[0];
+
+				/* Modify only rules in v6 WAN RT TBL*/
+				for (v6_num = 0;
+						v6_num < get_client_memptr(wan_client, clnt_index)->route_rule_set_v6;
+						v6_num++)
+				{
+					IPACMDBG_H("client(%d): v6 header handle:(0x%x)\n",
+							clnt_index,
+							get_client_memptr(wan_client, clnt_index)->hdr_hdl_v6);
+
+					/* Downlink traffic from Wan iface, directly through IPA */
+					if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+					{
+						IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+								tx_prop->tx[tx_index].alt_dst_pipe);
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+					}
+					else
+					{
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+					}
+
+					memcpy(&rt_rule_entry->rule.attrib,
+							&tx_prop->tx[tx_index].attrib,
+							sizeof(rt_rule_entry->rule.attrib));
+
+					rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, clnt_index)->hdr_hdl_v6;
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, clnt_index)->v6_addr[v6_num][0];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, clnt_index)->v6_addr[v6_num][1];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wan_client, clnt_index)->v6_addr[v6_num][2];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wan_client, clnt_index)->v6_addr[v6_num][3];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+
+					IPACMDBG_H("rt rule hdl=%x\n",
+							get_client_memptr(wan_client, clnt_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6_wan[v6_num]);
+
+					rt_rule_entry->rt_rule_hdl =
+						get_client_memptr(wan_client, clnt_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6_wan[v6_num];
+
+					if (false == m_routing.ModifyRoutingRule(rt_rule))
+					{
+						IPACMERR("Routing rule Modify failed!\n");
+						free(rt_rule);
+						return;
+					}
+				}
+			} /* end of for loop */
+		}
+
+	}
+
+	free(rt_rule);
+	return;
 }

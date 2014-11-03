@@ -553,8 +553,11 @@ int IPACM_Iface::query_iface_property(void)
 		{
 			for (cnt = 0; cnt < tx_prop->num_tx_props; cnt++)
 			{
-				IPACMDBG_H("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, header: %s\n",
-								 cnt, tx_prop->tx[cnt].attrib.attrib_mask, tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe, tx_prop->tx[cnt].hdr_name);
+				IPACMDBG_H("Tx(%d):attrib-mask:0x%x, ip-type: %d, dst_pipe: %d, alt_dst_pipe: %d, header: %s\n",
+						cnt, tx_prop->tx[cnt].attrib.attrib_mask,
+						tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe,
+						tx_prop->tx[cnt].alt_dst_pipe,
+						tx_prop->tx[cnt].hdr_name);
 			}
 		}
 

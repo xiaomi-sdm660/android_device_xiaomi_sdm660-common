@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -177,6 +177,8 @@ typedef enum
 	IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT,     /* 47 ipacm_event_data_mac */
 	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 48 ipacm_event_data_fid */
 	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_fid */
+	IPA_WLAN_SWITCH_TO_SCC,                   /* 50 No Data */
+	IPA_WLAN_SWITCH_TO_MCC,                   /* 51 No Data */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
