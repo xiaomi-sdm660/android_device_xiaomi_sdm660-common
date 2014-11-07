@@ -58,6 +58,12 @@ uint32_t* IPACM_Wlan::dummy_flt_rule_hdl_v4 = NULL;
 uint32_t* IPACM_Wlan::dummy_flt_rule_hdl_v6 = NULL;
 int IPACM_Wlan::num_wlan_ap_iface = 0;
 
+lan2lan_flt_rule_hdl IPACM_Wlan::self_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+lan2lan_flt_rule_hdl IPACM_Wlan::self_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+
+lan2lan_flt_rule_hdl IPACM_Wlan::usb_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_USB_CLIENT];
+lan2lan_flt_rule_hdl IPACM_Wlan::usb_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_USB_CLIENT];
+
 IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 {
 #define WLAN_AMPDU_DEFAULT_FILTER_RULES 3
@@ -108,6 +114,60 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 	IPACMDBG_H("Now the number of wlan AP iface is %d\n", IPACM_Wlan::num_wlan_ap_iface);
 	add_dummy_flt_rule();
 
+	memset(wlan_guest_ap_flt_rule_hdl_v4, 0, IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(uint32_t));
+	wlan_guest_ap_flt_rule_hdl_v6 = 0;
+	is_guest_ap = false;
+	num_usb_client = 0;
+
+	memset(eth_bridge_usb_client_flt_info, 0, IPA_LAN_TO_LAN_MAX_USB_CLIENT * sizeof(eth_bridge_client_flt_info));
+	num_usb_client = 0;
+	eth_bridge_wlan_client_rt_from_usb_info_v4 = NULL;
+	eth_bridge_wlan_client_rt_from_usb_info_v6 = NULL;
+	eth_bridge_wlan_client_rt_from_wlan_info_v4 = NULL;
+	eth_bridge_wlan_client_rt_from_wlan_info_v6 = NULL;
+	if(tx_prop != NULL)
+	{
+#ifdef FEATURE_ETH_BRIDGE_LE
+		client_rt_info_size_v4 = sizeof(eth_bridge_client_rt_info) + each_client_rt_rule_count_v4 * sizeof(uint32_t);
+		eth_bridge_wlan_client_rt_from_usb_info_v4 = (eth_bridge_client_rt_info*)calloc(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT, client_rt_info_size_v4);
+		eth_bridge_wlan_client_rt_from_wlan_info_v4 = (eth_bridge_client_rt_info*)calloc(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT, client_rt_info_size_v4);
+
+		client_rt_info_size_v6 = sizeof(eth_bridge_client_rt_info) + each_client_rt_rule_count_v6 * sizeof(uint32_t);
+		eth_bridge_wlan_client_rt_from_usb_info_v6 = (eth_bridge_client_rt_info*)calloc(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT, client_rt_info_size_v6);
+		eth_bridge_wlan_client_rt_from_wlan_info_v6 = (eth_bridge_client_rt_info*)calloc(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT, client_rt_info_size_v6);
+#endif
+	}
+	wlan_client_rt_from_usb_info_count_v4 = 0;
+	wlan_client_rt_from_usb_info_count_v6 = 0;
+	wlan_client_rt_from_wlan_info_count_v4 = 0;
+	wlan_client_rt_from_wlan_info_count_v6 = 0;
+#ifdef FEATURE_ETH_BRIDGE_LE
+	if(iface_query != NULL)
+	{
+		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == WLAN_IF && tx_prop != NULL)
+		{
+			if(IPACM_Lan::wlan_hdr_type != IPA_HDR_L2_NONE && tx_prop->tx[0].hdr_l2_type != IPACM_Lan::wlan_hdr_type)
+			{
+				IPACMERR("The WLAN header format is not consistent! Now header format is %d.\n", tx_prop->tx[0].hdr_l2_type);
+			}
+			else
+			{
+				if(wlan_ap_index == 0)
+				{
+					if(eth_bridge_get_hdr_template_hdl(&IPACM_Lan::wlan_hdr_template_hdl) == IPACM_FAILURE)
+					{
+						IPACMERR("Failed to setup wlan hdr template.\n");
+					}
+					else
+					{
+						IPACM_Lan::wlan_hdr_type = tx_prop->tx[0].hdr_l2_type;
+						add_hdr_proc_ctx();
+					}
+				}
+			}
+		}
+	}
+#endif
 	return;
 }
 
@@ -251,7 +311,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					add_dummy_private_subnet_flt_rule(data->iptype);
 					handle_private_subnet_android(data->iptype);
 #else
-					handle_private_subnet(data->iptype);
+					if(wlan_ap_index == 0)
+					{
+						handle_private_subnet(data->iptype);
+					}
 #endif
 
 					if (IPACM_Wan::isWanUP())
@@ -341,6 +404,9 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		IPACMDBG_H("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 		{
+#ifdef FEATURE_ETH_BRIDGE_LE
+			eth_bridge_install_wlan_guest_ap_ipv6_flt_rule();
+#endif
 			if(wlan_ap_index == 0) //install ipv6 prefix rule only once
 			{
 				install_ipv6_prefix_flt_rule(data_wan->ipv6_prefix);
@@ -414,6 +480,36 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
 			if (ipa_interface_index == ipa_if_num)
 			{
+#ifdef FEATURE_ETH_BRIDGE_LE
+				int i;
+				for(i=0; i<data->num_of_attribs; i++)
+				{
+					if(data->attribs[i].attrib_type == WLAN_HDR_ATTRIB_MAC_ADDR)
+					{
+						if(IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.valid == true)
+						{
+							eth_bridge_add_wlan_client_rt_rule(data->attribs[i].u.mac_addr, SRC_WLAN, IPA_IP_v4);
+							eth_bridge_add_wlan_client_rt_rule(data->attribs[i].u.mac_addr, SRC_WLAN, IPA_IP_v6);
+						}
+						if(IPACM_Lan::usb_to_wlan_hdr_proc_ctx.valid == true)
+						{
+							eth_bridge_add_wlan_client_rt_rule(data->attribs[i].u.mac_addr, SRC_USB, IPA_IP_v4);
+							eth_bridge_add_wlan_client_rt_rule(data->attribs[i].u.mac_addr, SRC_USB, IPA_IP_v6);
+						}
+						if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
+						{
+							eth_bridge_add_self_client_flt_rule(data->attribs[i].u.mac_addr, IPA_IP_v4);
+						}
+						if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+						{
+							eth_bridge_add_self_client_flt_rule(data->attribs[i].u.mac_addr, IPA_IP_v6);
+						}
+						eth_bridge_post_lan_client_event(data->attribs[i].u.mac_addr, IPA_ETH_BRIDGE_WLAN_CLIENT_ADD_EVENT);
+						eth_bridge_add_wlan_client(data->attribs[i].u.mac_addr, ipa_if_num);
+						break;
+					}
+				}
+#endif
 				IPACMDBG_H("Received IPA_WLAN_CLIENT_ADD_EVENT\n");
 				handle_wlan_client_init_ex(data);
 			}
@@ -427,6 +523,16 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG_H("Received IPA_WLAN_CLIENT_DEL_EVENT\n");
+#ifdef FEATURE_ETH_BRIDGE_LE
+				eth_bridge_del_wlan_client_rt_rule(data->mac_addr, SRC_WLAN);
+				if(IPACM_Lan::usb_to_wlan_hdr_proc_ctx.valid == true)
+				{
+					eth_bridge_del_wlan_client_rt_rule(data->mac_addr, SRC_USB);
+				}
+				eth_bridge_del_self_client_flt_rule(data->mac_addr);
+				eth_bridge_post_lan_client_event(data->mac_addr, IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT);
+				eth_bridge_del_wlan_client(data->mac_addr);
+#endif
 				/* support lan2lan ipa-HW feature*/
 				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_DISCONNECT, IPA_IP_v4);
 				handle_lan2lan_msg_post(data->mac_addr, IPA_LAN_CLIENT_DISCONNECT, IPA_IP_v6);
@@ -529,6 +635,104 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		IPACM_Iface::handle_software_routing_disable();
 		break;
 
+	case IPA_ETH_BRIDGE_USB_CLIENT_ADD_EVENT:
+		{
+			IPACMDBG_H("Received IPA_ETH_BRIDGE_USB_CLIENT_ADD_EVENT event.\n");
+			ipacm_event_data_mac* mac = (ipacm_event_data_mac*)param;
+			if(mac != NULL)
+			{
+				if(wlan_ap_index == 0)
+				{
+					if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
+					{
+						eth_bridge_add_usb_client_flt_rule(mac->mac_addr, IPA_IP_v4);
+					}
+					if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+					{
+						eth_bridge_add_usb_client_flt_rule(mac->mac_addr, IPA_IP_v6);
+					}
+				}
+			}
+			else
+			{
+				IPACMERR("Event MAC is empty.\n");
+			}
+		}
+		break;
+
+	case IPA_ETH_BRIDGE_USB_CLIENT_DEL_EVENT:
+		{
+			IPACMDBG_H("Received IPA_ETH_BRIDGE_USB_CLIENT_DEL_EVENT event.\n");
+			ipacm_event_data_mac* mac = (ipacm_event_data_mac*)param;
+			if(mac != NULL)
+			{
+				if(wlan_ap_index == 0)
+				{
+					if(eth_bridge_del_usb_client_flt_rule(mac->mac_addr) == IPACM_FAILURE)
+					{
+						IPACMDBG_H("Failed to delete usb client MAC based flt rule.\n");
+					}
+				}
+			}
+			else
+			{
+				IPACMERR("Event MAC is empty.\n");
+			}
+		}
+		break;
+
+	case IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT:
+	{
+		IPACMDBG_H("Received IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT event.\n");
+		int i;
+		ipacm_event_data_fid* fid = (ipacm_event_data_fid*)param;
+		if(fid == NULL)
+		{
+			IPACMERR("Event data is empty.\n");
+			return;
+		}
+		if(fid->if_index == ipa_if_num)
+		{
+			IPACMDBG_H("The event was sent by the same interface, ignore.\n");
+			return;
+		}
+		for(i=0; i<IPACM_Lan::num_wlan_client; i++)
+		{
+			if(IPACM_Lan::eth_bridge_wlan_client[i].ipa_if_num == ipa_if_num)
+			{
+				eth_bridge_add_wlan_client_rt_rule(IPACM_Lan::eth_bridge_wlan_client[i].mac, SRC_USB, IPA_IP_v4);
+				eth_bridge_add_wlan_client_rt_rule(IPACM_Lan::eth_bridge_wlan_client[i].mac, SRC_USB, IPA_IP_v6);
+			}
+		}
+	}
+	break;
+
+	case IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT:
+	{
+		IPACMDBG_H("Received IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT event.\n");
+		int i;
+		ipacm_event_data_fid* fid = (ipacm_event_data_fid*)param;
+		if(fid == NULL)
+		{
+			IPACMERR("Event data is empty.\n");
+			return;
+		}
+		if(fid->if_index == ipa_if_num)
+		{
+			IPACMDBG_H("The event was sent by the same interface, ignore.\n");
+			return;
+		}
+
+		for(i=0; i<IPACM_Lan::num_wlan_client; i++)
+		{
+			if(IPACM_Lan::eth_bridge_wlan_client[i].ipa_if_num == ipa_if_num)
+			{
+				eth_bridge_del_wlan_client_rt_rule(IPACM_Lan::eth_bridge_wlan_client[i].mac, SRC_USB);
+			}
+		}
+	}
+	break;
+
 	default:
 		break;
 	}
@@ -595,6 +799,13 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
 		return IPACM_SUCCESS;
 	}
+#ifdef FEATURE_ETH_BRIDGE_LE
+	if(wlan_ap_index != 0)
+	{
+		IPACMDBG_H("Install frag/multicast/broadcast rules only for the first AP.\n");
+		return IPACM_SUCCESS;
+	}
+#endif
 
 	/* construct ipa_ioc_add_flt_rule with default filter rules */
 	if (iptype == IPA_IP_v4)
@@ -604,11 +815,15 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 			IPACMERR("Dummy ipv4 flt rule has not been installed.\n");
 			return IPACM_FAILURE;
 		}
+#ifdef FEATURE_ETH_BRIDGE_LE
+		offset = 0;
+#else
 #ifndef CT_OPT
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #else
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
-								+ NUM_TCP_CTL_FLT_RULE;
+				+ NUM_TCP_CTL_FLT_RULE;
+#endif
 #endif
 
 #ifdef FEATURE_IPA_ANDROID
@@ -639,14 +854,20 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 		/* Configuring Fragment Filtering Rule */
 		IPACMDBG_H("rx property attrib mask:0x%x\n", rx_prop->rx[0].attrib.attrib_mask);
 		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
-
+#ifdef FEATURE_ETH_BRIDGE_LE
+		/* remove meta data mask */
+		flt_rule.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
+#endif
 		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_FRAGMENT;
 		flt_rule.rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v4[offset];
 		memcpy(&(pFilteringTable->rules[0]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
 
 		/* Configuring Multicast Filtering Rule */
 		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
-
+#ifdef FEATURE_ETH_BRIDGE_LE
+		/* remove meta data mask */
+		flt_rule.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
+#endif
 		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		flt_rule.rule.attrib.u.v4.dst_addr_mask = 0xF0000000;
 		flt_rule.rule.attrib.u.v4.dst_addr = 0xE0000000;
@@ -689,13 +910,17 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 			IPACMERR("Dummy ipv6 flt rule has not been installed.\n");
 			return IPACM_FAILURE;
 		}
+#ifdef FEATURE_ETH_BRIDGE_LE
+		offset = 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
+#else
 #ifndef CT_OPT
-		offset = wlan_ap_index * (IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR)
-								+ MAX_OFFLOAD_PAIR;
+		offset = wlan_ap_index * (IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + MAX_OFFLOAD_PAIR;
 #else
 		offset = wlan_ap_index * (IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR)
-								+ NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
+				+ NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
 #endif
+#endif
+
 		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPV6_DEFAULT_FILTERTING_RULES * sizeof(struct ipa_flt_rule_mdfy));
 		pFilteringTable = (struct ipa_ioc_mdfy_flt_rule *)calloc(1, len);
 		if (!pFilteringTable)
@@ -720,6 +945,10 @@ int IPACM_Wlan::init_fl_rule(ipa_ip_type iptype)
 
 		/* Configuring Multicast Filtering Rule */
 		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+#ifdef FEATURE_ETH_BRIDGE_LE
+		/* remove meta data mask */
+		flt_rule.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
+#endif
 		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 		flt_rule.rule.attrib.u.v6.dst_addr_mask[0] = 0xFF000000;
 		flt_rule.rule.attrib.u.v6.dst_addr_mask[1] = 0x00000000;
@@ -870,13 +1099,16 @@ int IPACM_Wlan::handle_private_subnet(ipa_ip_type iptype)
 			IPACMERR("Dummy ipv4 flt rule has not been installed.\n");
 			return IPACM_FAILURE;
 		}
-
+#ifdef FEATURE_ETH_BRIDGE_LE
+		offset = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
+#else
 #ifndef CT_OPT
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
-						+ IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR;
+				+ IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR;
 #else
 		offset = wlan_ap_index * (IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet)
-						+ IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
+				+ IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR;
+#endif
 #endif
 
 		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPACM_Iface::ipacmcfg->ipa_num_private_subnet) * sizeof(struct ipa_flt_rule_mdfy);
@@ -912,6 +1144,10 @@ int IPACM_Wlan::handle_private_subnet(ipa_ip_type iptype)
 
 		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
 		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+#ifdef FEATURE_ETH_BRIDGE_LE
+		/* remove meta data mask */
+		flt_rule.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
+#endif
 
 		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
 		{
@@ -1030,22 +1266,31 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 
 	if(iptype == IPA_IP_v4)
 	{
+#ifdef FEATURE_ETH_BRIDGE_LE
+		offset = IPV4_DEFAULT_FILTERTING_RULES + 2 * IPACM_Iface::ipacmcfg->ipa_num_private_subnet
+				+ IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
+#else
 #ifndef CT_OPT
 		offset = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #else
 		offset = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #endif
-
 #ifdef FEATURE_IPA_ANDROID
 		offset = offset + 2 * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
 #endif
 	}
 	else
 	{
+#ifdef FEATURE_ETH_BRIDGE_LE
+		offset = IPV6_DEFAULT_FILTERTING_RULES + 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + NUM_IPV6_PREFIX_FLT_RULE
+				+ NUM_IPV6_ICMP_FLT_RULE;
+#else
 #ifndef CT_OPT
 		offset = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
 #else
 		offset = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
+#endif
 #endif
 	}
 
@@ -1849,6 +2094,14 @@ int IPACM_Wlan::handle_down_evt()
 		IPACMERR("Invalid iptype: 0x%x\n", ip_type);
 		goto fail;
 	}
+#ifdef FEATURE_ETH_BRIDGE_LE
+	if(wlan_ap_index == 0)
+	{
+		IPACM_Lan::wlan_hdr_type = IPA_HDR_L2_NONE;
+		IPACM_Lan::wlan_hdr_template_hdl = 0;
+		del_hdr_proc_ctx();
+	}
+#endif
 
 	/* delete wan filter rule */
 	if (IPACM_Wan::isWanUP() && rx_prop != NULL)
@@ -1867,7 +2120,21 @@ int IPACM_Wlan::handle_down_evt()
 	/* Delete v4 filtering rules */
 	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
-		IPACMDBG_H("Delete default v4 filter rules\n");
+#ifdef FEATURE_ETH_BRIDGE_LE
+		if(wlan_ap_index == 0)
+		{
+			/* delete default filter rules */
+			for(i=0; i<IPV4_DEFAULT_FILTERTING_RULES; i++)
+			{
+				if(reset_to_dummy_flt_rule(IPA_IP_v4, dft_v4fl_rule_hdl[i]) == IPACM_FAILURE)
+				{
+					IPACMERR("Error deleting dft IPv4 flt rules.\n");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+			}
+		}
+#else
 		/* delete default filter rules */
 		for(i=0; i<IPV4_DEFAULT_FILTERTING_RULES; i++)
 		{
@@ -1878,6 +2145,24 @@ int IPACM_Wlan::handle_down_evt()
 				goto fail;
 			}
 		}
+#endif
+		IPACMDBG_H("Deleted default v4 filter rules successfully.\n");
+#ifdef FEATURE_ETH_BRIDGE_LE
+		if(is_guest_ap == true)
+		{
+			IPACMDBG_H("Delete wlan guest ap v4 flt rules.\n");
+			for(i=0; i<IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
+			{
+				if(reset_to_dummy_flt_rule(IPA_IP_v4, wlan_guest_ap_flt_rule_hdl_v4[i]) == IPACM_FAILURE)
+				{
+					IPACMERR("Error deleting wlan guest ap IPv4 flt rules.\n");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+			}
+		}
+		IPACMDBG_H("Deleted guest ap v4 filter rules successfully.\n");
+#endif
 
 		/* delete icmp filter rules */
 		if(wlan_ap_index == 0)
@@ -1889,6 +2174,7 @@ int IPACM_Wlan::handle_down_evt()
 				goto fail;
 			}
 		}
+#ifndef FEATURE_ETH_BRIDGE_LE
 #ifdef CT_OPT
 		IPACMDBG_H("Delete tcp control flt rules.\n");
 		/* Delete tcp control flt rules */
@@ -1912,6 +2198,7 @@ int IPACM_Wlan::handle_down_evt()
 				goto fail;
 			}
 		}
+#endif
 
 		IPACMDBG_H("Delete private v4 filter rules\n");
 		/* delete private-ipv4 filter rules */
@@ -1926,15 +2213,19 @@ int IPACM_Wlan::handle_down_evt()
 			}
 		}
 #else
-		for(i=0; i<IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
+		if(wlan_ap_index == 0)
 		{
-			if(reset_to_dummy_flt_rule(IPA_IP_v4, private_fl_rule_hdl[i]) == IPACM_FAILURE)
+			for(i=0; i<IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
 			{
-				IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
-				res = IPACM_FAILURE;
-				goto fail;
+				if(reset_to_dummy_flt_rule(IPA_IP_v4, private_fl_rule_hdl[i]) == IPACM_FAILURE)
+				{
+					IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
 			}
 		}
+		IPACMDBG_H("Deleted private subnet v4 filter rules successfully.\n");
 #endif
 	}
 
@@ -1943,6 +2234,19 @@ int IPACM_Wlan::handle_down_evt()
 	{
 		IPACMDBG_H("Delete default %d v6 filter rules\n", IPV6_DEFAULT_FILTERTING_RULES);
 		/* delete default filter rules */
+#ifdef FEATURE_ETH_BRIDGE_LE
+		if(wlan_ap_index == 0)
+		{
+			for(i=0; i<IPV6_DEFAULT_FILTERTING_RULES; i++)
+			{
+				if(reset_to_dummy_flt_rule(IPA_IP_v6, dft_v6fl_rule_hdl[i]) == IPACM_FAILURE)
+				{
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+			}
+		}
+#else
 		for(i=0; i<IPV6_DEFAULT_FILTERTING_RULES; i++)
 		{
 			if(reset_to_dummy_flt_rule(IPA_IP_v6, dft_v6fl_rule_hdl[i]) == IPACM_FAILURE)
@@ -1951,6 +2255,10 @@ int IPACM_Wlan::handle_down_evt()
 				goto fail;
 			}
 		}
+#endif
+		IPACMDBG_H("Deleted default v6 filter rules successfully.\n");
+
+#ifndef FEATURE_ETH_BRIDGE_LE
 #ifdef CT_OPT
 		IPACMDBG_H("Delete tcp control flt rules.\n");
 		/* Delete tcp control flt rules */
@@ -1963,19 +2271,32 @@ int IPACM_Wlan::handle_down_evt()
 			}
 		}
 #endif
-		IPACMDBG_H("Delete lan2lan v6 filter rules\n");
-		/* delete lan2lan ipv6 filter rules */
+		IPACMDBG_H("Delete lan2lan v6 flt rules.\n");
+		/* delete lan2lan ipv4 flt rules */
 		for(i=0; i<MAX_OFFLOAD_PAIR; i++)
 		{
 			if(reset_to_dummy_flt_rule(IPA_IP_v6, lan2lan_flt_rule_hdl_v6[i].rule_hdl) == IPACM_FAILURE)
 			{
-				IPACMERR("Error deleting lan2lan IPv6 flt rules.\n");
+				IPACMERR("Error deleting lan2lan IPv4 flt rules.\n");
 				res = IPACM_FAILURE;
 				goto fail;
 			}
 		}
+#endif
+#ifdef FEATURE_ETH_BRIDGE_LE
+		if(is_guest_ap == true)
+		{
+			if(reset_to_dummy_flt_rule(IPA_IP_v6, wlan_guest_ap_flt_rule_hdl_v6) == IPACM_FAILURE)
+			{
+				IPACMERR("Error deleting wlan guest ap IPv6 flt rules.\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+		}
+		IPACMDBG_H("Deleted wlan guest ap v6 filter rules successfully.\n");
+#endif
 	}
-	IPACMDBG_H("finished delete default filtering rules\n ");
+	IPACMDBG_H("finished delete filtering rules\n ");
 
 	/* Delete default v4 RT rule */
 	if (ip_type != IPA_IP_v6)
@@ -2023,6 +2344,13 @@ int IPACM_Wlan::handle_down_evt()
 
 	for (i = 0; i < num_wifi_client; i++)
 	{
+#ifdef FEATURE_ETH_BRIDGE_LE
+		eth_bridge_del_wlan_client(get_client_memptr(wlan_client, i)->mac);
+		eth_bridge_del_self_client_flt_rule(get_client_memptr(wlan_client, i)->mac);
+		eth_bridge_post_lan_client_event(get_client_memptr(wlan_client, i)->mac, IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT);
+		eth_bridge_del_wlan_client_rt_rule(get_client_memptr(wlan_client, i)->mac, SRC_WLAN);
+		eth_bridge_del_wlan_client_rt_rule(get_client_memptr(wlan_client, i)->mac, SRC_USB);
+#endif
 		/* First reset nat rules and then route rules */
 		if(get_client_memptr(wlan_client, i)->ipv4_set == true)
 		{
@@ -2110,7 +2438,32 @@ fail:
 	{
 		free(iface_query);
 	}
-
+#ifdef FEATURE_ETH_BRIDGE_LE
+	if(eth_bridge_usb_client_rt_info_v4 != NULL)
+	{
+		free(eth_bridge_usb_client_rt_info_v4);
+	}
+	if(eth_bridge_usb_client_rt_info_v6 != NULL)
+	{
+		free(eth_bridge_usb_client_rt_info_v6);
+	}
+	if(eth_bridge_wlan_client_rt_from_usb_info_v4 != NULL)
+	{
+		free(eth_bridge_wlan_client_rt_from_usb_info_v4);
+	}
+	if(eth_bridge_wlan_client_rt_from_usb_info_v6 != NULL)
+	{
+		free(eth_bridge_wlan_client_rt_from_usb_info_v6);
+	}
+	if(eth_bridge_wlan_client_rt_from_wlan_info_v4 != NULL)
+	{
+		free(eth_bridge_wlan_client_rt_from_wlan_info_v4);
+	}
+	if(eth_bridge_wlan_client_rt_from_wlan_info_v6 != NULL)
+	{
+		free(eth_bridge_wlan_client_rt_from_wlan_info_v6);
+	}
+#endif
 	is_active = false;
 	post_del_self_evt();
 
@@ -2524,6 +2877,10 @@ void IPACM_Wlan::add_dummy_flt_rule()
 			IPACMERR("Either v4 or v6 dummy filtering rule handle is not empty.\n");
 			return;
 		}
+#ifdef FEATURE_ETH_BRIDGE_LE
+		num_v4_dummy_rule = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		num_v6_dummy_rule = IPV6_DEFAULT_FILTERTING_RULES + 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
+#else
 #ifndef CT_OPT
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR);
@@ -2531,9 +2888,9 @@ void IPACM_Wlan::add_dummy_flt_rule()
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR);
 #endif
-
 #ifdef FEATURE_IPA_ANDROID
 		num_v4_dummy_rule = num_v4_dummy_rule - 2* IPACM_Iface::ipacmcfg->ipa_num_private_subnet + 2 * IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+#endif
 #endif
 
 		IPACM_Wlan::dummy_flt_rule_hdl_v4 = (uint32_t*)malloc(num_v4_dummy_rule * sizeof(uint32_t));
@@ -2717,9 +3074,13 @@ void IPACM_Wlan::del_dummy_flt_rule()
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR);
 #endif
-
 #ifdef FEATURE_IPA_ANDROID
 		num_v4_dummy_rule = num_v4_dummy_rule - 2* IPACM_Iface::ipacmcfg->ipa_num_private_subnet + 2 * IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+#endif
+
+#ifdef FEATURE_ETH_BRIDGE_LE
+		num_v4_dummy_rule = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		num_v6_dummy_rule = IPV6_DEFAULT_FILTERTING_RULES + 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
 #endif
 
 		if(m_filtering.DeleteFilteringHdls(IPACM_Wlan::dummy_flt_rule_hdl_v4, IPA_IP_v4, num_v4_dummy_rule) == false)
@@ -2737,6 +3098,12 @@ void IPACM_Wlan::del_dummy_flt_rule()
 		IPACM_Wlan::dummy_flt_rule_hdl_v4 = NULL;
 		free(IPACM_Wlan::dummy_flt_rule_hdl_v6);
 		IPACM_Wlan::dummy_flt_rule_hdl_v6 = NULL;
+#ifdef FEATURE_ETH_BRIDGE_LE
+		memset(self_client_flt_rule_hdl_v4, 0, IPA_LAN_TO_LAN_MAX_WLAN_CLIENT * sizeof(lan2lan_flt_rule_hdl));
+		memset(self_client_flt_rule_hdl_v6, 0, IPA_LAN_TO_LAN_MAX_WLAN_CLIENT * sizeof(lan2lan_flt_rule_hdl));
+		memset(usb_client_flt_rule_hdl_v4, 0, IPA_LAN_TO_LAN_MAX_USB_CLIENT * sizeof(lan2lan_flt_rule_hdl));
+		memset(usb_client_flt_rule_hdl_v6, 0, IPA_LAN_TO_LAN_MAX_USB_CLIENT * sizeof(lan2lan_flt_rule_hdl));
+#endif
 	}
 	return;
 }
@@ -2914,4 +3281,1283 @@ int IPACM_Wlan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 		}
 	}
 	return IPACM_SUCCESS;
+}
+
+int IPACM_Wlan::eth_bridge_add_wlan_guest_ap_flt_rule(ipa_ip_type iptype)
+{
+	if(rx_prop == NULL)
+	{
+		IPACMDBG_H("There is no rx_prop for iface %s, not able to add wlan guest ap filtering rule.\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+	if(is_guest_ap == false)
+	{
+		IPACMDBG_H("This is not WLAN guest AP, do nothing.\n");
+		return IPACM_SUCCESS;
+	}
+
+	int len, i, offset, res = IPACM_SUCCESS;
+	struct ipa_flt_rule_mdfy flt_rule;
+	struct ipa_ioc_mdfy_flt_rule* pFilteringTable = NULL;
+	if(iptype == IPA_IP_v4)
+	{
+		if(IPACM_Wlan::dummy_flt_rule_hdl_v4 == NULL)
+		{
+			IPACMERR("Dummy ipv4 flt rule has not been installed.\n");
+			return IPACM_FAILURE;
+		}
+
+		offset = IPV4_DEFAULT_FILTERTING_RULES;
+		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPACM_Iface::ipacmcfg->ipa_num_private_subnet) * sizeof(struct ipa_flt_rule_mdfy);
+		pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
+		if (!pFilteringTable)
+		{
+			IPACMERR("Failed to allocate ipa_ioc_mdfy_flt_rule memory...\n");
+			return IPACM_FAILURE;
+		}
+		memset(pFilteringTable, 0, len);
+
+		pFilteringTable->commit = 1;
+		pFilteringTable->ip = iptype;
+		pFilteringTable->num_rules = (uint8_t)IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+
+		memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_mdfy));
+		flt_rule.status = -1;
+
+		flt_rule.rule.retain_hdr = 1;
+		flt_rule.rule.to_uc = 0;
+		flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+		flt_rule.rule.eq_attrib_type = 0;
+
+		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+
+		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
+		{
+			flt_rule.rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v4[offset+i];
+			flt_rule.rule.attrib.u.v4.dst_addr_mask = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask;
+			flt_rule.rule.attrib.u.v4.dst_addr = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr;
+			memcpy(&(pFilteringTable->rules[i]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+		}
+
+		if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
+		{
+			IPACMERR("Failed to modify wlan guest AP IPv4 filtering rules.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
+		/* copy filter rule hdls */
+		for (i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
+		{
+			wlan_guest_ap_flt_rule_hdl_v4[i] = pFilteringTable->rules[i].rule_hdl;
+		}
+	}
+	else
+	{
+		if(IPACM_Wan::wan_up_v6 == true)
+		{
+			eth_bridge_install_wlan_guest_ap_ipv6_flt_rule();
+		}
+	}
+fail:
+	if(pFilteringTable != NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_install_wlan_guest_ap_ipv6_flt_rule()
+{
+	if(rx_prop == NULL)
+	{
+		IPACMDBG_H("There is no rx_prop for iface %s, not able to add wlan guest ap filtering rule.\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+	if(is_guest_ap == false)
+	{
+		IPACMDBG_H("This is not WLAN guest AP, do nothing.\n");
+		return IPACM_SUCCESS;
+	}
+
+	int len, offset, res = IPACM_SUCCESS;
+	struct ipa_flt_rule_mdfy flt_rule;
+	struct ipa_ioc_mdfy_flt_rule* pFilteringTable = NULL;
+
+	if(IPACM_Wlan::dummy_flt_rule_hdl_v6 == NULL)
+	{
+		IPACMERR("Dummy ipv6 flt rule has not been installed.\n");
+		return IPACM_FAILURE;
+	}
+
+	offset = 0;
+	len = sizeof(struct ipa_ioc_mdfy_flt_rule) + sizeof(struct ipa_flt_rule_mdfy);
+	pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
+	if (!pFilteringTable)
+	{
+		IPACMERR("Failed to allocate ipa_ioc_mdfy_flt_rule memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+	pFilteringTable->commit = 1;
+	pFilteringTable->ip = IPA_IP_v6;
+	pFilteringTable->num_rules = 1;
+
+	memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_mdfy));
+	flt_rule.status = -1;
+
+	flt_rule.rule.retain_hdr = 1;
+	flt_rule.rule.to_uc = 0;
+	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+	flt_rule.rule.eq_attrib_type = 0;
+
+	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+	flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+	flt_rule.rule.attrib.u.v6.dst_addr[0] = IPACM_Wan::backhaul_ipv6_prefix[0];
+	flt_rule.rule.attrib.u.v6.dst_addr[1] = IPACM_Wan::backhaul_ipv6_prefix[1];
+	flt_rule.rule.attrib.u.v6.dst_addr[2] = 0x0;
+	flt_rule.rule.attrib.u.v6.dst_addr[3] = 0x0;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[2] = 0x0;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[3] = 0x0;
+
+	flt_rule.rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v6[offset];
+	memcpy(&(pFilteringTable->rules[0]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+
+	if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
+	{
+		IPACMERR("Failed to modify wlan guest AP IPv6 filtering rules.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+	/* copy filter rule hdls */
+	wlan_guest_ap_flt_rule_hdl_v6 = pFilteringTable->rules[0].rule_hdl;
+
+fail:
+	if(pFilteringTable != NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype)
+{
+	int i, offset;
+	if(wlan_ap_index == 0)
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			offset = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+			for(i=0; i<IPA_LAN_TO_LAN_MAX_WLAN_CLIENT; i++)
+			{
+				self_client_flt_rule_hdl_v4[i].rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v4[offset+i];
+				self_client_flt_rule_hdl_v4[i].valid = true;
+			}
+		}
+		else
+		{
+			offset = 1;
+			for(i=0; i<IPA_LAN_TO_LAN_MAX_WLAN_CLIENT; i++)
+			{
+				self_client_flt_rule_hdl_v6[i].rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v6[offset+i];
+				self_client_flt_rule_hdl_v6[i].valid = true;
+			}
+		}
+		IPACMDBG_H("Get %d flt rule hdls for wlan clients ip type: %d.\n", IPA_LAN_TO_LAN_MAX_WLAN_CLIENT, iptype);
+	}
+	return IPACM_SUCCESS;
+}
+
+int IPACM_Wlan::eth_bridge_handle_dummy_usb_client_flt_rule(ipa_ip_type iptype)
+{
+	int i, offset;
+	if(wlan_ap_index == 0)
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			offset = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT;
+			for(i=0; i<IPA_LAN_TO_LAN_MAX_USB_CLIENT; i++)
+			{
+				usb_client_flt_rule_hdl_v4[i].rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v4[offset+i];
+				usb_client_flt_rule_hdl_v4[i].valid = true;
+			}
+		}
+		else
+		{
+			offset = 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT;
+			for(i=0; i<IPA_LAN_TO_LAN_MAX_USB_CLIENT; i++)
+			{
+				usb_client_flt_rule_hdl_v6[i].rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v6[offset+i];
+				usb_client_flt_rule_hdl_v6[i].valid = true;
+			}
+		}
+		IPACMDBG_H("Get %d flt rule hdls for usb clients ip type: %d.\n", IPA_LAN_TO_LAN_MAX_USB_CLIENT, iptype);
+	}
+	return IPACM_SUCCESS;
+}
+
+int IPACM_Wlan::eth_bridge_add_usb_client_flt_rule(uint8_t* mac, ipa_ip_type iptype)
+{
+	int i, len, res = IPACM_SUCCESS, client_position;
+	struct ipa_flt_rule_mdfy flt_rule;
+	struct ipa_ioc_mdfy_flt_rule* pFilteringTable = NULL;
+	bool client_is_found = false;
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_FAILURE;
+	}
+	if(mac == NULL)
+	{
+		IPACMERR("MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+	if(IPACM_Lan::wlan_to_usb_hdr_proc_ctx.valid == false)
+	{
+		IPACMDBG_H("WLAN to USB hdr proc ctx has not been set, don't add USB client specific flt rule.\n");
+		return IPACM_FAILURE;
+	}
+
+	for(i=0; i<num_usb_client; i++)
+	{
+		if(memcmp(eth_bridge_usb_client_flt_info[i].mac, mac, sizeof(eth_bridge_usb_client_flt_info[i].mac)) == 0)
+		{
+			client_is_found = true;
+			client_position = i;
+			if( (iptype == IPA_IP_v4 && eth_bridge_usb_client_flt_info[i].flt_rule_set_v4 == true)
+				|| (iptype == IPA_IP_v6 && eth_bridge_usb_client_flt_info[i].flt_rule_set_v6 == true))
+			{
+				IPACMDBG_H("Flt rule for iptype %d has been set.\n", iptype);
+				return IPACM_SUCCESS;
+			}
+			break;
+		}
+	}
+
+	if(client_is_found == false && num_usb_client == IPA_LAN_TO_LAN_MAX_USB_CLIENT)
+	{
+		IPACMDBG_H("The usb client flt table is already full.\n");
+		return IPACM_FAILURE;
+	}
+
+	len = sizeof(struct ipa_ioc_mdfy_flt_rule) + sizeof(struct ipa_flt_rule_mdfy);
+	pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
+	if (!pFilteringTable)
+	{
+		IPACMERR("Failed to allocate ipa_ioc_mdfy_flt_rule memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+	IPACMDBG_H("Receive USB client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	/* add mac based rule on flt table */
+	pFilteringTable->commit = 1;
+	pFilteringTable->ip = iptype;
+	pFilteringTable->num_rules = 1;
+
+	/* point to USB-WLAN routing table */
+	memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_mdfy));
+	flt_rule.status = -1;
+
+	flt_rule.rule.retain_hdr = 0;
+	flt_rule.rule.to_uc = 0;
+	flt_rule.rule.action = IPA_PASS_TO_ROUTING;
+	flt_rule.rule.eq_attrib_type = 0;
+
+	if(iptype == IPA_IP_v4)
+	{
+		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v4))
+		{
+			IPACMERR("Failed to get routing table handle.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v4.hdl;
+		IPACMDBG_H("WLAN->USB IPv4 filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v4.name);
+	}
+	else
+	{
+		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v6))
+		{
+			IPACMERR("Failed to get routing table handle.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v6.hdl;
+		IPACMDBG_H("WLAN->USB IPv6 filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v6.name);
+	}
+
+	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+	if(IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_ETHERNET_II)
+	{
+		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
+	}
+	else if(IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_802_3)
+	{
+		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_802_3;
+	}
+	else
+	{
+		IPACMERR("WLAN hdr type is not expected.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	memcpy(flt_rule.rule.attrib.dst_mac_addr, mac, sizeof(flt_rule.rule.attrib.dst_mac_addr));
+	memset(flt_rule.rule.attrib.dst_mac_addr_mask, 0xFF, sizeof(flt_rule.rule.attrib.dst_mac_addr_mask));
+
+	if(iptype == IPA_IP_v4)
+	{
+		for(i=0; i<IPA_LAN_TO_LAN_MAX_USB_CLIENT; i++)
+		{
+			if(usb_client_flt_rule_hdl_v4[i].valid == true)
+			{
+				flt_rule.rule_hdl = usb_client_flt_rule_hdl_v4[i].rule_hdl;
+				usb_client_flt_rule_hdl_v4[i].valid = false;
+				break;
+			}
+		}
+		if(i == IPA_LAN_TO_LAN_MAX_USB_CLIENT)
+		{
+			IPACMDBG_H("Cannot find a valid flt rule hdl.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+	else
+	{
+		for(i=0; i<IPA_LAN_TO_LAN_MAX_USB_CLIENT; i++)
+		{
+			if(usb_client_flt_rule_hdl_v6[i].valid == true)
+			{
+				flt_rule.rule_hdl = usb_client_flt_rule_hdl_v6[i].rule_hdl;
+				usb_client_flt_rule_hdl_v6[i].valid = false;
+				break;
+			}
+		}
+		if(i == IPA_LAN_TO_LAN_MAX_USB_CLIENT)
+		{
+			IPACMDBG_H("Cannot find a valid flt rule hdl.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+
+	memcpy(&(pFilteringTable->rules[0]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+	if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
+	{
+		IPACMERR("Failed to add wlan client filtering rules.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+	if(client_is_found == false)
+	{
+		client_position = num_usb_client;
+		num_usb_client++;
+	}
+
+	memcpy(eth_bridge_usb_client_flt_info[client_position].mac, mac, sizeof(eth_bridge_usb_client_flt_info[client_position].mac));
+	if(iptype == IPA_IP_v4)
+	{
+		eth_bridge_usb_client_flt_info[client_position].flt_rule_set_v4 = true;
+		eth_bridge_usb_client_flt_info[client_position].flt_rule_hdl_v4 = usb_client_flt_rule_hdl_v4[i].rule_hdl;
+	}
+	else
+	{
+		eth_bridge_usb_client_flt_info[client_position].flt_rule_set_v6 = true;
+		eth_bridge_usb_client_flt_info[client_position].flt_rule_hdl_v6 = usb_client_flt_rule_hdl_v6[i].rule_hdl;
+	}
+
+fail:
+	if(pFilteringTable == NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_del_usb_client_flt_rule(uint8_t* mac)
+{
+	if(mac == NULL)
+	{
+		IPACMERR("Client MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("Receive USB client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	int i, j, res = IPACM_SUCCESS;
+	for(i=0; i<num_usb_client; i++)
+	{
+		if(memcmp(eth_bridge_usb_client_flt_info[i].mac, mac, sizeof(eth_bridge_usb_client_flt_info[i].mac)) == 0)
+		{
+			break;
+		}
+	}
+
+	if(i == num_usb_client)
+	{
+		IPACMERR("Do not find the usb client.\n");
+		return IPACM_FAILURE;
+	}
+
+	if(eth_bridge_usb_client_flt_info[i].flt_rule_set_v4 == true)
+	{
+		if(reset_to_dummy_flt_rule(IPA_IP_v4, eth_bridge_usb_client_flt_info[i].flt_rule_hdl_v4) == IPACM_SUCCESS)
+		{
+			for(j=0; j<IPA_LAN_TO_LAN_MAX_USB_CLIENT; j++)
+			{
+				if(usb_client_flt_rule_hdl_v4[j].rule_hdl == eth_bridge_usb_client_flt_info[i].flt_rule_hdl_v4)
+				{
+					usb_client_flt_rule_hdl_v4[j].valid = true;
+					break;
+				}
+			}
+			if(j == IPA_LAN_TO_LAN_MAX_USB_CLIENT)
+			{
+				IPACMERR("Not finding the rule handle in handle pool.\n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			IPACMERR("Failed to delete the usb client specific flt rule.\n");
+			return IPACM_FAILURE;
+		}
+	}
+	if(eth_bridge_usb_client_flt_info[i].flt_rule_set_v6 == true)
+	{
+		if(reset_to_dummy_flt_rule(IPA_IP_v6, eth_bridge_usb_client_flt_info[i].flt_rule_hdl_v6) == IPACM_SUCCESS)
+		{
+			for(j=0; j<IPA_LAN_TO_LAN_MAX_USB_CLIENT; j++)
+			{
+				if(usb_client_flt_rule_hdl_v6[j].rule_hdl == eth_bridge_usb_client_flt_info[i].flt_rule_hdl_v6)
+				{
+					usb_client_flt_rule_hdl_v6[j].valid = true;
+					break;
+				}
+			}
+			if(j == IPA_LAN_TO_LAN_MAX_USB_CLIENT)
+			{
+				IPACMERR("Not finding the rule handle in handle pool.\n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			IPACMERR("Failed to delete the usb client specific flt rule.\n");
+			return IPACM_FAILURE;
+		}
+	}
+
+	for(j=i+1; j<num_usb_client; j++)
+	{
+		memcpy(&(eth_bridge_usb_client_flt_info[j-1]), &(eth_bridge_usb_client_flt_info[j]), sizeof(eth_bridge_client_flt_info));
+	}
+	memset(&(eth_bridge_usb_client_flt_info[num_usb_client-1]), 0, sizeof(eth_bridge_client_flt_info));
+	num_usb_client--;
+
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_add_self_client_flt_rule(uint8_t* mac, ipa_ip_type iptype)
+{
+	int i, len, res = IPACM_SUCCESS, client_position;
+	struct ipa_flt_rule_mdfy flt_rule;
+	struct ipa_ioc_mdfy_flt_rule* pFilteringTable = NULL;
+	bool client_is_found = false;
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_FAILURE;
+	}
+	if(mac == NULL)
+	{
+		IPACMERR("MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+	if(IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.valid == false)
+	{
+		IPACMDBG_H("WLAN to WLAN hdr proc ctx has not been set, don't add WLAN client specific flt rule.\n");
+		return IPACM_FAILURE;
+	}
+
+	for(i=0; i<wlan_client_flt_info_count; i++)
+	{
+		if(memcmp(eth_bridge_wlan_client_flt_info[i].mac, mac, sizeof(eth_bridge_wlan_client_flt_info[i].mac)) == 0)
+		{
+			client_is_found = true;
+			client_position = i;
+			if( (iptype == IPA_IP_v4 && eth_bridge_wlan_client_flt_info[i].flt_rule_set_v4 == true)
+				|| (iptype == IPA_IP_v6 && eth_bridge_wlan_client_flt_info[i].flt_rule_set_v6 == true))
+			{
+				IPACMDBG_H("Flt rule for iptype %d has been set.\n", iptype);
+				return IPACM_SUCCESS;
+			}
+			break;
+		}
+	}
+
+	if(client_is_found == false && wlan_client_flt_info_count == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+	{
+		IPACMDBG_H("The wlan client flt table is already full.\n");
+		return IPACM_FAILURE;
+	}
+
+	len = sizeof(struct ipa_ioc_mdfy_flt_rule) + sizeof(struct ipa_flt_rule_mdfy);
+	pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
+	if (!pFilteringTable)
+	{
+		IPACMERR("Failed to allocate ipa_ioc_mdfy_flt_rule memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+	IPACMDBG_H("Receive WLAN client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	/* add mac based rule on IPv4 table */
+	pFilteringTable->commit = 1;
+	pFilteringTable->ip = iptype;
+	pFilteringTable->num_rules = 1;
+
+	/* point to USB-WLAN routing table */
+	memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_mdfy));
+	flt_rule.status = -1;
+
+	flt_rule.rule.retain_hdr = 0;
+	flt_rule.rule.to_uc = 0;
+	flt_rule.rule.action = IPA_PASS_TO_ROUTING;
+	flt_rule.rule.eq_attrib_type = 0;
+
+	if(iptype == IPA_IP_v4)
+	{
+		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v4))
+		{
+			IPACMERR("Failed to get routing table handle.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v4.hdl;
+		IPACMDBG_H("WLAN->WLAN IPv4 filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v4.name);
+	}
+	else
+	{
+		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v6))
+		{
+			IPACMERR("Failed to get routing table handle.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v6.hdl;
+		IPACMDBG_H("WLAN->WLAN IPv4 filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v6.name);
+	}
+
+	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+	flt_rule.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);	//remove meta data mask
+	if(IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_ETHERNET_II)
+	{
+		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
+	}
+	else if(IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_802_3)
+	{
+		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_802_3;
+	}
+	else
+	{
+		IPACMERR("WLAN hdr type is not expected.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	memcpy(flt_rule.rule.attrib.dst_mac_addr, mac, sizeof(flt_rule.rule.attrib.dst_mac_addr));
+	memset(flt_rule.rule.attrib.dst_mac_addr_mask, 0xFF, sizeof(flt_rule.rule.attrib.dst_mac_addr_mask));
+
+	if(iptype == IPA_IP_v4)
+	{
+		for(i=0; i<IPA_LAN_TO_LAN_MAX_WLAN_CLIENT; i++)
+		{
+			if(self_client_flt_rule_hdl_v4[i].valid == true)
+			{
+				flt_rule.rule_hdl = self_client_flt_rule_hdl_v4[i].rule_hdl;
+				self_client_flt_rule_hdl_v4[i].valid = false;
+				break;
+			}
+		}
+		if(i == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+		{
+			IPACMDBG_H("Cannot find a valid flt rule hdl.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+	else
+	{
+		for(i=0; i<IPA_LAN_TO_LAN_MAX_WLAN_CLIENT; i++)
+		{
+			if(self_client_flt_rule_hdl_v6[i].valid == true)
+			{
+				flt_rule.rule_hdl = self_client_flt_rule_hdl_v6[i].rule_hdl;
+				self_client_flt_rule_hdl_v6[i].valid = false;
+				break;
+			}
+		}
+		if(i == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+		{
+			IPACMDBG_H("Cannot find a valid flt rule hdl.\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+
+	memcpy(&(pFilteringTable->rules[0]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+	if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
+	{
+		IPACMERR("Failed to add self client filtering rules.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+	if(client_is_found == false)
+	{
+		client_position = wlan_client_flt_info_count;
+		wlan_client_flt_info_count++;
+	}
+
+	memcpy(eth_bridge_wlan_client_flt_info[client_position].mac, mac, sizeof(eth_bridge_wlan_client_flt_info[client_position].mac));
+	if(iptype == IPA_IP_v4)
+	{
+		eth_bridge_wlan_client_flt_info[client_position].flt_rule_set_v4 = true;
+		eth_bridge_wlan_client_flt_info[client_position].flt_rule_hdl_v4 = self_client_flt_rule_hdl_v4[i].rule_hdl;
+	}
+	else
+	{
+		eth_bridge_wlan_client_flt_info[client_position].flt_rule_set_v6 = true;
+		eth_bridge_wlan_client_flt_info[client_position].flt_rule_hdl_v6 = self_client_flt_rule_hdl_v6[i].rule_hdl;
+	}
+
+fail:
+	if(pFilteringTable == NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_del_self_client_flt_rule(uint8_t* mac)
+{
+	if(mac == NULL)
+	{
+		IPACMERR("Client MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("Receive WLAN client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	int i, j, res = IPACM_SUCCESS;
+	for(i=0; i<wlan_client_flt_info_count; i++)
+	{
+		if(memcmp(eth_bridge_wlan_client_flt_info[i].mac, mac, sizeof(eth_bridge_wlan_client_flt_info[i].mac)) == 0)
+		{
+			break;
+		}
+	}
+
+	if(i == wlan_client_flt_info_count)
+	{
+		IPACMERR("Do not find the wlan client.\n");
+		return IPACM_FAILURE;
+	}
+
+	if(eth_bridge_wlan_client_flt_info[i].flt_rule_set_v4 == true)
+	{
+		if(reset_to_dummy_flt_rule(IPA_IP_v4, eth_bridge_wlan_client_flt_info[i].flt_rule_hdl_v4) == IPACM_SUCCESS)
+		{
+			for(j=0; j<IPA_LAN_TO_LAN_MAX_WLAN_CLIENT; j++)
+			{
+				if(self_client_flt_rule_hdl_v4[j].rule_hdl == eth_bridge_wlan_client_flt_info[i].flt_rule_hdl_v4)
+				{
+					self_client_flt_rule_hdl_v4[j].valid = true;
+					break;
+				}
+			}
+			if(j == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+			{
+				IPACMERR("Not finding the rule handle in handle pool.\n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			IPACMERR("Failed to delete the wlan client specific flt rule.\n");
+			return IPACM_FAILURE;
+		}
+	}
+	if(eth_bridge_wlan_client_flt_info[i].flt_rule_set_v6 == true)
+	{
+		if(reset_to_dummy_flt_rule(IPA_IP_v6, eth_bridge_wlan_client_flt_info[i].flt_rule_hdl_v6) == IPACM_SUCCESS)
+		{
+			for(j=0; j<IPA_LAN_TO_LAN_MAX_WLAN_CLIENT; j++)
+			{
+				if(self_client_flt_rule_hdl_v6[j].rule_hdl == eth_bridge_wlan_client_flt_info[i].flt_rule_hdl_v6)
+				{
+					self_client_flt_rule_hdl_v6[j].valid = true;
+					break;
+				}
+			}
+			if(j == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+			{
+				IPACMERR("Not finding the rule handle in handle pool.\n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			IPACMERR("Failed to delete the wlan client specific flt rule.\n");
+			return IPACM_FAILURE;
+		}
+	}
+
+	for(j=i+1; j<wlan_client_flt_info_count; j++)
+	{
+		memcpy(&(eth_bridge_wlan_client_flt_info[j-1]), &(eth_bridge_wlan_client_flt_info[j]), sizeof(eth_bridge_client_flt_info));
+	}
+	memset(&(eth_bridge_wlan_client_flt_info[wlan_client_flt_info_count-1]), 0, sizeof(eth_bridge_client_flt_info));
+	wlan_client_flt_info_count--;
+
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_install_cache_usb_client_flt_rule(ipa_ip_type iptype)
+{
+	int i;
+
+	IPACMDBG_H("There are %d usb clients cached.\n", IPACM_Lan::num_usb_client);
+	for(i=0; i<IPACM_Lan::num_usb_client; i++)
+	{
+		eth_bridge_add_usb_client_flt_rule(IPACM_Lan::eth_bridge_usb_client[i].mac, iptype);
+	}
+	return IPACM_SUCCESS;
+}
+
+int IPACM_Wlan::eth_bridge_install_cache_wlan_client_flt_rule(ipa_ip_type iptype)
+{
+	int i;
+
+	IPACMDBG_H("There are %d wlan clients cached.\n", IPACM_Lan::num_wlan_client);
+	for(i=0; i<IPACM_Lan::num_wlan_client; i++)
+	{
+		eth_bridge_add_self_client_flt_rule(IPACM_Lan::eth_bridge_wlan_client[i].mac, iptype);
+	}
+	return IPACM_SUCCESS;
+}
+
+int IPACM_Wlan::eth_bridge_add_wlan_client_rt_rule(uint8_t* mac, eth_bridge_src_iface src, ipa_ip_type iptype)
+{
+	if(tx_prop == NULL)
+	{
+		IPACMDBG_H("Tx prop is empty, not adding routing rule.\n");
+		return IPACM_SUCCESS;
+	}
+	if(mac == NULL)
+	{
+		IPACMERR("Client MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+	if(iptype == IPA_IP_v4)
+	{
+		if( (src == SRC_WLAN && wlan_client_rt_from_wlan_info_count_v4 == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+			|| (src == SRC_USB && wlan_client_rt_from_usb_info_count_v4 == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT))
+		{
+			IPACMDBG_H("WLAN client number has reached maximum.\n");
+			return IPACM_FAILURE;
+		}
+	}
+	else
+	{
+		if( (src == SRC_WLAN && wlan_client_rt_from_wlan_info_count_v6 == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+			|| (src == SRC_USB && wlan_client_rt_from_usb_info_count_v6 == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT))
+		{
+			IPACMDBG_H("WLAN client number has reached maximum.\n");
+			return IPACM_FAILURE;
+		}
+	}
+	if( (src == SRC_WLAN && IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.valid == false)
+		|| (src == SRC_USB && IPACM_Lan::usb_to_wlan_hdr_proc_ctx.valid == false) )
+	{
+		IPACMDBG_H("Hdr proc ctx has not been set for source %d, don't add WLAN client routing rule.\n", src);
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("Receive WLAN client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	int i, len, res = IPACM_SUCCESS;
+	struct ipa_ioc_add_rt_rule* rt_rule_table = NULL;
+	struct ipa_rt_rule_add rt_rule;
+	int position, num_rt_rule;
+
+	if(src == SRC_WLAN)
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			for(i=0; i<wlan_client_rt_from_wlan_info_count_v4; i++)
+			{
+				if(memcmp(eth_bridge_get_client_rt_info_ptr(i, SRC_WLAN, iptype)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, SRC_WLAN, iptype)->mac)) == 0)
+				{
+					IPACMDBG_H("The client's routing rule was added before.\n");
+					return IPACM_SUCCESS;
+				}
+			}
+			memcpy(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v4, src, iptype)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v4, src, iptype)->mac));
+		}
+		else
+		{
+			for(i=0; i<wlan_client_rt_from_wlan_info_count_v6; i++)
+			{
+				if(memcmp(eth_bridge_get_client_rt_info_ptr(i, SRC_WLAN, iptype)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, SRC_WLAN, iptype)->mac)) == 0)
+				{
+					IPACMDBG_H("The client's routing rule was added before.\n");
+					return IPACM_SUCCESS;
+				}
+			}
+			memcpy(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v6, src, iptype)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v6, src, iptype)->mac));
+		}
+	}
+	else
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			for(i=0; i<wlan_client_rt_from_usb_info_count_v4; i++)
+			{
+				if(memcmp(eth_bridge_get_client_rt_info_ptr(i, SRC_USB, iptype)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, SRC_USB, iptype)->mac)) == 0)
+				{
+					IPACMDBG_H("The client's routing rule was added before.\n");
+					return IPACM_SUCCESS;
+				}
+			}
+			memcpy(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v4, src, iptype)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v4, src, iptype)->mac));
+		}
+		else
+		{
+			for(i=0; i<wlan_client_rt_from_usb_info_count_v6; i++)
+			{
+				if(memcmp(eth_bridge_get_client_rt_info_ptr(i, SRC_USB, iptype)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, SRC_USB, iptype)->mac)) == 0)
+				{
+					IPACMDBG_H("The client's routing rule was added before.\n");
+					return IPACM_SUCCESS;
+				}
+			}
+			memcpy(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v6, src, iptype)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v6, src, iptype)->mac));
+		}
+	}
+
+	if(iptype == IPA_IP_v4)
+	{
+		num_rt_rule = each_client_rt_rule_count_v4;
+	}
+	else
+	{
+		num_rt_rule = each_client_rt_rule_count_v6;
+	}
+
+	len = sizeof(ipa_ioc_add_rt_rule) + num_rt_rule * sizeof(ipa_rt_rule_add);
+	rt_rule_table = (ipa_ioc_add_rt_rule*)malloc(len);
+	if(rt_rule_table == NULL)
+	{
+		IPACMERR("Failed to allocate memory.\n");
+		return IPACM_FAILURE;
+	}
+	memset(rt_rule_table, 0, len);
+
+	rt_rule_table->commit = 1;
+	rt_rule_table->ip = iptype;
+	rt_rule_table->num_rules = num_rt_rule;
+	if(src == SRC_WLAN)
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v4.name, sizeof(rt_rule_table->rt_tbl_name));
+		}
+		else
+		{
+			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v6.name, sizeof(rt_rule_table->rt_tbl_name));
+		}
+	}
+	else
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v4.name, sizeof(rt_rule_table->rt_tbl_name));
+		}
+		else
+		{
+			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_usb_wlan_v6.name, sizeof(rt_rule_table->rt_tbl_name));
+		}
+	}
+
+	memset(&rt_rule, 0, sizeof(ipa_rt_rule_add));
+	rt_rule.at_rear = false;
+	rt_rule.status = -1;
+	rt_rule.rt_rule_hdl = -1;
+
+	rt_rule.rule.hdr_hdl = 0;
+	if(src == SRC_WLAN)
+	{
+		rt_rule.rule.hdr_proc_ctx_hdl = IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.proc_ctx_hdl;
+	}
+	else
+	{
+		rt_rule.rule.hdr_proc_ctx_hdl = IPACM_Lan::usb_to_wlan_hdr_proc_ctx.proc_ctx_hdl;
+	}
+	position = 0;
+	for(i=0; i<iface_query->num_tx_props; i++)
+	{
+		if(tx_prop->tx[i].ip == iptype)
+		{
+			if(position >= num_rt_rule)
+			{
+				IPACMERR("Number of routing rules already exceeds limit.\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+
+			rt_rule.rule.dst = tx_prop->tx[i].dst_pipe;
+			memcpy(&rt_rule.rule.attrib, &tx_prop->tx[i].attrib, sizeof(rt_rule.rule.attrib));
+			if(src == SRC_WLAN)	//src is WLAN means packet is from WLAN
+			{
+				if(IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_ETHERNET_II)
+				{
+					rt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
+				}
+				else
+				{
+					rt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_802_3;
+				}
+			}
+			else	//packet is from USB
+			{
+				if(IPACM_Lan::usb_hdr_type == IPA_HDR_L2_ETHERNET_II)
+				{
+					rt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
+				}
+				else
+				{
+					rt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_802_3;
+				}
+			}
+			memcpy(rt_rule.rule.attrib.dst_mac_addr, mac, sizeof(rt_rule.rule.attrib.dst_mac_addr));
+			memset(rt_rule.rule.attrib.dst_mac_addr_mask, 0xFF, sizeof(rt_rule.rule.attrib.dst_mac_addr_mask));
+
+			memcpy(&(rt_rule_table->rules[position]), &rt_rule, sizeof(rt_rule_table->rules[position]));
+			position++;
+		}
+	}
+
+	if(false == m_routing.AddRoutingRule(rt_rule_table))
+	{
+		IPACMERR("Routing rule addition failed!\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	else
+	{
+		if(src == SRC_WLAN)
+		{
+			for(i=0; i<num_rt_rule; i++)
+			{
+				if(iptype == IPA_IP_v4)
+				{
+					eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v4, src, iptype)->rt_rule_hdl[i] = rt_rule_table->rules[i].rt_rule_hdl;
+				}
+				else
+				{
+					eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v6, src, iptype)->rt_rule_hdl[i] = rt_rule_table->rules[i].rt_rule_hdl;
+				}
+			}
+			if(iptype == IPA_IP_v4)
+			{
+				wlan_client_rt_from_wlan_info_count_v4++;
+				IPACMDBG_H("Now the number of IPv4 rt rule on wlan-wlan rt table is %d.\n", wlan_client_rt_from_wlan_info_count_v4);
+			}
+			else
+			{
+				wlan_client_rt_from_wlan_info_count_v6++;
+				IPACMDBG_H("Now the number of IPv6 rt rule on wlan-wlan rt table is %d.\n", wlan_client_rt_from_wlan_info_count_v6);
+			}
+		}
+		else
+		{
+			for(i=0; i<num_rt_rule; i++)
+			{
+				if(iptype == IPA_IP_v4)
+				{
+					eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v4, src, iptype)->rt_rule_hdl[i] = rt_rule_table->rules[i].rt_rule_hdl;
+				}
+				else
+				{
+					eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v6, src, iptype)->rt_rule_hdl[i] = rt_rule_table->rules[i].rt_rule_hdl;
+				}
+			}
+			if(iptype == IPA_IP_v4)
+			{
+				wlan_client_rt_from_usb_info_count_v4++;
+				IPACMDBG_H("Now the number of IPv4 rt rule on usb-wlan rt table is %d.\n", wlan_client_rt_from_usb_info_count_v4);
+			}
+			else
+			{
+				wlan_client_rt_from_usb_info_count_v6++;
+				IPACMDBG_H("Now the number of IPv6 rt rule on usb-wlan rt table is %d.\n", wlan_client_rt_from_usb_info_count_v6);
+			}
+		}
+	}
+
+fail:
+	if(rt_rule_table != NULL)
+	{
+		free(rt_rule_table);
+	}
+	return res;
+}
+
+int IPACM_Wlan::eth_bridge_del_wlan_client_rt_rule(uint8_t* mac, eth_bridge_src_iface src)
+{
+	if(tx_prop == NULL)
+	{
+		IPACMDBG_H("Tx prop is empty, not deleting routing rule.\n");
+		return IPACM_SUCCESS;
+	}
+	if(mac == NULL)
+	{
+		IPACMERR("Client MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("Receive WLAN client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	int i, position;
+
+	/* first delete the rt rules from IPv4 rt table*/
+	if(src == SRC_WLAN)
+	{
+		for(i=0; i<wlan_client_rt_from_wlan_info_count_v4; i++)
+		{
+			if(memcmp(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v4)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v4)->mac)) == 0)
+			{
+				position = i;
+				IPACMDBG_H("The client is found at position %d.\n", position);
+				break;
+			}
+		}
+		if(i == wlan_client_rt_from_wlan_info_count_v4)
+		{
+			IPACMERR("The client is not found.\n");
+			return IPACM_FAILURE;
+		}
+	}
+	else
+	{
+		for(i=0; i<wlan_client_rt_from_usb_info_count_v4; i++)
+		{
+			if(memcmp(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v4)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v4)->mac)) == 0)
+			{
+				position = i;
+				IPACMDBG_H("The client is found at position %d.\n", position);
+				break;
+			}
+		}
+		if(i == wlan_client_rt_from_usb_info_count_v4)
+		{
+			IPACMERR("The client is not found.\n");
+			return IPACM_FAILURE;
+		}
+	}
+
+	for(i=0; i<each_client_rt_rule_count_v4; i++)
+	{
+		if(m_routing.DeleteRoutingHdl(eth_bridge_get_client_rt_info_ptr(position, src, IPA_IP_v4)->rt_rule_hdl[i], IPA_IP_v4) == false)
+		{
+			IPACMERR("Failed to delete routing rule %d.\n", i);
+			return IPACM_FAILURE;
+		}
+	}
+
+	if(src == SRC_WLAN)
+	{
+		for(i=position+1; i<wlan_client_rt_from_wlan_info_count_v4; i++)
+		{
+			memcpy(eth_bridge_get_client_rt_info_ptr(i-1, src, IPA_IP_v4), eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v4), client_rt_info_size_v4);
+		}
+		memset(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v4-1, src, IPA_IP_v4), 0, client_rt_info_size_v4);
+		wlan_client_rt_from_wlan_info_count_v4--;
+		IPACMDBG_H("Now the number of IPv4 rt rule from wlan info is %d.\n", wlan_client_rt_from_wlan_info_count_v4);
+	}
+	else
+	{
+		for(i=position+1; i<wlan_client_rt_from_usb_info_count_v4; i++)
+		{
+			memcpy(eth_bridge_get_client_rt_info_ptr(i-1, src, IPA_IP_v4), eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v4), client_rt_info_size_v4);
+		}
+		memset(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v4-1, src, IPA_IP_v4), 0, client_rt_info_size_v4);
+		wlan_client_rt_from_usb_info_count_v4--;
+		IPACMDBG_H("Now the number of IPv4 rt rule from usb info is %d.\n", wlan_client_rt_from_usb_info_count_v4);
+	}
+
+	/*delete rt rules from IPv6 rt table */
+	if(src == SRC_WLAN)
+	{
+		for(i=0; i<wlan_client_rt_from_wlan_info_count_v6; i++)
+		{
+			if(memcmp(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v6)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v6)->mac)) == 0)
+			{
+				position = i;
+				IPACMDBG_H("The client is found at position %d.\n", position);
+				break;
+			}
+		}
+		if(i == wlan_client_rt_from_wlan_info_count_v6)
+		{
+			IPACMERR("The client is not found.\n");
+			return IPACM_FAILURE;
+		}
+	}
+	else
+	{
+		for(i=0; i<wlan_client_rt_from_usb_info_count_v6; i++)
+		{
+			if(memcmp(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v6)->mac, mac, sizeof(eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v6)->mac)) == 0)
+			{
+				position = i;
+				IPACMDBG_H("The client is found at position %d.\n", position);
+				break;
+			}
+		}
+		if(i == wlan_client_rt_from_usb_info_count_v6)
+		{
+			IPACMERR("The client is not found.\n");
+			return IPACM_FAILURE;
+		}
+	}
+
+	for(i=0; i<each_client_rt_rule_count_v6; i++)
+	{
+		if(m_routing.DeleteRoutingHdl(eth_bridge_get_client_rt_info_ptr(position, src, IPA_IP_v6)->rt_rule_hdl[i], IPA_IP_v6) == false)
+		{
+			IPACMERR("Failed to delete routing rule %d.\n", i);
+			return IPACM_FAILURE;
+		}
+	}
+
+	if(src == SRC_WLAN)
+	{
+		for(i=position+1; i<wlan_client_rt_from_wlan_info_count_v6; i++)
+		{
+			memcpy(eth_bridge_get_client_rt_info_ptr(i-1, src, IPA_IP_v6), eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v6), client_rt_info_size_v6);
+		}
+		memset(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_wlan_info_count_v6-1, src, IPA_IP_v6), 0, client_rt_info_size_v6);
+		wlan_client_rt_from_wlan_info_count_v6--;
+		IPACMDBG_H("Now the number of IPv6 rt rule from wlan info is %d.\n", wlan_client_rt_from_wlan_info_count_v6);
+	}
+	else
+	{
+		for(i=position+1; i<wlan_client_rt_from_usb_info_count_v6; i++)
+		{
+			memcpy(eth_bridge_get_client_rt_info_ptr(i-1, src, IPA_IP_v6), eth_bridge_get_client_rt_info_ptr(i, src, IPA_IP_v6), client_rt_info_size_v6);
+		}
+		memset(eth_bridge_get_client_rt_info_ptr(wlan_client_rt_from_usb_info_count_v6-1, src, IPA_IP_v6), 0, client_rt_info_size_v6);
+		wlan_client_rt_from_usb_info_count_v6--;
+		IPACMDBG_H("Now the number of IPv6 rt rule from usb info is %d.\n", wlan_client_rt_from_usb_info_count_v6);
+	}
+
+	return IPACM_SUCCESS;
+}
+
+eth_bridge_client_rt_info* IPACM_Wlan::eth_bridge_get_client_rt_info_ptr(uint8_t index, eth_bridge_src_iface src, ipa_ip_type iptype)
+{
+	void* result;
+	if(src == SRC_WLAN)
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			result = (void*)((void*)eth_bridge_wlan_client_rt_from_wlan_info_v4 + index * client_rt_info_size_v4);
+		}
+		else
+		{
+			result = (void*)((void*)eth_bridge_wlan_client_rt_from_wlan_info_v6 + index * client_rt_info_size_v6);
+		}
+	}
+	else
+	{
+		if(iptype == IPA_IP_v4)
+		{
+			result = (void*)((void*)eth_bridge_wlan_client_rt_from_usb_info_v4 + index * client_rt_info_size_v4);
+		}
+		else
+		{
+			result = (void*)((void*)eth_bridge_wlan_client_rt_from_usb_info_v6 + index * client_rt_info_size_v6);
+		}
+	}
+	return (eth_bridge_client_rt_info*)result;
+}
+
+void IPACM_Wlan::eth_bridge_add_wlan_client(uint8_t* mac, int if_num)
+{
+	if(IPACM_Lan::num_wlan_client == IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
+	{
+		IPACMDBG_H("WLAN client table is already full.\n");
+		return;
+	}
+
+	if(mac == NULL)
+	{
+		IPACMERR("Mac address is empty.\n");
+		return;
+	}
+
+	memcpy(IPACM_Lan::eth_bridge_wlan_client[IPACM_Lan::num_wlan_client].mac, mac, sizeof(IPACM_Lan::eth_bridge_wlan_client[IPACM_Lan::num_wlan_client].mac));
+	IPACM_Lan::eth_bridge_wlan_client[IPACM_Lan::num_wlan_client].ipa_if_num = if_num;
+	IPACM_Lan::num_wlan_client++;
+	return;
+}
+
+void IPACM_Wlan::eth_bridge_del_wlan_client(uint8_t* mac)
+{
+	if(mac == NULL)
+	{
+		IPACMERR("Mac address is empty.\n");
+		return;
+	}
+
+	int i, j;
+	for(i=0; i<IPACM_Lan::num_wlan_client; i++)
+	{
+		if(memcmp(IPACM_Lan::eth_bridge_wlan_client[i].mac, mac, sizeof(IPACM_Lan::eth_bridge_wlan_client[i].mac)) == 0)
+		{
+			IPACMDBG_H("Found WLAN client at position %d.\n", i);
+			break;
+		}
+	}
+
+	if(i == IPACM_Lan::num_wlan_client)
+	{
+		IPACMDBG_H("Not finding the WLAN client.\n");
+		return;
+	}
+
+	for(j=i+1; j<IPACM_Lan::num_wlan_client; j++)
+	{
+		memcpy(IPACM_Lan::eth_bridge_wlan_client[j-1].mac, IPACM_Lan::eth_bridge_wlan_client[j].mac, sizeof(IPACM_Lan::eth_bridge_wlan_client[j].mac));
+		IPACM_Lan::eth_bridge_wlan_client[j-1].ipa_if_num = IPACM_Lan::eth_bridge_wlan_client[j].ipa_if_num;
+	}
+	IPACM_Lan::num_wlan_client--;
+	return;
 }

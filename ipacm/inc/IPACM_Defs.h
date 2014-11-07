@@ -85,6 +85,11 @@ extern "C"
 #define V4_ODU_ROUTE_TABLE_NAME  "ODURTBLv4"
 #define V6_ODU_ROUTE_TABLE_NAME  "ODURTBLv6"
 
+#define ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V4 "ETH_BRIDGE_USB_WLAN_RTBLv4"
+#define ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V4 "ETH_BRIDGE_WLAN_WLAN_RTBLv4"
+#define ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V6 "ETH_BRIDGE_USB_WLAN_RTBLv6"
+#define ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V6 "ETH_BRIDGE_WLAN_WLAN_RTBLv6"
+
 #define WWAN_QMI_IOCTL_DEVICE_NAME "/dev/wwan_ioctl"
 #define IPA_DEVICE_NAME "/dev/ipa"
 #define IPA_MAX_FLT_RULE 50
@@ -166,6 +171,12 @@ typedef enum
 	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,         /* 41 ipacm_event_data_fid */
 	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,         /* 42 ipacm_event_data_fid */
 	IPA_WAN_EMBMS_LINK_UP_EVENT,              /* 43 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_USB_CLIENT_ADD_EVENT,      /* 44 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_WLAN_CLIENT_ADD_EVENT,     /* 45 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_USB_CLIENT_DEL_EVENT,      /* 46 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT,     /* 47 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 48 ipacm_event_data_fid */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_fid */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 

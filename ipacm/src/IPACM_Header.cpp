@@ -198,3 +198,34 @@ fail:
 
 }
 
+bool IPACM_Header::AddHeaderProcCtx(struct ipa_ioc_add_hdr_proc_ctx* pHeader)
+{
+	int ret = 0;
+	//call the Driver ioctl to add header processing context
+	ret = ioctl(m_fd, IPA_IOC_ADD_HDR_PROC_CTX, pHeader);
+	return (ret != -1);
+}
+
+bool IPACM_Header::DeleteHeaderProcCtx(uint32_t hdl)
+{
+	int len, ret;
+	struct ipa_ioc_del_hdr_proc_ctx* pHeaderTable = NULL;
+
+	len = sizeof(struct ipa_ioc_del_hdr_proc_ctx) + sizeof(struct ipa_hdr_proc_ctx_del);
+	pHeaderTable = (struct ipa_ioc_del_hdr_proc_ctx*)malloc(len);
+	if(pHeaderTable == NULL)
+	{
+		IPACMERR("Failed to allocate buffer.\n");
+		return false;
+	}
+	memset(pHeaderTable, 0, len);
+
+	pHeaderTable->commit = 1;
+	pHeaderTable->num_hdls = 1;
+	pHeaderTable->hdl[0].hdl = hdl;
+
+	ret = ioctl(m_fd, IPA_IOC_DEL_HDR_PROC_CTX, pHeaderTable);
+	free(pHeaderTable);
+	return (ret != -1);
+}
+

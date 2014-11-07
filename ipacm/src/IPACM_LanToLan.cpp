@@ -1095,8 +1095,8 @@ void IPACM_LanToLan::generate_new_connection(ipa_ip_type iptype, client_info* cl
 				}
 				memset(new_conn, 0, sizeof(ipacm_event_connection));
 				new_conn->iptype = IPA_IP_v6;
-				memcpy(new_conn->src_ipv6_addr, client->ip.ipv6_addr, sizeof(client->ip.ipv6_addr));
-				memcpy(new_conn->dst_ipv6_addr, it->second.ip.ipv6_addr, sizeof(it->second.ip.ipv6_addr));
+				memcpy(new_conn->src_ipv6_addr, client->ip.ipv6_addr, sizeof(new_conn->src_ipv6_addr));
+				memcpy(new_conn->dst_ipv6_addr, it->second.ip.ipv6_addr, sizeof(new_conn->dst_ipv6_addr));
 
 				memset(&evt, 0, sizeof(evt));
 				evt.event = IPA_LAN_TO_LAN_NEW_CONNECTION;
