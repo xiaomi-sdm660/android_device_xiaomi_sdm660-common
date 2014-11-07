@@ -2615,6 +2615,12 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 /*handle lan2lan client active*/
 int IPACM_Lan::handle_lan2lan_client_active(ipacm_event_data_all *data, ipa_cm_event_id event)
 {
+	if((tx_prop == NULL) || (rx_prop == NULL))
+	{
+		IPACMDBG_H("No tx/rx properties registered for iface %s, not posting lan2lan event(%d)\n", dev_name, event);
+		return IPACM_SUCCESS;
+	}
+
 	if(data == NULL)
 	{
 		IPACMERR("Event data is empty.\n");
