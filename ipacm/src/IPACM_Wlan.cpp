@@ -1610,7 +1610,7 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 			    					sizeof(rt_rule->rt_tbl_name));
 
 		                /* Support QCMAP LAN traffic feature, send to A5 */
-				rt_rule_entry->rule.dst = iface_query->excp_pipe;
+				rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
 			        memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
 		   	        rt_rule_entry->rule.hdr_hdl = 0;
 			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;

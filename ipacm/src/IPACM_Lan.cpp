@@ -684,7 +684,7 @@ if (data->iptype == IPA_IP_v4)
 		rt_rule->ip = data->iptype;
 		rt_rule_entry = &rt_rule->rules[0];
 		rt_rule_entry->at_rear = false;
-		rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
+		rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;  //go to A5
 		rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
    		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
 		rt_rule_entry->rule.attrib.u.v4.dst_addr      = data->ipv4_addr;
@@ -742,7 +742,7 @@ if (data->iptype == IPA_IP_v4)
 
 	    rt_rule_entry = &rt_rule->rules[0];
 	    rt_rule_entry->at_rear = false;
-	    rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
+	    rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;  //go to A5
 	    rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
 		rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = data->ipv6_addr[0];
 		rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = data->ipv6_addr[1];
@@ -1585,7 +1585,7 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 						rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v6;
 
 		            /* Support QCMAP LAN traffic feature, send to A5 */
-					rt_rule_entry->rule.dst = iface_query->excp_pipe;
+					rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
 			        memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
 		   	        rt_rule_entry->rule.hdr_hdl = 0;
 			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
