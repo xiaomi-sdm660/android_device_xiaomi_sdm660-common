@@ -148,6 +148,7 @@ typedef struct loc_gps_cfg_s
     uint32_t       INTERMEDIATE_POS;
     uint32_t       ACCURACY_THRES;
     uint32_t       SUPL_VER;
+    uint32_t       SUPL_MODE;
     uint32_t       CAPABILITIES;
     uint32_t       LPP_PROFILE;
     uint32_t       XTRA_VERSION_CHECK;
@@ -156,7 +157,7 @@ typedef struct loc_gps_cfg_s
     char        XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
     uint32_t       USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
     uint32_t       NMEA_PROVIDER;
-    uint8_t        GPS_LOCK;
+    uint32_t       GPS_LOCK;
     uint32_t       A_GLONASS_POS_PROTOCOL_SELECT;
     uint32_t       AGPS_CERT_WRITABLE_MASK;
 } loc_gps_cfg_s_type;
@@ -196,6 +197,9 @@ typedef struct
 
 extern loc_gps_cfg_s_type gps_conf;
 extern loc_sap_cfg_s_type sap_conf;
+
+
+uint32_t getCarrierCapabilities();
 
 //loc_eng functions
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,

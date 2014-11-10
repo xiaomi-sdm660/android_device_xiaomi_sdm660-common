@@ -62,6 +62,7 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_GEOFENCE 0X0008
 /** Positioin is from Hardware FLP */
 #define ULP_LOCATION_IS_FROM_HW_FLP   0x0010
+#define ULP_LOCATION_IS_FROM_NLP   0x0020
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
