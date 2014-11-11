@@ -118,6 +118,8 @@ public:
 	static bool embms_is_on;
 
 private:
+
+	uint32_t ipv6_frag_firewall_flt_rule_hdl;
 	uint32_t *wan_route_rule_v4_hdl;
 	uint32_t *wan_route_rule_v6_hdl;
 	uint32_t *wan_route_rule_v6_hdl_a5;
