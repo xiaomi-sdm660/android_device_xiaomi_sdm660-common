@@ -56,6 +56,8 @@ public:
 	bool Commit();
 	bool Reset();
 	bool DeleteHeaderHdl(uint32_t hdr_hdl);
+	bool AddHeaderProcCtx(struct ipa_ioc_add_hdr_proc_ctx* pHeader);
+	bool DeleteHeaderProcCtx(uint32_t hdl);
 
 	IPACM_Header();
 	~IPACM_Header();

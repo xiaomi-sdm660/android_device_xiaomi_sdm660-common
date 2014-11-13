@@ -103,6 +103,33 @@ struct lan2lan_hdr_hdl
 	bool valid;
 };
 
+struct eth_bridge_client_flt_info
+{
+	uint8_t mac[IPA_MAC_ADDR_SIZE];
+	uint32_t flt_rule_hdl_v4;
+	bool flt_rule_set_v4;
+	uint32_t flt_rule_hdl_v6;
+	bool flt_rule_set_v6;
+};
+
+struct eth_bridge_client_rt_info
+{
+	uint8_t mac[IPA_MAC_ADDR_SIZE];
+	uint32_t rt_rule_hdl[0];
+};
+
+struct hdr_proc_ctx_info
+{
+	uint32_t proc_ctx_hdl;
+	bool valid;
+};
+
+struct eth_bridge_subnet_client_info
+{
+	uint8_t mac[IPA_MAC_ADDR_SIZE];
+	int ipa_if_num;
+};
+
 /* lan iface */
 class IPACM_Lan : public IPACM_Iface
 {
@@ -158,7 +185,76 @@ public:
 
 	int del_lan2lan_hdr(ipa_ip_type iptype, uint32_t hdr_hdl);
 
+
+
+	static ipa_hdr_l2_type usb_hdr_type;
+	static ipa_hdr_l2_type wlan_hdr_type;
+
+	static uint32_t usb_hdr_template_hdl;
+	static uint32_t wlan_hdr_template_hdl;
+
+	static hdr_proc_ctx_info usb_to_wlan_hdr_proc_ctx, wlan_to_usb_hdr_proc_ctx;
+	static hdr_proc_ctx_info wlan_to_wlan_hdr_proc_ctx;
+
+	static eth_bridge_subnet_client_info eth_bridge_wlan_client[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+	static eth_bridge_subnet_client_info eth_bridge_usb_client[IPA_LAN_TO_LAN_MAX_USB_CLIENT];
+
+	static int num_wlan_client;
+	static int num_usb_client;
+
 protected:
+
+	lan2lan_flt_rule_hdl wlan_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+	lan2lan_flt_rule_hdl wlan_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+
+	eth_bridge_client_flt_info eth_bridge_wlan_client_flt_info[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+	int wlan_client_flt_info_count;
+
+	eth_bridge_client_rt_info* eth_bridge_usb_client_rt_info_v4;
+	eth_bridge_client_rt_info* eth_bridge_usb_client_rt_info_v6;
+	int usb_client_rt_info_count_v4;
+	int usb_client_rt_info_count_v6;
+	int client_rt_info_size_v4;
+	int client_rt_info_size_v6;
+
+	int each_client_rt_rule_count_v4;
+	int each_client_rt_rule_count_v6;
+
+	virtual int eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype);
+
+	virtual int eth_bridge_add_wlan_guest_ap_flt_rule(ipa_ip_type iptype);
+
+	virtual int eth_bridge_handle_dummy_usb_client_flt_rule(ipa_ip_type iptype);
+
+	int eth_bridge_add_wlan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
+
+	int eth_bridge_del_wlan_client_flt_rule(uint8_t* mac);
+
+	int eth_bridge_post_lan_client_event(uint8_t* mac_addr, ipa_cm_event_id evt);
+
+	int add_hdr_proc_ctx();
+
+	int del_hdr_proc_ctx();
+
+	ipa_hdr_proc_type get_hdr_proc_type(ipa_hdr_l2_type t1, ipa_hdr_l2_type t2);
+
+	virtual int eth_bridge_install_cache_wlan_client_flt_rule(ipa_ip_type iptype);
+
+	virtual int eth_bridge_install_cache_usb_client_flt_rule(ipa_ip_type iptype);
+
+	int eth_bridge_add_usb_client_rt_rule(uint8_t* mac, ipa_ip_type iptype);
+
+	int eth_bridge_del_usb_client_rt_rule(uint8_t* mac);
+
+	eth_bridge_client_rt_info* eth_bridge_get_client_rt_info_ptr(uint8_t index, ipa_ip_type iptype);
+
+	void eth_bridge_add_usb_client(uint8_t* mac);
+
+	void eth_bridge_del_usb_client(uint8_t* mac);
+
+	int eth_bridge_get_hdr_template_hdl(uint32_t* hdr_hdl);
+
+
 
 	virtual int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
 
