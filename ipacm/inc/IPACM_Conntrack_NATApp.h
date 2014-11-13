@@ -52,6 +52,7 @@ typedef struct _nat_table_entry
 	uint32_t target_ip;
 	uint16_t target_port;
 
+	uint16_t public_ip;
 	uint16_t public_port;
 
 	u_int8_t  protocol;
@@ -74,6 +75,7 @@ private:
 	nat_table_entry *cache;
 	nat_table_entry temp[MAX_TEMP_ENTRIES];
 	uint32_t pub_ip_addr;
+	uint32_t pub_ip_addr_pre;
 	uint32_t nat_table_hdl;
 
 	int curCnt, max_entries;
@@ -118,6 +120,7 @@ public:
 	void UpdateTcpUdpTo(uint32_t, int proto);
 
 	void AddTempEntry(const nat_table_entry *);
+	void CacheEntry(const nat_table_entry *);
 	void DeleteTempEntry(const nat_table_entry *);
 	void FlushTempEntries(uint32_t, bool);
 };

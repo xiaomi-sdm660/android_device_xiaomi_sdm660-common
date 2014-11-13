@@ -113,19 +113,6 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 		goto IGNORE;
 	}
 
-	if(!CtList->isWanUp())
-	{
-#ifdef IPACM_DEBUG
-		IPACMDBG("Wan is not up, ignoring below connections\n");
-		char buf[1024];
-		nfct_snprintf(buf, sizeof(buf), ct,
-									type, NFCT_O_PLAIN, NFCT_OF_TIME);
-		IPACMDBG("%s\n", buf);
-		IPACMDBG("\n");
-		ParseCTMessage(ct);
-#endif
-		goto IGNORE;
-	}
 #endif
 
 	ct_data = (ipacm_ct_evt_data *)malloc(sizeof(ipacm_ct_evt_data));
