@@ -324,6 +324,8 @@ private:
 	/* construct complete STA ethernet header */
 	int handle_sta_header_add_evt();
 
+	bool check_dft_firewall_rules_attr_mask(IPACM_firewall_conf_t *firewall_config);
+
 	int config_dft_firewall_rules(ipa_ip_type iptype);
 
 	/* configure the initial firewall filter rules */
