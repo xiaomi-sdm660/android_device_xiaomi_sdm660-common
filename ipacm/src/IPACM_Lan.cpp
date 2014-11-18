@@ -1688,8 +1688,8 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 	{
 
         /* Add corresponding ipa_rm_resource_name of TX-endpoint up before IPV6 RT-rule set */
-	IPACMDBG_H("dev %s add producer dependency\n", dev_name);
-	IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+		IPACMDBG_H("dev %s add producer dependency\n", dev_name);
+		IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
         IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 
 		rt_rule = (struct ipa_ioc_add_rt_rule *)

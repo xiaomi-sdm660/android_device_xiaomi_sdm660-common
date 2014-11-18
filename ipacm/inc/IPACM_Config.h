@@ -115,6 +115,9 @@ public:
 
 	int ipa_nat_iface_entries;
 
+	/* Max valid rm entry */
+	int ipa_max_valid_rm_entry;
+
 	/* Store SW-enable or not */
 	bool ipa_sw_rt_enable;
 

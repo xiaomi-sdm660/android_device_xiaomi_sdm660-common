@@ -64,6 +64,7 @@ IPACM_Config::IPACM_Config()
 	ipa_nat_iface_entries = 0;
 	ipa_sw_rt_enable = false;
 	isMCC_Mode = false;
+	ipa_max_valid_rm_entry = 0;
 
 	memset(&rt_tbl_default_v4, 0, sizeof(rt_tbl_default_v4));
 	memset(&rt_tbl_lan_v4, 0, sizeof(rt_tbl_lan_v4));
@@ -286,6 +287,9 @@ int IPACM_Config::Init(void)
 	ipa_client_rm_map_tbl[IPA_CLIENT_A2_EMBEDDED_CONS]= IPA_RM_RESOURCE_Q6_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_A2_TETHERED_CONS]= IPA_RM_RESOURCE_Q6_CONS;
 	ipa_client_rm_map_tbl[IPA_CLIENT_APPS_WAN_CONS]= IPA_RM_RESOURCE_Q6_CONS;
+	ipa_client_rm_map_tbl[IPA_CLIENT_ODU_PROD]= IPA_RM_RESOURCE_ODU_ADAPT_PROD;
+	ipa_client_rm_map_tbl[IPA_CLIENT_ODU_EMB_CONS]= IPA_RM_RESOURCE_ODU_ADAPT_CONS;
+	ipa_client_rm_map_tbl[IPA_CLIENT_ODU_TETH_CONS]= IPA_RM_RESOURCE_ODU_ADAPT_CONS;
 
 	/* Create the entries which IPACM wants to add dependencies on */
 	ipa_rm_tbl[0].producer_rm1 = IPA_RM_RESOURCE_WLAN_PROD;
@@ -303,9 +307,28 @@ int IPACM_Config::Init(void)
 	ipa_rm_tbl[2].producer_rm2 = IPA_RM_RESOURCE_USB_PROD;
 	ipa_rm_tbl[2].consumer_rm2 = IPA_RM_RESOURCE_WLAN_CONS;
 
+	ipa_rm_tbl[3].producer_rm1 = IPA_RM_RESOURCE_ODU_ADAPT_PROD;
+	ipa_rm_tbl[3].consumer_rm1 = IPA_RM_RESOURCE_Q6_CONS;
+	ipa_rm_tbl[3].producer_rm2 = IPA_RM_RESOURCE_Q6_PROD;
+	ipa_rm_tbl[3].consumer_rm2 = IPA_RM_RESOURCE_ODU_ADAPT_CONS;
+
+	ipa_rm_tbl[4].producer_rm1 = IPA_RM_RESOURCE_WLAN_PROD;
+	ipa_rm_tbl[4].consumer_rm1 = IPA_RM_RESOURCE_ODU_ADAPT_CONS;
+	ipa_rm_tbl[4].producer_rm2 = IPA_RM_RESOURCE_ODU_ADAPT_PROD;
+	ipa_rm_tbl[4].consumer_rm2 = IPA_RM_RESOURCE_WLAN_CONS;
+
+	ipa_rm_tbl[5].producer_rm1 = IPA_RM_RESOURCE_ODU_ADAPT_PROD;
+	ipa_rm_tbl[5].consumer_rm1 = IPA_RM_RESOURCE_USB_CONS;
+	ipa_rm_tbl[5].producer_rm2 = IPA_RM_RESOURCE_USB_PROD;
+	ipa_rm_tbl[5].consumer_rm2 = IPA_RM_RESOURCE_ODU_ADAPT_CONS;
+	ipa_max_valid_rm_entry = 6; /* max is IPA_MAX_RM_ENTRY (6)*/
+
 	IPACMDBG_H(" depend MAP-0 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_WLAN_PROD, IPA_RM_RESOURCE_Q6_CONS);
 	IPACMDBG_H(" depend MAP-1 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_USB_PROD, IPA_RM_RESOURCE_Q6_CONS);
 	IPACMDBG_H(" depend MAP-2 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_WLAN_PROD, IPA_RM_RESOURCE_USB_CONS);
+	IPACMDBG_H(" depend MAP-3 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_ODU_ADAPT_PROD, IPA_RM_RESOURCE_Q6_CONS);
+	IPACMDBG_H(" depend MAP-4 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_WLAN_PROD, IPA_RM_RESOURCE_ODU_ADAPT_CONS);
+	IPACMDBG_H(" depend MAP-5 rm index %d to rm index: %d \n", IPA_RM_RESOURCE_ODU_ADAPT_PROD, IPA_RM_RESOURCE_USB_CONS);
 
 fail:
 	if (cfg != NULL)
@@ -443,7 +466,7 @@ void IPACM_Config::AddRmDepend(ipa_rm_resource_name rm1,bool rx_bypass_ipa)
 		IPACMDBG_H("got %d times default RT routing from A2 \n", ipa_rm_a2_check);
 	}
 
-	for(int i=0;i<IPA_MAX_PRIVATE_SUBNET_ENTRIES;i++)
+	for(int i=0;i<ipa_max_valid_rm_entry;i++)
 	{
 		if(rm1 == ipa_rm_tbl[i].producer_rm1)
 		{
@@ -551,7 +574,7 @@ void IPACM_Config::DelRmDepend(ipa_rm_resource_name rm1)
 		IPACMDBG_H("Left %d times default RT routing from A2 \n", ipa_rm_a2_check);
 	}
 
-	for(int i=0;i<IPA_MAX_PRIVATE_SUBNET_ENTRIES;i++)
+	for(int i=0;i<ipa_max_valid_rm_entry;i++)
 	{
 
 		if(rm1 == ipa_rm_tbl[i].producer_rm1)
