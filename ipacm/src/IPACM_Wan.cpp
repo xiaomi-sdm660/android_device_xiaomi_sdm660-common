@@ -464,29 +464,29 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 
 	case IPA_LINK_DOWN_EVENT:
 		{
-			if(m_is_sta_mode == Q6_WAN)
+			ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
+			ipa_interface_index = iface_ipa_index_query(data->if_index);
+			if (ipa_interface_index == ipa_if_num)
 			{
-				ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
-				ipa_interface_index = iface_ipa_index_query(data->if_index);
-				if (ipa_interface_index == ipa_if_num)
+				if(m_is_sta_mode == Q6_WAN)
 				{
-					IPACMDBG_H("Received IPA_LINK_DOWN_EVENT\n");
-					handle_down_evt_ex();
-					IPACMDBG_H("IPA_WAN_Q6 (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+						IPACMDBG_H("Received IPA_LINK_DOWN_EVENT\n");
+						handle_down_evt_ex();
+						IPACMDBG_H("IPA_WAN_Q6 (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+						IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
+						delete this;
+						return;
+				}
+				else if (m_is_sta_mode == ECM_WAN)
+				{
+					IPACMDBG_H("Received IPA_LINK_DOWN_EVENT(wan_mode:%d)\n", m_is_sta_mode);
+					/* delete previous instance */
+					handle_down_evt();
+					IPACMDBG_H("IPA_WAN_CRADLE (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
 					IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
 					delete this;
 					return;
 				}
-			}
-			else if (m_is_sta_mode == ECM_WAN)
-			{
-				IPACMDBG_H("Received IPA_LINK_DOWN_EVENT(wan_mode:%d)\n", m_is_sta_mode);
-				/* delete previous instance */
-				handle_down_evt();
-				IPACMDBG_H("IPA_WAN_CRADLE (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
-				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
-				delete this;
-				return;
 			}
 		}
 		break;
