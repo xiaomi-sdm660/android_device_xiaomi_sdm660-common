@@ -328,15 +328,14 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 								/* use previous ipv4 first */
 								if(data->if_index != neighbor_client[i].iface_index)
 								{
-									IPACMERR("update new kernel iface index \n");
+									IPACMDBG_H("update new kernel iface index \n");
 									neighbor_client[i].iface_index = data->if_index;
 								}
 
 								/* check if client associated with previous network interface */
 								if(ipa_interface_index != neighbor_client[i].ipa_if_num)
 								{
-									IPACMERR("client associate to different AP \n");
-									return;
+									IPACMDBG_H("client associate to different AP \n");
 								}
 
 								if (neighbor_client[i].v4_addr != 0) /* not 0.0.0.0 */
