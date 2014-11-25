@@ -3871,12 +3871,6 @@ int IPACM_Wan::handle_down_evt_ex()
 
 	IPACMDBG_H(" wan handle_down_evt \n");
 
-	/* no iface address up, directly close iface*/
-	if (ip_type == IPACM_IP_NULL)
-	{
-		goto fail;
-	}
-
 	/* free ODU filter rule handlers */
 	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == EMBMS_IF)
 	{
@@ -3891,6 +3885,12 @@ int IPACM_Wan::handle_down_evt_ex()
 			install_wan_filtering_rule(false);
 			IPACMDBG("finished delete embms filtering rule\n ");
 		}
+		goto fail;
+	}
+
+	/* no iface address up, directly close iface*/
+	if (ip_type == IPACM_IP_NULL)
+	{
 		goto fail;
 	}
 
@@ -4228,6 +4228,7 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 					IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 					return IPACM_FAILURE;
 				}
+				memset(pFilteringTable_v4, 0, len);
 				pFilteringTable_v4->commit = 1;
 				pFilteringTable_v4->ep = rx_prop->rx[0].src_pipe;
 				pFilteringTable_v4->global = false;
@@ -4250,6 +4251,7 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 					free(pFilteringTable_v4);
 					return IPACM_FAILURE;
 				}
+				memset(pFilteringTable_v6, 0, len);
 				pFilteringTable_v6->commit = 1;
 				pFilteringTable_v6->ep = rx_prop->rx[0].src_pipe;
 				pFilteringTable_v6->global = false;
@@ -4270,6 +4272,7 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 				IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
 				return IPACM_FAILURE;
 			}
+			memset(pFilteringTable_v4, 0, len);
 			pFilteringTable_v4->commit = 1;
 			pFilteringTable_v4->ep = rx_prop->rx[0].src_pipe;
 			pFilteringTable_v4->global = false;
@@ -4286,6 +4289,7 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 				free(pFilteringTable_v4);
 				return IPACM_FAILURE;
 			}
+			memset(pFilteringTable_v6, 0, len);
 			pFilteringTable_v6->commit = 1;
 			pFilteringTable_v6->ep = rx_prop->rx[0].src_pipe;
 			pFilteringTable_v6->global = false;
