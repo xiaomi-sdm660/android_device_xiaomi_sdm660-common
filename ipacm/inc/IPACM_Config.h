@@ -122,11 +122,11 @@ public:
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan_v4, rt_tbl_wan_v4, rt_tbl_default_v4, rt_tbl_v6, rt_tbl_wan_v6;
 	struct ipa_ioc_get_rt_tbl rt_tbl_wan_dl;
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan2lan_v4, rt_tbl_lan2lan_v6;
-
 	struct ipa_ioc_get_rt_tbl rt_tbl_odu_v4, rt_tbl_odu_v6;
-
 	struct ipa_ioc_get_rt_tbl rt_tbl_eth_bridge_usb_wlan_v4, rt_tbl_eth_bridge_wlan_wlan_v4;
 	struct ipa_ioc_get_rt_tbl rt_tbl_eth_bridge_usb_wlan_v6, rt_tbl_eth_bridge_wlan_wlan_v6;
+
+	bool isMCC_Mode;
 
 	/* To return the instance */
 	static IPACM_Config* GetInstance();

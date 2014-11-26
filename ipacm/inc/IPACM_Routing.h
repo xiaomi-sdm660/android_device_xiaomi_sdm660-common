@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,8 @@ public:
 
 	bool DeviceNodeIsOpened();
 	bool DeleteRoutingHdl(uint32_t rt_rule_hdl, ipa_ip_type ip);
+
+	bool ModifyRoutingRule(struct ipa_ioc_mdfy_rt_rule *);
 
 private:
 	static const char *DEVICE_NAME;

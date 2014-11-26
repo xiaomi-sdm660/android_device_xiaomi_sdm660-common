@@ -63,6 +63,7 @@ IPACM_Config::IPACM_Config()
 	ipa_nat_max_entries = 0;
 	ipa_nat_iface_entries = 0;
 	ipa_sw_rt_enable = false;
+	isMCC_Mode = false;
 
 	memset(&rt_tbl_default_v4, 0, sizeof(rt_tbl_default_v4));
 	memset(&rt_tbl_lan_v4, 0, sizeof(rt_tbl_lan_v4));

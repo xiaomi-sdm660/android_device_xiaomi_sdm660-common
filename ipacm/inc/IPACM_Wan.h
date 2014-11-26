@@ -324,6 +324,9 @@ private:
 
 	bool is_global_ipv6_addr(uint32_t* ipv6_addr);
 
+	void handle_wlan_SCC_MCC_switch(bool, ipa_ip_type);
+	void handle_wan_client_SCC_MCC_switch(bool, ipa_ip_type);
+
 	int m_fd_ipa;
 
 };

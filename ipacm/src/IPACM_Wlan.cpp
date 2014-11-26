@@ -617,7 +617,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					/* Add NAT rules after ipv4 RT rules are set */
 					CtList->HandleNeighIpAddrAddEvt(data);
-//					Nat_App->ResetPwrSaveIf(data->ipv4_addr);
+					//Nat_App->ResetPwrSaveIf(data->ipv4_addr);
 				}
 			}
 		}
@@ -732,6 +732,32 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 	}
 	break;
+
+	case IPA_WLAN_SWITCH_TO_SCC:
+		IPACMDBG_H("Received IPA_WLAN_SWITCH_TO_SCC\n");
+		if(ip_type == IPA_IP_MAX)
+		{
+			handle_SCC_MCC_switch(IPA_IP_v4);
+			handle_SCC_MCC_switch(IPA_IP_v6);
+		}
+		else
+		{
+			handle_SCC_MCC_switch(ip_type);
+		}
+		break;
+
+	case IPA_WLAN_SWITCH_TO_MCC:
+		IPACMDBG_H("Received IPA_WLAN_SWITCH_TO_MCC\n");
+		if(ip_type == IPA_IP_MAX)
+		{
+			handle_SCC_MCC_switch(IPA_IP_v4);
+			handle_SCC_MCC_switch(IPA_IP_v6);
+		}
+		else
+		{
+			handle_SCC_MCC_switch(ip_type);
+		}
+		break;
 
 	default:
 		break;
@@ -1739,8 +1765,8 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 	}
 
 	IPACMDBG_H("Received mac_addr MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
-					 mac_addr[0], mac_addr[1], mac_addr[2],
-					 mac_addr[3], mac_addr[4], mac_addr[5]);
+			mac_addr[0], mac_addr[1], mac_addr[2],
+			mac_addr[3], mac_addr[4], mac_addr[5]);
 
 	wlan_index = get_wlan_client_index(mac_addr);
 	if (wlan_index == IPACM_INVALID_INDEX)
@@ -1756,31 +1782,31 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 		return IPACM_SUCCESS;
 	}
 
-        if (iptype==IPA_IP_v4)
+	if (iptype==IPA_IP_v4)
 	{
-	IPACMDBG_H("wlan client index: %d, ip-type: %d, ipv4_set:%d, ipv4_rule_set:%d \n", wlan_index, iptype,
-					 get_client_memptr(wlan_client, wlan_index)->ipv4_set,
-					 get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4);
+		IPACMDBG_H("wlan client index: %d, ip-type: %d, ipv4_set:%d, ipv4_rule_set:%d \n", wlan_index, iptype,
+				get_client_memptr(wlan_client, wlan_index)->ipv4_set,
+				get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4);
 	}
-        else
+	else
 	{
-	  IPACMDBG_H("wlan client index: %d, ip-type: %d, ipv6_set:%d, ipv6_rule_num:%d \n", wlan_index, iptype,
-					 get_client_memptr(wlan_client, wlan_index)->ipv6_set,
-					 get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6);
+		IPACMDBG_H("wlan client index: %d, ip-type: %d, ipv6_set:%d, ipv6_rule_num:%d \n", wlan_index, iptype,
+				get_client_memptr(wlan_client, wlan_index)->ipv6_set,
+				get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6);
 	}
 
 
 	/* Add default  Qos routing rules if not set yet */
 	if ((iptype == IPA_IP_v4
-			 && get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4 == false
-			 && get_client_memptr(wlan_client, wlan_index)->ipv4_set == true)
+				&& get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4 == false
+				&& get_client_memptr(wlan_client, wlan_index)->ipv4_set == true)
 			|| (iptype == IPA_IP_v6
-		            && get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6 < get_client_memptr(wlan_client, wlan_index)->ipv6_set
-					))
+				&& get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6 < get_client_memptr(wlan_client, wlan_index)->ipv6_set
+			   ))
 	{
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
-			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
-						NUM * sizeof(struct ipa_rt_rule_add));
+			calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
+					NUM * sizeof(struct ipa_rt_rule_add));
 
 		if (rt_rule == NULL)
 		{
@@ -1788,133 +1814,152 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 			return IPACM_FAILURE;
 		}
 
-		        rt_rule->commit = 1;
-	                rt_rule->num_rules = (uint8_t)NUM;
-		        rt_rule->ip = iptype;
+		rt_rule->commit = 1;
+		rt_rule->num_rules = (uint8_t)NUM;
+		rt_rule->ip = iptype;
 
 
 		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
-  	        {
+		{
 
-		        if(iptype != tx_prop->tx[tx_index].ip)
-		        {
-		   	        IPACMDBG_H("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n",
-		   	  				    tx_index, tx_prop->tx[tx_index].ip,iptype);
-		   	        continue;
-		        }
+			if(iptype != tx_prop->tx[tx_index].ip)
+			{
+				IPACMDBG_H("Tx:%d, ip-type: %d conflict ip-type: %d no RT-rule added\n",
+						tx_index, tx_prop->tx[tx_index].ip,iptype);
+				continue;
+			}
 
-  	   	        rt_rule_entry = &rt_rule->rules[0];
+			rt_rule_entry = &rt_rule->rules[0];
 			rt_rule_entry->at_rear = 0;
 
 			if (iptype == IPA_IP_v4)
 			{
-		                IPACMDBG_H("client index(%d):ipv4 address: 0x%x\n", wlan_index,
-		  				        get_client_memptr(wlan_client, wlan_index)->v4_addr);
+				IPACMDBG_H("client index(%d):ipv4 address: 0x%x\n", wlan_index,
+						get_client_memptr(wlan_client, wlan_index)->v4_addr);
 
-                                IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
-		  				 wlan_index,
-		  				 get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4);
+				IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
+						wlan_index,
+						get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4);
 				strncpy(rt_rule->rt_tbl_name,
-								IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name,
-								sizeof(rt_rule->rt_tbl_name));
+						IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name,
+						sizeof(rt_rule->rt_tbl_name));
 
 
-			        rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-			        memcpy(&rt_rule_entry->rule.attrib,
-						 &tx_prop->tx[tx_index].attrib,
-						 sizeof(rt_rule_entry->rule.attrib));
-			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		   	        rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4;
+				if(IPACM_Iface::ipacmcfg->isMCC_Mode)
+				{
+					IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+							tx_prop->tx[tx_index].alt_dst_pipe);
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+				}
+				else
+				{
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+				}
+
+				memcpy(&rt_rule_entry->rule.attrib,
+						&tx_prop->tx[tx_index].attrib,
+						sizeof(rt_rule_entry->rule.attrib));
+				rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+				rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(wlan_client, wlan_index)->v4_addr;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
 
-			        if (false == m_routing.AddRoutingRule(rt_rule))
-  	                        {
-  	          	            IPACMERR("Routing rule addition failed!\n");
-  	          	            free(rt_rule);
-  	          	            return IPACM_FAILURE;
-			        }
+				if (false == m_routing.AddRoutingRule(rt_rule))
+				{
+					IPACMERR("Routing rule addition failed!\n");
+					free(rt_rule);
+					return IPACM_FAILURE;
+				}
 
-			        /* copy ipv4 RT hdl */
-		                get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4 =
-  	   	                rt_rule->rules[0].rt_rule_hdl;
-		                IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
-		      	        get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4, iptype);
-  	   	        }
-  	   	        else
-  	   	        {
-		            for(v6_num = get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6;v6_num < get_client_memptr(wlan_client, wlan_index)->ipv6_set;v6_num++)
-			    {
-                                IPACMDBG_H("client(%d): v6 header handle:(0x%x)\n",
-		  	    			 wlan_index,
-		  	    			 get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6);
-
-		                /* v6 LAN_RT_TBL */
-			    	strncpy(rt_rule->rt_tbl_name,
-			    					IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
-			    					sizeof(rt_rule->rt_tbl_name));
-
-		                /* Support QCMAP LAN traffic feature, send to A5 */
-				rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
-			        memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
-		   	        rt_rule_entry->rule.hdr_hdl = 0;
-			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][3];
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
-
-   	                        if (false == m_routing.AddRoutingRule(rt_rule))
-  	                        {
-  	                	    IPACMERR("Routing rule addition failed!\n");
-  	                	    free(rt_rule);
-  	                	    return IPACM_FAILURE;
-			        }
-
-		                get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[v6_num] = rt_rule->rules[0].rt_rule_hdl;
-		                IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
-		            				 get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[v6_num], iptype);
-
-			        /*Copy same rule to v6 WAN RT TBL*/
-  	                        strncpy(rt_rule->rt_tbl_name,
-  	                 					IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
-  	                 					sizeof(rt_rule->rt_tbl_name));
-
-                                /* Downlink traffic from Wan iface, directly through IPA */
-				rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-			        memcpy(&rt_rule_entry->rule.attrib,
-						 &tx_prop->tx[tx_index].attrib,
-						 sizeof(rt_rule_entry->rule.attrib));
-		   	        rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6;
-			        rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
-		   	        rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][3];
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
-				rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
-
-		               if (false == m_routing.AddRoutingRule(rt_rule))
-		               {
-			           IPACMERR("Routing rule addition failed!\n");
-			           free(rt_rule);
-			           return IPACM_FAILURE;
-		               }
-
-		                get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6_wan[v6_num] = rt_rule->rules[0].rt_rule_hdl;
-
+				/* copy ipv4 RT hdl */
+				get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4 =
+					rt_rule->rules[0].rt_rule_hdl;
 				IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
-		            				 get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6_wan[v6_num], iptype);
-			    }
+						get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4, iptype);
+			}
+			else
+			{
+				for(v6_num = get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6;v6_num < get_client_memptr(wlan_client, wlan_index)->ipv6_set;v6_num++)
+				{
+					IPACMDBG_H("client(%d): v6 header handle:(0x%x)\n",
+							wlan_index,
+							get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6);
+
+					/* v6 LAN_RT_TBL */
+					strncpy(rt_rule->rt_tbl_name,
+							IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
+							sizeof(rt_rule->rt_tbl_name));
+
+					/* Support QCMAP LAN traffic feature, send to A5 */
+					rt_rule_entry->rule.dst = iface_query->excp_pipe;
+					memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
+					rt_rule_entry->rule.hdr_hdl = 0;
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][3];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+
+					if (false == m_routing.AddRoutingRule(rt_rule))
+					{
+						IPACMERR("Routing rule addition failed!\n");
+						free(rt_rule);
+						return IPACM_FAILURE;
+					}
+
+					get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[v6_num] = rt_rule->rules[0].rt_rule_hdl;
+					IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
+							get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[v6_num], iptype);
+
+					/*Copy same rule to v6 WAN RT TBL*/
+					strncpy(rt_rule->rt_tbl_name,
+							IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
+							sizeof(rt_rule->rt_tbl_name));
+
+					/* Downlink traffic from Wan iface, directly through IPA */
+					if(IPACM_Iface::ipacmcfg->isMCC_Mode)
+					{
+						IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+								tx_prop->tx[tx_index].alt_dst_pipe);
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+					}
+					else
+					{
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+					}
+					memcpy(&rt_rule_entry->rule.attrib,
+							&tx_prop->tx[tx_index].attrib,
+							sizeof(rt_rule_entry->rule.attrib));
+					rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6;
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][3];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+
+					if (false == m_routing.AddRoutingRule(rt_rule))
+					{
+						IPACMERR("Routing rule addition failed!\n");
+						free(rt_rule);
+						return IPACM_FAILURE;
+					}
+
+					get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6_wan[v6_num] = rt_rule->rules[0].rt_rule_hdl;
+
+					IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
+							get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6_wan[v6_num], iptype);
+				}
 			}
 
-  	        } /* end of for loop */
+		} /* end of for loop */
 
 		free(rt_rule);
 
@@ -4559,5 +4604,212 @@ void IPACM_Wlan::eth_bridge_del_wlan_client(uint8_t* mac)
 		IPACM_Lan::eth_bridge_wlan_client[j-1].ipa_if_num = IPACM_Lan::eth_bridge_wlan_client[j].ipa_if_num;
 	}
 	IPACM_Lan::num_wlan_client--;
+	return;
+}
+
+void IPACM_Wlan::handle_SCC_MCC_switch(ipa_ip_type iptype)
+{
+	struct ipa_ioc_mdfy_rt_rule *rt_rule = NULL;
+	struct ipa_rt_rule_mdfy *rt_rule_entry;
+	uint32_t tx_index;
+	int wlan_index, v6_num;
+	const int NUM = 1;
+	int num_wifi_client_tmp = IPACM_Wlan::num_wifi_client;
+	bool isAdded = false;
+
+	if (tx_prop == NULL)
+	{
+		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
+		return;
+	}
+
+	if (rt_rule == NULL)
+	{
+		rt_rule = (struct ipa_ioc_mdfy_rt_rule *)
+			calloc(1, sizeof(struct ipa_ioc_mdfy_rt_rule) +
+					NUM * sizeof(struct ipa_rt_rule_mdfy));
+
+		if (rt_rule == NULL)
+		{
+			PERROR("Error Locate ipa_ioc_mdfy_rt_rule memory...\n");
+			return;
+		}
+
+		rt_rule->commit = 0;
+		rt_rule->num_rules = NUM;
+		rt_rule->ip = iptype;
+	}
+	rt_rule_entry = &rt_rule->rules[0];
+
+	/* modify ipv4 routing rule */
+	if (iptype == IPA_IP_v4)
+	{
+		for (wlan_index = 0; wlan_index < num_wifi_client_tmp; wlan_index++)
+		{
+			IPACMDBG_H("wlan client index: %d, ip-type: %d, ipv4_set:%d, ipv4_rule_set:%d \n",
+					wlan_index, iptype,
+					get_client_memptr(wlan_client, wlan_index)->ipv4_set,
+					get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4);
+
+			if (get_client_memptr(wlan_client, wlan_index)->power_save_set == true ||
+					get_client_memptr(wlan_client, wlan_index)->route_rule_set_v4 == false)
+			{
+				IPACMDBG_H("client %d route rules not set\n", wlan_index);
+				continue;
+			}
+
+			IPACMDBG_H("Modify client %d route rule\n", wlan_index);
+			for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+			{
+				if (iptype != tx_prop->tx[tx_index].ip)
+				{
+					IPACMDBG_H("Tx:%d, ip-type: %d ip-type not matching: %d ignore\n",
+							tx_index, tx_prop->tx[tx_index].ip, iptype);
+					continue;
+				}
+
+				IPACMDBG_H("client index(%d):ipv4 address: 0x%x\n", wlan_index,
+						get_client_memptr(wlan_client, wlan_index)->v4_addr);
+
+				IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
+						wlan_index,
+						get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4);
+
+				if (IPACM_Iface::ipacmcfg->isMCC_Mode)
+				{
+					IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+							tx_prop->tx[tx_index].alt_dst_pipe);
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+				}
+				else
+				{
+					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+				}
+
+				memcpy(&rt_rule_entry->rule.attrib,
+						&tx_prop->tx[tx_index].attrib,
+						sizeof(rt_rule_entry->rule.attrib));
+
+				rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+				rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4;
+
+				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(wlan_client, wlan_index)->v4_addr;
+				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+
+				IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
+						get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4, iptype);
+
+				rt_rule_entry->rt_rule_hdl =
+					get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v4;
+
+				if (false == m_routing.ModifyRoutingRule(rt_rule))
+				{
+					IPACMERR("Routing rule modify failed!\n");
+					free(rt_rule);
+					return;
+				}
+				isAdded = true;
+			}
+
+		}
+	}
+
+	/* modify ipv6 routing rule */
+	if (iptype == IPA_IP_v6)
+	{
+		for (wlan_index = 0; wlan_index < num_wifi_client_tmp; wlan_index++)
+		{
+
+			IPACMDBG_H("wlan client index: %d, ip-type: %d, ipv6_set:%d, ipv6_rule_num:%d \n", wlan_index, iptype,
+					get_client_memptr(wlan_client, wlan_index)->ipv6_set,
+					get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6);
+
+			if (get_client_memptr(wlan_client, wlan_index)->power_save_set == true ||
+					(get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6 <
+					 get_client_memptr(wlan_client, wlan_index)->ipv6_set) )
+			{
+				IPACMDBG_H("client %d route rules not set\n", wlan_index);
+				continue;
+			}
+
+			IPACMDBG_H("Modify client %d route rule\n", wlan_index);
+			for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+			{
+				if (iptype != tx_prop->tx[tx_index].ip)
+				{
+					IPACMDBG_H("Tx:%d, ip-type: %d ip-type not matching: %d Ignore\n",
+							tx_index, tx_prop->tx[tx_index].ip, iptype);
+					continue;
+				}
+
+				for (v6_num = get_client_memptr(wlan_client, wlan_index)->route_rule_set_v6;
+						v6_num < get_client_memptr(wlan_client, wlan_index)->ipv6_set;
+						v6_num++)
+				{
+
+					IPACMDBG_H("client(%d): v6 header handle:(0x%x)\n",
+							wlan_index,
+							get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6);
+
+					if (IPACM_Iface::ipacmcfg->isMCC_Mode)
+					{
+						IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+								tx_prop->tx[tx_index].alt_dst_pipe);
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+					}
+					else
+					{
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+					}
+
+					memcpy(&rt_rule_entry->rule.attrib,
+							&tx_prop->tx[tx_index].attrib,
+							sizeof(rt_rule_entry->rule.attrib));
+
+					rt_rule_entry->rule.hdr_hdl = get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6;
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][0];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][1];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][2];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = get_client_memptr(wlan_client, wlan_index)->v6_addr[v6_num][3];
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
+					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+
+					rt_rule_entry->rt_rule_hdl =
+						get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6_wan[v6_num];
+
+					if (false == m_routing.ModifyRoutingRule(rt_rule))
+					{
+						IPACMERR("Routing rule modify failed!\n");
+						free(rt_rule);
+						return;
+					}
+					isAdded = true;
+				}
+			}
+
+		}
+	}
+
+
+	if (isAdded)
+	{
+		if (false == m_routing.Commit(iptype))
+		{
+			IPACMERR("Routing rule modify commit failed!\n");
+			free(rt_rule);
+			return;
+		}
+
+		IPACMDBG("Routing rule modified successfully \n");
+	}
+
+	if(rt_rule)
+	{
+		free(rt_rule);
+	}
 	return;
 }

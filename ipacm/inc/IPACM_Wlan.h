@@ -320,6 +320,8 @@ private:
 
 	/*handle reset wifi-client rt-rules */
 	int handle_wlan_client_reset_rt(ipa_ip_type iptype);
+
+	void handle_SCC_MCC_switch(ipa_ip_type);
 };
 
 
