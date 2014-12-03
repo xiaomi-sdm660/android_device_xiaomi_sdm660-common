@@ -46,21 +46,6 @@
 #include <time.h>
 #include <new>
 #include <LocEngAdapter.h>
-
-#ifdef _ANDROID
-#include <cutils/sched_policy.h>
-#include <cutils/properties.h>
-#else
-#include "fake_sched_policy.h"
-#include "fake_property_service.h"
-#endif
-
-#ifndef USE_GLIB
-#include <utils/SystemClock.h>
-#include <utils/Log.h>
-#endif /* USE_GLIB */
-
-
 #if defined(USE_GLIB) && !defined(OFF_TARGET)
 #include <glib.h>
 #endif
@@ -69,7 +54,6 @@
 #endif /* USE_GLIB */
 
 #include <string.h>
-
 #include <loc_eng.h>
 #include <loc_eng_ni.h>
 #include <loc_eng_dmn_conn.h>
@@ -78,8 +62,7 @@
 #include <loc_eng_nmea.h>
 #include <msg_q.h>
 #include <loc.h>
-#include "log_util.h"
-#include "platform_lib_includes.h"
+#include <platform_lib_includes.h>
 #include "loc_core_log.h"
 #include "loc_eng_log.h"
 

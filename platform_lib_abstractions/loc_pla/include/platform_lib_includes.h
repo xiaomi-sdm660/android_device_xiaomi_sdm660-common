@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,22 +24,17 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#include <stdio.h>
-#ifdef USE_GLIB
-#include <string.h>
-#endif
+#ifndef __PLATFORM_LIB_INCLUDES_H__
+#define __PLATFORM_LIB_INCLUDES_H__
 
-int property_get(const char *key, char * value, const char *default_value)
-{
-    /* This will disable gps interface
-       value[0] = '1';
-     */
-    if (strcmp(key, "ro.baseband") == 0) {
-        memcpy(value, "msm", 4);
-    }
-    return 0;
-}
+#include "platform_lib_android_runtime.h"
+#include "platform_lib_gettid.h"
+#include "platform_lib_log_util.h"
+#include "platform_lib_macros.h"
+#include "platform_lib_property_service.h"
+#include "platform_lib_sched_policy.h"
+#include "platform_lib_time.h"
 
+#endif /* __PLATFORM_LIB_INCLUDES_H__ */

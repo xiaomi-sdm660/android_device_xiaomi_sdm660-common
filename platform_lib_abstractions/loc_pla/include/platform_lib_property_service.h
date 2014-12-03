@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,22 +24,20 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef _FAKE_PROPERTY_SERVICE_H_
-#define _FAKE_PROPERTY_SERVICE_H
+#ifndef __PLATFORM_LIB_PROPERTY_SERVICE_H__
+#define __PLATFORM_LIB_PROPERTY_SERVICE_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define PROPERTY_VALUE_MAX  92
-int property_get(const char *key, char *value, const char *default_value);
+int platform_lib_abstraction_property_get(const char *key, char *value, const char *default_value);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-
-#endif
+#endif /* __PLATFORM_LIB_PROPERTY_SERVICE_H__ */

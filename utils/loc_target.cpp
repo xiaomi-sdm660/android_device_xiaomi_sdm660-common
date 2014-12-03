@@ -38,7 +38,6 @@
 #include <cutils/properties.h>
 #include "loc_target.h"
 #include "loc_log.h"
-#include "log_util.h"
 #include <platform_lib_includes.h>
 
 #define APQ8064_ID_1 "109"
@@ -109,7 +108,7 @@ static bool is_qca1530(void)
 
     for (i = 0; i < QCA1530_DETECT_TIMEOUT; ++i)
     {
-        ret = property_get(qca1530_property_name, buf, NULL);
+        ret = platform_lib_abstraction_property_get(qca1530_property_name, buf, NULL);
         if (ret < 0)
         {
             LOC_LOGV( "qca1530: property %s is not accessible, ret=%d",
@@ -165,7 +164,7 @@ unsigned int loc_get_target(void)
         goto detected;
     }
 
-    property_get("ro.baseband", baseband, "");
+    platform_lib_abstraction_property_get("ro.baseband", baseband, "");
     if (!access(hw_platform, F_OK)) {
         read_a_line(hw_platform, rd_hw_platform, LINE_LEN);
     } else {

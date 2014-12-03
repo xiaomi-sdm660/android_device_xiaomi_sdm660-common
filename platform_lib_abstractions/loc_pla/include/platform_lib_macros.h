@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,42 +24,48 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef _FAKE_SCHED_POLICY_H
-#define _FAKE_SCHED_POLICY_H
+#ifndef __PLATFORM_LIB_MACROS_H__
+#define __PLATFORM_LIB_MACROS_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    SP_BACKGROUND = 0,
-    SP_FOREGROUND = 1,
-} SchedPolicy;
+#ifdef USE_GLIB
+#include <sys/time.h>
+#ifndef OFF_TARGET
+#include <glib.h>
+#define strlcat g_strlcat
+#define strlcpy g_strlcpy
+#else
+#define strlcat strncat
+#define strlcpy strncpy
+#endif
 
-/*===========================================================================
-FUNCTION set_sched_policy
+#define TS_PRINTF(format, x...)                                \
+{                                                              \
+  struct timeval tv;                                           \
+  struct timezone tz;                                          \
+  int hh, mm, ss;                                              \
+  gettimeofday(&tv, &tz);                                      \
+  hh = tv.tv_sec/3600%24;                                      \
+  mm = (tv.tv_sec%3600)/60;                                    \
+  ss = tv.tv_sec%60;                                           \
+  fprintf(stdout,"%02d:%02d:%02d.%06ld]" format "\n", hh, mm, ss, tv.tv_usec,##x);    \
+}
 
-DESCRIPTION
-   Local copy of this function which bypasses android set_sched_policy
+#define ALOGE(format, x...) TS_PRINTF("E/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGW(format, x...) TS_PRINTF("W/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGI(format, x...) TS_PRINTF("I/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGD(format, x...) TS_PRINTF("D/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#define ALOGV(format, x...) TS_PRINTF("V/%s (%d): " format , LOG_TAG, getpid(), ##x)
 
-DEPENDENCIES
-   None
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int set_sched_policy(int tid, SchedPolicy policy);
+#endif /* USE_GLIB */
 
 #ifdef __cplusplus
 }
-#endif
+#endif /*__cplusplus */
 
-#endif // _FAKE_SCHED_POLICY_H
-
+#endif /* __PLATFORM_LIB_MACROS_H__ */

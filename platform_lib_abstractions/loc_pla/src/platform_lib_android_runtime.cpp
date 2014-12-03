@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,20 +26,15 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _PLATFORM_LIB_TIME_H_
-#define _PLATFORM_LIB_TIME_H_
+#include "platform_lib_android_runtime.h"
 
-#include <sys/time.h>
+#ifdef USE_GLIB
+#include <loc_stub_android_runtime.h>
+#else
+#include <android/AndroidRuntime.h>
+#endif /* USE_GLIB */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int64_t systemTime(int clock);
-int64_t elapsedMillisSinceBoot();
-
-#ifdef __cplusplus
+pthread_t platform_lib_abstraction_createJavaThread(const char* name, void (*start)(void *), void* arg)
+{
+    return android::AndroidRuntime::createJavaThread(name, start, arg);
 }
-#endif /* __cplusplus */
-
-#endif

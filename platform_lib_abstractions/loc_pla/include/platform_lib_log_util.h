@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,26 +24,27 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef __LOG_UTIL_H__
-#define __LOG_UTIL_H__
+#ifndef __PLATFORM_LIB_LOG_UTIL_H__
+#define __PLATFORM_LIB_LOG_UTIL_H__
+
+#include "platform_lib_macros.h"
 
 #ifndef USE_GLIB
 #include <utils/Log.h>
-#endif /* USE_GLIB */
-
-#ifdef USE_GLIB
+#else
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifndef LOG_TAG
 #define LOG_TAG "GPS_UTILS"
-
-#endif  // LOG_TAG
+#endif /* LOG_TAG */
 
 #endif /* USE_GLIB */
 
@@ -86,8 +87,8 @@ extern const char ENTRY_TAG[];
  *                        MODULE EXPORTED FUNCTIONS
  *
  *============================================================================*/
-extern void loc_logger_init(unsigned long debug, unsigned long timestamp);
-extern char* get_timestamp(char* str, unsigned long buf_size);
+void loc_logger_init(unsigned long debug, unsigned long timestamp);
+char* get_timestamp(char* str, unsigned long buf_size);
 
 #ifndef DEBUG_DMN_LOC_API
 
@@ -168,4 +169,4 @@ else if (loc_logger.DEBUG_LEVEL == 0xff) { ALOGV("V/"__VA_ARGS__); }
 }
 #endif
 
-#endif // __LOG_UTIL_H__
+#endif /* __PLATFORM_LIB_LOG_UTIL_H__ */

@@ -40,7 +40,7 @@
 #include <linked_list.h>
 #include <loc_timer.h>
 #include <LocEngAdapter.h>
-
+#include <platform_lib_includes.h>
 #if defined(USE_GLIB) && !defined(OFF_TARGET)
 #include <glib.h>
 #endif /* USE_GLIB */

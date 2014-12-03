@@ -35,7 +35,6 @@
 #include <ContextBase.h>
 #include <msg_q.h>
 #include <loc_target.h>
-#include <log_util.h>
 #include <platform_lib_includes.h>
 #include <loc_log.h>
 

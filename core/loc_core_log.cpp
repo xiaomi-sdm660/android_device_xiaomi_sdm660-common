@@ -31,7 +31,6 @@
 #define LOG_TAG "LocSvc_core_log"
 
 #include <loc_log.h>
-#include <log_util.h>
 #include <loc_core_log.h>
 #include <platform_lib_includes.h>
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2012,2014 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -34,11 +34,7 @@
 #include <sys/time.h>
 #include "loc_log.h"
 #include "msg_q.h"
-#ifdef USE_GLIB
-#include <time.h>
-#endif /* USE_GLIB  */
-#include "log_util.h"
-#include "platform_lib_includes.h"
+#include <platform_lib_includes.h>
 
 #define  BUFFER_SIZE  120
 
@@ -180,55 +176,3 @@ char *loc_get_time(char *time_string, unsigned long buf_size)
 
    return time_string;
 }
-
-
-/*===========================================================================
-FUNCTION loc_logger_init
-
-DESCRIPTION
-   Initializes the state of DEBUG_LEVEL and TIMESTAMP
-
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   None
-
-SIDE EFFECTS
-   N/A
-===========================================================================*/
-void loc_logger_init(unsigned long debug, unsigned long timestamp)
-{
-   loc_logger.DEBUG_LEVEL = debug;
-   loc_logger.TIMESTAMP   = timestamp;
-}
-
-
-/*===========================================================================
-FUNCTION get_timestamp
-
-DESCRIPTION
-   Generates a timestamp using the current system time
-
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   Char pointer to the parameter str
-
-SIDE EFFECTS
-   N/A
-===========================================================================*/
-char * get_timestamp(char *str, unsigned long buf_size)
-{
-  struct timeval tv;
-  struct timezone tz;
-  int hh, mm, ss;
-  gettimeofday(&tv, &tz);
-  hh = tv.tv_sec/3600%24;
-  mm = (tv.tv_sec%3600)/60;
-  ss = tv.tv_sec%60;
-  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_usec);
-  return str;
-}
-

@@ -2,8 +2,8 @@ AM_CFLAGS = \
      -I./ \
      -I../core \
      -I./libloc_api_50001 \
-     -I../platform_lib_abstractions \
      -I../utils \
+     $(LOCPLA_CFLAGS) \
      -fno-short-enums \
      -DTARGET_USES_QCOM_BSP
 
@@ -26,8 +26,7 @@ libloc_eng_so_la_SOURCES = \
     libloc_api_50001/loc_eng_dmn_conn_handler.cpp \
     libloc_api_50001/loc_eng_dmn_conn_thread_helper.c \
     libloc_api_50001/loc_eng_dmn_conn_glue_msg.c \
-    libloc_api_50001/loc_eng_dmn_conn_glue_pipe.c \
-    fake_property_service.c
+    libloc_api_50001/loc_eng_dmn_conn_glue_pipe.c
 
 libloc_eng_so_la_SOURCES += libloc_eng_so_la_h_sources
 
@@ -41,13 +40,12 @@ libloc_eng_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
 libloc_eng_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libloc_eng_so_la_LIBADD = -lstdc++ -ldl -llog ../utils/libgps_utils_so.la ../core/libloc_core.la
+libloc_eng_so_la_LIBADD = -lstdc++ -ldl -llog $(LOCPLA_LIBS) ../utils/libgps_utils_so.la ../core/libloc_core.la
 
 
 libgps_default_so_la_SOURCES = \
       libloc_api_50001/loc.cpp \
-      libloc_api_50001/gps.c \
-      fake_property_service.c
+      libloc_api_50001/gps.c
 
 if USE_GLIB
 libgps_default_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
@@ -59,7 +57,7 @@ libgps_default_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
 libgps_default_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libgps_default_so_la_LIBADD = -lstdc++ -llog ../utils/libgps_utils_so.la ../core/libloc_core.la -ldl libloc_eng_so.la
+libgps_default_so_la_LIBADD = -lstdc++ -llog $(LOCPLA_LIBS) ../utils/libgps_utils_so.la ../core/libloc_core.la -ldl libloc_eng_so.la
 
 
 libloc_ds_api_CFLAGS = \
@@ -83,7 +81,7 @@ libloc_ds_api_la_LDFLAGS += -Wl,--export-dynamic
 libloc_ds_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_ds_api_CFLAGS)
 endif
 
-libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices -ldsi_netctrl ../utils/libgps_utils_so.la
+libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices -ldsi_netctrl $(LOCPLA_LIBS) ../utils/libgps_utils_so.la
 
 libloc_api_v02_CFLAGS = \
      $(QMIF_CFLAGS) \
@@ -108,7 +106,7 @@ libloc_api_v02_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_api_v02_CFLAGS
 endif
 
 libloc_api_v02_la_CXXFLAGS = -std=c++0x
-libloc_api_v02_la_LIBADD = -lstdc++ -lqmi_cci -lqmi_common_so ../core/libloc_core.la ../utils/libgps_utils_so.la libloc_ds_api.la
+libloc_api_v02_la_LIBADD = -lstdc++ -lqmi_cci -lqmi_common_so $(QMIF_LIBS) $(LOCPLA_LIBS) ../core/libloc_core.la ../utils/libgps_utils_so.la libloc_ds_api.la
 
 library_include_HEADERS = \
    libloc_api_50001/LocEngAdapter.h \
@@ -119,7 +117,6 @@ library_include_HEADERS = \
    libloc_api_50001/loc_eng_agps.h \
    libloc_api_50001/loc_eng_msg.h \
    libloc_api_50001/loc_eng_log.h \
-   fake_property_service.h \
    $(WORKSPACE)/qcom-opensource/location/loc_api/ds_api/ds_client.h \
    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/location_service_v02.h \
    $(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02/loc_api_v02_log.h \

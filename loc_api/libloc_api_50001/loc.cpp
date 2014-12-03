@@ -43,11 +43,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <LocDualContext.h>
-#ifdef _ANDROID
-#include <cutils/properties.h>
-#else
-#include "fake_property_service.h"
-#endif
+#include <platform_lib_includes.h>
 
 using namespace loc_core;
 
@@ -174,7 +170,7 @@ extern "C" const GpsInterface* gps_get_hardware_interface ()
     loc_eng_read_config();
 
     // check to see if GPS should be disabled
-    property_get("gps.disable", propBuf, "");
+    platform_lib_abstraction_property_get("gps.disable", propBuf, "");
     if (propBuf[0] == '1')
     {
         LOC_LOGD("gps_get_interface returning NULL because gps.disable=1\n");
@@ -475,7 +471,7 @@ static int loc_inject_location(double latitude, double longitude, float accuracy
     {
         char value[PROPERTY_VALUE_MAX];
         memset(value, 0, sizeof(value));
-        (void)property_get("persist.gps.qc_nlp_in_use", value, "0");
+        (void)platform_lib_abstraction_property_get("persist.gps.qc_nlp_in_use", value, "0");
         if(0 == strcmp(value, "1"))
         {
             enable_cpi = false;
@@ -596,7 +592,7 @@ const void* loc_get_extension(const char* name)
    else if (strcmp(name, AGPS_RIL_INTERFACE) == 0)
    {
        char baseband[PROPERTY_VALUE_MAX];
-       property_get("ro.baseband", baseband, "msm");
+       platform_lib_abstraction_property_get("ro.baseband", baseband, "msm");
        if (strcmp(baseband, "csfb") == 0)
        {
            ret_val = &sLocEngAGpsRilInterface;

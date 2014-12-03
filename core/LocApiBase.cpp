@@ -32,7 +32,6 @@
 #include <dlfcn.h>
 #include <LocApiBase.h>
 #include <LocAdapterBase.h>
-#include <log_util.h>
 #include <platform_lib_includes.h>
 
 namespace loc_core {

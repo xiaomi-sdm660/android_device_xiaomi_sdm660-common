@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,28 +24,17 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#include "fake_sched_policy.h"
+#include "platform_lib_gettid.h"
 
-/*===========================================================================
-FUNCTION set_sched_policy
+#ifdef USE_GLIB
+#include <loc_stub_gettid.h>
+#else
+#include <unistd.h>
+#endif /* USE_GLIB */
 
-DESCRIPTION
-   Local copy of this function which bypasses android set_sched_policy
-
-DEPENDENCIES
-   None
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-int set_sched_policy(int tid, SchedPolicy policy)
+pid_t platform_lib_abstraction_gettid()
 {
-    return 0;
+    return gettid();
 }
