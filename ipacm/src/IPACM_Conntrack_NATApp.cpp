@@ -77,24 +77,27 @@ int NatApp::Init(void)
 	memset(cache, 0, size);
 
 	nALGPort = pConfig->GetAlgPortCnt();
-	pALGPorts = (ipacm_alg *)malloc(sizeof(ipacm_alg) * nALGPort);
-	if(pALGPorts == NULL)
+	if(nALGPort > 0)
 	{
-		IPACMERR("Unable to allocate memory for alg prots\n");
-		goto fail;
-	}
-	memset(pALGPorts, 0, sizeof(ipacm_alg) * nALGPort);
+		pALGPorts = (ipacm_alg *)malloc(sizeof(ipacm_alg) * nALGPort);
+		if(pALGPorts == NULL)
+		{
+			IPACMERR("Unable to allocate memory for alg prots\n");
+			goto fail;
+		}
+		memset(pALGPorts, 0, sizeof(ipacm_alg) * nALGPort);
 
-	if(pConfig->GetAlgPorts(nALGPort, pALGPorts) != 0)
-	{
-		IPACMERR("Unable to retrieve ALG prots\n");
-		goto fail;
-	}
+		if(pConfig->GetAlgPorts(nALGPort, pALGPorts) != 0)
+		{
+			IPACMERR("Unable to retrieve ALG prots\n");
+			goto fail;
+		}
 
-	IPACMDBG("Printing %d alg ports information\n", nALGPort);
-	for(int cnt=0; cnt<nALGPort; cnt++)
-	{
-		IPACMDBG("%d: Proto[%d], port[%d]\n", cnt, pALGPorts[cnt].protocol, pALGPorts[cnt].port);
+		IPACMDBG("Printing %d alg ports information\n", nALGPort);
+		for(int cnt=0; cnt<nALGPort; cnt++)
+		{
+			IPACMDBG("%d: Proto[%d], port[%d]\n", cnt, pALGPorts[cnt].protocol, pALGPorts[cnt].port);
+		}
 	}
 
 	return 0;
