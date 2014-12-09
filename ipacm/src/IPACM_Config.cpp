@@ -145,7 +145,9 @@ int IPACM_Config::Init(void)
 	{
 		strncpy(iface_table[i].iface_name, cfg->iface_config.iface_entries[i].iface_name, sizeof(iface_table[i].iface_name));
 		iface_table[i].if_cat = cfg->iface_config.iface_entries[i].if_cat;
-		IPACMDBG_H("IPACM_Config::iface_table[%d] = %s, cat=%d\n", i, iface_table[i].iface_name, iface_table[i].if_cat);
+		iface_table[i].if_mode = cfg->iface_config.iface_entries[i].if_mode;
+		IPACMDBG_H("IPACM_Config::iface_table[%d] = %s, cat=%d, mode=%d\n", i, iface_table[i].iface_name,
+				iface_table[i].if_cat, iface_table[i].if_mode);
 		/* copy bridge interface name to ipacmcfg */
 		if( iface_table[i].if_cat == VIRTUAL_IF)
 		{

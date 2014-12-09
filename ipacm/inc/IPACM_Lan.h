@@ -185,6 +185,7 @@ public:
 
 	int del_lan2lan_hdr(ipa_ip_type iptype, uint32_t hdr_hdl);
 
+	int handle_cradle_wan_mode_switch(bool is_wan_bridge_mode);
 
 
 	static ipa_hdr_l2_type usb_hdr_type;

@@ -12,6 +12,7 @@
 			<Iface>
 			   <Name>ecm0</Name>
 			   <Category>LAN</Category>
+			   <Mode>ROUTER</Mode>
 			</Iface>
 			<Iface>
 			   <Name>rmnet_data0</Name>

@@ -116,6 +116,7 @@ public:
 	static uint32_t backhaul_ipv6_prefix[2];
 
 	static bool embms_is_on;
+	static bool cradle_backhaul_is_wan_bridge;
 
 private:
 

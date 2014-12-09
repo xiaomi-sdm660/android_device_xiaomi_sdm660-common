@@ -292,6 +292,26 @@ static int ipacm_cfg_xml_parse_tree
 						}
 					}
 				}
+				else if (IPACM_util_icmp_string((char*)xml_node->name, MODE_TAG) == 0)
+				{
+					content = IPACM_read_content_element(xml_node);
+					if (content)
+					{
+						str_size = strlen(content);
+						memset(content_buf, 0, sizeof(content_buf));
+						memcpy(content_buf, (void *)content, str_size);
+						if (0 == strncasecmp(content_buf, IFACE_ROUTER_MODE_TAG, str_size))
+						{
+							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_mode = ROUTER;
+							IPACMDBG_H("Iface mode %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_mode);
+						}
+						else  if (0 == strncasecmp(content_buf, IFACE_BRIDGE_MODE_TAG, str_size))
+						{
+							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_mode = BRIDGE;
+							IPACMDBG_H("Iface mode %d\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].if_mode);
+						}
+					}
+				}
 				else if (IPACM_util_icmp_string((char*)xml_node->name,
 																				SUBNETADDRESS_TAG) == 0)
 				{

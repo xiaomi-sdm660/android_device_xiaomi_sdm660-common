@@ -101,7 +101,7 @@ extern "C"
 #define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4 "Lan2Lan_Wlan_v4"
 #define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6 "Lan2Lan_Wlan_v6"
 #define IPA_LAN_TO_LAN_MAX_WLAN_CLIENT 32
-#define IPA_LAN_TO_LAN_MAX_USB_CLIENT 1
+#define IPA_LAN_TO_LAN_MAX_USB_CLIENT 15
 #define TCP_FIN_SHIFT 16
 #define TCP_SYN_SHIFT 17
 #define TCP_RST_SHIFT 18
@@ -179,6 +179,7 @@ typedef enum
 	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_fid */
 	IPA_WLAN_SWITCH_TO_SCC,                   /* 50 No Data */
 	IPA_WLAN_SWITCH_TO_MCC,                   /* 51 No Data */
+	IPA_CRADLE_WAN_MODE_SWITCH,				  /* 52 ipacm_event_cradle_wan_mode */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
@@ -200,6 +201,12 @@ typedef enum
 	UNKNOWN_IF
 } ipacm_iface_type;
 
+typedef enum
+{
+	ROUTER = 0,
+	BRIDGE
+} ipacm_iface_mode;
+
 typedef struct
 {
 	struct nf_conntrack *ct;
@@ -210,6 +217,7 @@ typedef struct
 {
 	char iface_name[IPA_IFACE_NAME_LEN];
 	ipacm_iface_type if_cat;
+	ipacm_iface_mode if_mode;
 	int netlink_interface_index;
 } ipa_ifi_dev_name_t;
 
@@ -230,6 +238,11 @@ typedef struct _ipacm_event_data_all
 } ipacm_event_data_all;
 
 class IPACM_Lan;
+
+typedef struct
+{
+	ipacm_iface_mode cradle_wan_mode;
+} ipacm_event_cradle_wan_mode;
 
 typedef struct
 {

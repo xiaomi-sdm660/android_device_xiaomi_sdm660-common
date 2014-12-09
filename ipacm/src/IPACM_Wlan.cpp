@@ -757,6 +757,27 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
+	case IPA_CRADLE_WAN_MODE_SWITCH:
+	{
+		IPACMDBG_H("Received IPA_CRADLE_WAN_MODE_SWITCH event.\n");
+		ipacm_event_cradle_wan_mode* wan_mode = (ipacm_event_cradle_wan_mode*)param;
+		if(wan_mode == NULL)
+		{
+			IPACMERR("Event data is empty.\n");
+			return;
+		}
+
+		if(wan_mode->cradle_wan_mode == BRIDGE)
+		{
+			handle_cradle_wan_mode_switch(true);
+		}
+		else
+		{
+			handle_cradle_wan_mode_switch(false);
+		}
+	}
+	break;
+
 	default:
 		break;
 	}
