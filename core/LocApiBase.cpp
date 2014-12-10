@@ -232,6 +232,17 @@ void LocApiBase::reportPosition(UlpLocation &location,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask)
 {
+    // print the location info before delivering
+    LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  "
+             "altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  "
+             "timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  "
+             "Session status: %d\n Technology mask: %u",
+             location.gpsLocation.flags, location.position_source,
+             location.gpsLocation.latitude, location.gpsLocation.longitude,
+             location.gpsLocation.altitude, location.gpsLocation.speed,
+             location.gpsLocation.bearing, location.gpsLocation.accuracy,
+             location.gpsLocation.timestamp, location.rawDataSize,
+             location.rawData, status, loc_technology_mask);
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportPosition(location,
@@ -246,6 +257,19 @@ void LocApiBase::reportSv(GpsSvStatus &svStatus,
                   GpsLocationExtended &locationExtended,
                   void* svExt)
 {
+    // print the SV info before delivering
+    LOC_LOGV("num sv: %d\n  ephemeris mask: %dxn  almanac mask: %x\n  used"
+             " in fix mask: %x\n      sv: prn         snr       elevation      azimuth",
+             svStatus.num_svs, svStatus.ephemeris_mask,
+             svStatus.almanac_mask, svStatus.used_in_fix_mask);
+    for (int i = 0; i < svStatus.num_svs && i < GPS_MAX_SVS; i++) {
+        LOC_LOGV("   %d:   %d    %f    %f    %f",
+                 i,
+                 svStatus.sv_list[i].prn,
+                 svStatus.sv_list[i].snr,
+                 svStatus.sv_list[i].elevation,
+                 svStatus.sv_list[i].azimuth);
+    }
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportSv(svStatus,
