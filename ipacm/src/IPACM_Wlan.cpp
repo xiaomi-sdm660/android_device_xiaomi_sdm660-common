@@ -90,6 +90,7 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 
 	num_wifi_client = 0;
 	header_name_count = 0;
+	wlan_client = NULL;
 
 	if(iface_query != NULL)
 	{
@@ -2471,9 +2472,15 @@ fail:
 
 	for (i = 0; i < num_wifi_client; i++)
 	{
-		free(get_client_memptr(wlan_client, i)->p_hdr_info);
+		if(get_client_memptr(wlan_client, i)->p_hdr_info != NULL)
+		{
+			free(get_client_memptr(wlan_client, i)->p_hdr_info);
+		}
 	}
-	free(wlan_client);
+	if(wlan_client != NULL)
+	{
+		free(wlan_client);
+	}
 	if (tx_prop != NULL)
 	{
 		free(tx_prop);

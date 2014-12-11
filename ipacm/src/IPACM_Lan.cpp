@@ -78,6 +78,9 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	ipv6_set = 0;
 	ipv4_header_set = false;
 	ipv6_header_set = false;
+	odu_route_rule_v4_hdl = NULL;
+	odu_route_rule_v6_hdl = NULL;
+	eth_client = NULL;
 	int m_fd_odu, ret = IPACM_SUCCESS;
 
 	Nat_App = NatApp::GetInstance();

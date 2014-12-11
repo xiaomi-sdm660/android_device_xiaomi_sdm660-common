@@ -75,6 +75,10 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 {
 	num_firewall_v4 = 0;
 	num_firewall_v6 = 0;
+	wan_route_rule_v4_hdl = NULL;
+	wan_route_rule_v6_hdl = NULL;
+	wan_route_rule_v6_hdl_a5 = NULL;
+	wan_client = NULL;
 
 	if(iface_query != NULL)
 	{
