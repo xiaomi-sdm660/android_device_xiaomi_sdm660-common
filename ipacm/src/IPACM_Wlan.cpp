@@ -3211,11 +3211,14 @@ void IPACM_Wlan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
 
 	flt_rule.rule.eq_attrib.rule_eq_bitmap = 0;
 
-	flt_rule.rule.eq_attrib.rule_eq_bitmap |= (1<<14);
-	flt_rule.rule.eq_attrib.metadata_meq32_present = 1;
-	flt_rule.rule.eq_attrib.metadata_meq32.offset = 0;
-	flt_rule.rule.eq_attrib.metadata_meq32.value = rx_prop->rx[0].attrib.meta_data;
-	flt_rule.rule.eq_attrib.metadata_meq32.mask = rx_prop->rx[0].attrib.meta_data_mask;
+	if(rx_prop->rx[0].attrib.attrib_mask & IPA_FLT_META_DATA)
+	{
+		flt_rule.rule.eq_attrib.rule_eq_bitmap |= (1<<14);
+		flt_rule.rule.eq_attrib.metadata_meq32_present = 1;
+		flt_rule.rule.eq_attrib.metadata_meq32.offset = 0;
+		flt_rule.rule.eq_attrib.metadata_meq32.value = rx_prop->rx[0].attrib.meta_data;
+		flt_rule.rule.eq_attrib.metadata_meq32.mask = rx_prop->rx[0].attrib.meta_data_mask;
+	}
 
 	flt_rule.rule.eq_attrib.rule_eq_bitmap |= (1<<1);
 	flt_rule.rule.eq_attrib.protocol_eq_present = 1;
