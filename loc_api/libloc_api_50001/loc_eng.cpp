@@ -106,6 +106,10 @@ static loc_param_s_type gps_conf_table[] =
   {"ACCURACY_THRES",                 &gps_conf.ACCURACY_THRES,                 NULL, 'n'},
   {"NMEA_PROVIDER",                  &gps_conf.NMEA_PROVIDER,                  NULL, 'n'},
   {"CAPABILITIES",                   &gps_conf.CAPABILITIES,                   NULL, 'n'},
+  {"XTRA_VERSION_CHECK",             &gps_conf.XTRA_VERSION_CHECK,             NULL, 'n'},
+  {"XTRA_SERVER_1",                  &gps_conf.XTRA_SERVER_1,                  NULL, 's'},
+  {"XTRA_SERVER_2",                  &gps_conf.XTRA_SERVER_2,                  NULL, 's'},
+  {"XTRA_SERVER_3",                  &gps_conf.XTRA_SERVER_3,                  NULL, 's'},
   {"USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL",  &gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL,          NULL, 'n'},
 };
 
@@ -127,12 +131,7 @@ static loc_param_s_type sap_conf_table[] =
   {"SENSOR_CONTROL_MODE",            &sap_conf.SENSOR_CONTROL_MODE,            NULL, 'n'},
   {"SENSOR_USAGE",                   &sap_conf.SENSOR_USAGE,                   NULL, 'n'},
   {"SENSOR_ALGORITHM_CONFIG_MASK",   &sap_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'},
-  {"SENSOR_PROVIDER",                &sap_conf.SENSOR_PROVIDER,                NULL, 'n'},
-  {"XTRA_VERSION_CHECK",             &gps_conf.XTRA_VERSION_CHECK,                  NULL, 'n'},
-  {"XTRA_SERVER_1",                  &gps_conf.XTRA_SERVER_1,                  NULL, 's'},
-  {"XTRA_SERVER_2",                  &gps_conf.XTRA_SERVER_2,                  NULL, 's'},
-  {"XTRA_SERVER_3",                  &gps_conf.XTRA_SERVER_3,                  NULL, 's'},
-  {"AGPS_CERT_WRITABLE_MASK",        &gps_conf.AGPS_CERT_WRITABLE_MASK,        NULL, 'n'}
+  {"SENSOR_PROVIDER",                &sap_conf.SENSOR_PROVIDER,                NULL, 'n'}
 };
 
 static void loc_default_parameters(void)
