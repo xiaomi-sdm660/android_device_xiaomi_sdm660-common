@@ -230,7 +230,14 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 			rt_rule_entry->rule.hdr_hdl = hdr.hdl;
 		}
 	    rt_rule_entry->at_rear = false;
-	    rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
+		if(m_is_sta_mode == Q6_WAN)
+		{
+			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_WAN_CONS;
+		}
+		else
+		{
+			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
+		}
 	    rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
 	    	rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = data->ipv6_addr[0];
 	    	rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = data->ipv6_addr[1];
@@ -383,9 +390,13 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 				return IPACM_FAILURE;
 			}
 			rt_rule_entry->rule.hdr_hdl = hdr.hdl;
+			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_WAN_CONS;
+		}
+		else
+		{
+			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
 		}
 		rt_rule_entry->at_rear = false;
-		rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
 		rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
 		/* still need setup v4 default routing rule to A5*/
 		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
@@ -1190,7 +1201,14 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
     strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
     memset(rt_rule_entry, 0, sizeof(struct ipa_rt_rule_add));
 	rt_rule_entry->at_rear = true;
-    rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
+	if(m_is_sta_mode == Q6_WAN)
+	{
+		rt_rule_entry->rule.dst = IPA_CLIENT_APPS_WAN_CONS;
+	}
+	else
+	{
+		rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
+	}
     rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
 	rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = 0;
 	rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = 0;
