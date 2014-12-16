@@ -2523,29 +2523,29 @@ int loc_eng_set_server_proxy(loc_eng_data_s_type &loc_eng_data,
     ENTRY_LOG_CALLFLOW();
     int ret_val = 0;
 
+    LOC_LOGV("save the address, type: %d, hostname: %s, port: %d",
+             (int) type, hostname, port);
+    switch (type)
+    {
+    case LOC_AGPS_SUPL_SERVER:
+        strlcpy(loc_eng_data.supl_host_buf, hostname,
+                sizeof(loc_eng_data.supl_host_buf));
+        loc_eng_data.supl_port_buf = port;
+        loc_eng_data.supl_host_set = 1;
+        break;
+    case LOC_AGPS_CDMA_PDE_SERVER:
+        strlcpy(loc_eng_data.c2k_host_buf, hostname,
+                sizeof(loc_eng_data.c2k_host_buf));
+        loc_eng_data.c2k_port_buf = port;
+        loc_eng_data.c2k_host_set = 1;
+        break;
+    default:
+        LOC_LOGE("loc_eng_set_server_proxy, unknown server type = %d", (int) type);
+    }
+
     if (NULL != loc_eng_data.adapter)
     {
         ret_val = loc_eng_set_server(loc_eng_data, type, hostname, port);
-    } else {
-        LOC_LOGW("set_server called before init. save the address, type: %d, hostname: %s, port: %d",
-                 (int) type, hostname, port);
-        switch (type)
-        {
-        case LOC_AGPS_SUPL_SERVER:
-            strlcpy(loc_eng_data.supl_host_buf, hostname,
-                    sizeof(loc_eng_data.supl_host_buf));
-            loc_eng_data.supl_port_buf = port;
-            loc_eng_data.supl_host_set = 1;
-            break;
-        case LOC_AGPS_CDMA_PDE_SERVER:
-            strlcpy(loc_eng_data.c2k_host_buf, hostname,
-                    sizeof(loc_eng_data.c2k_host_buf));
-            loc_eng_data.c2k_port_buf = port;
-            loc_eng_data.c2k_host_set = 1;
-            break;
-        default:
-            LOC_LOGE("loc_eng_set_server_proxy, unknown server type = %d", (int) type);
-        }
     }
 
     EXIT_LOG(%d, ret_val);
