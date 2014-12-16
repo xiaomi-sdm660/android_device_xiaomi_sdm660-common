@@ -284,6 +284,7 @@ public:
     virtual bool requestSuplES(int connHandle);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
+    virtual void reportGpsMeasurementData(GpsData &gpsMeasurementData);
 
     inline const LocPosMode& getPositionMode() const
     {return mFixCriteria;}
@@ -334,6 +335,16 @@ public:
         return mLocApi->getGpsLock();
     }
 
+    /*
+      Update Registration Mask
+     */
+    void updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
+                                loc_registration_mask_status isEnabled);
+
+    /*
+      Set Gnss Constellation Config
+     */
+    bool gnssConstellationConfig();
 };
 
 #endif //LOC_API_ENG_ADAPTER_H

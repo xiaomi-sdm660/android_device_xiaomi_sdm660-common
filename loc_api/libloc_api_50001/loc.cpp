@@ -150,6 +150,17 @@ typedef struct {
 static s_loc_mdm_info loc_mdm_info;
 static void loc_pm_event_notifier(void *client_data, enum pm_event event);
 #endif /*MODEM_POWER_VOTE*/
+// For shutting down MDM in fusion devices
+static int mdm_fd = -1;
+static int loc_gps_measurement_init(GpsMeasurementCallbacks* callbacks);
+static void loc_gps_measurement_close();
+
+static const GpsMeasurementInterface sLocEngGpsMeasurementInterface =
+{
+    sizeof(GpsMeasurementInterface),
+    loc_gps_measurement_init,
+    loc_gps_measurement_close
+};
 
 static void loc_agps_ril_init( AGpsRilCallbacks* callbacks );
 static void loc_agps_ril_set_ref_location(const AGpsRefLocation *agps_reflocation, size_t sz_struct);
@@ -776,6 +787,10 @@ const void* loc_get_extension(const char* name)
    {
        ret_val = &sLocEngConfigInterface;
    }
+   else if (strcmp(name, GPS_MEASUREMENT_INTERFACE) == 0)
+   {
+       ret_val = &sLocEngGpsMeasurementInterface;
+   }
    else
    {
       LOC_LOGE ("get_extension: Invalid interface passed in\n");
@@ -981,6 +996,56 @@ static int loc_xtra_inject_data(char* data, int length)
                  __func__, data, length);
     EXIT_LOG(%d, ret_val);
     return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_gps_measurement_init
+
+DESCRIPTION
+   This function initializes the gps measurement interface
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static int loc_gps_measurement_init(GpsMeasurementCallbacks* callbacks)
+{
+    ENTRY_LOG();
+    int ret_val = loc_eng_gps_measurement_init(loc_afw_data,
+                                               callbacks);
+
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_gps_measurement_close
+
+DESCRIPTION
+   This function closes the gps measurement interface
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_gps_measurement_close()
+{
+    ENTRY_LOG();
+    loc_eng_gps_measurement_close(loc_afw_data);
+
+    EXIT_LOG(%s, VOID_RET);
 }
 
 /*===========================================================================
