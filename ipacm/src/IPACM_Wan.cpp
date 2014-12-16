@@ -176,10 +176,18 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	struct ipa_rt_rule_add *rt_rule_entry;
 	struct ipa_ioc_add_flt_rule *flt_rule;
 	struct ipa_flt_rule_add flt_rule_entry;
+	struct ipa_ioc_get_hdr hdr;
 
 	const int NUM_RULES = 1;
 	int num_ipv6_addr, len;
 	int res = IPACM_SUCCESS;
+
+	memset(&hdr, 0, sizeof(hdr));
+	if(tx_prop == NULL || rx_prop == NULL)
+	{
+		IPACMDBG_H("Either tx or rx property is NULL, return.\n");
+		return IPACM_SUCCESS;
+	}
 
 	if (data->iptype == IPA_IP_v6)
 	{
@@ -211,6 +219,16 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	    	strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
 
 	    rt_rule_entry = &rt_rule->rules[0];
+		if(m_is_sta_mode == Q6_WAN)
+		{
+			strncpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			if(m_header.GetHeaderHandle(&hdr) == false)
+			{
+				IPACMERR("Failed to get QMAP header.\n");
+				return IPACM_FAILURE;
+			}
+			rt_rule_entry->rule.hdr_hdl = hdr.hdl;
+		}
 	    rt_rule_entry->at_rear = false;
 	    rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
 	    rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
@@ -356,6 +374,16 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 		rt_rule->num_rules = NUM_RULES;
 		rt_rule->ip = data->iptype;
 		rt_rule_entry = &rt_rule->rules[0];
+		if(m_is_sta_mode == Q6_WAN)
+		{
+			strncpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			if(m_header.GetHeaderHandle(&hdr) == false)
+			{
+				IPACMERR("Failed to get QMAP header.\n");
+				return IPACM_FAILURE;
+			}
+			rt_rule_entry->rule.hdr_hdl = hdr.hdl;
+		}
 		rt_rule_entry->at_rear = false;
 		rt_rule_entry->rule.dst = iface_query->excp_pipe;  //go to A5
 		rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
