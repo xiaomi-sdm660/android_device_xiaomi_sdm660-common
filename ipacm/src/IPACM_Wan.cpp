@@ -1602,8 +1602,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
 		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(struct ipa_rule_attrib));
-		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_NEXT_HDR;
-		flt_rule_entry.rule.attrib.u.v6.next_hdr = (uint8_t)IPACM_FIREWALL_IPPROTO_FRAG_HDR;
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_FRAGMENT;
 
 		memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
@@ -2256,8 +2255,7 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		flt_rule_entry.rule.attrib.meta_data_mask = rx_prop->rx[0].attrib.meta_data_mask;
 		flt_rule_entry.rule.attrib.meta_data = rx_prop->rx[0].attrib.meta_data;
 
-		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_NEXT_HDR;
-		flt_rule_entry.rule.attrib.u.v6.next_hdr = (uint8_t)IPACM_FIREWALL_IPPROTO_FRAG_HDR;
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_FRAGMENT;
 
 		change_to_network_order(IPA_IP_v6, &flt_rule_entry.rule.attrib);
 
