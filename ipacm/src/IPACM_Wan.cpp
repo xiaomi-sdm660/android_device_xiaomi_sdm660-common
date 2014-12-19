@@ -958,7 +958,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 {
 
 	/* add default WAN route */
-	struct ipa_ioc_add_rt_rule *rt_rule;
+	struct ipa_ioc_add_rt_rule *rt_rule = NULL;
 	struct ipa_rt_rule_add *rt_rule_entry;
 	struct ipa_ioc_get_hdr sRetHeader;
 	uint32_t cnt, tx_index = 0;
@@ -1219,6 +1219,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	if (wanup_data == NULL)
 	{
 		IPACMERR("Unable to allocate memory\n");
+		free(rt_rule);
 		return IPACM_FAILURE;
 	}
 	memset(wanup_data, 0, sizeof(ipacm_event_iface_up));
@@ -1295,6 +1296,10 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 	IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
 
+	if(rt_rule != NULL)
+	{
+		free(rt_rule);
+	}
 	return IPACM_SUCCESS;
 }
 
@@ -4225,7 +4230,8 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_GENERATE_FLT_EQ, &flt_eq))
 		{
 			IPACMERR("Failed to get eq_attrib\n");
-			return IPACM_FAILURE;
+			res = IPACM_FAILURE;
+			goto fail;
 		}
 		memcpy(&flt_rule_entry.rule.eq_attrib,
 			&flt_eq.eq_attrib,
@@ -4257,8 +4263,8 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 		if(ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx) < 0)
 		{
 			IPACMERR("Failed to get routing table index from name\n");
-			free(pFilteringTable_v4);
-			return IPACM_FAILURE;
+			res = IPACM_FAILURE;
+			goto fail;
 		}
 		IPACMDBG_H("Routing table %s has index %d\n", rt_tbl_idx.name, rt_tbl_idx.idx);
 
@@ -4280,7 +4286,8 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_GENERATE_FLT_EQ, &flt_eq))
 		{
 			IPACMERR("Failed to get eq_attrib\n");
-			return IPACM_FAILURE;
+			res = IPACM_FAILURE;
+			goto fail;
 		}
 		memcpy(&flt_rule_entry.rule.eq_attrib,
 			&flt_eq.eq_attrib,
