@@ -316,86 +316,101 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 
 int IPACM_ConntrackListener::CreateConnTrackThreads(void)
 {
-	 int ret;
-	 pthread_t tcp_thread = 0, udp_thread = 0;
+	int ret;
+	pthread_t tcp_thread = 0, udp_thread = 0;
 
-	 if(isCTReg == false)
-	 {
-
-			if(!tcp_thread)
+	if(isCTReg == false)
+	{
+		if(!tcp_thread)
+		{
+			ret = pthread_create(&tcp_thread, NULL, IPACM_ConntrackClient::TCPRegisterWithConnTrack, NULL);
+			if(0 != ret)
 			{
-				 ret = pthread_create(&tcp_thread, NULL, IPACM_ConntrackClient::TCPRegisterWithConnTrack, NULL);
-				 if(0 != ret)
-				 {
-						IPACMERR("unable to create TCP conntrack event listner thread\n");
-						PERROR("unable to create TCP conntrack\n");
-						return -1;
-				 }
-
-				 IPACMDBG("created TCP conntrack event listner thread\n");
+				IPACMERR("unable to create TCP conntrack event listner thread\n");
+				PERROR("unable to create TCP conntrack\n");
+				return -1;
 			}
 
-			if(!udp_thread)
+			IPACMDBG("created TCP conntrack event listner thread\n");
+			if(pthread_setname_np(tcp_thread, "tcp ct listener") != 0)
 			{
-				 ret = pthread_create(&udp_thread, NULL, IPACM_ConntrackClient::UDPRegisterWithConnTrack, NULL);
-				 if(0 != ret)
-				 {
-						IPACMERR("unable to create UDP conntrack event listner thread\n");
-						PERROR("unable to create UDP conntrack\n");
-						goto error;
-				 }
+				IPACMERR("unable to set thread name\n");
+			}
+		}
 
-				 IPACMDBG("created UDP conntrack event listner thread\n");
+		if(!udp_thread)
+		{
+			ret = pthread_create(&udp_thread, NULL, IPACM_ConntrackClient::UDPRegisterWithConnTrack, NULL);
+			if(0 != ret)
+			{
+				IPACMERR("unable to create UDP conntrack event listner thread\n");
+				PERROR("unable to create UDP conntrack\n");
+				goto error;
 			}
 
-			isCTReg = true;
-	 }
+			IPACMDBG("created UDP conntrack event listner thread\n");
+			if(pthread_setname_np(udp_thread, "udp ct listener") != 0)
+			{
+				IPACMERR("unable to set thread name\n");
+			}
+		}
 
-	 return 0;
+		isCTReg = true;
+	}
+
+	return 0;
 
 error:
-	 return -1;
+	return -1;
 }
 int IPACM_ConntrackListener::CreateNatThreads(void)
 {
-	 int ret;
-	 pthread_t udpcto_thread = 0, to_monitor_thread = 0;
+	int ret;
+	pthread_t udpcto_thread = 0, to_monitor_thread = 0;
 
-	 if(isNatThreadStart == false)
-	 {
+	if(isNatThreadStart == false)
+	{
 
-			if(!udpcto_thread)
+		if(!udpcto_thread)
+		{
+			ret = pthread_create(&udpcto_thread, NULL, IPACM_ConntrackClient::UDPConnTimeoutUpdate, NULL);
+			if(0 != ret)
 			{
-				 ret = pthread_create(&udpcto_thread, NULL, IPACM_ConntrackClient::UDPConnTimeoutUpdate, NULL);
-				 if(0 != ret)
-				 {
-						IPACMERR("unable to create udp conn timeout thread\n");
-						PERROR("unable to create udp conn timeout\n");
-						goto error;
-				 }
-
-				 IPACMDBG("created upd conn timeout thread\n");
+				IPACMERR("unable to create udp conn timeout thread\n");
+				PERROR("unable to create udp conn timeout\n");
+				goto error;
 			}
 
-			if(!to_monitor_thread)
+			IPACMDBG("created upd conn timeout thread\n");
+			if(pthread_setname_np(udpcto_thread, "udp conn timeout") != 0)
 			{
-				ret = pthread_create(&to_monitor_thread, NULL, IPACM_ConntrackClient::TCPUDP_Timeout_monitor, NULL);
-				 if(0 != ret)
-				 {
-						IPACMERR("unable to create tcp/udp timeout monitor thread\n");
-						PERROR("unable to create tcp/udp timeout monitor\n");
-						goto error;
-				 }
+				IPACMERR("unable to set thread name\n");
+			}
+		}
 
-				 IPACMDBG("created tcp/udp timeout monitor thread\n");
+		if(!to_monitor_thread)
+		{
+			ret = pthread_create(&to_monitor_thread, NULL, IPACM_ConntrackClient::TCPUDP_Timeout_monitor, NULL);
+			if(0 != ret)
+			{
+				IPACMERR("unable to create tcp/udp timeout monitor thread\n");
+				PERROR("unable to create tcp/udp timeout monitor\n");
+				goto error;
 			}
 
-			isNatThreadStart = true;
-	 }
-	 return 0;
+			IPACMDBG("created tcp/udp timeout monitor thread\n");
+			if(pthread_setname_np(to_monitor_thread, "tcp udp timeout mtr") != 0)
+			{
+				IPACMERR("unable to set thread name\n");
+			}
+		}
+
+		isNatThreadStart = true;
+	}
+	return 0;
 
 error:
-	 return -1;
+	return -1;
 }
 
 void IPACM_ConntrackListener::TriggerWANDown(uint32_t wan_addr)
