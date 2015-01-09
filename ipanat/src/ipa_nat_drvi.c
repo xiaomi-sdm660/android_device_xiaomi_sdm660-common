@@ -665,14 +665,15 @@ int ipa_nati_add_ipv4_tbl(uint32_t public_ip_addr,
 		return -EINVAL;
 	}
 
+	/* Reset the nat table before posting init cmd */
+	ipa_nati_reset_tbl(tbl_indx);
+
 	/* Initialize the ipa hw with nat table dimensions */
 	ret = ipa_nati_post_ipv4_init_cmd(tbl_indx);
 	if (0 != ret) {
 		IPAERR("unable to post nat_init command Error %d\n", ret);
 		return -EINVAL;
 	}
-
-	ipa_nati_reset_tbl(tbl_indx);
 
 	/* Return table handle */
 	ipv4_nat_cache.table_cnt++;
