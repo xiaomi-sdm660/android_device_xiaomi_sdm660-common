@@ -713,6 +713,10 @@ int main(int argc, char **argv)
 			return ret;
 		}
 		IPACMDBG_H("created command queue thread\n");
+		if(pthread_setname_np(cmd_queue_thread, "cmd queue process") != 0)
+		{
+			IPACMERR("unable to set thread name\n");
+		}
 	}
 
 	if (IPACM_SUCCESS == netlink_thread)
@@ -724,6 +728,10 @@ int main(int argc, char **argv)
 			return ret;
 		}
 		IPACMDBG_H("created netlink thread\n");
+		if(pthread_setname_np(netlink_thread, "netlink socket") != 0)
+		{
+			IPACMERR("unable to set thread name\n");
+		}
 	}
 
 
@@ -736,6 +744,10 @@ int main(int argc, char **argv)
 			return ret;
 		}
 		IPACMDBG_H("created firewall monitor thread\n");
+		if(pthread_setname_np(monitor_thread, "firewall cfg process") != 0)
+		{
+			IPACMERR("unable to set thread name\n");
+		}
 	}
 
 	if (IPACM_SUCCESS == ipa_driver_thread)
@@ -747,6 +759,10 @@ int main(int argc, char **argv)
 			return ret;
 		}
 		IPACMDBG_H("created ipa_driver_wlan thread\n");
+		if(pthread_setname_np(ipa_driver_thread, "ipa driver ntfy") != 0)
+		{
+			IPACMERR("unable to set thread name\n");
+		}
 	}
 
 	pthread_join(cmd_queue_thread, NULL);
