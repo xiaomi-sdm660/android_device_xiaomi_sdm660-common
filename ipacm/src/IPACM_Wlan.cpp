@@ -642,16 +642,13 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			ipacm_event_data_mac* mac = (ipacm_event_data_mac*)param;
 			if(mac != NULL)
 			{
-				if(wlan_ap_index == 0)
+				if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
 				{
-					if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
-					{
-						eth_bridge_add_usb_client_flt_rule(mac->mac_addr, IPA_IP_v4);
-					}
-					if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
-					{
-						eth_bridge_add_usb_client_flt_rule(mac->mac_addr, IPA_IP_v6);
-					}
+					eth_bridge_add_usb_client_flt_rule(mac->mac_addr, IPA_IP_v4);
+				}
+				if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
+				{
+					eth_bridge_add_usb_client_flt_rule(mac->mac_addr, IPA_IP_v6);
 				}
 			}
 			else
@@ -3573,6 +3570,11 @@ int IPACM_Wlan::eth_bridge_add_usb_client_flt_rule(uint8_t* mac, ipa_ip_type ipt
 		IPACMERR("MAC address is empty.\n");
 		return IPACM_FAILURE;
 	}
+	if(wlan_ap_index != 0)
+	{
+		IPACMDBG_H("This is WLAN interface index %d, ignore.\n", wlan_ap_index);
+		return IPACM_SUCCESS;
+	}
 	if(IPACM_Lan::wlan_to_usb_hdr_proc_ctx.valid == false)
 	{
 		IPACMDBG_H("WLAN to USB hdr proc ctx has not been set, don't add USB client specific flt rule.\n");
@@ -3650,6 +3652,7 @@ int IPACM_Wlan::eth_bridge_add_usb_client_flt_rule(uint8_t* mac, ipa_ip_type ipt
 	}
 
 	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+	flt_rule.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);	//remove meta data mask
 	if(IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_ETHERNET_II)
 	{
 		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
