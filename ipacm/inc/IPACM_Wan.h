@@ -133,6 +133,7 @@ private:
 	uint32_t ODU_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];
 	int num_firewall_v4,num_firewall_v6;
 	uint32_t wan_v4_addr;
+	bool wan_v4_addr_set;
 	bool active_v4;
 	bool active_v6;
 	bool header_set_v4;
