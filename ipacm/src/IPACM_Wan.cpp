@@ -580,12 +580,12 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG_H("Received IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT (Android) for ip-type (%d)\n", data->iptype);
 				/* The special below condition is to handle default gateway */
-				if ((data->iptype == IPA_IP_v4) && (active_v4 == false))
+				if ((data->iptype == IPA_IP_v4) && (active_v4 == false) && (ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX))
 				{
 					IPACMDBG_H("adding routing table(upstream), dev (%s) ip-type(%d)\n", dev_name,data->iptype);
 					handle_route_add_evt(data->iptype);
 				}
-				else if ((data->iptype == IPA_IP_v6) && (active_v6 == false))
+				else if ((data->iptype == IPA_IP_v6) && (active_v6 == false) && (ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
 					IPACMDBG_H("\n get default v6 route (dst:00.00.00.00) upstream\n");
 				  	handle_route_add_evt(data->iptype);
@@ -679,13 +679,15 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG_H("ipv4 addr mask 0x%x\n", data->ipv4_addr_mask);
 
 				/* The special below condition is to handle default gateway */
-				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask) && (active_v4 == false))
+				if ((data->iptype == IPA_IP_v4) && (!data->ipv4_addr) && (!data->ipv4_addr_mask) && (active_v4 == false)
+					&& (ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX))
 				{
 					IPACMDBG_H("adding routing table, dev (%s) ip-type(%d)\n", dev_name,data->iptype);
 					handle_route_add_evt(data->iptype);
 				}
 				else if ((data->iptype == IPA_IP_v6) &&
-								 (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == false))
+								 (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == false)
+								 && (ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
 					IPACMDBG_H("\n get default v6 route (dst:00.00.00.00)\n");
 					IPACMDBG_H(" IPV6 value: %08x:%08x:%08x:%08x \n",
@@ -2756,15 +2758,19 @@ int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 	{
 		if(modem_ipv4_pdn_index == 0)	//install ipv4 default modem DL filtering rules only once
 		{
-		add_dft_filtering_rule(flt_rule_v4, IPACM_Wan::num_v4_flt_rule, IPA_IP_v4);
-	}
+			/* reset the num_v4_flt_rule*/
+			IPACM_Wan::num_v4_flt_rule = 0;
+			add_dft_filtering_rule(flt_rule_v4, IPACM_Wan::num_v4_flt_rule, IPA_IP_v4);
+		}
 	}
 	else if(iptype == IPA_IP_v6)
 	{
 		if(modem_ipv6_pdn_index == 0)	//install ipv6 default modem DL filtering rules only once
 		{
-		add_dft_filtering_rule(flt_rule_v6, IPACM_Wan::num_v6_flt_rule, IPA_IP_v6);
-	}
+			/* reset the num_v6_flt_rule*/
+			IPACM_Wan::num_v6_flt_rule = 0;
+			add_dft_filtering_rule(flt_rule_v6, IPACM_Wan::num_v6_flt_rule, IPA_IP_v6);
+		}
 	}
 	else
 	{
