@@ -322,6 +322,11 @@ private:
 	int handle_wlan_client_reset_rt(ipa_ip_type iptype);
 
 	void handle_SCC_MCC_switch(ipa_ip_type);
+
+	void eth_bridge_handle_wlan_SCC_MCC_switch(ipa_ip_type iptype);
+
+	int eth_bridge_modify_wlan_rt_rule(uint8_t* mac, eth_bridge_src_iface src_iface, ipa_ip_type iptyp);
+
 };
 
 

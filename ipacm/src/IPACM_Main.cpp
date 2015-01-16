@@ -611,16 +611,22 @@ void* ipa_driver_wlan_notifier(void *param)
 
 		case WLAN_SWITCH_TO_SCC:
 			IPACMDBG_H("Received WLAN_SWITCH_TO_SCC\n");
-			IPACM_Iface::ipacmcfg->isMCC_Mode = false;
-			evt_data.event = IPA_WLAN_SWITCH_TO_SCC;
-			break;
-
+			if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+			{
+				IPACM_Iface::ipacmcfg->isMCC_Mode = false;
+				evt_data.event = IPA_WLAN_SWITCH_TO_SCC;
+				break;
+			}
+			continue;
 		case WLAN_SWITCH_TO_MCC:
 			IPACMDBG_H("Received WLAN_SWITCH_TO_MCC\n");
-			IPACM_Iface::ipacmcfg->isMCC_Mode = true;
-			evt_data.event = IPA_WLAN_SWITCH_TO_MCC;
-			break;
-
+			if (IPACM_Iface::ipacmcfg->isMCC_Mode == false)
+			{
+				IPACM_Iface::ipacmcfg->isMCC_Mode == true;
+				evt_data.event = IPA_WLAN_SWITCH_TO_MCC;
+				break;
+			}
+			continue;
 		default:
 			IPACMDBG_H("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;
