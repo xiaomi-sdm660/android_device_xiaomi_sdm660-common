@@ -89,6 +89,7 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	}
 	m_is_sta_mode = is_sta_mode;
 
+	wan_v4_addr_set = false;
 	active_v4 = false;
 	active_v6 = false;
 	header_set_v4 = false;
@@ -367,6 +368,28 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
     }
 	else
 	{
+		if(wan_v4_addr_set)
+		{
+			/* check iface ipv4 same or not */
+			if(data->ipv4_addr == wan_v4_addr)
+			{
+				IPACMDBG_H("Already setup device (%s) ipv4 and it didn't change(0x%x)\n", dev_name, data->ipv4_addr);
+				return IPACM_SUCCESS;
+			}
+			else
+			{
+				IPACMDBG_H(" device (%s) ipv4 addr is changed\n", dev_name);
+				/* Delete default v4 RT rule */
+				IPACMDBG_H("Delete default v4 routing rules\n");
+				if (m_routing.DeleteRoutingHdl(dft_rt_rule_hdl[0], IPA_IP_v4) == false)
+				{
+					IPACMERR("Routing old RT rule deletion failed!\n");
+					res = IPACM_FAILURE;
+					goto fail;
+				}
+			}
+		}
+
 		rt_rule = (struct ipa_ioc_add_rt_rule *)
 			 calloc(1, sizeof(struct ipa_ioc_add_rt_rule) +
 							NUM_RULES * sizeof(struct ipa_rt_rule_add));
@@ -419,20 +442,26 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 		IPACMDBG_H("ipv4 wan iface rt-rule hdll=0x%x\n", dft_rt_rule_hdl[0]);
 			/* initial multicast/broadcast/fragment filter rule */
 
-		if(m_is_sta_mode == Q6_WAN)
+		/* only do one time */
+		if(!wan_v4_addr_set)
 		{
-			modem_ipv4_pdn_index = num_ipv4_modem_pdn;
-			num_ipv4_modem_pdn++;
-			IPACMDBG_H("Now the number of modem ipv4 pdn is %d.\n", num_ipv4_modem_pdn);
-			init_fl_rule_ex(data->iptype);
-		}
-		else
-		{
-			init_fl_rule(data->iptype);
+			/* initial multicast/broadcast/fragment filter rule */
+			if(m_is_sta_mode == Q6_WAN)
+			{
+				modem_ipv4_pdn_index = num_ipv4_modem_pdn;
+				num_ipv4_modem_pdn++;
+				IPACMDBG_H("Now the number of modem ipv4 pdn is %d.\n", num_ipv4_modem_pdn);
+				init_fl_rule_ex(data->iptype);
+			}
+			else
+			{
+				init_fl_rule(data->iptype);
+			}
 		}
 
 		wan_v4_addr = data->ipv4_addr;
-		IPACMDBG_H("Receved wan address:0x%x\n",wan_v4_addr);
+		wan_v4_addr_set = true;
+		IPACMDBG_H("Receved wan ipv4-addr:0x%x\n",wan_v4_addr);
 	}
 
 	IPACMDBG_H("number of default route rules %d\n", num_dft_rt_v6);
@@ -552,7 +581,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG_H("Get IPA_ADDR_ADD_EVENT: IF ip type %d, incoming ip type %d\n", ip_type, data->iptype);
 				/* check v4 not setup before, v6 can have 2 iface ip */
-				if( ((data->iptype != ip_type) && (ip_type != IPA_IP_MAX))
+				if( (data->iptype == IPA_IP_v4)
 				    || ((data->iptype==IPA_IP_v6) && (num_dft_rt_v6!=MAX_DEFAULT_v6_ROUTE_RULES)))
 				{
 					IPACMDBG_H("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt_v6);
