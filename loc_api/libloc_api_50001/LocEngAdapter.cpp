@@ -223,6 +223,23 @@ void LocEngAdapter::reportSv(GpsSvStatus &svStatus,
     }
 }
 
+
+void LocEngAdapter::reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet)
+{
+    // We send SvMeasurementSet to AmtProxy/ULPProxy to be forwarded as necessary.
+    if (! mUlp->reportSvMeasurement(svMeasurementSet)) {
+        //Send to Internal Adapter later if needed by LA
+    }
+}
+
+void LocEngAdapter::reportSvPolynomial(GnssSvPolynomial &svPolynomial)
+{
+    // We send SvMeasurementSet to AmtProxy/ULPProxy to be forwarded as necessary.
+    if (! mUlp->reportSvPolynomial(svPolynomial)) {
+       //Send to Internal Adapter later if needed by LA
+    }
+}
+
 void LocEngAdapter::setInSession(bool inSession)
 {
     mNavigating = inSession;

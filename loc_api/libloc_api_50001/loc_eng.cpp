@@ -2070,6 +2070,9 @@ void loc_eng_delete_aiding_data(loc_eng_data_s_type &loc_eng_data, GpsAidingData
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return);
 
+    //report delete aiding data to ULP to send to DRPlugin
+    loc_eng_data.adapter->getUlpProxy()->reportDeleteAidingData(f);
+
     loc_eng_data.adapter->sendMsg(new LocEngDelAidData(&loc_eng_data, f));
 
     EXIT_LOG(%s, VOID_RET);

@@ -297,6 +297,7 @@ static int loc_init(GpsCallbacks* callbacks)
     static int mdm_index = -1;
     int peripheral_mgr_ret = PM_RET_FAILED;
 #endif /*MODEM_POWER_VOTE*/
+    unsigned int target = (unsigned int) -1;
     ENTRY_LOG();
     LOC_API_ADAPTER_EVENT_MASK_T event;
 
@@ -314,6 +315,15 @@ static int loc_init(GpsCallbacks* callbacks)
             LOC_API_ADAPTER_BIT_STATUS_REPORT |
             LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT |
             LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
+
+    target = loc_get_target();
+
+    /*For "auto" platform enable Measurement report and SV Polynomial report*/
+    if(GNSS_AUTO == getTargetGnssType(target))
+    {
+        event |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT_REPORT |
+                LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
+    }
 
     LocCallbacks clientCallbacks = {local_loc_cb, /* location_cb */
                                     callbacks->status_cb, /* status_cb */

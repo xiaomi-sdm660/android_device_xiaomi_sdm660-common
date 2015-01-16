@@ -254,6 +254,22 @@ void LocApiBase::reportSv(GpsSvStatus &svStatus,
     );
 }
 
+void LocApiBase::reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet)
+{
+    // loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(
+        mLocAdapters[i]->reportSvMeasurement(svMeasurementSet)
+    );
+}
+
+void LocApiBase::reportSvPolynomial(GnssSvPolynomial &svPolynomial)
+{
+    // loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(
+        mLocAdapters[i]->reportSvPolynomial(svPolynomial)
+    );
+}
+
 void LocApiBase::reportStatus(GpsStatusValue status)
 {
     // loop through adapters, and deliver to all adapters.
