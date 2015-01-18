@@ -363,6 +363,12 @@ void* LocApiBase :: getSibling()
 LocApiProxyBase* LocApiBase :: getLocApiProxy()
     DEFAULT_IMPL(NULL)
 
+void LocApiBase::reportGpsMeasurementData(GpsData &gpsMeasurementData)
+{
+    // loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGpsMeasurementData(gpsMeasurementData));
+}
+
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T mask)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
@@ -526,4 +532,14 @@ DEFAULT_IMPL(-1)
 enum loc_api_adapter_err LocApiBase::
     setXtraVersionCheck(enum xtra_version_check check)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+
+int LocApiBase::
+    updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
+                           loc_registration_mask_status isEnabled)
+DEFAULT_IMPL(-1)
+
+bool LocApiBase::
+    gnssConstellationConfig()
+DEFAULT_IMPL(false)
+
 } // namespace loc_core

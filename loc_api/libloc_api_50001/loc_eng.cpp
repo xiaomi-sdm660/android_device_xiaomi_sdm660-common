@@ -1372,6 +1372,33 @@ struct LocEngEnableData : public LocMsg {
 //        case LOC_ENG_MSG_INJECT_XTRA_DATA:
 // loc_eng_xtra.cpp
 
+//        case LOC_ENG_MSG_SET_CAPABILITIES:
+struct LocEngSetCapabilities : public LocMsg {
+    loc_eng_data_s_type* mLocEng;
+    inline LocEngSetCapabilities(loc_eng_data_s_type* locEng) :
+        LocMsg(), mLocEng(locEng)
+    {
+        locallog();
+    }
+    inline virtual void proc() const {
+        if (NULL != mLocEng->set_capabilities_cb) {
+            LOC_LOGV("calling set_capabilities_cb 0x%x",
+                     gps_conf.CAPABILITIES);
+            mLocEng->set_capabilities_cb(gps_conf.CAPABILITIES);
+        } else {
+            LOC_LOGV("set_capabilities_cb is NULL.\n");
+        }
+    }
+    inline void locallog() const
+    {
+        LOC_LOGV("LocEngSetCapabilities");
+    }
+    inline virtual void log() const
+    {
+        locallog();
+    }
+};
+
 //        case LOC_ENG_MSG_LOC_INIT:
 struct LocEngInit : public LocMsg {
     loc_eng_data_s_type* mLocEng;
@@ -1382,6 +1409,8 @@ struct LocEngInit : public LocMsg {
     }
     inline virtual void proc() const {
         loc_eng_reinit(*mLocEng);
+        // set the capabilities
+        mLocEng->adapter->sendMsg(new LocEngSetCapabilities(mLocEng));
     }
     inline void locallog() const
     {
@@ -1571,6 +1600,99 @@ struct LocEngInstallAGpsCert : public LocMsg {
     }
 };
 
+struct LocEngUpdateRegistrationMask : public LocMsg {
+    loc_eng_data_s_type* mLocEng;
+    LOC_API_ADAPTER_EVENT_MASK_T mMask;
+    loc_registration_mask_status mIsEnabled;
+    inline LocEngUpdateRegistrationMask(loc_eng_data_s_type* locEng,
+                                        LOC_API_ADAPTER_EVENT_MASK_T mask,
+                                        loc_registration_mask_status isEnabled) :
+        LocMsg(), mLocEng(locEng), mMask(mask), mIsEnabled(isEnabled) {
+        locallog();
+    }
+    inline virtual void proc() const {
+        loc_eng_data_s_type *locEng = (loc_eng_data_s_type *)mLocEng;
+        locEng->adapter->updateRegistrationMask(mMask,
+                                                mIsEnabled);
+    }
+    void locallog() const {
+        LOC_LOGV("LocEngUpdateRegistrationMask\n");
+    }
+    virtual void log() const {
+        locallog();
+    }
+};
+
+struct LocEngGnssConstellationConfig : public LocMsg {
+    LocEngAdapter* mAdapter;
+    inline LocEngGnssConstellationConfig(LocEngAdapter* adapter) :
+        LocMsg(), mAdapter(adapter) {
+        locallog();
+    }
+    inline virtual void proc() const {
+        if (mAdapter->gnssConstellationConfig()) {
+            LOC_LOGV("Modem supports GNSS measurements\n");
+            gps_conf.CAPABILITIES |= GPS_CAPABILITY_MEASUREMENTS;
+        } else {
+            LOC_LOGV("Modem does not support GNSS measurements\n");
+        }
+    }
+    void locallog() const {
+        LOC_LOGV("LocEngGnssConstellationConfig\n");
+    }
+    virtual void log() const {
+        locallog();
+    }
+};
+
+//        case LOC_ENG_MSG_REPORT_GNSS_MEASUREMENT:
+LocEngReportGpsMeasurement::LocEngReportGpsMeasurement(void* locEng,
+                                                       GpsData &gpsData) :
+    LocMsg(), mLocEng(locEng), mGpsData(gpsData)
+{
+    locallog();
+}
+void LocEngReportGpsMeasurement::proc() const {
+    loc_eng_data_s_type* locEng = (loc_eng_data_s_type*) mLocEng;
+    if (locEng->mute_session_state != LOC_MUTE_SESS_IN_SESSION)
+    {
+        if (locEng->gps_measurement_cb != NULL) {
+            locEng->gps_measurement_cb((GpsData*)&(mGpsData));
+        }
+    }
+}
+void LocEngReportGpsMeasurement::locallog() const {
+    IF_LOC_LOGV {
+        LOC_LOGV("%s:%d]: Received in GPS HAL."
+                 "GNSS Measurements count: %d \n",
+                 __func__, __LINE__, mGpsData.measurement_count);
+        for (int i =0; i< mGpsData.measurement_count && i < GPS_MAX_SVS; i++) {
+                LOC_LOGV(" GNSS measurement data in GPS HAL: \n"
+                         " GPS_HAL => Measurement ID | prn | time_offset_ns | state |"
+                         " received_gps_tow_ns| c_n0_dbhz | pseudorange_rate_mps |"
+                         " pseudorange_rate_uncertainty_mps |"
+                         " accumulated_delta_range_state | flags \n"
+                         " GPS_HAL => %d | %d | %f | %d | %lld | %f | %f | %f | %d | %d \n",
+                         i,
+                         mGpsData.measurements[i].prn,
+                         mGpsData.measurements[i].time_offset_ns,
+                         mGpsData.measurements[i].state,
+                         mGpsData.measurements[i].received_gps_tow_ns,
+                         mGpsData.measurements[i].c_n0_dbhz,
+                         mGpsData.measurements[i].pseudorange_rate_mps,
+                         mGpsData.measurements[i].pseudorange_rate_uncertainty_mps,
+                         mGpsData.measurements[i].accumulated_delta_range_state,
+                         mGpsData.measurements[i].flags);
+        }
+        LOC_LOGV(" GPS_HAL => Clocks Info: type | time_ns \n"
+                 " GPS_HAL => Clocks Info: %d | %lld", mGpsData.clock.type,
+                 mGpsData.clock.time_ns);
+    }
+}
+inline void LocEngReportGpsMeasurement::log() const {
+    locallog();
+}
+
 /*********************************************************************
  * Initialization checking macros
  *********************************************************************/
@@ -1638,10 +1760,6 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
 
     memset(&loc_eng_data, 0, sizeof (loc_eng_data));
 
-    if (NULL != callbacks->set_capabilities_cb) {
-        callbacks->set_capabilities_cb(gps_conf.CAPABILITIES);
-    }
-
     // Save callbacks
     loc_eng_data.location_cb  = callbacks->location_cb;
     loc_eng_data.sv_status_cb = callbacks->sv_status_cb;
@@ -1690,6 +1808,7 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
     int ret_val = LOC_API_ADAPTER_ERR_SUCCESS;
     LocEngAdapter* adapter = loc_eng_data.adapter;
 
+    adapter->sendMsg(new LocEngGnssConstellationConfig(adapter));
     adapter->sendMsg(new LocEngSuplVer(adapter, gps_conf.SUPL_VER));
     adapter->sendMsg(new LocEngLppConfig(adapter, gps_conf.LPP_PROFILE));
     adapter->sendMsg(new LocEngSensorControlConfig(adapter, sap_conf.SENSOR_USAGE,
@@ -2626,33 +2745,32 @@ void loc_eng_configuration_update (loc_eng_data_s_type &loc_eng_data,
     ENTRY_LOG_CALLFLOW();
 
     if (config_data && length > 0) {
-        loc_gps_cfg_s_type gps_conf_old = gps_conf;
+        loc_gps_cfg_s_type gps_conf_tmp = gps_conf;
         UTIL_UPDATE_CONF(config_data, length, gps_conf_table);
         LocEngAdapter* adapter = loc_eng_data.adapter;
 
         // it is possible that HAL is not init'ed at this time
         if (adapter) {
-            if (gps_conf_old.SUPL_VER != gps_conf.SUPL_VER) {
+            if (gps_conf_tmp.SUPL_VER != gps_conf.SUPL_VER) {
                 adapter->sendMsg(new LocEngSuplVer(adapter, gps_conf.SUPL_VER));
             }
-            if (gps_conf_old.LPP_PROFILE != gps_conf.LPP_PROFILE) {
+            if (gps_conf_tmp.LPP_PROFILE != gps_conf.LPP_PROFILE) {
                 adapter->sendMsg(new LocEngLppConfig(adapter, gps_conf.LPP_PROFILE));
             }
-            if (gps_conf_old.A_GLONASS_POS_PROTOCOL_SELECT != gps_conf.A_GLONASS_POS_PROTOCOL_SELECT) {
+            if (gps_conf_tmp.A_GLONASS_POS_PROTOCOL_SELECT != gps_conf.A_GLONASS_POS_PROTOCOL_SELECT) {
                 adapter->sendMsg(new LocEngAGlonassProtocol(adapter,
                                                             gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
             }
-            if (gps_conf_old.SUPL_MODE != gps_conf.SUPL_MODE) {
+            if (gps_conf_tmp.SUPL_MODE != gps_conf.SUPL_MODE) {
                 adapter->sendMsg(new LocEngSuplMode(adapter->getUlpProxy()));
             }
         }
 
-        gps_conf_old.SUPL_VER = gps_conf.SUPL_VER;
-        gps_conf_old.LPP_PROFILE = gps_conf.LPP_PROFILE;
-        gps_conf_old.A_GLONASS_POS_PROTOCOL_SELECT = gps_conf.A_GLONASS_POS_PROTOCOL_SELECT;
-        gps_conf_old.SUPL_MODE = gps_conf.SUPL_MODE;
-        gps_conf = gps_conf_old;
-
+        gps_conf_tmp.SUPL_VER = gps_conf.SUPL_VER;
+        gps_conf_tmp.LPP_PROFILE = gps_conf.LPP_PROFILE;
+        gps_conf_tmp.A_GLONASS_POS_PROTOCOL_SELECT = gps_conf.A_GLONASS_POS_PROTOCOL_SELECT;
+        gps_conf_tmp.GPS_LOCK = gps_conf.GPS_LOCK;
+        gps_conf = gps_conf_tmp;
     }
 
     EXIT_LOG(%s, VOID_RET);
@@ -2860,5 +2978,82 @@ void loc_eng_handle_shutdown(loc_eng_data_s_type &locEng)
 {
     ENTRY_LOG();
     locEng.shutdown_cb();
+    EXIT_LOG(%d, 0);
+}
+
+/*===========================================================================
+FUNCTION    loc_eng_gps_measurement_init
+
+DESCRIPTION
+   Initialize gps measurement module.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   0: success
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+int loc_eng_gps_measurement_init(loc_eng_data_s_type &loc_eng_data,
+                                 GpsMeasurementCallbacks* callbacks)
+{
+    ENTRY_LOG_CALLFLOW();
+
+    STATE_CHECK((NULL == loc_eng_data.gps_measurement_cb),
+                "gps measurement already initialized",
+                return GPS_MEASUREMENT_ERROR_ALREADY_INIT);
+    STATE_CHECK((callbacks != NULL),
+                "callbacks can not be NULL",
+                return GPS_MEASUREMENT_ERROR_GENERIC);
+    STATE_CHECK(loc_eng_data.adapter,
+                "GpsInterface must be initialized first",
+                return GPS_MEASUREMENT_ERROR_GENERIC);
+
+    // updated the mask
+    LOC_API_ADAPTER_EVENT_MASK_T event = LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
+    loc_eng_data.adapter->sendMsg(new LocEngUpdateRegistrationMask(
+                                                        &loc_eng_data,
+                                                        event,
+                                                        LOC_REGISTRATION_MASK_ENABLED));
+    // set up the callback
+    loc_eng_data.gps_measurement_cb = callbacks->measurement_callback;
+    LOC_LOGD ("%s, event masks updated successfully", __func__);
+
+    return GPS_MEASUREMENT_OPERATION_SUCCESS;
+}
+
+/*===========================================================================
+FUNCTION    loc_eng_gps_measurement_close
+
+DESCRIPTION
+   Close gps measurement module.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   N/A
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+void loc_eng_gps_measurement_close(loc_eng_data_s_type &loc_eng_data)
+{
+    ENTRY_LOG_CALLFLOW();
+
+    INIT_CHECK(loc_eng_data.adapter, return);
+
+    // updated the mask
+    LOC_API_ADAPTER_EVENT_MASK_T event = LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
+    loc_eng_data.adapter->sendMsg(new LocEngUpdateRegistrationMask(
+                                                          &loc_eng_data,
+                                                          event,
+                                                          LOC_REGISTRATION_MASK_DISABLED));
+    // set up the callback
+    loc_eng_data.gps_measurement_cb = NULL;
     EXIT_LOG(%d, 0);
 }
