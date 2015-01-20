@@ -400,6 +400,8 @@ typedef enum loc_api_adapter_msg_to_check_supported {
     LOC_API_ADAPTER_MESSAGE_MAX
 } LocCheckingMessagesID;
 
+typedef int IzatDevId_t;
+
 typedef uint32_t LOC_GPS_LOCK_MASK;
 #define isGpsLockNone(lock) ((lock) == 0)
 #define isGpsLockMO(lock) ((lock) & ((LOC_GPS_LOCK_MASK)1))

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,9 +29,12 @@
 #define LOG_NDDEBUG 0
 #define LOG_TAG "LocSvc_EngAdapter"
 
+#include <cutils/properties.h>
 #include <LocEngAdapter.h>
 #include "loc_eng_msg.h"
 #include "loc_log.h"
+
+#define CHIPSET_SERIAL_NUMBER_MAX_LEN 16
 
 using namespace loc_core;
 
@@ -80,6 +83,72 @@ LocEngAdapter::~LocEngAdapter()
 {
     delete mInternalAdapter;
     LOC_LOGV("LocEngAdapter deleted");
+}
+
+void LocEngAdapter::setXtraUserAgent() {
+    struct LocSetXtraUserAgent : public LocMsg {
+        const ContextBase* const mContext;
+        inline LocSetXtraUserAgent(ContextBase* context) :
+            LocMsg(), mContext(context) {
+        }
+        virtual void proc() const {
+            char release[PROPERTY_VALUE_MAX];
+            char manufacture[PROPERTY_VALUE_MAX];
+            char model[PROPERTY_VALUE_MAX];
+            char carrier[PROPERTY_VALUE_MAX];
+            char board[PROPERTY_VALUE_MAX];
+            char brand[PROPERTY_VALUE_MAX];
+            char chipsetsn[CHIPSET_SERIAL_NUMBER_MAX_LEN];
+            char userAgent[PROPERTY_VALUE_MAX];
+            const char defVal[] = "-";
+
+            property_get("ro.build.version.release", release,     defVal);
+            property_get("ro.product.manufacturer",  manufacture, defVal);
+            property_get("ro.product.model", model,   defVal);
+            property_get("ro.carrier",       carrier, defVal);
+            property_get("ro.product.board", board,   defVal);
+            property_get("ro.product.brand", brand,   defVal);
+            getChipsetSerialNo(chipsetsn, sizeof(chipsetsn), defVal);
+
+            snprintf(userAgent, sizeof(userAgent), "A/%s/%s/%s/%s/%s/QCX3/s%u/-/%s/-/%s/-/-/-",
+                     release, manufacture, model, board, carrier,
+                     mContext->getIzatDevId(), chipsetsn, brand);
+
+            for (int i = 0; i < sizeof(userAgent) && userAgent[i]; i++) {
+                if (' ' == userAgent[i]) userAgent[i] = '#';
+            }
+
+            property_set("location.XTRA_USER_AGENT", userAgent);
+            LOC_LOGV("%s] UserAgent %s", __func__, userAgent);
+        }
+
+        void getChipsetSerialNo(char buf[], int buflen, const char def[]) const {
+            const char SOC_SERIAL_NUMBER[] = "/sys/devices/soc0/serial_number";
+
+            FILE* file = fopen(SOC_SERIAL_NUMBER, "rt");
+            if (file == NULL) {
+                // use default upon unreadable file
+                strlcpy(buf, def, buflen);
+
+            } else {
+                size_t size = fread(buf, 1, buflen - 1, file);
+                if (size == 0) {
+                   // use default upon empty file
+                   strlcpy(buf, def, buflen);
+
+                } else {
+                   buf[size] = '\0';
+                }
+
+                fclose(file);
+            }
+
+            return;
+        }
+
+    };
+
+    sendMsg(new LocSetXtraUserAgent(mContext));
 }
 
 void LocInternalAdapter::setUlpProxy(UlpProxyBase* ulp) {
