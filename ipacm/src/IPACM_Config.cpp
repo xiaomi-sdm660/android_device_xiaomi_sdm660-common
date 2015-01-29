@@ -209,8 +209,10 @@ int IPACM_Config::Init(void)
 	/* Find ODU is either router mode or bridge mode*/
 	ipacm_odu_enable = cfg->odu_enable;
 	ipacm_odu_router_mode = cfg->router_mode_enable;
+	ipacm_odu_embms_enable = cfg->odu_embms_enable;
 	IPACMDBG_H("ipacm_odu_enable %d\n", ipacm_odu_enable);
 	IPACMDBG_H("ipacm_odu_mode %d\n", ipacm_odu_router_mode);
+	IPACMDBG_H("ipacm_odu_embms_enable %d\n", ipacm_odu_embms_enable);
 
 	/* Allocate more non-nat entries if the monitored iface dun have Tx/Rx properties */
 	if (pNatIfaces != NULL)

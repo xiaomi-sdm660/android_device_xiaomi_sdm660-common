@@ -113,6 +113,8 @@ public:
 
 	bool ipacm_odu_enable;
 
+	bool ipacm_odu_embms_enable;
+
 	int ipa_nat_iface_entries;
 
 	/* Max valid rm entry */

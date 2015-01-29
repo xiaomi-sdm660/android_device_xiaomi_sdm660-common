@@ -573,9 +573,17 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				/* first construc ODU full header */
 				if ((ipv4_header_set == false) && (ipv6_header_set == false))
 				{
+					/* construct ODU RT tbl */
 					handle_odu_hdr_init(data->mac_addr);
-					handle_odu_route_add(); /* construct ODU RT tbl*/
-					IPACMDBG("construct ODU header and route rules \n");
+					if (IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable == true)
+					{
+						handle_odu_route_add();
+						IPACMDBG("construct ODU header and route rules, embms_flag (%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable);
+					}
+					else
+					{
+						IPACMDBG("construct ODU header only, embms_flag (%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable);
+					}
 				}
 				/* if ODU in bridge mode, directly return */
 				if(IPACM_Iface::ipacmcfg->ipacm_odu_router_mode == false)
@@ -2297,7 +2305,11 @@ int IPACM_Lan::handle_down_evt()
 	if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
 	{
 		/* delete ODU default RT rules */
-		handle_odu_route_del();
+		if (IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable == true)
+		{
+			IPACMDBG_H(" eMBMS enable, delete eMBMS DL RT rule\n");
+			handle_odu_route_del();
+		}
 
 		/* delete full header */
 		if (ipv4_header_set)

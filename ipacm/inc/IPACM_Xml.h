@@ -77,6 +77,7 @@ if (!(a)) {                                             \
 #define system_TAG                           "system"
 #define ODU_TAG                              "ODUCFG"
 #define ODUMODE_TAG                          "Mode"
+#define ODUEMBMS_OFFLOAD_TAG                 "eMBMS_offload"
 #define ODU_ROUTER_TAG                       "router"
 #define ODU_BRIDGE_TAG                       "bridge"
 #define IPACMCFG_TAG                         "IPACM"
@@ -267,6 +268,7 @@ typedef struct  _IPACM_conf_t
 	int nat_max_entries;
   bool odu_enable;
   bool router_mode_enable;
+  bool odu_embms_enable;
 } IPACM_conf_t;  
 
 /* This function read IPACM XML configuration*/
