@@ -2372,12 +2372,6 @@ int IPACM_Lan::handle_down_evt()
 			goto fail;
 		}
 #endif
-		if(m_filtering.DeleteFilteringHdls(ipv6_icmp_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_ICMP_FLT_RULE) == false)
-		{
-			IPACMERR("Error Deleting ICMPv6 Filtering Rule, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
 #ifndef FEATURE_ETH_BRIDGE_LE
 #ifdef CT_OPT
 		if (m_filtering.DeleteFilteringHdls(tcp_ctl_flt_rule_hdl_v4, IPA_IP_v4, NUM_TCP_CTL_FLT_RULE) == false)
@@ -2427,6 +2421,13 @@ int IPACM_Lan::handle_down_evt()
 
 	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
 	{
+		if(m_filtering.DeleteFilteringHdls(ipv6_icmp_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_ICMP_FLT_RULE) == false)
+		{
+			IPACMERR("Error Deleting ICMPv6 Filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+
 		if (m_filtering.DeleteFilteringHdls(dft_v6fl_rule_hdl,
 																				IPA_IP_v6,
 																				(IPV6_DEFAULT_FILTERTING_RULES + IPV6_DEFAULT_LAN_FILTERTING_RULES)) == false)
