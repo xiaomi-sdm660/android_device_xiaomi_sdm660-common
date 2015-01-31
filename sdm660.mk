@@ -30,8 +30,7 @@ COMMON_PATH := device/xiaomi/sdm660-common
 $(call inherit-product, $(COMMON_PATH)/properties.mk)
 
 # Boot animation
-TARGET_SCREEN_HEIGHT := 2160
-TARGET_SCREEN_WIDTH := 1080
+TARGET_BOOTANIMATION_SIZE := 1080p
 
 # Overlays
 DEVICE_PACKAGE_OVERLAYS += \
