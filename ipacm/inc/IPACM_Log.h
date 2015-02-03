@@ -65,12 +65,18 @@ typedef struct ipacm_log_buffer_s {
 void ipacm_log_send( void * user_data);
 
 static char buffer_send[MAX_BUF_LEN];
+static char dmesg_cmd[MAX_BUF_LEN];
 
 #define PERROR(fmt)   memset(buffer_send, 0, MAX_BUF_LEN);\
 					  snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s()", __FILE__, __LINE__, __FUNCTION__);\
 					  ipacm_log_send (buffer_send); \
                       perror(fmt);
 
+#define IPACMDBG_DMESG(fmt, ...) memset(buffer_send, 0, MAX_BUF_LEN);\
+							     snprintf(buffer_send,MAX_BUF_LEN,"%s:%d %s: " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+								 memset(dmesg_cmd, 0, MAX_BUF_LEN);\
+								 snprintf(dmesg_cmd, MAX_BUF_LEN, "echo %s > /dev/kmsg", buffer_send);\
+								 system(dmesg_cmd);
 #define IPACMERR(fmt, ...)	memset(buffer_send, 0, MAX_BUF_LEN);\
 							snprintf(buffer_send,MAX_BUF_LEN,"ERR: %s:%d %s() " fmt, __FILE__,  __LINE__, __FUNCTION__, ##__VA_ARGS__);\
 							ipacm_log_send (buffer_send);\
