@@ -133,7 +133,9 @@ private:
 	uint32_t ODU_fl_hdl[IPA_NUM_DEFAULT_WAN_FILTER_RULES];
 	int num_firewall_v4,num_firewall_v6;
 	uint32_t wan_v4_addr;
+	uint32_t wan_v4_addr_gw;
 	bool wan_v4_addr_set;
+	bool wan_v4_addr_gw_set;
 	bool active_v4;
 	bool active_v6;
 	bool header_set_v4;
@@ -200,6 +202,39 @@ private:
 			}
 		}
 
+		return IPACM_INVALID_INDEX;
+	}
+
+	inline int get_wan_client_index_ipv4(uint32_t ipv4_addr)
+	{
+		int cnt;
+		int num_wan_client_tmp = num_wan_client;
+
+		IPACMDBG_H("Passed IPv4 %x\n", ipv4_addr);
+
+		for(cnt = 0; cnt < num_wan_client_tmp; cnt++)
+		{
+			if (get_client_memptr(wan_client, cnt)->ipv4_set)
+			{
+				IPACMDBG_H("stored IPv4 %x\n", get_client_memptr(wan_client, cnt)->v4_addr);
+
+				if(ipv4_addr == get_client_memptr(wan_client, cnt)->v4_addr)
+				{
+					IPACMDBG_H("Matched client index: %d\n", cnt);
+					IPACMDBG_H("The MAC is %02x:%02x:%02x:%02x:%02x:%02x\n",
+							get_client_memptr(wan_client, cnt)->mac[0],
+							get_client_memptr(wan_client, cnt)->mac[1],
+							get_client_memptr(wan_client, cnt)->mac[2],
+							get_client_memptr(wan_client, cnt)->mac[3],
+							get_client_memptr(wan_client, cnt)->mac[4],
+							get_client_memptr(wan_client, cnt)->mac[5]);
+					IPACMDBG_H("header set ipv4(%d) ipv6(%d)\n",
+							get_client_memptr(wan_client, cnt)->ipv4_header_set,
+							get_client_memptr(wan_client, cnt)->ipv6_header_set);
+					return cnt;
+				}
+			}
+		}
 		return IPACM_INVALID_INDEX;
 	}
 
@@ -278,8 +313,8 @@ private:
 	/* wan default route/filter rule configuration */
 	int handle_route_add_evt(ipa_ip_type iptype);
 
-	/* construct complete ethernet header */
-	int handle_header_add_evt(uint8_t *mac_addr);
+	/* construct complete STA ethernet header */
+	int handle_sta_header_add_evt();
 
 	int config_dft_firewall_rules(ipa_ip_type iptype);
 

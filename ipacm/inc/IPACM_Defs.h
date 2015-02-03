@@ -265,6 +265,7 @@ typedef struct _ipacm_event_data_addr
 {
 	enum ipa_ip_type iptype;
 	int if_index;
+	uint32_t  ipv4_addr_gw;
 	uint32_t  ipv4_addr;
 	uint32_t  ipv4_addr_mask;
 	uint32_t  ipv6_addr[4];
