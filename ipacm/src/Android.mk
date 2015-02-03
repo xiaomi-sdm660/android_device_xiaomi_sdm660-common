@@ -54,7 +54,7 @@ LOCAL_SRC_FILES := IPACM_Main.cpp \
                 IPACM_Log.cpp
 
 LOCAL_MODULE := ipacm
-LOCAL_MODULE_TAGS := debug
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := libipanat
 LOCAL_SHARED_LIBRARIES += libxml2
