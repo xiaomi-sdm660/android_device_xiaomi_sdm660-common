@@ -374,13 +374,17 @@ enum loc_api_adapter_err LocEngAdapter::setXtraVersionCheck(int check)
     switch (check) {
     case 0:
         eCheck = DISABLED;
+        break;
     case 1:
         eCheck = AUTO;
+        break;
     case 2:
         eCheck = XTRA2;
+        break;
     case 3:
         eCheck = XTRA3;
-    defaul:
+        break;
+    default:
         eCheck = DISABLED;
     }
     ret = mLocApi->setXtraVersionCheck(eCheck);
