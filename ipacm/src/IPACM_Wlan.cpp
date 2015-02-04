@@ -737,10 +737,13 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			handle_SCC_MCC_switch(IPA_IP_v4);
 			handle_SCC_MCC_switch(IPA_IP_v6);
+			eth_bridge_handle_wlan_SCC_MCC_switch(IPA_IP_v4);
+			eth_bridge_handle_wlan_SCC_MCC_switch(IPA_IP_v6);
 		}
 		else
 		{
 			handle_SCC_MCC_switch(ip_type);
+			eth_bridge_handle_wlan_SCC_MCC_switch(ip_type);
 		}
 		break;
 
@@ -750,10 +753,13 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			handle_SCC_MCC_switch(IPA_IP_v4);
 			handle_SCC_MCC_switch(IPA_IP_v6);
+			eth_bridge_handle_wlan_SCC_MCC_switch(IPA_IP_v4);
+			eth_bridge_handle_wlan_SCC_MCC_switch(IPA_IP_v6);
 		}
 		else
 		{
 			handle_SCC_MCC_switch(ip_type);
+			eth_bridge_handle_wlan_SCC_MCC_switch(ip_type);
 		}
 		break;
 
@@ -4308,8 +4314,18 @@ int IPACM_Wlan::eth_bridge_add_wlan_client_rt_rule(uint8_t* mac, eth_bridge_src_
 				res = IPACM_FAILURE;
 				goto fail;
 			}
+			/* Handle MCC Mode case */
+			if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+			{
+				IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+						tx_prop->tx[i].alt_dst_pipe);
+				rt_rule.rule.dst = tx_prop->tx[i].alt_dst_pipe;
+			}
+			else
+			{
+				rt_rule.rule.dst = tx_prop->tx[i].dst_pipe;
+			}
 
-			rt_rule.rule.dst = tx_prop->tx[i].dst_pipe;
 			memcpy(&rt_rule.rule.attrib, &tx_prop->tx[i].attrib, sizeof(rt_rule.rule.attrib));
 			if(src == SRC_WLAN)	//src is WLAN means packet is from WLAN
 			{
@@ -4845,4 +4861,258 @@ void IPACM_Wlan::handle_SCC_MCC_switch(ipa_ip_type iptype)
 		free(rt_rule);
 	}
 	return;
+}
+
+void IPACM_Wlan::eth_bridge_handle_wlan_SCC_MCC_switch(ipa_ip_type iptype)
+{
+
+	for (int i= 0; i < IPACM_Lan::num_wlan_client; i++)
+	{
+		if (IPACM_Lan::eth_bridge_wlan_client[i].ipa_if_num == ipa_if_num)
+		{
+			if (IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.valid == true)
+			{
+				if (eth_bridge_modify_wlan_rt_rule(IPACM_Lan::eth_bridge_wlan_client[i].mac, SRC_WLAN, iptype) == IPACM_FAILURE)
+				{
+					IPACMDBG_H("SCC/MCC switch is failed for iptype: %d src_iface: %d \n", iptype, SRC_WLAN);
+					return;
+				}
+			}
+			if (IPACM_Lan::usb_to_wlan_hdr_proc_ctx.valid == true)
+			{
+				if (eth_bridge_modify_wlan_rt_rule(IPACM_Lan::eth_bridge_wlan_client[i].mac, SRC_USB, iptype) == IPACM_FAILURE)
+				{
+					IPACMDBG_H("SCC/MCC switch is failed for iptype: %d src_iface: %d \n", iptype, SRC_USB);
+					return;
+				}
+			}
+		}
+	}
+
+	IPACMDBG_H("SCC/MCC switch is successful for iptype: %d\n", iptype);
+}
+
+int IPACM_Wlan::eth_bridge_modify_wlan_rt_rule(uint8_t* mac, eth_bridge_src_iface src_iface, ipa_ip_type iptype)
+{
+	struct ipa_ioc_mdfy_rt_rule *rt_rule = NULL;
+	struct ipa_rt_rule_mdfy *rt_rule_entry;
+	uint32_t index = 0, num_rt_rule = 0, position;
+
+	if (tx_prop == NULL)
+	{
+		IPACMDBG_H("No tx properties \n");
+		return IPACM_FAILURE;
+	}
+
+	if (mac == NULL)
+	{
+		IPACMERR("Client MAC address is empty.\n");
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("Receive WLAN client MAC 0x%02x%02x%02x%02x%02x%02x.\n",
+			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	if (iptype == IPA_IP_v4)
+	{
+		num_rt_rule = each_client_rt_rule_count_v4;
+	}
+	else
+	{
+		num_rt_rule = each_client_rt_rule_count_v6;
+	}
+
+	if (src_iface == SRC_WLAN)
+	{
+		if (iptype == IPA_IP_v4)
+		{
+			for (index = 0; index < wlan_client_rt_from_wlan_info_count_v4; index++)
+			{
+				if (memcmp(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v4)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v4)->mac)) == 0)
+				{
+					position = index;
+					IPACMDBG_H("The client is found at position %d.\n", position);
+					break;
+				}
+			}
+			if (index == wlan_client_rt_from_wlan_info_count_v4)
+			{
+				IPACMERR("The client is not found.\n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			for (index =0 ; index < wlan_client_rt_from_wlan_info_count_v6; index++)
+			{
+				if (memcmp(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v6)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v6)->mac)) == 0)
+				{
+					position = index;
+					IPACMDBG_H("The client is found at position %d.\n", position);
+					break;
+				}
+			}
+			if (index == wlan_client_rt_from_wlan_info_count_v6)
+			{
+				IPACMERR("The client is not found.\n");
+				return IPACM_FAILURE;
+			}
+		}
+	}
+	else
+	{
+		if (iptype == IPA_IP_v4)
+		{
+			for (index = 0; index < wlan_client_rt_from_usb_info_count_v4; index++)
+			{
+				if (memcmp(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v4)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v4)->mac)) == 0)
+				{
+					position = index;
+					IPACMDBG_H("The client is found at position %d.\n", position);
+					break;
+				}
+			}
+			if (index == wlan_client_rt_from_usb_info_count_v4)
+			{
+				IPACMERR("The client is not found.\n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			for (index = 0; index < wlan_client_rt_from_usb_info_count_v6; index++)
+			{
+				if (memcmp(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v6)->mac, mac,
+					sizeof(eth_bridge_get_client_rt_info_ptr(index, src_iface, IPA_IP_v6)->mac)) == 0)
+				{
+					position = index;
+					IPACMDBG_H("The client is found at position %d.\n", position);
+					break;
+				}
+			}
+			if (index == wlan_client_rt_from_usb_info_count_v6)
+			{
+				IPACMERR("The client is not found.\n");
+				return IPACM_FAILURE;
+			}
+		}
+	}
+
+	rt_rule = (struct ipa_ioc_mdfy_rt_rule *)
+			calloc(1, sizeof(struct ipa_ioc_mdfy_rt_rule) +
+			(num_rt_rule) * sizeof(struct ipa_rt_rule_mdfy));
+
+	if (rt_rule == NULL)
+	{
+		IPACMERR("Unable to allocate memory for modify rt rule\n");
+		return IPACM_FAILURE;
+	}
+	IPACMDBG("Allocated memory for %d rules successfully\n", num_rt_rule);
+
+	rt_rule->commit = 1;
+	rt_rule->num_rules = 0;
+	rt_rule->ip = iptype;
+
+	for (index = 0; index < tx_prop->num_tx_props; index++)
+	{
+		if (tx_prop->tx[index].ip == iptype)
+		{
+			if (rt_rule->num_rules >= num_rt_rule)
+			{
+				IPACMERR("Number of routing rules exceeds limit.\n");
+				free(rt_rule);
+				return IPACM_FAILURE;
+			}
+
+			rt_rule_entry = &rt_rule->rules[rt_rule->num_rules];
+
+			if (IPACM_Iface::ipacmcfg->isMCC_Mode)
+			{
+				IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+						tx_prop->tx[index].alt_dst_pipe);
+				rt_rule_entry->rule.dst = tx_prop->tx[index].alt_dst_pipe;
+			}
+			else
+			{
+				rt_rule_entry->rule.dst = tx_prop->tx[index].dst_pipe;
+			}
+
+			rt_rule_entry->rule.hdr_hdl = 0;
+
+			if (src_iface == SRC_WLAN)
+			{
+				rt_rule_entry->rule.hdr_proc_ctx_hdl =
+						IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.proc_ctx_hdl;
+			}
+			else
+			{
+				rt_rule_entry->rule.hdr_proc_ctx_hdl =
+						IPACM_Lan::usb_to_wlan_hdr_proc_ctx.proc_ctx_hdl;
+			}
+
+			memcpy(&rt_rule_entry->rule.attrib,
+					&tx_prop->tx[index].attrib,
+					sizeof(rt_rule_entry->rule.attrib));
+
+			if (src_iface == SRC_WLAN)	//src is WLAN means packet is from WLAN
+			{
+				if (IPACM_Lan::wlan_hdr_type == IPA_HDR_L2_ETHERNET_II)
+				{
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
+				}
+				else
+				{
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_802_3;
+				}
+			}
+			else	//packet is from USB
+			{
+				if (IPACM_Lan::usb_hdr_type == IPA_HDR_L2_ETHERNET_II)
+				{
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_ETHER_II;
+				}
+				else
+				{
+					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_MAC_DST_ADDR_802_3;
+				}
+			}
+			memcpy(rt_rule_entry->rule.attrib.dst_mac_addr, mac,
+					sizeof(rt_rule_entry->rule.attrib.dst_mac_addr));
+			memset(rt_rule_entry->rule.attrib.dst_mac_addr_mask, 0xFF,
+					sizeof(rt_rule_entry->rule.attrib.dst_mac_addr_mask));
+
+			rt_rule_entry->rt_rule_hdl =
+					eth_bridge_get_client_rt_info_ptr(position, src_iface, iptype)->rt_rule_hdl[rt_rule->num_rules];
+			IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", index,
+				eth_bridge_get_client_rt_info_ptr(position, src_iface, iptype)->rt_rule_hdl[rt_rule->num_rules], iptype);
+
+			rt_rule->num_rules++;
+		}
+	}
+
+	if (rt_rule->num_rules > 0)
+	{
+		if (false == m_routing.ModifyRoutingRule(rt_rule))
+		{
+			IPACMERR("Routing rule modify failed!\n");
+			free(rt_rule);
+			return IPACM_FAILURE;
+		}
+		if (false == m_routing.Commit(iptype))
+		{
+			IPACMERR("Routing rule modify commit failed!\n");
+			free(rt_rule);
+			return IPACM_FAILURE;
+		}
+		IPACMDBG("Routing rule modified successfully \n");
+	}
+
+	if (rt_rule)
+	{
+		free(rt_rule);
+	}
+	return IPACM_SUCCESS;
 }
