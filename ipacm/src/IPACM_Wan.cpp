@@ -66,6 +66,7 @@ int IPACM_Wan::num_ipv4_modem_pdn = 0;
 int IPACM_Wan::num_ipv6_modem_pdn = 0;
 
 bool IPACM_Wan::embms_is_on = false;
+bool IPACM_Wan::cradle_backhaul_is_wan_bridge = false;
 
 uint32_t IPACM_Wan::backhaul_ipv6_prefix[2];
 
@@ -501,7 +502,66 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 
 	case IPA_CFG_CHANGE_EVENT:
 		{
-			if ( (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != ipa_if_cate) &&
+			if ( (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ipa_if_cate) &&
+					(m_is_sta_mode ==ECM_WAN))
+			{
+				IPACMDBG_H("Received IPA_CFG_CHANGE_EVENT and category did not change(wan_mode:%d)\n", m_is_sta_mode);
+				IPACMDBG_H("Now the cradle wan mode is %d.\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode);
+				if(is_default_gateway == true)
+				{
+					if(cradle_backhaul_is_wan_bridge == false && IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
+					{
+						IPACMDBG_H("Cradle wan mode switch to bridge mode.\n");
+						cradle_backhaul_is_wan_bridge = true;
+					}
+					else if(cradle_backhaul_is_wan_bridge == true && IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+					{
+						IPACMDBG_H("Cradle wan mode switch to router mode.\n");
+						cradle_backhaul_is_wan_bridge = false;
+					}
+					else
+					{
+						IPACMDBG_H("No cradle mode switch, return.\n");
+						return;
+					}
+					/* post wan mode change event to LAN/WLAN */
+					if(IPACM_Wan::wan_up == true)
+					{
+						IPACMDBG_H("This interface is default GW.\n");
+						ipacm_cmd_q_data evt_data;
+						memset(&evt_data, 0, sizeof(evt_data));
+
+						ipacm_event_cradle_wan_mode *data_wan_mode = NULL;
+						data_wan_mode = (ipacm_event_cradle_wan_mode *)malloc(sizeof(ipacm_event_cradle_wan_mode));
+						if(data_wan_mode == NULL)
+						{
+							IPACMERR("unable to allocate memory.\n");
+							return;
+						}
+						data_wan_mode->cradle_wan_mode = IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode;
+						evt_data.event = IPA_CRADLE_WAN_MODE_SWITCH;
+						evt_data.evt_data = data_wan_mode;
+						IPACMDBG_H("Posting IPA_CRADLE_WAN_MODE_SWITCH event.\n");
+						IPACM_EvtDispatcher::PostEvt(&evt_data);
+					}
+					/* update the firewall flt rule actions */
+					if(active_v4)
+					{
+						del_dft_firewall_rules(IPA_IP_v4);
+						config_dft_firewall_rules(IPA_IP_v4);
+					}
+					if(active_v6)
+					{
+						del_dft_firewall_rules(IPA_IP_v6);
+						config_dft_firewall_rules(IPA_IP_v6);
+					}
+				}
+				else
+				{
+					IPACMDBG_H("This interface is not default GW, ignore.\n");
+				}
+			}
+			else if ( (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != ipa_if_cate) &&
 					(m_is_sta_mode ==ECM_WAN))
 			{
 				IPACMDBG_H("Received IPA_CFG_CHANGE_EVENT and category changed(wan_mode:%d)\n", m_is_sta_mode);
@@ -1027,6 +1087,14 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	if (m_is_sta_mode !=Q6_WAN)
 	{
 		IPACM_Wan::backhaul_is_sta_mode	= true;
+		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
+		{
+			IPACM_Wan::cradle_backhaul_is_wan_bridge = true;
+		}
+		else
+		{
+			IPACM_Wan::cradle_backhaul_is_wan_bridge = false;
+		}
 		if((iptype==IPA_IP_v4) && (header_set_v4 != true))
 		{
 			header_partial_default_wan_v4 = true;
@@ -1566,13 +1634,13 @@ int IPACM_Wan::handle_header_add_evt(uint8_t *mac_addr)
 	        }
 	}
 
-    /* see if default routes are setup before constructing full header */
-    if(header_partial_default_wan_v4 == true)
+	/* see if default routes are setup before constructing full header */
+	if(header_partial_default_wan_v4 == true)
 	{
 	   handle_route_add_evt(IPA_IP_v4);
 	}
 
-    if(header_partial_default_wan_v6 == true)
+	if(header_partial_default_wan_v6 == true)
 	{
 	   handle_route_add_evt(IPA_IP_v6);
 	}
@@ -1697,25 +1765,39 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			flt_rule_entry.status = -1;
 
 			/* firewall disable, all traffic are allowed */
-                        if(firewall_config.firewall_enable == true)
+			if(firewall_config.firewall_enable == true)
 			{
-			    flt_rule_entry.at_rear = true;
+				flt_rule_entry.at_rear = true;
 
-			     /* default action for v4 is go DST_NAT unless user set to exception*/
-                             if(firewall_config.rule_action_accept == true)
-			    {
-			        flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
-			    }
-			    else
-			    {
-			        flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
-                            }
-		        }
+				/* default action for v4 is go DST_NAT unless user set to exception*/
+				if(firewall_config.rule_action_accept == true)
+				{
+					flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+				}
+				else
+				{
+					if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+					{
+						flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+					}
+					else
+					{
+						flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+					}
+				}
+			}
 			else
 			{
-			  flt_rule_entry.at_rear = true;
-			flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
-                        }
+				flt_rule_entry.at_rear = true;
+				if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+				{
+					flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+				}
+				else
+				{
+					flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+				}
+            }
 
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 			memcpy(&flt_rule_entry.rule.attrib,
@@ -1776,14 +1858,21 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 					flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 
 					/* Accept v4 matched rules*/
-                                        if(firewall_config.rule_action_accept == true)
-			                {
-			                     flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
-			                }
-			                else
-			                {
-			                     flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
-                                        }
+                    if(firewall_config.rule_action_accept == true)
+			        {
+						if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+						{
+							flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+						}
+						else
+						{
+							flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+						}
+			        }
+			        else
+			        {
+			            flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+                    }
 
 					memcpy(&flt_rule_entry.rule.attrib,
 								 &firewall_config.extd_firewall_entries[i].attrib,
@@ -1877,7 +1966,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			flt_rule_entry.status = -1;
 
 			/* firewall disable, all traffic are allowed */
-                        if(firewall_config.firewall_enable == true)
+            if(firewall_config.firewall_enable == true)
 			{
 			     flt_rule_entry.at_rear = true;
 
@@ -1888,14 +1977,28 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			     }
 			     else
 			     {
-			       flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
-                             }
-		        }
+					if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+					{
+						flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+					}
+					else
+					{
+						flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+					}
+				}
+		    }
 			else
 			{
 			    flt_rule_entry.at_rear = true;
-			flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
-                        }
+				if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+				{
+					flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+				}
+				else
+				{
+					flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+				}
+            }
 
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.hdl;
 			memcpy(&flt_rule_entry.rule.attrib,

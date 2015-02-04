@@ -732,6 +732,27 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 	}
 	break;
 
+	case IPA_CRADLE_WAN_MODE_SWITCH:
+	{
+		IPACMDBG_H("Received IPA_CRADLE_WAN_MODE_SWITCH event.\n");
+		ipacm_event_cradle_wan_mode* wan_mode = (ipacm_event_cradle_wan_mode*)param;
+		if(wan_mode == NULL)
+		{
+			IPACMERR("Event data is empty.\n");
+			return;
+		}
+
+		if(wan_mode->cradle_wan_mode == BRIDGE)
+		{
+			handle_cradle_wan_mode_switch(true);
+		}
+		else
+		{
+			handle_cradle_wan_mode_switch(false);
+		}
+	}
+	break;
+
 	default:
 		break;
 	}
@@ -1148,7 +1169,14 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 		flt_rule_entry.at_rear = true;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
-		flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT; //IPA_PASS_TO_ROUTING
+		if(IPACM_Wan::cradle_backhaul_is_wan_bridge == true)
+		{
+			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+		}
+		else
+		{
+			flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT; //IPA_PASS_TO_ROUTING
+		}
 		flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.hdl;
 
 		memcpy(&flt_rule_entry.rule.attrib,
@@ -5423,6 +5451,86 @@ int IPACM_Lan::del_hdr_proc_ctx()
 			IPACM_Lan::wlan_to_wlan_hdr_proc_ctx.valid = false;
 		}
 	}
+	return IPACM_SUCCESS;
+}
+
+int IPACM_Lan::handle_cradle_wan_mode_switch(bool is_wan_bridge_mode)
+{
+	struct ipa_flt_rule_mdfy flt_rule_entry;
+	int len = 0;
+	ipa_ioc_mdfy_flt_rule *m_pFilteringTable;
+
+	IPACMDBG_H("Handle wan mode swtich: is wan bridge mode?%d\n", is_wan_bridge_mode);
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+
+	len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (1 * sizeof(struct ipa_flt_rule_mdfy));
+	m_pFilteringTable = (struct ipa_ioc_mdfy_flt_rule *)calloc(1, len);
+	if (m_pFilteringTable == NULL)
+	{
+		PERROR("Error Locate ipa_ioc_mdfy_flt_rule memory...\n");
+		return IPACM_FAILURE;
+	}
+
+	m_pFilteringTable->commit = 1;
+	m_pFilteringTable->ip = IPA_IP_v4;
+	m_pFilteringTable->num_rules = (uint8_t)1;
+
+	IPACMDBG_H("Retrieving routing hanle for table: %s\n",
+					 IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.name);
+	if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v4))
+	{
+		IPACMERR("m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_wan_v4=0x%p) Failed.\n",
+						 &IPACM_Iface::ipacmcfg->rt_tbl_wan_v4);
+		free(m_pFilteringTable);
+		return IPACM_FAILURE;
+	}
+	IPACMDBG_H("Routing handle for table: %d\n", IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.hdl);
+
+
+	memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_mdfy)); // Zero All Fields
+	flt_rule_entry.status = -1;
+	flt_rule_entry.rule_hdl = lan_wan_fl_rule_hdl[0];
+
+	flt_rule_entry.rule.retain_hdr = 0;
+	flt_rule_entry.rule.to_uc = 0;
+	flt_rule_entry.rule.eq_attrib_type = 0;
+	if(is_wan_bridge_mode)
+	{
+		flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+	}
+	else
+	{
+		flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT;
+	}
+	flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.hdl;
+
+	memcpy(&flt_rule_entry.rule.attrib,
+				 &rx_prop->rx[0].attrib,
+				 sizeof(flt_rule_entry.rule.attrib));
+
+	flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+	flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = 0x0;
+	flt_rule_entry.rule.attrib.u.v4.dst_addr = 0x0;
+
+	memcpy(&m_pFilteringTable->rules[0], &flt_rule_entry, sizeof(flt_rule_entry));
+	if (false == m_filtering.ModifyFilteringRule(m_pFilteringTable))
+	{
+		IPACMERR("Error Modifying RuleTable(0) to Filtering, aborting...\n");
+		free(m_pFilteringTable);
+		return IPACM_FAILURE;
+	}
+	else
+	{
+		IPACMDBG_H("flt rule hdl = %d, status = %d\n",
+						 m_pFilteringTable->rules[0].rule_hdl,
+						 m_pFilteringTable->rules[0].status);
+	}
+	free(m_pFilteringTable);
 	return IPACM_SUCCESS;
 }
 
