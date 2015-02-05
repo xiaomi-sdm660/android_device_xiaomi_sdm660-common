@@ -28,10 +28,10 @@ LOCAL_CFLAGS := -v
 LOCAL_CFLAGS += -DFEATURE_IPA_ANDROID
 LOCAL_CFLAGS += -DDEBUG
 
-ifeq ($(TARGET_ARCH),arm)
-LOCAL_CFLAGS += -include bionic/libc/kernel/arch-arm/asm/posix_types.h
-LOCAL_CFLAGS += -include bionic/libc/kernel/arch-arm/asm/byteorder.h
-endif
+filetoadd = bionic/libc/kernel/arch-arm/asm/posix_types.h
+LOCAL_CFLAGS += $(shell if [ -a $(filetoadd) ] ; then echo -include $(filetoadd) ; fi ;)
+filetoadd = bionic/libc/kernel/arch-arm/asm/byteorder.h
+LOCAL_CFLAGS += $(shell if [ -a $(filetoadd) ] ; then echo -include $(filetoadd) ; fi ;)
 
 LOCAL_SRC_FILES := IPACM_Main.cpp \
 		IPACM_EvtDispatcher.cpp \
