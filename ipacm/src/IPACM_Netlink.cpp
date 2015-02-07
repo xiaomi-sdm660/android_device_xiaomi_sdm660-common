@@ -610,7 +610,7 @@ static int ipa_nl_decode_nlmsg
 	int ret_val, mask_value, mask_index, mask_value_v6;
 	struct nlmsghdr *nlh = (struct nlmsghdr *)buffer;
 
-	uint32_t if_ipv4_addr =0, if_ipipv4_addr_mask =0, temp =0;
+	uint32_t if_ipv4_addr =0, if_ipipv4_addr_mask =0, temp =0, if_ipv4_addr_gw =0;
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_all *data_all;
@@ -996,17 +996,20 @@ static int ipa_nl_decode_nlmsg
 
 						IPACM_EVENT_COPY_ADDR_v4( if_ipv4_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 						IPACM_EVENT_COPY_ADDR_v4( if_ipipv4_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
+						IPACM_EVENT_COPY_ADDR_v4( if_ipv4_addr_gw, msg_ptr->nl_route_info.attr_info.gateway_addr);
 
 						evt_data.event = IPA_ROUTE_ADD_EVENT;
 						data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
 						data_addr->iptype = IPA_IP_v4;
 						data_addr->ipv4_addr = ntohl(if_ipv4_addr);
+						data_addr->ipv4_addr_gw = ntohl(if_ipv4_addr_gw);
 						data_addr->ipv4_addr_mask = ntohl(if_ipipv4_addr_mask);
 
-            IPACMDBG_H("Posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv4 addr:0x%x and maxk: 0x%x\n",
+            IPACMDBG_H("Posting IPA_ROUTE_ADD_EVENT with if index:%d, ipv4 addr:0x%x, mask: 0x%x and gw: 0x%x\n",
 										 data_addr->if_index,
 										 data_addr->ipv4_addr,
-										 data_addr->ipv4_addr_mask);
+										 data_addr->ipv4_addr_mask,
+										 data_addr->ipv4_addr_gw);
 						evt_data.evt_data = data_addr;
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 						/* finish command queue */
