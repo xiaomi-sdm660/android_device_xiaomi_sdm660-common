@@ -82,8 +82,6 @@ IPACM_Iface::IPACM_Iface(int iface_index)
 	memset(software_routing_fl_rule_hdl, 0, sizeof(software_routing_fl_rule_hdl));
 	memset(ipv6_addr, 0, sizeof(ipv6_addr));
 
-	flt_rule_count_v4 = 0;
-	flt_rule_count_v6 = 0;
 	query_iface_property();
 	IPACMDBG_H(" create iface-index(%d) constructor\n", ipa_if_num);
 	return;
@@ -159,6 +157,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 			goto fail;
 		}
 
+		IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, 1);
 		IPACMDBG("soft-routing flt rule hdl0=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl);
 		/* copy filter hdls */
 		software_routing_fl_rule_hdl[0] = m_pFilteringTable->rules[0].flt_rule_hdl;
@@ -179,6 +178,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 			goto fail;
 		}
 
+		IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 		IPACMDBG("soft-routing flt rule hdl0=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl);
 		/* copy filter hdls */
 		software_routing_fl_rule_hdl[1] = m_pFilteringTable->rules[0].flt_rule_hdl;
@@ -209,6 +209,7 @@ int IPACM_Iface::handle_software_routing_enable(void)
 			goto fail;
 		}
 
+		IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, ip_type, 1);
 		IPACMDBG("soft-routing flt rule hdl0=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl);
 		/* copy filter hdls */
 		if (ip_type == IPA_IP_v4)
@@ -258,6 +259,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 			res = IPACM_FAILURE;
 			goto fail;
 		}
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, 1);
 
 		/* ipv6 case */
 		if (m_filtering.DeleteFilteringHdls(&software_routing_fl_rule_hdl[1],
@@ -267,6 +269,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 			res = IPACM_FAILURE;
 			goto fail;
 		}
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 		softwarerouting_act = false;
 #if 0
 	}
@@ -297,6 +300,7 @@ int IPACM_Iface::handle_software_routing_disable(void)
 			res = IPACM_FAILURE;
 			goto fail;
 		}
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, ip, 1);
 		softwarerouting_act = false;
 	}
 #endif
@@ -754,7 +758,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		}
 		else
 		{
-			flt_rule_count_v4 += IPV4_DEFAULT_FILTERTING_RULES;
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES);
 			/* copy filter hdls */
 			for (int i = 0; i < IPV4_DEFAULT_FILTERTING_RULES; i++)
 			{
@@ -842,7 +846,7 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		}
 		else
 		{
-			flt_rule_count_v6 += IPV6_DEFAULT_FILTERTING_RULES;
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, IPV6_DEFAULT_FILTERTING_RULES);
 			/* copy filter hdls */
 			for (int i = 0;
 					 i < IPV6_DEFAULT_FILTERTING_RULES;

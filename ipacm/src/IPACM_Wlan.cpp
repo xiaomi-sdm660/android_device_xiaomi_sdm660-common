@@ -110,6 +110,23 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 		return;
 	}
 
+#ifdef FEATURE_ETH_BRIDGE_LE
+	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + 2 * IPACM_Iface::ipacmcfg->ipa_num_private_subnet
+			+ IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
+	exp_index_v6 = IPV6_DEFAULT_FILTERTING_RULES + 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + NUM_IPV6_PREFIX_FLT_RULE
+				+ NUM_IPV6_ICMP_FLT_RULE;
+#else
+#ifndef CT_OPT
+	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
+#else
+	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
+#endif
+#ifdef FEATURE_IPA_ANDROID
+	exp_index_v4 = exp_index_v4 + 2 * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+#endif
+#endif
 
 	IPACM_Wlan::num_wlan_ap_iface++;
 	IPACMDBG_H("Now the number of wlan AP iface is %d\n", IPACM_Wlan::num_wlan_ap_iface);
@@ -1234,7 +1251,7 @@ fail:
 int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype)
 {
 	ipa_flt_rule_add flt_rule_entry;
-	int len = 0, cnt, ret = IPACM_SUCCESS, offset;
+	int len = 0, cnt, ret = IPACM_SUCCESS, index;
 	ipa_ioc_add_flt_rule *pFilteringTable;
 	ipa_fltr_installed_notif_req_msg_v01 flt_index;
 	int fd;
@@ -1264,6 +1281,13 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 	if (0 == fd)
 	{
 		IPACMERR("Failed opening %s.\n", IPA_DEVICE_NAME);
+		return IPACM_FAILURE;
+	}
+	if (prop->num_ext_props > MAX_WAN_UL_FILTER_RULES)
+	{
+		IPACMERR("number of modem UL rules > MAX_WAN_UL_FILTER_RULES, aborting...\n");
+		close(fd);
+		return IPACM_FAILURE;
 	}
 
 	memset(&flt_index, 0, sizeof(flt_index));
@@ -1315,35 +1339,20 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 		goto fail;
 	}
 
-	if(iptype == IPA_IP_v4)
+	index = IPACM_Iface::ipacmcfg->getFltRuleCount(rx_prop->rx[0].src_pipe, iptype);
+
+#ifndef FEATURE_IPA_ANDROID
+	if(iptype == IPA_IP_v4 && index != exp_index_v4)
 	{
-#ifdef FEATURE_ETH_BRIDGE_LE
-		offset = IPV4_DEFAULT_FILTERTING_RULES + 2 * IPACM_Iface::ipacmcfg->ipa_num_private_subnet
-				+ IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
-#else
-#ifndef CT_OPT
-		offset = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-#else
-		offset = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-#endif
-#ifdef FEATURE_IPA_ANDROID
-		offset = offset + 2 * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-#endif
-#endif
+		IPACMDBG_DMESG("### WARNING ### num flt rules for IPv4 on client %d is not expected: %d expected value: %d",
+			rx_prop->rx[0].src_pipe, index, exp_index_v4);
 	}
-	else
+	if(iptype == IPA_IP_v6 && index != exp_index_v6)
 	{
-#ifdef FEATURE_ETH_BRIDGE_LE
-		offset = IPV6_DEFAULT_FILTERTING_RULES + 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + NUM_IPV6_PREFIX_FLT_RULE
-				+ NUM_IPV6_ICMP_FLT_RULE;
-#else
-#ifndef CT_OPT
-		offset = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
-#else
-		offset = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
-#endif
-#endif
+		IPACMDBG_DMESG("### WARNING ### num flt rules for IPv6 on client %d is not expected: %d expected value: %d",
+			rx_prop->rx[0].src_pipe, index, exp_index_v6);
 	}
+#endif
 
 	for(cnt=0; cnt<prop->num_ext_props; cnt++)
 	{
@@ -1353,8 +1362,9 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 		flt_rule_entry.rule.rt_tbl_idx = prop->prop[cnt].rt_tbl_idx;
 		memcpy(&pFilteringTable->rules[cnt], &flt_rule_entry, sizeof(flt_rule_entry));
 
-		flt_index.filter_index_list[cnt].filter_index = offset+cnt;
-		IPACMDBG_H("Modem UL filtering rule %d has index %d\n", cnt, offset+cnt);
+		IPACMDBG_H("Modem UL filtering rule %d has index %d\n", cnt, index);
+		flt_index.filter_index_list[cnt].filter_index = index;
+		index++;
 
 		flt_index.filter_index_list[cnt].filter_handle = prop->prop[cnt].filter_hdl;
 	}
@@ -1381,6 +1391,7 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 				wan_ul_fl_rule_hdl_v4[num_wan_ul_fl_rule_v4] = pFilteringTable->rules[i].flt_rule_hdl;
 				num_wan_ul_fl_rule_v4++;
 			}
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, iptype, pFilteringTable->num_rules);
 		}
 		else if(iptype == IPA_IP_v6)
 		{
@@ -1389,6 +1400,7 @@ int IPACM_Wlan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type ipty
 				wan_ul_fl_rule_hdl_v6[num_wan_ul_fl_rule_v6] = pFilteringTable->rules[i].flt_rule_hdl;
 				num_wan_ul_fl_rule_v6++;
 			}
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, iptype, pFilteringTable->num_rules);
 		}
 		else
 		{
@@ -2300,6 +2312,7 @@ int IPACM_Wlan::handle_down_evt()
 				res = IPACM_FAILURE;
 				goto fail;
 			}
+			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, NUM_IPV6_ICMP_FLT_RULE);
 		}
 		IPACMDBG_H("Delete default %d v6 filter rules\n", IPV6_DEFAULT_FILTERTING_RULES);
 		/* delete default filter rules */
@@ -3052,6 +3065,7 @@ int IPACM_Wlan::install_dummy_flt_rule(ipa_ip_type iptype, int num_rule)
 		}
 		else
 		{
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, iptype, num_rule);
 			/* copy filter rule hdls */
 			for (int i = 0; i < num_rule; i++)
 			{
@@ -3102,6 +3116,7 @@ int IPACM_Wlan::install_dummy_flt_rule(ipa_ip_type iptype, int num_rule)
 		}
 		else
 		{
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, iptype, num_rule);
 			/* copy filter rule hdls */
 			for (int i = 0; i < num_rule; i++)
 			{
@@ -3163,11 +3178,13 @@ void IPACM_Wlan::del_dummy_flt_rule()
 			IPACMERR("Failed to delete ipv4 dummy flt rules.\n");
 			return;
 		}
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, num_v4_dummy_rule);
 		if(m_filtering.DeleteFilteringHdls(IPACM_Wlan::dummy_flt_rule_hdl_v6, IPA_IP_v6, num_v6_dummy_rule) == false)
 		{
 			IPACMERR("Failed to delete ipv6 dummy flt rules.\n");
 			return;
 		}
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, num_v6_dummy_rule);
 
 		free(IPACM_Wlan::dummy_flt_rule_hdl_v4);
 		IPACM_Wlan::dummy_flt_rule_hdl_v4 = NULL;

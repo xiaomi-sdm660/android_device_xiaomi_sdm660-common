@@ -53,7 +53,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPA_WAN_DEFAULT_FILTER_RULE_HANDLES  1
 #define IPA_PRIV_SUBNET_FILTER_RULE_HANDLES  3
 #define IPA_NUM_ODU_ROUTE_RULES 2
-#define MAX_WAN_UL_FILTER_RULES 20
+#define MAX_WAN_UL_FILTER_RULES MAX_NUM_EXT_PROPS
 #define NUM_IPV6_PREFIX_FLT_RULE 1
 #define NUM_IPV6_ICMP_FLT_RULE 1
 
@@ -303,6 +303,10 @@ protected:
 	bool is_active;
 
 	uint32_t if_ipv4_subnet;
+
+	/* expected modem UL rules starting index */
+	int exp_index_v4;
+	int exp_index_v6;
 
 private:
 

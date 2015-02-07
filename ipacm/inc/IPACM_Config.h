@@ -121,6 +121,10 @@ public:
 	/* Store SW-enable or not */
 	bool ipa_sw_rt_enable;
 
+	/* Store the flt rule count for each producer client*/
+	int flt_rule_count_v4[IPA_CLIENT_CONS - IPA_CLIENT_PROD];
+	int flt_rule_count_v6[IPA_CLIENT_CONS - IPA_CLIENT_PROD];
+
 	/* IPACM routing table name for v4/v6 */
 	struct ipa_ioc_get_rt_tbl rt_tbl_lan_v4, rt_tbl_wan_v4, rt_tbl_default_v4, rt_tbl_v6, rt_tbl_wan_v6;
 	struct ipa_ioc_get_rt_tbl rt_tbl_wan_dl;
@@ -133,6 +137,63 @@ public:
 
 	/* To return the instance */
 	static IPACM_Config* GetInstance();
+
+	inline void increaseFltRuleCount(int index, ipa_ip_type iptype, int increment)
+	{
+		if((index >= IPA_CLIENT_CONS - IPA_CLIENT_PROD) || (index < 0))
+		{
+			IPACMERR("Index is out of range: %d.\n", index);
+			return;
+		}
+		if(iptype == IPA_IP_v4)
+		{
+			flt_rule_count_v4[index] += increment;
+			IPACMDBG_H("Now num of v4 flt rules on client %d is %d.\n", index, flt_rule_count_v4[index]);
+		}
+		else
+		{
+			flt_rule_count_v6[index] += increment;
+			IPACMDBG_H("Now num of v6 flt rules on client %d is %d.\n", index, flt_rule_count_v6[index]);
+		}
+		return;
+	}
+
+	inline void decreaseFltRuleCount(int index, ipa_ip_type iptype, int decrement)
+	{
+		if((index >= IPA_CLIENT_CONS - IPA_CLIENT_PROD) || (index < 0))
+		{
+			IPACMERR("Index is out of range: %d.\n", index);
+			return;
+		}
+		if(iptype == IPA_IP_v4)
+		{
+			flt_rule_count_v4[index] -= decrement;
+			IPACMDBG_H("Now num of v4 flt rules on client %d is %d.\n", index, flt_rule_count_v4[index]);
+		}
+		else
+		{
+			flt_rule_count_v6[index] -= decrement;
+			IPACMDBG_H("Now num of v6 flt rules on client %d is %d.\n", index, flt_rule_count_v6[index]);
+		}
+		return;
+	}
+
+	inline int getFltRuleCount(int index, ipa_ip_type iptype)
+	{
+		if((index >= IPA_CLIENT_CONS - IPA_CLIENT_PROD) || (index < 0))
+		{
+			IPACMERR("Index is out of range: %d.\n", index);
+			return -1;
+		}
+		if(iptype == IPA_IP_v4)
+		{
+			return flt_rule_count_v4[index];
+		}
+		else
+		{
+			return flt_rule_count_v6[index];
+		}
+	}
 
 	inline int GetAlgPortCnt()
 	{
