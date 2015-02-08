@@ -408,3 +408,36 @@ enum loc_api_adapter_err LocEngAdapter::setXtraVersionCheck(int check)
     EXIT_LOG(%d, ret);
     return ret;
 }
+
+void LocEngAdapter::reportGpsMeasurementData(GpsData &gpsMeasurementData)
+{
+    sendMsg(new LocEngReportGpsMeasurement(mOwner,
+                                           gpsMeasurementData));
+}
+
+/*
+  Update Registration Mask
+ */
+void LocEngAdapter::updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
+                                           loc_registration_mask_status isEnabled)
+{
+    LOC_LOGD("entering %s", __func__);
+    int result = LOC_API_ADAPTER_ERR_FAILURE;
+    result = mLocApi->updateRegistrationMask(event, isEnabled);
+    if (result == LOC_API_ADAPTER_ERR_SUCCESS) {
+        LOC_LOGD("%s] update registration mask succeed.", __func__);
+    } else {
+        LOC_LOGE("%s] update registration mask failed.", __func__);
+    }
+}
+
+/*
+  Set Gnss Constellation Config
+ */
+bool LocEngAdapter::gnssConstellationConfig()
+{
+    LOC_LOGD("entering %s", __func__);
+    bool result = false;
+    result = mLocApi->gnssConstellationConfig();
+    return result;
+}
