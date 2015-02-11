@@ -52,6 +52,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 bool IPACM_Wan::wan_up = false;
 bool IPACM_Wan::wan_up_v6 = false;
+uint8_t IPACM_Wan::xlat_mux_id = 0;
 
 int IPACM_Wan::num_v4_flt_rule = 0;
 int IPACM_Wan::num_v6_flt_rule = 0;
@@ -71,8 +72,8 @@ bool IPACM_Wan::cradle_backhaul_is_wan_bridge = false;
 uint32_t IPACM_Wan::backhaul_ipv6_prefix[2];
 
 IPACM_Wan::IPACM_Wan(int iface_index,
-       ipacm_wan_iface_type is_sta_mode,
-       uint8_t *mac_addr) : IPACM_Iface(iface_index)
+	ipacm_wan_iface_type is_sta_mode,
+	uint8_t *mac_addr) : IPACM_Iface(iface_index)
 {
 	num_firewall_v4 = 0;
 	num_firewall_v6 = 0;
@@ -108,6 +109,9 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	num_wan_client = 0;
 	header_name_count = 0;
 	memset(invalid_mac, 0, sizeof(invalid_mac));
+
+	is_xlat = false;
+
 	if(iface_query != NULL)
 	{
 		wan_client_len = (sizeof(ipa_wan_client)) + (iface_query->num_tx_props * sizeof(wan_client_rt_hdl));
@@ -502,6 +506,19 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		}
 		break;
 
+	case IPA_WAN_XLAT_CONNECT_EVENT:
+		{
+			IPACMDBG_H("Recieved IPA_WAN_XLAT_CONNECT_EVENT\n");
+			ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
+			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
+			if ((ipa_interface_index == ipa_if_num) && (m_is_sta_mode == Q6_WAN))
+			{
+				is_xlat = true;
+				IPACMDBG_H("WAN-LTE (%s) link up, iface: %d is_xlat: \n",
+						IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,data->if_index, is_xlat);
+			}
+			break;
+		}
 	case IPA_CFG_CHANGE_EVENT:
 		{
 			if ( (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ipa_if_cate) &&
@@ -785,15 +802,21 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 					/* Check & construct STA header */
 					handle_sta_header_add_evt();
 					handle_route_add_evt(data->iptype);
+					/* Add IPv6 routing table if XLAT is enabled */
+					if(is_xlat && (m_is_sta_mode == Q6_WAN) && (active_v6 == false))
+					{
+						IPACMDBG_H("XLAT enabled: adding IPv6 routing table dev (%s)\n", dev_name);
+						handle_route_add_evt(IPA_IP_v6);
+					}
 				}
 				else if ((data->iptype == IPA_IP_v6) &&
-								 (!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) && (active_v6 == false)
-								 && (ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
+						(!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) &&
+						(active_v6 == false) &&	(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
 					IPACMDBG_H("\n get default v6 route (dst:00.00.00.00)\n");
 					IPACMDBG_H(" IPV6 value: %08x:%08x:%08x:%08x \n",
-									 data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
-				handle_route_add_evt(data->iptype);
+							data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
+					handle_route_add_evt(data->iptype);
 				}
 			}
 			else /* double check if current default iface is not itself */
@@ -1375,8 +1398,24 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		}
 		IPACMDBG_H("Posting IPA_HANDLE_WAN_UP with below information:\n");
 		IPACMDBG_H("if_name:%s, ipv4_address:0x%x, is sta mode:%d\n",
-			wanup_data->ifname, wanup_data->ipv4_addr,  wanup_data->is_sta);
+				wanup_data->ifname, wanup_data->ipv4_addr, wanup_data->is_sta);
 		memset(&evt_data, 0, sizeof(evt_data));
+
+		/* send xlat configuration for installing uplink rules */
+		if(is_xlat && (m_is_sta_mode == Q6_WAN))
+		{
+			IPACM_Wan::xlat_mux_id = ext_prop->ext[0].mux_id;
+			wanup_data->xlat_mux_id = IPACM_Wan::xlat_mux_id;
+			IPACMDBG_H("Set xlat configuraiton with below information:\n");
+			IPACMDBG_H("xlat_enabled:  xlat_mux_id: %d \n",
+					is_xlat, xlat_mux_id);
+		}
+		else
+		{
+			IPACM_Wan::xlat_mux_id = 0;
+			wanup_data->xlat_mux_id = 0;
+			IPACMDBG_H("No xlat configuratio:\n");
+		}
 		evt_data.event = IPA_HANDLE_WAN_UP;
 		evt_data.evt_data = (void *)wanup_data;
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
@@ -3003,12 +3042,14 @@ int IPACM_Wan::query_ext_prop()
 			return ret;
 		}
 
-		IPACMDBG_H("Wan interface has %d tx props, %d rx props and %d ext props\n", iface_query->num_tx_props, iface_query->num_rx_props, iface_query->num_ext_props);
+		IPACMDBG_H("Wan interface has %d tx props, %d rx props and %d ext props\n",
+				iface_query->num_tx_props, iface_query->num_rx_props, iface_query->num_ext_props);
 
 		for (cnt = 0; cnt < ext_prop->num_ext_props; cnt++)
 		{
-			IPACMDBG_H("Ex(%d): ip-type: %d, mux_id: %d, flt_action: %d\n, rt_tbl_idx: %d, flt_hdr: %d \n",
-							 cnt, ext_prop->ext[cnt].ip, ext_prop->ext[cnt].mux_id, ext_prop->ext[cnt].action, ext_prop->ext[cnt].rt_tbl_idx, ext_prop->ext[cnt].filter_hdl);
+			IPACMDBG_H("Ex(%d): ip-type: %d, mux_id: %d, flt_action: %d\n, rt_tbl_idx: %d, flt_hdr: %d  is_xlat_rule: %d\n",
+					cnt, ext_prop->ext[cnt].ip, ext_prop->ext[cnt].mux_id, ext_prop->ext[cnt].action,
+					ext_prop->ext[cnt].rt_tbl_idx, ext_prop->ext[cnt].filter_hdl, ext_prop->ext[cnt].is_xlat_rule);
 		}
 
 		if(IPACM_Wan::is_ext_prop_set == false)

@@ -154,16 +154,16 @@ typedef enum
 	IPA_HANDLE_WLAN_UP,                       /* 24 ipacm_event_iface_up */
 	IPA_HANDLE_LAN_UP,                        /* 25 ipacm_event_iface_up */
 	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 26 ipacm_event_data_wlan_ex */
-	IPA_HANDLE_WAN_UP_V6,					  /* 27 NULL */
-	IPA_HANDLE_WAN_DOWN_V6,					  /* 28 NULL */
-	IPA_LAN_CLIENT_ACTIVE,					  /* 29 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_INACTIVE,				  /* 30 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_DISCONNECT,				  /* 31 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_POWER_SAVE,				  /* 32 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_POWER_RECOVER,			  /* 33 ipacm_event_lan_client*/
-	IPA_LAN_TO_LAN_NEW_CONNECTION,			  /* 34 ipacm_event_connection */
-	IPA_LAN_TO_LAN_DEL_CONNECTION,			  /* 35 ipacm_event_connection */
-	IPA_LAN_DELETE_SELF,					  /* 36 ipacm_event_data_fid */
+	IPA_HANDLE_WAN_UP_V6,                     /* 27 NULL */
+	IPA_HANDLE_WAN_DOWN_V6,                   /* 28 NULL */
+	IPA_LAN_CLIENT_ACTIVE,                    /* 29 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_INACTIVE,                  /* 30 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_DISCONNECT,                /* 31 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_SAVE,                /* 32 ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_RECOVER,             /* 33 ipacm_event_lan_client*/
+	IPA_LAN_TO_LAN_NEW_CONNECTION,            /* 34 ipacm_event_connection */
+	IPA_LAN_TO_LAN_DEL_CONNECTION,            /* 35 ipacm_event_connection */
+	IPA_LAN_DELETE_SELF,                      /* 36 ipacm_event_data_fid */
 	IPA_WLAN_LINK_DOWN_EVENT,                 /* 37 ipacm_event_data_mac */
 	IPA_USB_LINK_UP_EVENT,                    /* 38 ipacm_event_data_fid */
 	IPA_PROCESS_CT_MESSAGE_V6,                /* 39 ipacm_ct_evt_data */
@@ -179,7 +179,8 @@ typedef enum
 	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_fid */
 	IPA_WLAN_SWITCH_TO_SCC,                   /* 50 No Data */
 	IPA_WLAN_SWITCH_TO_MCC,                   /* 51 No Data */
-	IPA_CRADLE_WAN_MODE_SWITCH,				  /* 52 ipacm_event_cradle_wan_mode */
+	IPA_CRADLE_WAN_MODE_SWITCH,               /* 52 ipacm_event_cradle_wan_mode */
+	IPA_WAN_XLAT_CONNECT_EVENT,               /* 53 ipacm_event_data_fid */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
@@ -305,6 +306,7 @@ typedef struct _ipacm_event_iface_up
 	uint32_t addr_mask;
 	uint32_t ipv6_prefix[2];
 	bool is_sta;
+	uint8_t xlat_mux_id;
 }ipacm_event_iface_up;
 
 typedef enum

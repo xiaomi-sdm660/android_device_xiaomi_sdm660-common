@@ -86,6 +86,7 @@ public:
 
 	static bool wan_up;
 	static bool wan_up_v6;
+	static uint8_t xlat_mux_id;
 
 	IPACM_Wan(int, ipacm_wan_iface_type, uint8_t *);
 	virtual ~IPACM_Wan();
@@ -100,6 +101,10 @@ public:
 		return wan_up_v6;
 	}
 
+	static bool getXlat_Mux_Id()
+	{
+		return xlat_mux_id;
+	}
 
 	void event_callback(ipa_cm_event_id event,
 											void *data);
@@ -168,6 +173,8 @@ private:
 	int header_name_count;
 	int num_wan_client;
 	uint8_t invalid_mac[IPA_MAC_ADDR_SIZE];
+	bool is_xlat;
+
 
 	inline ipa_wan_client* get_client_memptr(ipa_wan_client *param, int cnt)
 	{
