@@ -234,6 +234,28 @@ static int ipacm_cfg_xml_parse_tree
 					}
 				}
 				else if (IPACM_util_icmp_string((char*)xml_node->name,
+																	ODUEMBMS_OFFLOAD_TAG) == 0)
+				{
+					IPACMDBG("inside ODU-XML\n");
+					content = IPACM_read_content_element(xml_node);
+					if (content)
+					{
+						str_size = strlen(content);
+						memset(content_buf, 0, sizeof(content_buf));
+						memcpy(content_buf, (void *)content, str_size);
+						if (atoi(content_buf))
+						{
+							config->odu_embms_enable = true;
+							IPACMDBG("router-mode enable %d buf(%d)\n", config->odu_embms_enable, atoi(content_buf));
+						}
+						else
+						{
+							config->odu_embms_enable = false;
+							IPACMDBG("router-mode enable %d buf(%d)\n", config->odu_embms_enable, atoi(content_buf));
+						}
+					}
+				}
+				else if (IPACM_util_icmp_string((char*)xml_node->name,
 																				NAME_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
