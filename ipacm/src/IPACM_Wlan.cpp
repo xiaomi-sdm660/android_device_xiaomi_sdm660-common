@@ -112,15 +112,15 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + 2 * IPACM_Iface::ipacmcfg->ipa_num_private_subnet
-			+ IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT;
+			+ IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + NUM_IPV4_ICMP_FLT_RULE;
 	exp_index_v6 = IPV6_DEFAULT_FILTERTING_RULES + 1 + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT + NUM_IPV6_PREFIX_FLT_RULE
 				+ NUM_IPV6_ICMP_FLT_RULE;
 #else
 #ifndef CT_OPT
-	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet) + NUM_IPV4_ICMP_FLT_RULE;
 	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
 #else
-	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet) + NUM_IPV4_ICMP_FLT_RULE;
 	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
 #endif
 #ifdef FEATURE_IPA_ANDROID
@@ -315,6 +315,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 						IPACMDBG_H("IPv4 address:0x%x, IPv4 address mask:0x%x\n",
 										 info->ipv4_addr, info->addr_mask);
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
+					}
+					if ((data->iptype == IPA_IP_v4) && (wlan_ap_index == 0))
+					{
+						IPACM_Lan::install_ipv4_icmp_flt_rule();
 					}
 					if ((num_dft_rt_v6 == 0) && (data->iptype == IPA_IP_v6) && (wlan_ap_index == 0))
 					{
@@ -2205,6 +2209,14 @@ int IPACM_Wlan::handle_down_evt()
 #ifdef FEATURE_ETH_BRIDGE_LE
 		if(wlan_ap_index == 0)
 		{
+			/* delete IPv4 icmp filter rules */
+			if(m_filtering.DeleteFilteringHdls(ipv4_icmp_flt_rule_hdl, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE) == false)
+			{
+				IPACMERR("Error Deleting ICMPv4 Filtering Rule, aborting...\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE);
 			/* delete default filter rules */
 			for(i=0; i<IPV4_DEFAULT_FILTERTING_RULES; i++)
 			{
