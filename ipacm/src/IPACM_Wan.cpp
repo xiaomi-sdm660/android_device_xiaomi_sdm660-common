@@ -1079,6 +1079,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	const int NUM = 1;
 	ipacm_cmd_q_data evt_data;
 	struct ipa_ioc_copy_hdr sCopyHeader; /* checking if partial header*/
+	struct ipa_ioc_get_hdr hdr;
 
 	IPACMDBG_H("ip-type:%d\n", iptype);
 
@@ -1297,38 +1298,44 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 
 	if (iptype == IPA_IP_v6)
 	{
-    strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
-    memset(rt_rule_entry, 0, sizeof(struct ipa_rt_rule_add));
-	rt_rule_entry->at_rear = true;
-	if(m_is_sta_mode == Q6_WAN)
-	{
-		rt_rule_entry->rule.dst = IPA_CLIENT_APPS_WAN_CONS;
-	}
-	else
-	{
-		rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
-	}
-    rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0;
-	rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
+		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
+		memset(rt_rule_entry, 0, sizeof(struct ipa_rt_rule_add));
+		rt_rule_entry->at_rear = true;
+		if(m_is_sta_mode == Q6_WAN)
+		{
+			memset(&hdr, 0, sizeof(hdr));
+			strncpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			if(m_header.GetHeaderHandle(&hdr) == false)
+			{
+				IPACMERR("Failed to get QMAP header.\n");
+				return IPACM_FAILURE;
+			}
+			rt_rule_entry->rule.hdr_hdl = hdr.hdl;
+			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_WAN_CONS;
+		}
+		else
+		{
+			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
+		}
+		rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr[2] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr[3] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[0] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0;
+		rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
 
-	if (false == m_routing.AddRoutingRule(rt_rule))
-	{
-		IPACMERR("Routing rule addition failed!\n");
-		free(rt_rule);
-		return IPACM_FAILURE;
-	}
-	wan_route_rule_v6_hdl_a5[0] = rt_rule_entry->rt_rule_hdl;
-	IPACMDBG_H("Set ipv6 wan-route rule hdl for v6_wan_table:0x%x,tx:%d,ip-type: %d \n",
-				wan_route_rule_v6_hdl_a5[0],
-		        0,
-		        iptype);
+		if (false == m_routing.AddRoutingRule(rt_rule))
+		{
+			IPACMERR("Routing rule addition failed!\n");
+			free(rt_rule);
+			return IPACM_FAILURE;
+		}
+		wan_route_rule_v6_hdl_a5[0] = rt_rule_entry->rt_rule_hdl;
+		IPACMDBG_H("Set ipv6 wan-route rule hdl for v6_wan_table:0x%x,tx:%d,ip-type: %d \n",
+				wan_route_rule_v6_hdl_a5[0], 0, iptype);
 	}
 
 	ipacm_event_iface_up *wanup_data;
@@ -1343,7 +1350,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 
 	if (iptype == IPA_IP_v4)
 	{
-	    IPACM_Wan::wan_up = true;
+		IPACM_Wan::wan_up = true;
 		active_v4 = true;
 
 		if(m_is_sta_mode == Q6_WAN)
