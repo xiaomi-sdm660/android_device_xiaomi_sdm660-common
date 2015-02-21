@@ -160,6 +160,7 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(wlan_client_flt_rule_hdl_v6, 0, IPA_LAN_TO_LAN_MAX_WLAN_CLIENT * sizeof(lan2lan_flt_rule_hdl));
 
 	is_active = true;
+	memset(ipv4_icmp_flt_rule_hdl, 0, NUM_IPV4_ICMP_FLT_RULE * sizeof(uint32_t));
 	memset(tcp_ctl_flt_rule_hdl_v4, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
 	memset(tcp_ctl_flt_rule_hdl_v6, 0, NUM_TCP_CTL_FLT_RULE*sizeof(uint32_t));
 	is_mode_switch = false;
@@ -169,14 +170,14 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(ipv6_icmp_flt_rule_hdl, 0, NUM_IPV6_ICMP_FLT_RULE * sizeof(uint32_t));
 
 #ifdef FEATURE_ETH_BRIDGE_LE
-	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + NUM_IPV4_ICMP_FLT_RULE + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 	exp_index_v6 = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + NUM_IPV6_ICMP_FLT_RULE + NUM_IPV6_PREFIX_FLT_RULE;
 #else
 #ifdef CT_OPT
-	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_TCP_CTL_FLT_RULE + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_TCP_CTL_FLT_RULE + NUM_IPV4_ICMP_FLT_RULE +IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 	exp_index_v6 = IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + NUM_IPV6_ICMP_FLT_RULE + NUM_IPV6_PREFIX_FLT_RULE;
 #else
-	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV4_ICMP_FLT_RULE + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 	exp_index_v6 = IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV6_ICMP_FLT_RULE + NUM_IPV6_PREFIX_FLT_RULE;
 #endif
 #ifdef FEATURE_IPA_ANDROID
@@ -420,6 +421,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						|| ((data->iptype==IPA_IP_v6) && (num_dft_rt_v6!=MAX_DEFAULT_v6_ROUTE_RULES)))
 					{
 						IPACMDBG_H("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt_v6);
+						/* ADD ipv4 icmp rule */
+						if (data->iptype == IPA_IP_v4)
+						{
+							install_ipv4_icmp_flt_rule();
+						}
 						/* ADD ipv6 icmp rule */
 						if ((num_dft_rt_v6 == 0) && (data->iptype == IPA_IP_v6))
 						{
@@ -912,20 +918,20 @@ if (data->iptype == IPA_IP_v4)
    		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
 		rt_rule_entry->rule.attrib.u.v4.dst_addr      = data->ipv4_addr;
 		rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
-	    if (false == m_routing.AddRoutingRule(rt_rule))
-	    {
-	    	IPACMERR("Routing rule addition failed!\n");
-	    	res = IPACM_FAILURE;
-	    	goto fail;
-	    }
-	    else if (rt_rule_entry->status)
-	    {
-	    	IPACMERR("rt rule adding failed. Result=%d\n", rt_rule_entry->status);
-	    	res = rt_rule_entry->status;
-	    	goto fail;
-	    }
+		if (false == m_routing.AddRoutingRule(rt_rule))
+		{
+			IPACMERR("Routing rule addition failed!\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		else if (rt_rule_entry->status)
+		{
+			IPACMERR("rt rule adding failed. Result=%d\n", rt_rule_entry->status);
+			res = rt_rule_entry->status;
+			goto fail;
+		}
 		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
-        IPACMDBG_H("ipv4 iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);
+		IPACMDBG_H("ipv4 iface rt-rule hdl1=0x%x\n", dft_rt_rule_hdl[0]);
 		/* initial multicast/broadcast/fragment filter rule */
 #ifdef FEATURE_ETH_BRIDGE_LE
 		init_fl_rule(data->iptype);
@@ -2414,6 +2420,14 @@ int IPACM_Lan::handle_down_evt()
 	/* delete default filter rules */
 	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
+		if(m_filtering.DeleteFilteringHdls(ipv4_icmp_flt_rule_hdl, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE) == false)
+		{
+			IPACMERR("Error Deleting ICMPv4 Filtering Rule, aborting...\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE);
+
 		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
 		{
 			IPACMERR("Error Deleting Filtering Rule, aborting...\n");
@@ -4067,6 +4081,63 @@ int IPACM_Lan::post_lan2lan_client_disconnect_msg(ipa_ip_type iptype)
 	return IPACM_SUCCESS;
 }
 
+int IPACM_Lan::install_ipv4_icmp_flt_rule()
+{
+	int len;
+	struct ipa_ioc_add_flt_rule* flt_rule;
+	struct ipa_flt_rule_add flt_rule_entry;
+
+	if(rx_prop != NULL)
+	{
+		len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
+
+		flt_rule = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
+		if (!flt_rule)
+		{
+			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+			return IPACM_FAILURE;
+		}
+
+		flt_rule->commit = 1;
+		flt_rule->ep = rx_prop->rx[0].src_pipe;
+		flt_rule->global = false;
+		flt_rule->ip = IPA_IP_v4;
+		flt_rule->num_rules = 1;
+
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+
+		flt_rule_entry.rule.retain_hdr = 1;
+		flt_rule_entry.rule.to_uc = 0;
+		flt_rule_entry.rule.eq_attrib_type = 0;
+		flt_rule_entry.at_rear = false;
+		flt_rule_entry.flt_rule_hdl = -1;
+		flt_rule_entry.status = -1;
+		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+
+		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
+
+		flt_rule_entry.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
+		flt_rule_entry.rule.attrib.attrib_mask = IPA_FLT_PROTOCOL;
+		flt_rule_entry.rule.attrib.u.v4.protocol = (uint8_t)IPACM_FIREWALL_IPPROTO_ICMP;
+		memcpy(&(flt_rule->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+
+		if (m_filtering.AddFilteringRule(flt_rule) == false)
+		{
+			IPACMERR("Error Adding Filtering rule, aborting...\n");
+			free(flt_rule);
+			return IPACM_FAILURE;
+		}
+		else
+		{
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, 1);
+			ipv4_icmp_flt_rule_hdl[0] = flt_rule->rules[0].flt_rule_hdl;
+			IPACMDBG_H("IPv4 icmp filter rule HDL:0x%x\n", ipv4_icmp_flt_rule_hdl[0]);
+                        free(flt_rule);
+		}
+	}
+	return IPACM_SUCCESS;
+}
+
 void IPACM_Lan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
 {
 	if (rx_prop == NULL)
@@ -4439,7 +4510,7 @@ int IPACM_Lan::install_ipv6_icmp_flt_rule()
 		flt_rule_entry.rule.retain_hdr = 1;
 		flt_rule_entry.rule.to_uc = 0;
 		flt_rule_entry.rule.eq_attrib_type = 0;
-		flt_rule_entry.at_rear = true;
+		flt_rule_entry.at_rear = false;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
