@@ -78,8 +78,14 @@ include $(BUILD_PREBUILT)
 
 endef
 
-IPACM_FILE_LIST := IPACM_cfg.xml
-$(foreach TEST,$(IPACM_FILE_LIST),$(eval $(call ADD_TEST,$(TEST))))
+include $(CLEAR_VARS)
+LOCAL_MODULE := IPACM_cfg.xml
+LOCAL_MODULE_CLASS := ETC
+LOCAL_MODULE_PATH := $(TARGET_OUT_ETC)
+LOCAL_MODULE_TAGS := optional
+LOCAL_SRC_FILES := $(LOCAL_MODULE)
+LOCAL_MODULE_OWNER := ipacm
+include $(BUILD_PREBUILT)
 
 endif # not (TARGET_USES_AOSP)
 endif # $(TARGET_ARCH)
