@@ -93,19 +93,18 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	/* support eth multiple clients */
 	if(iface_query != NULL)
 	{
-
-	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != WLAN_IF)
-	{
-		eth_client_len = (sizeof(ipa_eth_client)) + (iface_query->num_tx_props * sizeof(eth_client_rt_hdl));
-		eth_client = (ipa_eth_client *)calloc(IPA_MAX_NUM_ETH_CLIENTS, eth_client_len);
-		if (eth_client == NULL)
+		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat != WLAN_IF)
 		{
-			IPACMERR("unable to allocate memory\n");
-			return;
+			eth_client_len = (sizeof(ipa_eth_client)) + (iface_query->num_tx_props * sizeof(eth_client_rt_hdl));
+			eth_client = (ipa_eth_client *)calloc(IPA_MAX_NUM_ETH_CLIENTS, eth_client_len);
+			if (eth_client == NULL)
+			{
+				IPACMERR("unable to allocate memory\n");
+				return;
+			}
 		}
-	}
 
-	IPACMDBG_H(" IPACM->IPACM_Lan(%d) constructor: Tx:%d Rx:%d\n", ipa_if_num,
+		IPACMDBG_H(" IPACM->IPACM_Lan(%d) constructor: Tx:%d Rx:%d\n", ipa_if_num,
 					 iface_query->num_tx_props, iface_query->num_rx_props);
 #ifdef FEATURE_ETH_BRIDGE_LE
 		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == LAN_IF && tx_prop != NULL)
@@ -444,7 +443,8 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 							if(IPACM_Wan::backhaul_is_sta_mode == false)
 							{
 									ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
-									handle_wan_up_ex(ext_prop, IPA_IP_v4);
+									handle_wan_up_ex(ext_prop, IPA_IP_v4,
+												IPACM_Wan::getXlat_Mux_Id());
 								}
 							else
 							{
@@ -461,7 +461,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 							if(IPACM_Wan::backhaul_is_sta_mode == false)
 							{
 									ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
-									handle_wan_up_ex(ext_prop, IPA_IP_v6);
+									handle_wan_up_ex(ext_prop, IPA_IP_v6, 0);
 								}
 							else
 							{
@@ -529,8 +529,8 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		if(data_wan->is_sta == false)
 		{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
-				handle_wan_up_ex(ext_prop, IPA_IP_v4);
-			}
+				handle_wan_up_ex(ext_prop, IPA_IP_v4, data_wan->xlat_mux_id);
+		}
 		else
 		{
 			handle_wan_up(IPA_IP_v4);
@@ -554,7 +554,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		if(data_wan->is_sta == false)
 		{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
-				handle_wan_up_ex(ext_prop, IPA_IP_v6);
+				handle_wan_up_ex(ext_prop, IPA_IP_v6, 0);
 			}
 		else
 		{
@@ -1308,7 +1308,7 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 	return IPACM_SUCCESS;
 }
 
-int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype)
+int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop *ext_prop, ipa_ip_type iptype, uint8_t xlat_mux_id)
 {
 	int fd, ret = IPACM_SUCCESS, cnt;
 	IPACM_Config* ipacm_config = IPACM_Iface::ipacmcfg;
@@ -1343,8 +1343,8 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype)
 	if ((num_dft_rt_v6 ==1 && iptype ==IPA_IP_v6) ||
 			(iptype ==IPA_IP_v4))
 	{
-		IPACMDBG_H("num_dft_rt_v6 %d iptype %d\n", num_dft_rt_v6, iptype);
-		ret = handle_uplink_filter_rule(ext_prop, iptype);
+		IPACMDBG_H("num_dft_rt_v6 %d iptype %d xlat_mux_id: %d \n", num_dft_rt_v6, iptype, xlat_mux_id);
+		ret = handle_uplink_filter_rule(ext_prop, iptype, xlat_mux_id);
 	}
 	return ret;
 }
@@ -2717,7 +2717,7 @@ fail:
 }
 
 /* install UL filter rule from Q6 */
-int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype)
+int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptype, uint8_t xlat_mux_id)
 {
 	ipa_flt_rule_add flt_rule_entry;
 	int len = 0, cnt, ret = IPACM_SUCCESS;
@@ -2725,6 +2725,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptyp
 	ipa_fltr_installed_notif_req_msg_v01 flt_index;
 	int fd;
 	int i, index;
+	uint32_t value = 0;
 
 	IPACMDBG_H("Set extended property rules in LAN\n");
 
@@ -2822,6 +2823,19 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptyp
 					 &prop->prop[cnt].eq_attrib,
 					 sizeof(prop->prop[cnt].eq_attrib));
 		flt_rule_entry.rule.rt_tbl_idx = prop->prop[cnt].rt_tbl_idx;
+
+		/* Handle XLAT configuration */
+		if ((iptype == IPA_IP_v4) && prop->prop[cnt].is_xlat_rule && (xlat_mux_id != 0))
+		{
+			/* fill the value of meta-data */
+			value = xlat_mux_id;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32_present = 1;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32.offset = 0;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32.value = (value & 0xFF) << 16;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32.mask = 0x00FF0000;
+			IPACMDBG_H("xlat meta-data is modified fur rult: %d has index %d with xlat_mux_id: %d\n",
+					cnt, index, xlat_mux_id);
+		}
 		memcpy(&pFilteringTable->rules[cnt], &flt_rule_entry, sizeof(flt_rule_entry));
 
 		IPACMDBG_H("Modem UL filtering rule %d has index %d\n", cnt, index);

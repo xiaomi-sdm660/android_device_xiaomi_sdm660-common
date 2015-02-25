@@ -146,13 +146,12 @@ public:
 	uint32_t private_fl_rule_hdl[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
 
 	/* LAN-iface's callback function */
-	void event_callback(ipa_cm_event_id event,
-											void *data);
+	void event_callback(ipa_cm_event_id event, void *data);
 
 	virtual int handle_wan_up(ipa_ip_type ip_type);
 
 	/* configure filter rule for wan_up event*/
-	virtual int handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype);
+	virtual int handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype, uint8_t xlat_mux_id);
 
 	/* delete filter rule for wan_down event*/
 	virtual int handle_wan_down(bool is_sta_mode);
@@ -171,7 +170,7 @@ public:
 	static bool odu_up;
 
 	/* install UL filter rule from Q6 */
-	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype);
+	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype, uint8_t xlat_mux_id);
 
 	int add_lan2lan_flt_rule(ipa_ip_type iptype, uint32_t src_v4_addr, uint32_t dst_v4_addr, uint32_t* src_v6_addr, uint32_t* dst_v6_addr, uint32_t* rule_hdl);
 
@@ -327,7 +326,7 @@ private:
 
 	NatApp *Nat_App;
 
-    int ipv6_set;
+	int ipv6_set;
 
 	uint32_t ODU_hdr_hdl_v4, ODU_hdr_hdl_v6;
 
