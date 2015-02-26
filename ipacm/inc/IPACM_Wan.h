@@ -149,8 +149,6 @@ private:
 	bool header_partial_default_wan_v4;
 	bool header_partial_default_wan_v6;
 	uint8_t ext_router_mac_addr[IPA_MAC_ADDR_SIZE];
-	uint16_t eth2_ofst_v4;
-	uint16_t eth2_ofst_v6;
 
 	static int num_ipv4_modem_pdn;
 

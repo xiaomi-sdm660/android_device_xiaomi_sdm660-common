@@ -4593,7 +4593,19 @@ int IPACM_Wan::handle_wan_hdr_init(uint8_t *mac_addr)
 								/* copy client mac_addr to partial header */
 								IPACMDBG_H("header eth2_ofst_valid: %d, eth2_ofst: %d\n",
 										sCopyHeader.is_eth2_ofst_valid, sCopyHeader.eth2_ofst);
-								memcpy(&pHeaderDescriptor->hdr[0].hdr[eth2_ofst_v4], mac_addr, IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */
+
+								/* only copy 6 bytes mac-address */
+								if(sCopyHeader.is_eth2_ofst_valid == false)
+								{
+									memcpy(&pHeaderDescriptor->hdr[0].hdr[0],
+											mac_addr, IPA_MAC_ADDR_SIZE);
+								}
+								else
+								{
+									memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst],
+											mac_addr, IPA_MAC_ADDR_SIZE);
+								}
+
 
 								pHeaderDescriptor->commit = true;
 								pHeaderDescriptor->num_hdrs = 1;
@@ -4676,11 +4688,21 @@ int IPACM_Wan::handle_wan_hdr_init(uint8_t *mac_addr)
 				{
 					memcpy(pHeaderDescriptor->hdr[0].hdr,
 							sCopyHeader.hdr,
-								sCopyHeader.hdr_len);
+							sCopyHeader.hdr_len);
 				}
 
 				/* copy client mac_addr to partial header */
-				memcpy(&pHeaderDescriptor->hdr[0].hdr[eth2_ofst_v6], mac_addr, IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */
+				if(sCopyHeader.is_eth2_ofst_valid == false)
+				{
+					memcpy(&pHeaderDescriptor->hdr[0].hdr[0],
+								 mac_addr, IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */
+				}
+				else
+				{
+					memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst],
+								 mac_addr, IPA_MAC_ADDR_SIZE); /* only copy 6 bytes mac-address */
+				}
+
 
 				pHeaderDescriptor->commit = true;
 				pHeaderDescriptor->num_hdrs = 1;
