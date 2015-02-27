@@ -78,9 +78,9 @@ IPACM_Config::IPACM_Config()
 	memset(&ext_prop_v4, 0, sizeof(ext_prop_v4));
 	memset(&ext_prop_v6, 0, sizeof(ext_prop_v6));
 
-	memset(&rt_tbl_eth_bridge_usb_wlan_v4, 0, sizeof(rt_tbl_eth_bridge_usb_wlan_v4));
+	memset(&rt_tbl_eth_bridge_lan_wlan_v4, 0, sizeof(rt_tbl_eth_bridge_lan_wlan_v4));
 	memset(&rt_tbl_eth_bridge_wlan_wlan_v4, 0, sizeof(rt_tbl_eth_bridge_wlan_wlan_v4));
-	memset(&rt_tbl_eth_bridge_usb_wlan_v6, 0, sizeof(rt_tbl_eth_bridge_usb_wlan_v6));
+	memset(&rt_tbl_eth_bridge_lan_wlan_v6, 0, sizeof(rt_tbl_eth_bridge_lan_wlan_v6));
 	memset(&rt_tbl_eth_bridge_wlan_wlan_v6, 0, sizeof(rt_tbl_eth_bridge_wlan_wlan_v6));
 
 	qmap_id = ~0;
@@ -267,14 +267,14 @@ int IPACM_Config::Init(void)
 	rt_tbl_lan2lan_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_lan2lan_v6.name, V6_LAN_TO_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan2lan_v6.name));
 
-	rt_tbl_eth_bridge_usb_wlan_v4.ip = IPA_IP_v4;
-	strncpy(rt_tbl_eth_bridge_usb_wlan_v4.name, ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V4, sizeof(rt_tbl_eth_bridge_usb_wlan_v4.name));
+	rt_tbl_eth_bridge_lan_wlan_v4.ip = IPA_IP_v4;
+	strncpy(rt_tbl_eth_bridge_lan_wlan_v4.name, ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V4, sizeof(rt_tbl_eth_bridge_lan_wlan_v4.name));
 
 	rt_tbl_eth_bridge_wlan_wlan_v4.ip = IPA_IP_v4;
 	strncpy(rt_tbl_eth_bridge_wlan_wlan_v4.name, ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V4, sizeof(rt_tbl_eth_bridge_wlan_wlan_v4.name));
 
-	rt_tbl_eth_bridge_usb_wlan_v6.ip = IPA_IP_v6;
-	strncpy(rt_tbl_eth_bridge_usb_wlan_v6.name, ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V6, sizeof(rt_tbl_eth_bridge_usb_wlan_v6.name));
+	rt_tbl_eth_bridge_lan_wlan_v6.ip = IPA_IP_v6;
+	strncpy(rt_tbl_eth_bridge_lan_wlan_v6.name, ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V6, sizeof(rt_tbl_eth_bridge_lan_wlan_v6.name));
 
 	rt_tbl_eth_bridge_wlan_wlan_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_eth_bridge_wlan_wlan_v6.name, ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V6, sizeof(rt_tbl_eth_bridge_wlan_wlan_v6.name));

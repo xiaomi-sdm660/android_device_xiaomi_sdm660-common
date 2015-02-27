@@ -85,9 +85,9 @@ extern "C"
 #define V4_ODU_ROUTE_TABLE_NAME  "ODURTBLv4"
 #define V6_ODU_ROUTE_TABLE_NAME  "ODURTBLv6"
 
-#define ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V4 "ETH_BRIDGE_USB_WLAN_RTBLv4"
+#define ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V4 "ETH_BRIDGE_LAN_WLAN_RTBLv4"
 #define ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V4 "ETH_BRIDGE_WLAN_WLAN_RTBLv4"
-#define ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V6 "ETH_BRIDGE_USB_WLAN_RTBLv6"
+#define ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V6 "ETH_BRIDGE_LAN_WLAN_RTBLv6"
 #define ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V6 "ETH_BRIDGE_WLAN_WLAN_RTBLv6"
 
 #define WWAN_QMI_IOCTL_DEVICE_NAME "/dev/wwan_ioctl"
@@ -100,8 +100,8 @@ extern "C"
 #define IPA_LAN_TO_LAN_USB_HDR_NAME_V6 "Lan2Lan_USB_v6"
 #define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4 "Lan2Lan_Wlan_v4"
 #define IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6 "Lan2Lan_Wlan_v6"
-#define IPA_LAN_TO_LAN_MAX_WLAN_CLIENT 32
-#define IPA_LAN_TO_LAN_MAX_USB_CLIENT 15
+#define IPA_LAN_TO_LAN_MAX_WLAN_CLIENT 16
+#define IPA_LAN_TO_LAN_MAX_LAN_CLIENT 16
 #define TCP_FIN_SHIFT 16
 #define TCP_SYN_SHIFT 17
 #define TCP_RST_SHIFT 18
@@ -171,12 +171,12 @@ typedef enum
 	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,         /* 41 ipacm_event_data_fid */
 	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,         /* 42 ipacm_event_data_fid */
 	IPA_WAN_EMBMS_LINK_UP_EVENT,              /* 43 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_USB_CLIENT_ADD_EVENT,      /* 44 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_LAN_CLIENT_ADD_EVENT,      /* 44 ipacm_event_data_mac */
 	IPA_ETH_BRIDGE_WLAN_CLIENT_ADD_EVENT,     /* 45 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_USB_CLIENT_DEL_EVENT,      /* 46 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_LAN_CLIENT_DEL_EVENT,      /* 46 ipacm_event_data_mac */
 	IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT,     /* 47 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 48 ipacm_event_data_fid */
-	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_fid */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 48 ipacm_event_data_if_cat */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_if_cat */
 	IPA_WLAN_SWITCH_TO_SCC,                   /* 50 No Data */
 	IPA_WLAN_SWITCH_TO_MCC,                   /* 51 No Data */
 	IPA_CRADLE_WAN_MODE_SWITCH,               /* 52 ipacm_event_cradle_wan_mode */
@@ -267,6 +267,11 @@ typedef struct _ipacm_event_data_fid
 {
 	int if_index;
 } ipacm_event_data_fid;
+
+typedef struct
+{
+	ipacm_iface_type if_cat;
+} ipacm_event_data_if_cat;
 
 typedef struct _ipacm_event_data_iptype
 {

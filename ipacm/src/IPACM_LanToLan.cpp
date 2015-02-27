@@ -54,8 +54,8 @@ IPACM_LanToLan::IPACM_LanToLan()
 {
 	num_offload_pair_v4_ = 0;
 	num_offload_pair_v6_ = 0;
-	client_info_v4_.reserve(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT);
-	client_info_v6_.reserve(3*(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_USB_CLIENT));
+	client_info_v4_.reserve(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT);
+	client_info_v6_.reserve(3*(IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT));
 	p_instance = this;
 
 	IPACM_EvtDispatcher::registr(IPA_LAN_CLIENT_ACTIVE, this);
