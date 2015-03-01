@@ -72,6 +72,30 @@ extern "C" {
 #define AGPS_CERTIFICATE_MAX_LENGTH 2000
 #define AGPS_CERTIFICATE_MAX_SLOTS 10
 
+/** Batching default ID for dummy batching session*/
+#define GPS_BATCHING_DEFAULT_ID                 1
+
+/** This cap is used to decide the FLP session cache
+size on AP. If the BATCH_SIZE in flp.conf is less than
+GPS_AP_BATCHING_SIZE_CAP, FLP session cache size will
+be twice the BATCH_SIZE defined in flp.conf. Otherwise,
+FLP session cache size will be equal to the BATCH_SIZE.*/
+#define GPS_AP_BATCHING_SIZE_CAP               40
+
+#define GPS_BATCHING_OPERATION_SUCCEESS         1
+#define GPS_BATCHING_OPERATION_FAILURE          0
+
+/** GPS extended batching flags*/
+#define GPS_EXT_BATCHING_ON_FULL        0x0000001
+#define GPS_EXT_BATCHING_ON_FIX         0x0000002
+
+/** Reasons of GPS reports batched locations*/
+typedef enum loc_batching_reported_type {
+    LOC_BATCHING_ON_FULL_IND_REPORT,
+    LOC_BATCHING_ON_FIX_IND_REPORT,
+    LOC_BATCHING_ON_QUERY_REPORT
+}LocBatchingReportedType;
+
 enum loc_registration_mask_status {
     LOC_REGISTRATION_MASK_ENABLED,
     LOC_REGISTRATION_MASK_DISABLED
