@@ -1839,7 +1839,6 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 
 				/* Replace the v4 header in ODU interface */
 				if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
-				rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v4;
 
 			    if (false == m_routing.AddRoutingRule(rt_rule))
   	            {
@@ -1866,10 +1865,6 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 			    	strncpy(rt_rule->rt_tbl_name,
 			    					IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
 			    					sizeof(rt_rule->rt_tbl_name));
-
-				   /* Replace v6 header in ODU interface */
-				   if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
-						rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v6;
 
 		            /* Support QCMAP LAN traffic feature, send to A5 */
 					rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
