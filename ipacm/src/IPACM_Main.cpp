@@ -627,7 +627,7 @@ void* ipa_driver_msg_notifier(void *param)
 			IPACMDBG_H("Received WLAN_WDI_DISABLE\n");
 			if (IPACM_Iface::ipacmcfg->isMCC_Mode == false)
 			{
-				IPACM_Iface::ipacmcfg->isMCC_Mode == true;
+				IPACM_Iface::ipacmcfg->isMCC_Mode = true;
 				evt_data.event = IPA_WLAN_SWITCH_TO_MCC;
 				break;
 			}
