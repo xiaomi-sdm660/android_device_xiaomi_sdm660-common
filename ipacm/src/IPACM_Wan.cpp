@@ -1534,6 +1534,33 @@ int IPACM_Wan::handle_sta_header_add_evt()
 	return res;
 }
 
+/* For checking attribute mask field in firewall rules for IPv6 only */
+bool IPACM_Wan::check_dft_firewall_rules_attr_mask(IPACM_firewall_conf_t *firewall_config)
+{
+	uint32_t attrib_mask = 0ul;
+	attrib_mask =	IPA_FLT_SRC_PORT_RANGE |
+			IPA_FLT_DST_PORT_RANGE |
+			IPA_FLT_TYPE |
+			IPA_FLT_CODE |
+			IPA_FLT_SPI |
+			IPA_FLT_SRC_PORT |
+			IPA_FLT_DST_PORT;
+
+	for (int i = 0; i < firewall_config->num_extd_firewall_entries; i++)
+	{
+		if (firewall_config->extd_firewall_entries[i].ip_vsn == 6)
+		{
+			if (firewall_config->extd_firewall_entries[i].attrib.attrib_mask & attrib_mask)
+			{
+				IPACMDBG_H("IHL based attribute mask is found: install IPv6 frag firewall rule \n");
+				return true;
+			}
+		}
+	}
+	IPACMDBG_H("IHL based attribute mask is not found: no IPv6 frag firewall rule \n");
+	return false;
+}
+
 /* for STA mode: add firewall rules */
 int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 {
@@ -2279,7 +2306,9 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 	}
 
 	/* add IPv6 frag rule when firewall is enabled*/
-	if(iptype == IPA_IP_v6 && firewall_config.firewall_enable == true)
+	if(iptype == IPA_IP_v6 &&
+			firewall_config.firewall_enable == true &&
+			check_dft_firewall_rules_attr_mask(&firewall_config))
 	{
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
