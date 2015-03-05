@@ -117,6 +117,9 @@ public:
 
 	int ipa_nat_iface_entries;
 
+	/* Store the total number of wlan guest ap configured */
+	int ipa_num_wlan_guest_ap;
+
 	/* Max valid rm entry */
 	int ipa_max_valid_rm_entry;
 

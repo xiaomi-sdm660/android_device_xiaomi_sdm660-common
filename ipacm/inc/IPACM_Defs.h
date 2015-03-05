@@ -71,6 +71,7 @@ extern "C"
 
 #define IPA_MAX_IFACE_ENTRIES 15
 #define IPA_MAX_PRIVATE_SUBNET_ENTRIES 3
+#define IPA_GUEST_AP_IPv6_FLT_RULE_ENTRIES 2
 #define IPA_MAX_ALG_ENTRIES 20
 #define IPA_MAX_RM_ENTRY 6
 
@@ -206,7 +207,13 @@ typedef enum
 {
 	ROUTER = 0,
 	BRIDGE
-} ipacm_iface_mode;
+} ipacm_cradle_iface_mode;
+
+typedef enum
+{
+	FULL,
+	INTERNET
+} ipacm_wlan_access_mode;
 
 typedef struct
 {
@@ -218,7 +225,8 @@ typedef struct
 {
 	char iface_name[IPA_IFACE_NAME_LEN];
 	ipacm_iface_type if_cat;
-	ipacm_iface_mode if_mode;
+	ipacm_cradle_iface_mode if_mode;
+	ipacm_wlan_access_mode wlan_mode;
 	int netlink_interface_index;
 } ipa_ifi_dev_name_t;
 
@@ -242,7 +250,7 @@ class IPACM_Lan;
 
 typedef struct
 {
-	ipacm_iface_mode cradle_wan_mode;
+	ipacm_cradle_iface_mode cradle_wan_mode;
 } ipacm_event_cradle_wan_mode;
 
 typedef struct

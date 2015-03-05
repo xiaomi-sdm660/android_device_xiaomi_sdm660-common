@@ -158,7 +158,6 @@ static int ipacm_cfg_xml_parse_tree
 
 	if (NULL == xml_node)
 		return ret_val;
-
 	while ( xml_node != NULL &&
 				 ret_val == IPACM_SUCCESS)
 	{
@@ -166,55 +165,40 @@ static int ipacm_cfg_xml_parse_tree
 		{
 		case XML_ELEMENT_NODE:
 			{
-				if (IPACM_util_icmp_string((char*)xml_node->name,
-																	 system_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 ODU_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IPACMCFG_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IPACMIFACECFG_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IFACE_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IPACMPRIVATESUBNETCFG_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 SUBNET_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IPACMALG_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 ALG_TAG) == 0 ||
-						IPACM_util_icmp_string((char*)xml_node->name,
-																	 IPACMNat_TAG) == 0)
+				if (IPACM_util_icmp_string((char*)xml_node->name, system_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, ODU_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, IPACMCFG_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, IPACMIFACECFG_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, IFACE_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, IPACMPRIVATESUBNETCFG_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, SUBNET_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, IPACMALG_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, ALG_TAG) == 0 ||
+						IPACM_util_icmp_string((char*)xml_node->name, IPACMNat_TAG) == 0)
 				{
-					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																					IFACE_TAG))
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name, IFACE_TAG))
 					{
 						/* increase iface entry number */
 						config->iface_config.num_iface_entries++;
 					}
 
-					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																					SUBNET_TAG))
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name, SUBNET_TAG))
 					{
 						/* increase iface entry number */
 						config->private_subnet_config.num_subnet_entries++;
 					}
 
-					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																					ALG_TAG))
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name, ALG_TAG))
 					{
 						/* increase iface entry number */
 						config->alg_config.num_alg_entries++;
 					}
 					/* go to child */
-					ret_val = ipacm_cfg_xml_parse_tree(xml_node->children,
-																						 config);
+					ret_val = ipacm_cfg_xml_parse_tree(xml_node->children, config);
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																	ODUMODE_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, ODUMODE_TAG) == 0)
 				{
-					IPACMDBG("inside ODU-XML\n");
+					IPACMDBG_H("inside ODU-XML\n");
 					content = IPACM_read_content_element(xml_node);
 					if (content)
 					{
@@ -224,19 +208,18 @@ static int ipacm_cfg_xml_parse_tree
 						if (0 == strncasecmp(content_buf, ODU_ROUTER_TAG, str_size))
 						{
 							config->router_mode_enable = true;
-							IPACMDBG("router-mode enable %d\n", config->router_mode_enable);
+							IPACMDBG_H("router-mode enable %d\n", config->router_mode_enable);
 						}
 						else if (0 == strncasecmp(content_buf, ODU_BRIDGE_TAG, str_size))
 						{
 							config->router_mode_enable = false;
-							IPACMDBG("router-mode enable %d\n", config->router_mode_enable);
+							IPACMDBG_H("router-mode enable %d\n", config->router_mode_enable);
 						}
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																	ODUEMBMS_OFFLOAD_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, ODUEMBMS_OFFLOAD_TAG) == 0)
 				{
-					IPACMDBG("inside ODU-XML\n");
+					IPACMDBG_H("inside ODU-XML\n");
 					content = IPACM_read_content_element(xml_node);
 					if (content)
 					{
@@ -246,17 +229,16 @@ static int ipacm_cfg_xml_parse_tree
 						if (atoi(content_buf))
 						{
 							config->odu_embms_enable = true;
-							IPACMDBG("router-mode enable %d buf(%d)\n", config->odu_embms_enable, atoi(content_buf));
+							IPACMDBG_H("router-mode enable %d buf(%d)\n", config->odu_embms_enable, atoi(content_buf));
 						}
 						else
 						{
 							config->odu_embms_enable = false;
-							IPACMDBG("router-mode enable %d buf(%d)\n", config->odu_embms_enable, atoi(content_buf));
+							IPACMDBG_H("router-mode enable %d buf(%d)\n", config->odu_embms_enable, atoi(content_buf));
 						}
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				NAME_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, NAME_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -268,8 +250,7 @@ static int ipacm_cfg_xml_parse_tree
 						IPACMDBG_H("Name %s\n", config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].iface_name);
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				CATEGORY_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, CATEGORY_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -334,8 +315,32 @@ static int ipacm_cfg_xml_parse_tree
 						}
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				SUBNETADDRESS_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, WLAN_MODE_TAG) == 0)
+				{
+					IPACMDBG_H("Inside WLAN-XML\n");
+					content = IPACM_read_content_element(xml_node);
+					if (content)
+					{
+						str_size = strlen(content);
+						memset(content_buf, 0, sizeof(content_buf));
+						memcpy(content_buf, (void *)content, str_size);
+
+						if (0 == strncasecmp(content_buf, WLAN_FULL_MODE_TAG, str_size))
+						{
+							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].wlan_mode = FULL;
+							IPACMDBG_H("Wlan-mode full(%d)\n",
+									config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].wlan_mode);
+						}
+						else  if (0 == strncasecmp(content_buf, WLAN_INTERNET_MODE_TAG, str_size))
+						{
+							config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].wlan_mode = INTERNET;
+							config->num_wlan_guest_ap++;
+							IPACMDBG_H("Wlan-mode internet(%d)\n",
+									config->iface_config.iface_entries[config->iface_config.num_iface_entries - 1].wlan_mode);
+						}
+					}
+				}
+				else if (IPACM_util_icmp_string((char*)xml_node->name, SUBNETADDRESS_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -349,8 +354,7 @@ static int ipacm_cfg_xml_parse_tree
 						IPACMDBG_H("subnet_addr: %s \n", content_buf);
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				SUBNETMASK_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, SUBNETMASK_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -364,8 +368,7 @@ static int ipacm_cfg_xml_parse_tree
 						IPACMDBG_H("subnet_mask: %s \n", content_buf);
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				Protocol_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, Protocol_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -378,17 +381,18 @@ static int ipacm_cfg_xml_parse_tree
 						if (0 == strncasecmp(content_buf, TCP_PROTOCOL_TAG, str_size))
 						{
 							config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].protocol = IPPROTO_TCP;
-							IPACMDBG_H("Protocol %s: %d\n", content_buf, config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].protocol);
+							IPACMDBG_H("Protocol %s: %d\n",
+									content_buf, config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].protocol);
 						}
 						else if (0 == strncasecmp(content_buf, UDP_PROTOCOL_TAG, str_size))
 						{
 							config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].protocol = IPPROTO_UDP;
-							IPACMDBG_H("Protocol %s: %d\n", content_buf, config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].protocol);
+							IPACMDBG_H("Protocol %s: %d\n",
+									content_buf, config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].protocol);
 						}
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				Port_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, Port_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -401,8 +405,7 @@ static int ipacm_cfg_xml_parse_tree
 						IPACMDBG_H("port %d\n", config->alg_config.alg_entries[config->alg_config.num_alg_entries - 1].port);
 					}
 				}
-				else if (IPACM_util_icmp_string((char*)xml_node->name,
-																				NAT_MaxEntries_TAG) == 0)
+				else if (IPACM_util_icmp_string((char*)xml_node->name, NAT_MaxEntries_TAG) == 0)
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -437,10 +440,10 @@ int IPACM_read_firewall_xml(char *xml_file, IPACM_firewall_conf_t *config)
 
 	/* invoke the XML parser and obtain the parse tree */
 	doc = xmlReadFile(xml_file, "UTF-8", XML_PARSE_NOBLANKS);
-    if (doc == NULL) {
-        IPACMDBG_H("IPACM_xml_parse: libxml returned parse error\n");
+	if (doc == NULL) {
+		IPACMDBG_H("IPACM_xml_parse: libxml returned parse error\n");
 		return IPACM_FAILURE;
-    }
+	}
 	/*get the root of the tree*/
 	root = xmlDocGetRootElement(doc);
 
@@ -453,7 +456,7 @@ int IPACM_read_firewall_xml(char *xml_file, IPACM_firewall_conf_t *config)
 	}
 
 	/* free the tree */
-    xmlFreeDoc(doc);
+	xmlFreeDoc(doc);
 
 	return ret_val;
 }
@@ -486,31 +489,19 @@ static int IPACM_firewall_xml_parse_tree
 
 		case XML_ELEMENT_NODE:
 			{
-				if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																				system_TAG) ||
-						0 == IPACM_util_icmp_string((char*)xml_node->name,
-																				MobileAPFirewallCfg_TAG) ||
-						0 == IPACM_util_icmp_string((char*)xml_node->name,
-																				Firewall_TAG) ||
-
-						0 == IPACM_util_icmp_string((char*)xml_node->name,
-																				FirewallEnabled_TAG)  ||
-						0 == IPACM_util_icmp_string((char*)xml_node->name,
-																				FirewallPktsAllowed_TAG)
-
-
-																				)
+				if (0 == IPACM_util_icmp_string((char*)xml_node->name, system_TAG) ||
+						0 == IPACM_util_icmp_string((char*)xml_node->name, MobileAPFirewallCfg_TAG) ||
+						0 == IPACM_util_icmp_string((char*)xml_node->name, Firewall_TAG) ||
+						0 == IPACM_util_icmp_string((char*)xml_node->name, FirewallEnabled_TAG)  ||
+						0 == IPACM_util_icmp_string((char*)xml_node->name, FirewallPktsAllowed_TAG))
 				{
-					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																					Firewall_TAG))
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name, Firewall_TAG))
 					{
 						/* increase firewall entry num */
 						config->num_extd_firewall_entries++;
 					}
 
-
-					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																					FirewallPktsAllowed_TAG))
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name, FirewallPktsAllowed_TAG))
 					{
 						/* setup action of matched rules */
 					    content = IPACM_read_content_element(xml_node);
@@ -521,18 +512,17 @@ static int IPACM_firewall_xml_parse_tree
 						        memcpy(content_buf, (void *)content, str_size);
 							if (atoi(content_buf)==1)
 							{
-					    	            config->rule_action_accept = true;
+								config->rule_action_accept = true;
 							}
 							else
 							{
-					    	            config->rule_action_accept = false;
+								config->rule_action_accept = false;
 							}
-				    	                IPACMDBG_H(" Allow traffic which matches rules ?:%d\n",config->rule_action_accept);
+							IPACMDBG_H(" Allow traffic which matches rules ?:%d\n",config->rule_action_accept);
 					    }
 				        }
 
-					if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																					FirewallEnabled_TAG))
+					if (0 == IPACM_util_icmp_string((char*)xml_node->name, FirewallEnabled_TAG))
 					{
 						/* setup if firewall enable or not */
 					    content = IPACM_read_content_element(xml_node);
@@ -543,21 +533,19 @@ static int IPACM_firewall_xml_parse_tree
 						        memcpy(content_buf, (void *)content, str_size);
 							if (atoi(content_buf)==1)
 							{
-					    	            config->firewall_enable = true;
+								config->firewall_enable = true;
 							}
 						        else
 							{
-					    	            config->firewall_enable = false;
+								config->firewall_enable = false;
 							}
-				    	                IPACMDBG_H(" Firewall Enable?:%d\n", config->firewall_enable);
+							IPACMDBG_H(" Firewall Enable?:%d\n", config->firewall_enable);
 				            }
 					}
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPFamily_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPFamily_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -568,20 +556,16 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].ip_vsn
 							 = (firewall_ip_version_enum)atoi(content_buf);
 						IPACMDBG_H("\n IP family type is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].ip_vsn);
-
+								config->extd_firewall_entries[config->num_extd_firewall_entries - 1].ip_vsn);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4SourceAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4SourceAddress_TAG))
 				{
 					config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4SourceIPAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4SourceIPAddress_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -595,8 +579,7 @@ static int IPACM_firewall_xml_parse_tree
 						IPACMDBG_H("IPv4 source address is: %s \n", content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4SourceSubnetMask_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4SourceSubnetMask_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -610,16 +593,13 @@ static int IPACM_firewall_xml_parse_tree
 						IPACMDBG_H("IPv4 source subnet mask is: %s \n", content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4DestinationAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4DestinationAddress_TAG))
 				{
 					config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4DestinationIPAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4DestinationIPAddress_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -633,8 +613,7 @@ static int IPACM_firewall_xml_parse_tree
 						IPACMDBG_H("IPv4 destination address is: %s \n", content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4DestinationSubnetMask_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4DestinationSubnetMask_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -643,24 +622,21 @@ static int IPACM_firewall_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						content_buf[MAX_XML_STR_LEN-1] = '\0';
-							if (content_buf > 0)
-							{
-						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.dst_addr_mask
-							 = ntohl(inet_addr(content_buf));
-						IPACMDBG_H("IPv4 destination subnet mask is: %s \n", content_buf);
+						if (content_buf > 0)
+						{
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.dst_addr_mask
+								 = ntohl(inet_addr(content_buf));
+							IPACMDBG_H("IPv4 destination subnet mask is: %s \n", content_buf);
+						}
 					}
 				}
-				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4TypeOfService_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4TypeOfService_TAG))
 				{
 					config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_TOS;
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TOSValue_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TOSValue_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -670,13 +646,11 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.tos
 							 = atoi(content_buf);
-
 						IPACMDBG_H("\n IPV4 TOS val is %d \n",
 										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.tos);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TOSMask_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TOSMask_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -686,13 +660,11 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.tos
 							 &= atoi(content_buf);
-
 						IPACMDBG_H("\n IPv4 TOS mask is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.tos);
+								config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.tos);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV4NextHeaderProtocol_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV4NextHeaderProtocol_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -701,24 +673,19 @@ static int IPACM_firewall_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_PROTOCOL;
-
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.protocol = atoi(content_buf);
-
 						IPACMDBG_H("\n IPv4 next header prot is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.protocol);
+								 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v4.protocol);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6SourceAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6SourceAddress_TAG))
 				{
 					config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |=
 						 IPA_FLT_SRC_ADDR;
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6SourceIPAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6SourceIPAddress_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -735,11 +702,10 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[3]=ntohl(config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[3]);
 
 						IPACMDBG_H("\n ipv6 source addr is %d \n ",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[0]);
+								config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.src_addr[0]);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6SourcePrefix_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6SourcePrefix_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -761,21 +727,17 @@ static int IPACM_firewall_xml_parse_tree
 								mask_value_v6 = 0;
 							}
 						}
-						IPACMDBG_H("\n ipv6 source prefix is %d \n",
-										 atoi(content_buf));
+						IPACMDBG_H("\n ipv6 source prefix is %d \n", atoi(content_buf));
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6DestinationAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6DestinationAddress_TAG))
 				{
 					config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |=
 						 IPA_FLT_DST_ADDR;
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6DestinationIPAddress_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6DestinationIPAddress_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -791,11 +753,10 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.dst_addr[2]=ntohl(config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.dst_addr[2]);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.dst_addr[3]=ntohl(config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.dst_addr[3]);
 						IPACMDBG_H("\n ipv6 dest addr is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.dst_addr[0]);
+								 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.dst_addr[0]);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6DestinationPrefix_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6DestinationPrefix_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -817,20 +778,16 @@ static int IPACM_firewall_xml_parse_tree
 								mask_value_v6 = 0;
 							}
 						}
-						IPACMDBG_H("\n ipv6 dest prefix is %d \n",
-										 atoi(content_buf));
+						IPACMDBG_H("\n ipv6 dest prefix is %d \n", atoi(content_buf));
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6TrafficClass_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6TrafficClass_TAG))
 				{
 					config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_TC;
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TrfClsValue_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TrfClsValue_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -838,15 +795,13 @@ static int IPACM_firewall_xml_parse_tree
 						str_size = strlen(content);
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
-
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.tc
 							 = atoi(content_buf);
 						IPACMDBG_H("\n ipv6 trf class val is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.tc);
+								 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.tc);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TrfClsMask_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TrfClsMask_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -856,13 +811,10 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.tc
 							 &= atoi(content_buf);
-
-						IPACMDBG_H("\n ipv6 trf class mask is %d \n",
-										 atoi(content_buf));
+						IPACMDBG_H("\n ipv6 trf class mask is %d \n", atoi(content_buf));
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 IPV6NextHeaderProtocol_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, IPV6NextHeaderProtocol_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -871,22 +823,18 @@ static int IPACM_firewall_xml_parse_tree
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_NEXT_HDR;
-
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.next_hdr
 							 = atoi(content_buf);
 						IPACMDBG_H("\n ipv6 next header protocol is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.next_hdr);
+								 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.u.v6.next_hdr);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCPSource_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCPSource_TAG))
 				{
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCPSourcePort_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCPSourcePort_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -894,13 +842,11 @@ static int IPACM_firewall_xml_parse_tree
 						str_size = strlen(content);
 						memset(content_buf, 0, sizeof(content_buf));
 						memcpy(content_buf, (void *)content, str_size);
-
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port
 							 = atoi(content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCPSourceRange_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCPSourceRange_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -910,34 +856,30 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						if (atoi(content_buf) != 0)
 						{
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT_RANGE;
- 						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port;
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port + atoi(content_buf);
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port
-							 = 0;
-						  IPACMDBG_H("\n tcp source port from %d to %d \n",
-						                 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo,
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT_RANGE;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port + atoi(content_buf);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port = 0;
+							IPACMDBG_H("\n tcp source port from %d to %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo,
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi);
 						}
 						else
 						{
-					       config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT;
-                           IPACMDBG_H("\n tcp source port= %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT;
+							IPACMDBG_H("\n tcp source port= %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port);
 						}
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCPDestination_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCPDestination_TAG))
 				{
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCPDestinationPort_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCPDestinationPort_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -949,8 +891,7 @@ static int IPACM_firewall_xml_parse_tree
 							 = atoi(content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCPDestinationRange_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCPDestinationRange_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -960,34 +901,30 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						if(atoi(content_buf)!=0)
 						{
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT_RANGE;
- 						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port;
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port + atoi(content_buf);
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port
-							 = 0;
-						  IPACMDBG_H("\n tcp dest port from %d to %d \n",
-						                 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo,
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT_RANGE;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port + atoi(content_buf);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port = 0;
+							IPACMDBG_H("\n tcp dest port from %d to %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo,
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi);
 						}
 						else
 						{
-					      config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT;
-						  IPACMDBG_H("\n tcp dest port= %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT;
+							IPACMDBG_H("\n tcp dest port= %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port);
 						}
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 UDPSource_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, UDPSource_TAG))
 				{
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 UDPSourcePort_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, UDPSourcePort_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -999,8 +936,7 @@ static int IPACM_firewall_xml_parse_tree
 							 = atoi(content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 UDPSourceRange_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, UDPSourceRange_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1010,35 +946,30 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						if(atoi(content_buf)!=0)
 						{
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT_RANGE;
- 						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port;
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port + atoi(content_buf);
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port
-							 = 0;
-						  IPACMDBG_H("\n udp source port from %d to %d \n",
-						                 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo,
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT_RANGE;
+ 							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port + atoi(content_buf);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port = 0;
+							IPACMDBG_H("\n udp source port from %d to %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo,
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi);
 						}
 						else
 						{
-					      config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT;
-						  IPACMDBG_H("\n udp source port= %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port);
-
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT;
+							IPACMDBG_H("\n udp source port= %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port);
 						}
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 UDPDestination_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, UDPDestination_TAG))
 				{
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 UDPDestinationPort_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, UDPDestinationPort_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1050,8 +981,7 @@ static int IPACM_firewall_xml_parse_tree
 							 = atoi(content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 UDPDestinationRange_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, UDPDestinationRange_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1061,28 +991,25 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						if(atoi(content_buf)!=0)
 						{
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT_RANGE;
- 						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port;
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port + atoi(content_buf);
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port
-							 = 0;
-						  IPACMDBG_H("\n UDP dest port from %d to %d \n",
-						                 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo,
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT_RANGE;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port + atoi(content_buf);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port = 0;
+							IPACMDBG_H("\n UDP dest port from %d to %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo,
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi);
 						}
 						else
 						{
-					      config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT;
-						  IPACMDBG_H("\n UDP dest port= %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port);
-
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT;
+							IPACMDBG_H("\n UDP dest port= %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port);
 						}
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 ICMPType_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, ICMPType_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1093,11 +1020,10 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.type = atoi(content_buf);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_TYPE;
 						IPACMDBG_H("\n icmp type is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.type);
+								 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.type);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 ICMPCode_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, ICMPCode_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1108,11 +1034,10 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.code = atoi(content_buf);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_CODE;
 						IPACMDBG_H("\n icmp code is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.code);
+								 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.code);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 ESPSPI_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, ESPSPI_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1123,18 +1048,15 @@ static int IPACM_firewall_xml_parse_tree
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.spi = atoi(content_buf);
 						config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SPI;
 						IPACMDBG_H("\n esp spi is %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.spi);
+								config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.spi);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCP_UDPSource_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCP_UDPSource_TAG))
 				{
 					/* go to child */
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCP_UDPSourcePort_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCP_UDPSourcePort_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1146,8 +1068,7 @@ static int IPACM_firewall_xml_parse_tree
 							 = atoi(content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCP_UDPSourceRange_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCP_UDPSourceRange_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1157,34 +1078,30 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						if(atoi(content_buf)!=0)
 						{
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT_RANGE;
- 						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port;
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port + atoi(content_buf);
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port
-							 = 0;
-						  IPACMDBG_H("\n tcp_udp source port from %d to %d \n",
-						                 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo,
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT_RANGE;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port + atoi(content_buf);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port = 0;
+							IPACMDBG_H("\n tcp_udp source port from %d to %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_lo,
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port_hi);
 						}
 						else
 						{
-	  				      config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT;
-						  IPACMDBG_H("\n tcp_udp source port= %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_SRC_PORT;
+							IPACMDBG_H("\n tcp_udp source port= %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.src_port);
 
 						}
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCP_UDPDestination_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCP_UDPDestination_TAG))
 				{
-					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children,
-																									config);
+					ret_val = IPACM_firewall_xml_parse_tree(xml_node->children, config);
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCP_UDPDestinationPort_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCP_UDPDestinationPort_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1196,8 +1113,7 @@ static int IPACM_firewall_xml_parse_tree
 							 = atoi(content_buf);
 					}
 				}
-				else if (0 == IPACM_util_icmp_string((char*)xml_node->name,
-																						 TCP_UDPDestinationRange_TAG))
+				else if (0 == IPACM_util_icmp_string((char*)xml_node->name, TCP_UDPDestinationRange_TAG))
 				{
 					content = IPACM_read_content_element(xml_node);
 					if (content)
@@ -1207,23 +1123,21 @@ static int IPACM_firewall_xml_parse_tree
 						memcpy(content_buf, (void *)content, str_size);
 						if(atoi(content_buf)!=0)
 						{
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT_RANGE;
- 						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port;
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi
-							 = config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port + atoi(content_buf);
-						  config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port
-							 = 0;
-						  IPACMDBG_H("\n tcp_udp dest port from %d to %d \n",
-						                 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo,
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT_RANGE;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port;
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi
+								= config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port + atoi(content_buf);
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port = 0;
+							IPACMDBG_H("\n tcp_udp dest port from %d to %d \n",
+								config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_lo,
+								config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port_hi);
 						}
 						else
 						{
-					      config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT;
-						  IPACMDBG_H("\n tcp_udp dest port= %d \n",
-										 config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port);
-
+							config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.attrib_mask |= IPA_FLT_DST_PORT;
+							IPACMDBG_H("\n tcp_udp dest port= %d \n",
+									config->extd_firewall_entries[config->num_extd_firewall_entries - 1].attrib.dst_port);
 						}
 					}
 				}
@@ -1238,5 +1152,3 @@ static int IPACM_firewall_xml_parse_tree
 	} /* end while */
 	return ret_val;
 }
-
-

@@ -50,10 +50,12 @@
 			<Iface>
 			   <Name>wlan0</Name>
 			   <Category>UNKNOWN</Category>
+			   <WlanMode>full</WlanMode>
 			</Iface>			
 			<Iface>
 			   <Name>wlan1</Name>
 			   <Category>UNKNOWN</Category>
+			   <WlanMode>internet</WlanMode>
 			</Iface>
 			<Iface>
 			   <Name>eth0</Name>
