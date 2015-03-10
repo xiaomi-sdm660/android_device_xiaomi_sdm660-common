@@ -1837,9 +1837,6 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(eth_client, eth_index)->v4_addr;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
 
-				/* Replace the v4 header in ODU interface */
-				if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
-
 			    if (false == m_routing.AddRoutingRule(rt_rule))
   	            {
   	          	            IPACMERR("Routing rule addition failed!\n");
