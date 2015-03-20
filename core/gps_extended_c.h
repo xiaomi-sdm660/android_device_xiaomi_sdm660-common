@@ -36,6 +36,7 @@ extern "C" {
 #include <ctype.h>
 #include <stdbool.h>
 #include <hardware/gps.h>
+#include <time.h>
 
 /** Location has valid source information. */
 #define LOCATION_HAS_SOURCE_INFO   0x0020
@@ -907,6 +908,14 @@ typedef struct
 
 typedef struct
 {
+    struct timespec apTimeStamp;
+    /*boottime received from pps-ktimer*/
+    float apTimeStampUncertaintyMs;
+    /* timestamp uncertainty in milli seconds */
+}Gnss_ApTimeStampStructType;
+
+typedef struct
+{
     size_t                                      size;
     uint8_t                                     seqNum;
     /**< Current message Number */
@@ -932,6 +941,8 @@ typedef struct
     Gnss_LocRcvrClockFrequencyInfoStructType    clockFreq;   /* Freq */
     bool                                     gnssMeasValid;
     Gnss_ClockMeasurementStructType             gnssMeas;
+    Gnss_ApTimeStampStructType               timeStamp;
+
 } GnssSvMeasurementSet;
 
 typedef enum
