@@ -437,19 +437,19 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						|| ((data->iptype==IPA_IP_v6) && (num_dft_rt_v6!=MAX_DEFAULT_v6_ROUTE_RULES)))
 					{
 						IPACMDBG_H("Got IPA_ADDR_ADD_EVENT ip-family:%d, v6 num %d: \n",data->iptype,num_dft_rt_v6);
+						if(handle_addr_evt(data) == IPACM_FAILURE)
+						{
+							return;
+						}
 						/* ADD ipv4 icmp rule */
 						if (data->iptype == IPA_IP_v4)
 						{
 							install_ipv4_icmp_flt_rule();
 						}
 						/* ADD ipv6 icmp rule */
-						if ((num_dft_rt_v6 == 0) && (data->iptype == IPA_IP_v6))
+						if ((num_dft_rt_v6 == 1) && (data->iptype == IPA_IP_v6))
 						{
 							install_ipv6_icmp_flt_rule();
-						}
-						if(handle_addr_evt(data) == IPACM_FAILURE)
-						{
-							return;
 						}
 						handle_private_subnet(data->iptype);
 
@@ -2878,7 +2878,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 			flt_rule_entry.rule.eq_attrib.metadata_meq32.offset = 0;
 			flt_rule_entry.rule.eq_attrib.metadata_meq32.value = (value & 0xFF) << 16;
 			flt_rule_entry.rule.eq_attrib.metadata_meq32.mask = 0x00FF0000;
-			IPACMDBG_H("xlat meta-data is modified fur rult: %d has index %d with xlat_mux_id: %d\n",
+			IPACMDBG_H("xlat meta-data is modified for rule: %d has index %d with xlat_mux_id: %d\n",
 					cnt, index, xlat_mux_id);
 		}
 		memcpy(&pFilteringTable->rules[cnt], &flt_rule_entry, sizeof(flt_rule_entry));
@@ -4168,7 +4168,7 @@ int IPACM_Lan::install_ipv4_icmp_flt_rule()
 		flt_rule_entry.rule.retain_hdr = 1;
 		flt_rule_entry.rule.to_uc = 0;
 		flt_rule_entry.rule.eq_attrib_type = 0;
-		flt_rule_entry.at_rear = false;
+		flt_rule_entry.at_rear = true;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
@@ -4569,7 +4569,7 @@ int IPACM_Lan::install_ipv6_icmp_flt_rule()
 		flt_rule_entry.rule.retain_hdr = 1;
 		flt_rule_entry.rule.to_uc = 0;
 		flt_rule_entry.rule.eq_attrib_type = 0;
-		flt_rule_entry.at_rear = false;
+		flt_rule_entry.at_rear = true;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
