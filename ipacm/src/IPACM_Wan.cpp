@@ -876,6 +876,14 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						del_wan_firewall_rule(IPA_IP_v4);
 						install_wan_filtering_rule(false);
 						handle_route_del_evt_ex(IPA_IP_v4);
+
+						if(is_xlat && active_v6 == true)
+						{
+							IPACMDBG_H("XLAT enabled: Delete IPv6 routing table dev (%s)\n", dev_name);
+							del_wan_firewall_rule(IPA_IP_v6);
+							install_wan_filtering_rule(false);
+							handle_route_del_evt_ex(IPA_IP_v6);
+						}
 					}
 					else
 					{
