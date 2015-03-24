@@ -53,9 +53,10 @@ IPACM_Config::IPACM_Config()
 	alg_table = NULL;
 	memset(&ipa_client_rm_map_tbl, 0, sizeof(ipa_client_rm_map_tbl));
 	memset(&ipa_rm_tbl, 0, sizeof(ipa_rm_tbl));
-    ipa_rm_a2_check=0;
+	ipa_rm_a2_check=0;
 	ipacm_odu_enable = false;
 	ipacm_odu_router_mode = false;
+	ipa_num_wlan_guest_ap = 0;
 
 	ipa_num_ipa_interfaces = 0;
 	ipa_num_private_subnet = 0;
@@ -127,6 +128,14 @@ int IPACM_Config::Init(void)
 		goto fail;
 	}
 
+	/* Check wlan AP-AP access mode configuration */
+	if (cfg->num_wlan_guest_ap == 2)
+	{
+		IPACMDBG_H("IPACM_Config::Both wlan APs can not be configured in guest ap mode. \n");
+		IPACMDBG_H("IPACM_Config::configure both APs in full access mode or at least one in guest ap mode. \n");
+		ret = IPACM_FAILURE;
+		goto fail;
+	}
 	/* Construct IPACM Iface table */
 	ipa_num_ipa_interfaces = cfg->iface_config.num_iface_entries;
 	if (iface_table != NULL)
@@ -149,8 +158,9 @@ int IPACM_Config::Init(void)
 		strncpy(iface_table[i].iface_name, cfg->iface_config.iface_entries[i].iface_name, sizeof(iface_table[i].iface_name));
 		iface_table[i].if_cat = cfg->iface_config.iface_entries[i].if_cat;
 		iface_table[i].if_mode = cfg->iface_config.iface_entries[i].if_mode;
-		IPACMDBG_H("IPACM_Config::iface_table[%d] = %s, cat=%d, mode=%d\n", i, iface_table[i].iface_name,
-				iface_table[i].if_cat, iface_table[i].if_mode);
+		iface_table[i].wlan_mode = cfg->iface_config.iface_entries[i].wlan_mode;
+		IPACMDBG_H("IPACM_Config::iface_table[%d] = %s, cat=%d, mode=%d wlan-mode=%d \n", i, iface_table[i].iface_name,
+				iface_table[i].if_cat, iface_table[i].if_mode, iface_table[i].wlan_mode);
 		/* copy bridge interface name to ipacmcfg */
 		if( iface_table[i].if_cat == VIRTUAL_IF)
 		{
@@ -218,6 +228,8 @@ int IPACM_Config::Init(void)
 	IPACMDBG_H("ipacm_odu_enable %d\n", ipacm_odu_enable);
 	IPACMDBG_H("ipacm_odu_mode %d\n", ipacm_odu_router_mode);
 	IPACMDBG_H("ipacm_odu_embms_enable %d\n", ipacm_odu_embms_enable);
+	ipa_num_wlan_guest_ap = cfg->num_wlan_guest_ap;
+	IPACMDBG_H("ipa_num_wlan_guest_ap %d\n",ipa_num_wlan_guest_ap);
 
 	/* Allocate more non-nat entries if the monitored iface dun have Tx/Rx properties */
 	if (pNatIfaces != NULL)

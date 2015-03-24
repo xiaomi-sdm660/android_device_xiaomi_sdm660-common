@@ -327,6 +327,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_LAN_CLIENT_DEL_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT, wl);
 				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT, wl);
+				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, wl);
 #endif
 				IPACM_EvtDispatcher::registr(IPA_CRADLE_WAN_MODE_SWITCH, wl);
 				IPACM_EvtDispatcher::registr(IPA_WLAN_LINK_DOWN_EVENT, wl);

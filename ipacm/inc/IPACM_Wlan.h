@@ -104,7 +104,7 @@ private:
 
 	uint32_t wlan_guest_ap_flt_rule_hdl_v4[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
 
-	uint32_t wlan_guest_ap_flt_rule_hdl_v6;
+	uint32_t wlan_guest_ap_flt_rule_hdl_v6[IPA_GUEST_AP_IPv6_FLT_RULE_ENTRIES];
 
 	static lan2lan_flt_rule_hdl self_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
 	static lan2lan_flt_rule_hdl self_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
@@ -326,6 +326,9 @@ private:
 	void eth_bridge_handle_wlan_SCC_MCC_switch(ipa_ip_type iptype);
 
 	int eth_bridge_modify_wlan_rt_rule(uint8_t* mac, eth_bridge_src_iface src_iface, ipa_ip_type iptyp);
+
+	/*handle wlan access mode switch */
+	void eth_bridge_handle_wlan_mode_switch();
 
 };
 
