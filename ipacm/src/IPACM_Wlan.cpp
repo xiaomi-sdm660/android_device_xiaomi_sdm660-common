@@ -320,17 +320,17 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 										 info->ipv4_addr, info->addr_mask);
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
 					}
+					if(handle_addr_evt(data) == IPACM_FAILURE)
+					{
+						return;
+					}
 					if ((data->iptype == IPA_IP_v4) && (wlan_ap_index == 0))
 					{
 						IPACM_Lan::install_ipv4_icmp_flt_rule();
 					}
-					if ((num_dft_rt_v6 == 0) && (data->iptype == IPA_IP_v6) && (wlan_ap_index == 0))
+					if ((num_dft_rt_v6 == 1) && (data->iptype == IPA_IP_v6) && (wlan_ap_index == 0))
 					{
-							install_ipv6_icmp_flt_rule();
-					}
-					if(handle_addr_evt(data) == IPACM_FAILURE)
-					{
-						return;
+						install_ipv6_icmp_flt_rule();
 					}
 
 #ifdef FEATURE_IPA_ANDROID
