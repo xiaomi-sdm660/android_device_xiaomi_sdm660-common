@@ -148,7 +148,7 @@ typedef struct {
     AGpsExtType type;
     AGpsStatusValue status;
     uint32_t        ipv4_addr;
-    char            ipv6_addr[16];
+    struct sockaddr_storage addr;
     char            ssid[SSID_BUF_SIZE];
     char            password[SSID_BUF_SIZE];
 } AGpsExtStatus;
