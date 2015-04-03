@@ -74,13 +74,6 @@ typedef struct _ipa_wlan_client
 	wlan_client_rt_hdl wifi_rt_hdl[0]; /* depends on number of tx properties */
 }ipa_wlan_client;
 
-typedef enum
-{
-	SRC_WLAN,
-	SRC_LAN
-} eth_bridge_src_iface;
-
-
 /* wlan iface */
 class IPACM_Wlan : public IPACM_Lan
 {

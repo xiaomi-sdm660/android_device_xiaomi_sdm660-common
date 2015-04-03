@@ -279,11 +279,17 @@ int IPACM_Config::Init(void)
 	rt_tbl_lan2lan_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_lan2lan_v6.name, V6_LAN_TO_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan2lan_v6.name));
 
+	rt_tbl_eth_bridge_lan_lan_v4.ip = IPA_IP_v4;
+	strncpy(rt_tbl_eth_bridge_lan_lan_v4.name, ETH_BRIDGE_USB_CPE_ROUTE_TABLE_NAME_V4, sizeof(rt_tbl_eth_bridge_lan_lan_v4.name));
+
 	rt_tbl_eth_bridge_lan_wlan_v4.ip = IPA_IP_v4;
 	strncpy(rt_tbl_eth_bridge_lan_wlan_v4.name, ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V4, sizeof(rt_tbl_eth_bridge_lan_wlan_v4.name));
 
 	rt_tbl_eth_bridge_wlan_wlan_v4.ip = IPA_IP_v4;
 	strncpy(rt_tbl_eth_bridge_wlan_wlan_v4.name, ETH_BRIDGE_WLAN_WLAN_ROUTE_TABLE_NAME_V4, sizeof(rt_tbl_eth_bridge_wlan_wlan_v4.name));
+
+	rt_tbl_eth_bridge_lan_lan_v6.ip = IPA_IP_v6;
+	strncpy(rt_tbl_eth_bridge_lan_lan_v6.name, ETH_BRIDGE_USB_CPE_ROUTE_TABLE_NAME_V6, sizeof(rt_tbl_eth_bridge_lan_lan_v6.name));
 
 	rt_tbl_eth_bridge_lan_wlan_v6.ip = IPA_IP_v6;
 	strncpy(rt_tbl_eth_bridge_lan_wlan_v6.name, ETH_BRIDGE_USB_WLAN_ROUTE_TABLE_NAME_V6, sizeof(rt_tbl_eth_bridge_lan_wlan_v6.name));

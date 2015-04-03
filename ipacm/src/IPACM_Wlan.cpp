@@ -734,6 +734,11 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMDBG_H("The event was not sent by LAN interface, ignore.\n");
 			return;
 		}
+		if (IPACM_Lan::is_usb_up == true && IPACM_Lan::is_cpe_up == true)
+		{
+			IPACMDBG_H("USB and CPE both are up, lan-wlan routing rules are already installed. \n");
+			return;
+		}
 		for(i=0; i<IPACM_Lan::num_wlan_client; i++)
 		{
 			if(IPACM_Lan::eth_bridge_wlan_client[i].ipa_if_num == ipa_if_num)
@@ -760,7 +765,11 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMDBG_H("The event was not sent by LAN interface, ignore.\n");
 			return;
 		}
-
+		if (IPACM_Lan::is_usb_up == true || IPACM_Lan::is_cpe_up == true)
+		{
+			IPACMDBG_H("USB or CPE is still up, so keep lan-wlan routing rule. \n");
+			return;
+		}
 		for(i=0; i<IPACM_Lan::num_wlan_client; i++)
 		{
 			if(IPACM_Lan::eth_bridge_wlan_client[i].ipa_if_num == ipa_if_num)
@@ -2606,13 +2615,21 @@ fail:
 		free(iface_query);
 	}
 #ifdef FEATURE_ETH_BRIDGE_LE
-	if(eth_bridge_lan_client_rt_info_v4 != NULL)
+	if(eth_bridge_lan_client_rt_from_lan_info_v4 != NULL)
 	{
-		free(eth_bridge_lan_client_rt_info_v4);
+		free(eth_bridge_lan_client_rt_from_lan_info_v4);
 	}
-	if(eth_bridge_lan_client_rt_info_v6 != NULL)
+	if(eth_bridge_lan_client_rt_from_lan_info_v6 != NULL)
 	{
-		free(eth_bridge_lan_client_rt_info_v6);
+		free(eth_bridge_lan_client_rt_from_lan_info_v6);
+	}
+	if(eth_bridge_lan_client_rt_from_wlan_info_v4 != NULL)
+	{
+		free(eth_bridge_lan_client_rt_from_wlan_info_v4);
+	}
+	if(eth_bridge_lan_client_rt_from_wlan_info_v6 != NULL)
+	{
+		free(eth_bridge_lan_client_rt_from_wlan_info_v6);
 	}
 	if(eth_bridge_wlan_client_rt_from_lan_info_v4 != NULL)
 	{

@@ -210,7 +210,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 				//IPACM_EvtDispatcher::registr(IPA_ROUTE_ADD_EVENT, lan);
 				//IPACM_EvtDispatcher::registr(IPA_ROUTE_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, lan);
-				//IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, lan);
+				IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, lan);
 				IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, lan);
 				IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, lan);
@@ -220,6 +220,8 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 				IPACM_EvtDispatcher::registr(IPA_CFG_CHANGE_EVENT, lan); 				// register for IPA_CFG_CHANGE event
 				IPACM_EvtDispatcher::registr(IPA_PRIVATE_SUBNET_CHANGE_EVENT, lan); 	// register for IPA_PRIVATE_SUBNET_CHANGE_EVENT event
 #ifdef FEATURE_ETH_BRIDGE_LE
+				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_LAN_CLIENT_ADD_EVENT, lan);
+				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_LAN_CLIENT_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_WLAN_CLIENT_ADD_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT, lan);
 				IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT, lan);
@@ -265,6 +267,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 					IPACM_Lan *odu = new IPACM_Lan(ipa_interface_index);
 					IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, odu);
+					IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_ENABLE, odu);
 					IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, odu);
 					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_UP, odu);
@@ -272,6 +275,8 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN, odu);
 					IPACM_EvtDispatcher::registr(IPA_HANDLE_WAN_DOWN_V6, odu);
 #ifdef FEATURE_ETH_BRIDGE_LE
+					IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_LAN_CLIENT_ADD_EVENT, odu);
+					IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_LAN_CLIENT_DEL_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_WLAN_CLIENT_ADD_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT, odu);

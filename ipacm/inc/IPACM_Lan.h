@@ -68,6 +68,12 @@ struct ipa_lan_rt_rule
 	uint32_t rt_rule_hdl[0];
 };
 
+typedef enum
+{
+	SRC_WLAN,
+	SRC_LAN
+} eth_bridge_src_iface;
+
 /* Support multiple eth client */
 typedef struct _eth_client_rt_hdl
 {
@@ -198,6 +204,7 @@ public:
 
 	static hdr_proc_ctx_info lan_to_wlan_hdr_proc_ctx, wlan_to_usb_hdr_proc_ctx, wlan_to_cpe_hdr_proc_ctx;
 	static hdr_proc_ctx_info wlan_to_wlan_hdr_proc_ctx;
+	static hdr_proc_ctx_info cpe_to_usb_hdr_proc_ctx, usb_to_cpe_hdr_proc_ctx;
 
 	static eth_bridge_subnet_client_info eth_bridge_wlan_client[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
 	static eth_bridge_subnet_client_info eth_bridge_lan_client[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
@@ -212,16 +219,26 @@ protected:
 
 	lan2lan_flt_rule_hdl wlan_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
 	lan2lan_flt_rule_hdl wlan_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
+	lan2lan_flt_rule_hdl lan_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
+	lan2lan_flt_rule_hdl lan_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
 
 	eth_bridge_client_flt_info eth_bridge_wlan_client_flt_info[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-	int wlan_client_flt_info_count;
+	eth_bridge_client_flt_info eth_bridge_lan_client_flt_info[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
 
-	eth_bridge_client_rt_info* eth_bridge_lan_client_rt_info_v4;
-	eth_bridge_client_rt_info* eth_bridge_lan_client_rt_info_v6;
-	int lan_client_rt_info_count_v4;
-	int lan_client_rt_info_count_v6;
+	int wlan_client_flt_info_count;
+	int lan_client_flt_info_count;
+
 	int client_rt_info_size_v4;
 	int client_rt_info_size_v6;
+
+	eth_bridge_client_rt_info* eth_bridge_lan_client_rt_from_lan_info_v4;
+	int lan_client_rt_from_lan_info_count_v4;
+	eth_bridge_client_rt_info* eth_bridge_lan_client_rt_from_lan_info_v6;
+	int lan_client_rt_from_lan_info_count_v6;
+	eth_bridge_client_rt_info* eth_bridge_lan_client_rt_from_wlan_info_v4;
+	int lan_client_rt_from_wlan_info_count_v4;
+	eth_bridge_client_rt_info* eth_bridge_lan_client_rt_from_wlan_info_v6;
+	int lan_client_rt_from_wlan_info_count_v6;
 
 	int each_client_rt_rule_count_v4;
 	int each_client_rt_rule_count_v6;
@@ -231,6 +248,10 @@ protected:
 	virtual int eth_bridge_add_wlan_guest_ap_flt_rule(ipa_ip_type iptype);
 
 	virtual int eth_bridge_handle_dummy_lan_client_flt_rule(ipa_ip_type iptype);
+
+	int eth_bridge_add_lan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
+
+	int eth_bridge_del_lan_client_flt_rule(uint8_t* mac);
 
 	int eth_bridge_add_wlan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
 
@@ -248,11 +269,11 @@ protected:
 
 	virtual int eth_bridge_install_cache_lan_client_flt_rule(ipa_ip_type iptype);
 
-	int eth_bridge_add_lan_client_rt_rule(uint8_t* mac, ipa_ip_type iptype);
+	int eth_bridge_add_lan_client_rt_rule(uint8_t* mac, eth_bridge_src_iface src, ipa_ip_type iptype);
 
-	int eth_bridge_del_lan_client_rt_rule(uint8_t* mac);
+	int eth_bridge_del_lan_client_rt_rule(uint8_t* mac, eth_bridge_src_iface src);
 
-	eth_bridge_client_rt_info* eth_bridge_get_client_rt_info_ptr(uint8_t index, ipa_ip_type iptype);
+	eth_bridge_client_rt_info* eth_bridge_get_client_rt_info_ptr(uint8_t index, eth_bridge_src_iface src, ipa_ip_type iptype);
 
 	void eth_bridge_add_lan_client(uint8_t* mac);
 
