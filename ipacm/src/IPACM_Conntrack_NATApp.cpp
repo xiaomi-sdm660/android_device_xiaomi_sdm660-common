@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -573,7 +573,6 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 		}
 	}
 
-
 	for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
 	{
 		if(PwrSaveIfs[cnt] == 0)
@@ -772,7 +771,7 @@ void NatApp::FlushTempEntries(uint32_t ip_addr, bool isAdd)
 
 int NatApp::DelEntriesOnClntDiscon(uint32_t ip_addr)
 {
- 	int cnt, tmp = curCnt;
+	int cnt, tmp = 0;
 	IPACMDBG("Received IP address: 0x%x\n", ip_addr);
 
 	if(ip_addr == INVALID_IP_ADDR)
@@ -781,39 +780,40 @@ int NatApp::DelEntriesOnClntDiscon(uint32_t ip_addr)
 		return -1;
 	}
 
-
-  for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
-  {
-    if(PwrSaveIfs[cnt] == ip_addr)
-    {
-      PwrSaveIfs[cnt] = 0;
-      IPACMDBG("Remove %d power save entry\n", cnt);
-      break;
-    }
-  }
-
-  for(cnt = 0; cnt < max_entries; cnt++)
-  {
-	if(cache[cnt].private_ip == ip_addr)
+	for(cnt = 0; cnt < IPA_MAX_NUM_WIFI_CLIENTS; cnt++)
 	{
-		if(cache[cnt].enabled == true)
-      		{
-			if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
-			{
-				IPACMERR("unable to delete the rule\n");
-				continue;
-			}
-			else
-			{
-				IPACMDBG("won't delete the rule\n");
-				cache[cnt].enabled = false;
-		        }
-	        }
-		IPACMDBG("won't delete the rule for entry %d, enabled %d\n",cnt, cache[cnt].enabled);
+		if(PwrSaveIfs[cnt] == ip_addr)
+		{
+			PwrSaveIfs[cnt] = 0;
+			IPACMDBG("Remove %d power save entry\n", cnt);
+			break;
+		}
 	}
-  }
-  IPACMDBG("Deleted %d entries\n", (tmp - curCnt));
-  return 0;
+
+	for(cnt = 0; cnt < max_entries; cnt++)
+	{
+		if(cache[cnt].private_ip == ip_addr)
+		{
+			if(cache[cnt].enabled == true)
+			{
+				if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
+				{
+					IPACMERR("unable to delete the rule\n");
+					continue;
+				}
+				else
+				{
+					IPACMDBG("won't delete the rule\n");
+					cache[cnt].enabled = false;
+					tmp++;
+				}
+			}
+			IPACMDBG("won't delete the rule for entry %d, enabled %d\n",cnt, cache[cnt].enabled);
+		}
+	}
+
+	IPACMDBG("Deleted (but cached) %d entries\n", tmp);
+	return 0;
 }
 
 int NatApp::DelEntriesOnSTAClntDiscon(uint32_t ip_addr)
@@ -826,7 +826,6 @@ int NatApp::DelEntriesOnSTAClntDiscon(uint32_t ip_addr)
 		IPACMERR("Invalid ip address received\n");
 		return -1;
 	}
-
 
 	for(cnt = 0; cnt < max_entries; cnt++)
 	{
@@ -893,6 +892,7 @@ void NatApp::CacheEntry(const nat_table_entry *rule)
 			cache[cnt].protocol = rule->protocol;
 			cache[cnt].timestamp = 0;
 			cache[cnt].public_port = rule->public_port;
+			cache[cnt].public_ip = rule->public_ip;
 			cache[cnt].dst_nat = rule->dst_nat;
 			curCnt++;
 		}
