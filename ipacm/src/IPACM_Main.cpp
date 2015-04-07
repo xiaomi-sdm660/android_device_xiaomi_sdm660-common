@@ -275,7 +275,7 @@ void* ipa_driver_msg_notifier(void *param)
 	ipacm_event_data_all* new_neigh_data;
 
 	fd = open(IPA_DRIVER, O_RDWR);
-	if (fd == 0)
+	if (fd < 0)
 	{
 		IPACMERR("Failed opening %s.\n", IPA_DRIVER);
 		return NULL;
