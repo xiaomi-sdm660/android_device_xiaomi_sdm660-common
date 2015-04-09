@@ -969,6 +969,28 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 	}
 	break;
 
+	case IPA_TETHERING_STATS_UPDATE_EVENT:
+	{
+		IPACMDBG_H("Received IPA_TETHERING_STATS_UPDATE_EVENT event.\n");
+		if (IPACM_Wan::isWanUP())
+		{
+			if(IPACM_Wan::backhaul_is_sta_mode == false) /* LTE */
+			{
+				ipa_get_data_stats_resp_msg_v01 *data = (ipa_get_data_stats_resp_msg_v01 *)param;
+				IPACMDBG("Received IPA_TETHERING_STATS_UPDATE_STATS ipa_stats_type: %d\n",data->ipa_stats_type);
+				IPACMDBG("Received %d UL, %d DL pipe stats\n",data->ul_src_pipe_stats_list_len,
+					data->dl_dst_pipe_stats_list_len);
+				if (data->ipa_stats_type != QMI_IPA_STATS_TYPE_PIPE_V01)
+				{
+					IPACMERR("not valid pipe stats enum(%d)\n", data->ipa_stats_type);
+					return;
+				}
+				handle_tethering_stats_event(data);
+			}
+		}
+	}
+	break;
+
 	default:
 		break;
 	}
@@ -6745,5 +6767,103 @@ int IPACM_Lan::handle_cradle_wan_mode_switch(bool is_wan_bridge_mode)
 	return IPACM_SUCCESS;
 }
 
+/*handle reset usb-client rt-rules */
+int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *data)
+{
+	int cnt, pipe_len, fd;
+	uint64_t num_ul_packets, num_ul_bytes;
+	uint64_t num_dl_packets, num_dl_bytes;
+	bool ul_pipe_found, dl_pipe_found;
+	char command[MAX_COMMAND_LEN];
+	fd = open(IPA_DEVICE_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		IPACMERR("Failed opening %s.\n", IPA_DEVICE_NAME);
+		return IPACM_FAILURE;
+	}
 
 
+	ul_pipe_found = false;
+	dl_pipe_found = false;
+	num_ul_packets = 0;
+	num_dl_packets = 0;
+	num_ul_bytes = 0;
+	num_dl_bytes = 0;
+
+	if (data->dl_dst_pipe_stats_list_valid)
+	{
+		if(tx_prop != NULL)
+		{
+			for (pipe_len = 0; pipe_len < data->dl_dst_pipe_stats_list_len; pipe_len++)
+			{
+				IPACMDBG_H("Check entry(%d) dl_dst_pipe(%d)\n", pipe_len, data->dl_dst_pipe_stats_list[pipe_len].pipe_index);
+				for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+				{
+					IPACMDBG_H("Check Tx_prop_entry(%d) pipe(%d)\n", cnt, ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, tx_prop->tx[cnt].dst_pipe));
+					if(ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, tx_prop->tx[cnt].dst_pipe) == data->dl_dst_pipe_stats_list[pipe_len].pipe_index)
+					{
+						/* update the DL stats */
+						dl_pipe_found = true;
+						num_dl_packets += data->dl_dst_pipe_stats_list[pipe_len].num_ipv4_packets;
+						num_dl_packets += data->dl_dst_pipe_stats_list[pipe_len].num_ipv6_packets;
+						num_dl_bytes += data->dl_dst_pipe_stats_list[pipe_len].num_ipv4_bytes;
+						num_dl_bytes += data->dl_dst_pipe_stats_list[pipe_len].num_ipv6_bytes;
+						IPACMDBG_H("Got matched dst-pipe (%d) from %d tx props\n", data->dl_dst_pipe_stats_list[pipe_len].pipe_index, cnt);
+						IPACMDBG_H("DL_packets:(%lu) DL_bytes:(%lu) \n", num_dl_packets, num_dl_bytes);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (data->ul_src_pipe_stats_list_valid)
+	{
+		if(rx_prop != NULL)
+		{
+			for (pipe_len = 0; pipe_len < data->ul_src_pipe_stats_list_len; pipe_len++)
+			{
+				IPACMDBG_H("Check entry(%d) dl_dst_pipe(%d)\n", pipe_len, data->ul_src_pipe_stats_list[pipe_len].pipe_index);
+				for (cnt=0; cnt < rx_prop->num_rx_props; cnt++)
+				{
+					IPACMDBG_H("Check Rx_prop_entry(%d) pipe(%d)\n", cnt, ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, rx_prop->rx[cnt].src_pipe));
+					if(ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, rx_prop->rx[cnt].src_pipe) == data->ul_src_pipe_stats_list[pipe_len].pipe_index)
+					{
+						/* update the UL stats */
+						ul_pipe_found = true;
+						num_ul_packets += data->ul_src_pipe_stats_list[pipe_len].num_ipv4_packets;
+						num_ul_packets += data->ul_src_pipe_stats_list[pipe_len].num_ipv6_packets;
+						num_ul_bytes += data->ul_src_pipe_stats_list[pipe_len].num_ipv4_bytes;
+						num_ul_bytes += data->ul_src_pipe_stats_list[pipe_len].num_ipv6_bytes;
+						IPACMDBG_H("Got matched dst-pipe (%d) from %d tx props\n", data->ul_src_pipe_stats_list[pipe_len].pipe_index, cnt);
+						IPACMDBG_H("UL_packets:(%lu) UL_bytes:(%lu) \n", num_ul_packets, num_ul_bytes);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (ul_pipe_found || dl_pipe_found)
+	{
+		IPACMDBG_H("Update IPA_TETHERING_STATS_UPDATE_EVENT, TX(P%lu/B%lu) RX(P%lu/B%lu) DEV(%s) to LTE(%s) \n",
+					num_ul_packets,
+						num_ul_bytes,
+							num_dl_packets,
+								num_dl_bytes,
+									dev_name,
+										IPACM_Wan::wan_up_dev_name);
+			memset(command, 0, sizeof(command));
+			snprintf(command, sizeof(command), PIPE_STATS,
+				dev_name,
+					IPACM_Wan::wan_up_dev_name,
+						num_ul_bytes,
+						num_ul_packets,
+							    num_dl_bytes,
+								num_dl_packets,
+										IPA_PIPE_STATS_FILE_NAME);
+			system(command);
+	}
+	close(fd);
+	return IPACM_SUCCESS;
+}

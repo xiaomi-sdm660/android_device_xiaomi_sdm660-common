@@ -55,6 +55,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/inotify.h>
 #include <stdlib.h>
 #include <signal.h>
+#include "linux/ipa_qmi_service_v01.h"
 
 #define __stringify_1(x...)	#x
 #define __stringify(x...)	__stringify_1(x)
@@ -140,8 +141,9 @@ const char *ipacm_event_name[] = {
 
 #define IPA_DRIVER_WLAN_EVENT_MAX_OF_ATTRIBS  3
 #define IPA_DRIVER_WLAN_EVENT_SIZE  (sizeof(struct ipa_wlan_msg_ex)+ IPA_DRIVER_WLAN_EVENT_MAX_OF_ATTRIBS*sizeof(ipa_wlan_hdr_attrib_val))
+#define IPA_DRIVER_PIPE_STATS_EVENT_SIZE  (sizeof(struct ipa_get_data_stats_resp_msg_v01))
 #define IPA_DRIVER_WLAN_META_MSG    (sizeof(struct ipa_msg_meta))
-#define IPA_DRIVER_WLAN_BUF_LEN     (IPA_DRIVER_WLAN_EVENT_SIZE + IPA_DRIVER_WLAN_META_MSG)
+#define IPA_DRIVER_WLAN_BUF_LEN     (IPA_DRIVER_PIPE_STATS_EVENT_SIZE + IPA_DRIVER_WLAN_META_MSG)
 
 uint32_t ipacm_event_stats[IPACM_EVENT_MAX];
 bool ipacm_logging = true;
@@ -264,12 +266,16 @@ void* ipa_driver_msg_notifier(void *param)
 	struct ipa_wlan_msg_ex event_ex_o;
 	struct ipa_wlan_msg *event_wlan=NULL;
 	struct ipa_wlan_msg_ex *event_ex= NULL;
+	struct ipa_get_data_stats_resp_msg_v01 event_data_stats;
+	struct ipa_get_apn_data_stats_resp_msg_v01 event_network_stats;
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
 	ipacm_event_data_fid *data_fid = NULL;
 	ipacm_event_data_iptype *data_iptype = NULL;
 	ipacm_event_data_wlan_ex *data_ex;
+	ipa_get_data_stats_resp_msg_v01 *data_tethering_stats = NULL;
+	ipa_get_apn_data_stats_resp_msg_v01 *data_network_stats = NULL;
 
 	ipacm_cmd_q_data new_neigh_evt;
 	ipacm_event_data_all* new_neigh_data;
@@ -290,6 +296,8 @@ void* ipa_driver_msg_notifier(void *param)
 		new_neigh_data = NULL;
 		data = NULL;
 		data_fid = NULL;
+		data_tethering_stats = NULL;
+		data_network_stats = NULL;
 
 		length = read(fd, buffer, IPA_DRIVER_WLAN_BUF_LEN);
 		if (length < 0)
@@ -667,6 +675,40 @@ void* ipa_driver_msg_notifier(void *param)
 			evt_data.evt_data = data_fid;
 			IPACMDBG_H("Posting IPA_WAN_XLAT_CONNECT_EVENT event:%d\n", evt_data.event);
 			break;
+
+		case IPA_TETHERING_STATS_UPDATE_STATS:
+			memcpy(&event_data_stats, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_get_data_stats_resp_msg_v01));
+			data_tethering_stats = (ipa_get_data_stats_resp_msg_v01 *)malloc(sizeof(struct ipa_get_data_stats_resp_msg_v01));
+			if(data_tethering_stats == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_tethering_stats\n");
+				return NULL;
+			}
+			memcpy(data_tethering_stats,
+					 &event_data_stats,
+						 sizeof(struct ipa_get_data_stats_resp_msg_v01));
+			IPACMDBG("Received IPA_TETHERING_STATS_UPDATE_STATS ipa_stats_type: %d\n",data_tethering_stats->ipa_stats_type);
+			IPACMDBG("Received %d UL, %d DL pipe stats\n",data_tethering_stats->ul_src_pipe_stats_list_len, data_tethering_stats->dl_dst_pipe_stats_list_len);
+			evt_data.event = IPA_TETHERING_STATS_UPDATE_EVENT;
+			evt_data.evt_data = data_tethering_stats;
+			break;
+
+		case IPA_TETHERING_STATS_UPDATE_NETWORK_STATS:
+			memcpy(&event_network_stats, buffer + sizeof(struct ipa_msg_meta), sizeof(struct ipa_get_apn_data_stats_resp_msg_v01));
+			data_network_stats = (ipa_get_apn_data_stats_resp_msg_v01 *)malloc(sizeof(ipa_get_apn_data_stats_resp_msg_v01));
+			if(data_network_stats == NULL)
+			{
+				IPACMERR("unable to allocate memory for event data_network_stats\n");
+				return NULL;
+			}
+			memcpy(data_network_stats,
+					 &event_network_stats,
+						 sizeof(struct ipa_get_apn_data_stats_resp_msg_v01));
+			IPACMDBG("Received %d apn network stats \n", data_network_stats->apn_data_stats_list_len);
+			evt_data.event = IPA_NETWORK_STATS_UPDATE_EVENT;
+			evt_data.evt_data = data_network_stats;
+			break;
+
 		default:
 			IPACMDBG_H("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;

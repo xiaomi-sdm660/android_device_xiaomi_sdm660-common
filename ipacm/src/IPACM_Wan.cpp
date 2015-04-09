@@ -49,6 +49,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Config.h"
 #include "IPACM_Defs.h"
 #include <IPACM_ConntrackListener.h>
+#include "linux/ipa_qmi_service_v01.h"
 
 bool IPACM_Wan::wan_up = false;
 bool IPACM_Wan::wan_up_v6 = false;
@@ -59,6 +60,8 @@ int IPACM_Wan::num_v6_flt_rule = 0;
 
 struct ipa_flt_rule_add IPACM_Wan::flt_rule_v4[IPA_MAX_FLT_RULE];
 struct ipa_flt_rule_add IPACM_Wan::flt_rule_v6[IPA_MAX_FLT_RULE];
+
+char IPACM_Wan::wan_up_dev_name[IF_NAME_LEN];
 
 bool IPACM_Wan::backhaul_is_sta_mode = false;
 bool IPACM_Wan::is_ext_prop_set = false;
@@ -130,6 +133,14 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 		IPACMDBG_H("The new WAN interface is modem.\n");
 		is_default_gateway = false;
 		query_ext_prop();
+//#ifdef FEATURE_IPA_ANDROID
+//		ipa_network_stats_fd = open(IPA_NETWORK_STATS_FILE_NAME, O_RDWR | O_CREAT, 0660);
+//		if (ipa_network_stats_fd <= 0)
+//		{
+//			IPACMERR("Failed to open %s, error is %d - %s\n",
+//				IPA_NETWORK_STATS_FILE_NAME, errno, strerror(errno));
+//		}
+//#endif
 	}
 	else
 	{
@@ -165,7 +176,6 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	{
 		IPACMDBG(" IPACM->IPACM_Wan(%d)\n", ipa_if_num);
 	}
-
 	return;
 }
 
@@ -781,7 +791,20 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			}
 		}
 		break;
-
+	case IPA_NETWORK_STATS_UPDATE_EVENT:
+		{
+			ipa_get_apn_data_stats_resp_msg_v01 *data = (ipa_get_apn_data_stats_resp_msg_v01 *)param;
+			if (!data->apn_data_stats_list_valid)
+			{
+				IPACMERR("not valid APN\n");
+				return;
+			}
+			else
+			{
+				handle_network_stats_update(data);
+			}
+		}
+		break;
 	case IPA_ROUTE_ADD_EVENT:
 		{
 			ipacm_event_data_addr *data = (ipacm_event_data_addr *)param;
@@ -1386,6 +1409,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	{
 		IPACM_Wan::wan_up = true;
 		active_v4 = true;
+		memcpy(IPACM_Wan::wan_up_dev_name,
+			dev_name,
+				sizeof(IPACM_Wan::wan_up_dev_name));
 
 		if(m_is_sta_mode == Q6_WAN)
 		{
@@ -3596,6 +3622,7 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			IPACMDBG_H("setup wan_up/active_v4= false \n");
 			IPACM_Wan::wan_up = false;
 			active_v4 = false;
+			memset(IPACM_Wan::wan_up_dev_name, 0, sizeof(IPACM_Wan::wan_up_dev_name));
 		}
 		else
 		{
@@ -3690,6 +3717,7 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 			IPACMDBG_H("setup wan_up/active_v4= false \n");
 			IPACM_Wan::wan_up = false;
 			active_v4 = false;
+			memset(IPACM_Wan::wan_up_dev_name, 0, sizeof(IPACM_Wan::wan_up_dev_name));
 		}
 		else
 		{
@@ -4087,10 +4115,11 @@ int IPACM_Wan::handle_down_evt_ex()
 		/* only when default gw goes down we post WAN_DOWN event*/
 		if(is_default_gateway == true)
 		{
-		IPACM_Wan::wan_up = 0;
+			IPACM_Wan::wan_up = false;
 			del_wan_firewall_rule(IPA_IP_v4);
 			install_wan_filtering_rule(false);
 			handle_route_del_evt_ex(IPA_IP_v4);
+			memset(IPACM_Wan::wan_up_dev_name, 0, sizeof(IPACM_Wan::wan_up_dev_name));
 		}
 
 		/* only when the last ipv4 modem interface goes down, delete ipv4 default flt rules*/
@@ -4116,7 +4145,7 @@ int IPACM_Wan::handle_down_evt_ex()
 		/* only when default gw goes down we post WAN_DOWN event*/
 		if(is_default_gateway == true)
 		{
-		IPACM_Wan::wan_up_v6 = 0;
+		IPACM_Wan::wan_up_v6 = false;
 			del_wan_firewall_rule(IPA_IP_v6);
 			install_wan_filtering_rule(false);
 			handle_route_del_evt_ex(IPA_IP_v6);
@@ -4150,11 +4179,12 @@ int IPACM_Wan::handle_down_evt_ex()
 		/* only when default gw goes down we post WAN_DOWN event*/
 		if(is_default_gateway == true)
 		{
-		IPACM_Wan::wan_up = 0;
+			IPACM_Wan::wan_up = false;
 			del_wan_firewall_rule(IPA_IP_v4);
-		handle_route_del_evt_ex(IPA_IP_v4);
+			handle_route_del_evt_ex(IPA_IP_v4);
+			memset(IPACM_Wan::wan_up_dev_name, 0, sizeof(IPACM_Wan::wan_up_dev_name));
 
-		IPACM_Wan::wan_up_v6 = 0;
+			IPACM_Wan::wan_up_v6 = false;
 			del_wan_firewall_rule(IPA_IP_v6);
 			handle_route_del_evt_ex(IPA_IP_v6);
 
@@ -5429,4 +5459,33 @@ void IPACM_Wan::handle_wan_client_SCC_MCC_switch(bool isSCCMode, ipa_ip_type ipt
 
 	free(rt_rule);
 	return;
+}
+
+/*handle eth client */
+int IPACM_Wan::handle_network_stats_update(ipa_get_apn_data_stats_resp_msg_v01 *data)
+{
+	char command[MAX_COMMAND_LEN];
+	for (int apn_index =0; apn_index < data->apn_data_stats_list_len; apn_index++)
+	{
+		if(data->apn_data_stats_list[apn_index].mux_id == ext_prop->ext[0].mux_id)
+		{
+			IPACMDBG_H("Received IPA_TETHERING_STATS_UPDATE_NETWORK_STATS, MUX ID %d TX (P%lu/B%lu) RX (P%lu/B%lu)\n",
+				data->apn_data_stats_list[apn_index].mux_id,
+					data->apn_data_stats_list[apn_index].num_ul_packets,
+						data->apn_data_stats_list[apn_index].num_ul_bytes,
+							data->apn_data_stats_list[apn_index].num_dl_packets,
+								data->apn_data_stats_list[apn_index].num_dl_bytes);
+			memset(command, 0, sizeof(command));
+			snprintf(command, sizeof(command), NETWORK_STATS,
+				dev_name,
+					data->apn_data_stats_list[apn_index].num_ul_packets,
+						data->apn_data_stats_list[apn_index].num_ul_bytes,
+							data->apn_data_stats_list[apn_index].num_dl_packets,
+								data->apn_data_stats_list[apn_index].num_dl_bytes,
+									IPA_NETWORK_STATS_FILE_NAME);
+			system(command);
+			break;
+		};
+	}
+	return IPACM_SUCCESS;
 }

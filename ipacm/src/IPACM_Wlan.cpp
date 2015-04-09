@@ -877,6 +877,24 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		}
 	}
 	break;
+	case IPA_TETHERING_STATS_UPDATE_EVENT:
+	{
+		IPACMDBG_H("Received IPA_TETHERING_STATS_UPDATE_EVENT event.\n");
+		if (IPACM_Wan::isWanUP())
+		{
+			if(IPACM_Wan::backhaul_is_sta_mode == false) /* LTE */
+			{
+				ipa_get_data_stats_resp_msg_v01 *data = (ipa_get_data_stats_resp_msg_v01 *)param;
+				if (data->ipa_stats_type != QMI_IPA_STATS_TYPE_PIPE_V01)
+				{
+					IPACMERR("not valid pipe stats\n");
+					return;
+				}
+				handle_tethering_stats_event(data);
+			};
+		}
+	}
+	break;
 	default:
 		break;
 	}

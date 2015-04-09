@@ -55,6 +55,7 @@ extern "C"
 #define IPA_MAX_FILE_LEN  64
 #define IPA_IFACE_NAME_LEN 16
 #define IPA_ALG_PROTOCOL_NAME_LEN  10
+#define MAX_COMMAND_LEN 1024
 
 #define IPA_WLAN_PARTIAL_HDR_OFFSET  0 // dst mac first then src mac
 //#define IPA_ETH_PARTIAL_HDR_OFFSET  8 // dst mac first then src mac
@@ -186,6 +187,8 @@ typedef enum
 	IPA_WLAN_SWITCH_TO_MCC,                   /* 51 No Data */
 	IPA_CRADLE_WAN_MODE_SWITCH,               /* 52 ipacm_event_cradle_wan_mode */
 	IPA_WAN_XLAT_CONNECT_EVENT,               /* 53 ipacm_event_data_fid */
+	IPA_TETHERING_STATS_UPDATE_EVENT,         /* 54 ipacm_event_data_fid */
+	IPA_NETWORK_STATS_UPDATE_EVENT,           /* 55 ipacm_event_data_fid */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 

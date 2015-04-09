@@ -58,6 +58,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUM_IPV6_PREFIX_FLT_RULE 1
 #define NUM_IPV6_ICMP_FLT_RULE 1
 
+/* ndc bandwidth ipatetherstats <ifaceIn> <ifaceOut> */
+/* <in->out_bytes> <in->out_pkts> <out->in_bytes> <out->in_pkts */
+
+#define PIPE_STATS "echo %s %s %lu %lu %lu %lu > %s"
+#define IPA_PIPE_STATS_FILE_NAME "/data/misc/ipa/tether_stats"
+
 /* store each lan-iface unicast routing rule and its handler*/
 struct ipa_lan_rt_rule
 {
@@ -305,6 +311,9 @@ protected:
 	int install_ipv6_icmp_flt_rule();
 
 	void post_del_self_evt();
+
+	/* handle tethering stats */
+	int handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *data);
 
 	lan2lan_flt_rule_hdl lan2lan_flt_rule_hdl_v4[MAX_OFFLOAD_PAIR];
 	lan2lan_flt_rule_hdl lan2lan_flt_rule_hdl_v6[MAX_OFFLOAD_PAIR];

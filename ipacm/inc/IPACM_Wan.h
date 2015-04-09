@@ -53,6 +53,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV4 2
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 3
 
+#define NETWORK_STATS "echo %s %lu %lu %lu %lu > %s"
+#define IPA_NETWORK_STATS_FILE_NAME "/data/misc/ipa/network_stats"
+
 typedef struct _wan_client_rt_hdl
 {
 	uint32_t wan_rt_rule_hdl_v4;
@@ -87,6 +90,8 @@ public:
 	static bool wan_up;
 	static bool wan_up_v6;
 	static uint8_t xlat_mux_id;
+	/* IPACM interface name */
+	static char wan_up_dev_name[IF_NAME_LEN];
 
 	IPACM_Wan(int, ipacm_wan_iface_type, uint8_t *);
 	virtual ~IPACM_Wan();
@@ -178,6 +183,8 @@ private:
 	uint8_t invalid_mac[IPA_MAC_ADDR_SIZE];
 	bool is_xlat;
 
+	/* update network stats for CNE */
+	int ipa_network_stats_fd;
 
 	inline ipa_wan_client* get_client_memptr(ipa_wan_client *param, int cnt)
 	{
@@ -376,8 +383,11 @@ private:
 	void handle_wlan_SCC_MCC_switch(bool, ipa_ip_type);
 	void handle_wan_client_SCC_MCC_switch(bool, ipa_ip_type);
 
+	int handle_network_stats_evt();
+
 	int m_fd_ipa;
 
+	int handle_network_stats_update(ipa_get_apn_data_stats_resp_msg_v01 *data);
 };
 
 #endif /* IPACM_WAN_H */
