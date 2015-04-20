@@ -108,6 +108,9 @@ public:
 		 IPACMLOG(" %s(0x%x): %d.%d.%d.%d\n", X, Y, ((Y>>24) & 0xFF), ((Y>>16) & 0xFF), ((Y>>8) & 0xFF), (Y & 0xFF));
 #endif
 
+#define log_nat(A,B,C,D,E,F) \
+		IPACMDBG_H("protocol %d Private IP: %d.%d.%d.%d\t Target IP: %d.%d.%d.%d\t private port: %d public port: %d %s",A,((B>>24) & 0xFF), ((B>>16) & 0xFF), ((B>>8) & 0xFF), (B & 0xFF), ((C>>24) & 0xFF), ((C>>16) & 0xFF),((C>>8) & 0xFF),(C & 0xFF),D,E,F);
+
 };
 
 #endif  /* IPACM_CONNTRACK_FILTER_H */
