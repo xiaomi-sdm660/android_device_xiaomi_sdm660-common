@@ -1955,7 +1955,6 @@ static int loc_eng_start_handler(loc_eng_data_s_type &loc_eng_data)
            ret_val == LOC_API_ADAPTER_ERR_INTERNAL)
        {
            loc_eng_data.adapter->setInSession(TRUE);
-           loc_inform_gps_status(loc_eng_data, GPS_STATUS_SESSION_BEGIN);
        }
    }
 
@@ -2001,11 +2000,6 @@ static int loc_eng_stop_handler(loc_eng_data_s_type &loc_eng_data)
    if (loc_eng_data.adapter->isInSession()) {
 
        ret_val = loc_eng_data.adapter->stopFix();
-       if (ret_val == LOC_API_ADAPTER_ERR_SUCCESS)
-       {
-           loc_inform_gps_status(loc_eng_data, GPS_STATUS_SESSION_END);
-       }
-
        loc_eng_data.adapter->setInSession(FALSE);
    }
 
@@ -2885,8 +2879,6 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
 
         loc_eng_agps_reinit(loc_eng_data);
     }
-
-    loc_eng_report_status(loc_eng_data, GPS_STATUS_ENGINE_ON);
 
     // modem is back up.  If we crashed in the middle of navigating, we restart.
     if (loc_eng_data.adapter->isInSession()) {
