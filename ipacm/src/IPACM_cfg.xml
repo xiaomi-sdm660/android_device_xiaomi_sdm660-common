@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <system xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ipacm_cfg.xsd">
 	<ODUCFG>
-		<Mode>router</Mode>
+		<OduMode>router</OduMode>
 		<eMBMS_offload>0</eMBMS_offload>
 	</ODUCFG>
 	<IPACM>

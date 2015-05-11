@@ -76,7 +76,7 @@ if (!(a)) {                                                 \
 /* IPA Config Entries */
 #define system_TAG                           "system"
 #define ODU_TAG                              "ODUCFG"
-#define ODUMODE_TAG                          "Mode"
+#define ODUMODE_TAG                          "OduMode"
 #define ODUEMBMS_OFFLOAD_TAG                 "eMBMS_offload"
 #define ODU_ROUTER_TAG                       "router"
 #define ODU_BRIDGE_TAG                       "bridge"
