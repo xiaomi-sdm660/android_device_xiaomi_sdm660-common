@@ -78,7 +78,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 				IPACM_Iface::ipacmcfg->Init();
 			break;
 		case IPA_LINK_UP_EVENT:
-			IPACMDBG_H("link up %d: \n", evt_data->if_index);
+			IPACMDBG_H("Recieved IPA_LINK_UP_EVENT event: link up %d: \n", evt_data->if_index);
 			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
 			/* LTE-backhaul */
 			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == EMBMS_IF)
@@ -95,6 +95,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 			break;
 
 		case IPA_USB_LINK_UP_EVENT:
+			IPACMDBG_H("Recieved IPA_USB_LINK_UP_EVENT event: link up %d: \n", evt_data->if_index);
 			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(evt_data->if_index);
 			/* check if it's WAN_IF */
 			if(IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].if_cat == WAN_IF)

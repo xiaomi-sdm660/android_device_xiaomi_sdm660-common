@@ -18,6 +18,7 @@
 			<Iface>
 			   <Name>rmnet_data0</Name>
 			   <Category>WAN</Category>
+			   <Mode>ROUTER</Mode>
 			</Iface>
 			<Iface>
 			   <Name>rmnet_data1</Name>

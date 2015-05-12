@@ -67,7 +67,7 @@ int IPACM_Wan::num_ipv4_modem_pdn = 0;
 int IPACM_Wan::num_ipv6_modem_pdn = 0;
 
 bool IPACM_Wan::embms_is_on = false;
-bool IPACM_Wan::cradle_backhaul_is_wan_bridge = false;
+bool IPACM_Wan::backhaul_is_wan_bridge = false;
 
 uint32_t IPACM_Wan::backhaul_ipv6_prefix[2];
 
@@ -528,15 +528,15 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG_H("Now the cradle wan mode is %d.\n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode);
 				if(is_default_gateway == true)
 				{
-					if(cradle_backhaul_is_wan_bridge == false && IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
+					if(backhaul_is_wan_bridge == false && IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
 					{
 						IPACMDBG_H("Cradle wan mode switch to bridge mode.\n");
-						cradle_backhaul_is_wan_bridge = true;
+						backhaul_is_wan_bridge = true;
 					}
-					else if(cradle_backhaul_is_wan_bridge == true && IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
+					else if(backhaul_is_wan_bridge == true && IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == ROUTER)
 					{
 						IPACMDBG_H("Cradle wan mode switch to router mode.\n");
-						cradle_backhaul_is_wan_bridge = false;
+						backhaul_is_wan_bridge = false;
 					}
 					else
 					{
@@ -1128,17 +1128,20 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	memcpy(backhaul_ipv6_prefix, ipv6_prefix, sizeof(backhaul_ipv6_prefix));
 	IPACMDBG_H("Setup backhaul ipv6 prefix to be 0x%08x%08x.\n", backhaul_ipv6_prefix[0], backhaul_ipv6_prefix[1]);
 
+	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
+	{
+		IPACM_Wan::backhaul_is_wan_bridge = true;
+	}
+	else
+	{
+		IPACM_Wan::backhaul_is_wan_bridge = false;
+	}
+	IPACMDBG_H("backhaul_is_wan_bridge ?: %d \n", IPACM_Wan::backhaul_is_wan_bridge);
+
 	if (m_is_sta_mode !=Q6_WAN)
 	{
 		IPACM_Wan::backhaul_is_sta_mode	= true;
-		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
-		{
-			IPACM_Wan::cradle_backhaul_is_wan_bridge = true;
-		}
-		else
-		{
-			IPACM_Wan::cradle_backhaul_is_wan_bridge = false;
-		}
+
 		if((iptype==IPA_IP_v4) && (header_set_v4 != true))
 		{
 			header_partial_default_wan_v4 = true;
@@ -2518,7 +2521,15 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 		}
 		else
 		{
-			flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+			if(isWan_Bridge_Mode())
+			{
+				IPACMDBG_H("ODU is in bridge mode. \n");
+				flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+			}
+			else
+			{
+				flt_rule_entry.rule.action = IPA_PASS_TO_DST_NAT;
+			}
 		}
 
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));

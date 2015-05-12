@@ -244,6 +244,7 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 					IPACMERR("Failed tell odu-driver the mode\n");
 				}
 				IPACMDBG("Tell odu-driver in router-mode(%d)\n", IPACM_Iface::ipacmcfg->ipacm_odu_router_mode);
+				IPACMDBG_H("odu is up: odu-driver in router-mode(%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_router_mode);
 				close(m_fd_odu);
 				IPACM_Lan::odu_up = true;
 		}
@@ -644,11 +645,12 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_all *data = (ipacm_event_data_all *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
+			IPACMDBG_H("Recieved IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT event \n");
 			IPACMDBG_H("check iface %s category: %d\n",IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat);
 
 			if ((ipa_interface_index == ipa_if_num) && (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF))
 			{
-				IPACMDBG("ODU iface got v4-ip \n");
+				IPACMDBG_H("ODU iface got v4-ip \n");
 				/* first construc ODU full header */
 				if ((ipv4_header_set == false) && (ipv6_header_set == false))
 				{
@@ -657,19 +659,19 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 					if (IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable == true)
 					{
 						handle_odu_route_add();
-						IPACMDBG("construct ODU header and route rules, embms_flag (%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable);
+						IPACMDBG_H("construct ODU header and route rules, embms_flag (%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable);
 					}
 					else
 					{
-						IPACMDBG("construct ODU header only, embms_flag (%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable);
+						IPACMDBG_H("construct ODU header only, embms_flag (%d) \n", IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable);
 					}
 				}
 				/* if ODU in bridge mode, directly return */
 				if(IPACM_Iface::ipacmcfg->ipacm_odu_router_mode == false)
 				{
-				  return;
+					IPACMDBG_H("ODU is in bridge mode, no action \n");
+					return;
 				}
-
 			}
 
 			if (ipa_interface_index == ipa_if_num)
@@ -732,6 +734,14 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 
 			IPACMDBG_H("Received IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT event. \n");
 			IPACMDBG_H("check iface %s category: %d\n",IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat);
+			/* if ODU in bridge mode, directly return */
+			if ((ipa_interface_index == ipa_if_num) && (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
+					&& (IPACM_Iface::ipacmcfg->ipacm_odu_router_mode == false))
+			{
+				IPACMDBG_H("ODU is in bridge mode, no action \n");
+				return;
+			}
+
 			if (ipa_interface_index == ipa_if_num)
 			{
 #ifdef FEATURE_ETH_BRIDGE_LE
@@ -760,7 +770,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				eth_bridge_post_lan_client_event(data->mac_addr, IPA_ETH_BRIDGE_LAN_CLIENT_DEL_EVENT);
 				eth_bridge_del_lan_client(data->mac_addr);
 #endif
-				IPACMDBG_H("ETH iface delete client \n");
+				IPACMDBG_H("LAN iface delete client \n");
 				handle_eth_client_down_evt(data->mac_addr);
 				handle_lan2lan_client_active(data, IPA_LAN_CLIENT_INACTIVE);
 				return;
@@ -1362,7 +1372,7 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 		flt_rule_entry.at_rear = true;
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
-		if(IPACM_Wan::cradle_backhaul_is_wan_bridge == true)
+		if(IPACM_Wan::isWan_Bridge_Mode())
 		{
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 		}
@@ -1520,7 +1530,7 @@ int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
 	char index[ETH_IFACE_INDEX_LEN];
 	struct ipa_ioc_copy_hdr sCopyHeader;
 	struct ipa_ioc_add_hdr *pHeaderDescriptor = NULL;
-    uint32_t cnt;
+	uint32_t cnt;
 	int clnt_indx;
 
 	clnt_indx = get_eth_client_index(mac_addr);
@@ -2020,11 +2030,9 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 		            				 get_client_memptr(eth_client, eth_index)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6[v6_num], iptype);
 
 			        /*Copy same rule to v6 WAN RT TBL*/
-  	                strncpy(rt_rule->rt_tbl_name,
-  	                 					IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
-  	                 					sizeof(rt_rule->rt_tbl_name));
+				strncpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, sizeof(rt_rule->rt_tbl_name));
 
-                    /* Downlink traffic from Wan iface, directly through IPA */
+				/* Downlink traffic from Wan iface, directly through IPA */
 					rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
 			        memcpy(&rt_rule_entry->rule.attrib,
 						 &tx_prop->tx[tx_index].attrib,
@@ -2250,7 +2258,7 @@ int IPACM_Lan::handle_odu_route_add()
 
 	if(tx_prop == NULL)
 	{
-	  IPACMDBG("No tx properties, ignore default route setting\n");
+	  IPACMDBG_H("No tx properties, ignore default route setting\n");
 	  return IPACM_SUCCESS;
 	}
 
@@ -2268,25 +2276,25 @@ int IPACM_Lan::handle_odu_route_add()
 	rt_rule->num_rules = (uint8_t)NUM;
 
 
-	IPACMDBG(" WAN table created %s \n", rt_rule->rt_tbl_name);
+	IPACMDBG_H("WAN table created %s \n", rt_rule->rt_tbl_name);
 	rt_rule_entry = &rt_rule->rules[0];
 	rt_rule_entry->at_rear = true;
 
 	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
 	{
 
-	    if (IPA_IP_v4 == tx_prop->tx[tx_index].ip)
-	    {
-	    	strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v4.name);
+		if (IPA_IP_v4 == tx_prop->tx[tx_index].ip)
+		{
+			strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v4.name);
 			rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v4;
 			rt_rule->ip = IPA_IP_v4;
-	    }
-	    else
-	    {
-	    	strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v6.name);
+		}
+		else
+		{
+			strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v6.name);
 			rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v6;
 			rt_rule->ip = IPA_IP_v6;
-	    }
+		}
 
 		rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
 		memcpy(&rt_rule_entry->rule.attrib,
@@ -2300,13 +2308,13 @@ int IPACM_Lan::handle_odu_route_add()
 			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0;
 
 			if (false == m_routing.AddRoutingRule(rt_rule))
-		    {
-		    	IPACMERR("Routing rule addition failed!\n");
-		    	free(rt_rule);
-		    	return IPACM_FAILURE;
-		    }
+			{
+				IPACMERR("Routing rule addition failed!\n");
+				free(rt_rule);
+				return IPACM_FAILURE;
+			}
 			odu_route_rule_v4_hdl[tx_index] = rt_rule_entry->rt_rule_hdl;
-		    IPACMDBG("Got ipv4 ODU-route rule hdl:0x%x,tx:%d,ip-type: %d \n",
+			IPACMDBG_H("Got ipv4 ODU-route rule hdl:0x%x,tx:%d,ip-type: %d \n",
 						 odu_route_rule_v4_hdl[tx_index],
 						 tx_index,
 						 IPA_IP_v4);
@@ -2323,18 +2331,17 @@ int IPACM_Lan::handle_odu_route_add()
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
 
 			if (false == m_routing.AddRoutingRule(rt_rule))
-		    {
-		    	IPACMERR("Routing rule addition failed!\n");
-		    	free(rt_rule);
-		    	return IPACM_FAILURE;
+			{
+				IPACMERR("Routing rule addition failed!\n");
+				free(rt_rule);
+				return IPACM_FAILURE;
 			}
 			odu_route_rule_v6_hdl[tx_index] = rt_rule_entry->rt_rule_hdl;
-			IPACMDBG("Set ipv6 ODU-route rule hdl for v6_lan_table:0x%x,tx:%d,ip-type: %d \n",
-		                 odu_route_rule_v6_hdl[tx_index],
-		                 tx_index,
-		                 IPA_IP_v6);
+			IPACMDBG_H("Set ipv6 ODU-route rule hdl for v6_lan_table:0x%x,tx:%d,ip-type: %d \n",
+					odu_route_rule_v6_hdl[tx_index],
+					tx_index,
+					IPA_IP_v6);
 		}
-
 	}
 	free(rt_rule);
 	return IPACM_SUCCESS;
@@ -2347,37 +2354,37 @@ int IPACM_Lan::handle_odu_route_del()
 
 	if(tx_prop == NULL)
 	{
-	  IPACMDBG("No tx properties, ignore delete default route setting\n");
-	  return IPACM_SUCCESS;
+		IPACMDBG_H("No tx properties, ignore delete default route setting\n");
+		return IPACM_SUCCESS;
 	}
 
-		for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+	for (tx_index = 0; tx_index < iface_query->num_tx_props; tx_index++)
+	{
+		if (tx_prop->tx[tx_index].ip == IPA_IP_v4)
 		{
-			if (tx_prop->tx[tx_index].ip == IPA_IP_v4)
-			{
-		    	IPACMDBG("Tx:%d, ip-type: %d match ip-type: %d, RT-rule deleted\n",
-		    					    tx_index, tx_prop->tx[tx_index].ip,IPA_IP_v4);
+			IPACMDBG_H("Tx:%d, ip-type: %d match ip-type: %d, RT-rule deleted\n",
+					tx_index, tx_prop->tx[tx_index].ip,IPA_IP_v4);
 
-				if (m_routing.DeleteRoutingHdl(odu_route_rule_v4_hdl[tx_index], IPA_IP_v4)
-						== false)
-				{
-					IPACMDBG("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n", IPA_IP_v4, odu_route_rule_v4_hdl[tx_index], tx_index);
-					return IPACM_FAILURE;
-				}
-			}
-			else
+			if (m_routing.DeleteRoutingHdl(odu_route_rule_v4_hdl[tx_index], IPA_IP_v4)
+					== false)
 			{
-		    	IPACMDBG("Tx:%d, ip-type: %d match ip-type: %d, RT-rule deleted\n",
-		    					    tx_index, tx_prop->tx[tx_index].ip,IPA_IP_v6);
-
-				if (m_routing.DeleteRoutingHdl(odu_route_rule_v6_hdl[tx_index], IPA_IP_v6)
-						== false)
-				{
-					IPACMDBG("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n", IPA_IP_v6, odu_route_rule_v6_hdl[tx_index], tx_index);
-					return IPACM_FAILURE;
-				}
+				IPACMERR("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n", IPA_IP_v4, odu_route_rule_v4_hdl[tx_index], tx_index);
+				return IPACM_FAILURE;
 			}
 		}
+		else
+		{
+			IPACMDBG_H("Tx:%d, ip-type: %d match ip-type: %d, RT-rule deleted\n",
+					tx_index, tx_prop->tx[tx_index].ip,IPA_IP_v6);
+
+			if (m_routing.DeleteRoutingHdl(odu_route_rule_v6_hdl[tx_index], IPA_IP_v6)
+					== false)
+			{
+				IPACMERR("IP-family:%d, Routing rule(hdl:0x%x) deletion failed with tx_index %d!\n", IPA_IP_v6, odu_route_rule_v6_hdl[tx_index], tx_index);
+				return IPACM_FAILURE;
+			}
+		}
+	}
 
 	return IPACM_SUCCESS;
 }
@@ -2514,12 +2521,13 @@ int IPACM_Lan::handle_down_evt()
 	int res = IPACM_SUCCESS;
 	uint32_t temp_eth_bridge_flt_rule[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
 
+	IPACMDBG_H("lan handle_down_evt\n ");
 	if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF)
 	{
 		/* delete ODU default RT rules */
 		if (IPACM_Iface::ipacmcfg->ipacm_odu_embms_enable == true)
 		{
-			IPACMDBG_H(" eMBMS enable, delete eMBMS DL RT rule\n");
+			IPACMDBG_H("eMBMS enable, delete eMBMS DL RT rule\n");
 			handle_odu_route_del();
 		}
 
@@ -2529,11 +2537,11 @@ int IPACM_Lan::handle_down_evt()
 			if (m_header.DeleteHeaderHdl(ODU_hdr_hdl_v4)
 					== false)
 			{
-					IPACMDBG("ODU ipv4 header delete fail\n");
+					IPACMERR("ODU ipv4 header delete fail\n");
 					res = IPACM_FAILURE;
 					goto fail;
 			}
-			IPACMDBG("ODU ipv4 header delete success\n");
+			IPACMDBG_H("ODU ipv4 header delete success\n");
 		}
 
 		if (ipv6_header_set)
@@ -2541,11 +2549,11 @@ int IPACM_Lan::handle_down_evt()
 			if (m_header.DeleteHeaderHdl(ODU_hdr_hdl_v6)
 					== false)
 			{
-				IPACMDBG("ODU ipv6 header delete fail\n");
+				IPACMERR("ODU ipv6 header delete fail\n");
 				res = IPACM_FAILURE;
 				goto fail;
 			}
-			IPACMDBG("ODU ipv6 header delete success\n");
+			IPACMERR("ODU ipv6 header delete success\n");
 		}
 	}
 
@@ -2554,7 +2562,6 @@ int IPACM_Lan::handle_down_evt()
 	{
 		goto fail;
 	}
-	IPACMDBG_H("lan handle_down_evt\n ");
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == LAN_IF)
@@ -2701,7 +2708,7 @@ int IPACM_Lan::handle_down_evt()
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
 #endif
 	}
-    IPACMDBG_H("Finished delete default iface ipv4 filtering rules \n ");
+	IPACMDBG_H("Finished delete default iface ipv4 filtering rules \n ");
 
 	if (ip_type != IPA_IP_v4 && rx_prop != NULL)
 	{
@@ -2786,7 +2793,7 @@ int IPACM_Lan::handle_down_evt()
 		IPACMDBG_H("Deleted lan2lan IPv6 flt rules.\n");
 #endif
 	}
-    IPACMDBG_H("Finished delete default iface ipv6 filtering rules \n ");
+	IPACMDBG_H("Finished delete default iface ipv6 filtering rules \n ");
 
 	if (ip_type != IPA_IP_v6)
 	{
@@ -3037,7 +3044,18 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 	flt_rule_entry.rule.to_uc = 0;
 	flt_rule_entry.rule.eq_attrib_type = 1;
 	if(iptype == IPA_IP_v4)
-		flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT;
+	{
+		if (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF &&
+			IPACM_Wan::isWan_Bridge_Mode())
+		{
+			IPACMDBG_H("WAN, ODU are in bridge mode \n");
+			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+		}
+		else
+		{
+			flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT;
+		}
+	}
 	else if(iptype == IPA_IP_v6)
 		flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 	else
@@ -5824,6 +5842,11 @@ int IPACM_Lan::add_hdr_proc_ctx()
 		if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == LAN_IF ||
 			(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == ODU_IF))
 		{
+			if(IPACM_Iface::ipacmcfg->ipacm_odu_router_mode == false)
+			{
+				IPACMDBG_H("ODU is in bridge mode, do not set CPE to USB and USB to CPE hdr proc ctx.\n");
+				return res;
+			}
 			if(IPACM_Lan::is_cpe_up == true && IPACM_Lan::is_usb_up == true &&
 				IPACM_Lan::cpe_to_usb_hdr_proc_ctx.valid == false && IPACM_Lan::usb_to_cpe_hdr_proc_ctx.valid == false)
 			{
