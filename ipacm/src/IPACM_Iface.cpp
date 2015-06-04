@@ -543,15 +543,15 @@ int IPACM_Iface::query_iface_property(void)
 			close(fd);
 			return IPACM_FAILURE;
 		}
-	memcpy(tx_prop->name, dev_name, sizeof(tx_prop->name));
-	tx_prop->num_tx_props = iface_query->num_tx_props;
+		memcpy(tx_prop->name, dev_name, sizeof(tx_prop->name));
+		tx_prop->num_tx_props = iface_query->num_tx_props;
 
-	if (ioctl(fd, IPA_IOC_QUERY_INTF_TX_PROPS, tx_prop) < 0)
-	{
-		PERROR("ioctl IPA_IOC_QUERY_INTF_TX_PROPS failed\n");
-		/* tx_prop memory will free when iface-down*/
-		res = IPACM_FAILURE;
-	}
+		if (ioctl(fd, IPA_IOC_QUERY_INTF_TX_PROPS, tx_prop) < 0)
+		{
+			PERROR("ioctl IPA_IOC_QUERY_INTF_TX_PROPS failed\n");
+			/* tx_prop memory will free when iface-down*/
+			res = IPACM_FAILURE;
+		}
 
 		if (res != IPACM_FAILURE)
 		{
@@ -562,12 +562,28 @@ int IPACM_Iface::query_iface_property(void)
 						tx_prop->tx[cnt].ip, tx_prop->tx[cnt].dst_pipe,
 						tx_prop->tx[cnt].alt_dst_pipe,
 						tx_prop->tx[cnt].hdr_name);
+
+				if (tx_prop->tx[cnt].dst_pipe == 0)
+				{
+					IPACMERR("Tx(%d): wrong tx property: dst_pipe: 0.\n", cnt);
+					close(fd);
+					return IPACM_FAILURE;
+				}
+				if (tx_prop->tx[cnt].alt_dst_pipe == 0 &&
+					((memcmp(dev_name, "wlan0", sizeof("wlan0")) == 0) ||
+					(memcmp(dev_name, "wlan1", sizeof("wlan1")) == 0)))
+				{
+					IPACMERR("Tx(%d): wrong tx property: alt_dst_pipe: 0. \n", cnt);
+					close(fd);
+					return IPACM_FAILURE;
+				}
+
 			}
 		}
 
 	}
 
-		if (iface_query->num_rx_props > 0)
+	if (iface_query->num_rx_props > 0)
 	{
 		rx_prop = (struct ipa_ioc_query_intf_rx_props *)
 			 calloc(1, sizeof(struct ipa_ioc_query_intf_rx_props) +
@@ -578,16 +594,16 @@ int IPACM_Iface::query_iface_property(void)
 			close(fd);
 			return IPACM_FAILURE;
 		}
-	memcpy(rx_prop->name, dev_name,
+		memcpy(rx_prop->name, dev_name,
 				 sizeof(rx_prop->name));
-	rx_prop->num_rx_props = iface_query->num_rx_props;
+		rx_prop->num_rx_props = iface_query->num_rx_props;
 
-	if (ioctl(fd, IPA_IOC_QUERY_INTF_RX_PROPS, rx_prop) < 0)
-	{
-		PERROR("ioctl IPA_IOC_QUERY_INTF_RX_PROPS failed\n");
-		/* rx_prop memory will free when iface-down*/
-		res = IPACM_FAILURE;
-	}
+		if (ioctl(fd, IPA_IOC_QUERY_INTF_RX_PROPS, rx_prop) < 0)
+		{
+			PERROR("ioctl IPA_IOC_QUERY_INTF_RX_PROPS failed\n");
+			/* rx_prop memory will free when iface-down*/
+			res = IPACM_FAILURE;
+		}
 
 		if (res != IPACM_FAILURE)
 		{
