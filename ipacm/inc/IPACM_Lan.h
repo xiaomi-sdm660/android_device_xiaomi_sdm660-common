@@ -74,6 +74,12 @@ typedef enum
 	SRC_LAN
 } eth_bridge_src_iface;
 
+typedef enum
+{
+	DST_WLAN,
+	DST_LAN
+} eth_bridge_dst_iface;
+
 /* Support multiple eth client */
 typedef struct _eth_client_rt_hdl
 {

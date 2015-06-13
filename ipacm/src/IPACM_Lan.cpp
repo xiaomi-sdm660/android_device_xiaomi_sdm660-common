@@ -1106,7 +1106,6 @@ if (data->iptype == IPA_IP_v4)
 		/* initial multicast/broadcast/fragment filter rule */
 #ifdef FEATURE_ETH_BRIDGE_LE
 		init_fl_rule(data->iptype);
-		eth_bridge_add_wlan_guest_ap_flt_rule(data->iptype);
 		eth_bridge_handle_dummy_wlan_client_flt_rule(data->iptype);
 		eth_bridge_handle_dummy_lan_client_flt_rule(data->iptype);
 		eth_bridge_install_cache_wlan_client_flt_rule(data->iptype);
@@ -1204,7 +1203,6 @@ if (data->iptype == IPA_IP_v4)
 		{
 			/* initial multicast/broadcast/fragment filter rule */
 #ifdef FEATURE_ETH_BRIDGE_LE
-			eth_bridge_add_wlan_guest_ap_flt_rule(data->iptype);
 			eth_bridge_handle_dummy_wlan_client_flt_rule(data->iptype);
 			eth_bridge_handle_dummy_lan_client_flt_rule(data->iptype);
 			eth_bridge_install_cache_wlan_client_flt_rule(data->iptype);
