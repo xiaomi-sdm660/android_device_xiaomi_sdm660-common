@@ -1,4 +1,4 @@
-/* Copyright (c) 2013,2015 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,45 +27,41 @@
  *
  */
 
-#ifndef __LOC_DELAY_H__
-#define __LOC_DELAY_H__
+#ifndef __LOC_TIMER_CPP_H__
+#define __LOC_TIMER_CPP_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 #include <stddef.h>
+#include <log_util.h>
 
-/*
-    user_data: client context pointer, passthrough. Originally received
-               from calling client when loc_timer_start() is called.
-    result:    0 if timer successfully timed out; else timer failed.
-*/
-typedef void (*loc_timer_callback)(void *user_data, int32_t result);
+// opaque class to provide service implementation.
+class LocTimerDelegate;
 
+// LocTimer client must extend this class and implementthe callback.
+// start() / stop() methods are to arm / disarm timer.
+class LocTimer
+{
+    LocTimerDelegate* mTimer;
+public:
+    inline LocTimer() : mTimer(NULL) {}
+    inline virtual ~LocTimer() { stop(); }
 
-/*
-    delay_msec:         timeout value for the timer.
-    loc_timer_callback: callback function pointer, implemented by client.
-    user_data:          client context pointer, passthrough.  Will be
-                        returned when loc_timer_callback() is called.
-    wakeOnExpire:       true if to wake up CPU (if sleeping) upon timer
-                                expiration and notify the client.
-                        false if to wait until next time CPU wakes up (if
-                                 sleeping) and then notify the client.
-    Returns the handle, which can be used to stop the timer
-*/
-void* loc_timer_start(uint64_t delay_msec,
-                      loc_timer_callback,
-                      void *user_data,
-                      bool wake_on_expire=false);
+    // timeOutInMs:  timeout delay in ms
+    // wakeOnExpire: true if to wake up CPU (if sleeping) upon timer
+    //                        expiration and notify the client.
+    //               false if to wait until next time CPU wakes up (if
+    //                        sleeping) and then notify the client.
+    // return:       true on success;
+    //               false on failure, e.g. timer is already running.
+    bool start(uint32_t timeOutInMs, bool wakeOnExpire);
 
-/*
-    handle becomes invalid upon the return of the callback
-*/
-void loc_timer_stop(void*& handle);
+    // return:       true on success;
+    //               false on failure, e.g. timer is not running.
+    bool stop();
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+    //  LocTimer client Should implement this method.
+    //  This method is used for timeout calling back to client. This method
+    //  should be short enough (eg: send a message to your own thread).
+    virtual void timeOutCallback() = 0;
+};
 
 #endif //__LOC_DELAY_H__

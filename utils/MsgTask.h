@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013,2015 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,9 +29,8 @@
 #ifndef __MSG_TASK__
 #define __MSG_TASK__
 
-#include <stdbool.h>
-#include <ctype.h>
-#include <string.h>
+#include <LocThread.h>
+// TODO: remove this include in the next patch
 #include <pthread.h>
 
 namespace loc_core {
@@ -43,23 +42,37 @@ struct LocMsg {
     inline virtual void log() const {}
 };
 
-class MsgTask {
+class MsgTask : public LocRunnable{
+    const void* mQ;
+    LocThread* mThread;
+    friend class LocThreadDelegate;
+protected:
+    virtual ~MsgTask();
 public:
+    MsgTask(const char* threadName = NULL, bool joinable = true);
+    // this obj will be deleted once thread is deleted
+    void destroy();
+    void sendMsg(const LocMsg* msg) const;
+    // Overrides of LocRunnable methods
+    // This method will be repeated called until it returns false; or
+    // until thread is stopped.
+    virtual bool run();
+
+    // The method to be run before thread loop (conditionally repeatedly)
+    // calls run()
+    virtual void prerun();
+
+    // The method to be run after thread loop (conditionally repeatedly)
+    // calls run()
+    inline virtual void postrun() {}
+
+    // TODO: remove the below in the next patch
     typedef void* (*tStart)(void*);
     typedef pthread_t (*tCreate)(const char* name, tStart start, void* arg);
     typedef int (*tAssociate)();
     MsgTask(tCreate tCreator, const char* threadName);
     MsgTask(tAssociate tAssociator, const char* threadName);
-    ~MsgTask();
-    void sendMsg(const LocMsg* msg) const;
     void associate(tAssociate tAssociator) const;
-
-private:
-    const void* mQ;
-    tAssociate mAssociator;
-    MsgTask(const void* q, tAssociate associator);
-    static void* loopMain(void* copy);
-    void createPThread(const char* name);
 };
 
 } // namespace loc_core
