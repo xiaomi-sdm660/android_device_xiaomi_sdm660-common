@@ -251,8 +251,6 @@ protected:
 
 	virtual int eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype);
 
-	virtual int eth_bridge_add_wlan_guest_ap_flt_rule(ipa_ip_type iptype);
-
 	virtual int eth_bridge_handle_dummy_lan_client_flt_rule(ipa_ip_type iptype);
 
 	int eth_bridge_add_lan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
