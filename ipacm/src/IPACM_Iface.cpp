@@ -853,7 +853,53 @@ int IPACM_Iface::init_fl_rule(ipa_ip_type iptype)
 		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = 0X00000000;
 		memcpy(&(m_pFilteringTable->rules[2]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
 
+#ifdef FEATURE_IPA_ANDROID
+		IPACMDBG_H("Add TCP ctrl rules: total num %d\n", IPV6_DEFAULT_FILTERTING_RULES);
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
+		flt_rule_entry.at_rear = true;
+		flt_rule_entry.flt_rule_hdl = -1;
+		flt_rule_entry.status = -1;
+
+		flt_rule_entry.rule.retain_hdr = 1;
+		flt_rule_entry.rule.to_uc = 0;
+		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+		flt_rule_entry.rule.eq_attrib_type = 1;
+
+		flt_rule_entry.rule.eq_attrib.rule_eq_bitmap = 0;
+
+		if(rx_prop->rx[0].attrib.attrib_mask & IPA_FLT_META_DATA)
+		{
+			flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<14);
+			flt_rule_entry.rule.eq_attrib.metadata_meq32_present = 1;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32.offset = 0;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32.value = rx_prop->rx[0].attrib.meta_data;
+			flt_rule_entry.rule.eq_attrib.metadata_meq32.mask = rx_prop->rx[0].attrib.meta_data_mask;
+		}
+
+		flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<1);
+		flt_rule_entry.rule.eq_attrib.protocol_eq_present = 1;
+		flt_rule_entry.rule.eq_attrib.protocol_eq = IPACM_FIREWALL_IPPROTO_TCP;
+
+		flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<8);
+		flt_rule_entry.rule.eq_attrib.num_ihl_offset_meq_32 = 1;
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].offset = 12;
+
+		/* add TCP FIN rule*/
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_FIN_SHIFT);
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_FIN_SHIFT);
+		memcpy(&(m_pFilteringTable->rules[3]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+
+		/* add TCP SYN rule*/
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_SYN_SHIFT);
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_SYN_SHIFT);
+		memcpy(&(m_pFilteringTable->rules[4]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+
+		/* add TCP RST rule*/
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_RST_SHIFT);
+		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_RST_SHIFT);
+		memcpy(&(m_pFilteringTable->rules[5]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+#endif
 		if (m_filtering.AddFilteringRule(m_pFilteringTable) == false)
 		{
 			IPACMERR("Error Adding Filtering rule, aborting...\n");
