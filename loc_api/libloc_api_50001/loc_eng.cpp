@@ -815,8 +815,14 @@ void LocEngReportPosition::proc() const {
             locEng->adapter->setInSession(false);
         }
 
+        LOC_LOGV("LocEngReportPosition::proc() - generateNmea: %d, position source: %d, "
+                 "engine_status: %d, isInSession: %d",
+                        locEng->generateNmea, mLocation.position_source,
+                        locEng->engine_status, locEng->adapter->isInSession());
+
         if (locEng->generateNmea &&
             mLocation.position_source == ULP_LOCATION_IS_FROM_GNSS &&
+            locEng->adapter->isInSession() &&
             mTechMask & (LOC_POS_TECH_MASK_SATELLITE |
                          LOC_POS_TECH_MASK_SENSORS |
                          LOC_POS_TECH_MASK_HYBRID))
