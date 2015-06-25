@@ -51,7 +51,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define IPA_NUM_DEFAULT_WAN_FILTER_RULES 3 /*1 for v4, 2 for v6*/
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV4 2
+
+#ifdef FEATURE_IPA_ANDROID
+#define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 6
+#else
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 3
+#endif
 
 #define NETWORK_STATS "echo %s %lu %lu %lu %lu > %s"
 #define IPA_NETWORK_STATS_FILE_NAME "/data/misc/ipa/network_stats"
