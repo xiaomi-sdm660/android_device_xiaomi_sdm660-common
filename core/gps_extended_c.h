@@ -413,7 +413,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_GDT_UPLOAD_BEGIN_REQ,              // GDT upload start request
     LOC_API_ADAPTER_GDT_UPLOAD_END_REQ,                // GDT upload end request
     LOC_API_ADAPTER_GNSS_MEASUREMENT,                  // GNSS Measurement report
-    LOC_API_ADAPTER_REQUEST_TIMEZONE,                  // Timezone injection request
+
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -442,7 +442,6 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_GDT_UPLOAD_BEGIN_REQ             (1<<LOC_API_ADAPTER_GDT_UPLOAD_BEGIN_REQ)
 #define LOC_API_ADAPTER_BIT_GDT_UPLOAD_END_REQ               (1<<LOC_API_ADAPTER_GDT_UPLOAD_END_REQ)
 #define LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT                 (1<<LOC_API_ADAPTER_GNSS_MEASUREMENT)
-#define LOC_API_ADAPTER_BIT_REQUEST_TIMEZONE                 (1<<LOC_API_ADAPTER_REQUEST_TIMEZONE)
 
 typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
 
@@ -464,3 +463,4 @@ typedef uint32_t LOC_GPS_LOCK_MASK;
 #endif /* __cplusplus */
 
 #endif /* GPS_EXTENDED_C_H */
+
