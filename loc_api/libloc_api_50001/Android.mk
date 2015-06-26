@@ -41,7 +41,8 @@ LOCAL_CFLAGS += \
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
     $(TARGET_OUT_HEADERS)/libloc_core \
-    hardware/qcom/gps/loc_api/libloc_api_50001
+    hardware/qcom/gps/loc_api/libloc_api_50001 \
+    $(TARGET_OUT_HEADERS)/libflp
 
 LOCAL_COPY_HEADERS_TO:= libloc_eng/
 LOCAL_COPY_HEADERS:= \
@@ -94,7 +95,8 @@ endif
 ## Includes
 LOCAL_C_INCLUDES:= \
     $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core
+    $(TARGET_OUT_HEADERS)/libloc_core \
+    $(TARGET_OUT_HEADERS)/libflp
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_RELATIVE_PATH := hw
