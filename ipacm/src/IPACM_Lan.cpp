@@ -972,7 +972,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 	case IPA_TETHERING_STATS_UPDATE_EVENT:
 	{
 		IPACMDBG_H("Received IPA_TETHERING_STATS_UPDATE_EVENT event.\n");
-		if (IPACM_Wan::isWanUP())
+		if (IPACM_Wan::isWanUP() || IPACM_Wan::isWanUP_V6())
 		{
 			if(IPACM_Wan::backhaul_is_sta_mode == false) /* LTE */
 			{
