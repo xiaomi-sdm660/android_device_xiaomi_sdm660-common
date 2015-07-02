@@ -95,10 +95,6 @@ private:
 	eth_bridge_client_flt_info eth_bridge_lan_client_flt_info[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
 	int lan_client_flt_info_count;
 
-	uint32_t wlan_guest_ap_flt_rule_hdl_v4[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
-
-	uint32_t wlan_guest_ap_flt_rule_hdl_v6[IPA_GUEST_AP_IPv6_FLT_RULE_ENTRIES];
-
 	static lan2lan_flt_rule_hdl self_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
 	static lan2lan_flt_rule_hdl self_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
 
@@ -116,8 +112,6 @@ private:
 	int wlan_client_rt_from_wlan_info_count_v4;
 	eth_bridge_client_rt_info* eth_bridge_wlan_client_rt_from_wlan_info_v6;
 	int wlan_client_rt_from_wlan_info_count_v6;
-
-	virtual int eth_bridge_add_wlan_guest_ap_flt_rule(ipa_ip_type iptype);
 
 	int eth_bridge_install_wlan_guest_ap_ipv6_flt_rule();
 

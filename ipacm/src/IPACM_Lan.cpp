@@ -1308,7 +1308,7 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			flt_rule_entry.status = -1;
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 
-                        /* Support priave subnet feature including guest-AP can't talk to primary AP etc */
+                        /* Support private subnet feature including guest-AP can't talk to primary AP etc */
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
 			IPACMDBG_H(" private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
 
@@ -5008,12 +5008,6 @@ int IPACM_Lan::eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype)
 fail:
 	free(pFilteringTable);
 	return res;
-}
-
-int IPACM_Lan::eth_bridge_add_wlan_guest_ap_flt_rule(ipa_ip_type iptype)
-{
-	IPACMDBG_H("No need to add WLAN guest AP flt rule on USB pipe.\n");
-	return IPACM_SUCCESS;
 }
 
 int IPACM_Lan::eth_bridge_handle_dummy_lan_client_flt_rule(ipa_ip_type iptype)
