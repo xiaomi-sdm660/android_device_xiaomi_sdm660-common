@@ -6774,7 +6774,8 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 	uint64_t num_ul_packets, num_ul_bytes;
 	uint64_t num_dl_packets, num_dl_bytes;
 	bool ul_pipe_found, dl_pipe_found;
-	char command[MAX_COMMAND_LEN];
+	FILE *fp = NULL;
+
 	fd = open(IPA_DEVICE_NAME, O_RDWR);
 	if (fd < 0)
 	{
@@ -6843,6 +6844,7 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 			}
 		}
 	}
+	close(fd);
 
 	if (ul_pipe_found || dl_pipe_found)
 	{
@@ -6853,17 +6855,22 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 								num_dl_bytes,
 									dev_name,
 										IPACM_Wan::wan_up_dev_name);
-			memset(command, 0, sizeof(command));
-			snprintf(command, sizeof(command), PIPE_STATS,
+		fp = fopen(IPA_PIPE_STATS_FILE_NAME, "w");
+		if ( fp == NULL )
+		{
+			IPACMERR("Failed to write pipe stats to %s, error is %d - %s\n",
+					IPA_PIPE_STATS_FILE_NAME, errno, strerror(errno));
+			return IPACM_FAILURE;
+		}
+
+		fprintf(fp, PIPE_STATS,
 				dev_name,
 					IPACM_Wan::wan_up_dev_name,
 						num_ul_bytes,
 						num_ul_packets,
 							    num_dl_bytes,
-								num_dl_packets,
-										IPA_PIPE_STATS_FILE_NAME);
-			system(command);
+							num_dl_packets);
+		fclose(fp);
 	}
-	close(fd);
 	return IPACM_SUCCESS;
 }
