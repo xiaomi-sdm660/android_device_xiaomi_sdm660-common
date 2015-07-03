@@ -64,7 +64,6 @@ public:
     virtual void stopFixInt();
     virtual void getZppInt();
     virtual void setUlpProxy(UlpProxyBase* ulp);
-    virtual void shutdown();
 };
 
 typedef void (*loc_msg_sender)(void* loc_eng_data_p, void* msgp);
@@ -305,6 +304,7 @@ public:
         mPowerVote = powerOn ? (mPowerVote | POWER_VOTE_VALUE) :
                                (mPowerVote & ~POWER_VOTE_VALUE);
         requestPowerVote();
+        mContext->modemPowerVote(powerOn);
     }
     inline bool getPowerVote() const {
         return (mPowerVote & POWER_VOTE_VALUE) != 0 ;

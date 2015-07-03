@@ -53,10 +53,6 @@ void LocInternalAdapter::getZppInt() {
     sendMsg(new LocEngGetZpp(mLocEngAdapter));
 }
 
-void LocInternalAdapter::shutdown() {
-    sendMsg(new LocEngShutdown(mLocEngAdapter));
-}
-
 LocEngAdapter::LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
                              void* owner, ContextBase* context,
                              MsgTask::tCreate tCreator) :

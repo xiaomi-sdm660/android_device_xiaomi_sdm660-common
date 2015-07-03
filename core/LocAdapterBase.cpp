@@ -136,10 +136,6 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
-    shutdown()
-DEFAULT_IMPL()
-
-void LocAdapterBase::
     reportGpsMeasurementData(GpsData &gpsMeasurementData)
 DEFAULT_IMPL()
 } // namespace loc_core
