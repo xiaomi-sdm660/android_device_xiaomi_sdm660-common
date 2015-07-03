@@ -63,9 +63,12 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_GEOFENCE 0X0008
 /** Positioin is from Hardware FLP */
 #define ULP_LOCATION_IS_FROM_HW_FLP   0x0010
-#define ULP_LOCATION_IS_FROM_NLP   0x0020
+/** Position is from NLP */
+#define ULP_LOCATION_IS_FROM_NLP      0x0020
+/** Position is from PIP */
+#define ULP_LOCATION_IS_FROM_PIP      0x0040
 /** Position is from external DR solution*/
-#define ULP_LOCATION_IS_FROM_EXT_DR 0X0040
+#define ULP_LOCATION_IS_FROM_EXT_DR   0X0080
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 
