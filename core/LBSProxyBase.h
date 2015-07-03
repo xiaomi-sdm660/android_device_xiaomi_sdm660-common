@@ -53,6 +53,7 @@ public:
                                    unsigned long capabilities) const {}
     inline virtual bool hasAgpsExtendedCapabilities() const { return false; }
     inline virtual bool hasCPIExtendedCapabilities() const { return false; }
+    inline virtual void modemPowerVote(bool power) const {}
     virtual void injectFeatureConfig(ContextBase* context) const {}
 };
 

@@ -58,6 +58,7 @@ public:
     inline LocApiProxyBase* getLocApiProxy() { return mLocApiProxy; }
     inline bool hasAgpsExtendedCapabilities() { return mLBSProxy->hasAgpsExtendedCapabilities(); }
     inline bool hasCPIExtendedCapabilities() { return mLBSProxy->hasCPIExtendedCapabilities(); }
+    inline void modemPowerVote(bool power) const { return mLBSProxy->modemPowerVote(power); }
     inline void requestUlp(LocAdapterBase* adapter,
                            unsigned long capabilities) {
         mLBSProxy->requestUlp(adapter, capabilities);

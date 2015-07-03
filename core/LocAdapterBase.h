@@ -112,7 +112,6 @@ public:
     virtual bool requestNiNotify(GpsNiNotification &notify,
                                  const void* data);
     inline virtual bool isInSession() { return false; }
-    virtual void shutdown();
     ContextBase* getContext() const { return mContext; }
     virtual void reportGpsMeasurementData(GpsData &gpsMeasurementData);
 };
