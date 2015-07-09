@@ -4361,9 +4361,9 @@ int IPACM_Lan::post_lan2lan_client_disconnect_msg(ipa_ip_type iptype)
 					memset(lan_client, 0, sizeof(ipacm_event_lan_client));
 					lan_client->iptype = IPA_IP_v6;
 					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
-					lan_client->ipv6_addr[0] = get_client_memptr(eth_client, i)->v6_addr[j][0];
+					lan_client->ipv6_addr[1] = get_client_memptr(eth_client, i)->v6_addr[j][1];
+					lan_client->ipv6_addr[2] = get_client_memptr(eth_client, i)->v6_addr[j][2];
+					lan_client->ipv6_addr[3] = get_client_memptr(eth_client, i)->v6_addr[j][3];
 					lan_client->p_iface = this;
 
 					memset(&evt_data, 0, sizeof(ipacm_cmd_q_data));
