@@ -101,11 +101,7 @@ void MsgTask::associate(tAssociate tAssociator) const {
         LocAssociateMsg(tAssociate associator) :
             mAssociator(associator) {}
         inline virtual void proc() const {
-            static bool sAssociated = false;
-            if (!sAssociated) {
-                sAssociated = true;
-                mAssociator();
-            }
+            mAssociator();
         }
     };
     sendMsg(new LocAssociateMsg(tAssociator));
@@ -124,7 +120,7 @@ MsgTask::MsgTask(tAssociate tAssociator, const char* threadName)  :
     if (!mThread->start(threadName, this, false)) {
         delete mThread;
         mThread = NULL;
-    } else {
+    } else if (tAssociator != NULL){
         associate(tAssociator);
     }
 }
