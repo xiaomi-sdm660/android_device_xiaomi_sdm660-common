@@ -5544,7 +5544,8 @@ void IPACM_Wan::handle_wan_client_SCC_MCC_switch(bool isSCCMode, ipa_ip_type ipt
 /*handle eth client */
 int IPACM_Wan::handle_network_stats_update(ipa_get_apn_data_stats_resp_msg_v01 *data)
 {
-	char command[MAX_COMMAND_LEN];
+	FILE *fp = NULL;
+
 	for (int apn_index =0; apn_index < data->apn_data_stats_list_len; apn_index++)
 	{
 		if(data->apn_data_stats_list[apn_index].mux_id == ext_prop->ext[0].mux_id)
@@ -5555,15 +5556,21 @@ int IPACM_Wan::handle_network_stats_update(ipa_get_apn_data_stats_resp_msg_v01 *
 						data->apn_data_stats_list[apn_index].num_ul_bytes,
 							data->apn_data_stats_list[apn_index].num_dl_packets,
 								data->apn_data_stats_list[apn_index].num_dl_bytes);
-			memset(command, 0, sizeof(command));
-			snprintf(command, sizeof(command), NETWORK_STATS,
+			fp = fopen(IPA_NETWORK_STATS_FILE_NAME, "w");
+			if ( fp == NULL )
+			{
+				IPACMERR("Failed to write pipe stats to %s, error is %d - %s\n",
+						IPA_NETWORK_STATS_FILE_NAME, errno, strerror(errno));
+				return IPACM_FAILURE;
+			}
+
+			fprintf(fp, NETWORK_STATS,
 				dev_name,
 					data->apn_data_stats_list[apn_index].num_ul_packets,
 						data->apn_data_stats_list[apn_index].num_ul_bytes,
 							data->apn_data_stats_list[apn_index].num_dl_packets,
-								data->apn_data_stats_list[apn_index].num_dl_bytes,
-									IPA_NETWORK_STATS_FILE_NAME);
-			system(command);
+								data->apn_data_stats_list[apn_index].num_dl_bytes);
+			fclose(fp);
 			break;
 		};
 	}

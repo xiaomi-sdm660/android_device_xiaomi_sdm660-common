@@ -58,7 +58,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 3
 #endif
 
-#define NETWORK_STATS "echo %s %lu %lu %lu %lu > %s"
+#define NETWORK_STATS "%s %lu %lu %lu %lu"
 #define IPA_NETWORK_STATS_FILE_NAME "/data/misc/ipa/network_stats"
 
 typedef struct _wan_client_rt_hdl
