@@ -45,7 +45,8 @@ typedef void (*loc_timer_callback)(void *user_data, int32_t result);
 
 /*
     delay_msec:         timeout value for the timer.
-    loc_timer_callback: callback function pointer, implemented by client.
+    cb_func:            callback function pointer, implemented by client.
+                        Can not be NULL.
     user_data:          client context pointer, passthrough.  Will be
                         returned when loc_timer_callback() is called.
     wakeOnExpire:       true if to wake up CPU (if sleeping) upon timer
@@ -53,9 +54,10 @@ typedef void (*loc_timer_callback)(void *user_data, int32_t result);
                         false if to wait until next time CPU wakes up (if
                                  sleeping) and then notify the client.
     Returns the handle, which can be used to stop the timer
+                        NULL, if timer start fails (e.g. if cb_func is NULL).
 */
 void* loc_timer_start(uint64_t delay_msec,
-                      loc_timer_callback,
+                      loc_timer_callback cb_func,
                       void *user_data,
                       bool wake_on_expire=false);
 

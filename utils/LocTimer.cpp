@@ -539,22 +539,38 @@ bool LocTimer::stop() {
 class LocTimerWrapper : public LocTimer {
     loc_timer_callback mCb;
     void* mCallerData;
+    static pthread_mutex_t mMutex;
+    inline ~LocTimerWrapper() { mCb = NULL; }
 public:
     inline LocTimerWrapper(loc_timer_callback cb, void* callerData) :
         mCb(cb), mCallerData(callerData) {}
+    inline bool isAlive() { return mCb != NULL; }
+    void destroy() {
+        pthread_mutex_lock(&mMutex);
+        if (isAlive()) {
+            delete this;
+        }
+        pthread_mutex_unlock(&mMutex);
+    }
     inline virtual void timeOutCallback() {
         mCb(mCallerData, 0);
-        delete this;
+        destroy();
     }
 };
+
+pthread_mutex_t LocTimerWrapper::mMutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* loc_timer_start(uint64_t msec, loc_timer_callback cb_func,
                       void *caller_data, bool wake_on_expire)
 {
-    LocTimerWrapper* locTimerWrapper = new LocTimerWrapper(cb_func, caller_data);
+    LocTimerWrapper* locTimerWrapper = NULL;
 
-    if (locTimerWrapper) {
-        locTimerWrapper->start(msec, wake_on_expire);
+    if (cb_func) {
+        locTimerWrapper = new LocTimerWrapper(cb_func, caller_data);
+
+        if (locTimerWrapper) {
+            locTimerWrapper->start(msec, wake_on_expire);
+        }
     }
 
     return locTimerWrapper;
@@ -565,7 +581,7 @@ void loc_timer_stop(void*&  handle)
     if (handle) {
         LocTimerWrapper* locTimerWrapper = (LocTimerWrapper*)(handle);
         locTimerWrapper->stop();
-        delete locTimerWrapper;
+        locTimerWrapper->destroy();
         handle = NULL;
     }
 }
