@@ -1663,6 +1663,7 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 
 				snprintf(index,sizeof(index), "%d", ipa_if_num);
 				strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
+				pHeaderDescriptor->hdr[0].name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 
 				if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WLAN_PARTIAL_HDR_NAME_v4, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
 				{
@@ -1768,6 +1769,7 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 
 				snprintf(index,sizeof(index), "%d", ipa_if_num);
 				strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
+				pHeaderDescriptor->hdr[0].name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 				if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WLAN_PARTIAL_HDR_NAME_v6, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
 				{
 					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
@@ -2019,10 +2021,10 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 				IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
 						wlan_index,
 						get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v4);
-				strncpy(rt_rule->rt_tbl_name,
+				strlcpy(rt_rule->rt_tbl_name,
 						IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name,
 						sizeof(rt_rule->rt_tbl_name));
-
+				rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 
 				if(IPACM_Iface::ipacmcfg->isMCC_Mode)
 				{
@@ -2065,10 +2067,10 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 							get_client_memptr(wlan_client, wlan_index)->hdr_hdl_v6);
 
 					/* v6 LAN_RT_TBL */
-					strncpy(rt_rule->rt_tbl_name,
+					strlcpy(rt_rule->rt_tbl_name,
 							IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
 							sizeof(rt_rule->rt_tbl_name));
-
+					rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 					/* Support QCMAP LAN traffic feature, send to A5 */
 					rt_rule_entry->rule.dst = iface_query->excp_pipe;
 					memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
@@ -2095,10 +2097,10 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 							get_client_memptr(wlan_client, wlan_index)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[v6_num], iptype);
 
 					/*Copy same rule to v6 WAN RT TBL*/
-					strncpy(rt_rule->rt_tbl_name,
+					strlcpy(rt_rule->rt_tbl_name,
 							IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
 							sizeof(rt_rule->rt_tbl_name));
-
+					rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 					/* Downlink traffic from Wan iface, directly through IPA */
 					if(IPACM_Iface::ipacmcfg->isMCC_Mode)
 					{
@@ -2915,7 +2917,7 @@ int IPACM_Wlan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* d
 
 				memset(pHeader->hdr[0].name, 0, sizeof(pHeader->hdr[0].name));
 				strlcpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_WLAN_HDR_NAME_V4, sizeof(pHeader->hdr[0].name));
-
+				pHeader->hdr[0].name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 				for(j=0; j<MAX_OFFLOAD_PAIR; j++)
 				{
 					if( lan2lan_hdr_hdl_v4[j].valid == false)
@@ -3032,7 +3034,7 @@ int IPACM_Wlan::add_lan2lan_hdr(ipa_ip_type iptype, uint8_t* src_mac, uint8_t* d
 
 				memset(pHeader->hdr[0].name, 0, sizeof(pHeader->hdr[0].name));
 				strlcpy(pHeader->hdr[0].name, IPA_LAN_TO_LAN_WLAN_HDR_NAME_V6, sizeof(pHeader->hdr[0].name));
-
+				pHeader->hdr[0].name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 
 				for(j=0; j<MAX_OFFLOAD_PAIR; j++)
 				{
@@ -4274,25 +4276,25 @@ int IPACM_Wlan::eth_bridge_add_wlan_client_rt_rule(uint8_t* mac, eth_bridge_src_
 	{
 		if(iptype == IPA_IP_v4)
 		{
-			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v4.name, sizeof(rt_rule_table->rt_tbl_name));
+			strlcpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v4.name, sizeof(rt_rule_table->rt_tbl_name));
 		}
 		else
 		{
-			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v6.name, sizeof(rt_rule_table->rt_tbl_name));
+			strlcpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_wlan_wlan_v6.name, sizeof(rt_rule_table->rt_tbl_name));
 		}
 	}
 	else
 	{
 		if(iptype == IPA_IP_v4)
 		{
-			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_lan_wlan_v4.name, sizeof(rt_rule_table->rt_tbl_name));
+			strlcpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_lan_wlan_v4.name, sizeof(rt_rule_table->rt_tbl_name));
 		}
 		else
 		{
-			strncpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_lan_wlan_v6.name, sizeof(rt_rule_table->rt_tbl_name));
+			strlcpy(rt_rule_table->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_eth_bridge_lan_wlan_v6.name, sizeof(rt_rule_table->rt_tbl_name));
 		}
 	}
-
+	rt_rule_table->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 	memset(&rt_rule, 0, sizeof(ipa_rt_rule_add));
 	rt_rule.at_rear = false;
 	rt_rule.status = -1;
