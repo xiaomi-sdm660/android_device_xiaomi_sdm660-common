@@ -477,7 +477,13 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						{
 							install_ipv6_icmp_flt_rule();
 						}
+
+#ifdef FEATURE_IPA_ANDROID
+						add_dummy_private_subnet_flt_rule(data->iptype);
+						handle_private_subnet_android(data->iptype);
+#else
 						handle_private_subnet(data->iptype);
+#endif
 
 						if (IPACM_Wan::isWanUP())
 						{
