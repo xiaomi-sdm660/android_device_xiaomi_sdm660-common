@@ -40,10 +40,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef IPACM_XML_H
 #define IPACM_XML_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <linux/msm_ipa.h>
 #include "IPACM_Defs.h"
 #include <stdio.h>
@@ -53,6 +49,10 @@ extern "C" {
 #include <stdint.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
   
 #define IPACM_ASSERT(a)                                     \
 if (!(a)) {                                                 \
