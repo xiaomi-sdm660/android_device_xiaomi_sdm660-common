@@ -267,7 +267,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 			{
 				if(IPACM_Iface::ipacmcfg->ipacm_odu_router_mode == true)
 				{
-					IPACMDBG("Creating ODU interface in router mode\n");
+					IPACMDBG_H("Creating ODU interface in router mode\n");
 					IPACM_Lan *odu = new IPACM_Lan(ipa_interface_index);
 					IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, odu);
@@ -289,14 +289,14 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 					IPACM_EvtDispatcher::registr(IPA_CRADLE_WAN_MODE_SWITCH, odu);
 					IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, odu);
-					IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", odu->dev_name, odu->ipa_if_num);
+					IPACMDBG_H("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", odu->dev_name, odu->ipa_if_num);
 					registr(ipa_interface_index, odu);
 					/* solve the new_addr comes earlier issue */
 					IPACM_Iface::iface_addr_query(if_index);
 				}
 				else
 				{
-					IPACMDBG("Creating ODU interface in bridge mode\n");
+					IPACMDBG_H("Creating ODU interface in bridge mode\n");
 					IPACM_Lan *odu = new IPACM_Lan(ipa_interface_index);
 					IPACM_EvtDispatcher::registr(IPA_ADDR_ADD_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT, odu);
@@ -304,7 +304,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 					IPACM_EvtDispatcher::registr(IPA_SW_ROUTING_DISABLE, odu);
 					IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, odu);
 					IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, odu);
-					IPACMDBG("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", odu->dev_name, odu->ipa_if_num);
+					IPACMDBG_H("ipa_LAN (%s):ipa_index (%d) instance open/registr ok\n", odu->dev_name, odu->ipa_if_num);
 					registr(ipa_interface_index, odu);
 					/* solve the new_addr comes earlier issue */
 					IPACM_Iface::iface_addr_query(if_index);
