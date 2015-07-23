@@ -479,7 +479,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		IPACMDBG_H("Received IPA_WAN_V6_DOWN in WLAN-instance and need clean up client IPv6 address \n");
 		/* reset wifi-client ipv6 rt-rules */
 		handle_wlan_client_reset_rt(IPA_IP_v6);
-		IPACMDBG_H("Backhaul is sta mode?%d\n", data_wan->is_sta);
+		IPACMDBG_H("Backhaul is sta mode ? %d\n", data_wan->is_sta);
 		if(data_wan->is_sta == false && wlan_ap_index > 0)
 		{
 			IPACMDBG_H("This is not the first AP instance and not STA mode, ignore WAN_DOWN event.\n");

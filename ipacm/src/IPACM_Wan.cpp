@@ -1652,7 +1652,9 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 		return IPACM_FAILURE;
 	}
 
-	if(iptype == IPA_IP_v6 && firewall_config.firewall_enable == true)
+	if(iptype == IPA_IP_v6 &&
+			firewall_config.firewall_enable == true &&
+			check_dft_firewall_rules_attr_mask(&firewall_config))
 	{
 		m_pFilteringTable->commit = 1;
 		m_pFilteringTable->ep = rx_prop->rx[0].src_pipe;
@@ -3546,11 +3548,17 @@ int IPACM_Wan::del_dft_firewall_rules(ipa_ip_type iptype)
 			return IPACM_FAILURE;
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
-		if (m_filtering.DeleteFilteringHdls(&ipv6_frag_firewall_flt_rule_hdl, IPA_IP_v6, 1) == false)
+
+		if (firewall_config.firewall_enable == true &&
+			check_dft_firewall_rules_attr_mask(&firewall_config))
 		{
-			IPACMERR("Error deleting IPv6 frag filtering rules.\n");
+			if (m_filtering.DeleteFilteringHdls(&ipv6_frag_firewall_flt_rule_hdl, IPA_IP_v6, 1) == false)
+			{
+				IPACMERR("Error deleting IPv6 frag filtering rules.\n");
+				return IPACM_FAILURE;
+			}
+			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 		}
-		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 		num_firewall_v6 = 0;
 	}
 
