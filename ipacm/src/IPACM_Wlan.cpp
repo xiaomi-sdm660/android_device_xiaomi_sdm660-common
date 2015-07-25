@@ -2344,10 +2344,9 @@ int IPACM_Wlan::handle_down_evt()
 	/* Delete v4 filtering rules */
 	if (ip_type != IPA_IP_v6 && rx_prop != NULL)
 	{
-#ifdef FEATURE_ETH_BRIDGE_LE
+		/* delete IPv4 icmp filter rules */
 		if(wlan_ap_index == 0)
 		{
-			/* delete IPv4 icmp filter rules */
 			if(m_filtering.DeleteFilteringHdls(ipv4_icmp_flt_rule_hdl, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE) == false)
 			{
 				IPACMERR("Error Deleting ICMPv4 Filtering Rule, aborting...\n");
@@ -2355,6 +2354,10 @@ int IPACM_Wlan::handle_down_evt()
 				goto fail;
 			}
 			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE);
+		}
+#ifdef FEATURE_ETH_BRIDGE_LE
+		if(wlan_ap_index == 0)
+		{
 			/* delete default filter rules */
 			for(i=0; i<IPV4_DEFAULT_FILTERTING_RULES; i++)
 			{
