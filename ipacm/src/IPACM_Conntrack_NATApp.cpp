@@ -684,6 +684,13 @@ void NatApp::AddTempEntry(const nat_table_entry *new_entry)
 	IPACMDBG("Private Port: %d\t Target Port: %d\t", new_entry->private_port, new_entry->target_port);
 	IPACMDBG("protocolcol: %d\n", new_entry->protocol);
 
+	if(isAlgPort(new_entry->protocol, new_entry->private_port) ||
+		 isAlgPort(new_entry->protocol, new_entry->target_port))
+	{
+		IPACMDBG("connection using ALG Port. Dont insert into nat cache\n");
+		return;
+	}
+
 	if(ChkForDup(new_entry))
 	{
 		return;
