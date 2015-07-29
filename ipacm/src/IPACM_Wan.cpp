@@ -230,7 +230,8 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	    rt_rule_entry = &rt_rule->rules[0];
 		if(m_is_sta_mode == Q6_WAN)
 		{
-			strncpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			strlcpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			hdr.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 			if(m_header.GetHeaderHandle(&hdr) == false)
 			{
 				IPACMERR("Failed to get QMAP header.\n");
@@ -415,7 +416,8 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 		rt_rule_entry = &rt_rule->rules[0];
 		if(m_is_sta_mode == Q6_WAN)
 		{
-			strncpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			strlcpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			hdr.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 			if(m_header.GetHeaderHandle(&hdr) == false)
 			{
 				IPACMERR("Failed to get QMAP header.\n");
@@ -1353,7 +1355,8 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		if(m_is_sta_mode == Q6_WAN)
 		{
 			memset(&hdr, 0, sizeof(hdr));
-			strncpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			strlcpy(hdr.name, tx_prop->tx[0].hdr_name, sizeof(hdr.name));
+			hdr.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 			if(m_header.GetHeaderHandle(&hdr) == false)
 			{
 				IPACMERR("Failed to get QMAP header.\n");
@@ -1609,7 +1612,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 
 	/* default firewall is disable and the rule action is drop */
 	memset(&firewall_config, 0, sizeof(firewall_config));
-	strncpy(firewall_config.firewall_config_file, "/etc/mobileap_firewall.xml", sizeof(firewall_config.firewall_config_file));
+	strlcpy(firewall_config.firewall_config_file, "/etc/mobileap_firewall.xml", sizeof(firewall_config.firewall_config_file));
 
 	if (firewall_config.firewall_config_file)
 	{
@@ -2319,7 +2322,7 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 
 	/* default firewall is disable and the rule action is drop */
 	memset(&firewall_config, 0, sizeof(firewall_config));
-	strncpy(firewall_config.firewall_config_file, "/etc/mobileap_firewall.xml", sizeof(firewall_config.firewall_config_file));
+	strlcpy(firewall_config.firewall_config_file, "/etc/mobileap_firewall.xml", sizeof(firewall_config.firewall_config_file));
 
 	if (firewall_config.firewall_config_file)
 	{
@@ -2357,7 +2360,8 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
 		rt_tbl_idx.ip = IPA_IP_v6;
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
 			IPACMERR("Failed to get routing table index from name\n");
@@ -2424,13 +2428,13 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 					rt_tbl_idx.ip = iptype;
 					if(flt_rule_entry.rule.action == IPA_PASS_TO_ROUTING)
 					{
-						strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+						strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
 					}
 					else /*pass to dst nat*/
 					{
-						strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name, IPA_RESOURCE_NAME_MAX);
+						strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name, IPA_RESOURCE_NAME_MAX);
 					}
-
+					rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 					if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 					{
 						IPACMERR("Failed to get routing table index from name\n");
@@ -2560,12 +2564,13 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 
 		if(flt_rule_entry.rule.action == IPA_PASS_TO_ROUTING)
 		{
-			strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+			strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
 		}
 		else /*pass to dst nat*/
 		{
-			strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name, IPA_RESOURCE_NAME_MAX);
+			strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name, IPA_RESOURCE_NAME_MAX);
 		}
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
@@ -2633,12 +2638,14 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 					/* matched rules for v6 go PASS_TO_ROUTE */
 					if(firewall_config.rule_action_accept == true)
 					{
-						strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, IPA_RESOURCE_NAME_MAX);
+						strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, IPA_RESOURCE_NAME_MAX);
 					}
 					else
 					{
-						strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+						strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
 					}
+					rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
+
 					if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 					{
 						IPACMERR("Failed to get routing table index from name\n");
@@ -2744,17 +2751,18 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 			/* default action for v6 is PASS_TO_ROUTE unless user set to exception*/
 			if(firewall_config.rule_action_accept == true)
 			{
-				strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+				strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
 			}
 			else
 			{
-				strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, IPA_RESOURCE_NAME_MAX);
+				strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, IPA_RESOURCE_NAME_MAX);
 			}
 		}
 		else
 		{
-			strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, IPA_RESOURCE_NAME_MAX);
+			strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, IPA_RESOURCE_NAME_MAX);
 		}
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
 			IPACMERR("Failed to get routing table index from name\n");
@@ -2901,7 +2909,8 @@ int IPACM_Wan::add_icmp_alg_rules(struct ipa_flt_rule_add *rules, int rule_offse
 		original_num_rules = IPACM_Wan::num_v4_flt_rule;
 
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		rt_tbl_idx.ip = iptype;
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
@@ -3017,7 +3026,8 @@ int IPACM_Wan::add_icmp_alg_rules(struct ipa_flt_rule_add *rules, int rule_offse
 		original_num_rules = IPACM_Wan::num_v6_flt_rule;
 
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		rt_tbl_idx.ip = iptype;
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
@@ -3206,7 +3216,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 	if (iptype == IPA_IP_v4)
 	{
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		rt_tbl_idx.ip = iptype;
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
@@ -3285,7 +3296,8 @@ int IPACM_Wan::add_dft_filtering_rule(struct ipa_flt_rule_add *rules, int rule_o
 	else	/*insert rules for ipv6*/
 	{
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		rt_tbl_idx.ip = iptype;
 		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 		{
@@ -3845,7 +3857,8 @@ int IPACM_Wan::config_dft_embms_rules(ipa_ioc_add_flt_rule *pFilteringTable_v4, 
 
 	/* get eMBMS ODU tbl index*/
 	memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-	strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v4.name, IPA_RESOURCE_NAME_MAX);
+	strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v4.name, IPA_RESOURCE_NAME_MAX);
+	rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 	rt_tbl_idx.ip = IPA_IP_v4;
 	if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 	{
@@ -3890,7 +3903,8 @@ int IPACM_Wan::config_dft_embms_rules(ipa_ioc_add_flt_rule *pFilteringTable_v4, 
 	memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 	/* get eMBMS ODU tbl*/
 	memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-	strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v6.name, IPA_RESOURCE_NAME_MAX);
+	strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v6.name, IPA_RESOURCE_NAME_MAX);
+	rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 	rt_tbl_idx.ip = IPA_IP_v6;
 	if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
 	{
@@ -4405,7 +4419,8 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 		/* Configuring Software-Routing Filtering Rule */
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		rt_tbl_idx.ip = IPA_IP_v4;
 		if(ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx) < 0)
 		{
@@ -4462,7 +4477,8 @@ int IPACM_Wan::install_wan_filtering_rule(bool is_sw_routing)
 		/* Configuring Software-Routing Filtering Rule */
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strncpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
+		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 		rt_tbl_idx.ip = IPA_IP_v6;
 		if(ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx) < 0)
 		{
@@ -4785,7 +4801,7 @@ int IPACM_Wan::handle_wan_hdr_init(uint8_t *mac_addr)
 
 								snprintf(index,sizeof(index), "%d", ipa_if_num);
 								strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
-
+								pHeaderDescriptor->hdr[0].name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 								if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WAN_PARTIAL_HDR_NAME_v4, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
 								{
 									IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
@@ -4882,7 +4898,7 @@ int IPACM_Wan::handle_wan_hdr_init(uint8_t *mac_addr)
 
 				snprintf(index,sizeof(index), "%d", ipa_if_num);
 				strlcpy(pHeaderDescriptor->hdr[0].name, index, sizeof(pHeaderDescriptor->hdr[0].name));
-
+				pHeaderDescriptor->hdr[0].name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 				if (strlcat(pHeaderDescriptor->hdr[0].name, IPA_WAN_PARTIAL_HDR_NAME_v6, sizeof(pHeaderDescriptor->hdr[0].name)) > IPA_RESOURCE_NAME_MAX)
 				{
 					IPACMERR(" header name construction failed exceed length (%d)\n", strlen(pHeaderDescriptor->hdr[0].name));
@@ -5128,10 +5144,10 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 				IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
 						wan_index,
 						get_client_memptr(wan_client, wan_index)->hdr_hdl_v4);
-				strncpy(rt_rule->rt_tbl_name,
+				strlcpy(rt_rule->rt_tbl_name,
 						IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.name,
 						sizeof(rt_rule->rt_tbl_name));
-
+				rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 				if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
 				{
 					IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
@@ -5171,10 +5187,10 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 							get_client_memptr(wan_client, wan_index)->hdr_hdl_v6);
 
 					/* v6 LAN_RT_TBL */
-					strncpy(rt_rule->rt_tbl_name,
+					strlcpy(rt_rule->rt_tbl_name,
 							IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
 							sizeof(rt_rule->rt_tbl_name));
-
+					rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 					/* Support QCMAP LAN traffic feature, send to A5 */
 					rt_rule_entry->rule.dst = iface_query->excp_pipe;
 					memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
@@ -5201,10 +5217,10 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 							get_client_memptr(wan_client, wan_index)->wan_rt_hdl[tx_index].wan_rt_rule_hdl_v6[v6_num], iptype);
 
 					/*Copy same rule to v6 WAN RT TBL*/
-					strncpy(rt_rule->rt_tbl_name,
+					strlcpy(rt_rule->rt_tbl_name,
 							IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
 							sizeof(rt_rule->rt_tbl_name));
-
+					rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
 					/* Downlink traffic from Wan iface, directly through IPA */
 					if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
 					{
