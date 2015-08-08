@@ -238,6 +238,7 @@ int IPACM_Config::Init(void)
 		pNatIfaces = NULL;
 		IPACMDBG_H("RESET IPACM_Config::pNatIfaces \n");
 	}
+	ipa_nat_iface_entries = 0;
 	pNatIfaces = (NatIfaces *)calloc(ipa_num_ipa_interfaces, sizeof(NatIfaces));
 	if (pNatIfaces == NULL)
 	{
@@ -423,6 +424,19 @@ int IPACM_Config::GetNatIfaces(int nIfaces, NatIfaces *pIfaces)
 
 int IPACM_Config::AddNatIfaces(char *dev_name)
 {
+	int i;
+	/* Check if this iface already in NAT-iface*/
+	for(i = 0; i < ipa_nat_iface_entries; i++)
+	{
+		if(strncmp(dev_name,
+							 pNatIfaces[i].iface_name,
+							 sizeof(pNatIfaces[i].iface_name)) == 0)
+		{
+			IPACMDBG("Interface (%s) is add to nat iface already\n", dev_name);
+				return 0;
+		}
+	}
+
 	IPACMDBG_H("Add iface %s to NAT-ifaces, origin it has %d nat ifaces\n",
 					          dev_name, ipa_nat_iface_entries);
 	ipa_nat_iface_entries++;

@@ -140,6 +140,11 @@
 			   <Description>NETBIOS_NS</Description>
 		    </ALG>
 			<ALG>
+			   <Protocol>UDP</Protocol>
+			   <Port>138</Port>
+			   <Description>NETBIOS_NS</Description>
+		    </ALG>
+			<ALG>
   			   <Protocol>TCP</Protocol>
   			   <Port>6566</Port>
 			   <Description>SANE</Description>

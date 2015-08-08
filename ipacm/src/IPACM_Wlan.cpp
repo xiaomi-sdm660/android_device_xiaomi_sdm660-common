@@ -823,6 +823,13 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name,
 				(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].wlan_mode == 0) ? "full" : "internet",
 				(is_guest_ap == true) ? "internet" : "full");
+		/* Add Natting iface to IPACM_Config if there is  Rx/Tx property */
+		if (rx_prop != NULL || tx_prop != NULL)
+		{
+			IPACMDBG_H(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
+			IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name);
+		}
+
 		if (is_guest_ap == true && (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].wlan_mode == FULL))
 		{
 			is_guest_ap = false;
