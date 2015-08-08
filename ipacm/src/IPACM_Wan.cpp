@@ -74,6 +74,14 @@ bool IPACM_Wan::backhaul_is_wan_bridge = false;
 
 uint32_t IPACM_Wan::backhaul_ipv6_prefix[2];
 
+#ifdef FEATURE_IPA_ANDROID
+int	IPACM_Wan::ipa_if_num_tether_v4_total = 0;
+int	IPACM_Wan::ipa_if_num_tether_v6_total = 0;
+
+int	IPACM_Wan::ipa_if_num_tether_v4[IPA_MAX_IFACE_ENTRIES];
+int	IPACM_Wan::ipa_if_num_tether_v6[IPA_MAX_IFACE_ENTRIES];
+#endif
+
 IPACM_Wan::IPACM_Wan(int iface_index,
 	ipacm_wan_iface_type is_sta_mode,
 	uint8_t *mac_addr) : IPACM_Iface(iface_index)
@@ -693,18 +701,27 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			{
 				IPACMDBG_H("Received IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT (Android) for ip-type (%d)\n", data->iptype);
 				/* The special below condition is to handle default gateway */
-				if ((data->iptype == IPA_IP_v4) && (active_v4 == false) && (ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX))
+				if ((data->iptype == IPA_IP_v4) && (ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX))
 				{
-//					wan_v4_addr_gw = data->ipv4_addr_gw; /* android requires CnE change too */
-//					wan_v4_addr_gw_set = true;
-					IPACMDBG_H("adding routing table, dev (%s) ip-type(%d), default gw (%x)\n", dev_name,data->iptype, wan_v4_addr_gw);
-					handle_route_add_evt(data->iptype);
-
+					if (active_v4 == false)
+					{
+						IPACMDBG_H("adding routing table(upstream), dev (%s) ip-type(%d)\n", dev_name,data->iptype);
+						handle_route_add_evt(data->iptype);
+					}
+#ifdef FEATURE_IPA_ANDROID
+					post_wan_up_tether_evt(data->iptype, data->if_index_tether);
+#endif
 				}
-				else if ((data->iptype == IPA_IP_v6) && (active_v6 == false) && (ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
+				else if ((data->iptype == IPA_IP_v6) && (ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
-					IPACMDBG_H("\n get default v6 route (dst:00.00.00.00) upstream\n");
-				  	handle_route_add_evt(data->iptype);
+					if (active_v6 == false)
+					{
+						IPACMDBG_H("\n get default v6 route (dst:00.00.00.00) upstream\n");
+						handle_route_add_evt(data->iptype);
+					}
+#ifdef FEATURE_IPA_ANDROID
+					post_wan_up_tether_evt(data->iptype, data->if_index_tether);
+#endif
 				}
 			}
 			else /* double check if current default iface is not itself */
@@ -757,6 +774,15 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					IPACMDBG_H("get del default v4 route (dst:0.0.0.0)\n");
 //					wan_v4_addr_gw_set = false; /* android requires CnE change too */
+#ifdef FEATURE_IPA_ANDROID
+					post_wan_down_tether_evt(data->iptype, data->if_index_tether);
+					/* no any ipv4 tether iface support*/
+					if(IPACM_Wan::ipa_if_num_tether_v4_total != 0)
+					{
+						IPACMDBG_H("still have tether ipv4 client on upsteam iface\n");
+						return;
+					}
+#endif
 					if(m_is_sta_mode == Q6_WAN)
 					{
 						del_wan_firewall_rule(IPA_IP_v4);
@@ -771,6 +797,15 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				}
 				else if ((data->iptype == IPA_IP_v6) && (active_v6 == true))
 				{
+#ifdef FEATURE_IPA_ANDROID
+					post_wan_down_tether_evt(data->iptype, data->if_index_tether);
+					/* no any ipv6 tether iface support*/
+					if(IPACM_Wan::ipa_if_num_tether_v6_total != 0)
+					{
+						IPACMDBG_H("still have tether ipv6 client on upsteam iface\n");
+						return;
+					}
+#endif
 					if(m_is_sta_mode == Q6_WAN)
 					{
 						del_wan_firewall_rule(IPA_IP_v6);
@@ -1501,6 +1536,147 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	}
 	return IPACM_SUCCESS;
 }
+
+#ifdef FEATURE_IPA_ANDROID
+/* wan default route/filter rule configuration */
+int IPACM_Wan::post_wan_up_tether_evt(ipa_ip_type iptype, int ipa_if_num_tether)
+{
+	ipacm_cmd_q_data evt_data;
+	ipacm_event_iface_up_tehter *wanup_data;
+
+	wanup_data = (ipacm_event_iface_up_tehter *)malloc(sizeof(ipacm_event_iface_up_tehter));
+	if (wanup_data == NULL)
+	{
+		IPACMERR("Unable to allocate memory\n");
+		return IPACM_FAILURE;
+	}
+	memset(wanup_data, 0, sizeof(ipacm_event_iface_up_tehter));
+
+	wanup_data->if_index_tether = ipa_if_num_tether;
+	if (m_is_sta_mode!=Q6_WAN)
+	{
+		wanup_data->is_sta = true;
+	}
+	else
+	{
+		wanup_data->is_sta = false;
+	}
+	IPACMDBG_H("Posting IPA_HANDLE_WAN_UP_TETHER with below information:\n");
+	IPACMDBG_H("tether_if_name:%s, is sta mode:%d\n",
+			IPACM_Iface::ipacmcfg->iface_table[iface_ipa_index_query(ipa_if_num_tether)].iface_name, wanup_data->is_sta);
+	memset(&evt_data, 0, sizeof(evt_data));
+
+	if (iptype == IPA_IP_v4)
+	{
+		evt_data.event = IPA_HANDLE_WAN_UP_TETHER;
+		/* Add support tether ifaces to its array*/
+		IPACM_Wan::ipa_if_num_tether_v4[IPACM_Wan::ipa_if_num_tether_v4_total] = ipa_if_num_tether;
+		IPACMDBG_H("adding tether iface(%s) ipa_if_num_tether_v4_total(%d)\n",
+			IPACM_Iface::ipacmcfg->iface_table[iface_ipa_index_query(ipa_if_num_tether)].iface_name,
+				IPACM_Wan::ipa_if_num_tether_v4_total);
+		IPACM_Wan::ipa_if_num_tether_v4_total++;
+	}
+	else
+	{
+		evt_data.event = IPA_HANDLE_WAN_UP_V6_TETHER;
+		memcpy(wanup_data->ipv6_prefix, ipv6_prefix, sizeof(wanup_data->ipv6_prefix));
+		/* Add support tether ifaces to its array*/
+		IPACM_Wan::ipa_if_num_tether_v6[IPACM_Wan::ipa_if_num_tether_v6_total] = ipa_if_num_tether;
+		IPACMDBG_H("adding tether iface(%s) ipa_if_num_tether_v6_total(%d)\n",
+			IPACM_Iface::ipacmcfg->iface_table[iface_ipa_index_query(ipa_if_num_tether)].iface_name,
+				IPACM_Wan::ipa_if_num_tether_v6_total);
+		IPACM_Wan::ipa_if_num_tether_v6_total++;
+	}
+		evt_data.evt_data = (void *)wanup_data;
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+
+	return IPACM_SUCCESS;
+}
+
+/* wan default route/filter rule configuration */
+int IPACM_Wan::post_wan_down_tether_evt(ipa_ip_type iptype, int ipa_if_num_tether)
+{
+	ipacm_cmd_q_data evt_data;
+	ipacm_event_iface_up_tehter *wandown_data;
+	int i, j;
+
+	wandown_data = (ipacm_event_iface_up_tehter *)malloc(sizeof(ipacm_event_iface_up_tehter));
+	if (wandown_data == NULL)
+	{
+		IPACMERR("Unable to allocate memory\n");
+		return IPACM_FAILURE;
+	}
+	memset(wandown_data, 0, sizeof(ipacm_event_iface_up_tehter));
+
+	wandown_data->if_index_tether = ipa_if_num_tether;
+	if (m_is_sta_mode!=Q6_WAN)
+	{
+		wandown_data->is_sta = true;
+	}
+	else
+	{
+		wandown_data->is_sta = false;
+	}
+	IPACMDBG_H("Posting IPA_HANDLE_WAN_DOWN_TETHER with below information:\n");
+	IPACMDBG_H("tether_if_name:%s, is sta mode:%d\n",
+			IPACM_Iface::ipacmcfg->iface_table[iface_ipa_index_query(ipa_if_num_tether)].iface_name, wandown_data->is_sta);
+	memset(&evt_data, 0, sizeof(evt_data));
+
+	if (iptype == IPA_IP_v4)
+	{
+		evt_data.event = IPA_HANDLE_WAN_DOWN_TETHER;
+		/* delete support tether ifaces to its array*/
+		for (i=0; i < IPACM_Wan::ipa_if_num_tether_v4_total; i++) //sky
+		{
+			if(IPACM_Wan::ipa_if_num_tether_v4[i] == ipa_if_num_tether)
+			{
+				IPACMDBG_H("Found tether client at position %d.\n", i);
+				break;
+			}
+		}
+		if(i == IPACM_Wan::ipa_if_num_tether_v4_total)
+		{
+			IPACMDBG_H("Not finding the tether client.\n");
+			free(wandown_data);
+			return IPACM_SUCCESS;
+		}
+		for(j = i+1; j < IPACM_Wan::ipa_if_num_tether_v4_total; j++)
+		{
+			IPACM_Wan::ipa_if_num_tether_v4[j-1] = IPACM_Wan::ipa_if_num_tether_v4[j];
+		}
+		IPACM_Wan::ipa_if_num_tether_v4_total--;
+		IPACMDBG_H("Now the total num of ipa_if_num_tether_v4_total is %d \n", IPACM_Wan::ipa_if_num_tether_v4_total);
+	}
+	else
+	{
+		evt_data.event = IPA_HANDLE_WAN_DOWN_V6_TETHER;
+		/* delete support tether ifaces to its array*/
+		for (i=0; i < IPACM_Wan::ipa_if_num_tether_v6_total; i++) //sky
+		{
+			if(IPACM_Wan::ipa_if_num_tether_v6[i] == ipa_if_num_tether)
+			{
+				IPACMDBG_H("Found tether client at position %d.\n", i);
+				break;
+			}
+		}
+		if(i == IPACM_Wan::ipa_if_num_tether_v6_total)
+		{
+			IPACMDBG_H("Not finding the tether client.\n");
+			free(wandown_data);
+			return IPACM_SUCCESS;
+		}
+		for(j = i+1; j < IPACM_Wan::ipa_if_num_tether_v6_total; j++)
+		{
+			IPACM_Wan::ipa_if_num_tether_v6[j-1] = IPACM_Wan::ipa_if_num_tether_v6[j];
+		}
+		IPACM_Wan::ipa_if_num_tether_v6_total--;
+		IPACMDBG_H("Now the total num of ipa_if_num_tether_v6_total is %d \n", IPACM_Wan::ipa_if_num_tether_v6_total);
+	}
+		evt_data.evt_data = (void *)wandown_data;
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+	return IPACM_SUCCESS;
+}
+#endif
 
 /* construct complete ethernet header */
 int IPACM_Wan::handle_sta_header_add_evt()

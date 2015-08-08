@@ -315,6 +315,9 @@ protected:
 	/* handle tethering stats */
 	int handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *data);
 
+	/* handle tethering client */
+	int handle_tethering_client(bool reset, ipacm_client_enum ipa_client);
+
 	lan2lan_flt_rule_hdl lan2lan_flt_rule_hdl_v4[MAX_OFFLOAD_PAIR];
 	lan2lan_flt_rule_hdl lan2lan_flt_rule_hdl_v6[MAX_OFFLOAD_PAIR];
 
