@@ -112,6 +112,8 @@ class LocTimerContainer : public LocHeap {
     static LocTimerPollTask* getPollTaskLocked();
     // extend LocHeap and pop if the top outRanks input
     LocTimerDelegate* popIfOutRanks(LocTimerDelegate& timer);
+    // update the timer POSIX calls with updated soonest timer spec
+    void updateSoonestTime(LocTimerDelegate* priorTop);
 
 public:
     // factory method to control the creation of mSwTimers / mHwTimers
@@ -270,74 +272,68 @@ int LocTimerContainer::getTimerFd() {
     return mDevFd;
 }
 
+void LocTimerContainer::updateSoonestTime(LocTimerDelegate* priorTop) {
+    LocTimerDelegate* curTop = getSoonestTimer();
+
+    // check if top has changed
+    if (curTop != priorTop) {
+        struct itimerspec delay = {0};
+        bool toSetTime = false;
+        // if tree is empty now, we remove poll and disarm timer
+        if (!curTop) {
+            mPollTask->removePoll(*this);
+            // setting the values to disarm timer
+            delay.it_value.tv_sec = 0;
+            delay.it_value.tv_nsec = 0;
+            toSetTime = true;
+        } else if (!priorTop || curTop->outRanks(*priorTop)) {
+            // do this first to avoid race condition, in case settime is called
+            // with too small an interval
+            mPollTask->addPoll(*this);
+            delay.it_value = curTop->getFutureTime();
+            toSetTime = true;
+        }
+        if (toSetTime) {
+            timerfd_settime(getTimerFd(), TFD_TIMER_ABSTIME, &delay, NULL);
+        }
+    }
+}
+
 // all the heap management is done in the MsgTask context.
 inline
 void LocTimerContainer::add(LocTimerDelegate& timer) {
     struct MsgTimerPush : public LocMsg {
         LocTimerContainer* mTimerContainer;
         LocHeapNode* mTree;
-        LocTimerPollTask* mPollTask;
         LocTimerDelegate* mTimer;
-        inline MsgTimerPush(LocTimerContainer& container, LocTimerPollTask& pollTask, LocTimerDelegate& timer) :
-            LocMsg(), mTimerContainer(&container), mPollTask(&pollTask), mTimer(&timer) {}
+        inline MsgTimerPush(LocTimerContainer& container, LocTimerDelegate& timer) :
+            LocMsg(), mTimerContainer(&container), mTimer(&timer) {}
         inline virtual void proc() const {
             LocTimerDelegate* priorTop = mTimerContainer->getSoonestTimer();
             mTimerContainer->push((LocRankable&)(*mTimer));
-
-            // if the tree top changed (new top is the new node), we need to update
-            // timerfd with the new timerout value.
-            if (priorTop != mTimerContainer->getSoonestTimer()) {
-                // if tree was empty before, we need to let poll task poll on this
-                // do this first to avoid race condition, in case settime is called
-                // with too small an interval
-                if (!priorTop) {
-                    mPollTask->addPoll(*mTimerContainer);
-                }
-                struct itimerspec delay = {0};
-                delay.it_value = mTimer->getFutureTime();
-                timerfd_settime(mTimerContainer->getTimerFd(), TFD_TIMER_ABSTIME, &delay, NULL);
-            }
+            mTimerContainer->updateSoonestTime(priorTop);
         }
     };
 
-    mMsgTask->sendMsg(new MsgTimerPush(*this, *mPollTask, timer));
+    mMsgTask->sendMsg(new MsgTimerPush(*this, timer));
 }
 
 // all the heap management is done in the MsgTask context.
 void LocTimerContainer::remove(LocTimerDelegate& timer) {
     struct MsgTimerRemove : public LocMsg {
         LocTimerContainer* mTimerContainer;
-        LocTimerPollTask* mPollTask;
         LocTimerDelegate* mTimer;
-        inline MsgTimerRemove(LocTimerContainer& container, LocTimerPollTask& pollTask, LocTimerDelegate& timer) :
-            LocMsg(), mTimerContainer(&container), mPollTask(&pollTask), mTimer(&timer) {}
+        inline MsgTimerRemove(LocTimerContainer& container, LocTimerDelegate& timer) :
+            LocMsg(), mTimerContainer(&container), mTimer(&timer) {}
         inline virtual void proc() const {
             LocTimerDelegate* priorTop = mTimerContainer->getSoonestTimer();
             ((LocHeap*)mTimerContainer)->remove((LocRankable&)*mTimer);
+            mTimerContainer->updateSoonestTime(priorTop);
             delete mTimer;
-            LocTimerDelegate* curTop = mTimerContainer->getSoonestTimer();
-
-            // if the tree top changed (the removed the node was the tree top), we need
-            // to update the timerfd with the new timeout value from the new top.
-            if (priorTop != curTop) {
-                struct itimerspec delay = {0};
-                // if tree is empty now, we need to remove poll from poll task
-                if (!curTop) {
-                    mPollTask->removePoll(*mTimerContainer);
-                    // setting the values to disarm timer
-                    delay.it_value.tv_sec = 0;
-                    delay.it_value.tv_nsec = 0;
-                } else {
-                    delay.it_value = curTop->getFutureTime();
-                }
-                // this will either update the timer with the new soonest timeout
-                // or disarm the timer, if the current tree top empty
-                timerfd_settime(mTimerContainer->getTimerFd(), TFD_TIMER_ABSTIME, &delay, NULL);
-            }
         }
     };
 
-    mMsgTask->sendMsg(new MsgTimerRemove(*this, *mPollTask, timer));
+    mMsgTask->sendMsg(new MsgTimerRemove(*this, timer));
 }
 
 // all the heap management is done in the MsgTask context.
@@ -355,22 +351,25 @@ void LocTimerContainer::expire() {
             LocTimerDelegate timerOfNow(now);
             // pop everything in the heap that outRanks now, i.e. has time older than now
             // and then call expire() on that timer.
-            for (LocTimerDelegate* timer = mTimerContainer->popIfOutRanks(timerOfNow);
+            for (LocTimerDelegate* timer = (LocTimerDelegate*)mTimerContainer->pop();
                  NULL != timer;
                  timer = mTimerContainer->popIfOutRanks(timerOfNow)) {
                 // the timer delegate obj will be deleted before the return of this call
                 timer->expire();
             }
+            mTimerContainer->updateSoonestTime(NULL);
         }
     };
 
+    struct itimerspec delay = {0};
+    timerfd_settime(getTimerFd(), TFD_TIMER_ABSTIME, &delay, NULL);
+    mPollTask->removePoll(*this);
     mMsgTask->sendMsg(new MsgTimerExpire(*this));
 }
 
 LocTimerDelegate* LocTimerContainer::popIfOutRanks(LocTimerDelegate& timer) {
     LocTimerDelegate* poppedNode = NULL;
-
-    if (mTree && peek()->outRanks((LocRankable&)(timer))) {
+    if (mTree && !timer.outRanks(*peek())) {
         poppedNode = (LocTimerDelegate*)(pop());
     }
 
@@ -415,10 +414,12 @@ void LocTimerPollTask::addPoll(LocTimerContainer& timerContainer) {
     memset(&ev, 0, sizeof(ev));
 
     ev.events = EPOLLIN | EPOLLWAKEUP;
+    ev.data.fd = timerContainer.getTimerFd();
     // it is important that we set this context pointer with the input
     // timer container this is how we know which container should handle
     // which expiration.
     ev.data.ptr = &timerContainer;
+
     epoll_ctl(mFd, EPOLL_CTL_ADD, timerContainer.getTimerFd(), &ev);
 }
 
@@ -431,17 +432,22 @@ void LocTimerPollTask::removePoll(LocTimerContainer& timerContainer) {
 // be repetitvely called, it must return true from the previous call.
 bool LocTimerPollTask::run() {
     struct epoll_event ev[2];
+
     // we have max 2 descriptors to poll from
     int fds = epoll_wait(mFd, ev, 2, -1);
+
     // we pretty much want to continually poll until the fd is closed
     bool rerun = (fds > 0) || (errno == EINTR);
+
     if (fds > 0) {
         // we may have 2 events
         for (int i = 0; i < fds; i++) {
-            // each fd will has a context pointer associated with the right timer container
+            // each fd has a context pointer associated with the right timer container
             LocTimerContainer* container = (LocTimerContainer*)(ev[i].data.ptr);
             if (container) {
                 container->expire();
+            } else {
+                epoll_ctl(mFd, EPOLL_CTL_DEL, ev[i].data.fd, NULL);
             }
         }
     }
@@ -464,6 +470,8 @@ void LocTimerDelegate::destroy() {
     if (mContainer) {
         mContainer->remove(*this);
         mContainer = NULL;
+    } else {
+        delete this;
     }
 }
 
@@ -534,7 +542,10 @@ class LocTimerWrapper : public LocTimer {
 public:
     inline LocTimerWrapper(loc_timer_callback cb, void* callerData) :
         mCb(cb), mCallerData(callerData) {}
-    inline virtual void timeOutCallback() { mCb(mCallerData, 0); }
+    inline virtual void timeOutCallback() {
+        mCb(mCallerData, 0);
+        delete this;
+    }
 };
 
 void* loc_timer_start(uint64_t msec, loc_timer_callback cb_func,
