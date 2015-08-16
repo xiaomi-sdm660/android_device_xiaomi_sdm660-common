@@ -296,7 +296,8 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	    	          dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6],
 	    	          dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6+1],num_dft_rt_v6);
 
-        if (num_dft_rt_v6 == 0)
+		/* add default filtering rules when wan-iface get global v6-prefix */
+        if (num_dft_rt_v6 == 1)
 	    {
 			if(m_is_sta_mode == Q6_WAN)
 			{
