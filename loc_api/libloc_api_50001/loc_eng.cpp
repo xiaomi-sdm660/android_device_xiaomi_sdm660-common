@@ -798,11 +798,7 @@ void LocEngReportPosition::proc() const {
                         locEng->engine_status, locEng->adapter->isInSession());
 
         if (locEng->generateNmea &&
-            mLocation.position_source == ULP_LOCATION_IS_FROM_GNSS &&
-            locEng->adapter->isInSession() &&
-            mTechMask & (LOC_POS_TECH_MASK_SATELLITE |
-                         LOC_POS_TECH_MASK_SENSORS |
-                         LOC_POS_TECH_MASK_HYBRID))
+            locEng->adapter->isInSession())
         {
             unsigned char generate_nmea = reported &&
                                           (mStatus != LOC_SESS_FAILURE);
