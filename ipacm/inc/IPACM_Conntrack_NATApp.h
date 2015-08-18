@@ -44,6 +44,9 @@ extern "C"
 
 #define MAX_TEMP_ENTRIES 25
 
+#define IPACM_TCP_FULL_FILE_NAME  "/proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established"
+#define IPACM_UDP_FULL_FILE_NAME   "/proc/sys/net/ipv4/netfilter/ip_conntrack_udp_timeout_stream"
+
 typedef struct _nat_table_entry
 {
 	uint32_t private_ip;
@@ -117,7 +120,7 @@ public:
 	int DelEntriesOnClntDiscon(uint32_t);
 	int DelEntriesOnSTAClntDiscon(uint32_t);
 
-	void UpdateTcpUdpTo(uint32_t, int proto);
+	void Read_TcpUdp_Timeout(void);
 
 	void AddTempEntry(const nat_table_entry *);
 	void CacheEntry(const nat_table_entry *);

@@ -59,17 +59,6 @@ using namespace std;
 #define UDP_TIMEOUT_UPDATE 20
 #define BROADCAST_IPV4_ADDR 0xFFFFFFFF
 
-
-#define IPACM_TCP_UDP_DIR_NAME       "/proc/sys/net/ipv4/netfilter"
-#define IPACM_TCP_FILE_NAME  "ip_conntrack_tcp_timeout_established"
-#define IPACM_UDP_FILE_NAME   "ip_conntrack_udp_timeout_stream"
-
-#define IPACM_TCP_FULL_FILE_NAME  "/proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established"
-#define IPACM_UDP_FULL_FILE_NAME   "/proc/sys/net/ipv4/netfilter/ip_conntrack_udp_timeout_stream"
-
-#define INOTIFY_EVT_SIZE  (sizeof(struct inotify_event))
-#define INOTIFY_BUFFER_LEN     (INOTIFY_EVT_SIZE + 2*sizeof(IPACM_TCP_FILE_NAME))
-
 class IPACM_ConntrackClient
 {
 
@@ -95,7 +84,6 @@ public:
    static void* TCPRegisterWithConnTrack(void *);
    static void* UDPRegisterWithConnTrack(void *);
    static void* UDPConnTimeoutUpdate(void *);
-   static void* TCPUDP_Timeout_monitor(void *);
 
    static void UpdateUDPFilters(void *, bool);
    static void UpdateTCPFilters(void *, bool);

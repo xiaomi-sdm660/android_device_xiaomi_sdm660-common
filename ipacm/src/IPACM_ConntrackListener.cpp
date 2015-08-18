@@ -90,7 +90,7 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 #endif
 
 	 case IPA_HANDLE_WAN_UP:
-			IPACMDBG("Received IPA_HANDLE_WAN_UP event\n");
+			IPACMDBG_H("Received IPA_HANDLE_WAN_UP event\n");
 			CreateConnTrackThreads();
 			if(!isWanUp())
 			{
@@ -99,7 +99,7 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			break;
 
 	 case IPA_HANDLE_WAN_DOWN:
-			IPACMDBG("Received IPA_HANDLE_WAN_DOWN event\n");
+			IPACMDBG_H("Received IPA_HANDLE_WAN_DOWN event\n");
 			wan_down = (ipacm_event_iface_up *)data;
 			if(isWanUp())
 			{
@@ -111,7 +111,7 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 		 tcp/udp filters to ignore local wlan or lan connections */
 	 case IPA_HANDLE_WLAN_UP:
 	 case IPA_HANDLE_LAN_UP:
-			IPACMDBG("Received event: %d with ifname: %s and address: 0x%x\n",
+			IPACMDBG_H("Received event: %d with ifname: %s and address: 0x%x\n",
 							 evt, ((ipacm_event_iface_up *)data)->ifname,
 							 ((ipacm_event_iface_up *)data)->ipv4_addr);
 			CreateConnTrackThreads();
@@ -136,7 +136,7 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(ipacm_event_data_all *data
 		return;
 	}
 
-  IPACMDBG("\n");
+	IPACMDBG("\n");
 	IPACMDBG("Received interface index %d with ip type: %d", data->if_index, data->iptype);
 	iptodot(" and ipv4 address", data->ipv4_addr);
 
@@ -152,28 +152,25 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(ipacm_event_data_all *data
 
 
 	cnt = pConfig->GetNatIfacesCnt();
-		NatIfaceCnt = cnt;
-		if(pNatIfaces != NULL)
-		{
-			free(pNatIfaces);
-			pNatIfaces = NULL;
-		}
+	NatIfaceCnt = cnt;
+	if (pNatIfaces != NULL) {
+		free(pNatIfaces);
+		pNatIfaces = NULL;
+	}
 
-		len = (sizeof(NatIfaces) * NatIfaceCnt);
-		pNatIfaces = (NatIfaces *)malloc(len);
-		if(pNatIfaces == NULL)
-		{
-			IPACMERR("Unable to allocate memory for non nat ifaces\n");
-			return;
-		}
-		memset(pNatIfaces, 0, len);
+	len = (sizeof(NatIfaces) * NatIfaceCnt);
+	pNatIfaces = (NatIfaces *)malloc(len);
+	if (pNatIfaces == NULL) {
+		IPACMERR("Unable to allocate memory for non nat ifaces\n");
+		return;
+	}
+	memset(pNatIfaces, 0, len);
 
-		if(pConfig->GetNatIfaces(NatIfaceCnt, pNatIfaces) != 0)
-		{
-			IPACMERR("Unable to retrieve non nat ifaces\n");
-			return;
-		}
-  IPACMDBG("Update %d Nat ifaces\n", NatIfaceCnt);
+	if (pConfig->GetNatIfaces(NatIfaceCnt, pNatIfaces) != 0) {
+		IPACMERR("Unable to retrieve non nat ifaces\n");
+		return;
+	}
+	IPACMDBG("Update %d Nat ifaces\n", NatIfaceCnt); 
 
 
 	/* Search/Configure linux interface-index and map it to IPA interface-index */
@@ -227,8 +224,10 @@ void IPACM_ConntrackListener::HandleNeighIpAddrAddEvt(ipacm_event_data_all *data
 
 
 			isNatIface = true;
-			IPACMDBG("Nating connections of Interface (%s), entry (%d) ", pNatIfaces[i].iface_name, j);
-			iptodot("with ipv4 address", nat_iface_ipv4_addr[j]);
+			IPACMDBG_H("Nating connections of Interface (%s), entry (%d) ", pNatIfaces[i].iface_name, j);
+			IPACMDBG_H(" with ipv4 address(0x%x): %d.%d.%d.%d\n", nat_iface_ipv4_addr[j],
+					    ((nat_iface_ipv4_addr[j]>>24) & 0xFF), ((nat_iface_ipv4_addr[j]>>16) & 0xFF), 
+					    ((nat_iface_ipv4_addr[j]>>8) & 0xFF), (nat_iface_ipv4_addr[j] & 0xFF));
 			break;
 		}
 	}
@@ -281,7 +280,7 @@ void IPACM_ConntrackListener::HandleNeighIpAddrDelEvt(uint32_t ipv4_addr)
 	}
 
 	nat_inst->FlushTempEntries(ipv4_addr, false);
-  nat_inst->DelEntriesOnClntDiscon(ipv4_addr);
+	nat_inst->DelEntriesOnClntDiscon(ipv4_addr);
 	return;
 }
 
@@ -289,8 +288,8 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 {
 	 ipacm_event_iface_up *wanup_data = (ipacm_event_iface_up *)in_param;
 
-	 IPACMDBG("Recevied below information during wanup,\n");
-	 IPACMDBG("if_name:%s, ipv4_address:0x%x\n",
+	 IPACMDBG_H("Recevied below information during wanup,\n");
+	 IPACMDBG_H("if_name:%s, ipv4_address:0x%x\n",
 						wanup_data->ifname, wanup_data->ipv4_addr);
 
 	 if(wanup_data->ipv4_addr == 0)
@@ -367,11 +366,10 @@ error:
 int IPACM_ConntrackListener::CreateNatThreads(void)
 {
 	int ret;
-	pthread_t udpcto_thread = 0, to_monitor_thread = 0;
+	pthread_t udpcto_thread = 0;
 
 	if(isNatThreadStart == false)
 	{
-
 		if(!udpcto_thread)
 		{
 			ret = pthread_create(&udpcto_thread, NULL, IPACM_ConntrackClient::UDPConnTimeoutUpdate, NULL);
@@ -389,23 +387,6 @@ int IPACM_ConntrackListener::CreateNatThreads(void)
 			}
 		}
 
-		if(!to_monitor_thread)
-		{
-			ret = pthread_create(&to_monitor_thread, NULL, IPACM_ConntrackClient::TCPUDP_Timeout_monitor, NULL);
-			if(0 != ret)
-			{
-				IPACMERR("unable to create tcp/udp timeout monitor thread\n");
-				PERROR("unable to create tcp/udp timeout monitor\n");
-				goto error;
-			}
-
-			IPACMDBG("created tcp/udp timeout monitor thread\n");
-			if(pthread_setname_np(to_monitor_thread, "tcp udp timeout mtr") != 0)
-			{
-				IPACMERR("unable to set thread name\n");
-			}
-		}
-
 		isNatThreadStart = true;
 	}
 	return 0;
@@ -416,8 +397,11 @@ error:
 
 void IPACM_ConntrackListener::TriggerWANDown(uint32_t wan_addr)
 {
-	 IPACMDBG("Deleting ipv4 nat table with");
-	 iptodot("public ip address", wan_addr);
+	 IPACMDBG_H("Deleting ipv4 nat table with");
+	 IPACMDBG_H(" public ip address(0x%x): %d.%d.%d.%d\n", wan_addr,
+		    ((wan_addr>>24) & 0xFF), ((wan_addr>>16) & 0xFF), 
+		    ((wan_addr>>8) & 0xFF), (wan_addr & 0xFF));
+	 
 	 WanUp = false;
 
 	 if(nat_inst != NULL)
@@ -624,8 +608,7 @@ void IPACM_ConntrackListener::ProcessCTMessage(void *param)
 	 out_flags = (NFCT_OF_SHOW_LAYER3 | NFCT_OF_TIME | NFCT_OF_ID);
 	 nfct_snprintf(buf, sizeof(buf), evt_data->ct,
 								 evt_data->type, NFCT_O_PLAIN, out_flags);
-	 IPACMDBG("%s\n", buf);
-	 IPACMDBG("\n");
+	 IPACMDBG_H("%s\n", buf);
 
 	 ParseCTMessage(evt_data->ct);
 #endif
@@ -711,7 +694,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 		}
 		else
 		{
-			IPACMDBG("Neither orig src ip:0x%x Nor orig Dst IP:0x%x equal to wan ip:0x%x\n",
+			IPACMDBG_H("Neither orig src ip:0x%x Nor orig Dst IP:0x%x equal to wan ip:0x%x\n",
 					orig_src_ip, orig_dst_ip, wan_ipaddr);
 
 #ifdef CT_OPT
@@ -841,7 +824,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 				 {
 					 IPACMDBG("matched nat_iface_ipv4_addr entry(%d)\n", cnt);
 					 iptodot("ProcessTCPorUDPMsg(): Nat entry match with ip addr",
-																					nat_iface_ipv4_addr[cnt]);
+									nat_iface_ipv4_addr[cnt]);
 					 break;
 				 }
 			 }
@@ -849,7 +832,7 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 
 		if(cnt == MAX_NAT_IFACES)
 		{
-			IPACMDBG("Not mtaching with nat ifaces\n");
+			IPACMDBG_H("Not mtaching with nat ifaces\n");
 			if(pConfig == NULL)
 			{
 				goto IGNORE;
@@ -909,13 +892,13 @@ void IPACM_ConntrackListener::ProcessTCPorUDPMsg(
 		}
 	 }
 
-	IPACMDBG("Not matching with STA Clnt Ip Addrs 0x%x\n",
+	IPACMDBG_H("Not matching with STA Clnt Ip Addrs 0x%x\n",
 		rule.target_ip);
 	isTempEntry = true;
 
 
 ADD:
-	 IPACMDBG("Nat Entry with below information will either be added or deleted\n");
+	 IPACMDBG_H("Nat Entry with below information will either be added or deleted\n");
 	 iptodot("target ip or dst ip", rule.target_ip);
 	 IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
 	 iptodot("private ip or src ip", rule.private_ip);
@@ -1003,7 +986,7 @@ ADD:
 	 return;
 
 IGNORE:
-	IPACMDBG("ignoring below Nat Entry\n");
+	IPACMDBG_H("ignoring below Nat Entry\n");
 	iptodot("target ip or dst ip", rule.target_ip);
 	IPACMDBG("target port or dst port: 0x%x Decimal:%d\n", rule.target_port, rule.target_port);
 	iptodot("private ip or src ip", rule.private_ip);
@@ -1017,7 +1000,7 @@ IGNORE:
 void IPACM_ConntrackListener::HandleSTAClientAddEvt(uint32_t clnt_ip_addr)
 {
 	 int cnt;
-	 IPACMDBG("Received STA client 0x%x\n", clnt_ip_addr);
+	 IPACMDBG_H("Received STA client 0x%x\n", clnt_ip_addr);
 
 	 if(StaClntCnt >= MAX_STA_CLNT_IFACES)
 	 {
@@ -1053,7 +1036,7 @@ void IPACM_ConntrackListener::HandleSTAClientAddEvt(uint32_t clnt_ip_addr)
 void IPACM_ConntrackListener::HandleSTAClientDelEvt(uint32_t clnt_ip_addr)
 {
 	 int cnt;
-	 IPACMDBG("Received STA client 0x%x\n", clnt_ip_addr);
+	 IPACMDBG_H("Received STA client 0x%x\n", clnt_ip_addr);
 
 	 for(cnt=0; cnt<MAX_STA_CLNT_IFACES; cnt++)
 	 {
