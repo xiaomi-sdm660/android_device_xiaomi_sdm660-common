@@ -52,8 +52,8 @@
  *============================================================================*/
 
 /* Parameter data */
-static uint8_t DEBUG_LEVEL = 0xff;
-static uint8_t TIMESTAMP = 0;
+static uint32_t DEBUG_LEVEL = 0xff;
+static uint32_t TIMESTAMP = 0;
 
 /* Parameter spec table */
 static loc_param_s_type loc_param_table[] =

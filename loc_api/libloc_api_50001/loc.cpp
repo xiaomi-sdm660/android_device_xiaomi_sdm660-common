@@ -805,7 +805,10 @@ SIDE EFFECTS
 static int loc_xtra_init(GpsXtraCallbacks* callbacks)
 {
     ENTRY_LOG();
-    int ret_val = loc_eng_xtra_init(loc_afw_data, (GpsXtraExtCallbacks*)callbacks);
+    GpsXtraExtCallbacks extCallbacks;
+    memset(&extCallbacks, 0, sizeof(extCallbacks));
+    extCallbacks.download_request_cb = callbacks->download_request_cb;
+    int ret_val = loc_eng_xtra_init(loc_afw_data, &extCallbacks);
 
     EXIT_LOG(%d, ret_val);
     return ret_val;
