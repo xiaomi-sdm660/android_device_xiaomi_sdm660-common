@@ -103,7 +103,7 @@ class LocTimerContainer : public LocHeap {
     // Poll task to provide epoll call and threading to poll.
     static LocTimerPollTask* mPollTask;
     // timer / alarm fd
-    const int mDevFd;
+    int mDevFd;
     // ctor
     LocTimerContainer(bool wakeOnExpire);
     // dtor
@@ -210,6 +210,13 @@ LocTimerPollTask* LocTimerContainer::mPollTask = NULL;
 // HwTimer (alarm), when wakeOnExpire is false.
 LocTimerContainer::LocTimerContainer(bool wakeOnExpire) :
     mDevFd(timerfd_create(wakeOnExpire ? CLOCK_BOOTTIME_ALARM : CLOCK_BOOTTIME, 0)) {
+
+    if ((-1 == mDevFd) && (errno == EINVAL)) {
+        LOC_LOGW("%s: timerfd_create failure, fallback to CLOCK_MONOTONIC - %s",
+            __FUNCTION__, strerror(errno));
+        mDevFd = timerfd_create(CLOCK_MONOTONIC, 0);
+    }
+
     if (-1 != mDevFd) {
         // ensure we have the necessary resources created
         LocTimerContainer::getPollTaskLocked();
