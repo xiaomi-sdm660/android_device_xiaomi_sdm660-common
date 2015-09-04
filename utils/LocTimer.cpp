@@ -48,6 +48,20 @@
 
 using namespace loc_core;
 
+// a shared lock until, place it here for now.
+class LocUtilSharedLock {
+    uint32_t mRef;
+    pthread_mutex_t mMutex;
+    inline ~LocUtilSharedLock() { pthread_mutex_destroy(&mMutex); }
+public:
+    inline LocUtilSharedLock() : mRef(1) { pthread_mutex_init(&mMutex, NULL); }
+    inline LocUtilSharedLock* share() { mRef++; return this; }
+    inline void drop() { if (0 == --mRef) delete this; }
+    inline void lock() { pthread_mutex_lock(&mMutex); }
+    inline void unlock() { pthread_mutex_unlock(&mMutex); }
+};
+
+
 /*
 There are implementations of 5 classes in this file:
 LocTimer, LocTimerDelegate, LocTimerContainer, LocTimerPollTask, LocTimerWrapper
@@ -177,15 +191,16 @@ class LocTimerDelegate : public LocRankable {
     friend class LocTimerContainer;
     friend class LocTimer;
     LocTimer* mClient;
+    LocUtilSharedLock* mLock;
     struct timespec mFutureTime;
     LocTimerContainer* mContainer;
     // not a complete obj, just ctor for LocRankable comparisons
     inline LocTimerDelegate(struct timespec& delay)
-        : mClient(NULL), mFutureTime(delay), mContainer(NULL) {}
-    inline ~LocTimerDelegate() {}
+        : mClient(NULL), mLock(NULL), mFutureTime(delay), mContainer(NULL) {}
+    inline ~LocTimerDelegate() { if (mLock) { mLock->drop(); mLock = NULL; } }
 public:
     LocTimerDelegate(LocTimer& client, struct timespec& futureTime, bool wakeOnExpire);
-    void destroy();
+    void destroyLocked();
     // LocRankable virtual method
     virtual int ranks(LocRankable& rankable);
     void expire();
@@ -327,8 +342,9 @@ void LocTimerContainer::remove(LocTimerDelegate& timer) {
             LocMsg(), mTimerContainer(&container), mTimer(&timer) {}
         inline virtual void proc() const {
             LocTimerDelegate* priorTop = mTimerContainer->getSoonestTimer();
-            ((LocHeap*)mTimerContainer)->remove((LocRankable&)*mTimer);
-            mTimerContainer->updateSoonestTime(priorTop);
+            if (NULL != ((LocHeap*)mTimerContainer)->remove((LocRankable&)*mTimer)) {
+                mTimerContainer->updateSoonestTime(priorTop);
+            }
             delete mTimer;
         }
     };
@@ -356,6 +372,7 @@ void LocTimerContainer::expire() {
                  timer = mTimerContainer->popIfOutRanks(timerOfNow)) {
                 // the timer delegate obj will be deleted before the return of this call
                 timer->expire();
+                delete timer;
             }
             mTimerContainer->updateSoonestTime(NULL);
         }
@@ -460,19 +477,30 @@ bool LocTimerPollTask::run() {
 
 inline
 LocTimerDelegate::LocTimerDelegate(LocTimer& client, struct timespec& futureTime, bool wakeOnExpire)
-    : mClient(&client), mFutureTime(futureTime), mContainer(LocTimerContainer::get(wakeOnExpire)) {
+    : mClient(&client),
+      mLock(mClient->mLock->share()),
+      mFutureTime(futureTime),
+      mContainer(LocTimerContainer::get(wakeOnExpire)) {
     // adding the timer into the container
     mContainer->add(*this);
 }
 
 inline
-void LocTimerDelegate::destroy() {
+void LocTimerDelegate::destroyLocked() {
+    // client handle will likely be deleted soon after this
+    // method returns. Nulling this handle so that expire()
+    // won't call the callback on the dead handle any more.
+    mClient = NULL;
+
     if (mContainer) {
-        mContainer->remove(*this);
+        LocTimerContainer* container = mContainer;
         mContainer = NULL;
-    } else {
-        delete this;
-    }
+        if (container) {
+            container->remove(*this);
+        }
+    } // else we do not do anything, as *this* will be deleted either
+      // after it expires or stop is first called (if case above),
+      // where container->remove() will have it deleted.
 }
 
 int LocTimerDelegate::ranks(LocRankable& rankable) {
@@ -488,6 +516,7 @@ int LocTimerDelegate::ranks(LocRankable& rankable) {
 
 inline
 void LocTimerDelegate::expire() {
+    mLock->lock();
     // keeping a copy of client pointer to be safe
     // when timeOutCallback() is called at the end of this
     // method, this obj is already deleted.
@@ -495,14 +524,29 @@ void LocTimerDelegate::expire() {
     // this obj is already removed from mContainer.
     // NULL it here so that dtor won't try to call remove again
     mContainer = NULL;
+    mClient = NULL;
+    mLock->unlock();
     // force a stop, which will force a delete of this obj
-    mClient->stop();
-    // calling client callback with a pointer save on the stack
-    client->timeOutCallback();
+    if (client && client->stop()) {
+        // calling client callback with a pointer save on the stack
+        // only if stop() returns true, i.e. it hasn't been stopped
+        // already.
+        client->timeOutCallback();
+    }
 }
 
 
 /***************************LocTimer methods***************************/
+LocTimer::LocTimer() : mTimer(NULL), mLock(new LocUtilSharedLock()) {
+}
+
+LocTimer::~LocTimer() {
+    stop();
+    if (mLock) {
+        mLock->drop();
+        mLock = NULL;
+    }
+}
 
 bool LocTimer::start(unsigned int timeOutInMs, bool wakeOnExpire) {
     bool success = false;
@@ -525,9 +569,14 @@ bool LocTimer::start(unsigned int timeOutInMs, bool wakeOnExpire) {
 bool LocTimer::stop() {
     bool success = false;
     if (mTimer) {
-        mTimer->destroy();
+        mLock->lock();
+        LocTimerDelegate* timer = mTimer;
         mTimer = NULL;
-        success = true;
+        if (timer) {
+            timer->destroyLocked();
+            success = true;
+        }
+        mLock->unlock();
     }
     return success;
 }
@@ -539,21 +588,26 @@ bool LocTimer::stop() {
 class LocTimerWrapper : public LocTimer {
     loc_timer_callback mCb;
     void* mCallerData;
+    LocTimerWrapper* mMe;
     static pthread_mutex_t mMutex;
-    inline ~LocTimerWrapper() { mCb = NULL; }
+    inline ~LocTimerWrapper() { mCb = NULL; mMe = NULL; }
 public:
     inline LocTimerWrapper(loc_timer_callback cb, void* callerData) :
-        mCb(cb), mCallerData(callerData) {}
-    inline bool isAlive() { return mCb != NULL; }
+        mCb(cb), mCallerData(callerData), mMe(this) {
+    }
     void destroy() {
         pthread_mutex_lock(&mMutex);
-        if (isAlive()) {
+        if (NULL != mCb && this == mMe) {
             delete this;
         }
         pthread_mutex_unlock(&mMutex);
     }
-    inline virtual void timeOutCallback() {
-        mCb(mCallerData, 0);
+    virtual void timeOutCallback() {
+        loc_timer_callback cb = mCb;
+        void* callerData = mCallerData;
+        if (cb) {
+            cb(callerData, 0);
+        }
         destroy();
     }
 };
@@ -580,7 +634,6 @@ void loc_timer_stop(void*&  handle)
 {
     if (handle) {
         LocTimerWrapper* locTimerWrapper = (LocTimerWrapper*)(handle);
-        locTimerWrapper->stop();
         locTimerWrapper->destroy();
         handle = NULL;
     }
