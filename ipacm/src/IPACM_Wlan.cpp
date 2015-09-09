@@ -3767,10 +3767,7 @@ int IPACM_Wlan::eth_bridge_add_lan_client_flt_rule(uint8_t* mac, ipa_ip_type ipt
 	}
 
 fail:
-	if(pFilteringTable == NULL)
-	{
-		free(pFilteringTable);
-	}
+	free(pFilteringTable);
 	return res;
 }
 
@@ -4041,10 +4038,7 @@ int IPACM_Wlan::eth_bridge_add_self_client_flt_rule(uint8_t* mac, ipa_ip_type ip
 	}
 
 fail:
-	if(pFilteringTable == NULL)
-	{
-		free(pFilteringTable);
-	}
+	free(pFilteringTable);
 	return res;
 }
 
@@ -5369,9 +5363,6 @@ int IPACM_Wlan::eth_bridge_modify_wlan_client_flt_rule(uint8_t* mac, eth_bridge_
 		goto fail;
 	}
 fail:
-	if(pFilteringTable == NULL)
-	{
-		free(pFilteringTable);
-	}
+	free(pFilteringTable);
 	return res;
 }
