@@ -72,6 +72,7 @@ void LocAdapterBase::
                    LocPosTechMask loc_technology_mask) {
     if (mLocAdapterProxyBase == NULL ||
         !mLocAdapterProxyBase->reportPosition(location,
+                                              locationExtended,
                                               status,
                                               loc_technology_mask)) {
         DEFAULT_IMPL()

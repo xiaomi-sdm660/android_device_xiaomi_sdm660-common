@@ -73,10 +73,8 @@ public:
                                               bool active) {
         return false;
     }
-    inline virtual bool reportPositions(FlpExtLocation * locations,
-                                        int32_t number_of_locations,
-                                        enum loc_sess_status status,
-                                        LocPosTechMask techMask) {
+    inline virtual bool reportPositions(const FlpExtLocation* locations,
+                                        int32_t number_of_locations) {
         return false;
     }
 };
