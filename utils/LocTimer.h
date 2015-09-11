@@ -35,15 +35,22 @@
 
 // opaque class to provide service implementation.
 class LocTimerDelegate;
+class LocUtilSharedLock;
 
 // LocTimer client must extend this class and implementthe callback.
 // start() / stop() methods are to arm / disarm timer.
 class LocTimer
 {
     LocTimerDelegate* mTimer;
+    LocUtilSharedLock* mLock;
+    // don't really want mLock to be manipulated by clients, yet LocTimer
+    // has to have a reference to the lock so that the delete of LocTimer
+    // and LocTimerDelegate can work together on their share resources.
+    friend class LocTimerDelegate;
+
 public:
-    inline LocTimer() : mTimer(NULL) {}
-    inline virtual ~LocTimer() { stop(); }
+    LocTimer();
+    virtual ~LocTimer();
 
     // timeOutInMs:  timeout delay in ms
     // wakeOnExpire: true if to wake up CPU (if sleeping) upon timer
