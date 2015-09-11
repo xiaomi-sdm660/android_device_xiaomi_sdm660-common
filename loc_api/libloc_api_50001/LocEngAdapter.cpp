@@ -29,12 +29,16 @@
 #define LOG_NDDEBUG 0
 #define LOG_TAG "LocSvc_EngAdapter"
 
+#include <sys/stat.h>
+#include <errno.h>
+#include <ctype.h>
 #include <cutils/properties.h>
 #include <LocEngAdapter.h>
 #include "loc_eng_msg.h"
 #include "loc_log.h"
 
 #define CHIPSET_SERIAL_NUMBER_MAX_LEN 16
+#define USER_AGENT_MAX_LEN 512
 
 using namespace loc_core;
 
@@ -99,7 +103,7 @@ void LocEngAdapter::setXtraUserAgent() {
             char board[PROPERTY_VALUE_MAX];
             char brand[PROPERTY_VALUE_MAX];
             char chipsetsn[CHIPSET_SERIAL_NUMBER_MAX_LEN];
-            char userAgent[PROPERTY_VALUE_MAX];
+            char userAgent[USER_AGENT_MAX_LEN];
             const char defVal[] = "-";
 
             property_get("ro.build.version.release", release,     defVal);
@@ -118,8 +122,49 @@ void LocEngAdapter::setXtraUserAgent() {
                 if (' ' == userAgent[i]) userAgent[i] = '#';
             }
 
-            property_set("location.XTRA_USER_AGENT", userAgent);
+            saveUserAgentString(userAgent, strlen(userAgent));
             LOC_LOGV("%s] UserAgent %s", __func__, userAgent);
+        }
+
+        void saveUserAgentString(const char* data, const int len) const {
+            const char XTRA_FOLDER[] = "/data/misc/location/xtra";
+            const char USER_AGENT_FILE[] = "/data/misc/location/xtra/useragent.txt";
+
+            if (data == NULL || len < 1) {
+                LOC_LOGE("%s:%d]: invalid input data = %p len = %d", __func__, __LINE__, data, len);
+                return;
+            }
+
+            struct stat s;
+            int err = stat(XTRA_FOLDER, &s);
+            if (err < 0) {
+                if (ENOENT == errno) {
+                    if (mkdir(XTRA_FOLDER, 0700) < 0) {
+                        LOC_LOGE("%s:%d]: make XTRA_FOLDER failed", __func__, __LINE__);
+                        return;
+                    }
+                } else {
+                    LOC_LOGE("%s:%d]: XTRA_FOLDER invalid", __func__, __LINE__);
+                    return;
+                }
+            }
+
+            FILE* file = fopen(USER_AGENT_FILE, "wt");
+            if (file == NULL) {
+                LOC_LOGE("%s:%d]: open USER_AGENT_FILE failed", __func__, __LINE__);
+                return;
+            }
+
+            size_t written = fwrite(data, 1, len, file);
+            fclose(file);
+            file = NULL;
+
+            // set file permission
+            chmod(USER_AGENT_FILE, 0600);
+
+            if (written != len) {
+                LOC_LOGE("%s:%d]: write USER_AGENT_FILE failed", __func__, __LINE__);
+            }
         }
 
         void getChipsetSerialNo(char buf[], int buflen, const char def[]) const {
@@ -141,6 +186,12 @@ void LocEngAdapter::setXtraUserAgent() {
                 }
 
                 fclose(file);
+
+                // remove trailing spaces
+                size_t len = strlen(buf);
+                while (--len >= 0 && isspace(buf[len])) {
+                    buf[len] = '\0';
+                }
             }
 
             return;
