@@ -36,10 +36,17 @@
 #include <log_util.h>
 #include <loc_log.h>
 
-namespace loc_core {
-
 static void LocMsgDestroy(void* msg) {
     delete (LocMsg*)msg;
+}
+
+MsgTask::MsgTask(LocThread::tCreate tCreator,
+                 const char* threadName, bool joinable) :
+    mQ(msg_q_init2()), mThread(new LocThread()) {
+    if (!mThread->start(tCreator, threadName, this, joinable)) {
+        delete mThread;
+        mThread = NULL;
+    }
 }
 
 MsgTask::MsgTask(const char* threadName, bool joinable) :
@@ -93,40 +100,3 @@ bool MsgTask::run() {
 
     return true;
 }
-
-// TODO: remove the below in the next patch
-void MsgTask::associate(tAssociate tAssociator) const {
-    struct LocAssociateMsg : public LocMsg {
-        tAssociate mAssociator;
-        LocAssociateMsg(tAssociate associator) :
-            mAssociator(associator) {}
-        inline virtual void proc() const {
-            static bool sAssociated = false;
-            if (!sAssociated) {
-                sAssociated = true;
-                mAssociator();
-            }
-        }
-    };
-    sendMsg(new LocAssociateMsg(tAssociator));
-}
-
-MsgTask::MsgTask(tCreate tCreator, const char* threadName) :
-    mQ(msg_q_init2()), mThread(new LocThread()) {
-    if (!mThread->start(threadName, this, false)) {
-        delete mThread;
-        mThread = NULL;
-    }
-}
-
-MsgTask::MsgTask(tAssociate tAssociator, const char* threadName)  :
-    mQ(msg_q_init2()), mThread(new LocThread()) {
-    if (!mThread->start(threadName, this, false)) {
-        delete mThread;
-        mThread = NULL;
-    } else {
-        associate(tAssociator);
-    }
-}
-
-} // namespace loc_core

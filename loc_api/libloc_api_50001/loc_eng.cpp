@@ -223,7 +223,6 @@ static void* noProc(void* data)
     return NULL;
 }
 
-
 /*********************************************************************
  * definitions of the static messages used in the file
  *********************************************************************/
@@ -1768,7 +1767,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
 
     loc_eng_data.adapter =
         new LocEngAdapter(event, &loc_eng_data, context,
-                          (MsgTask::tCreate)callbacks->create_thread_cb);
+                          (LocThread::tCreate)callbacks->create_thread_cb);
 
     LOC_LOGD("loc_eng_init created client, id = %p\n",
              loc_eng_data.adapter);

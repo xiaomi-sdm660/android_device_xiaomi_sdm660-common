@@ -35,14 +35,14 @@
 
 // opaque class to provide service implementation.
 class LocTimerDelegate;
-class LocUtilSharedLock;
+class LocSharedLock;
 
 // LocTimer client must extend this class and implementthe callback.
 // start() / stop() methods are to arm / disarm timer.
 class LocTimer
 {
     LocTimerDelegate* mTimer;
-    LocUtilSharedLock* mLock;
+    LocSharedLock* mLock;
     // don't really want mLock to be manipulated by clients, yet LocTimer
     // has to have a reference to the lock so that the delete of LocTimer
     // and LocTimerDelegate can work together on their share resources.
