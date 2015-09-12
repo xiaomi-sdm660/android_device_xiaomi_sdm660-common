@@ -37,12 +37,12 @@ class LocThreadDelegate {
     pthread_mutex_t mMutex;
     int mRefCount;
     ~LocThreadDelegate();
-    LocThreadDelegate(const char* threadName,
+    LocThreadDelegate(LocThread::tCreate creator, const char* threadName,
                       LocRunnable* runnable, bool joinable);
     void destroy();
 public:
-    static LocThreadDelegate* create(const char* threadName,
-                      LocRunnable* runnable, bool joinable);
+    static LocThreadDelegate* create(LocThread::tCreate creator,
+            const char* threadName, LocRunnable* runnable, bool joinable);
     void stop();
     // bye() is for the parent thread to go away. if joinable,
     // parent must stop the spawned thread, join, and then
@@ -62,19 +62,28 @@ public:
 // However, upon pthread_create failure, the data members
 // must be set to  indicate failure, e.g. mRunnable, and
 // threashold approprietly for destroy(), e.g. mRefCount.
-LocThreadDelegate::LocThreadDelegate(const char* threadName,
-        LocRunnable* runnable, bool joinable) :
-    mRunnable(runnable), mJoinable(joinable),
+LocThreadDelegate::LocThreadDelegate(LocThread::tCreate creator,
+        const char* threadName, LocRunnable* runnable, bool joinable) :
+    mRunnable(runnable), mJoinable(joinable), mThandle(NULL),
     mMutex(PTHREAD_MUTEX_INITIALIZER), mRefCount(2) {
+
+    // set up thread name, if nothing is passed in
+    if (!threadName) {
+        threadName = "LocThread";
+    }
+
     // create the thread here, then if successful
     // and a name is given, we set the thread name
-    if (!pthread_create(&mThandle, NULL, threadMain, this)) {
+    if (creator) {
+        mThandle = creator(threadName, threadMain, this);
+    } else if (pthread_create(&mThandle, NULL, threadMain, this)) {
+        // pthread_create() failed
+        mThandle = NULL;
+    }
+
+    if (mThandle) {
         // set thread name
         char lname[16];
-        const char* defaultName = "LocThread";
-        if (!threadName) {
-            threadName = defaultName;
-        }
         int len = sizeof(lname) - 1;
         memcpy(lname, threadName, len);
         lname[len] = 0;
@@ -99,11 +108,11 @@ LocThreadDelegate::~LocThreadDelegate() {
 }
 
 // factory method so that we could return NULL upon failure
-LocThreadDelegate* LocThreadDelegate::create(const char* threadName,
-        LocRunnable* runnable, bool joinable) {
+LocThreadDelegate* LocThreadDelegate::create(LocThread::tCreate creator,
+        const char* threadName, LocRunnable* runnable, bool joinable) {
     LocThreadDelegate* thread = NULL;
     if (runnable) {
-        thread = new LocThreadDelegate(threadName, runnable, joinable);
+        thread = new LocThreadDelegate(creator, threadName, runnable, joinable);
         if (thread && !thread->isRunning()) {
             thread->destroy();
             thread = NULL;
@@ -199,11 +208,14 @@ LocThread::~LocThread() {
     }
 }
 
-bool LocThread::start(const char* threadName, LocRunnable* runnable, bool joinable) {
-    mThread = LocThreadDelegate::create(threadName, runnable, joinable);
-
-    // true only if thread is created successfully
-    return (NULL != mThread);
+bool LocThread::start(tCreate creator, const char* threadName, LocRunnable* runnable, bool joinable) {
+    bool success = false;
+    if (!mThread) {
+        mThread = LocThreadDelegate::create(creator, threadName, runnable, joinable);
+        // true only if thread is created successfully
+        success = (NULL != mThread);
+    }
+    return success;
 }
 
 void LocThread::stop() {

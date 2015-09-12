@@ -37,7 +37,7 @@
 #include <LocTimer.h>
 #include <LocHeap.h>
 #include <LocThread.h>
-#include <pthread.h>
+#include <LocSharedLock.h>
 #include <MsgTask.h>
 
 #ifdef __HOST_UNIT_TEST__
@@ -45,22 +45,6 @@
 #define CLOCK_BOOTTIME CLOCK_MONOTONIC
 #define CLOCK_BOOTTIME_ALARM CLOCK_MONOTONIC
 #endif
-
-using namespace loc_core;
-
-// a shared lock until, place it here for now.
-class LocUtilSharedLock {
-    uint32_t mRef;
-    pthread_mutex_t mMutex;
-    inline ~LocUtilSharedLock() { pthread_mutex_destroy(&mMutex); }
-public:
-    inline LocUtilSharedLock() : mRef(1) { pthread_mutex_init(&mMutex, NULL); }
-    inline LocUtilSharedLock* share() { mRef++; return this; }
-    inline void drop() { if (0 == --mRef) delete this; }
-    inline void lock() { pthread_mutex_lock(&mMutex); }
-    inline void unlock() { pthread_mutex_unlock(&mMutex); }
-};
-
 
 /*
 There are implementations of 5 classes in this file:
@@ -191,7 +175,7 @@ class LocTimerDelegate : public LocRankable {
     friend class LocTimerContainer;
     friend class LocTimer;
     LocTimer* mClient;
-    LocUtilSharedLock* mLock;
+    LocSharedLock* mLock;
     struct timespec mFutureTime;
     LocTimerContainer* mContainer;
     // not a complete obj, just ctor for LocRankable comparisons
@@ -548,7 +532,7 @@ void LocTimerDelegate::expire() {
 
 
 /***************************LocTimer methods***************************/
-LocTimer::LocTimer() : mTimer(NULL), mLock(new LocUtilSharedLock()) {
+LocTimer::LocTimer() : mTimer(NULL), mLock(new LocSharedLock()) {
 }
 
 LocTimer::~LocTimer() {

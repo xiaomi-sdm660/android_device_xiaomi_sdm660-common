@@ -88,7 +88,7 @@ public:
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
                   void* owner, ContextBase* context,
-                  MsgTask::tCreate tCreator);
+                  LocThread::tCreate tCreator);
     virtual ~LocEngAdapter();
 
     virtual void setUlpProxy(UlpProxyBase* ulp);

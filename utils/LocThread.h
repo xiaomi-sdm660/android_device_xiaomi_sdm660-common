@@ -30,6 +30,7 @@
 #define __LOC_THREAD__
 
 #include <stddef.h>
+#include <pthread.h>
 
 // abstract class to be implemented by client to provide a runnable class
 // which gets scheduled by LocThread
@@ -64,6 +65,7 @@ public:
     inline LocThread() : mThread(NULL) {}
     virtual ~LocThread();
 
+    typedef pthread_t (*tCreate)(const char* name, void* (*start)(void*), void* arg);
     // client starts thread with a runnable, which implements
     // the logics to fun in the created thread context.
     // The thread could be either joinable or detached.
@@ -74,7 +76,10 @@ public:
     //          returns true. Else it is client's responsibility
     //          to delete the object
     // Returns 0 if success; false if failure.
-    bool start(const char* threadName, LocRunnable* runnable, bool joinable = true);
+    bool start(tCreate creator, const char* threadName, LocRunnable* runnable, bool joinable = true);
+    inline bool start(const char* threadName, LocRunnable* runnable, bool joinable = true) {
+        return start(NULL, threadName, runnable, joinable);
+    }
 
     // NOTE: if this is a joinable thread, this stop may block
     // for a while until the thread is joined.

@@ -63,34 +63,28 @@ const char* LocDualContext::mLBSLibName = "liblbs_core.so";
 
 pthread_mutex_t LocDualContext::mGetLocContextMutex = PTHREAD_MUTEX_INITIALIZER;
 
-const MsgTask* LocDualContext::getMsgTask(MsgTask::tCreate tCreator,
-                                          const char* name)
+const MsgTask* LocDualContext::getMsgTask(LocThread::tCreate tCreator,
+                                          const char* name, bool joinable)
 {
     if (NULL == mMsgTask) {
-        mMsgTask = new MsgTask(tCreator, name);
+        mMsgTask = new MsgTask(tCreator, name, joinable);
     }
     return mMsgTask;
 }
 
-const MsgTask* LocDualContext::getMsgTask(MsgTask::tAssociate tAssociate,
-                                          const char* name)
-{
-    if (NULL == mMsgTask) {
-        mMsgTask = new MsgTask(tAssociate, name);
-    } else if (tAssociate) {
-        mMsgTask->associate(tAssociate);
-    }
-    return mMsgTask;
+inline
+const MsgTask* LocDualContext::getMsgTask(const char* name, bool joinable) {
+    return getMsgTask((LocThread::tCreate)NULL, name, joinable);
 }
 
-ContextBase* LocDualContext::getLocFgContext(MsgTask::tCreate tCreator,
-                                             const char* name)
+ContextBase* LocDualContext::getLocFgContext(LocThread::tCreate tCreator,
+            LocMsg* firstMsg, const char* name, bool joinable)
 {
     pthread_mutex_lock(&LocDualContext::mGetLocContextMutex);
     LOC_LOGD("%s:%d]: querying ContextBase with tCreator", __func__, __LINE__);
     if (NULL == mFgContext) {
         LOC_LOGD("%s:%d]: creating msgTask with tCreator", __func__, __LINE__);
-        const MsgTask* msgTask = getMsgTask(tCreator, name);
+        const MsgTask* msgTask = getMsgTask(tCreator, name, joinable);
         mFgContext = new LocDualContext(msgTask,
                                         mFgExclMask);
     }
@@ -100,37 +94,22 @@ ContextBase* LocDualContext::getLocFgContext(MsgTask::tCreate tCreator,
         injectFeatureConfig(mInjectContext);
     }
     pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
+
+    if (firstMsg) {
+        mFgContext->sendMsg(firstMsg);
+    }
+
     return mFgContext;
 }
 
-ContextBase* LocDualContext::getLocFgContext(MsgTask::tAssociate tAssociate,
-                                             const char* name)
-{
-    pthread_mutex_lock(&LocDualContext::mGetLocContextMutex);
-    LOC_LOGD("%s:%d]: querying ContextBase with tAssociate", __func__, __LINE__);
-    if (NULL == mFgContext) {
-        LOC_LOGD("%s:%d]: creating msgTask with tAssociate", __func__, __LINE__);
-        const MsgTask* msgTask = getMsgTask(tAssociate, name);
-        mFgContext = new LocDualContext(msgTask,
-                                        mFgExclMask);
-    }
-    if(NULL == mInjectContext) {
-        LOC_LOGD("%s:%d]: mInjectContext is FgContext", __func__, __LINE__);
-        mInjectContext = mFgContext;
-        injectFeatureConfig(mInjectContext);
-    }
-    pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
-    return mFgContext;
-}
-
-ContextBase* LocDualContext::getLocBgContext(MsgTask::tCreate tCreator,
-                                             const char* name)
+ContextBase* LocDualContext::getLocBgContext(LocThread::tCreate tCreator,
+            LocMsg* firstMsg, const char* name, bool joinable)
 {
     pthread_mutex_lock(&LocDualContext::mGetLocContextMutex);
     LOC_LOGD("%s:%d]: querying ContextBase with tCreator", __func__, __LINE__);
     if (NULL == mBgContext) {
         LOC_LOGD("%s:%d]: creating msgTask with tCreator", __func__, __LINE__);
-        const MsgTask* msgTask = getMsgTask(tCreator, name);
+        const MsgTask* msgTask = getMsgTask(tCreator, name, joinable);
         mBgContext = new LocDualContext(msgTask,
                                         mBgExclMask);
     }
@@ -140,26 +119,11 @@ ContextBase* LocDualContext::getLocBgContext(MsgTask::tCreate tCreator,
         injectFeatureConfig(mInjectContext);
     }
     pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
-    return mBgContext;
-}
 
-ContextBase* LocDualContext::getLocBgContext(MsgTask::tAssociate tAssociate,
-                                             const char* name)
-{
-    pthread_mutex_lock(&LocDualContext::mGetLocContextMutex);
-    LOC_LOGD("%s:%d]: querying ContextBase with tAssociate", __func__, __LINE__);
-    if (NULL == mBgContext) {
-        LOC_LOGD("%s:%d]: creating msgTask with tAssociate", __func__, __LINE__);
-        const MsgTask* msgTask = getMsgTask(tAssociate, name);
-        mBgContext = new LocDualContext(msgTask,
-                                        mBgExclMask);
+    if (firstMsg) {
+        mBgContext->sendMsg(firstMsg);
     }
-    if(NULL == mInjectContext) {
-        LOC_LOGD("%s:%d]: mInjectContext is BgContext", __func__, __LINE__);
-        mInjectContext = mBgContext;
-        injectFeatureConfig(mInjectContext);
-    }
-    pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
+
     return mBgContext;
 }
 
