@@ -199,7 +199,7 @@ bool LocHeapNode::checkNodes() {
     int totalSize = mSize;
     if (mLeft) {
         // check the consistency of left subtree
-        if (!outRanks(*mLeft) || !mLeft->checkNodes()) {
+        if (mLeft->outRanks(*this) || !mLeft->checkNodes()) {
             return false;
         }
         // subtract the size of left subtree (with subtree head)
@@ -208,7 +208,7 @@ bool LocHeapNode::checkNodes() {
 
     if (mRight) {
         // check the consistency of right subtree
-        if (!outRanks(*mRight) || !mRight->checkNodes()) {
+        if (mRight->outRanks(*this) || !mRight->checkNodes()) {
             return false;
         }
         // subtract the size of right subtree (with subtree head)
