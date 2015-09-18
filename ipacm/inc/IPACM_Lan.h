@@ -185,6 +185,8 @@ public:
 
 	int handle_addr_evt_odu_bridge(ipacm_event_data_addr* data);
 
+	int handle_del_ipv6_addr(ipacm_event_data_all *data);
+
 	static bool odu_up;
 
 	/* install UL filter rule from Q6 */

@@ -161,7 +161,13 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 			{
 				if (data->ipv4_addr != 0) /* not 0.0.0.0 */
 				{
-					IPACMDBG("Got Neighbor event with ipv4 address \n");
+					IPACMDBG("Got Neighbor event with ipv4 address: 0x%x \n", data->ipv4_addr);
+					/* check if ipv4 address is link local(169.254.xxx.xxx) */
+					if ((data->ipv4_addr & IPV4_ADDR_LINKLOCAL_MASK) == IPV4_ADDR_LINKLOCAL)
+					{
+						IPACMDBG_H("This is link local ipv4 address: 0x%x : ignore this NEIGH_EVENT\n", data->ipv4_addr);
+						return;
+					}
 					/* check if iface is bridge interface*/
 					if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
 					{
@@ -355,7 +361,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 
 				if ((data->ipv6_addr[0]) || (data->ipv6_addr[1]) || (data->ipv6_addr[2]) || (data->ipv6_addr[3]))
 				{
-					IPACMDBG(" Got New_Neighbor event with ipv6 address \n");
+					IPACMDBG("Got New_Neighbor event with ipv6 address \n");
 					/* check if iface is bridge interface*/
 					if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
 					{
