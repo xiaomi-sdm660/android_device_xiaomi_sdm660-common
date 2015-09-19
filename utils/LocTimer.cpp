@@ -349,8 +349,12 @@ void LocTimerContainer::remove(LocTimerDelegate& timer) {
             LocMsg(), mTimerContainer(&container), mTimer(&timer) {}
         inline virtual void proc() const {
             LocTimerDelegate* priorTop = mTimerContainer->getSoonestTimer();
-            if (NULL != ((LocHeap*)mTimerContainer)->remove((LocRankable&)*mTimer)) {
-                mTimerContainer->updateSoonestTime(priorTop);
+            // update soonest timer only if mTimer is actually removed from mTimerContainer
+            // AND mTimer is not priorTop.
+            if (priorTop == ((LocHeap*)mTimerContainer)->remove((LocRankable&)*mTimer)) {
+                // if passing in NULL, we tell updateSoonestTime to update kernel with
+                // the current top timer interval.
+                mTimerContainer->updateSoonestTime(NULL);
             }
             delete mTimer;
         }
