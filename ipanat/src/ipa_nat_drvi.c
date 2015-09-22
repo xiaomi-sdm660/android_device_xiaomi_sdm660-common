@@ -823,7 +823,7 @@ int ipa_nati_update_cache(struct ipa_ioc_nat_alloc_mem *mem,
 																 prot, flags,
 																 fd, offset);
 #endif
-	if (NULL == ipv4_rules_addr) {
+	if (MAP_FAILED  == ipv4_rules_addr) {
 		perror("unable to mmap the memory\n");
 		return -EINVAL;
 	}
