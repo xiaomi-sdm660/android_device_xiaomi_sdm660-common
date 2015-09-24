@@ -211,6 +211,20 @@ typedef uint16_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_VERT_UNC 0x0010
 /** GpsLocationExtended has valid speed uncertainty */
 #define GPS_LOCATION_EXTENDED_HAS_SPEED_UNC 0x0020
+/** GpsLocationExtended has valid heading uncertainty */
+#define GPS_LOCATION_EXTENDED_HAS_BEARING_UNC 0x0040
+/** GpsLocationExtended has valid horizontal reliability */
+#define GPS_LOCATION_EXTENDED_HAS_HOR_RELIABILITY 0x0080
+/** GpsLocationExtended has valid vertical reliability */
+#define GPS_LOCATION_EXTENDED_HAS_VERT_RELIABILITY 0x0100
+
+typedef enum {
+    LOC_RELIABILITY_NOT_SET = 0,
+    LOC_RELIABILITY_VERY_LOW = 1,
+    LOC_RELIABILITY_LOW = 2,
+    LOC_RELIABILITY_MEDIUM = 3,
+    LOC_RELIABILITY_HIGH = 4
+}LocReliability;
 
 /** Represents gps location extended. */
 typedef struct {
@@ -232,6 +246,12 @@ typedef struct {
     float           vert_unc;
     /** speed uncertainty in m/s */
     float           speed_unc;
+    /** heading uncertainty in degrees (0 to 359.999) */
+    float           bearing_unc;
+    /** horizontal reliability. */
+    LocReliability  horizontal_reliability;
+    /** vertical reliability. */
+    LocReliability  vertical_reliability;
 } GpsLocationExtended;
 
 /** Represents SV status. */
