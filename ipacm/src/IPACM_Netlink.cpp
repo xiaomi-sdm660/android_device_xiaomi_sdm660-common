@@ -879,7 +879,6 @@ static int ipa_nl_decode_nlmsg
 
 			IPACMDBG("In case RTM_NEWROUTE\n");
 			IPACMDBG("rtm_type: %d\n", msg_ptr->nl_route_info.metainfo.rtm_type);
-			IPACMDBG("rtm_type: %d\n", msg_ptr->nl_route_info.metainfo.rtm_type);
 			IPACMDBG("protocol: %d\n", msg_ptr->nl_route_info.metainfo.rtm_protocol);
 			IPACMDBG("rtm_scope: %d\n", msg_ptr->nl_route_info.metainfo.rtm_scope);
 			IPACMDBG("rtm_table: %d\n", msg_ptr->nl_route_info.metainfo.rtm_table);
@@ -888,7 +887,8 @@ static int ipa_nl_decode_nlmsg
 
 			/* take care of route add default route & uniroute */
 			if((msg_ptr->nl_route_info.metainfo.rtm_type == RTN_UNICAST) &&
-				 (msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_BOOT) &&
+				 ((msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_BOOT) ||
+				  (msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_RA)) &&
 				 (msg_ptr->nl_route_info.metainfo.rtm_scope == RT_SCOPE_UNIVERSE) &&
 				 (msg_ptr->nl_route_info.metainfo.rtm_table == RT_TABLE_MAIN))
 			{
@@ -967,12 +967,19 @@ static int ipa_nl_decode_nlmsg
 						data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 						data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
 						data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
-						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
 
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
 						data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
 						data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
 						data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
 						data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);
+
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_gw, msg_ptr->nl_route_info.attr_info.gateway_addr);
+						data_addr->ipv6_addr_gw[0] = ntohl(data_addr->ipv6_addr_gw[0]);
+						data_addr->ipv6_addr_gw[1] = ntohl(data_addr->ipv6_addr_gw[1]);
+						data_addr->ipv6_addr_gw[2] = ntohl(data_addr->ipv6_addr_gw[2]);
+						data_addr->ipv6_addr_gw[3] = ntohl(data_addr->ipv6_addr_gw[3]);
+						IPACM_NL_REPORT_ADDR( " ", msg_ptr->nl_route_info.attr_info.gateway_addr);
 
 						evt_data.event = IPA_ROUTE_ADD_EVENT;
 						data_addr->if_index = msg_ptr->nl_route_info.attr_info.oif_index;
@@ -1146,7 +1153,8 @@ static int ipa_nl_decode_nlmsg
 			}
 			/* take care of route delete of default route & uniroute */
 			if((msg_ptr->nl_route_info.metainfo.rtm_type == RTN_UNICAST) &&
-				 (msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_BOOT) &&
+				 ((msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_BOOT) ||
+				  (msg_ptr->nl_route_info.metainfo.rtm_protocol == RTPROT_RA)) &&
 				 (msg_ptr->nl_route_info.metainfo.rtm_scope == 0) &&
 				 (msg_ptr->nl_route_info.metainfo.rtm_table == RT_TABLE_MAIN))
 			{
@@ -1217,19 +1225,24 @@ static int ipa_nl_decode_nlmsg
 						{
 							IPACMDBG("ip -6 route del default dev %s\n", dev_name);
 						}
-						 IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
-
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr, msg_ptr->nl_route_info.attr_info.dst_addr);
 						data_addr->ipv6_addr[0] = ntohl(data_addr->ipv6_addr[0]);
 						data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 						data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
 						data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
 
 						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_mask, msg_ptr->nl_route_info.attr_info.dst_addr);
-
 						data_addr->ipv6_addr_mask[0] = ntohl(data_addr->ipv6_addr_mask[0]);
 						data_addr->ipv6_addr_mask[1] = ntohl(data_addr->ipv6_addr_mask[1]);
 						data_addr->ipv6_addr_mask[2] = ntohl(data_addr->ipv6_addr_mask[2]);
 						data_addr->ipv6_addr_mask[3] = ntohl(data_addr->ipv6_addr_mask[3]);
+
+						IPACM_EVENT_COPY_ADDR_v6( data_addr->ipv6_addr_gw, msg_ptr->nl_route_info.attr_info.gateway_addr);
+						data_addr->ipv6_addr_gw[0] = ntohl(data_addr->ipv6_addr_gw[0]);
+						data_addr->ipv6_addr_gw[1] = ntohl(data_addr->ipv6_addr_gw[1]);
+						data_addr->ipv6_addr_gw[2] = ntohl(data_addr->ipv6_addr_gw[2]);
+						data_addr->ipv6_addr_gw[3] = ntohl(data_addr->ipv6_addr_gw[3]);
+						IPACM_NL_REPORT_ADDR( " ", msg_ptr->nl_route_info.attr_info.gateway_addr);
 						data_addr->iptype = IPA_IP_v6;
 					}
 					else

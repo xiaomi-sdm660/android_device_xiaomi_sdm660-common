@@ -305,6 +305,7 @@ typedef struct _ipacm_event_data_addr
 	uint32_t  ipv4_addr_mask;
 	uint32_t  ipv6_addr[4];
 	uint32_t  ipv6_addr_mask[4];
+	uint32_t  ipv6_addr_gw[4];
 } ipacm_event_data_addr;
 
 typedef struct _ipacm_event_data_mac

@@ -155,8 +155,10 @@ private:
 	int num_firewall_v4,num_firewall_v6;
 	uint32_t wan_v4_addr;
 	uint32_t wan_v4_addr_gw;
+	uint32_t wan_v6_addr_gw[4];
 	bool wan_v4_addr_set;
 	bool wan_v4_addr_gw_set;
+	bool wan_v6_addr_gw_set;
 	bool active_v4;
 	bool active_v6;
 	bool header_set_v4;
@@ -255,6 +257,49 @@ private:
 							get_client_memptr(wan_client, cnt)->ipv4_header_set,
 							get_client_memptr(wan_client, cnt)->ipv6_header_set);
 					return cnt;
+				}
+			}
+		}
+		return IPACM_INVALID_INDEX;
+	}
+
+	inline int get_wan_client_index_ipv6(uint32_t* ipv6_addr)
+	{
+		int cnt, v6_num;
+		int num_wan_client_tmp = num_wan_client;
+
+		IPACMDBG_H("Get ipv6 address 0x%08x.0x%08x.0x%08x.0x%08x\n", ipv6_addr[0], ipv6_addr[1], ipv6_addr[2], ipv6_addr[3]);
+
+		for(cnt = 0; cnt < num_wan_client_tmp; cnt++)
+		{
+			if (get_client_memptr(wan_client, cnt)->ipv6_set)
+			{
+			    for(v6_num=0;v6_num < get_client_memptr(wan_client, cnt)->ipv6_set;v6_num++)
+	            {
+
+					IPACMDBG_H("stored IPv6 0x%08x.0x%08x.0x%08x.0x%08x\n", get_client_memptr(wan_client, cnt)->v6_addr[v6_num][0],
+						get_client_memptr(wan_client, cnt)->v6_addr[v6_num][1],
+						get_client_memptr(wan_client, cnt)->v6_addr[v6_num][2],
+						get_client_memptr(wan_client, cnt)->v6_addr[v6_num][3]);
+
+					if(ipv6_addr[0] == get_client_memptr(wan_client, cnt)->v6_addr[v6_num][0] &&
+					   ipv6_addr[1] == get_client_memptr(wan_client, cnt)->v6_addr[v6_num][1] &&
+					   ipv6_addr[2]== get_client_memptr(wan_client, cnt)->v6_addr[v6_num][2] &&
+					   ipv6_addr[3] == get_client_memptr(wan_client, cnt)->v6_addr[v6_num][3])
+					{
+						IPACMDBG_H("Matched client index: %d\n", cnt);
+						IPACMDBG_H("The MAC is %02x:%02x:%02x:%02x:%02x:%02x\n",
+								get_client_memptr(wan_client, cnt)->mac[0],
+								get_client_memptr(wan_client, cnt)->mac[1],
+								get_client_memptr(wan_client, cnt)->mac[2],
+								get_client_memptr(wan_client, cnt)->mac[3],
+								get_client_memptr(wan_client, cnt)->mac[4],
+								get_client_memptr(wan_client, cnt)->mac[5]);
+						IPACMDBG_H("header set ipv4(%d) ipv6(%d)\n",
+								get_client_memptr(wan_client, cnt)->ipv4_header_set,
+								get_client_memptr(wan_client, cnt)->ipv6_header_set);
+						return cnt;
+					}
 				}
 			}
 		}
