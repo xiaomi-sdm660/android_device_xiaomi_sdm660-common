@@ -59,6 +59,7 @@ LOCAL_COPY_HEADERS:= \
    loc_misc_utils.h
 
 LOCAL_MODULE := libgps.utils
+LOCAL_CLANG := false
 
 LOCAL_MODULE_TAGS := optional
 
