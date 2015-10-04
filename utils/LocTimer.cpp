@@ -333,13 +333,15 @@ void LocTimerContainer::remove(LocTimerDelegate& timer) {
             LocMsg(), mTimerContainer(&container), mTimer(&timer) {}
         inline virtual void proc() const {
             LocTimerDelegate* priorTop = mTimerContainer->getSoonestTimer();
-            // update soonest timer only if mTimer is actually removed from mTimerContainer
-            // AND mTimer is not priorTop.
+
+            // update soonest timer only if mTimer is actually removed from
+            // mTimerContainer AND mTimer is not priorTop.
             if (priorTop == ((LocHeap*)mTimerContainer)->remove((LocRankable&)*mTimer)) {
-                // if passing in NULL, we tell updateSoonestTime to update kernel with
-                // the current top timer interval.
+                // if passing in NULL, we tell updateSoonestTime to update
+                // kernel with the current top timer interval.
                 mTimerContainer->updateSoonestTime(NULL);
             }
+            // all timers are deleted here, and only here.
             delete mTimer;
         }
     };
@@ -367,7 +369,6 @@ void LocTimerContainer::expire() {
                  timer = mTimerContainer->popIfOutRanks(timerOfNow)) {
                 // the timer delegate obj will be deleted before the return of this call
                 timer->expire();
-                delete timer;
             }
             mTimerContainer->updateSoonestTime(NULL);
         }
@@ -493,9 +494,10 @@ void LocTimerDelegate::destroyLocked() {
         if (container) {
             container->remove(*this);
         }
-    } // else we do not do anything, as *this* will be deleted either
-      // after it expires or stop is first called (if case above),
-      // where container->remove() will have it deleted.
+    } // else we do not do anything. No such *this* can be
+      // created and reached here with mContainer ever been
+      // a non NULL. So *this* must have reached the if clause
+      // once, and we want it reach there only once.
 }
 
 int LocTimerDelegate::ranks(LocRankable& rankable) {
@@ -511,17 +513,11 @@ int LocTimerDelegate::ranks(LocRankable& rankable) {
 
 inline
 void LocTimerDelegate::expire() {
-    mLock->lock();
     // keeping a copy of client pointer to be safe
     // when timeOutCallback() is called at the end of this
-    // method, this obj is already deleted.
+    // method, *this* obj may be already deleted.
     LocTimer* client = mClient;
-    // this obj is already removed from mContainer.
-    // NULL it here so that dtor won't try to call remove again
-    mContainer = NULL;
-    mClient = NULL;
-    mLock->unlock();
-    // force a stop, which will force a delete of this obj
+    // force a stop, which will lead to delete of this obj
     if (client && client->stop()) {
         // calling client callback with a pointer save on the stack
         // only if stop() returns true, i.e. it hasn't been stopped
@@ -545,6 +541,7 @@ LocTimer::~LocTimer() {
 
 bool LocTimer::start(unsigned int timeOutInMs, bool wakeOnExpire) {
     bool success = false;
+    mLock->lock();
     if (!mTimer) {
         struct timespec futureTime;
         clock_gettime(CLOCK_BOOTTIME, &futureTime);
@@ -558,21 +555,22 @@ bool LocTimer::start(unsigned int timeOutInMs, bool wakeOnExpire) {
         // if mTimer is non 0, success should be 0; or vice versa
         success = (NULL != mTimer);
     }
+    mLock->unlock();
     return success;
 }
 
 bool LocTimer::stop() {
     bool success = false;
+    mLock->lock();
     if (mTimer) {
-        mLock->lock();
         LocTimerDelegate* timer = mTimer;
         mTimer = NULL;
         if (timer) {
             timer->destroyLocked();
             success = true;
         }
-        mLock->unlock();
     }
+    mLock->unlock();
     return success;
 }
 
