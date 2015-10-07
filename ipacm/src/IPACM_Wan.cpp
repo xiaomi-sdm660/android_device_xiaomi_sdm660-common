@@ -104,6 +104,7 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 
 	wan_v4_addr_set = false;
 	wan_v4_addr_gw_set = false;
+	wan_v6_addr_gw_set = false;
 	active_v4 = false;
 	active_v6 = false;
 	header_set_v4 = false;
@@ -115,6 +116,7 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	num_ipv6_dest_flt_rule = 0;
 	memset(ipv6_dest_flt_rule_hdl, 0, MAX_DEFAULT_v6_ROUTE_RULES*sizeof(uint32_t));
 	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
+	memset(wan_v6_addr_gw, 0, sizeof(wan_v6_addr_gw));
 	ext_prop = NULL;
 
 	num_wan_client = 0;
@@ -867,8 +869,17 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						(active_v6 == false) &&	(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
 					IPACMDBG_H("\n get default v6 route (dst:00.00.00.00)\n");
-					IPACMDBG_H(" IPV6 value: %08x:%08x:%08x:%08x \n",
+					IPACMDBG_H(" IPV6 dst: %08x:%08x:%08x:%08x \n",
 							data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
+					IPACMDBG_H(" IPV6 gateway: %08x:%08x:%08x:%08x \n",
+							data->ipv6_addr_gw[0], data->ipv6_addr_gw[1], data->ipv6_addr_gw[2], data->ipv6_addr_gw[3]);
+					wan_v6_addr_gw[0] = data->ipv6_addr_gw[0];
+					wan_v6_addr_gw[1] = data->ipv6_addr_gw[1];
+					wan_v6_addr_gw[2] = data->ipv6_addr_gw[2];
+					wan_v6_addr_gw[3] = data->ipv6_addr_gw[3];
+					wan_v6_addr_gw_set = true;
+					/* Check & construct STA header */
+					handle_sta_header_add_evt();
 					handle_route_add_evt(data->iptype);
 				}
 			}
@@ -1723,6 +1734,51 @@ int IPACM_Wan::handle_sta_header_add_evt()
 			else
 			{
 				IPACMERR(" wan-client got ipv6 however didn't construct complete ipv6 header \n");
+				return IPACM_FAILURE;
+			}
+		}
+		else
+		{
+			IPACMDBG_H(" currently can't find matched wan-client's MAC-addr, waiting for header construction\n");
+			return IPACM_SUCCESS;
+		}
+	}
+
+	/* checking if the ipv4 same as default route */
+	if(wan_v6_addr_gw_set)
+	{
+		index = get_wan_client_index_ipv6(wan_v6_addr_gw);
+		if (index != IPACM_INVALID_INDEX)
+		{
+			IPACMDBG_H("Matched client index: %d\n", index);
+			IPACMDBG_H("Received Client MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+					 get_client_memptr(wan_client, index)->mac[0],
+					 get_client_memptr(wan_client, index)->mac[1],
+					 get_client_memptr(wan_client, index)->mac[2],
+					 get_client_memptr(wan_client, index)->mac[3],
+					 get_client_memptr(wan_client, index)->mac[4],
+					 get_client_memptr(wan_client, index)->mac[5]);
+			if(get_client_memptr(wan_client, index)->ipv6_header_set)
+			{
+				hdr_hdl_sta_v6 = get_client_memptr(wan_client, index)->hdr_hdl_v6;
+				header_set_v6 = true;
+				IPACMDBG_H("add full ipv6 header hdl: (%x)\n", get_client_memptr(wan_client, index)->hdr_hdl_v6);
+			}
+			else
+			{
+				IPACMERR(" wan-client got ipv6 however didn't construct complete ipv4 header \n");
+				return IPACM_FAILURE;
+			}
+
+			if(get_client_memptr(wan_client, index)->ipv4_header_set)
+			{
+				hdr_hdl_sta_v4 = get_client_memptr(wan_client, index)->hdr_hdl_v4;
+				header_set_v4 = true;
+				IPACMDBG_H("add full ipv4 header hdl: (%x)\n", get_client_memptr(wan_client, index)->hdr_hdl_v4);
+			}
+			else
+			{
+				IPACMERR(" wan-client got ipv4 however didn't construct complete ipv4 header \n");
 				return IPACM_FAILURE;
 			}
 		}
