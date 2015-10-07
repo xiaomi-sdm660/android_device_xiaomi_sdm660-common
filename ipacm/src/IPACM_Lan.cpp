@@ -586,9 +586,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
-		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d\n", data_wan_tether->is_sta,
-					data_wan_tether->if_index_tether);
-		if (iface_ipa_index_query(data_wan_tether->if_index_tether) == ipa_if_num)
+		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d tether_if_name:%s\n", data_wan_tether->is_sta,
+					data_wan_tether->if_index_tether,
+					IPACM_Iface::ipacmcfg->iface_table[data_wan_tether->if_index_tether].iface_name);
+		if (data_wan_tether->if_index_tether == ipa_if_num)
 		{
 			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
 			{
@@ -614,9 +615,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
-		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d\n", data_wan_tether->is_sta,
-					data_wan_tether->if_index_tether);
-		if (iface_ipa_index_query(data_wan_tether->if_index_tether) == ipa_if_num)
+		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d tether_if_name:%s\n", data_wan_tether->is_sta,
+					data_wan_tether->if_index_tether,
+					IPACM_Iface::ipacmcfg->iface_table[data_wan_tether->if_index_tether].iface_name);
+		if (data_wan_tether->if_index_tether == ipa_if_num)
 		{
 			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 			{
@@ -642,9 +644,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
-		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d\n", data_wan_tether->is_sta,
-					data_wan_tether->if_index_tether);
-		if (iface_ipa_index_query(data_wan_tether->if_index_tether) == ipa_if_num)
+		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d tether_if_name:%s\n", data_wan_tether->is_sta,
+					data_wan_tether->if_index_tether,
+					IPACM_Iface::ipacmcfg->iface_table[data_wan_tether->if_index_tether].iface_name);
+		if (data_wan_tether->if_index_tether == ipa_if_num)
 		{
 			if(ip_type == IPA_IP_v4 || ip_type == IPA_IP_MAX)
 			{
@@ -661,9 +664,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
-		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d\n", data_wan_tether->is_sta,
-					data_wan_tether->if_index_tether);
-		if (iface_ipa_index_query(data_wan_tether->if_index_tether) == ipa_if_num)
+		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d tether_if_name:%s\n", data_wan_tether->is_sta,
+					data_wan_tether->if_index_tether,
+					IPACM_Iface::ipacmcfg->iface_table[data_wan_tether->if_index_tether].iface_name);
+		if (data_wan_tether->if_index_tether == ipa_if_num)
 		{
 			/* clean up v6 RT rules*/
 			IPACMDBG_H("Received IPA_HANDLE_WAN_DOWN_V6_TETHER in LAN-instance and need clean up client IPv6 address \n");
