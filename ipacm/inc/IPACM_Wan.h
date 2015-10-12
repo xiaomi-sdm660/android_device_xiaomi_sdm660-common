@@ -445,6 +445,9 @@ private:
 	int config_dft_firewall_rules_ex(struct ipa_flt_rule_add* rules, int rule_offset,
 		ipa_ip_type iptype);
 
+	/* Change IP Type.*/
+	void config_ip_type(ipa_ip_type iptype);
+
 	/* init filtering rule in wan dl filtering table */
 	int init_fl_rule_ex(ipa_ip_type iptype);
 

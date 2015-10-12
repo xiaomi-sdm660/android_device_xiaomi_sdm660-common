@@ -306,9 +306,12 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	    	          dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6],
 	    	          dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6+1],num_dft_rt_v6);
 
+		/* Update the IP Type. */
+		config_ip_type(data->iptype);
+
 		/* add default filtering rules when wan-iface get global v6-prefix */
-        if (num_dft_rt_v6 == 1)
-	    {
+        	if (num_dft_rt_v6 == 1)
+	    	{
 			if(m_is_sta_mode == Q6_WAN)
 			{
 				modem_ipv6_pdn_index = num_ipv6_modem_pdn;
@@ -320,7 +323,7 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 			{
 				init_fl_rule(data->iptype);
 			}
-	    }
+	    	}
 
 		/* add WAN DL interface IP specific flt rule for IPv6 when backhaul is not Q6 */
 		if(m_is_sta_mode != Q6_WAN)
@@ -463,6 +466,9 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 		dft_rt_rule_hdl[0] = rt_rule_entry->rt_rule_hdl;
 		IPACMDBG_H("ipv4 wan iface rt-rule hdll=0x%x\n", dft_rt_rule_hdl[0]);
 			/* initial multicast/broadcast/fragment filter rule */
+
+		/* Update the IP Type. */
+		config_ip_type(data->iptype);
 
 		/* only do one time */
 		if(!wan_v4_addr_set)
@@ -3042,13 +3048,8 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 	return IPACM_SUCCESS;
 }
 
-int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
+void IPACM_Wan::config_ip_type(ipa_ip_type iptype)
 {
-	int res = IPACM_SUCCESS;
-
-	char *dev_wlan0="wlan0";
-	char *dev_wlan1="wlan1";
-	char *dev_ecm0="ecm0";
 
 	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
 	if (iptype == IPA_IP_v4)
@@ -3057,7 +3058,7 @@ int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 		if ((ip_type == IPA_IP_v4) || (ip_type == IPA_IP_MAX))
 		{
 			IPACMDBG_H(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
-			return res;
+			return;
 		}
 
 		if (ip_type == IPA_IP_v6)
@@ -3075,7 +3076,7 @@ int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 		if ((ip_type == IPA_IP_v6) || (ip_type == IPA_IP_MAX))
 		{
 			IPACMDBG_H(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
-			return res;
+			return;
 		}
 
 		if (ip_type == IPA_IP_v4)
@@ -3089,6 +3090,17 @@ int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 
 		IPACMDBG_H(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
 	}
+
+	return;
+}
+
+int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
+{
+	int res = IPACM_SUCCESS;
+
+	char *dev_wlan0="wlan0";
+	char *dev_wlan1="wlan1";
+	char *dev_ecm0="ecm0";
 
 	/* ADD corresponding ipa_rm_resource_name of RX-endpoint before adding all IPV4V6 FT-rules */
 	IPACMDBG_H(" dun add producer dependency from %s with registered rx-prop\n", dev_name);
