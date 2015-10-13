@@ -104,10 +104,12 @@ public:
 	{
 #ifdef FEATURE_IPA_ANDROID
 		int i;
-		for (i=1; i < ipa_if_num_tether_v4_total;i++)
+		for (i=0; i < ipa_if_num_tether_v4_total;i++)
 		{
 			if (ipa_if_num_tether_v4[i] == ipa_if_num_tether)
 			{
+				IPACMDBG_H("support ipv4 tether_iface(%s)\n",
+					IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether].iface_name);
 				return wan_up;
 				break;
 			}
@@ -122,10 +124,12 @@ public:
 	{
 #ifdef FEATURE_IPA_ANDROID
 		int i;
-		for (i=1; i < ipa_if_num_tether_v6_total;i++)
+		for (i=0; i < ipa_if_num_tether_v6_total;i++)
 		{
 			if (ipa_if_num_tether_v6[i] == ipa_if_num_tether)
 			{
+				IPACMDBG_H("support ipv6 tether_iface(%s)\n",
+					IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether].iface_name);
 				return wan_up_v6;
 				break;
 			}
