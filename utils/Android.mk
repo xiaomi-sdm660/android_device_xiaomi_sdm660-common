@@ -53,6 +53,7 @@ LOCAL_COPY_HEADERS:= \
    LocTimer.h \
    loc_target.h \
    loc_timer.h \
+   LocSharedLock.h \
    platform_lib_abstractions/platform_lib_includes.h \
    platform_lib_abstractions/platform_lib_time.h \
    platform_lib_abstractions/platform_lib_macros.h \
