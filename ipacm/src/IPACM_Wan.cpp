@@ -5448,10 +5448,19 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 							IPACM_Iface::ipacmcfg->rt_tbl_v6.name,
 							sizeof(rt_rule->rt_tbl_name));
 					rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
-					/* Support QCMAP LAN traffic feature, send to A5 */
-					rt_rule_entry->rule.dst = iface_query->excp_pipe;
+					/* Uplink going to wan clients should go to IPA */
+					if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
+					{
+						IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
+								tx_prop->tx[tx_index].alt_dst_pipe);
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
+					}
+					else
+					{
+						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
+					}
 					memset(&rt_rule_entry->rule.attrib, 0, sizeof(rt_rule_entry->rule.attrib));
-					rt_rule_entry->rule.hdr_hdl = 0;
+					rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, wan_index)->hdr_hdl_v6;;
 					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][0];
 					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][1];
@@ -5478,21 +5487,12 @@ int IPACM_Wan::handle_wan_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 							IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name,
 							sizeof(rt_rule->rt_tbl_name));
 					rt_rule->rt_tbl_name[IPA_RESOURCE_NAME_MAX-1] = '\0';
-					/* Downlink traffic from Wan iface, directly through IPA */
-					if (IPACM_Iface::ipacmcfg->isMCC_Mode == true)
-					{
-						IPACMDBG_H("In MCC mode, use alt dst pipe: %d\n",
-								tx_prop->tx[tx_index].alt_dst_pipe);
-						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].alt_dst_pipe;
-					}
-					else
-					{
-						rt_rule_entry->rule.dst = tx_prop->tx[tx_index].dst_pipe;
-					}
+					/* Downlink traffic from Wan clients, should go exception */
+					rt_rule_entry->rule.dst = iface_query->excp_pipe;
 					memcpy(&rt_rule_entry->rule.attrib,
 							&tx_prop->tx[tx_index].attrib,
 							sizeof(rt_rule_entry->rule.attrib));
-					rt_rule_entry->rule.hdr_hdl = get_client_memptr(wan_client, wan_index)->hdr_hdl_v6;
+					rt_rule_entry->rule.hdr_hdl = 0;
 					rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr[0] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][0];
 					rt_rule_entry->rule.attrib.u.v6.dst_addr[1] = get_client_memptr(wan_client, wan_index)->v6_addr[v6_num][1];
