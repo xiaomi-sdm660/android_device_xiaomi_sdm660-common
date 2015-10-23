@@ -114,14 +114,14 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 	exp_index_v4 = IPV4_DEFAULT_FILTERTING_RULES + IPACM_Iface::ipacmcfg->ipa_num_private_subnet
 			+ IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT + NUM_IPV4_ICMP_FLT_RULE;
 	exp_index_v6 = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT
-			+ NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
+			+ 2 * NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
 #else
 #ifndef CT_OPT
 	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet) + NUM_IPV4_ICMP_FLT_RULE;
-	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
+	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE) + NUM_IPV6_ICMP_FLT_RULE;
 #else
 	exp_index_v4 = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet) + NUM_IPV4_ICMP_FLT_RULE;
-	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR) + NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_ICMP_FLT_RULE;
+	exp_index_v6 = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE) + NUM_IPV6_ICMP_FLT_RULE;
 #endif
 #ifdef FEATURE_IPA_ANDROID
 	exp_index_v4 = exp_index_v4 + 2 * (IPA_MAX_PRIVATE_SUBNET_ENTRIES - IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
@@ -372,10 +372,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					{
 						if((data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX) && num_dft_rt_v6 == 1)
 						{
-							if(wlan_ap_index == 0) //install ipv6 prefix rule only once
-							{
-								install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
-							}
+							install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
+
 							if(IPACM_Wan::backhaul_is_sta_mode == false)
 							{
 								ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
@@ -446,10 +444,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 			{
-				if(wlan_ap_index == 0) //install ipv6 prefix rule only once
-				{
-					install_ipv6_prefix_flt_rule(data_wan_tether->ipv6_prefix);
-				}
+				install_ipv6_prefix_flt_rule(data_wan_tether->ipv6_prefix);
+
 				if(data_wan_tether->is_sta == false)
 				{
 					ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
@@ -509,11 +505,6 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			/* reset wifi-client ipv6 rt-rules */
 			handle_wlan_client_reset_rt(IPA_IP_v6);
 
-			if(data_wan_tether->is_sta == false && wlan_ap_index > 0)
-			{
-				IPACMDBG_H("This is not the first AP instance and not STA mode, ignore WAN_DOWN event.\n");
-				return;
-			}
 			if (rx_prop != NULL)
 			{
 				if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
@@ -560,10 +551,8 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		IPACMDBG_H("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 		{
-			if(wlan_ap_index == 0) //install ipv6 prefix rule only once
-			{
-				install_ipv6_prefix_flt_rule(data_wan->ipv6_prefix);
-			}
+			install_ipv6_prefix_flt_rule(data_wan->ipv6_prefix);
+
 			if(data_wan->is_sta == false)
 			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
@@ -612,11 +601,6 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		/* reset wifi-client ipv6 rt-rules */
 		handle_wlan_client_reset_rt(IPA_IP_v6);
 		IPACMDBG_H("Backhaul is sta mode ? %d\n", data_wan->is_sta);
-		if(data_wan->is_sta == false && wlan_ap_index > 0)
-		{
-			IPACMDBG_H("This is not the first AP instance and not STA mode, ignore WAN_DOWN event.\n");
-			return;
-		}
 		if (rx_prop != NULL)
 		{
 			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
@@ -2479,7 +2463,7 @@ int IPACM_Wlan::handle_down_evt()
 	if (IPACM_Wan::isWanUP_V6(ipa_if_num) && rx_prop != NULL)
 	{
 		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
-		IPACM_Lan::handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
+		handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
 	}
 	IPACMDBG_H("finished deleting wan filtering rules\n ");
 
@@ -3247,14 +3231,14 @@ void IPACM_Wlan::add_dummy_flt_rule()
 		}
 #ifdef FEATURE_ETH_BRIDGE_LE
 		num_v4_dummy_rule = IPV4_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
-		num_v6_dummy_rule = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT;
+		num_v6_dummy_rule = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT + 2 * NUM_IPV6_PREFIX_FLT_RULE;
 #else
 #ifndef CT_OPT
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR);
+		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE);
 #else
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR);
+		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE);
 #endif
 #ifdef FEATURE_IPA_ANDROID
 		num_v4_dummy_rule = num_v4_dummy_rule - 2* IPACM_Iface::ipacmcfg->ipa_num_private_subnet + 2 * IPA_MAX_PRIVATE_SUBNET_ENTRIES;
@@ -3439,10 +3423,10 @@ void IPACM_Wlan::del_dummy_flt_rule()
 		}
 #ifndef CT_OPT
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR);
+		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE);
 #else
 		num_v4_dummy_rule = 2*(IPV4_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
-		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR);
+		num_v6_dummy_rule = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR + NUM_IPV6_PREFIX_FLT_RULE);
 #endif
 #ifdef FEATURE_IPA_ANDROID
 		num_v4_dummy_rule = num_v4_dummy_rule - 2* IPACM_Iface::ipacmcfg->ipa_num_private_subnet + 2 * IPA_MAX_PRIVATE_SUBNET_ENTRIES;
@@ -3450,7 +3434,7 @@ void IPACM_Wlan::del_dummy_flt_rule()
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 		num_v4_dummy_rule = IPV4_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT + IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
-		num_v6_dummy_rule = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT;
+		num_v6_dummy_rule = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT + 2 * NUM_IPV6_PREFIX_FLT_RULE;
 #endif
 
 		if(m_filtering.DeleteFilteringHdls(IPACM_Wlan::dummy_flt_rule_hdl_v4, IPA_IP_v4, num_v4_dummy_rule) == false)
@@ -5500,4 +5484,96 @@ int IPACM_Wlan::eth_bridge_modify_wlan_client_flt_rule(uint8_t* mac, eth_bridge_
 fail:
 	free(pFilteringTable);
 	return res;
+}
+
+int IPACM_Wlan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
+{
+	int i, len, res = IPACM_SUCCESS, offset;
+	struct ipa_flt_rule_mdfy flt_rule;
+	struct ipa_ioc_mdfy_flt_rule* pFilteringTable;
+
+	if (rx_prop == NULL)
+	{
+		IPACMDBG_H("No rx properties registered for iface %s\n", dev_name);
+		return IPACM_SUCCESS;
+	}
+
+	if(IPACM_Wlan::dummy_flt_rule_hdl_v6 == NULL)
+	{
+		IPACMERR("Dummy ipv6 flt rule has not been installed.\n");
+		return IPACM_FAILURE;
+	}
+	if(wlan_ap_index >= 2)
+	{
+		IPACMERR("Cannot support more than 2 WLAN AP, abort.\n");
+		return IPACM_FAILURE;
+	}
+
+#ifdef FEATURE_ETH_BRIDGE_LE
+	offset = IPV6_DEFAULT_FILTERTING_RULES + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT + IPA_LAN_TO_LAN_MAX_LAN_CLIENT + wlan_ap_index;
+#else
+#ifndef CT_OPT
+	offset = 2*(IPV6_DEFAULT_FILTERTING_RULES + MAX_OFFLOAD_PAIR) + wlan_ap_index;
+#else
+	offset = 2*(IPV6_DEFAULT_FILTERTING_RULES + NUM_TCP_CTL_FLT_RULE + MAX_OFFLOAD_PAIR) + wlan_ap_index;
+#endif
+#endif
+
+	len = sizeof(struct ipa_ioc_mdfy_flt_rule) + sizeof(struct ipa_flt_rule_mdfy);
+	pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
+	if (!pFilteringTable)
+	{
+		IPACMERR("Failed to allocate ipa_ioc_mdfy_flt_rule memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+	pFilteringTable->commit = 1;
+	pFilteringTable->ip = IPA_IP_v6;
+	pFilteringTable->num_rules = 1;
+
+	memset(&flt_rule, 0, sizeof(flt_rule));
+	flt_rule.status = -1;
+	flt_rule.rule_hdl = IPACM_Wlan::dummy_flt_rule_hdl_v6[offset];
+
+	flt_rule.rule.retain_hdr = 1;
+	flt_rule.rule.to_uc = 0;
+	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+	flt_rule.rule.eq_attrib_type = 0;
+
+	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+	flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+	flt_rule.rule.attrib.u.v6.dst_addr[0] = prefix[0];
+	flt_rule.rule.attrib.u.v6.dst_addr[1] = prefix[1];
+	flt_rule.rule.attrib.u.v6.dst_addr[2] = 0x0;
+	flt_rule.rule.attrib.u.v6.dst_addr[3] = 0x0;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[0] = 0xFFFFFFFF;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[2] = 0x0;
+	flt_rule.rule.attrib.u.v6.dst_addr_mask[3] = 0x0;
+	memcpy(&(pFilteringTable->rules[0]), &flt_rule, sizeof(flt_rule));
+
+	if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
+	{
+		IPACMERR("Failed to modify tcp control filtering rules.\n");
+		free(pFilteringTable);
+		return IPACM_FAILURE;
+	}
+	else
+	{
+		ipv6_prefix_flt_rule_hdl[0] = IPACM_Wlan::dummy_flt_rule_hdl_v6[offset];
+		IPACMDBG_H("IPv6 prefix filter rule HDL:0x%x\n", ipv6_prefix_flt_rule_hdl[0]);
+	}
+
+	free(pFilteringTable);
+	return IPACM_SUCCESS;
+}
+
+void IPACM_Wlan::delete_ipv6_prefix_flt_rule()
+{
+	if(reset_to_dummy_flt_rule(IPA_IP_v6, ipv6_prefix_flt_rule_hdl[0]) == IPACM_FAILURE)
+	{
+		IPACMERR("Failed to delete ipv6 prefix flt rule.\n");
+	}
+	return;
 }

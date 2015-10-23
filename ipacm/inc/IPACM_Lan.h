@@ -55,7 +55,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPA_NUM_ODU_ROUTE_RULES 2
 #define MAX_WAN_UL_FILTER_RULES MAX_NUM_EXT_PROPS
 #define NUM_IPV4_ICMP_FLT_RULE 1
-#define NUM_IPV6_PREFIX_FLT_RULE 1
 #define NUM_IPV6_ICMP_FLT_RULE 1
 
 /* ndc bandwidth ipatetherstats <ifaceIn> <ifaceOut> */
@@ -306,7 +305,9 @@ protected:
 	/*handle lan2lan client active*/
 	int handle_lan2lan_client_active(ipacm_event_data_all *data, ipa_cm_event_id event);
 
-	int install_ipv6_prefix_flt_rule(uint32_t* prefix);
+	virtual int install_ipv6_prefix_flt_rule(uint32_t* prefix);
+
+	virtual void delete_ipv6_prefix_flt_rule();
 
 	int install_ipv6_icmp_flt_rule();
 

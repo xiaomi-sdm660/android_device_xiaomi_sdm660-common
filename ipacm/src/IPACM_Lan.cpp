@@ -3392,12 +3392,9 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 		IPACMERR("Failed opening %s.\n", IPA_DEVICE_NAME);
 		return IPACM_FAILURE;
 	}
-	if(m_filtering.DeleteFilteringHdls(ipv6_prefix_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE) == false)
-	{
-		close(fd);
-		return IPACM_FAILURE;
-	}
-	IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE);
+
+	delete_ipv6_prefix_flt_rule();
+
 	if(is_sta_mode == false)
 	{
 		if (num_wan_ul_fl_rule_v6 > MAX_WAN_UL_FILTER_RULES)
@@ -3406,6 +3403,13 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 			close(fd);
 			return IPACM_FAILURE;
 		}
+		if (num_wan_ul_fl_rule_v6 == 0)
+		{
+			IPACMERR("No modem UL rules were installed, return...\n");
+			close(fd);
+			return IPACM_FAILURE;
+		}
+
 		if (m_filtering.DeleteFilteringHdls(wan_ul_fl_rule_hdl_v6,
 			IPA_IP_v6, num_wan_ul_fl_rule_v6) == false)
 		{
@@ -4977,6 +4981,17 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 		}
 	}
 	return IPACM_SUCCESS;
+}
+
+void IPACM_Lan::delete_ipv6_prefix_flt_rule()
+{
+	if(m_filtering.DeleteFilteringHdls(ipv6_prefix_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE) == false)
+	{
+		IPACMERR("Failed to delete ipv6 prefix flt rule.\n");
+		return;
+	}
+	IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE);
+	return;
 }
 
 int IPACM_Lan::install_ipv6_icmp_flt_rule()

@@ -319,6 +319,10 @@ private:
 	/*handle wlan access mode switch */
 	void eth_bridge_handle_wlan_mode_switch();
 
+	virtual int install_ipv6_prefix_flt_rule(uint32_t* prefix);
+
+	virtual void delete_ipv6_prefix_flt_rule();
+
 };
 
 
