@@ -1782,6 +1782,15 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 						memcpy(&pHeaderDescriptor->hdr[0].hdr[data->attribs[i].offset],
 									 get_client_memptr(wlan_client, num_wifi_client)->mac,
 									 IPA_MAC_ADDR_SIZE);
+						/* replace src mac to bridge mac_addr if any  */
+						if (IPACM_Iface::ipacmcfg->ipa_bridge_enable)
+						{
+							memcpy(&pHeaderDescriptor->hdr[0].hdr[data->attribs[i].offset+IPA_MAC_ADDR_SIZE],
+									 IPACM_Iface::ipacmcfg->bridge_mac,
+									 IPA_MAC_ADDR_SIZE);
+							IPACMDBG_H("device is in bridge mode \n");
+						}
+
 					}
 					else if(data->attribs[i].attrib_type == WLAN_HDR_ATTRIB_STA_ID)
 					{
@@ -1888,6 +1897,15 @@ int IPACM_Wlan::handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data)
 						memcpy(&pHeaderDescriptor->hdr[0].hdr[data->attribs[i].offset],
 								get_client_memptr(wlan_client, num_wifi_client)->mac,
 								IPA_MAC_ADDR_SIZE);
+
+						/* replace src mac to bridge mac_addr if any  */
+						if (IPACM_Iface::ipacmcfg->ipa_bridge_enable)
+						{
+							memcpy(&pHeaderDescriptor->hdr[0].hdr[data->attribs[i].offset+IPA_MAC_ADDR_SIZE],
+									 IPACM_Iface::ipacmcfg->bridge_mac,
+									 IPA_MAC_ADDR_SIZE);
+							IPACMDBG_H("device is in bridge mode \n");
+						}
 					}
 					else if (data->attribs[i].attrib_type == WLAN_HDR_ATTRIB_STA_ID)
 					{

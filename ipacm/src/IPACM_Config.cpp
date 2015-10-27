@@ -64,6 +64,7 @@ IPACM_Config::IPACM_Config()
 	ipa_nat_max_entries = 0;
 	ipa_nat_iface_entries = 0;
 	ipa_sw_rt_enable = false;
+	ipa_bridge_enable = false;
 	isMCC_Mode = false;
 	ipa_max_valid_rm_entry = 0;
 
@@ -88,6 +89,7 @@ IPACM_Config::IPACM_Config()
 
 	memset(flt_rule_count_v4, 0, (IPA_CLIENT_CONS - IPA_CLIENT_PROD)*sizeof(int));
 	memset(flt_rule_count_v6, 0, (IPA_CLIENT_CONS - IPA_CLIENT_PROD)*sizeof(int));
+	memset(bridge_mac, 0, IPA_MAC_ADDR_SIZE*sizeof(uint8_t));
 
 	IPACMDBG_H(" create IPACM_Config constructor\n");
 	return;

@@ -194,6 +194,7 @@ typedef enum
 	IPA_HANDLE_WAN_DOWN_TETHER,               /* 57 ipacm_event_iface_up_tehter */
 	IPA_HANDLE_WAN_UP_V6_TETHER,		  /* 58 ipacm_event_iface_up_tehter */
 	IPA_HANDLE_WAN_DOWN_V6_TETHER,		  /* 59 ipacm_event_iface_up_tehter */
+	IPA_BRIDGE_LINK_UP_EVENT,                 /* 60 ipacm_event_data_all */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 

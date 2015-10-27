@@ -58,8 +58,10 @@ IPACM_IfaceManager::IPACM_IfaceManager()
 	IPACM_EvtDispatcher::registr(IPA_WLAN_AP_LINK_UP_EVENT, this);  // register for wlan AP-iface
 #ifndef FEATURE_IPA_ANDROID
 	IPACM_EvtDispatcher::registr(IPA_WLAN_STA_LINK_UP_EVENT, this); // register for wlan STA-iface
+	/* only MDM targets support device on bridge mode */
+	IPACM_EvtDispatcher::registr(IPA_BRIDGE_LINK_UP_EVENT, this); 	// register for IPA_BRIDGE_LINK_UP_EVENT event
 #endif /* not defined(FEATURE_IPA_ANDROID)*/
-	IPACM_EvtDispatcher::registr(IPA_USB_LINK_UP_EVENT, this); // register for wlan STA-iface
+	IPACM_EvtDispatcher::registr(IPA_USB_LINK_UP_EVENT, this); // register for USB-iface
 	IPACM_EvtDispatcher::registr(IPA_WAN_EMBMS_LINK_UP_EVENT, this);  // register for wan eMBMS-iface
 	return;
 }
@@ -69,6 +71,7 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 	int ipa_interface_index;
 	ipacm_event_data_fid *evt_data = (ipacm_event_data_fid *)param;
 	ipacm_event_data_mac *StaData = (ipacm_event_data_mac *)param;
+	ipacm_event_data_all *data_all = (ipacm_event_data_all *)param;
 	ipacm_ifacemgr_data ifmgr_data = {0};
 
 	switch(event)
@@ -76,6 +79,21 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 		case IPA_CFG_CHANGE_EVENT:
 				IPACMDBG_H(" RESET IPACM_cfg \n");
 				IPACM_Iface::ipacmcfg->Init();
+			break;
+		case IPA_BRIDGE_LINK_UP_EVENT:
+			IPACMDBG_H(" Save the bridge0 mac info in IPACM_cfg \n");
+			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data_all->if_index);
+			/* check if iface is bridge interface*/
+			if (strcmp(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name, IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name) == 0)
+			{
+				IPACM_Iface::ipacmcfg->ipa_bridge_enable = true;
+				memcpy(IPACM_Iface::ipacmcfg->bridge_mac,
+								data_all->mac_addr,
+								sizeof(IPACM_Iface::ipacmcfg->bridge_mac));
+				IPACMDBG_H("cached bridge0 MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+						 IPACM_Iface::ipacmcfg->bridge_mac[0], IPACM_Iface::ipacmcfg->bridge_mac[1], IPACM_Iface::ipacmcfg->bridge_mac[2],
+						 IPACM_Iface::ipacmcfg->bridge_mac[3], IPACM_Iface::ipacmcfg->bridge_mac[4], IPACM_Iface::ipacmcfg->bridge_mac[5]);
+			}
 			break;
 		case IPA_LINK_UP_EVENT:
 			IPACMDBG_H("Recieved IPA_LINK_UP_EVENT event: link up %d: \n", evt_data->if_index);
