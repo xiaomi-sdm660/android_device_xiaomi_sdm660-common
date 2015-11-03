@@ -92,8 +92,6 @@ public:
 	/* IPACM interface v6 ip-address*/
 	uint32_t ipv6_addr[MAX_DEFAULT_v6_ROUTE_RULES][4];
 
-	uint32_t header_hdl;
-
 	uint32_t software_routing_fl_rule_hdl[MAX_SOFTWAREROUTING_FILTERTING_RULES];
 
 	bool softwarerouting_act;

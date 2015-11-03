@@ -57,10 +57,10 @@ extern "C"
 #define IPA_ALG_PROTOCOL_NAME_LEN  10
 
 #define IPA_WLAN_PARTIAL_HDR_OFFSET  0 // dst mac first then src mac
-//#define IPA_ETH_PARTIAL_HDR_OFFSET  8 // dst mac first then src mac
 #define IPA_ODU_PARTIAL_HDR_OFFSET  8 // dst mac first then src mac
 #define IPA_WLAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_v4"
 #define IPA_WLAN_PARTIAL_HDR_NAME_v6  "IEEE802_3_v6"
+#define IPA_DUMMY_ETH_HDR_NAME_v6     "ETH_dummy_v6"
 #define IPA_WAN_PARTIAL_HDR_NAME_v4  "IEEE802_3_STA_v4"
 #define IPA_WAN_PARTIAL_HDR_NAME_v6  "IEEE802_3_STA_v6"
 #define IPA_ETH_HDR_NAME_v4  "IPACM_ETH_v4"

@@ -124,6 +124,8 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	memset(invalid_mac, 0, sizeof(invalid_mac));
 
 	is_xlat = false;
+	hdr_hdl_dummy_v6 = 0;
+	hdr_proc_hdl_dummy_v6 = 0;
 
 	if(iface_query != NULL)
 	{
@@ -147,12 +149,6 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	else
 	{
 		IPACMDBG_H("The new WAN interface is WLAN STA.\n");
-	}
-
-	if(m_is_sta_mode == WLAN_WAN)
-	{
-		memcpy(ext_router_mac_addr, mac_addr,
-			sizeof(ext_router_mac_addr));
 	}
 
 	m_fd_ipa = open(IPA_DEVICE_NAME, O_RDWR);
@@ -1218,7 +1214,6 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	if (m_is_sta_mode !=Q6_WAN)
 	{
 		IPACM_Wan::backhaul_is_sta_mode	= true;
-
 		if((iptype==IPA_IP_v4) && (header_set_v4 != true))
 		{
 			header_partial_default_wan_v4 = true;
@@ -1425,6 +1420,15 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		}
 		else
 		{
+			/* create dummy ethernet header for v6 RX path */
+			IPACMDBG_H("Construct dummy ethernet_header\n");
+			if (add_dummy_rx_hdr())
+			{
+				IPACMERR("Construct dummy ethernet_header failed!\n");
+				free(rt_rule);
+				return IPACM_FAILURE;
+			}
+			rt_rule_entry->rule.hdr_proc_ctx_hdl = hdr_proc_hdl_dummy_v6;
 			rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;
 		}
 		rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
@@ -1731,11 +1735,14 @@ int IPACM_Wan::handle_sta_header_add_evt()
 					 get_client_memptr(wan_client, index)->mac[3],
 					 get_client_memptr(wan_client, index)->mac[4],
 					 get_client_memptr(wan_client, index)->mac[5]);
+
 			if(get_client_memptr(wan_client, index)->ipv4_header_set)
 			{
 				hdr_hdl_sta_v4 = get_client_memptr(wan_client, index)->hdr_hdl_v4;
 				header_set_v4 = true;
 				IPACMDBG_H("add full ipv4 header hdl: (%x)\n", get_client_memptr(wan_client, index)->hdr_hdl_v4);
+				/* store external_ap's MAC */
+				memcpy(ext_router_mac_addr, get_client_memptr(wan_client, index)->mac, sizeof(ext_router_mac_addr));
 			}
 			else
 			{
@@ -1776,11 +1783,14 @@ int IPACM_Wan::handle_sta_header_add_evt()
 					 get_client_memptr(wan_client, index)->mac[3],
 					 get_client_memptr(wan_client, index)->mac[4],
 					 get_client_memptr(wan_client, index)->mac[5]);
+
 			if(get_client_memptr(wan_client, index)->ipv6_header_set)
 			{
 				hdr_hdl_sta_v6 = get_client_memptr(wan_client, index)->hdr_hdl_v6;
 				header_set_v6 = true;
 				IPACMDBG_H("add full ipv6 header hdl: (%x)\n", get_client_memptr(wan_client, index)->hdr_hdl_v6);
+				/* store external_ap's MAC */
+				memcpy(ext_router_mac_addr, get_client_memptr(wan_client, index)->mac, sizeof(ext_router_mac_addr));
 			}
 			else
 			{
@@ -4377,7 +4387,24 @@ int IPACM_Wan::handle_down_evt()
 		}
 		IPACMDBG_H("finished delete default v6 filtering rules\n ");
 	}
-
+	if(hdr_proc_hdl_dummy_v6)
+	{
+		if(m_header.DeleteHeaderProcCtx(hdr_proc_hdl_dummy_v6) == false)
+		{
+			IPACMERR("Failed to delete hdr_proc_hdl_dummy_v6\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
+	if(hdr_hdl_dummy_v6)
+	{
+		if (m_header.DeleteHeaderHdl(hdr_hdl_dummy_v6) == false)
+		{
+			IPACMERR("Failed to delete hdr_hdl_dummy_v6\n");
+			res = IPACM_FAILURE;
+			goto fail;
+		}
+	}
 fail:
 	if (tx_prop != NULL)
 	{
@@ -5024,7 +5051,6 @@ int IPACM_Wan::handle_wan_hdr_init(uint8_t *mac_addr)
 	memcpy(get_client_memptr(wan_client, num_wan_client)->mac,
 				 mac_addr,
 				 sizeof(get_client_memptr(wan_client, num_wan_client)->mac));
-
 
 	IPACMDBG_H("Received Client MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
 					 mac_addr[0], mac_addr[1], mac_addr[2],
@@ -5904,6 +5930,141 @@ int IPACM_Wan::handle_network_stats_update(ipa_get_apn_data_stats_resp_msg_v01 *
 			fclose(fp);
 			break;
 		};
+	}
+	return IPACM_SUCCESS;
+}
+
+int IPACM_Wan::add_dummy_rx_hdr()
+{
+
+#define IFACE_INDEX_LEN 2
+	char index[IFACE_INDEX_LEN];
+	struct ipa_ioc_add_hdr *pHeaderDescriptor = NULL;
+	int len = 0;
+	struct ipa_ioc_copy_hdr sCopyHeader;
+	struct ipa_hdr_add *ipv6_hdr;
+	struct ethhdr *eth_ipv6;
+	struct ipa_ioc_add_hdr_proc_ctx* pHeaderProcTable = NULL;
+	uint32_t cnt;
+
+	/* get netdev-mac */
+	if(tx_prop != NULL)
+	{
+		/* copy partial header for v6 */
+		for (cnt=0; cnt<tx_prop->num_tx_props; cnt++)
+		{
+				 if(tx_prop->tx[cnt].ip==IPA_IP_v6)
+				 {
+								IPACMDBG_H("Got partial v6-header name from %d tx props\n", cnt);
+								memset(&sCopyHeader, 0, sizeof(sCopyHeader));
+								memcpy(sCopyHeader.name,
+											 tx_prop->tx[cnt].hdr_name,
+											 sizeof(sCopyHeader.name));
+
+								IPACMDBG_H("header name: %s in tx:%d\n", sCopyHeader.name,cnt);
+								if (m_header.CopyHeader(&sCopyHeader) == false)
+								{
+									PERROR("ioctl copy header failed");
+									return IPACM_FAILURE;
+								}
+
+								IPACMDBG_H("header length: %d, paritial: %d\n", sCopyHeader.hdr_len, sCopyHeader.is_partial);
+								IPACMDBG_H("header eth2_ofst_valid: %d, eth2_ofst: %d\n", sCopyHeader.is_eth2_ofst_valid, sCopyHeader.eth2_ofst);
+								if (sCopyHeader.hdr_len > IPA_HDR_MAX_SIZE)
+								{
+									IPACMERR("header oversize\n");
+									return IPACM_FAILURE;
+								}
+								else
+								{
+									/* copy client mac_addr to partial header */
+									IPACMDBG_H("header eth2_ofst_valid: %d, eth2_ofst: %d\n",
+											sCopyHeader.is_eth2_ofst_valid, sCopyHeader.eth2_ofst);
+									/* only copy 6 bytes mac-address */
+									if(sCopyHeader.is_eth2_ofst_valid == false)
+									{
+										memcpy(netdev_mac, &sCopyHeader.hdr[0+IPA_MAC_ADDR_SIZE],
+												sizeof(netdev_mac));
+									}
+									else
+									{
+										memcpy(netdev_mac, &sCopyHeader.hdr[sCopyHeader.eth2_ofst+IPA_MAC_ADDR_SIZE],
+												sizeof(netdev_mac));
+									}
+								}
+					break;
+				}
+		}
+	}
+
+	len = sizeof(struct ipa_ioc_add_hdr) + (1 * sizeof(struct ipa_hdr_add));
+	pHeaderDescriptor = (struct ipa_ioc_add_hdr *)calloc(1, len);
+	if (pHeaderDescriptor == NULL)
+	{
+		IPACMERR("calloc failed to allocate pHeaderDescriptor\n");
+		return IPACM_FAILURE;
+	}
+	ipv6_hdr = &pHeaderDescriptor->hdr[0];
+	/* copy ethernet type to header */
+	eth_ipv6 = (struct ethhdr *) (ipv6_hdr->hdr +2);
+	memcpy(eth_ipv6->h_dest, netdev_mac, ETH_ALEN);
+	memcpy(eth_ipv6->h_source, ext_router_mac_addr, ETH_ALEN);
+	eth_ipv6->h_proto = htons(ETH_P_IPV6);
+	pHeaderDescriptor->commit = true;
+	pHeaderDescriptor->num_hdrs = 1;
+
+	memset(ipv6_hdr->name, 0,
+			 sizeof(pHeaderDescriptor->hdr[0].name));
+
+	snprintf(index,sizeof(index), "%d", ipa_if_num);
+	strlcpy(ipv6_hdr->name, index, sizeof(ipv6_hdr->name));
+	ipv6_hdr->name[IPA_RESOURCE_NAME_MAX-1] = '\0';
+
+	if (strlcat(ipv6_hdr->name, IPA_DUMMY_ETH_HDR_NAME_v6, sizeof(ipv6_hdr->name)) > IPA_RESOURCE_NAME_MAX)
+	{
+		IPACMERR(" header name construction failed exceed length (%d)\n", strlen(ipv6_hdr->name));
+		return IPACM_FAILURE;
+	}
+
+	ipv6_hdr->hdr_len = ETH_HLEN + 2;
+	ipv6_hdr->hdr_hdl = -1;
+	ipv6_hdr->is_partial = 0;
+	ipv6_hdr->status = -1;
+	ipv6_hdr->type = IPA_HDR_L2_ETHERNET_II;
+
+	if (m_header.AddHeader(pHeaderDescriptor) == false ||
+			ipv6_hdr->status != 0)
+	{
+		IPACMERR("ioctl IPA_IOC_ADD_HDR failed: %d\n", ipv6_hdr->status);
+		return IPACM_FAILURE;
+	}
+
+	hdr_hdl_dummy_v6 = ipv6_hdr->hdr_hdl;
+	IPACMDBG_H("dummy v6 full header name:%s header handle:(0x%x)\n",
+								 ipv6_hdr->name,
+								 hdr_hdl_dummy_v6);
+	/* add dummy hdr_proc_hdl */
+	len = sizeof(struct ipa_ioc_add_hdr_proc_ctx) + sizeof(struct ipa_hdr_proc_ctx_add);
+	pHeaderProcTable = (ipa_ioc_add_hdr_proc_ctx*)malloc(len);
+	if(pHeaderProcTable == NULL)
+	{
+		IPACMERR("Cannot allocate header processing table.\n");
+		return IPACM_FAILURE;
+	}
+
+	memset(pHeaderProcTable, 0, len);
+	pHeaderProcTable->commit = 1;
+	pHeaderProcTable->num_proc_ctxs = 1;
+	pHeaderProcTable->proc_ctx[0].hdr_hdl = hdr_hdl_dummy_v6;
+	if (m_header.AddHeaderProcCtx(pHeaderProcTable) == false)
+	{
+		IPACMERR("Adding dummy hhdr_proc_hdl failed with status: %d\n", pHeaderProcTable->proc_ctx[0].status);
+		return IPACM_FAILURE;
+	}
+	else
+	{
+		hdr_proc_hdl_dummy_v6 = pHeaderProcTable->proc_ctx[0].proc_ctx_hdl;
+		IPACMDBG_H("dummy hhdr_proc_hdl is added successfully. (0x%x)\n", hdr_proc_hdl_dummy_v6);
 	}
 	return IPACM_SUCCESS;
 }
