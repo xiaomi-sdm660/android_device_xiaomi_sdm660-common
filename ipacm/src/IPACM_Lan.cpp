@@ -1326,6 +1326,9 @@ if (data->iptype == IPA_IP_v4)
    		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
 		rt_rule_entry->rule.attrib.u.v4.dst_addr      = data->ipv4_addr;
 		rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+#ifdef FEATURE_IPA_V3
+		rt_rule_entry->rule.hashable = true;
+#endif
 		if (false == m_routing.AddRoutingRule(rt_rule))
 		{
 			IPACMERR("Routing rule addition failed!\n");
@@ -1401,6 +1404,9 @@ if (data->iptype == IPA_IP_v4)
 		ipv6_addr[num_dft_rt_v6][1] = data->ipv6_addr[1];
 		ipv6_addr[num_dft_rt_v6][2] = data->ipv6_addr[2];
 		ipv6_addr[num_dft_rt_v6][3] = data->ipv6_addr[3];
+#ifdef FEATURE_IPA_V3
+		rt_rule_entry->rule.hashable = true;
+#endif
 		if (false == m_routing.AddRoutingRule(rt_rule))
 		{
 			IPACMERR("Routing rule addition failed!\n");
@@ -1521,6 +1527,9 @@ int IPACM_Lan::handle_private_subnet(ipa_ip_type iptype)
 			flt_rule_entry.flt_rule_hdl = -1;
 			flt_rule_entry.status = -1;
 			flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+#ifdef FEATURE_IPA_V3
+			flt_rule_entry.rule.hashable = true;
+#endif
                         /* Support private subnet feature including guest-AP can't talk to primary AP etc */
 			flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
 			IPACMDBG_H(" private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
@@ -1613,6 +1622,9 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 		{
 			flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT; //IPA_PASS_TO_ROUTING
 		}
+#ifdef FEATURE_IPA_V3
+		flt_rule_entry.rule.hashable = true;
+#endif
 		flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_wan_v4.hdl;
 
 		memcpy(&flt_rule_entry.rule.attrib,
@@ -1675,6 +1687,9 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+#ifdef FEATURE_IPA_V3
+		flt_rule_entry.rule.hashable = true;
+#endif
 		flt_rule_entry.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_v6.hdl;
 
 		memcpy(&flt_rule_entry.rule.attrib,
@@ -2229,6 +2244,9 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 		   	    rt_rule_entry->rule.hdr_hdl = get_client_memptr(eth_client, eth_index)->hdr_hdl_v4;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(eth_client, eth_index)->v4_addr;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+#ifdef FEATURE_IPA_V3
+				rt_rule_entry->rule.hashable = true;
+#endif
 			    if (false == m_routing.AddRoutingRule(rt_rule))
   	            {
   	          	            IPACMERR("Routing rule addition failed!\n");
@@ -2268,6 +2286,9 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+#ifdef FEATURE_IPA_V3
+					rt_rule_entry->rule.hashable = true;
+#endif
    	                if (false == m_routing.AddRoutingRule(rt_rule))
   	                {
   	                	    IPACMERR("Routing rule addition failed!\n");
@@ -2297,6 +2318,9 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
 					rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+#ifdef FEATURE_IPA_V3
+					rt_rule_entry->rule.hashable = true;
+#endif
 		            if (false == m_routing.AddRoutingRule(rt_rule))
 		            {
 							IPACMERR("Routing rule addition failed!\n");
@@ -2568,6 +2592,9 @@ int IPACM_Lan::handle_odu_route_add()
 		{
 			rt_rule_entry->rule.attrib.u.v4.dst_addr      = 0;
 			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0;
+#ifdef FEATURE_IPA_V3
+			rt_rule_entry->rule.hashable = true;
+#endif
 			if (false == m_routing.AddRoutingRule(rt_rule))
 			{
 				IPACMERR("Routing rule addition failed!\n");
@@ -2590,6 +2617,9 @@ int IPACM_Lan::handle_odu_route_add()
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0;
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0;
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
+#ifdef FEATURE_IPA_V3
+			rt_rule_entry->rule.hashable = true;
+#endif
 			if (false == m_routing.AddRoutingRule(rt_rule))
 			{
 				IPACMERR("Routing rule addition failed!\n");
@@ -3812,6 +3842,9 @@ int IPACM_Lan::add_dummy_lan2lan_flt_rule(ipa_ip_type iptype)
 	flt_rule.flt_rule_hdl = -1;
 	flt_rule.status = -1;
 	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+#ifdef FEATURE_IPA_V3
+	flt_rule.rule.hashable = true;
+#endif
 	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib,
 			sizeof(flt_rule.rule.attrib));
 
@@ -4417,6 +4450,9 @@ int IPACM_Lan::add_lan2lan_rt_rule(ipa_ip_type iptype, uint32_t src_v4_addr, uin
 			rt_rule_entry->rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 			rt_rule_entry->rule.attrib.u.v4.dst_addr      = dst_v4_addr;
 			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+#ifdef FEATURE_IPA_V3
+			rt_rule_entry->rule.hashable = true;
+#endif
 			if(m_routing.AddRoutingRule(rt_rule) == false)
 			{
 				IPACMERR("Routing rule addition failed\n");
@@ -4478,6 +4514,9 @@ int IPACM_Lan::add_lan2lan_rt_rule(ipa_ip_type iptype, uint32_t src_v4_addr, uin
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[1] = 0xFFFFFFFF;
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0xFFFFFFFF;
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0xFFFFFFFF;
+#ifdef FEATURE_IPA_V3
+			rt_rule_entry->rule.hashable = true;
+#endif
 			if(m_routing.AddRoutingRule(rt_rule) == false)
 			{
 				IPACMERR("Routing rule addition failed\n");
@@ -4677,6 +4716,9 @@ int IPACM_Lan::install_ipv4_icmp_flt_rule()
 		flt_rule_entry.flt_rule_hdl = -1;
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
+#ifdef FEATURE_IPA_V3
+		flt_rule_entry.rule.hashable = true;
+#endif
 		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
 
 		flt_rule_entry.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
@@ -4739,7 +4781,7 @@ void IPACM_Lan::install_tcp_ctl_flt_rule(ipa_ip_type iptype)
 	flt_rule.rule.to_uc = 0;
 	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
 #ifdef FEATURE_IPA_V3
-	flt_rule.rule.hashable = IPA_RULE_NON_HASHABLE;
+	flt_rule.rule.hashable = false;
 #endif
 	flt_rule.rule.eq_attrib_type = 1;
 
@@ -4847,6 +4889,9 @@ int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 	flt_rule.flt_rule_hdl = -1;
 	flt_rule.status = -1;
 	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+#ifdef FEATURE_IPA_V3
+	flt_rule.rule.hashable = true;
+#endif
 	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib,
 			sizeof(flt_rule.rule.attrib));
 
@@ -5016,7 +5061,7 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
 #ifdef FEATURE_IPA_V3
-		flt_rule_entry.rule.hashable = IPA_RULE_NON_HASHABLE;
+		flt_rule_entry.rule.hashable = false;
 #endif
 		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
 		flt_rule_entry.rule.attrib.attrib_mask = flt_rule_entry.rule.attrib.attrib_mask & ~((uint32_t)IPA_FLT_META_DATA);
@@ -5093,7 +5138,7 @@ int IPACM_Lan::install_ipv6_icmp_flt_rule()
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
 #ifdef FEATURE_IPA_V3
-		flt_rule_entry.rule.hashable = IPA_RULE_NON_HASHABLE;
+		flt_rule_entry.rule.hashable = false;
 #endif
 		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
 		flt_rule_entry.rule.attrib.attrib_mask = flt_rule_entry.rule.attrib.attrib_mask & ~((uint32_t)IPA_FLT_META_DATA);
@@ -5186,6 +5231,9 @@ int IPACM_Lan::eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype)
 	flt_rule.flt_rule_hdl = -1;
 	flt_rule.status = -1;
 	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+#ifdef FEATURE_IPA_V3
+	flt_rule.rule.hashable = true;
+#endif
 	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib,
 			sizeof(flt_rule.rule.attrib));
 
@@ -5336,6 +5384,9 @@ int IPACM_Lan::eth_bridge_handle_dummy_lan_client_flt_rule(ipa_ip_type iptype)
 	flt_rule.flt_rule_hdl = -1;
 	flt_rule.status = -1;
 	flt_rule.rule.action = IPA_PASS_TO_EXCEPTION;
+#ifdef FEATURE_IPA_V3
+	flt_rule.rule.hashable = true;
+#endif
 	memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib,
 			sizeof(flt_rule.rule.attrib));
 
@@ -6429,7 +6480,9 @@ int IPACM_Lan::eth_bridge_add_lan_client_rt_rule(uint8_t* mac, eth_bridge_src_if
 	rt_rule.at_rear = false;
 	rt_rule.status = -1;
 	rt_rule.rt_rule_hdl = -1;
-
+#ifdef FEATURE_IPA_V3
+	rt_rule.rule.hashable = true;
+#endif
 	rt_rule.rule.hdr_hdl = 0;
 	if(src == SRC_LAN)
 	{
