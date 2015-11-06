@@ -5592,6 +5592,7 @@ void IPACM_Wan::handle_wlan_SCC_MCC_switch(bool isSCCMode, ipa_ip_type iptype)
 		{
 			rt_rule_entry->rule.attrib.u.v4.dst_addr      = 0;
 			rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0;
+			rt_rule_entry->rule.hdr_hdl = hdr_hdl_sta_v4;
 			rt_rule_entry->rt_rule_hdl = wan_route_rule_v4_hdl[tx_index];
 		}
 		else
@@ -5605,8 +5606,10 @@ void IPACM_Wan::handle_wlan_SCC_MCC_switch(bool isSCCMode, ipa_ip_type iptype)
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[2] = 0;
 			rt_rule_entry->rule.attrib.u.v6.dst_addr_mask[3] = 0;
 
+			rt_rule_entry->rule.hdr_hdl = hdr_hdl_sta_v6;
 			rt_rule_entry->rt_rule_hdl = wan_route_rule_v6_hdl[tx_index];
 		}
+		IPACMDBG_H("Header handle: 0x%x\n", rt_rule_entry->rule.hdr_hdl);
 
 		if (isSCCMode)
 		{
