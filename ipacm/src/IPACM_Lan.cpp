@@ -1849,6 +1849,14 @@ int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
 											 mac_addr,
 											 IPA_MAC_ADDR_SIZE);
 								}
+								/* replace src mac to bridge mac_addr if any  */
+								if (IPACM_Iface::ipacmcfg->ipa_bridge_enable)
+								{
+									memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst+IPA_MAC_ADDR_SIZE],
+											IPACM_Iface::ipacmcfg->bridge_mac,
+											IPA_MAC_ADDR_SIZE);
+									IPACMDBG_H("device is in bridge mode \n");
+								}
 
 								pHeaderDescriptor->commit = true;
 								pHeaderDescriptor->num_hdrs = 1;
@@ -1941,6 +1949,15 @@ int IPACM_Lan::handle_eth_hdr_init(uint8_t *mac_addr)
 						mac_addr,
 						IPA_MAC_ADDR_SIZE);
 				}
+				/* replace src mac to bridge mac_addr if any  */
+				if (IPACM_Iface::ipacmcfg->ipa_bridge_enable)
+				{
+					memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst+IPA_MAC_ADDR_SIZE],
+							IPACM_Iface::ipacmcfg->bridge_mac,
+							IPA_MAC_ADDR_SIZE);
+					IPACMDBG_H("device is in bridge mode \n");
+				}
+
 				pHeaderDescriptor->commit = true;
 				pHeaderDescriptor->num_hdrs = 1;
 
@@ -2360,7 +2377,14 @@ int IPACM_Lan::handle_odu_hdr_init(uint8_t *mac_addr)
 											 mac_addr,
 											 IPA_MAC_ADDR_SIZE);
 								}
-
+								/* replace src mac to bridge mac_addr if any  */
+								if (IPACM_Iface::ipacmcfg->ipa_bridge_enable)
+								{
+									memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst+IPA_MAC_ADDR_SIZE],
+											IPACM_Iface::ipacmcfg->bridge_mac,
+											IPA_MAC_ADDR_SIZE);
+									IPACMDBG_H("device is in bridge mode \n");
+								}
 
 								pHeaderDescriptor->commit = true;
 								pHeaderDescriptor->num_hdrs = 1;
@@ -2431,6 +2455,14 @@ int IPACM_Lan::handle_odu_hdr_init(uint8_t *mac_addr)
 					memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst],
 					 mac_addr,
 					 IPA_MAC_ADDR_SIZE);
+				}
+				/* replace src mac to bridge mac_addr if any  */
+				if (IPACM_Iface::ipacmcfg->ipa_bridge_enable)
+				{
+					memcpy(&pHeaderDescriptor->hdr[0].hdr[sCopyHeader.eth2_ofst+IPA_MAC_ADDR_SIZE],
+							IPACM_Iface::ipacmcfg->bridge_mac,
+							IPA_MAC_ADDR_SIZE);
+					IPACMDBG_H("device is in bridge mode \n");
 				}
 
 				pHeaderDescriptor->commit = true;

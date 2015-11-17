@@ -126,6 +126,12 @@ public:
 	/* Store SW-enable or not */
 	bool ipa_sw_rt_enable;
 
+	/* Store bridge mode or not */
+	bool ipa_bridge_enable;
+
+	/* Store bridge netdev mac */
+	uint8_t bridge_mac[IPA_MAC_ADDR_SIZE];
+
 	/* Store the flt rule count for each producer client*/
 	int flt_rule_count_v4[IPA_CLIENT_CONS - IPA_CLIENT_PROD];
 	int flt_rule_count_v6[IPA_CLIENT_CONS - IPA_CLIENT_PROD];
