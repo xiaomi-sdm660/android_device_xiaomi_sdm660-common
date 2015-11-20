@@ -347,6 +347,8 @@ protected:
 	int num_wan_ul_fl_rule_v6;
 
 	bool is_active;
+	bool modem_ul_v4_set;
+	bool modem_ul_v6_set;
 
 	uint32_t if_ipv4_subnet;
 

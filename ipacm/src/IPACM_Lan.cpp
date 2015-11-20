@@ -189,6 +189,8 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(private_fl_rule_hdl, 0, IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(uint32_t));
 	memset(ipv6_prefix_flt_rule_hdl, 0, NUM_IPV6_PREFIX_FLT_RULE * sizeof(uint32_t));
 	memset(ipv6_icmp_flt_rule_hdl, 0, NUM_IPV6_ICMP_FLT_RULE * sizeof(uint32_t));
+	modem_ul_v4_set = false;
+	modem_ul_v6_set = false;
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat == LAN_IF)
@@ -1222,7 +1224,7 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 	{
 		if (num_wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES)
 		{
-			IPACMERR("number of wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES, aborting...\n");
+			IPACMERR("number of wan_ul_fl_rule_v4 (%d) > MAX_WAN_UL_FILTER_RULES (%d), aborting...\n", num_wan_ul_fl_rule_v4, MAX_WAN_UL_FILTER_RULES);
 			close(fd);
 			return IPACM_FAILURE;
 		}
@@ -1237,6 +1239,7 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 
 		memset(wan_ul_fl_rule_hdl_v4, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
 		num_wan_ul_fl_rule_v4 = 0;
+		modem_ul_v4_set = false;
 
 		memset(&flt_index, 0, sizeof(flt_index));
 		flt_index.source_pipe_index = ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, rx_prop->rx[0].src_pipe);
@@ -1741,11 +1744,17 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop *ext_prop, ipa_ip_type iptype, ui
 	}
 
 	/* check only add static UL filter rule once */
-	if ((num_dft_rt_v6 ==1 && iptype ==IPA_IP_v6) ||
-			(iptype ==IPA_IP_v4))
+	if (num_dft_rt_v6 ==1 && iptype ==IPA_IP_v6 && modem_ul_v6_set == false)
 	{
-		IPACMDBG_H("num_dft_rt_v6 %d iptype %d xlat_mux_id: %d \n", num_dft_rt_v6, iptype, xlat_mux_id);
+		IPACMDBG_H("IPA_IP_v6 num_dft_rt_v6 %d xlat_mux_id: %d modem_ul_v6_set: %d\n", num_dft_rt_v6, xlat_mux_id, modem_ul_v6_set);
 		ret = handle_uplink_filter_rule(ext_prop, iptype, xlat_mux_id);
+		modem_ul_v6_set = true;
+	} else if (iptype ==IPA_IP_v4 && modem_ul_v4_set == false) {
+		IPACMDBG_H("IPA_IP_v4 xlat_mux_id: %d, modem_ul_v4_set %d\n", xlat_mux_id, modem_ul_v4_set);
+		ret = handle_uplink_filter_rule(ext_prop, iptype, xlat_mux_id);
+		modem_ul_v4_set = true;
+	} else {
+		IPACMDBG_H("ip-type: %d modem_ul_v4_set: %d, modem_ul_v6_set %d\n", iptype, modem_ul_v4_set, modem_ul_v6_set);
 	}
 	return ret;
 }
@@ -3290,6 +3299,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 	if (pFilteringTable == NULL)
 	{
 		IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+		close(fd);
 		return IPACM_FAILURE;
 	}
 	memset(pFilteringTable, 0, len);
@@ -3448,7 +3458,7 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 	{
 		if (num_wan_ul_fl_rule_v6 > MAX_WAN_UL_FILTER_RULES)
 		{
-			IPACMERR(" the number of rules are bigger than array, aborting...\n");
+			IPACMERR(" the number of rules (%d) are bigger than array (%d), aborting...\n", num_wan_ul_fl_rule_v6, MAX_WAN_UL_FILTER_RULES);
 			close(fd);
 			return IPACM_FAILURE;
 		}
@@ -3469,6 +3479,7 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, num_wan_ul_fl_rule_v6);
 		memset(wan_ul_fl_rule_hdl_v6, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
 		num_wan_ul_fl_rule_v6 = 0;
+		modem_ul_v6_set = false;
 
 		memset(&flt_index, 0, sizeof(flt_index));
 		flt_index.source_pipe_index = ioctl(fd, IPA_IOC_QUERY_EP_MAPPING, rx_prop->rx[0].src_pipe);
