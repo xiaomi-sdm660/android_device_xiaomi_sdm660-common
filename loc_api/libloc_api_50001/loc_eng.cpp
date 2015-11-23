@@ -111,6 +111,7 @@ static loc_param_s_type gps_conf_table[] =
   {"XTRA_SERVER_2",                  &gps_conf.XTRA_SERVER_2,                  NULL, 's'},
   {"XTRA_SERVER_3",                  &gps_conf.XTRA_SERVER_3,                  NULL, 's'},
   {"USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL",  &gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL,          NULL, 'n'},
+  {"EXTERNAL_DR_ENABLED",            &gps_conf.EXTERNAL_DR_ENABLED,                  NULL, 'n'},
 };
 
 static loc_param_s_type sap_conf_table[] =
