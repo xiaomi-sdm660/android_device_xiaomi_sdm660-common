@@ -838,7 +838,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-
+	/* Enable Firewall support only on MDM targets */
+#ifndef FEATURE_IPA_ANDROID
 	if (IPACM_SUCCESS == monitor_thread)
 	{
 		ret = pthread_create(&monitor_thread, NULL, firewall_monitor, NULL);
@@ -853,6 +854,7 @@ int main(int argc, char **argv)
 			IPACMERR("unable to set thread name\n");
 		}
 	}
+#endif
 
 	if (IPACM_SUCCESS == ipa_driver_thread)
 	{
