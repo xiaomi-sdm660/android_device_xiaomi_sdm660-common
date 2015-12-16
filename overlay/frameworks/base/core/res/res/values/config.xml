@@ -554,6 +554,12 @@
          and one pSIM) -->
     <integer name="config_num_physical_slots">2</integer>
 
+    <!-- The RadioAccessFamilies supported by the device.
+      Empty is viewed as "all".  Only used on devices which
+      don't support RIL_REQUEST_GET_RADIO_CAPABILITY
+      format is UMTS|LTE|... -->
+    <string translatable="false" name="config_radio_access_family">CDMA|EVDO|GSM|TD_SCDMA|WCDMA|LTE</string>
+
     <!-- Enable system navigation keys. -->
     <bool name="config_supportSystemNavigationKeys">true</bool>
 
