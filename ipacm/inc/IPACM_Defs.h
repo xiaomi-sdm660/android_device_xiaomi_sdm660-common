@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -115,6 +115,7 @@ extern "C"
 #define IPA_LAN_TO_LAN_MAX_USB_CLIENT 1
 #define IPA_LAN_TO_LAN_MAX_CPE_CLIENT 15
 #define IPA_LAN_TO_LAN_MAX_LAN_CLIENT (IPA_LAN_TO_LAN_MAX_USB_CLIENT + IPA_LAN_TO_LAN_MAX_CPE_CLIENT)
+#define IPA_LAN_TO_LAN_MAX_CLIENT (IPA_LAN_TO_LAN_MAX_LAN_CLIENT + IPA_LAN_TO_LAN_MAX_WLAN_CLIENT)
 #define TCP_FIN_SHIFT 16
 #define TCP_SYN_SHIFT 17
 #define TCP_RST_SHIFT 18
@@ -185,23 +186,21 @@ typedef enum
 	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,         /* 41 ipacm_event_data_fid */
 	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,         /* 42 ipacm_event_data_fid */
 	IPA_WAN_EMBMS_LINK_UP_EVENT,              /* 43 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_LAN_CLIENT_ADD_EVENT,      /* 44 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_WLAN_CLIENT_ADD_EVENT,     /* 45 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_LAN_CLIENT_DEL_EVENT,      /* 46 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_WLAN_CLIENT_DEL_EVENT,     /* 47 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 48 ipacm_event_data_if_cat */
-	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 49 ipacm_event_data_if_cat */
-	IPA_WLAN_SWITCH_TO_SCC,                   /* 50 No Data */
-	IPA_WLAN_SWITCH_TO_MCC,                   /* 51 No Data */
-	IPA_CRADLE_WAN_MODE_SWITCH,               /* 52 ipacm_event_cradle_wan_mode */
-	IPA_WAN_XLAT_CONNECT_EVENT,               /* 53 ipacm_event_data_fid */
-	IPA_TETHERING_STATS_UPDATE_EVENT,         /* 54 ipacm_event_data_fid */
-	IPA_NETWORK_STATS_UPDATE_EVENT,           /* 55 ipacm_event_data_fid */
-	IPA_HANDLE_WAN_UP_TETHER,                 /* 56 ipacm_event_iface_up_tehter */
-	IPA_HANDLE_WAN_DOWN_TETHER,               /* 57 ipacm_event_iface_up_tehter */
-	IPA_HANDLE_WAN_UP_V6_TETHER,		  /* 58 ipacm_event_iface_up_tehter */
-	IPA_HANDLE_WAN_DOWN_V6_TETHER,		  /* 59 ipacm_event_iface_up_tehter */
-	IPA_BRIDGE_LINK_UP_EVENT,                 /* 60 ipacm_event_data_all */
+	IPA_ETH_BRIDGE_CLIENT_ADD_EVENT,          /* 44 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_CLIENT_DEL_EVENT,          /* 45 ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 46 ipacm_event_data_if_cat */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 47 ipacm_event_data_if_cat */
+	IPA_WLAN_SWITCH_TO_SCC,                   /* 48 No Data */
+	IPA_WLAN_SWITCH_TO_MCC,                   /* 49 No Data */
+	IPA_CRADLE_WAN_MODE_SWITCH,               /* 50 ipacm_event_cradle_wan_mode */
+	IPA_WAN_XLAT_CONNECT_EVENT,               /* 51 ipacm_event_data_fid */
+	IPA_TETHERING_STATS_UPDATE_EVENT,         /* 52 ipacm_event_data_fid */
+	IPA_NETWORK_STATS_UPDATE_EVENT,           /* 53 ipacm_event_data_fid */
+	IPA_HANDLE_WAN_UP_TETHER,                 /* 54 ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WAN_DOWN_TETHER,               /* 55 ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WAN_UP_V6_TETHER,		      /* 56 ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WAN_DOWN_V6_TETHER,		      /* 57 ipacm_event_iface_up_tehter */
+	IPA_BRIDGE_LINK_UP_EVENT,                 /* 58 ipacm_event_data_all */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
@@ -324,6 +323,7 @@ typedef struct _ipacm_event_data_addr
 typedef struct _ipacm_event_data_mac
 {
 	int if_index;
+	int ipa_if_cate;
 	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
 } ipacm_event_data_mac;
 

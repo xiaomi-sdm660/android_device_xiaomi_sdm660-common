@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -92,15 +92,6 @@ public:
 
 private:
 
-	eth_bridge_client_flt_info eth_bridge_lan_client_flt_info[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
-	int lan_client_flt_info_count;
-
-	static lan2lan_flt_rule_hdl self_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-	static lan2lan_flt_rule_hdl self_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-
-	static lan2lan_flt_rule_hdl lan_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
-	static lan2lan_flt_rule_hdl lan_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
-
 	bool is_guest_ap;
 
 	eth_bridge_client_rt_info* eth_bridge_wlan_client_rt_from_lan_info_v4;
@@ -113,23 +104,7 @@ private:
 	eth_bridge_client_rt_info* eth_bridge_wlan_client_rt_from_wlan_info_v6;
 	int wlan_client_rt_from_wlan_info_count_v6;
 
-	int eth_bridge_install_wlan_guest_ap_ipv6_flt_rule();
-
-	virtual int eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype);
-
-	virtual int eth_bridge_handle_dummy_lan_client_flt_rule(ipa_ip_type iptype);
-
-	int eth_bridge_add_lan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
-
-	int eth_bridge_del_lan_client_flt_rule(uint8_t* mac);
-
-	int eth_bridge_add_self_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
-
-	int eth_bridge_del_self_client_flt_rule(uint8_t* mac);
-
-	virtual int eth_bridge_install_cache_wlan_client_flt_rule(ipa_ip_type iptype);
-
-	virtual int eth_bridge_install_cache_lan_client_flt_rule(ipa_ip_type iptype);
+	virtual int eth_bridge_install_cache_client_flt_rule(ipa_ip_type iptype);
 
 	int eth_bridge_add_wlan_client_rt_rule(uint8_t* mac, eth_bridge_src_iface src, ipa_ip_type iptype);
 
@@ -137,9 +112,12 @@ private:
 
 	eth_bridge_client_rt_info* eth_bridge_get_client_rt_info_ptr(uint8_t index, eth_bridge_src_iface src, ipa_ip_type iptype);
 
-	void eth_bridge_add_wlan_client(uint8_t* mac, int if_num);
+	void eth_bridge_handle_wlan_SCC_MCC_switch(ipa_ip_type iptype);
 
-	void eth_bridge_del_wlan_client(uint8_t* mac);
+	int eth_bridge_modify_wlan_rt_rule(uint8_t* mac, eth_bridge_src_iface src_iface, ipa_ip_type iptyp);
+
+	/*handle wlan access mode switch */
+	void eth_bridge_handle_wlan_mode_switch();
 
 
 	int wlan_client_len;
@@ -280,27 +258,7 @@ private:
 	/*handle wlan iface down event*/
 	int handle_down_evt();
 
-	/* add dummy filtering rules for WLAN AP-AP mode support */
-	void add_dummy_flt_rule();
-
-	/* install dummy filtering rules for WLAN AP-AP mode support */
-	int install_dummy_flt_rule(ipa_ip_type iptype, int num_rule);
-
-	/* delete dummy flt rule for WLAN AP-AP mode support*/
-	void del_dummy_flt_rule();
-
-	/*Configure the initial filter rules */
-	virtual int init_fl_rule(ipa_ip_type iptype);
-
 	virtual int add_dummy_lan2lan_flt_rule(ipa_ip_type iptype);
-
-	virtual int add_dummy_private_subnet_flt_rule(ipa_ip_type iptype);
-
-	/*configure private subnet filter rules*/
-	virtual int handle_private_subnet(ipa_ip_type iptype);
-
-	/* install UL filter rule from Q6 */
-	virtual int handle_uplink_filter_rule(ipacm_ext_prop* prop, ipa_ip_type iptype, uint8_t xlat_mux_id);
 
 	/* install TCP control filter rules */
 	virtual void install_tcp_ctl_flt_rule(ipa_ip_type iptype);
@@ -309,19 +267,6 @@ private:
 	int handle_wlan_client_reset_rt(ipa_ip_type iptype);
 
 	void handle_SCC_MCC_switch(ipa_ip_type);
-
-	void eth_bridge_handle_wlan_SCC_MCC_switch(ipa_ip_type iptype);
-
-	int eth_bridge_modify_wlan_client_flt_rule(uint8_t* mac, eth_bridge_dst_iface dst_iface, ipa_ip_type iptype);
-
-	int eth_bridge_modify_wlan_rt_rule(uint8_t* mac, eth_bridge_src_iface src_iface, ipa_ip_type iptyp);
-
-	/*handle wlan access mode switch */
-	void eth_bridge_handle_wlan_mode_switch();
-
-	virtual int install_ipv6_prefix_flt_rule(uint32_t* prefix);
-
-	virtual void delete_ipv6_prefix_flt_rule();
 
 };
 

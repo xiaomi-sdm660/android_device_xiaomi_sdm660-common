@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -81,7 +81,7 @@ public:
 	int ipa_if_num;
 
 	/* IPACM interface category */
-	int ipa_if_cate;
+	ipacm_iface_type ipa_if_cate;
 
 	/* IPACM interface name */
 	char dev_name[IF_NAME_LEN];

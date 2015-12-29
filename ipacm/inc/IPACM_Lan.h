@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -121,7 +121,7 @@ struct lan2lan_hdr_hdl
 	bool valid;
 };
 
-struct eth_bridge_client_flt_info
+struct eth_bridge_subnet_client_flt_info
 {
 	uint8_t mac[IPA_MAC_ADDR_SIZE];
 	uint32_t flt_rule_hdl_v4;
@@ -146,6 +146,7 @@ struct eth_bridge_subnet_client_info
 {
 	uint8_t mac[IPA_MAC_ADDR_SIZE];
 	int ipa_if_num;
+	int ipa_if_cate;
 };
 
 /* lan iface */
@@ -219,27 +220,18 @@ public:
 	static hdr_proc_ctx_info wlan_to_wlan_hdr_proc_ctx;
 	static hdr_proc_ctx_info cpe_to_usb_hdr_proc_ctx, usb_to_cpe_hdr_proc_ctx;
 
-	static eth_bridge_subnet_client_info eth_bridge_wlan_client[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-	static eth_bridge_subnet_client_info eth_bridge_lan_client[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
+	static eth_bridge_subnet_client_info eth_bridge_client[IPA_LAN_TO_LAN_MAX_CLIENT];
 
-	static int num_wlan_client;
-	static int num_lan_client;
+	static int eth_bridge_num_client;
 
 	static bool is_usb_up;
 	static bool is_cpe_up;
 
 protected:
 
-	lan2lan_flt_rule_hdl wlan_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-	lan2lan_flt_rule_hdl wlan_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-	lan2lan_flt_rule_hdl lan_client_flt_rule_hdl_v4[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
-	lan2lan_flt_rule_hdl lan_client_flt_rule_hdl_v6[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
+	eth_bridge_subnet_client_flt_info eth_bridge_client_flt_info[IPA_LAN_TO_LAN_MAX_CLIENT];
 
-	eth_bridge_client_flt_info eth_bridge_wlan_client_flt_info[IPA_LAN_TO_LAN_MAX_WLAN_CLIENT];
-	eth_bridge_client_flt_info eth_bridge_lan_client_flt_info[IPA_LAN_TO_LAN_MAX_LAN_CLIENT];
-
-	int wlan_client_flt_info_count;
-	int lan_client_flt_info_count;
+	int client_flt_info_count;
 
 	int client_rt_info_size_v4;
 	int client_rt_info_size_v6;
@@ -256,17 +248,9 @@ protected:
 	int each_client_rt_rule_count_v4;
 	int each_client_rt_rule_count_v6;
 
-	virtual int eth_bridge_handle_dummy_wlan_client_flt_rule(ipa_ip_type iptype);
+	int eth_bridge_add_client_flt_rule(uint8_t* mac, ipa_ip_type iptype, int dest_if_cate);
 
-	virtual int eth_bridge_handle_dummy_lan_client_flt_rule(ipa_ip_type iptype);
-
-	int eth_bridge_add_lan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
-
-	int eth_bridge_del_lan_client_flt_rule(uint8_t* mac);
-
-	int eth_bridge_add_wlan_client_flt_rule(uint8_t* mac, ipa_ip_type iptype);
-
-	int eth_bridge_del_wlan_client_flt_rule(uint8_t* mac);
+	int eth_bridge_del_client_flt_rule(uint8_t* mac);
 
 	int eth_bridge_post_lan_client_event(uint8_t* mac_addr, ipa_cm_event_id evt);
 
@@ -276,9 +260,7 @@ protected:
 
 	ipa_hdr_proc_type get_hdr_proc_type(ipa_hdr_l2_type t1, ipa_hdr_l2_type t2);
 
-	virtual int eth_bridge_install_cache_wlan_client_flt_rule(ipa_ip_type iptype);
-
-	virtual int eth_bridge_install_cache_lan_client_flt_rule(ipa_ip_type iptype);
+	virtual int eth_bridge_install_cache_client_flt_rule(ipa_ip_type iptype);
 
 	int eth_bridge_add_lan_client_rt_rule(uint8_t* mac, eth_bridge_src_iface src, ipa_ip_type iptype);
 
@@ -286,11 +268,19 @@ protected:
 
 	eth_bridge_client_rt_info* eth_bridge_get_client_rt_info_ptr(uint8_t index, eth_bridge_src_iface src, ipa_ip_type iptype);
 
-	void eth_bridge_add_lan_client(uint8_t* mac);
+	void eth_bridge_add_client(uint8_t* mac);
 
-	void eth_bridge_del_lan_client(uint8_t* mac);
+	void eth_bridge_del_client(uint8_t* mac);
+
+	int eth_bridge_remove_all_client_flt_rule(ipa_ip_type iptype);
 
 	int eth_bridge_get_hdr_template_hdl(uint32_t* hdr_hdl);
+
+	bool eth_bridge_is_lan_client(int ipa_if_cate);
+
+	enum ipa_hdr_l2_type eth_bridge_get_l2_hdr_type();
+
+	void eth_bridge_get_rt_tbl_name(ipa_ip_type iptype, struct ipa_ioc_get_rt_tbl *rt_tbl, int dest_if_cate);
 
 
 
@@ -352,9 +342,8 @@ protected:
 
 	uint32_t if_ipv4_subnet;
 
-	/* expected modem UL rules starting index */
-	int exp_index_v4;
-	int exp_index_v6;
+	uint32_t eth_bridge_flt_rule_offset_v4;
+	uint32_t eth_bridge_flt_rule_offset_v6;
 
 private:
 
