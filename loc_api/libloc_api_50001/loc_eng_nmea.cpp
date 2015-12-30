@@ -124,7 +124,6 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     char* pMarker = sentence;
     int lengthRemaining = sizeof(sentence);
     int length = 0;
-
     time_t utcTime(location.gpsLocation.timestamp/1000);
     tm * pTm = gmtime(&utcTime);
     int utcYear = pTm->tm_year % 100; // 2 digit year
@@ -133,6 +132,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
     int utcHours = pTm->tm_hour;
     int utcMinutes = pTm->tm_min;
     int utcSeconds = pTm->tm_sec;
+    int utcMSeconds = (location.gpsLocation.timestamp)%1000;
 
     if (generate_nmea) {
         // ------------------
@@ -278,8 +278,8 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker = sentence;
         lengthRemaining = sizeof(sentence);
 
-        length = snprintf(pMarker, lengthRemaining, "$GPRMC,%02d%02d%02d,A," ,
-                          utcHours, utcMinutes, utcSeconds);
+        length = snprintf(pMarker, lengthRemaining, "$GPRMC,%02d%02d%02d.%02d,A," ,
+                          utcHours, utcMinutes, utcSeconds,utcMSeconds/10);
 
         if (length < 0 || length >= lengthRemaining)
         {
@@ -431,8 +431,8 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker = sentence;
         lengthRemaining = sizeof(sentence);
 
-        length = snprintf(pMarker, lengthRemaining, "$GPGGA,%02d%02d%02d," ,
-                          utcHours, utcMinutes, utcSeconds);
+        length = snprintf(pMarker, lengthRemaining, "$GPGGA,%02d%02d%02d.%02d," ,
+                          utcHours, utcMinutes, utcSeconds, utcMSeconds/10);
 
         if (length < 0 || length >= lengthRemaining)
         {
