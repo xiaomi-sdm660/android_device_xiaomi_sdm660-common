@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,11 +29,16 @@
 #ifndef GPS_EXTENDED_H
 #define GPS_EXTENDED_H
 
+#include <gps_extended_c.h>
+/**
+ * @file
+ * @brief C++ declarations for GPS types
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#include <gps_extended_c.h>
 #if defined(USE_GLIB) || defined(OFF_TARGET)
 #include <string.h>
 #endif
@@ -51,7 +56,8 @@ struct LocPosMode
                uint32_t gap, uint32_t accu, uint32_t time,
                const char* cred, const char* prov) :
         mode(m), recurrence(recr),
-        min_interval(gap < MIN_POSSIBLE_FIX_INTERVAL ? MIN_POSSIBLE_FIX_INTERVAL : gap),
+        min_interval(gap < GPS_MIN_POSSIBLE_FIX_INTERVAL_MS ?
+                                 GPS_MIN_POSSIBLE_FIX_INTERVAL_MS : gap),
         preferred_accuracy(accu), preferred_time(time) {
         memset(credentials, 0, sizeof(credentials));
         memset(provider, 0, sizeof(provider));
@@ -66,7 +72,7 @@ struct LocPosMode
     inline LocPosMode() :
         mode(LOC_POSITION_MODE_MS_BASED),
         recurrence(GPS_POSITION_RECURRENCE_PERIODIC),
-        min_interval(MIN_POSSIBLE_FIX_INTERVAL),
+        min_interval(GPS_DEFAULT_FIX_INTERVAL_MS),
         preferred_accuracy(50), preferred_time(120000) {
         memset(credentials, 0, sizeof(credentials));
         memset(provider, 0, sizeof(provider));

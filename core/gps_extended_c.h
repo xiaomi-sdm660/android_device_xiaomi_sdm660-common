@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,13 +29,18 @@
 #ifndef GPS_EXTENDED_C_H
 #define GPS_EXTENDED_C_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <ctype.h>
 #include <stdbool.h>
 #include <hardware/gps.h>
+
+/**
+ * @file
+ * @brief C++ declarations for GPS types
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /** Location has valid source information. */
 #define LOCATION_HAS_SOURCE_INFO   0x0020
@@ -177,7 +182,24 @@ typedef enum loc_position_mode_type {
 
 } LocPositionMode;
 
-#define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+/**
+ * @brief Minimum allowed value for fix interval.
+ *
+ * This value is a sanity limit in GPS framework. The hardware has own internal
+ * limits that may not match this value
+ *
+ * @sa GPS_DEFAULT_FIX_INTERVAL_MS
+ */
+
+#define GPS_MIN_POSSIBLE_FIX_INTERVAL_MS 100
+/**
+ * @brief Default value for fix interval.
+ *
+ * This value is used by default whenever appropriate.
+ *
+ * @sa GPS_MIN_POSSIBLE_FIX_INTERVAL_MS
+ */
+#define GPS_DEFAULT_FIX_INTERVAL_MS      1000
 
 /** GpsLocationExtended has valid latitude and longitude. */
 #define GPS_LOCATION_EXTENDED_HAS_LAT_LONG   (1U<<0)
