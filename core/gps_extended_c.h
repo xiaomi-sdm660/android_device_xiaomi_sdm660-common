@@ -531,6 +531,7 @@ enum ulp_gnss_sv_poly_valid_flags{
     ULP_GNSS_SV_POLY_ELEVATIONDOT,
     ULP_GNSS_SV_POLY_ELEVATIONUNC,
     ULP_GNSS_SV_POLY_VELO_COEFF,
+    ULP_GNSS_SV_POLY_ENHANCED_IOD,
 
     ULP_GNSS_SV_POLY_VALID_FLAGS
 
@@ -553,6 +554,7 @@ enum ulp_gnss_sv_poly_valid_flags{
 #define ULP_GNSS_SV_POLY_BIT_ELEVATIONDOT           (1<<ULP_GNSS_SV_POLY_ELEVATIONDOT)
 #define ULP_GNSS_SV_POLY_BIT_ELEVATIONUNC           (1<<ULP_GNSS_SV_POLY_ELEVATIONUNC)
 #define ULP_GNSS_SV_POLY_BIT_VELO_COEFF             (1<<ULP_GNSS_SV_POLY_VELO_COEFF)
+#define ULP_GNSS_SV_POLY_BIT_ENHANCED_IOD           (1<<ULP_GNSS_SV_POLY_ENHANCED_IOD)
 
 
 typedef enum
@@ -1031,9 +1033,9 @@ typedef struct
     as per Gnss_SvPolyStatusMaskType
     */
 
-    uint16_t    is_valid;
+    uint32_t    is_valid;
 
-    uint8_t     iode;
+    uint16_t     iode;
     /* Ephemeris reference time
        GPS:Issue of Data Ephemeris used [unitless].
        GLO: Tb 7-bit, refer to ICD02
@@ -1060,6 +1062,7 @@ typedef struct
     float       elevationUnc;      /* SV elevation [rad] uncertainty */
     double      velCoef[GNSS_SV_POLY_VELOCITY_COEF_MAX_SIZE];
     /* Coefficients of velocity poly */
+    uint32_t    enhancedIOD;    /*  Enhanced Reference Time */
 } GnssSvPolynomial;
 
 #ifdef __cplusplus
