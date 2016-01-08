@@ -961,7 +961,7 @@ int ipa_get_if_index
 
 	memset(&ifr, 0, sizeof(struct ifreq));
 
-	(void)strncpy(ifr.ifr_name, if_name, sizeof(ifr.ifr_name));
+	(void)strlcpy(ifr.ifr_name, if_name, sizeof(ifr.ifr_name));
 
 	if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0)
 	{
