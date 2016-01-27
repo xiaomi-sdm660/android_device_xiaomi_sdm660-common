@@ -1802,7 +1802,7 @@ int IPACM_Wlan::handle_wlan_client_down_evt(uint8_t *mac_addr)
 /*handle wlan iface down event*/
 int IPACM_Wlan::handle_down_evt()
 {
-	int res = IPACM_SUCCESS, i;
+	int res = IPACM_SUCCESS, i, num_private_subnet_fl_rule;
 
 	IPACMDBG_H("WLAN ip-type: %d \n", ip_type);
 	/* no iface address up, directly close iface*/
@@ -1871,13 +1871,15 @@ int IPACM_Wlan::handle_down_evt()
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES);
 #else
-		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
+		num_private_subnet_fl_rule = IPACM_Iface::ipacmcfg->ipa_num_private_subnet > IPA_MAX_PRIVATE_SUBNET_ENTRIES?
+			IPA_MAX_PRIVATE_SUBNET_ENTRIES : IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, num_private_subnet_fl_rule) == false)
 		{
 			IPACMERR("Error deleting private subnet flt rules, aborting...\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
-		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet);
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, num_private_subnet_fl_rule);
 #endif
 		IPACMDBG_H("Deleted private subnet v4 filter rules successfully.\n");
 	}

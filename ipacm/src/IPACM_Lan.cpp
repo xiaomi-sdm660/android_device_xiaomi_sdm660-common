@@ -5998,9 +5998,15 @@ int IPACM_Lan::eth_bridge_remove_all_client_flt_rule(ipa_ip_type iptype)
 	int i, j;
 	uint32_t temp_eth_bridge_flt_rule[IPA_LAN_TO_LAN_MAX_CLIENT];
 
+	if(rx_prop == NULL)
+	{
+		IPACMDBG_H("No rx property, return.\n");
+		return IPACM_SUCCESS;
+	}
+
 	i = 0;
 	j = 0;
-	while(i<client_flt_info_count)
+	while(i<client_flt_info_count && j<IPA_LAN_TO_LAN_MAX_CLIENT)
 	{
 		if(iptype == IPA_IP_v4 && eth_bridge_client_flt_info[i].flt_rule_set_v4)
 		{
