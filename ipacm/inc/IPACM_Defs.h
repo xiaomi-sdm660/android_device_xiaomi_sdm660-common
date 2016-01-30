@@ -143,64 +143,67 @@ extern "C"
 ===========================================================================*/
 typedef enum
 {
-	IPA_CFG_CHANGE_EVENT = 1,                 /* 1 NULL */
-	IPA_LINK_UP_EVENT,                        /* 2 ipacm_event_data_fid */
-	IPA_LINK_DOWN_EVENT,                      /* 3 ipacm_event_data_fid */
-	IPA_ADDR_ADD_EVENT,                       /* 4 ipacm_event_data_addr */
-	IPA_ADDR_DEL_EVENT,                       /* 5 no use */
-	IPA_ROUTE_ADD_EVENT,                      /* 6 ipacm_event_data_addr */
-	IPA_ROUTE_DEL_EVENT,                      /* 7 ipacm_event_data_addr */
-	IPA_FIREWALL_CHANGE_EVENT,                /* 8 NULL */
-	IPA_WLAN_AP_LINK_UP_EVENT,                /* 9 ipacm_event_data_mac */
-	IPA_WLAN_STA_LINK_UP_EVENT,               /* 10 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_ADD_EVENT,                /* 11 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_DEL_EVENT,                /* 12 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_POWER_SAVE_EVENT,         /* 13 ipacm_event_data_mac */
-	IPA_WLAN_CLIENT_RECOVER_EVENT,            /* 14 ipacm_event_data_mac */
-	IPA_NEW_NEIGH_EVENT,                      /* 15 ipacm_event_data_all */
-	IPA_DEL_NEIGH_EVENT,                      /* 16 ipacm_event_data_all */
-	IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT,       /* 17 ipacm_event_data_all */
-	IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT,       /* 18 ipacm_event_data_all */
-	IPA_SW_ROUTING_ENABLE,                    /* 19 NULL */
-	IPA_SW_ROUTING_DISABLE,                   /* 20 NULL */
-	IPA_PROCESS_CT_MESSAGE,                   /* 21 ipacm_ct_evt_data */
-	IPA_HANDLE_WAN_UP,                        /* 22 ipacm_event_iface_up  */
-	IPA_HANDLE_WAN_DOWN,                      /* 23 ipacm_event_iface_up  */
-	IPA_HANDLE_WLAN_UP,                       /* 24 ipacm_event_iface_up */
-	IPA_HANDLE_LAN_UP,                        /* 25 ipacm_event_iface_up */
-	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* 26 ipacm_event_data_wlan_ex */
-	IPA_HANDLE_WAN_UP_V6,                     /* 27 NULL */
-	IPA_HANDLE_WAN_DOWN_V6,                   /* 28 NULL */
-	IPA_LAN_CLIENT_ACTIVE,                    /* 29 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_INACTIVE,                  /* 30 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_DISCONNECT,                /* 31 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_POWER_SAVE,                /* 32 ipacm_event_lan_client*/
-	IPA_LAN_CLIENT_POWER_RECOVER,             /* 33 ipacm_event_lan_client*/
-	IPA_LAN_TO_LAN_NEW_CONNECTION,            /* 34 ipacm_event_connection */
-	IPA_LAN_TO_LAN_DEL_CONNECTION,            /* 35 ipacm_event_connection */
-	IPA_LAN_DELETE_SELF,                      /* 36 ipacm_event_data_fid */
-	IPA_WLAN_LINK_DOWN_EVENT,                 /* 37 ipacm_event_data_mac */
-	IPA_USB_LINK_UP_EVENT,                    /* 38 ipacm_event_data_fid */
-	IPA_PROCESS_CT_MESSAGE_V6,                /* 39 ipacm_ct_evt_data */
-	IPA_PRIVATE_SUBNET_CHANGE_EVENT,          /* 40 ipacm_event_data_fid */
-	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,         /* 41 ipacm_event_data_fid */
-	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,         /* 42 ipacm_event_data_fid */
-	IPA_WAN_EMBMS_LINK_UP_EVENT,              /* 43 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_CLIENT_ADD_EVENT,          /* 44 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_CLIENT_DEL_EVENT,          /* 45 ipacm_event_data_mac */
-	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* 46 ipacm_event_data_if_cat */
-	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* 47 ipacm_event_data_if_cat */
-	IPA_WLAN_SWITCH_TO_SCC,                   /* 48 No Data */
-	IPA_WLAN_SWITCH_TO_MCC,                   /* 49 No Data */
-	IPA_CRADLE_WAN_MODE_SWITCH,               /* 50 ipacm_event_cradle_wan_mode */
-	IPA_WAN_XLAT_CONNECT_EVENT,               /* 51 ipacm_event_data_fid */
-	IPA_TETHERING_STATS_UPDATE_EVENT,         /* 52 ipacm_event_data_fid */
-	IPA_NETWORK_STATS_UPDATE_EVENT,           /* 53 ipacm_event_data_fid */
-	IPA_HANDLE_WAN_UP_TETHER,                 /* 54 ipacm_event_iface_up_tehter */
-	IPA_HANDLE_WAN_DOWN_TETHER,               /* 55 ipacm_event_iface_up_tehter */
-	IPA_HANDLE_WAN_UP_V6_TETHER,		      /* 56 ipacm_event_iface_up_tehter */
-	IPA_HANDLE_WAN_DOWN_V6_TETHER,		      /* 57 ipacm_event_iface_up_tehter */
-	IPA_BRIDGE_LINK_UP_EVENT,                 /* 58 ipacm_event_data_all */
+	IPA_CFG_CHANGE_EVENT = 1,                 /* NULL */
+	IPA_PRIVATE_SUBNET_CHANGE_EVENT,          /* ipacm_event_data_fid */
+	IPA_FIREWALL_CHANGE_EVENT,                /* NULL */
+	IPA_LINK_UP_EVENT,                        /* ipacm_event_data_fid */
+	IPA_LINK_DOWN_EVENT,                      /* ipacm_event_data_fid */
+	IPA_USB_LINK_UP_EVENT,                    /* ipacm_event_data_fid */
+	IPA_BRIDGE_LINK_UP_EVENT,                 /* ipacm_event_data_all */
+	IPA_WAN_EMBMS_LINK_UP_EVENT,              /* ipacm_event_data_mac */
+	IPA_ADDR_ADD_EVENT,                       /* ipacm_event_data_addr */
+	IPA_ADDR_DEL_EVENT,                       /* no use */
+	IPA_ROUTE_ADD_EVENT,                      /* ipacm_event_data_addr */
+	IPA_ROUTE_DEL_EVENT,                      /* ipacm_event_data_addr */
+	IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT,         /* ipacm_event_data_fid */
+	IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT,         /* ipacm_event_data_fid */
+	IPA_WLAN_AP_LINK_UP_EVENT,                /* ipacm_event_data_mac */
+	IPA_WLAN_STA_LINK_UP_EVENT,               /* ipacm_event_data_mac */
+	IPA_WLAN_LINK_DOWN_EVENT,                 /* ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_ADD_EVENT,                /* ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_ADD_EVENT_EX,             /* ipacm_event_data_wlan_ex */
+	IPA_WLAN_CLIENT_DEL_EVENT,                /* ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_POWER_SAVE_EVENT,         /* ipacm_event_data_mac */
+	IPA_WLAN_CLIENT_RECOVER_EVENT,            /* ipacm_event_data_mac */
+	IPA_NEW_NEIGH_EVENT,                      /* ipacm_event_data_all */
+	IPA_DEL_NEIGH_EVENT,                      /* ipacm_event_data_all */
+	IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT,       /* ipacm_event_data_all */
+	IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT,       /* ipacm_event_data_all */
+	IPA_SW_ROUTING_ENABLE,                    /* NULL */
+	IPA_SW_ROUTING_DISABLE,                   /* NULL */
+	IPA_PROCESS_CT_MESSAGE,                   /* ipacm_ct_evt_data */
+	IPA_PROCESS_CT_MESSAGE_V6,                /* ipacm_ct_evt_data */
+	IPA_LAN_TO_LAN_NEW_CONNECTION,            /* ipacm_event_connection */
+	IPA_LAN_TO_LAN_DEL_CONNECTION,            /* ipacm_event_connection */
+	IPA_WLAN_SWITCH_TO_SCC,                   /* No Data */
+	IPA_WLAN_SWITCH_TO_MCC,                   /* No Data */
+	IPA_CRADLE_WAN_MODE_SWITCH,               /* ipacm_event_cradle_wan_mode */
+	IPA_WAN_XLAT_CONNECT_EVENT,               /* ipacm_event_data_fid */
+	IPA_TETHERING_STATS_UPDATE_EVENT,         /* ipacm_event_data_fid */
+	IPA_NETWORK_STATS_UPDATE_EVENT,           /* ipacm_event_data_fid */
+
+	IPA_EXTERNAL_EVENT_MAX = 500,
+
+	IPA_HANDLE_WAN_UP,                        /* ipacm_event_iface_up  */
+	IPA_HANDLE_WAN_DOWN,                      /* ipacm_event_iface_up  */
+	IPA_HANDLE_WAN_UP_V6,                     /* NULL */
+	IPA_HANDLE_WAN_DOWN_V6,                   /* NULL */
+	IPA_HANDLE_WAN_UP_TETHER,                 /* ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WAN_DOWN_TETHER,               /* ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WAN_UP_V6_TETHER,              /* ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WAN_DOWN_V6_TETHER,            /* ipacm_event_iface_up_tehter */
+	IPA_HANDLE_WLAN_UP,                       /* ipacm_event_iface_up */
+	IPA_HANDLE_LAN_UP,                        /* ipacm_event_iface_up */
+	IPA_LAN_CLIENT_ACTIVE,                    /* ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_INACTIVE,                  /* ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_DISCONNECT,                /* ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_SAVE,                /* ipacm_event_lan_client*/
+	IPA_LAN_CLIENT_POWER_RECOVER,             /* ipacm_event_lan_client*/
+	IPA_LAN_DELETE_SELF,                      /* ipacm_event_data_fid */
+	IPA_ETH_BRIDGE_CLIENT_ADD_EVENT,          /* ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_CLIENT_DEL_EVENT,          /* ipacm_event_data_mac */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT,    /* ipacm_event_data_if_cat */
+	IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT,  /* ipacm_event_data_if_cat */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 

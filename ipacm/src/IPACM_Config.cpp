@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -46,6 +46,71 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 IPACM_Config *IPACM_Config::pInstance = NULL;
 const char *IPACM_Config::DEVICE_NAME = "/dev/ipa";
 const char *IPACM_Config::DEVICE_NAME_ODU = "/dev/odu_ipa_bridge";
+
+#define __stringify(x...) #x
+
+const char *ipacm_event_name[] = {
+	__stringify(IPA_CFG_CHANGE_EVENT),                     /* NULL */
+	__stringify(IPA_PRIVATE_SUBNET_CHANGE_EVENT),          /* ipacm_event_data_fid */
+	__stringify(IPA_FIREWALL_CHANGE_EVENT),                /* NULL */
+	__stringify(IPA_LINK_UP_EVENT),                        /* ipacm_event_data_fid */
+	__stringify(IPA_LINK_DOWN_EVENT),                      /* ipacm_event_data_fid */
+	__stringify(IPA_USB_LINK_UP_EVENT),                    /* ipacm_event_data_fid */
+	__stringify(IPA_BRIDGE_LINK_UP_EVENT),                 /* ipacm_event_data_all */
+	__stringify(IPA_WAN_EMBMS_LINK_UP_EVENT),              /* ipacm_event_data_mac */
+	__stringify(IPA_ADDR_ADD_EVENT),                       /* ipacm_event_data_addr */
+	__stringify(IPA_ADDR_DEL_EVENT),                       /* no use */
+	__stringify(IPA_ROUTE_ADD_EVENT),                      /* ipacm_event_data_addr */
+	__stringify(IPA_ROUTE_DEL_EVENT),                      /* ipacm_event_data_addr */
+	__stringify(IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT),         /* ipacm_event_data_fid */
+	__stringify(IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT),         /* ipacm_event_data_fid */
+	__stringify(IPA_WLAN_AP_LINK_UP_EVENT),                /* ipacm_event_data_mac */
+	__stringify(IPA_WLAN_STA_LINK_UP_EVENT),               /* ipacm_event_data_mac */
+	__stringify(IPA_WLAN_LINK_DOWN_EVENT),                 /* ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_ADD_EVENT),                /* ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_ADD_EVENT_EX),             /* ipacm_event_data_wlan_ex */
+	__stringify(IPA_WLAN_CLIENT_DEL_EVENT),                /* ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_POWER_SAVE_EVENT),         /* ipacm_event_data_mac */
+	__stringify(IPA_WLAN_CLIENT_RECOVER_EVENT),            /* ipacm_event_data_mac */
+	__stringify(IPA_NEW_NEIGH_EVENT),                      /* ipacm_event_data_all */
+	__stringify(IPA_DEL_NEIGH_EVENT),                      /* ipacm_event_data_all */
+	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT),       /* ipacm_event_data_all */
+	__stringify(IPA_NEIGH_CLIENT_IP_ADDR_DEL_EVENT),       /* ipacm_event_data_all */
+	__stringify(IPA_SW_ROUTING_ENABLE),                    /* NULL */
+	__stringify(IPA_SW_ROUTING_DISABLE),                   /* NULL */
+	__stringify(IPA_PROCESS_CT_MESSAGE),                   /* ipacm_ct_evt_data */
+	__stringify(IPA_PROCESS_CT_MESSAGE_V6),                /* ipacm_ct_evt_data */
+	__stringify(IPA_LAN_TO_LAN_NEW_CONNECTION),            /* ipacm_event_connection */
+	__stringify(IPA_LAN_TO_LAN_DEL_CONNECTION),            /* ipacm_event_connection */
+	__stringify(IPA_WLAN_SWITCH_TO_SCC),                   /* No Data */
+	__stringify(IPA_WLAN_SWITCH_TO_MCC),                   /* No Data */
+	__stringify(IPA_CRADLE_WAN_MODE_SWITCH),               /* ipacm_event_cradle_wan_mode */
+	__stringify(IPA_WAN_XLAT_CONNECT_EVENT),               /* ipacm_event_data_fid */
+	__stringify(IPA_TETHERING_STATS_UPDATE_EVENT),         /* ipacm_event_data_fid */
+	__stringify(IPA_NETWORK_STATS_UPDATE_EVENT),           /* ipacm_event_data_fid */
+	__stringify(IPA_EXTERNAL_EVENT_MAX),
+	__stringify(IPA_HANDLE_WAN_UP),                        /* ipacm_event_iface_up  */
+	__stringify(IPA_HANDLE_WAN_DOWN),                      /* ipacm_event_iface_up  */
+	__stringify(IPA_HANDLE_WAN_UP_V6),                     /* NULL */
+	__stringify(IPA_HANDLE_WAN_DOWN_V6),                   /* NULL */
+	__stringify(IPA_HANDLE_WAN_UP_TETHER),                 /* ipacm_event_iface_up_tehter */
+	__stringify(IPA_HANDLE_WAN_DOWN_TETHER),               /* ipacm_event_iface_up_tehter */
+	__stringify(IPA_HANDLE_WAN_UP_V6_TETHER),              /* ipacm_event_iface_up_tehter */
+	__stringify(IPA_HANDLE_WAN_DOWN_V6_TETHER),            /* ipacm_event_iface_up_tehter */
+	__stringify(IPA_HANDLE_WLAN_UP),                       /* ipacm_event_iface_up */
+	__stringify(IPA_HANDLE_LAN_UP),                        /* ipacm_event_iface_up */
+	__stringify(IPA_LAN_CLIENT_ACTIVE),                    /* ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_INACTIVE),                  /* ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_DISCONNECT),                /* ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_POWER_SAVE),                /* ipacm_event_lan_client*/
+	__stringify(IPA_LAN_CLIENT_POWER_RECOVER),             /* ipacm_event_lan_client*/
+	__stringify(IPA_LAN_DELETE_SELF),                      /* ipacm_event_data_fid */
+	__stringify(IPA_ETH_BRIDGE_CLIENT_ADD_EVENT),          /* ipacm_event_data_mac */
+	__stringify(IPA_ETH_BRIDGE_CLIENT_DEL_EVENT),          /* ipacm_event_data_mac */
+	__stringify(IPA_ETH_BRIDGE_HDR_PROC_CTX_SET_EVENT),    /* ipacm_event_data_if_cat */
+	__stringify(IPA_ETH_BRIDGE_HDR_PROC_CTX_UNSET_EVENT),  /* ipacm_event_data_if_cat */
+	__stringify(IPACM_EVENT_MAX),
+};
 
 IPACM_Config::IPACM_Config()
 {
@@ -773,4 +838,15 @@ int IPACM_Config::DelExtProp(ipa_ip_type ip_type)
 	}
 
 	return IPACM_SUCCESS;
+}
+
+const char* IPACM_Config::getEventName(ipa_cm_event_id event_id)
+{
+	if(event_id >= sizeof(ipacm_event_name)/sizeof(ipacm_event_name[0]))
+	{
+		IPACMDBG_DMESG("ERROR: Event name array is not consistent with event array!\n");
+		return NULL;
+	}
+
+	return ipacm_event_name[event_id];
 }
