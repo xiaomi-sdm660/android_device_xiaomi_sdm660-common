@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -26,18 +26,33 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef __LOC_SHARED_LOCK__
+#define __LOC_SHARED_LOCK__
 
-#ifndef LOC_ENG_NMEA_H
-#define LOC_ENG_NMEA_H
+#include <stddef.h>
+#include <pthread.h>
 
-#include <hardware/gps.h>
-#include <gps_extended.h>
+// This is a utility created for use cases such that there are more than
+// one client who need to share the same lock, but it is not predictable
+// which of these clients is to last to go away. This shared lock deletes
+// itself when the last client calls its drop() method. To add a cient,
+// this share lock's share() method has to be called, so that the obj
+// can maintain an accurate client count.
+class LocSharedLock {
+    uint32_t mRef;
+    pthread_mutex_t mMutex;
+    inline ~LocSharedLock() { pthread_mutex_destroy(&mMutex); }
+public:
+    // first client to create this LockSharedLock
+    inline LocSharedLock() : mRef(1) { pthread_mutex_init(&mMutex, NULL); }
+    // following client(s) are to *share()* this lock created by the first client
+    inline LocSharedLock* share() { mRef++; return this; }
+    // whe a client no longer needs this shared lock, drop() shall be called.
+    inline void drop() { if (0 == --mRef) delete this; }
+    // locking the lock to enter critical section
+    inline void lock() { pthread_mutex_lock(&mMutex); }
+    // unlocking the lock to leave the critical section
+    inline void unlock() { pthread_mutex_unlock(&mMutex); }
+};
 
-#define NMEA_SENTENCE_MAX_LENGTH 200
-
-void loc_eng_nmea_send(char *pNmea, int length, loc_eng_data_s_type *loc_eng_data_p);
-int loc_eng_nmea_put_checksum(char *pNmea, int maxSize);
-void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p, const GnssSvStatus &svStatus, const GpsLocationExtended &locationExtended);
-void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p, const UlpLocation &location, const GpsLocationExtended &locationExtended, unsigned char generate_nmea);
-
-#endif // LOC_ENG_NMEA_H
+#endif //__LOC_SHARED_LOCK__

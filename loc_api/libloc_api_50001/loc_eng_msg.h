@@ -105,11 +105,11 @@ struct LocEngReportPosition : public LocMsg {
 
 struct LocEngReportSv : public LocMsg {
     LocAdapterBase* mAdapter;
-    const GpsSvStatus mSvStatus;
+    const GnssSvStatus mSvStatus;
     const GpsLocationExtended mLocationExtended;
     const void* mSvExt;
     LocEngReportSv(LocAdapterBase* adapter,
-                   GpsSvStatus &sv,
+                   GnssSvStatus &sv,
                    GpsLocationExtended &locExtended,
                    void* svExtended);
     virtual void proc() const;
@@ -287,6 +287,16 @@ struct LocEngGetZpp : public LocMsg {
     void locallog() const;
     virtual void log() const;
     void send() const;
+};
+
+struct LocEngReportGpsMeasurement : public LocMsg {
+    void* mLocEng;
+    const GpsData mGpsData;
+    LocEngReportGpsMeasurement(void* locEng,
+                               GpsData &gpsData);
+    virtual void proc() const;
+    void locallog() const;
+    virtual void log() const;
 };
 
 #ifdef __cplusplus

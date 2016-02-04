@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012,2014 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2012, 2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -47,14 +47,15 @@ const char FROM_MODEM[] = "<---";
 const char TO_AFW[]     = "<===";
 const char EXIT_TAG[]   = "Exiting";
 const char ENTRY_TAG[]  = "Entering";
+const char EXIT_ERROR_TAG[]  = "Exiting with error";
 
 /* Logging Mechanism */
 loc_logger_s_type loc_logger;
 
 /* Get names from value */
-const char* loc_get_name_from_mask(loc_name_val_s_type table[], int table_size, long mask)
+const char* loc_get_name_from_mask(const loc_name_val_s_type table[], size_t table_size, long mask)
 {
-   int i;
+   size_t i;
    for (i = 0; i < table_size; i++)
    {
       if (table[i].val & (long) mask)
@@ -66,9 +67,9 @@ const char* loc_get_name_from_mask(loc_name_val_s_type table[], int table_size, 
 }
 
 /* Get names from value */
-const char* loc_get_name_from_val(loc_name_val_s_type table[], int table_size, long value)
+const char* loc_get_name_from_val(const loc_name_val_s_type table[], size_t table_size, long value)
 {
-   int i;
+   size_t i;
    for (i = 0; i < table_size; i++)
    {
       if (table[i].val == (long) value)
@@ -79,7 +80,7 @@ const char* loc_get_name_from_val(loc_name_val_s_type table[], int table_size, l
    return UNKNOWN_STR;
 }
 
-static loc_name_val_s_type loc_msg_q_status[] =
+static const loc_name_val_s_type loc_msg_q_status[] =
 {
     NAME_VAL( eMSG_Q_SUCCESS ),
     NAME_VAL( eMSG_Q_FAILURE_GENERAL ),
@@ -88,7 +89,7 @@ static loc_name_val_s_type loc_msg_q_status[] =
     NAME_VAL( eMSG_Q_UNAVAILABLE_RESOURCE ),
     NAME_VAL( eMSG_Q_INSUFFICIENT_BUFFER )
 };
-static int loc_msg_q_status_num = sizeof(loc_msg_q_status) / sizeof(loc_name_val_s_type);
+static const size_t loc_msg_q_status_num = LOC_TABLE_SIZE(loc_msg_q_status);
 
 /* Find msg_q status name */
 const char* loc_get_msg_q_status(int status)
@@ -102,17 +103,18 @@ const char* log_succ_fail_string(int is_succ)
 }
 
 //Target names
-loc_name_val_s_type target_name[] =
+static const loc_name_val_s_type target_name[] =
 {
     NAME_VAL(GNSS_NONE),
     NAME_VAL(GNSS_MSM),
     NAME_VAL(GNSS_GSS),
     NAME_VAL(GNSS_MDM),
     NAME_VAL(GNSS_QCA1530),
+    NAME_VAL(GNSS_AUTO),
     NAME_VAL(GNSS_UNKNOWN)
 };
 
-static int target_name_num = sizeof(target_name)/sizeof(loc_name_val_s_type);
+static const size_t target_name_num = LOC_TABLE_SIZE(target_name);
 
 /*===========================================================================
 
@@ -133,7 +135,7 @@ const char *loc_get_target_name(unsigned int target)
     static char ret[BUFFER_SIZE];
 
     index =  getTargetGnssType(target);
-    if( index >= target_name_num || index < 0)
+    if( index < 0 || (unsigned)index >= target_name_num )
         index = target_name_num - 1;
 
     if( (target & HAS_SSC) == HAS_SSC ) {
@@ -162,7 +164,7 @@ RETURN VALUE
    The time string
 
 ===========================================================================*/
-char *loc_get_time(char *time_string, unsigned long buf_size)
+char *loc_get_time(char *time_string, size_t buf_size)
 {
    struct timeval now;     /* sec and usec     */
    struct tm now_tm;       /* broken-down time */
@@ -176,3 +178,61 @@ char *loc_get_time(char *time_string, unsigned long buf_size)
 
    return time_string;
 }
+
+
+/*===========================================================================
+FUNCTION loc_logger_init
+
+DESCRIPTION
+   Initializes the state of DEBUG_LEVEL and TIMESTAMP
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+void loc_logger_init(unsigned long debug, unsigned long timestamp)
+{
+   loc_logger.DEBUG_LEVEL = debug;
+#ifdef TARGET_BUILD_VARIANT_USER
+   // force user builds to 2 or less
+   if (loc_logger.DEBUG_LEVEL > 2) {
+       loc_logger.DEBUG_LEVEL = 2;
+   }
+#endif
+   loc_logger.TIMESTAMP   = timestamp;
+}
+
+
+/*===========================================================================
+FUNCTION get_timestamp
+
+DESCRIPTION
+   Generates a timestamp using the current system time
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   Char pointer to the parameter str
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+char * get_timestamp(char *str, unsigned long buf_size)
+{
+  struct timeval tv;
+  struct timezone tz;
+  int hh, mm, ss;
+  gettimeofday(&tv, &tz);
+  hh = tv.tv_sec/3600%24;
+  mm = (tv.tv_sec%3600)/60;
+  ss = tv.tv_sec%60;
+  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_usec);
+  return str;
+}
+

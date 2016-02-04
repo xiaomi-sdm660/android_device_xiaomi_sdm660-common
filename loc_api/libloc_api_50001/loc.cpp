@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -47,6 +47,8 @@
 
 using namespace loc_core;
 
+#define LOC_PM_CLIENT_NAME "GPS"
+
 //Globals defns
 static gps_location_callback gps_loc_cb = NULL;
 static gps_sv_status_callback gps_sv_cb = NULL;
@@ -68,7 +70,6 @@ static int  loc_set_position_mode(GpsPositionMode mode, GpsPositionRecurrence re
                                   uint32_t min_interval, uint32_t preferred_accuracy,
                                   uint32_t preferred_time);
 static const void* loc_get_extension(const char* name);
-
 // Defines the GpsInterface in gps.h
 static const GpsInterface sLocEngInterface =
 {
@@ -90,6 +91,7 @@ static int  loc_agps_open(const char* apn);
 static int  loc_agps_closed();
 static int  loc_agps_open_failed();
 static int  loc_agps_set_server(AGpsType type, const char *hostname, int port);
+static int  loc_agps_open_with_apniptype( const char* apn, ApnIpType apnIpType);
 
 static const AGpsInterface sLocEngAGpsInterface =
 {
@@ -98,7 +100,8 @@ static const AGpsInterface sLocEngAGpsInterface =
    loc_agps_open,
    loc_agps_closed,
    loc_agps_open_failed,
-   loc_agps_set_server
+   loc_agps_set_server,
+   loc_agps_open_with_apniptype
 };
 
 static int loc_xtra_init(GpsXtraCallbacks* callbacks);
@@ -114,11 +117,21 @@ static const GpsXtraInterface sLocEngXTRAInterface =
 static void loc_ni_init(GpsNiCallbacks *callbacks);
 static void loc_ni_respond(int notif_id, GpsUserResponseType user_response);
 
-const GpsNiInterface sLocEngNiInterface =
+static const GpsNiInterface sLocEngNiInterface =
 {
    sizeof(GpsNiInterface),
    loc_ni_init,
    loc_ni_respond,
+};
+
+static int loc_gps_measurement_init(GpsMeasurementCallbacks* callbacks);
+static void loc_gps_measurement_close();
+
+static const GpsMeasurementInterface sLocEngGpsMeasurementInterface =
+{
+    sizeof(GpsMeasurementInterface),
+    loc_gps_measurement_init,
+    loc_gps_measurement_close
 };
 
 static void loc_agps_ril_init( AGpsRilCallbacks* callbacks );
@@ -139,9 +152,29 @@ static const AGpsRilInterface sLocEngAGpsRilInterface =
    loc_agps_ril_update_network_availability
 };
 
+static int loc_agps_install_certificates(const DerEncodedCertificate* certificates,
+                                         size_t length);
+static int loc_agps_revoke_certificates(const Sha1CertificateFingerprint* fingerprints,
+                                        size_t length);
+
+static const SuplCertificateInterface sLocEngAGpsCertInterface =
+{
+    sizeof(SuplCertificateInterface),
+    loc_agps_install_certificates,
+    loc_agps_revoke_certificates
+};
+
+static void loc_configuration_update(const char* config_data, int32_t length);
+
+static const GnssConfigurationInterface sLocEngConfigInterface =
+{
+    sizeof(GnssConfigurationInterface),
+    loc_configuration_update
+};
+
 static loc_eng_data_s_type loc_afw_data;
 static int gss_fd = -1;
-
+static int sGnssType = GNSS_UNKNOWN;
 /*===========================================================================
 FUNCTION    gps_get_hardware_interface
 
@@ -194,10 +227,11 @@ extern "C" const GpsInterface* get_gps_interface()
     target = loc_get_target();
     LOC_LOGD("Target name check returned %s", loc_get_target_name(target));
 
-    int gnssType = getTargetGnssType(target);
-    switch (gnssType)
+    sGnssType = getTargetGnssType(target);
+    switch (sGnssType)
     {
     case GNSS_GSS:
+    case GNSS_AUTO:
         //APQ8064
         gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
         gss_fd = open("/dev/gss", O_RDONLY);
@@ -270,16 +304,31 @@ static int loc_init(GpsCallbacks* callbacks)
                                     callbacks->create_thread_cb, /* create_thread_cb */
                                     NULL, /* location_ext_parser */
                                     NULL, /* sv_ext_parser */
-                                    callbacks->request_utc_time_cb /* request_utc_time_cb */};
+                                    callbacks->request_utc_time_cb, /* request_utc_time_cb */
+                                    };
 
     gps_loc_cb = callbacks->location_cb;
     gps_sv_cb = callbacks->sv_status_cb;
 
     retVal = loc_eng_init(loc_afw_data, &clientCallbacks, event, NULL);
-    loc_afw_data.adapter->requestUlp(gps_conf.CAPABILITIES);
-    loc_afw_data.adapter->mAgpsEnabled = !loc_afw_data.adapter->hasAgpsExt();
-    loc_afw_data.adapter->mCPIEnabled = !loc_afw_data.adapter->hasCPIExt();
+    loc_afw_data.adapter->mSupportsAgpsRequests = !loc_afw_data.adapter->hasAgpsExtendedCapabilities();
+    loc_afw_data.adapter->mSupportsPositionInjection = !loc_afw_data.adapter->hasCPIExtendedCapabilities();
+    loc_afw_data.adapter->mSupportsTimeInjection = !loc_afw_data.adapter->hasCPIExtendedCapabilities();
+    loc_afw_data.adapter->setGpsLockMsg(0);
+    loc_afw_data.adapter->requestUlp(getCarrierCapabilities());
+    loc_afw_data.adapter->setXtraUserAgent();
 
+    if(retVal) {
+        LOC_LOGE("loc_eng_init() fail!");
+        goto err;
+    }
+
+    loc_afw_data.adapter->setPowerVoteRight(loc_get_target() == TARGET_QCA1530);
+    loc_afw_data.adapter->setPowerVote(true);
+
+    LOC_LOGD("loc_eng_init() success!");
+
+err:
     EXIT_LOG(%d, retVal);
     return retVal;
 }
@@ -303,18 +352,13 @@ SIDE EFFECTS
 static void loc_cleanup()
 {
     ENTRY_LOG();
+
+    loc_afw_data.adapter->setPowerVote(false);
+    loc_afw_data.adapter->setGpsLockMsg(gps_conf.GPS_LOCK);
+
     loc_eng_cleanup(loc_afw_data);
     gps_loc_cb = NULL;
     gps_sv_cb = NULL;
-
-/*
-    if (gss_fd >= 0)
-    {
-        close(gss_fd);
-        gss_fd = -1;
-        LOC_LOGD("GSS shutdown.\n");
-    }
-*/
 
     EXIT_LOG(%s, VOID_RET);
 }
@@ -462,33 +506,11 @@ SIDE EFFECTS
 ===========================================================================*/
 static int loc_inject_location(double latitude, double longitude, float accuracy)
 {
-    static bool initialized = false;
-    static bool enable_cpi = true;
-    accuracy = 1000;
     ENTRY_LOG();
 
-    if(!initialized)
-    {
-        char value[PROPERTY_VALUE_MAX];
-        memset(value, 0, sizeof(value));
-        (void)platform_lib_abstraction_property_get("persist.gps.qc_nlp_in_use", value, "0");
-        if(0 == strcmp(value, "1"))
-        {
-            enable_cpi = false;
-            LOC_LOGI("GPS HAL coarse position injection disabled");
-        }
-        else
-        {
-            LOC_LOGI("GPS HAL coarse position injection enabled");
-        }
-        initialized = true;
-    }
-
     int ret_val = 0;
-    if(enable_cpi)
-    {
-      ret_val = loc_eng_inject_location(loc_afw_data, latitude, longitude, accuracy);
-    }
+    ret_val = loc_eng_inject_location(loc_afw_data, latitude, longitude, accuracy);
+
     EXIT_LOG(%d, ret_val);
     return ret_val;
 }
@@ -544,7 +566,7 @@ const GpsGeofencingInterface* get_geofence_interface(void)
     }
     dlerror();    /* Clear any existing error */
     get_gps_geofence_interface = (get_gps_geofence_interface_function)dlsym(handle, "gps_geofence_get_interface");
-    if ((error = dlerror()) != NULL)  {
+    if ((error = dlerror()) != NULL || NULL == get_gps_geofence_interface)  {
         LOC_LOGE ("%s, dlsym for get_gps_geofence_interface failed, error = %s\n", __func__, error);
         goto exit;
      }
@@ -604,6 +626,18 @@ const void* loc_get_extension(const char* name)
            ret_val = get_geofence_interface();
        }
    }
+   else if (strcmp(name, SUPL_CERTIFICATE_INTERFACE) == 0)
+   {
+       ret_val = &sLocEngAGpsCertInterface;
+   }
+   else if (strcmp(name, GNSS_CONFIGURATION_INTERFACE) == 0)
+   {
+       ret_val = &sLocEngConfigInterface;
+   }
+   else if (strcmp(name, GPS_MEASUREMENT_INTERFACE) == 0)
+   {
+       ret_val = &sLocEngGpsMeasurementInterface;
+   }
    else
    {
       LOC_LOGE ("get_extension: Invalid interface passed in\n");
@@ -657,6 +691,50 @@ static int loc_agps_open(const char* apn)
     ENTRY_LOG();
     AGpsType agpsType = AGPS_TYPE_SUPL;
     AGpsBearerType bearerType = AGPS_APN_BEARER_IPV4;
+    int ret_val = loc_eng_agps_open(loc_afw_data, agpsType, apn, bearerType);
+
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_agps_open_with_apniptype
+
+DESCRIPTION
+   This function is called when on-demand data connection opening is successful.
+It should inform ARM 9 about the data open result.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   0
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static int  loc_agps_open_with_apniptype(const char* apn, ApnIpType apnIpType)
+{
+    ENTRY_LOG();
+    AGpsType agpsType = AGPS_TYPE_SUPL;
+    AGpsBearerType bearerType;
+
+    switch (apnIpType) {
+        case APN_IP_IPV4:
+            bearerType = AGPS_APN_BEARER_IPV4;
+            break;
+        case APN_IP_IPV6:
+            bearerType = AGPS_APN_BEARER_IPV6;
+            break;
+        case APN_IP_IPV4V6:
+            bearerType = AGPS_APN_BEARER_IPV4V6;
+            break;
+        default:
+            bearerType = AGPS_APN_BEARER_INVALID;
+            break;
+    }
+
     int ret_val = loc_eng_agps_open(loc_afw_data, agpsType, apn, bearerType);
 
     EXIT_LOG(%d, ret_val);
@@ -775,7 +853,10 @@ SIDE EFFECTS
 static int loc_xtra_init(GpsXtraCallbacks* callbacks)
 {
     ENTRY_LOG();
-    int ret_val = loc_eng_xtra_init(loc_afw_data, (GpsXtraExtCallbacks*)callbacks);
+    GpsXtraExtCallbacks extCallbacks;
+    memset(&extCallbacks, 0, sizeof(extCallbacks));
+    extCallbacks.download_request_cb = callbacks->download_request_cb;
+    int ret_val = loc_eng_xtra_init(loc_afw_data, &extCallbacks);
 
     EXIT_LOG(%d, ret_val);
     return ret_val;
@@ -809,6 +890,56 @@ static int loc_xtra_inject_data(char* data, int length)
                  __func__, data, length);
     EXIT_LOG(%d, ret_val);
     return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_gps_measurement_init
+
+DESCRIPTION
+   This function initializes the gps measurement interface
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static int loc_gps_measurement_init(GpsMeasurementCallbacks* callbacks)
+{
+    ENTRY_LOG();
+    int ret_val = loc_eng_gps_measurement_init(loc_afw_data,
+                                               callbacks);
+
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+
+/*===========================================================================
+FUNCTION    loc_gps_measurement_close
+
+DESCRIPTION
+   This function closes the gps measurement interface
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   None
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_gps_measurement_close()
+{
+    ENTRY_LOG();
+    loc_eng_gps_measurement_close(loc_afw_data);
+
+    EXIT_LOG(%s, VOID_RET);
 }
 
 /*===========================================================================
@@ -888,6 +1019,40 @@ static void loc_agps_ril_update_network_availability(int available, const char* 
     EXIT_LOG(%s, VOID_RET);
 }
 
+static int loc_agps_install_certificates(const DerEncodedCertificate* certificates,
+                                         size_t length)
+{
+    ENTRY_LOG();
+    int ret_val = loc_eng_agps_install_certificates(loc_afw_data, certificates, length);
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+static int loc_agps_revoke_certificates(const Sha1CertificateFingerprint* fingerprints,
+                                        size_t length)
+{
+    ENTRY_LOG();
+    LOC_LOGE("%s:%d]: agps_revoke_certificates not supported");
+    int ret_val = AGPS_CERTIFICATE_ERROR_GENERIC;
+    EXIT_LOG(%d, ret_val);
+    return ret_val;
+}
+
+static void loc_configuration_update(const char* config_data, int32_t length)
+{
+    ENTRY_LOG();
+    loc_eng_configuration_update(loc_afw_data, config_data, length);
+    switch (sGnssType)
+    {
+    case GNSS_GSS:
+    case GNSS_AUTO:
+    case GNSS_QCA1530:
+        //APQ
+        gps_conf.CAPABILITIES &= ~(GPS_CAPABILITY_MSA | GPS_CAPABILITY_MSB);
+        break;
+    }
+    EXIT_LOG(%s, VOID_RET);
+}
+
 static void local_loc_cb(UlpLocation* location, void* locExt)
 {
     ENTRY_LOG();
@@ -910,3 +1075,4 @@ static void local_sv_cb(GpsSvStatus* sv_status, void* svExt)
     }
     EXIT_LOG(%s, VOID_RET);
 }
+

@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013,2015 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation nor the names of its
+ *     * Neither the name of The Linux Foundation, nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -26,18 +26,42 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef __MSG_TASK__
+#define __MSG_TASK__
 
-#ifndef LOC_ENG_NMEA_H
-#define LOC_ENG_NMEA_H
+#include <LocThread.h>
 
-#include <hardware/gps.h>
-#include <gps_extended.h>
+struct LocMsg {
+    inline LocMsg() {}
+    inline virtual ~LocMsg() {}
+    virtual void proc() const = 0;
+    inline virtual void log() const {}
+};
 
-#define NMEA_SENTENCE_MAX_LENGTH 200
+class MsgTask : public LocRunnable {
+    const void* mQ;
+    LocThread* mThread;
+    friend class LocThreadDelegate;
+protected:
+    virtual ~MsgTask();
+public:
+    MsgTask(LocThread::tCreate tCreator, const char* threadName = NULL, bool joinable = true);
+    MsgTask(const char* threadName = NULL, bool joinable = true);
+    // this obj will be deleted once thread is deleted
+    void destroy();
+    void sendMsg(const LocMsg* msg) const;
+    // Overrides of LocRunnable methods
+    // This method will be repeated called until it returns false; or
+    // until thread is stopped.
+    virtual bool run();
 
-void loc_eng_nmea_send(char *pNmea, int length, loc_eng_data_s_type *loc_eng_data_p);
-int loc_eng_nmea_put_checksum(char *pNmea, int maxSize);
-void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p, const GnssSvStatus &svStatus, const GpsLocationExtended &locationExtended);
-void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p, const UlpLocation &location, const GpsLocationExtended &locationExtended, unsigned char generate_nmea);
+    // The method to be run before thread loop (conditionally repeatedly)
+    // calls run()
+    virtual void prerun();
 
-#endif // LOC_ENG_NMEA_H
+    // The method to be run after thread loop (conditionally repeatedly)
+    // calls run()
+    inline virtual void postrun() {}
+};
+
+#endif //__MSG_TASK__
