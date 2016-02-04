@@ -1,5 +1,6 @@
 AM_CFLAGS = \
      -I../include \
+     -D__func__=__PRETTY_FUNCTION__ \
      -fno-short-enums
 
 libloc_stub_la_extra_h = \

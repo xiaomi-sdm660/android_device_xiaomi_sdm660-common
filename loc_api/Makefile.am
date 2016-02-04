@@ -5,6 +5,7 @@ AM_CFLAGS = \
      -I../utils \
      $(LOCPLA_CFLAGS) \
      -fno-short-enums \
+     -D__func__=__PRETTY_FUNCTION__ \
      -DTARGET_USES_QCOM_BSP
 
 libloc_eng_so_la_h_sources = \
@@ -81,7 +82,8 @@ libloc_ds_api_la_LDFLAGS += -Wl,--export-dynamic
 libloc_ds_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_ds_api_CFLAGS)
 endif
 
-libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices $(LOCPLA_LIBS) ../utils/libgps_utils_so.la
+libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices -ldsi_netctrl $(LOCPLA_LIBS) ../utils/libgps_utils_so.la
+#libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices $(LOCPLA_LIBS) ../utils/libgps_utils_so.la
 
 libloc_api_v02_CFLAGS = \
      $(QMIF_CFLAGS) \

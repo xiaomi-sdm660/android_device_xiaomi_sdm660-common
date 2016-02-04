@@ -30,7 +30,9 @@
 #define __PLATFORM_LIB_TIME_H__
 
 #include <stdint.h>
-
+#ifndef USE_GLIB
+#include <utils/SystemClock.h>
+#endif
 int64_t platform_lib_abstraction_elapsed_millis_since_boot();
 
 #endif /* __PLATFORM_LIB_TIME_H__ */

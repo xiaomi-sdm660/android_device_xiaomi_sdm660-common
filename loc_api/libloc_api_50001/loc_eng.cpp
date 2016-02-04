@@ -46,12 +46,7 @@
 #include <time.h>
 #include <new>
 #include <LocEngAdapter.h>
-#if defined(USE_GLIB) && !defined(OFF_TARGET)
-#include <glib.h>
-#endif
-#ifdef USE_GLIB
-#include <sys/syscall.h>
-#endif /* USE_GLIB */
+
 
 #include <string.h>
 #include <loc_eng.h>
