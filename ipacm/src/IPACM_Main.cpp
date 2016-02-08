@@ -734,7 +734,6 @@ void* ipa_driver_msg_notifier(void *param)
 
 void IPACM_Sig_Handler(int sig)
 {
-	int cnt;
 	ipacm_cmd_q_data evt_data;
 
 	printf("Received Signal: %d\n", sig);
