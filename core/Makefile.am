@@ -1,11 +1,10 @@
 AM_CFLAGS = -I./ \
             -I../utils \
             $(LOCPLA_CFLAGS) \
-           -I$(WORKSPACE)/gps-noship/flp \
-            -D__func__=__PRETTY_FUNCTION__ \
             -fno-short-enums
 
 libloc_core_la_h_sources = \
+           MsgTask.h \
            LocApiBase.h \
            LocAdapterBase.h \
            ContextBase.h \
@@ -14,10 +13,10 @@ libloc_core_la_h_sources = \
            UlpProxyBase.h \
            gps_extended_c.h \
            gps_extended.h \
-           loc_core_log.h \
-           LocAdapterProxyBase.h
+           loc_core_log.h
 
 libloc_core_la_c_sources = \
+           MsgTask.cpp \
            LocApiBase.cpp \
            LocAdapterBase.cpp \
            ContextBase.cpp \

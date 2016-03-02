@@ -33,7 +33,6 @@
 #include <unistd.h>
 #include <LocDualContext.h>
 #include <msg_q.h>
-#include <platform_lib_log_util.h>
 #include <loc_log.h>
 
 namespace loc_core {
@@ -59,11 +58,7 @@ ContextBase* LocDualContext::mBgContext = NULL;
 ContextBase* LocDualContext::mInjectContext = NULL;
 // the name must be shorter than 15 chars
 const char* LocDualContext::mLocationHalName = "Loc_hal_worker";
-#ifndef USE_GLIB
 const char* LocDualContext::mLBSLibName = "liblbs_core.so";
-#else
-const char* LocDualContext::mLBSLibName = "liblbs_core.so.1";
-#endif
 
 pthread_mutex_t LocDualContext::mGetLocContextMutex = PTHREAD_MUTEX_INITIALIZER;
 

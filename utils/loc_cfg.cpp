@@ -38,7 +38,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <loc_cfg.h>
-#include <platform_lib_includes.h>
+#include <log_util.h>
 #include <loc_misc_utils.h>
 #ifdef USE_GLIB
 #include <glib.h>

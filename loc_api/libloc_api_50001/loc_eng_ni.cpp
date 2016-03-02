@@ -235,6 +235,8 @@ static void* ni_thread_proc(void *args)
 
     LOC_LOGD("pSession->resp is %d\n",pSession->resp);
 
+    LOC_LOGD("loc_eng_ni_data_p->resp is %d\n",loc_eng_ni_data_p->resp);
+
     // adding this check to support modem restart, in which case, we need the thread
     // to exit without calling sending data. We made sure that rawRequest is NULL in
     // loc_eng_ni_reset_on_engine_restart()

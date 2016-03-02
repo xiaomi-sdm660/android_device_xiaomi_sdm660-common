@@ -32,7 +32,7 @@
 #include <dlfcn.h>
 #include <LocAdapterBase.h>
 #include <loc_target.h>
-#include <platform_lib_log_util.h>
+#include <log_util.h>
 #include <LocAdapterProxyBase.h>
 
 namespace loc_core {
