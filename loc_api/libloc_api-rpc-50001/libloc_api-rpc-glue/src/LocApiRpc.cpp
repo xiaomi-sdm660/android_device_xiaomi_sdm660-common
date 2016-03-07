@@ -133,9 +133,8 @@ const rpc_loc_event_mask_type LocApiRpc::locBits[] =
 
 // constructor
 LocApiRpc::LocApiRpc(const MsgTask* msgTask,
-                     LOC_API_ADAPTER_EVENT_MASK_T exMask,
-                     ContextBase* context) :
-    LocApiBase(msgTask, exMask, context),
+                     LOC_API_ADAPTER_EVENT_MASK_T exMask) :
+    LocApiBase(msgTask, exMask),
     client_handle(RPC_LOC_CLIENT_HANDLE_INVALID),
     dataEnableLastSet(-1)
 {
@@ -161,20 +160,6 @@ LocApiRpc::convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask)
     }
 
     return newMask;
-}
-
-rpc_loc_lock_e_type
-LocApiRpc::convertGpsLockMask(LOC_GPS_LOCK_MASK lockMask)
-{
-    if (isGpsLockAll(lockMask))
-        return RPC_LOC_LOCK_ALL;
-    if (isGpsLockMO(lockMask))
-        return RPC_LOC_LOCK_MI;
-    if (isGpsLockMT(lockMask))
-        return RPC_LOC_LOCK_MT;
-    if (isGpsLockNone(lockMask))
-        return RPC_LOC_LOCK_NONE;
-    return (rpc_loc_lock_e_type)lockMask;
 }
 
 enum loc_api_adapter_err
@@ -714,10 +699,12 @@ void LocApiRpc::reportPosition(const rpc_loc_parsed_position_s_type *location_re
                 }
 
                 // Speed
-                if (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SPEED_HORIZONTAL)
+                if ((location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SPEED_HORIZONTAL) &&
+                    (location_report_ptr->valid_mask & RPC_LOC_POS_VALID_SPEED_VERTICAL))
                 {
                     location.gpsLocation.flags    |= GPS_LOCATION_HAS_SPEED;
-                    location.gpsLocation.speed = location_report_ptr->speed_horizontal;
+                    location.gpsLocation.speed = sqrt(location_report_ptr->speed_horizontal * location_report_ptr->speed_horizontal +
+                                          location_report_ptr->speed_vertical * location_report_ptr->speed_vertical);
                 }
 
                 // Heading
@@ -796,7 +783,7 @@ void LocApiRpc::reportPosition(const rpc_loc_parsed_position_s_type *location_re
 
 void LocApiRpc::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
 {
-    GnssSvStatus     SvStatus = {0};
+    GpsSvStatus     SvStatus = {0};
     GpsLocationExtended locationExtended = {0};
     locationExtended.size = sizeof(locationExtended);
     int             num_svs_max = 0;
@@ -822,7 +809,7 @@ void LocApiRpc::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
             {
                 if (sv_info_ptr->system == RPC_LOC_SV_SYSTEM_GPS)
                 {
-                    SvStatus.sv_list[SvStatus.num_svs].size = sizeof(GpsSvInfo);
+                    SvStatus.sv_list[SvStatus.num_svs].size = sizeof(GpsSvStatus);
                     SvStatus.sv_list[SvStatus.num_svs].prn = sv_info_ptr->prn;
 
                     // We only have the data field to report gps eph and alm mask
@@ -841,7 +828,7 @@ void LocApiRpc::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
                     if ((sv_info_ptr->valid_mask & RPC_LOC_SV_INFO_VALID_PROCESS_STATUS) &&
                         (sv_info_ptr->process_status == RPC_LOC_SV_STATUS_TRACK))
                     {
-                        SvStatus.gps_used_in_fix_mask |= (1 << (sv_info_ptr->prn-1));
+                        SvStatus.used_in_fix_mask |= (1 << (sv_info_ptr->prn-1));
                     }
                 }
                 // SBAS: GPS RPN: 120-151,
@@ -854,12 +841,6 @@ void LocApiRpc::reportSv(const rpc_loc_gnss_info_s_type *gnss_report_ptr)
                 // In extended measurement report, we follow nmea standard, which is 65-96
                 else if (sv_info_ptr->system == RPC_LOC_SV_SYSTEM_GLONASS)
                 {
-                    if ((sv_info_ptr->valid_mask & RPC_LOC_SV_INFO_VALID_PROCESS_STATUS) &&
-                        (sv_info_ptr->process_status == RPC_LOC_SV_STATUS_TRACK))
-                    {
-                        SvStatus.glo_used_in_fix_mask |= (1 << (sv_info_ptr->prn-1));
-                    }
-
                     SvStatus.sv_list[SvStatus.num_svs].prn = sv_info_ptr->prn + (65-1);
                 }
                 // Unsupported SV system
@@ -1406,9 +1387,8 @@ GpsNiEncodingType LocApiRpc::convertNiEncodingType(int loc_encoding)
 }
 
 LocApiBase* getLocApi(const MsgTask* msgTask,
-                      LOC_API_ADAPTER_EVENT_MASK_T exMask,
-                      ContextBase *context) {
-    return new LocApiRpc(msgTask, exMask, context);
+                      LOC_API_ADAPTER_EVENT_MASK_T exMask) {
+    return new LocApiRpc(msgTask, exMask);
 }
 
 /*Values for lock
@@ -1417,12 +1397,12 @@ LocApiBase* getLocApi(const MsgTask* msgTask,
   3 = Lock MT position sessions
   4 = Lock all position sessions
 */
-int LocApiRpc::setGpsLock(LOC_GPS_LOCK_MASK lockMask)
+int LocApiRpc::setGpsLock(unsigned int lock)
 {
     rpc_loc_ioctl_data_u_type    ioctl_data;
     boolean ret_val;
-    LOC_LOGD("%s:%d]: lock: %x\n", __func__, __LINE__, lockMask);
-    ioctl_data.rpc_loc_ioctl_data_u_type_u.engine_lock = convertGpsLockMask(lockMask);
+    LOC_LOGD("%s:%d]: lock: %d\n", __func__, __LINE__, lock);
+    ioctl_data.rpc_loc_ioctl_data_u_type_u.engine_lock = (rpc_loc_lock_e_type)lock;
     ioctl_data.disc = RPC_LOC_IOCTL_SET_ENGINE_LOCK;
     ret_val = loc_eng_ioctl (loc_eng_data.client_handle,
                             RPC_LOC_IOCTL_SET_ENGINE_LOCK,

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -56,17 +56,12 @@ public:
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     inline LocApiBase* getLocApi() { return mLocApi; }
     inline LocApiProxyBase* getLocApiProxy() { return mLocApiProxy; }
-    inline bool hasAgpsExtendedCapabilities() { return mLBSProxy->hasAgpsExtendedCapabilities(); }
-    inline bool hasCPIExtendedCapabilities() { return mLBSProxy->hasCPIExtendedCapabilities(); }
-    inline void modemPowerVote(bool power) const { return mLBSProxy->modemPowerVote(power); }
+    inline bool hasAgpsExt() { return mLBSProxy->hasAgpsExt(); }
+    inline bool hasCPIExt() { return mLBSProxy->hasCPIExt(); }
     inline void requestUlp(LocAdapterBase* adapter,
                            unsigned long capabilities) {
         mLBSProxy->requestUlp(adapter, capabilities);
     }
-    inline IzatDevId_t getIzatDevId() const {
-        return mLBSProxy->getIzatDevId();
-    }
-    inline void sendMsg(const LocMsg *msg) { getMsgTask()->sendMsg(msg); }
 };
 
 } // namespace loc_core

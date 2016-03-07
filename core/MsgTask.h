@@ -1,4 +1,4 @@
-/* Copyright (c) 2014 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,45 +26,41 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef __MSG_TASK__
+#define __MSG_TASK__
 
-#ifndef LOC_ADAPTER_PROXY_BASE_H
-#define LOC_ADAPTER_PROXY_BASE_H
-
-#include <ContextBase.h>
-#include <gps_extended.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
+#include <pthread.h>
 
 namespace loc_core {
 
-class LocAdapterProxyBase {
-private:
-    LocAdapterBase *mLocAdapterBase;
-protected:
-    inline LocAdapterProxyBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
-                   ContextBase* context):
-                   mLocAdapterBase(new LocAdapterBase(mask, context, this)) {
-    }
-    inline virtual ~LocAdapterProxyBase() {
-        delete mLocAdapterBase;
-    }
-    ContextBase* getContext() const {
-        return mLocAdapterBase->getContext();
-    }
-    inline void updateEvtMask(LOC_API_ADAPTER_EVENT_MASK_T event,
-                              loc_registration_mask_status isEnabled) {
-        mLocAdapterBase->updateEvtMask(event,isEnabled);
-    }
+struct LocMsg {
+    inline LocMsg() {}
+    inline virtual ~LocMsg() {}
+    virtual void proc() const = 0;
+    inline virtual void log() const {}
+};
 
+class MsgTask {
 public:
-    inline virtual void handleEngineUpEvent() {};
-    inline virtual void handleEngineDownEvent() {};
-    inline virtual bool reportPosition(UlpLocation &location,
-                                       GpsLocationExtended &locationExtended,
-                                       enum loc_sess_status status,
-                                       LocPosTechMask loc_technology_mask) {
-        return false;
-    }
+    typedef void* (*tStart)(void*);
+    typedef pthread_t (*tCreate)(const char* name, tStart start, void* arg);
+    typedef int (*tAssociate)();
+    MsgTask(tCreate tCreator, const char* threadName);
+    MsgTask(tAssociate tAssociator, const char* threadName);
+    ~MsgTask();
+    void sendMsg(const LocMsg* msg) const;
+
+private:
+    const void* mQ;
+    tAssociate mAssociator;
+    MsgTask(const void* q, tAssociate associator);
+    static void* loopMain(void* copy);
+    void createPThread(const char* name);
 };
 
 } // namespace loc_core
 
-#endif //LOC_ADAPTER_PROXY_BASE_H
+#endif //__MSG_TASK__

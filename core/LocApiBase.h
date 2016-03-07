@@ -36,7 +36,6 @@
 #include <platform_lib_log_util.h>
 
 namespace loc_core {
-class ContextBase;
 
 int hexcode(char *hexstring, int string_size,
             const char *data, int data_size);
@@ -52,13 +51,6 @@ int decodeAddress(char *addr_string, int string_size,
 
 #define TO_1ST_HANDLING_ADAPTER(adapters, call)                              \
     for (int i = 0; i <MAX_ADAPTERS && NULL != (adapters)[i] && !(call); i++);
-
-enum xtra_version_check {
-    DISABLED,
-    AUTO,
-    XTRA2,
-    XTRA3
-};
 
 class LocAdapterBase;
 struct LocSsrMsg;
@@ -78,9 +70,8 @@ class LocApiBase {
     friend struct LocOpenMsg;
     friend class ContextBase;
     const MsgTask* mMsgTask;
-    ContextBase *mContext;
+
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
-    uint64_t mSupportedMsg;
 
 protected:
     virtual enum loc_api_adapter_err
@@ -90,17 +81,12 @@ protected:
     LOC_API_ADAPTER_EVENT_MASK_T getEvtMask();
     LOC_API_ADAPTER_EVENT_MASK_T mMask;
     LocApiBase(const MsgTask* msgTask,
-               LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
-               ContextBase* context = NULL);
+               LOC_API_ADAPTER_EVENT_MASK_T excludedMask);
     inline virtual ~LocApiBase() { close(); }
     bool isInSession();
     const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
 
 public:
-    inline void sendMsg(const LocMsg* msg) const {
-        mMsgTask->sendMsg(msg);
-    }
-
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
@@ -113,7 +99,7 @@ public:
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask =
                                   LOC_POS_TECH_MASK_DEFAULT);
-    void reportSv(GnssSvStatus &svStatus,
+    void reportSv(GpsSvStatus &svStatus,
                   GpsLocationExtended &locationExtended,
                   void* svExt);
     void reportStatus(GpsStatusValue status);
@@ -129,8 +115,6 @@ public:
     void reportDataCallOpened();
     void reportDataCallClosed();
     void requestNiNotify(GpsNiNotification &notify, const void* data);
-    void saveSupportedMsgList(uint64_t supportedMsgList);
-    void reportGpsMeasurementData(GpsData &gpsMeasurementData);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -174,7 +158,7 @@ public:
     virtual enum loc_api_adapter_err
         setLPPConfig(uint32_t profile);
     virtual enum loc_api_adapter_err
-        setSensorControlConfig(int sensorUsage, int sensorProvider);
+        setSensorControlConfig(int sensorUsage);
     virtual enum loc_api_adapter_err
         setSensorProperties(bool gyroBiasVarianceRandomWalk_valid,
                             float gyroBiasVarianceRandomWalk,
@@ -202,28 +186,15 @@ public:
     virtual enum loc_api_adapter_err
         setAGLONASSProtocol(unsigned long aGlonassProtocol);
     virtual enum loc_api_adapter_err
-        getWwanZppFix(GpsLocation & zppLoc);
+        getZppFix(GpsLocation & zppLoc);
     virtual enum loc_api_adapter_err
-        getBestAvailableZppFix(GpsLocation & zppLoc);
-    virtual enum loc_api_adapter_err
-        getBestAvailableZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask);
+        getZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask);
     virtual int initDataServiceClient();
     virtual int openAndStartDataCall();
     virtual void stopDataCall();
     virtual void closeDataCall();
-    virtual void installAGpsCert(const DerEncodedCertificate* pData,
-                                 size_t length,
-                                 uint32_t slotBitMask);
+
     inline virtual void setInSession(bool inSession) {}
-    inline bool isMessageSupported (LocCheckingMessagesID msgID) const {
-        if (msgID > (sizeof(mSupportedMsg) << 3)) {
-            return false;
-        } else {
-            uint32_t messageChecker = 1 << msgID;
-            return (messageChecker & mSupportedMsg) == messageChecker;
-        }
-    }
-    void updateEvtMask();
 
     /*Values for lock
       1 = Do not lock any position sessions
@@ -231,30 +202,17 @@ public:
       3 = Lock MT position sessions
       4 = Lock all position sessions
      */
-    virtual int setGpsLock(LOC_GPS_LOCK_MASK lock);
+    virtual int setGpsLock(unsigned int lock);
     /*
       Returns
       Current value of GPS Lock on success
       -1 on failure
      */
     virtual int getGpsLock(void);
-
-    virtual enum loc_api_adapter_err setXtraVersionCheck(enum xtra_version_check check);
-
-    /*
-      Update gps reporting events
-     */
-    virtual int updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
-                                       loc_registration_mask_status isEnabled);
-    /*
-      Check if the modem support the service
-     */
-    virtual bool gnssConstellationConfig();
 };
 
 typedef LocApiBase* (getLocApi_t)(const MsgTask* msgTask,
-                                  LOC_API_ADAPTER_EVENT_MASK_T exMask,
-                                  ContextBase *context);
+                                  LOC_API_ADAPTER_EVENT_MASK_T exMask);
 
 } // namespace loc_core
 

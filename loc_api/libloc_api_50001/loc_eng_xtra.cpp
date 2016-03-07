@@ -81,25 +81,6 @@ struct LocEngInjectXtraData : public LocMsg {
     }
 };
 
-struct LocEngSetXtraVersionCheck : public LocMsg {
-    LocEngAdapter *mAdapter;
-    int mCheck;
-    inline LocEngSetXtraVersionCheck(LocEngAdapter* adapter,
-                                        int check):
-        mAdapter(adapter), mCheck(check) {}
-    inline virtual void proc() const {
-        locallog();
-        mAdapter->setXtraVersionCheck(mCheck);
-    }
-    inline void locallog() const {
-        LOC_LOGD("%s:%d]: mCheck: %d",
-                 __func__, __LINE__, mCheck);
-    }
-    inline virtual void log() const {
-        locallog();
-    }
-};
-
 /*===========================================================================
 FUNCTION    loc_eng_xtra_init
 
@@ -121,7 +102,6 @@ int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
 {
     int ret_val = -1;
     loc_eng_xtra_data_s_type *xtra_module_data_ptr;
-    ENTRY_LOG();
 
     if(callbacks == NULL) {
         LOC_LOGE("loc_eng_xtra_init: failed, cb is NULL");
@@ -132,7 +112,6 @@ int loc_eng_xtra_init (loc_eng_data_s_type &loc_eng_data,
 
         ret_val = 0;
     }
-    EXIT_LOG(%d, ret_val);
     return ret_val;
 }
 
@@ -146,7 +125,8 @@ DEPENDENCIES
    N/A
 
 RETURN VALUE
-   0
+   0: success
+   >0: failure
 
 SIDE EFFECTS
    N/A
@@ -155,10 +135,9 @@ SIDE EFFECTS
 int loc_eng_xtra_inject_data(loc_eng_data_s_type &loc_eng_data,
                              char* data, int length)
 {
-    ENTRY_LOG();
     LocEngAdapter* adapter = loc_eng_data.adapter;
     adapter->sendMsg(new LocEngInjectXtraData(adapter, data, length));
-    EXIT_LOG(%d, 0);
+
     return 0;
 }
 /*===========================================================================
@@ -171,7 +150,7 @@ DEPENDENCIES
    N/A
 
 RETURN VALUE
-   0
+   length of server string
 
 SIDE EFFECTS
    N/A
@@ -179,34 +158,9 @@ SIDE EFFECTS
 ===========================================================================*/
 int loc_eng_xtra_request_server(loc_eng_data_s_type &loc_eng_data)
 {
-    ENTRY_LOG();
     LocEngAdapter* adapter = loc_eng_data.adapter;
     adapter->sendMsg(new LocEngRequestXtraServer(adapter));
-    EXIT_LOG(%d, 0);
+
     return 0;
-}
-/*===========================================================================
-FUNCTION    loc_eng_xtra_version_check
 
-DESCRIPTION
-   Injects the enable/disable value for checking XTRA version
-   that is specified in gps.conf
-
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   none
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-void loc_eng_xtra_version_check(loc_eng_data_s_type &loc_eng_data,
-                                int check)
-{
-    ENTRY_LOG();
-    LocEngAdapter *adapter = loc_eng_data.adapter;
-    adapter->sendMsg(new LocEngSetXtraVersionCheck(adapter, check));
-    EXIT_LOG(%d, 0);
 }

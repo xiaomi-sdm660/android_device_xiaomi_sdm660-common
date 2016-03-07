@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -54,7 +54,7 @@ public:
                                 void* locationExt,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask);
-    virtual void reportSv(GnssSvStatus &svStatus,
+    virtual void reportSv(GpsSvStatus &svStatus,
                           GpsLocationExtended &locationExtended,
                           void* svExt);
     virtual void reportStatus(GpsStatusValue status);
@@ -73,37 +73,25 @@ class LocEngAdapter : public LocAdapterBase {
     UlpProxyBase* mUlp;
     LocPosMode mFixCriteria;
     bool mNavigating;
-    // mPowerVote is encoded as
-    // mPowerVote & 0x20 -- powerVoteRight
-    // mPowerVote & 0x10 -- power On / Off
-    unsigned int mPowerVote;
-    static const unsigned int POWER_VOTE_RIGHT = 0x20;
-    static const unsigned int POWER_VOTE_VALUE = 0x10;
 
 public:
-    bool mSupportsAgpsRequests;
-    bool mSupportsPositionInjection;
-    bool mSupportsTimeInjection;
+    bool mAgpsEnabled;
+    bool mCPIEnabled;
 
     LocEngAdapter(LOC_API_ADAPTER_EVENT_MASK_T mask,
-                  void* owner, ContextBase* context,
-                  LocThread::tCreate tCreator);
+                  void* owner,ContextBase* context,
+                  MsgTask::tCreate tCreator);
     virtual ~LocEngAdapter();
 
     virtual void setUlpProxy(UlpProxyBase* ulp);
-    void setXtraUserAgent();
     inline void requestUlp(unsigned long capabilities) {
         mContext->requestUlp(mInternalAdapter, capabilities);
     }
     inline LocInternalAdapter* getInternalAdapter() { return mInternalAdapter; }
     inline UlpProxyBase* getUlpProxy() { return mUlp; }
     inline void* getOwner() { return mOwner; }
-    inline bool hasAgpsExtendedCapabilities() {
-        return mContext->hasAgpsExtendedCapabilities();
-    }
-    inline bool hasCPIExtendedCapabilities() {
-        return mContext->hasCPIExtendedCapabilities();
-    }
+    inline bool hasAgpsExt() { return mContext->hasAgpsExt(); }
+    inline bool hasCPIExt() { return mContext->hasCPIExt(); }
     inline const MsgTask* getMsgTask() { return mMsgTask; }
 
     inline enum loc_api_adapter_err
@@ -135,6 +123,11 @@ public:
         injectPosition(double latitude, double longitude, float accuracy)
     {
         return mLocApi->injectPosition(latitude, longitude, accuracy);
+    }
+    inline enum loc_api_adapter_err
+        setTime(GpsUtcTime time, int64_t timeReference, int uncertainty)
+    {
+        return mLocApi->setTime(time, timeReference, uncertainty);
     }
     inline enum loc_api_adapter_err
         setXtraData(char* data, int length)
@@ -191,9 +184,9 @@ public:
         return mLocApi->setLPPConfig(profile);
     }
     inline enum loc_api_adapter_err
-        setSensorControlConfig(int sensorUsage, int sensorProvider)
+        setSensorControlConfig(int sensorUsage)
     {
-        return mLocApi->setSensorControlConfig(sensorUsage, sensorProvider);
+        return mLocApi->setSensorControlConfig(sensorUsage);
     }
     inline enum loc_api_adapter_err
         setSensorProperties(bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
@@ -249,18 +242,9 @@ public:
     inline enum loc_api_adapter_err
         getZpp(GpsLocation &zppLoc, LocPosTechMask &tech_mask)
     {
-        return mLocApi->getBestAvailableZppFix(zppLoc, tech_mask);
+        return mLocApi->getZppFix(zppLoc, tech_mask);
     }
-    enum loc_api_adapter_err setTime(GpsUtcTime time,
-                                     int64_t timeReference,
-                                     int uncertainty);
-    enum loc_api_adapter_err setXtraVersionCheck(int check);
-    inline virtual void installAGpsCert(const DerEncodedCertificate* pData,
-                                        size_t length,
-                                        uint32_t slotBitMask)
-    {
-        mLocApi->installAGpsCert(pData, length, slotBitMask);
-    }
+
     virtual void handleEngineDownEvent();
     virtual void handleEngineUpEvent();
     virtual void reportPosition(UlpLocation &location,
@@ -268,7 +252,7 @@ public:
                                 void* locationExt,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask);
-    virtual void reportSv(GnssSvStatus &svStatus,
+    virtual void reportSv(GpsSvStatus &svStatus,
                           GpsLocationExtended &locationExtended,
                           void* svExt);
     virtual void reportStatus(GpsStatusValue status);
@@ -283,7 +267,6 @@ public:
     virtual bool requestSuplES(int connHandle);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
-    virtual void reportGpsMeasurementData(GpsData &gpsMeasurementData);
 
     inline const LocPosMode& getPositionMode() const
     {return mFixCriteria;}
@@ -291,40 +274,16 @@ public:
     { return mNavigating; }
     void setInSession(bool inSession);
 
-    // Permit/prohibit power voting
-    inline void setPowerVoteRight(bool powerVoteRight) {
-        mPowerVote = powerVoteRight ? (mPowerVote | POWER_VOTE_RIGHT) :
-                                      (mPowerVote & ~POWER_VOTE_RIGHT);
-    }
-    inline bool getPowerVoteRight() const {
-        return (mPowerVote & POWER_VOTE_RIGHT) != 0 ;
-    }
-    // Set the power voting up/down and do actual operation if permitted
-    inline void setPowerVote(bool powerOn) {
-        mPowerVote = powerOn ? (mPowerVote | POWER_VOTE_VALUE) :
-                               (mPowerVote & ~POWER_VOTE_VALUE);
-        requestPowerVote();
-        mContext->modemPowerVote(powerOn);
-    }
-    inline bool getPowerVote() const {
-        return (mPowerVote & POWER_VOTE_VALUE) != 0 ;
-    }
-    // Do power voting according to last settings if permitted
-    void requestPowerVote();
-
     /*Values for lock
       1 = Do not lock any position sessions
       2 = Lock MI position sessions
       3 = Lock MT position sessions
       4 = Lock all position sessions
     */
-    inline int setGpsLock(LOC_GPS_LOCK_MASK lock)
+    inline int setGpsLock(unsigned int lock)
     {
         return mLocApi->setGpsLock(lock);
     }
-
-    int setGpsLockMsg(LOC_GPS_LOCK_MASK lock);
-
     /*
       Returns
       Current value of GPS lock on success
@@ -334,17 +293,6 @@ public:
     {
         return mLocApi->getGpsLock();
     }
-
-    /*
-      Update Registration Mask
-     */
-    void updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
-                                loc_registration_mask_status isEnabled);
-
-    /*
-      Set Gnss Constellation Config
-     */
-    bool gnssConstellationConfig();
 };
 
 #endif //LOC_API_ENG_ADAPTER_H

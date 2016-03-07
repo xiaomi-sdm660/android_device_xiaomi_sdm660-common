@@ -1,4 +1,4 @@
-/* Copyright (c) 2013,2015 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -33,38 +33,28 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-#include <stddef.h>
+#include<pthread.h>
+#include <platform_lib_log_util.h>
 
 /*
-    user_data: client context pointer, passthrough. Originally received
-               from calling client when loc_timer_start() is called.
-    result:    0 if timer successfully timed out; else timer failed.
+  Return values:
+  Success = 0
+  Failure = Non zero
 */
-typedef void (*loc_timer_callback)(void *user_data, int32_t result);
+typedef void(*loc_timer_callback)(void *user_data, int result);
 
 
 /*
-    delay_msec:         timeout value for the timer.
-    cb_func:            callback function pointer, implemented by client.
-                        Can not be NULL.
-    user_data:          client context pointer, passthrough.  Will be
-                        returned when loc_timer_callback() is called.
-    wakeOnExpire:       true if to wake up CPU (if sleeping) upon timer
-                                expiration and notify the client.
-                        false if to wait until next time CPU wakes up (if
-                                 sleeping) and then notify the client.
-    Returns the handle, which can be used to stop the timer
-                        NULL, if timer start fails (e.g. if cb_func is NULL).
+  Returns the handle, which can be used to stop the timer
 */
-void* loc_timer_start(uint64_t delay_msec,
-                      loc_timer_callback cb_func,
-                      void *user_data,
-                      bool wake_on_expire=false);
+void* loc_timer_start(unsigned int delay_msec,
+                      loc_timer_callback,
+                      void* user_data);
 
 /*
-    handle becomes invalid upon the return of the callback
+  handle becomes invalid upon the return of the callback
 */
-void loc_timer_stop(void*& handle);
+void loc_timer_stop(void* handle);
 
 #ifdef __cplusplus
 }
