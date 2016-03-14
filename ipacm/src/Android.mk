@@ -70,6 +70,7 @@ LOCAL_SHARED_LIBRARIES += libxml2
 LOCAL_SHARED_LIBRARIES += libnfnetlink
 LOCAL_SHARED_LIBRARIES += libnetfilter_conntrack
 LOCAL_SHARED_LIBRARIES += libdhcpcd
+LOCAL_CLANG := true
 include $(BUILD_EXECUTABLE)
 
 ################################################################################
