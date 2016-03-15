@@ -1,6 +1,7 @@
 AM_CFLAGS = \
      $(LOCSTUB_CFLAGS) \
      -I../include \
+     -D__func__=__PRETTY_FUNCTION__ \
      -fno-short-enums
 
 h_sources = \

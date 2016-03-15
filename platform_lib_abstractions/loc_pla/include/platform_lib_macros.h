@@ -35,6 +35,8 @@ extern "C" {
 
 #ifdef USE_GLIB
 #include <sys/time.h>
+#include <string.h>
+#include <stdlib.h>
 #ifndef OFF_TARGET
 #include <glib.h>
 #define strlcat g_strlcat
