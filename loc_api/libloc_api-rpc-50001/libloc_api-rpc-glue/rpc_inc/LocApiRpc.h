@@ -1,4 +1,4 @@
-/* Copyright (c) 2011,2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011,2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -49,6 +49,7 @@ private:
     static const LOC_API_ADAPTER_EVENT_MASK_T maskAll;
     static const rpc_loc_event_mask_type locBits[];
     static rpc_loc_event_mask_type convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
+    static rpc_loc_lock_e_type convertGpsLockMask(LOC_GPS_LOCK_MASK lockMask);
     static enum loc_api_adapter_err convertErr(int rpcErr);
     static GpsNiEncodingType convertNiEncodingType(int loc_encoding);
     static int NIEventFillVerfiyType(GpsNiNotification &notif,
@@ -123,7 +124,7 @@ public:
       3 = Lock MT position sessions
       4 = Lock all position sessions
     */
-    virtual int setGpsLock(unsigned int lock);
+    virtual int setGpsLock(LOC_GPS_LOCK_MASK lock);
     /*
      Returns
      Current value of GPS Lock on success
@@ -133,6 +134,7 @@ public:
 };
 
 extern "C" LocApiBase* getLocApi(const MsgTask* msgTask,
-                                 LOC_API_ADAPTER_EVENT_MASK_T exMask);
+                                 LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                                 ContextBase *context);
 
 #endif //LOC_API_RPC_H
