@@ -29,15 +29,20 @@
 #ifndef GPS_EXTENDED_C_H
 #define GPS_EXTENDED_C_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <hardware/gps.h>
+
+/**
+ * @file
+ * @brief C++ declarations for GPS types
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /** Location has valid source information. */
 #define LOCATION_HAS_SOURCE_INFO   0x0020
@@ -195,7 +200,24 @@ typedef enum loc_position_mode_type {
 
 } LocPositionMode;
 
-#define MIN_POSSIBLE_FIX_INTERVAL 1000 /* msec */
+/**
+ * @brief Minimum allowed value for fix interval.
+ *
+ * This value is a sanity limit in GPS framework. The hardware has own internal
+ * limits that may not match this value
+ *
+ * @sa GPS_DEFAULT_FIX_INTERVAL_MS
+ */
+
+#define GPS_MIN_POSSIBLE_FIX_INTERVAL_MS 100
+/**
+ * @brief Default value for fix interval.
+ *
+ * This value is used by default whenever appropriate.
+ *
+ * @sa GPS_MIN_POSSIBLE_FIX_INTERVAL_MS
+ */
+#define GPS_DEFAULT_FIX_INTERVAL_MS      1000
 
 /** Flags to indicate which values are valid in a GpsLocationExtended. */
 typedef uint16_t GpsLocationExtendedFlags;

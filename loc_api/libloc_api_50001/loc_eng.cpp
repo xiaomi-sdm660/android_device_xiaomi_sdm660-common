@@ -47,19 +47,8 @@
 #include <new>
 #include <LocEngAdapter.h>
 
-#include <cutils/sched_policy.h>
-#ifndef USE_GLIB
-#include <utils/SystemClock.h>
-#include <utils/Log.h>
-#endif /* USE_GLIB */
-
-#ifdef USE_GLIB
-#include <glib.h>
-#include <sys/syscall.h>
-#endif /* USE_GLIB */
 
 #include <string.h>
-
 #include <loc_eng.h>
 #include <loc_eng_ni.h>
 #include <loc_eng_dmn_conn.h>
@@ -68,8 +57,7 @@
 #include <loc_eng_nmea.h>
 #include <msg_q.h>
 #include <loc.h>
-#include "log_util.h"
-#include "platform_lib_includes.h"
+#include <platform_lib_includes.h>
 #include "loc_core_log.h"
 #include "loc_eng_log.h"
 
@@ -2861,29 +2849,6 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
     }
     EXIT_LOG(%s, VOID_RET);
 }
-
-#ifdef USE_GLIB
-/*===========================================================================
-FUNCTION set_sched_policy
-
-DESCRIPTION
-   Local copy of this function which bypasses android set_sched_policy
-
-DEPENDENCIES
-   None
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static int set_sched_policy(int tid, SchedPolicy policy)
-{
-    return 0;
-}
-#endif /* USE_GLIB */
 
 /*===========================================================================
 FUNCTION    loc_eng_read_config

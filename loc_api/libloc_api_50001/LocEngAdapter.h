@@ -33,7 +33,6 @@
 #include <hardware/gps.h>
 #include <loc.h>
 #include <loc_eng_log.h>
-#include <log_util.h>
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
 #include <UlpProxyBase.h>
