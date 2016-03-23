@@ -25,24 +25,11 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "platform_lib_log_util.h"
 
-void loc_logger_init(unsigned long debug, unsigned long timestamp)
-{
-   loc_logger.DEBUG_LEVEL = debug;
-   loc_logger.TIMESTAMP   = timestamp;
-}
+#ifndef __PLATFORM_LIB_TIME_H__
+#define __PLATFORM_LIB_TIME_H__
 
-char * get_timestamp(char *str, unsigned long buf_size)
-{
-  struct timeval tv;
-  struct timezone tz;
-  int hh, mm, ss;
-  gettimeofday(&tv, &tz);
-  hh = tv.tv_sec/3600%24;
-  mm = (tv.tv_sec%3600)/60;
-  ss = tv.tv_sec%60;
-  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_usec);
-  return str;
-}
+#include <stdint.h>
+int64_t platform_lib_abstraction_elapsed_millis_since_boot();
 
+#endif /* __PLATFORM_LIB_TIME_H__ */

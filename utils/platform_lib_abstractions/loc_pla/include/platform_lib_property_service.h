@@ -26,15 +26,19 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform_lib_android_runtime.h"
+#ifndef __PLATFORM_LIB_PROPERTY_SERVICE_H__
+#define __PLATFORM_LIB_PROPERTY_SERVICE_H__
 
-#ifdef USE_GLIB
-#include <loc_stub_android_runtime.h>
-#else
-#include <android/AndroidRuntime.h>
-#endif /* USE_GLIB */
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifndef PROPERTY_VALUE_MAX
+#define PROPERTY_VALUE_MAX  92
+#endif
+int platform_lib_abstraction_property_get(const char *key, char *value, const char *default_value);
 
-pthread_t platform_lib_abstraction_createJavaThread(const char* name, void (*start)(void *), void* arg)
-{
-    return android::AndroidRuntime::createJavaThread(name, start, arg);
+#ifdef __cplusplus
 }
+#endif /* __cplusplus */
+
+#endif /* __PLATFORM_LIB_PROPERTY_SERVICE_H__ */

@@ -339,10 +339,6 @@ void LocEngAdapter::requestPowerVote()
         LOC_LOGV("LocEngAdapterVotePower - Vote Power: %d", (int)powerUp);
         setGpsLock(powerUp ? 103 : 101);
     }
-#ifndef USE_GLIB
-    delete mUlp;
-    mUlp = ulp;
-#endif
 }
 
 void LocInternalAdapter::reportPosition(UlpLocation &location,

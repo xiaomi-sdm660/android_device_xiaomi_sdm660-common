@@ -1,4 +1,4 @@
-/* Copyright (c) 2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -25,11 +25,18 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "platform_lib_log_util.h"
 
-#ifndef _PLATFORM_LIB_INCLUDES_H_
-#define _PLATFORM_LIB_INCLUDES_H_
+char * get_timestamp(char *str, unsigned long buf_size)
+{
+  struct timeval tv;
+  struct timezone tz;
+  int hh, mm, ss;
+  gettimeofday(&tv, &tz);
+  hh = tv.tv_sec/3600%24;
+  mm = (tv.tv_sec%3600)/60;
+  ss = tv.tv_sec%60;
+  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_usec);
+  return str;
+}
 
-#include "platform_lib_time.h"
-#include "platform_lib_macros.h"
-
-#endif
