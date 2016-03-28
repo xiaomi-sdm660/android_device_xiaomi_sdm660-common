@@ -684,6 +684,7 @@ void* ipa_driver_msg_notifier(void *param)
 
 void IPACM_Sig_Handler(int sig)
 {
+	int cnt;
 	ipacm_cmd_q_data evt_data;
 
 	printf("Received Signal: %d\n", sig);
@@ -729,11 +730,11 @@ int main(int argc, char **argv)
 	IPACMDBG_H("In main()\n");
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
-#ifndef FEATURE_ETH_BRIDGE_LE
-#ifndef FEATURE_IPA_ANDROID
+
+#ifdef FEATURE_ETH_BRIDGE_LE
 	IPACM_LanToLan* lan2lan = new IPACM_LanToLan();
-#endif /* defined(FEATURE_IPA_ANDROID)*/
 #endif
+
 	IPACM_ConntrackClient *cc = IPACM_ConntrackClient::GetInstance();
 	CtList = new IPACM_ConntrackListener();
 
