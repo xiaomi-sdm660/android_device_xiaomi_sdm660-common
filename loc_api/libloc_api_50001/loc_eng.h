@@ -94,7 +94,9 @@ typedef struct loc_eng_data_s
     gps_acquire_wakelock           acquire_wakelock_cb;
     gps_release_wakelock           release_wakelock_cb;
     gps_request_utc_time           request_utc_time_cb;
-    gps_measurement_callback       gps_measurement_cb;
+    gnss_set_system_info           set_system_info_cb;
+    gnss_sv_status_callback        gnss_sv_status_cb;
+    gnss_measurement_callback      gnss_measurement_cb;
     boolean                        intermediateFix;
     AGpsStatusValue                agps_status;
     loc_eng_xtra_data_s_type       xtra_module_data;

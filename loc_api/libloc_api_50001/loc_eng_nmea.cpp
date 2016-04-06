@@ -1,4 +1,4 @@
-/* Copyright (c) 2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012, 2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,10 +29,6 @@
 
 #define LOG_NDDEBUG 0
 #define LOG_TAG "LocSvc_eng_nmea"
-#define GPS_PRN_START 1
-#define GPS_PRN_END   32
-#define GLONASS_PRN_START 65
-#define GLONASS_PRN_END   96
 #include <loc_eng.h>
 #include <loc_eng_nmea.h>
 #include <math.h>
@@ -707,7 +703,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
-                              const QtiGnssSvStatus &svStatus, const GpsLocationExtended &locationExtended)
+                              const GnssSvStatus &svStatus, const GpsLocationExtended &locationExtended)
 {
     ENTRY_LOG();
 
@@ -724,15 +720,27 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
 
     //Count GPS SVs for saparating GPS from GLONASS and throw others
 
+    loc_eng_data_p->gps_used_mask = 0;
+    loc_eng_data_p->glo_used_mask = 0;
     for(svNumber=1; svNumber <= svCount; svNumber++) {
-        if( (svStatus.sv_list[svNumber-1].prn >= GPS_PRN_START)&&
-            (svStatus.sv_list[svNumber-1].prn <= GPS_PRN_END) )
+        if (GNSS_CONSTELLATION_GPS == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
+            // cache the used in fix mask, as it will be needed to send $GPGSA
+            // during the position report
+            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            {
+                loc_eng_data_p->gps_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
+            }
             gpsCount++;
         }
-        else if( (svStatus.sv_list[svNumber-1].prn >= GLONASS_PRN_START) &&
-                 (svStatus.sv_list[svNumber-1].prn <= GLONASS_PRN_END) )
+        else if (GNSS_CONSTELLATION_GLONASS == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
+            // cache the used in fix mask, as it will be needed to send $GNGSA
+            // during the position report
+            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            {
+                loc_eng_data_p->glo_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
+            }
             glnCount++;
         }
     }
@@ -772,13 +780,12 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
 
             for (int i=0; (svNumber <= svCount) && (i < 4);  svNumber++)
             {
-                if( (svStatus.sv_list[svNumber-1].prn >= GPS_PRN_START) &&
-                    (svStatus.sv_list[svNumber-1].prn <= GPS_PRN_END) )
+                if (GNSS_CONSTELLATION_GPS == svStatus.gnss_sv_list[svNumber - 1].constellation)
                 {
                     length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
-                                  svStatus.sv_list[svNumber-1].prn,
-                                  (int)(0.5 + svStatus.sv_list[svNumber-1].elevation), //float to int
-                                  (int)(0.5 + svStatus.sv_list[svNumber-1].azimuth)); //float to int
+                                      svStatus.gnss_sv_list[svNumber-1].svid,
+                                      (int)(0.5 + svStatus.gnss_sv_list[svNumber-1].elevation), //float to int
+                                      (int)(0.5 + svStatus.gnss_sv_list[svNumber-1].azimuth)); //float to int
 
                     if (length < 0 || length >= lengthRemaining)
                     {
@@ -788,10 +795,10 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
                     pMarker += length;
                     lengthRemaining -= length;
 
-                    if (svStatus.sv_list[svNumber-1].snr > 0)
+                    if (svStatus.gnss_sv_list[svNumber-1].c_n0_dbhz > 0)
                     {
                         length = snprintf(pMarker, lengthRemaining,"%02d",
-                                         (int)(0.5 + svStatus.sv_list[svNumber-1].snr)); //float to int
+                                         (int)(0.5 + svStatus.gnss_sv_list[svNumber-1].c_n0_dbhz)); //float to int
 
                         if (length < 0 || length >= lengthRemaining)
                         {
@@ -850,13 +857,13 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
 
             for (int i=0; (svNumber <= svCount) && (i < 4);  svNumber++)
             {
-                if( (svStatus.sv_list[svNumber-1].prn >= GLONASS_PRN_START) &&
-                    (svStatus.sv_list[svNumber-1].prn <= GLONASS_PRN_END) )      {
+                if (GNSS_CONSTELLATION_GLONASS == svStatus.gnss_sv_list[svNumber - 1].constellation)
+                {
 
                     length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
-                                  svStatus.sv_list[svNumber-1].prn,
-                                  (int)(0.5 + svStatus.sv_list[svNumber-1].elevation), //float to int
-                                  (int)(0.5 + svStatus.sv_list[svNumber-1].azimuth)); //float to int
+                        svStatus.gnss_sv_list[svNumber - 1].svid,
+                        (int)(0.5 + svStatus.gnss_sv_list[svNumber - 1].elevation), //float to int
+                        (int)(0.5 + svStatus.gnss_sv_list[svNumber - 1].azimuth)); //float to int
 
                     if (length < 0 || length >= lengthRemaining)
                     {
@@ -866,10 +873,10 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
                     pMarker += length;
                     lengthRemaining -= length;
 
-                    if (svStatus.sv_list[svNumber-1].snr > 0)
+                    if (svStatus.gnss_sv_list[svNumber - 1].c_n0_dbhz > 0)
                     {
                         length = snprintf(pMarker, lengthRemaining,"%02d",
-                                         (int)(0.5 + svStatus.sv_list[svNumber-1].snr)); //float to int
+                            (int)(0.5 + svStatus.gnss_sv_list[svNumber - 1].c_n0_dbhz)); //float to int
 
                         if (length < 0 || length >= lengthRemaining)
                         {
@@ -892,11 +899,6 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
         }  //while
 
     }//if
-
-    // cache the used in fix mask, as it will be needed to send $GPGSA/$GNGSA
-    // during the position report
-    loc_eng_data_p->gps_used_mask = svStatus.gps_used_in_fix_mask;
-    loc_eng_data_p->glo_used_mask = svStatus.glo_used_in_fix_mask;
 
     // For RPC, the DOP are sent during sv report, so cache them
     // now to be sent during position report.
