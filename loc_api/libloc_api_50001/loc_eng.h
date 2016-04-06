@@ -54,7 +54,6 @@ typedef unsigned char boolean;
 #include <loc_eng_agps.h>
 #include <loc_cfg.h>
 #include <loc_log.h>
-#include <log_util.h>
 #include <loc_eng_agps.h>
 #include <LocEngAdapter.h>
 
