@@ -120,6 +120,7 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(ipv6_icmp_flt_rule_hdl, 0, NUM_IPV6_ICMP_FLT_RULE * sizeof(uint32_t));
 	modem_ul_v4_set = false;
 	modem_ul_v6_set = false;
+	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 
 	/* ODU routing table initilization */
 	if(ipa_if_cate == ODU_IF)
@@ -379,6 +380,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						{
 							if((data->iptype == IPA_IP_v6 || data->iptype == IPA_IP_MAX) && num_dft_rt_v6 == 1)
 							{
+								memcpy(ipv6_prefix, IPACM_Wan::backhaul_ipv6_prefix, sizeof(ipv6_prefix));
 								install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
 								if(IPACM_Wan::backhaul_is_sta_mode == false)
 								{
@@ -481,6 +483,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 			{
+					memcpy(ipv6_prefix, data_wan_tether->ipv6_prefix, sizeof(ipv6_prefix));
 					install_ipv6_prefix_flt_rule(data_wan_tether->ipv6_prefix);
 					if(data_wan_tether->is_sta == false)
 					{
@@ -576,16 +579,17 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		IPACMDBG_H("Backhaul is sta mode?%d\n", data_wan->is_sta);
 		if(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX)
 		{
+			memcpy(ipv6_prefix, data_wan->ipv6_prefix, sizeof(ipv6_prefix));
 			install_ipv6_prefix_flt_rule(data_wan->ipv6_prefix);
-		if(data_wan->is_sta == false)
-		{
+			if(data_wan->is_sta == false)
+			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
 				handle_wan_up_ex(ext_prop, IPA_IP_v6, 0);
 			}
-		else
-		{
-			handle_wan_up(IPA_IP_v6);
-		}
+			else
+			{
+				handle_wan_up(IPA_IP_v6);
+			}
 		}
 		break;
 
@@ -1685,6 +1689,8 @@ int IPACM_Lan::handle_eth_client_ipaddr(ipacm_event_data_all *data)
 {
 	int clnt_indx;
 	int v6_num;
+	uint32_t ipv6_link_local_prefix = 0xFE800000;
+	uint32_t ipv6_link_local_prefix_mask = 0xFFC00000;
 
 	IPACMDBG_H("number of eth clients: %d\n", num_eth_client);
 	IPACMDBG_H("event MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -1731,10 +1737,10 @@ int IPACM_Lan::handle_eth_client_ipaddr(ipacm_event_data_all *data)
 					get_client_memptr(eth_client, clnt_indx)->route_rule_set_v4 = false;
 					get_client_memptr(eth_client, clnt_indx)->v4_addr = data->ipv4_addr;
 				}
+			}
 		}
-	}
-	else
-	{
+		else
+		{
 		    IPACMDBG_H("Invalid client IPv4 address \n");
 		    return IPACM_FAILURE;
 		}
@@ -1744,21 +1750,28 @@ int IPACM_Lan::handle_eth_client_ipaddr(ipacm_event_data_all *data)
 		if ((data->ipv6_addr[0] != 0) || (data->ipv6_addr[1] != 0) ||
 				(data->ipv6_addr[2] != 0) || (data->ipv6_addr[3] || 0)) /* check if all 0 not valid ipv6 address */
 		{
-		   IPACMDBG_H("ipv6 address: 0x%x:%x:%x:%x\n", data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
-                   if(get_client_memptr(eth_client, clnt_indx)->ipv6_set < IPV6_NUM_ADDR)
-		   {
+			IPACMDBG_H("ipv6 address: 0x%x:%x:%x:%x\n", data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
+			if( (data->ipv6_addr[0] & ipv6_link_local_prefix_mask) != (ipv6_link_local_prefix & ipv6_link_local_prefix_mask) &&
+				memcmp(ipv6_prefix, data->ipv6_addr, sizeof(ipv6_prefix)) != 0)
+			{
+				IPACMDBG_H("This IPv6 address is not global IPv6 address with correct prefix, ignore.\n");
+				return IPACM_FAILURE;
+			}
+
+            if(get_client_memptr(eth_client, clnt_indx)->ipv6_set < IPV6_NUM_ADDR)
+			{
 
 		       for(v6_num=0;v6_num < get_client_memptr(eth_client, clnt_indx)->ipv6_set;v6_num++)
-	               {
-			      if( data->ipv6_addr[0] == get_client_memptr(eth_client, clnt_indx)->v6_addr[v6_num][0] &&
+				{
+					if( data->ipv6_addr[0] == get_client_memptr(eth_client, clnt_indx)->v6_addr[v6_num][0] &&
 			           data->ipv6_addr[1] == get_client_memptr(eth_client, clnt_indx)->v6_addr[v6_num][1] &&
 			  	        data->ipv6_addr[2]== get_client_memptr(eth_client, clnt_indx)->v6_addr[v6_num][2] &&
 			  	         data->ipv6_addr[3] == get_client_memptr(eth_client, clnt_indx)->v6_addr[v6_num][3])
-			      {
-					IPACMDBG_H("Already see this ipv6 addr at position: %d for client:%d\n", v6_num, clnt_indx);
-			  	    return IPACM_FAILURE; /* not setup the RT rules*/
-			      }
-		       }
+					{
+						IPACMDBG_H("Already see this ipv6 addr at position: %d for client:%d\n", v6_num, clnt_indx);
+						return IPACM_FAILURE; /* not setup the RT rules*/
+					}
+				}
 
 		       /* not see this ipv6 before for wifi client*/
 			   get_client_memptr(eth_client, clnt_indx)->v6_addr[get_client_memptr(eth_client, clnt_indx)->ipv6_set][0] = data->ipv6_addr[0];
@@ -1769,8 +1782,8 @@ int IPACM_Lan::handle_eth_client_ipaddr(ipacm_event_data_all *data)
 		    }
 		    else
 		    {
-		         IPACMDBG_H("Already got 3 ipv6 addr for client:%d\n", clnt_indx);
-			 return IPACM_FAILURE; /* not setup the RT rules*/
+		        IPACMDBG_H("Already got %d ipv6 addr for client:%d\n", IPV6_NUM_ADDR, clnt_indx);
+				return IPACM_FAILURE; /* not setup the RT rules*/
 		    }
 		}
 	}
@@ -2930,6 +2943,8 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 	}
 
 	delete_ipv6_prefix_flt_rule();
+
+	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 
 	if(is_sta_mode == false)
 	{
