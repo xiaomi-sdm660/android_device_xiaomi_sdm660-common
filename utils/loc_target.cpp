@@ -174,6 +174,20 @@ void loc_get_platform_name(char *platform_name, int array_length)
     }
 }
 
+/*The character array passed to this function should have length
+  of atleast PROPERTY_VALUE_MAX*/
+void loc_get_auto_platform_name(char *platform_name, int array_length)
+{
+    if(platform_name && (array_length >= PROPERTY_VALUE_MAX)) {
+        property_get("ro.hardware.type", platform_name, "");
+        LOC_LOGD("%s:%d]: Autoplatform name: %s\n", __func__, __LINE__, platform_name);
+    }
+    else {
+        LOC_LOGE("%s:%d]: Null parameter or array length less than PROPERTY_VALUE_MAX\n",
+                 __func__, __LINE__);
+    }
+}
+
 unsigned int loc_get_target(void)
 {
     if (gTarget != (unsigned int)-1)
@@ -190,6 +204,7 @@ unsigned int loc_get_target(void)
     char rd_id[LINE_LEN];
     char rd_mdm[LINE_LEN];
     char baseband[LINE_LEN];
+    char rd_auto_platform[LINE_LEN];
 
     if (is_qca1530()) {
         gTarget = TARGET_QCA1530;
@@ -208,7 +223,10 @@ unsigned int loc_get_target(void)
     } else {
         read_a_line(id_dep, rd_id, LINE_LEN);
     }
-    if( !memcmp(baseband, STR_AUTO, LENGTH(STR_AUTO)) )
+
+    /*check automotive platform*/
+    loc_get_auto_platform_name(rd_auto_platform, sizeof(rd_auto_platform));
+    if( !memcmp(rd_auto_platform, STR_AUTO, LENGTH(STR_AUTO)) )
     {
           gTarget = TARGET_AUTO;
           goto detected;
