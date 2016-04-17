@@ -1384,7 +1384,7 @@ struct LocEngSetSystemInfo : public LocMsg {
         locallog();
     }
     inline virtual void proc() const {
-        if (NULL != mLocEng->set_capabilities_cb) {
+        if (NULL != mLocEng->set_system_info_cb) {
             LOC_LOGV("calling set_system_info_cb 0x%x",
                 mLocEng->adapter->mGnssInfo.year_of_hw);
             mLocEng->set_system_info_cb(&(mLocEng->adapter->mGnssInfo));
