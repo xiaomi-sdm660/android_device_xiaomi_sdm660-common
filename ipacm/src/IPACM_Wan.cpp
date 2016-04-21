@@ -55,6 +55,7 @@ bool IPACM_Wan::wan_up = false;
 bool IPACM_Wan::wan_up_v6 = false;
 uint8_t IPACM_Wan::xlat_mux_id = 0;
 
+uint32_t IPACM_Wan::curr_wan_ip = 0;
 int IPACM_Wan::num_v4_flt_rule = 0;
 int IPACM_Wan::num_v6_flt_rule = 0;
 
@@ -491,6 +492,10 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 
 		wan_v4_addr = data->ipv4_addr;
 		wan_v4_addr_set = true;
+
+		if (m_is_sta_mode == Q6_WAN)
+			curr_wan_ip = data->ipv4_addr;
+
 		IPACMDBG_H("Receved wan ipv4-addr:0x%x\n",wan_v4_addr);
 	}
 
