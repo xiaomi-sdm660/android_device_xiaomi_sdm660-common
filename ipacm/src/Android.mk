@@ -32,7 +32,7 @@ ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 LOCAL_CFLAGS += -DDEBUG
 endif
 
-ifeq ($(TARGET_BOARD_PLATFORM),msm8998)
+ifeq ($(TARGET_BOARD_PLATFORM),msmcobalt)
 LOCAL_CFLAGS += -DFEATURE_IPA_V3
 endif
 
