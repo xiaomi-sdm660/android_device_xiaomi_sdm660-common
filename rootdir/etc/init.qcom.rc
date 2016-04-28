@@ -653,7 +653,7 @@ on property:netd.fstman.start=false
 on property:persist.vendor.wigig.enable=1
     insmod /vendor/lib/modules/wil6210.ko alt_ifname=1
  
-service vendor.cnss_diag /system/vendor/bin/cnss_diag -q -f
+service vendor.cnss_diag /system/vendor/bin/cnss_diag -q
 	class main
 	user system
 	group system wifi inet net_admin sdcard_rw media_rw diag
