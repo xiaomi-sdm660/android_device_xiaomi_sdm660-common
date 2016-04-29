@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -496,6 +496,31 @@ struct LocEngSuplMode : public LocMsg {
         locallog();
     }
 };
+
+//        case LOC_ENG_MSG_SET_NMEA_TYPE:
+struct LocEngSetNmeaTypes : public LocMsg {
+    LocEngAdapter* mAdapter;
+    uint32_t  nmeaTypesMask;
+    inline LocEngSetNmeaTypes(LocEngAdapter* adapter,
+                                uint32_t typesMask) :
+        LocMsg(), mAdapter(adapter), nmeaTypesMask(typesMask)
+    {
+        locallog();
+    }
+    inline virtual void proc() const {
+        // set the nmea types
+        mAdapter->setNMEATypes(nmeaTypesMask);
+    }
+    inline void locallog() const
+    {
+        LOC_LOGV("LocEngSetNmeaTypes %u\n",nmeaTypesMask);
+    }
+    inline virtual void log() const
+    {
+        locallog();
+    }
+};
+
 
 //        case LOC_ENG_MSG_LPP_CONFIG:
 struct LocEngLppConfig : public LocMsg {
@@ -1749,7 +1774,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
         event = event ^ LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT; // unregister for modem NMEA report
         loc_eng_data.generateNmea = true;
     }
-    else
+    else if (gps_conf.NMEA_PROVIDER == NMEA_PROVIDER_MP)
     {
         loc_eng_data.generateNmea = false;
     }
@@ -1778,6 +1803,13 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
     adapter->sendMsg(new LocEngSensorControlConfig(adapter, sap_conf.SENSOR_USAGE,
                                                    sap_conf.SENSOR_PROVIDER));
     adapter->sendMsg(new LocEngAGlonassProtocol(adapter, gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
+
+    if (!loc_eng_data.generateNmea)
+    {
+        NmeaSentenceTypesMask typesMask = LOC_NMEA_ALL_SUPPORTED_MASK;
+        LOC_LOGD("loc_eng_init setting nmea types, mask = %u\n",typesMask);
+        adapter->sendMsg(new LocEngSetNmeaTypes(adapter,typesMask));
+    }
 
     /* Make sure at least one of the sensor property is specified by the user in the gps.conf file. */
     if( sap_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
