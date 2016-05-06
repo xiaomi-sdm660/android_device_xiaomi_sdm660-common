@@ -301,7 +301,7 @@ static int loc_init(GpsCallbacks* callbacks)
     /* If platform is "auto" and external dr enabled then enable
     ** Measurement report and SV Polynomial report
     */
-    if((1 == gps_conf.EXTERNAL_DR_ENABLED) && (GNSS_AUTO == getTargetGnssType(target)))
+    if((1 == gps_conf.EXTERNAL_DR_ENABLED))
     {
         event |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT_REPORT |
                 LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
