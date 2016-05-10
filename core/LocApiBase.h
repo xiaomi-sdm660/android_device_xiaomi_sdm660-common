@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -44,6 +44,7 @@ int decodeAddress(char *addr_string, int string_size,
                   const char *data, int data_size);
 
 #define MAX_ADAPTERS          10
+#define MAX_FEATURE_LENGTH    100
 
 #define TO_ALL_ADAPTERS(adapters, call)                                \
     for (int i = 0; i < MAX_ADAPTERS && NULL != (adapters)[i]; i++) {  \
@@ -81,6 +82,7 @@ class LocApiBase {
     ContextBase *mContext;
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
     uint64_t mSupportedMsg;
+    uint8_t mFeaturesSupported[MAX_FEATURE_LENGTH];
 
 protected:
     virtual enum loc_api_adapter_err
@@ -131,6 +133,7 @@ public:
     void requestNiNotify(GpsNiNotification &notify, const void* data);
     void saveSupportedMsgList(uint64_t supportedMsgList);
     void reportGnssMeasurementData(GnssData &gnssMeasurementData);
+    void saveSupportedFeatureList(uint8_t *featureList);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -204,6 +207,8 @@ public:
     virtual enum loc_api_adapter_err
         setAGLONASSProtocol(unsigned long aGlonassProtocol);
     virtual enum loc_api_adapter_err
+        setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP);
+    virtual enum loc_api_adapter_err
         getWwanZppFix(GpsLocation & zppLoc);
     virtual enum loc_api_adapter_err
         getBestAvailableZppFix(GpsLocation & zppLoc);
@@ -258,6 +263,11 @@ public:
       Check if the modem support the service
      */
     virtual bool gnssConstellationConfig();
+
+    /*
+       Check if a feature is supported
+      */
+    bool isFeatureSupported(uint8_t featureVal);
 };
 
 typedef LocApiBase* (getLocApi_t)(const MsgTask* msgTask,
