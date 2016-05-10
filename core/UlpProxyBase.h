@@ -31,7 +31,6 @@
 
 #include <gps_extended.h>
 #include "fused_location_extended.h"
-
 namespace loc_core {
 
 class LocAdapterBase;
