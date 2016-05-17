@@ -62,7 +62,7 @@ typedef struct _ipa_rm_client
     bool rx_bypass_ipa;          /* support WLAN may not register RX-property, should not add dependency */
 }ipa_rm_client;
 
-#define MAX_NUM_EXT_PROPS 15
+#define MAX_NUM_EXT_PROPS 25
 
 /* used to hold extended properties */
 typedef struct
