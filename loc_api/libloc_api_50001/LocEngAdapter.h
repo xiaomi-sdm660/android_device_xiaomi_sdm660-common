@@ -33,7 +33,6 @@
 #include <hardware/gps.h>
 #include <loc.h>
 #include <loc_eng_log.h>
-#include <log_util.h>
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
 #include <UlpProxyBase.h>
@@ -186,6 +185,11 @@ public:
         setSUPLVersion(uint32_t version)
     {
         return mLocApi->setSUPLVersion(version);
+    }
+    inline enum loc_api_adapter_err
+        setNMEATypes (uint32_t typesMask)
+    {
+        return mLocApi->setNMEATypes(typesMask);
     }
     inline enum loc_api_adapter_err
         setLPPConfig(uint32_t profile)

@@ -52,6 +52,10 @@ void loc_get_target_baseband(char *baseband, int array_length);
 /*The character array passed to this function should have length
   of atleast PROPERTY_VALUE_MAX*/
 void loc_get_platform_name(char *platform_name, int array_length);
+/*The character array passed to this function should have length
+  of atleast PROPERTY_VALUE_MAX*/
+void loc_get_auto_platform_name(char *platform_name, int array_length);
+
 /*Reads the property ro.lean to identify if this is a lean target
   Returns:
   0 if not a lean and mean target

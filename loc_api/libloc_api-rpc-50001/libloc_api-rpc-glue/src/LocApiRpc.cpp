@@ -38,7 +38,6 @@
 #include <LocAdapterBase.h>
 #include <loc_api_fixup.h>
 #include <loc_api_rpc_glue.h>
-#include <log_util.h>
 #include <loc_log.h>
 #include <loc_api_log.h>
 #ifdef USE_GLIB

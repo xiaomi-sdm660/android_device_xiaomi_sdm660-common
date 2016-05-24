@@ -35,7 +35,7 @@
 #include <ContextBase.h>
 #include <msg_q.h>
 #include <loc_target.h>
-#include <log_util.h>
+#include <platform_lib_includes.h>
 #include <loc_log.h>
 
 namespace loc_core {
@@ -51,6 +51,10 @@ LBSProxyBase* ContextBase::getLBSProxy(const char* libName)
         if (NULL != getter) {
             proxy = (*getter)();
         }
+    }
+    else
+    {
+        LOC_LOGW("%s:%d]: FAILED TO LOAD libname: %s\n", __func__, __LINE__, libName);
     }
     if (NULL == proxy) {
         proxy = new LBSProxyBase();

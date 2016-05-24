@@ -47,19 +47,8 @@
 #include <new>
 #include <LocEngAdapter.h>
 
-#include <cutils/sched_policy.h>
-#ifndef USE_GLIB
-#include <utils/SystemClock.h>
-#include <utils/Log.h>
-#endif /* USE_GLIB */
-
-#ifdef USE_GLIB
-#include <glib.h>
-#include <sys/syscall.h>
-#endif /* USE_GLIB */
 
 #include <string.h>
-
 #include <loc_eng.h>
 #include <loc_eng_ni.h>
 #include <loc_eng_dmn_conn.h>
@@ -68,8 +57,7 @@
 #include <loc_eng_nmea.h>
 #include <msg_q.h>
 #include <loc.h>
-#include "log_util.h"
-#include "platform_lib_includes.h"
+#include <platform_lib_includes.h>
 #include "loc_core_log.h"
 #include "loc_eng_log.h"
 
@@ -508,6 +496,31 @@ struct LocEngSuplMode : public LocMsg {
         locallog();
     }
 };
+
+//        case LOC_ENG_MSG_SET_NMEA_TYPE:
+struct LocEngSetNmeaTypes : public LocMsg {
+    LocEngAdapter* mAdapter;
+    uint32_t  nmeaTypesMask;
+    inline LocEngSetNmeaTypes(LocEngAdapter* adapter,
+                                uint32_t typesMask) :
+        LocMsg(), mAdapter(adapter), nmeaTypesMask(typesMask)
+    {
+        locallog();
+    }
+    inline virtual void proc() const {
+        // set the nmea types
+        mAdapter->setNMEATypes(nmeaTypesMask);
+    }
+    inline void locallog() const
+    {
+        LOC_LOGV("LocEngSetNmeaTypes %u\n",nmeaTypesMask);
+    }
+    inline virtual void log() const
+    {
+        locallog();
+    }
+};
+
 
 //        case LOC_ENG_MSG_LPP_CONFIG:
 struct LocEngLppConfig : public LocMsg {
@@ -1802,7 +1815,7 @@ int loc_eng_init(loc_eng_data_s_type &loc_eng_data, LocCallbacks* callbacks,
         event = event ^ LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT; // unregister for modem NMEA report
         loc_eng_data.generateNmea = true;
     }
-    else
+    else if (gps_conf.NMEA_PROVIDER == NMEA_PROVIDER_MP)
     {
         loc_eng_data.generateNmea = false;
     }
@@ -1833,6 +1846,13 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
     adapter->sendMsg(new LocEngSensorControlConfig(adapter, sap_conf.SENSOR_USAGE,
                                                    sap_conf.SENSOR_PROVIDER));
     adapter->sendMsg(new LocEngAGlonassProtocol(adapter, gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
+
+    if (!loc_eng_data.generateNmea)
+    {
+        NmeaSentenceTypesMask typesMask = LOC_NMEA_ALL_SUPPORTED_MASK;
+        LOC_LOGD("loc_eng_init setting nmea types, mask = %u\n",typesMask);
+        adapter->sendMsg(new LocEngSetNmeaTypes(adapter,typesMask));
+    }
 
     /* Make sure at least one of the sensor property is specified by the user in the gps.conf file. */
     if( sap_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
@@ -2904,29 +2924,6 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
     }
     EXIT_LOG(%s, VOID_RET);
 }
-
-#ifdef USE_GLIB
-/*===========================================================================
-FUNCTION set_sched_policy
-
-DESCRIPTION
-   Local copy of this function which bypasses android set_sched_policy
-
-DEPENDENCIES
-   None
-
-RETURN VALUE
-   0
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static int set_sched_policy(int tid, SchedPolicy policy)
-{
-    return 0;
-}
-#endif /* USE_GLIB */
 
 /*===========================================================================
 FUNCTION    loc_eng_read_config

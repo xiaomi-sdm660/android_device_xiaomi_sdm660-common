@@ -32,7 +32,7 @@
 #include <loc_eng.h>
 #include <loc_eng_nmea.h>
 #include <math.h>
-#include "log_util.h"
+#include <platform_lib_includes.h>
 
 /*===========================================================================
 FUNCTION    loc_eng_nmea_send

@@ -43,7 +43,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <LocDualContext.h>
-#include <cutils/properties.h>
+#include <platform_lib_includes.h>
 
 using namespace loc_core;
 
@@ -192,17 +192,18 @@ SIDE EFFECTS
    N/A
 
 ===========================================================================*/
-const GpsInterface* gps_get_hardware_interface ()
+extern "C" const GpsInterface* gps_get_hardware_interface ()
 {
     ENTRY_LOG_CALLFLOW();
     const GpsInterface* ret_val;
 
     char propBuf[PROPERTY_VALUE_MAX];
+    memset(propBuf, 0, sizeof(propBuf));
 
     loc_eng_read_config();
 
     // check to see if GPS should be disabled
-    property_get("gps.disable", propBuf, "");
+    platform_lib_abstraction_property_get("gps.disable", propBuf, "");
     if (propBuf[0] == '1')
     {
         LOC_LOGD("gps_get_interface returning NULL because gps.disable=1\n");
@@ -619,7 +620,7 @@ const void* loc_get_extension(const char* name)
    else if (strcmp(name, AGPS_RIL_INTERFACE) == 0)
    {
        char baseband[PROPERTY_VALUE_MAX];
-       property_get("ro.baseband", baseband, "msm");
+       platform_lib_abstraction_property_get("ro.baseband", baseband, "msm");
        if (strcmp(baseband, "csfb") == 0)
        {
            ret_val = &sLocEngAGpsRilInterface;
@@ -736,7 +737,7 @@ static int  loc_agps_open_with_apniptype(const char* apn, ApnIpType apnIpType)
             bearerType = AGPS_APN_BEARER_IPV4V6;
             break;
         default:
-            bearerType = AGPS_APN_BEARER_INVALID;
+            bearerType = AGPS_APN_BEARER_IPV4;
             break;
     }
 

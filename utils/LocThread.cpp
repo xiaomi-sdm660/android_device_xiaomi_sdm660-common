@@ -29,6 +29,7 @@
 #include <LocThread.h>
 #include <string.h>
 #include <pthread.h>
+#include <platform_lib_macros.h>
 
 class LocThreadDelegate {
     LocRunnable* mRunnable;
@@ -84,9 +85,7 @@ LocThreadDelegate::LocThreadDelegate(LocThread::tCreate creator,
     if (mThandle) {
         // set thread name
         char lname[16];
-        int len = sizeof(lname) - 1;
-        memcpy(lname, threadName, len);
-        lname[len] = 0;
+        strlcpy(lname, threadName, sizeof(lname));
         // set the thread name here
         pthread_setname_np(mThandle, lname);
 
