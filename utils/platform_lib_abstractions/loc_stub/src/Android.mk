@@ -30,7 +30,7 @@ LOCAL_LDFLAGS += -Wl,--export-dynamic
 ## Includes
 LOCAL_C_INCLUDES:= \
     $(LOCAL_PATH)/../include \
-    
+
 
 LOCAL_COPY_HEADERS_TO:= libloc_stub/
 LOCAL_COPY_HEADERS:= \
@@ -41,7 +41,6 @@ LOCAL_COPY_HEADERS:= \
         ../include/loc_stub_time.h
 
 LOCAL_MODULE := libloc_stub
-LOCAL_CLANG := false
 
 LOCAL_MODULE_TAGS := optional
 

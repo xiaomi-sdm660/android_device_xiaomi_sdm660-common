@@ -47,7 +47,6 @@ LOCAL_COPY_HEADERS:= \
         ../include/platform_lib_time.h
 
 LOCAL_MODULE := libloc_pla
-LOCAL_CLANG := false
 
 LOCAL_MODULE_TAGS := optional
 
