@@ -3476,7 +3476,7 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 		flt_rule_entry.status = -1;
 		flt_rule_entry.rule.action = IPA_PASS_TO_EXCEPTION;
 #ifdef FEATURE_IPA_V3
-		flt_rule_entry.rule.hashable = false;
+		flt_rule_entry.rule.hashable = true;
 #endif
 		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
@@ -4152,6 +4152,7 @@ int IPACM_Lan::eth_bridge_add_flt_rule(uint8_t *mac, uint32_t rt_tbl_hdl, ipa_ip
 	flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
 	flt_rule_entry.rule.eq_attrib_type = 0;
 	flt_rule_entry.rule.rt_tbl_hdl = rt_tbl_hdl;
+	flt_rule_entry.rule.hashable = true;
 
 	memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib));
 	if(tx_prop->tx[0].hdr_l2_type == IPA_HDR_L2_ETHERNET_II)
