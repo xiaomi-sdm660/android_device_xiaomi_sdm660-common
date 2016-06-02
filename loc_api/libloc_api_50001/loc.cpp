@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <LocDualContext.h>
 #include <platform_lib_includes.h>
+#include <cutils/properties.h>
 
 using namespace loc_core;
 
@@ -276,6 +277,7 @@ SIDE EFFECTS
 static int loc_init(GpsCallbacks* callbacks)
 {
     int retVal = -1;
+    unsigned int target = (unsigned int) -1;
     ENTRY_LOG();
     LOC_API_ADAPTER_EVENT_MASK_T event;
 
@@ -293,6 +295,17 @@ static int loc_init(GpsCallbacks* callbacks)
             LOC_API_ADAPTER_BIT_STATUS_REPORT |
             LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT |
             LOC_API_ADAPTER_BIT_NI_NOTIFY_VERIFY_REQUEST;
+
+    target = loc_get_target();
+
+    /* If platform is "auto" and external dr enabled then enable
+    ** Measurement report and SV Polynomial report
+    */
+    if((1 == gps_conf.EXTERNAL_DR_ENABLED) && (GNSS_AUTO == getTargetGnssType(target)))
+    {
+        event |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT_REPORT |
+                LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
+    }
 
     LocCallbacks clientCallbacks = {local_loc_cb, /* location_cb */
                                     callbacks->status_cb, /* status_cb */

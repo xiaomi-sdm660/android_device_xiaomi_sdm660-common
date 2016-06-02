@@ -85,6 +85,13 @@ void LocAdapterBase::
              void* svExt)
 DEFAULT_IMPL()
 
+void LocAdapterBase::
+    reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet)
+DEFAULT_IMPL()
+
+void LocAdapterBase::
+    reportSvPolynomial(GnssSvPolynomial &svPolynomial)
+DEFAULT_IMPL()
 
 void LocAdapterBase::
     reportStatus(GpsStatusValue status)
