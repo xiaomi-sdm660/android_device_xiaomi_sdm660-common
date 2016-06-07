@@ -47,12 +47,13 @@ typedef struct loc_gps_cfg_s
     uint32_t       ACCURACY_THRES;
     uint32_t       SUPL_VER;
     uint32_t       SUPL_MODE;
+    uint32_t       SUPL_ES;
     uint32_t       CAPABILITIES;
     uint32_t       LPP_PROFILE;
     uint32_t       XTRA_VERSION_CHECK;
-    char        XTRA_SERVER_1[MAX_XTRA_SERVER_URL_LENGTH];
-    char        XTRA_SERVER_2[MAX_XTRA_SERVER_URL_LENGTH];
-    char        XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
+    char           XTRA_SERVER_1[MAX_XTRA_SERVER_URL_LENGTH];
+    char           XTRA_SERVER_2[MAX_XTRA_SERVER_URL_LENGTH];
+    char           XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
     uint32_t       USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
     uint32_t       NMEA_PROVIDER;
     uint32_t       GPS_LOCK;
