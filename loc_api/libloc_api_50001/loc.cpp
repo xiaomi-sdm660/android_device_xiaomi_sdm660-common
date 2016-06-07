@@ -579,10 +579,14 @@ const GpsGeofencingInterface* get_geofence_interface(void)
     }
     dlerror();    /* Clear any existing error */
     get_gps_geofence_interface = (get_gps_geofence_interface_function)dlsym(handle, "gps_geofence_get_interface");
-    if ((error = dlerror()) != NULL || NULL == get_gps_geofence_interface)  {
+    if ((error = dlerror()) != NULL)  {
         LOC_LOGE ("%s, dlsym for get_gps_geofence_interface failed, error = %s\n", __func__, error);
         goto exit;
-     }
+    }
+    if (NULL == get_gps_geofence_interface)  {
+        LOC_LOGE ("%s, get_gps_geofence_interface is NULL\n", __func__);
+        goto exit;
+    }
 
     geofence_interface = get_gps_geofence_interface();
 
