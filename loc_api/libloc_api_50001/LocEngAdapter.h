@@ -105,6 +105,9 @@ public:
     inline bool hasCPIExtendedCapabilities() {
         return mContext->hasCPIExtendedCapabilities();
     }
+    inline bool hasNativeXtraClient() {
+        return mContext->hasNativeXtraClient();
+    }
     inline const MsgTask* getMsgTask() { return mMsgTask; }
 
     inline enum loc_api_adapter_err
