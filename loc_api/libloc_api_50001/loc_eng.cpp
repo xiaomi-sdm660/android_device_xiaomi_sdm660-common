@@ -196,6 +196,7 @@ static int loc_eng_get_zpp_handler(loc_eng_data_s_type &loc_eng_data);
 static void deleteAidingData(loc_eng_data_s_type &logEng);
 static AgpsStateMachine*
 getAgpsStateMachine(loc_eng_data_s_type& logEng, AGpsExtType agpsType);
+static void createAgnssNifs(loc_eng_data_s_type& locEng);
 static int dataCallCb(void *cb_data);
 static void update_aiding_data_for_deletion(loc_eng_data_s_type& loc_eng_data) {
     if (loc_eng_data.engine_status != GPS_STATUS_ENGINE_ON &&
@@ -1102,7 +1103,7 @@ LocEngRequestSuplEs::LocEngRequestSuplEs(void* locEng, int id) :
 }
 void LocEngRequestSuplEs::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    if (locEng->ds_nif) {
+    if (locEng->ds_nif && gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
         AgpsStateMachine* sm = locEng->ds_nif;
         DSSubscriber s(sm, mID);
         sm->subscribeRsrc((Subscriber*)&s);
@@ -1444,16 +1445,18 @@ struct LocEngInit : public LocMsg {
 
 //        case LOC_ENG_MSG_ATL_OPEN_SUCCESS:
 struct LocEngAtlOpenSuccess : public LocMsg {
-    AgpsStateMachine* mStateMachine;
+    loc_eng_data_s_type* mLocEng;
+    const AGpsExtType mAgpsType;
     const int mLen;
     char* mAPN;
     const AGpsBearerType mBearerType;
-    inline LocEngAtlOpenSuccess(AgpsStateMachine* statemachine,
+    inline LocEngAtlOpenSuccess(loc_eng_data_s_type* locEng,
+                                const AGpsExtType agpsType,
                                 const char* name,
                                 int len,
                                 AGpsBearerType btype) :
         LocMsg(),
-        mStateMachine(statemachine), mLen(len),
+        mLocEng(locEng), mAgpsType(agpsType), mLen(len),
         mAPN(new char[len+1]), mBearerType(btype)
     {
         memcpy((void*)mAPN, (void*)name, len);
@@ -1465,14 +1468,15 @@ struct LocEngAtlOpenSuccess : public LocMsg {
         delete[] mAPN;
     }
     inline virtual void proc() const {
-        mStateMachine->setBearer(mBearerType);
-        mStateMachine->setAPN(mAPN, mLen);
-        mStateMachine->onRsrcEvent(RSRC_GRANTED);
+        AgpsStateMachine* sm = getAgpsStateMachine(*mLocEng, mAgpsType);
+        sm->setBearer(mBearerType);
+        sm->setAPN(mAPN, mLen);
+        sm->onRsrcEvent(RSRC_GRANTED);
     }
     inline void locallog() const {
         LOC_LOGV("LocEngAtlOpenSuccess agps type: %s\n  apn: %s\n"
                  "  bearer type: %s",
-                 loc_get_agps_type_name(mStateMachine->getType()),
+                 loc_get_agps_type_name(mAgpsType),
                  mAPN,
                  loc_get_agps_bear_name(mBearerType));
     }
@@ -1483,13 +1487,16 @@ struct LocEngAtlOpenSuccess : public LocMsg {
 
 //        case LOC_ENG_MSG_ATL_CLOSED:
 struct LocEngAtlClosed : public LocMsg {
-    AgpsStateMachine* mStateMachine;
-    inline LocEngAtlClosed(AgpsStateMachine* statemachine) :
-        LocMsg(), mStateMachine(statemachine) {
+    loc_eng_data_s_type* mLocEng;
+    const AGpsExtType mAgpsType;
+    inline LocEngAtlClosed(loc_eng_data_s_type* locEng,
+                           const AGpsExtType agpsType) :
+        LocMsg(), mLocEng(locEng), mAgpsType(agpsType) {
         locallog();
     }
     inline virtual void proc() const {
-        mStateMachine->onRsrcEvent(RSRC_RELEASED);
+        AgpsStateMachine* sm = getAgpsStateMachine(*mLocEng, mAgpsType);
+        sm->onRsrcEvent(RSRC_RELEASED);
     }
     inline void locallog() const {
         LOC_LOGV("LocEngAtlClosed");
@@ -1501,13 +1508,16 @@ struct LocEngAtlClosed : public LocMsg {
 
 //        case LOC_ENG_MSG_ATL_OPEN_FAILED:
 struct LocEngAtlOpenFailed : public LocMsg {
-    AgpsStateMachine* mStateMachine;
-    inline LocEngAtlOpenFailed(AgpsStateMachine* statemachine) :
-        LocMsg(), mStateMachine(statemachine) {
+    loc_eng_data_s_type* mLocEng;
+    const AGpsExtType mAgpsType;
+    inline LocEngAtlOpenFailed(loc_eng_data_s_type* locEng,
+                               const AGpsExtType agpsType) :
+        LocMsg(), mLocEng(locEng), mAgpsType(agpsType) {
         locallog();
     }
     inline virtual void proc() const {
-        mStateMachine->onRsrcEvent(RSRC_DENIED);
+        AgpsStateMachine* sm = getAgpsStateMachine(*mLocEng, mAgpsType);
+        sm->onRsrcEvent(RSRC_DENIED);
     }
     inline void locallog() const {
         LOC_LOGV("LocEngAtlOpenFailed");
@@ -1549,22 +1559,17 @@ inline void LocEngUp::log() const {
     locallog();
 }
 
-struct LocEngDataClientInit : public LocMsg {
+struct LocEngAgnssNifInit : public LocMsg {
     loc_eng_data_s_type* mLocEng;
-    inline LocEngDataClientInit(loc_eng_data_s_type* locEng) :
+    inline LocEngAgnssNifInit(loc_eng_data_s_type* locEng) :
         LocMsg(), mLocEng(locEng) {
         locallog();
     }
     virtual void proc() const {
-        loc_eng_data_s_type *locEng = (loc_eng_data_s_type *)mLocEng;
-        if(!locEng->adapter->initDataServiceClient()) {
-            locEng->ds_nif = new DSStateMachine(servicerTypeExt,
-                                               (void *)dataCallCb,
-                                               locEng->adapter);
-        }
+        createAgnssNifs(*mLocEng);
     }
     void locallog() const {
-        LOC_LOGV("LocEngDataClientInit\n");
+        LOC_LOGV("LocEngAgnssNifInit\n");
     }
     virtual void log() const {
         locallog();
@@ -2338,31 +2343,14 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
         EXIT_LOG(%s, VOID_RET);
         return;
     }
+    bool agpsCapable = ((gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) ||
+                        (gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB));
     LocEngAdapter* adapter = loc_eng_data.adapter;
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 
-    loc_eng_data.internet_nif = new AgpsStateMachine(servicerTypeAgps,
-                                                     (void *)loc_eng_data.agps_status_cb,
-                                                     AGPS_TYPE_WWAN_ANY,
-                                                     false);
-    loc_eng_data.wifi_nif = new AgpsStateMachine(servicerTypeAgps,
-                                                 (void *)loc_eng_data.agps_status_cb,
-                                                 AGPS_TYPE_WIFI,
-                                                 true);
-
-    if ((gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) ||
-        (gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB)) {
-        loc_eng_data.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
-                                                      (void *)loc_eng_data.agps_status_cb,
-                                                      AGPS_TYPE_SUPL,
-                                                      false);
-
+    if (agpsCapable && NULL != adapter) {
         if (adapter->mSupportsAgpsRequests) {
-            if(gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
-                loc_eng_data.adapter->sendMsg(new LocEngDataClientInit(&loc_eng_data));
-            }
-            loc_eng_dmn_conn_loc_api_server_launch(callbacks->create_thread_cb,
-                                                   NULL, NULL, &loc_eng_data);
+            adapter->sendMsg(new LocEngAgnssNifInit(&loc_eng_data));
         }
         loc_eng_agps_reinit(loc_eng_data);
     }
@@ -2378,6 +2366,35 @@ static void deleteAidingData(loc_eng_data_s_type &logEng) {
     }
 }
 
+// must be called under msg handler context
+static void createAgnssNifs(loc_eng_data_s_type& locEng) {
+    bool agpsCapable = ((gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) ||
+                        (gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB));
+    LocEngAdapter* adapter = locEng.adapter;
+    if (agpsCapable && NULL != adapter && adapter->mSupportsAgpsRequests) {
+        if (NULL == locEng.internet_nif) {
+            locEng.internet_nif= new AgpsStateMachine(servicerTypeAgps,
+                                                       (void *)locEng.agps_status_cb,
+                                                       AGPS_TYPE_WWAN_ANY,
+                                                       false);
+        }
+        if (NULL == locEng.agnss_nif) {
+            locEng.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
+                                                     (void *)locEng.agps_status_cb,
+                                                     AGPS_TYPE_SUPL,
+                                                     false);
+        }
+        if (NULL == locEng.ds_nif &&
+            gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL &&
+            0 == adapter->initDataServiceClient()) {
+            locEng.ds_nif = new DSStateMachine(servicerTypeExt,
+                                                 (void *)dataCallCb,
+                                                 locEng.adapter);
+        }
+    }
+}
+
+// must be called under msg handler context
 static AgpsStateMachine*
 getAgpsStateMachine(loc_eng_data_s_type &locEng, AGpsExtType agpsType) {
     AgpsStateMachine* stateMachine;
@@ -2392,9 +2409,14 @@ getAgpsStateMachine(loc_eng_data_s_type &locEng, AGpsExtType agpsType) {
         break;
     }
     case AGPS_TYPE_SUPL_ES: {
-        locEng.ds_nif ?
-            stateMachine = locEng.ds_nif:
+        if (gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
+            if (NULL == locEng.ds_nif) {
+                createAgnssNifs(locEng);
+            }
+            stateMachine = locEng.ds_nif;
+        } else {
             stateMachine = locEng.agnss_nif;
+        }
         break;
     }
     default:
@@ -2436,10 +2458,9 @@ int loc_eng_agps_open(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType,
     LOC_LOGD("loc_eng_agps_open APN name = [%s]", apn);
 
     int apn_len = smaller_of(strlen (apn), MAX_APN_LEN);
-    AgpsStateMachine* sm = getAgpsStateMachine(loc_eng_data, agpsType);
-
     loc_eng_data.adapter->sendMsg(
-        new LocEngAtlOpenSuccess(sm, apn, apn_len, bearerType));
+        new LocEngAtlOpenSuccess(&loc_eng_data, agpsType,
+                                 apn, apn_len, bearerType));
 
     EXIT_LOG(%d, 0);
     return 0;
@@ -2468,8 +2489,8 @@ int loc_eng_agps_closed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agpsType)
     INIT_CHECK(loc_eng_data.adapter && loc_eng_data.agps_status_cb,
                return -1);
 
-    AgpsStateMachine* sm = getAgpsStateMachine(loc_eng_data, agpsType);
-    loc_eng_data.adapter->sendMsg(new LocEngAtlClosed(sm));
+    loc_eng_data.adapter->sendMsg(new LocEngAtlClosed(&loc_eng_data,
+                                                      agpsType));
 
     EXIT_LOG(%d, 0);
     return 0;
@@ -2498,8 +2519,8 @@ int loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agps
     INIT_CHECK(loc_eng_data.adapter && loc_eng_data.agps_status_cb,
                return -1);
 
-    AgpsStateMachine* sm = getAgpsStateMachine(loc_eng_data, agpsType);
-    loc_eng_data.adapter->sendMsg(new LocEngAtlOpenFailed(sm));
+    loc_eng_data.adapter->sendMsg(new LocEngAtlOpenFailed(&loc_eng_data,
+                                                          agpsType));
 
     EXIT_LOG(%d, 0);
     return 0;
@@ -2775,6 +2796,10 @@ void loc_eng_configuration_update (loc_eng_data_s_type &loc_eng_data,
             if (gps_conf_tmp.SUPL_MODE != gps_conf.SUPL_MODE) {
                 adapter->sendMsg(new LocEngSuplMode(adapter->getUlpProxy()));
             }
+            // we always update lock mask, this is because if this is dsds device, we would not
+            // know if modem has switched dds, if so, lock mask may also need to be updated.
+            // if we have power vote, HAL is on, lock mask 0; else gps_conf.GPS_LOCK.
+            adapter->setGpsLockMsg(adapter->getPowerVote() ? 0 : gps_conf.GPS_LOCK);
         }
 
         gps_conf_tmp.SUPL_VER = gps_conf.SUPL_VER;
@@ -2783,6 +2808,8 @@ void loc_eng_configuration_update (loc_eng_data_s_type &loc_eng_data,
         gps_conf_tmp.SUPL_MODE = gps_conf.SUPL_MODE;
         gps_conf_tmp.SUPL_ES = gps_conf.SUPL_ES;
         gps_conf_tmp.GPS_LOCK = gps_conf.GPS_LOCK;
+        gps_conf_tmp.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL =
+                                            gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
         gps_conf = gps_conf_tmp;
     }
 
