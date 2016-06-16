@@ -69,6 +69,7 @@ public:
 
         (void)context;
     }
+    inline virtual bool hasNativeXtraClient() const { return false; }
     inline virtual IzatDevId_t getIzatDevId() const { return 0; }
 };
 
