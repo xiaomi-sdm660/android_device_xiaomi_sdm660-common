@@ -89,7 +89,7 @@ typedef struct loc_eng_data_s
     loc_sv_status_cb_ext           sv_status_cb;
     agps_status_extended           agps_status_cb;
     gps_nmea_callback              nmea_cb;
-    gps_ni_notify_callback         ni_notify_cb;
+    loc_ni_notify_callback         ni_notify_cb;
     gps_set_capabilities           set_capabilities_cb;
     gps_acquire_wakelock           acquire_wakelock_cb;
     gps_release_wakelock           release_wakelock_cb;

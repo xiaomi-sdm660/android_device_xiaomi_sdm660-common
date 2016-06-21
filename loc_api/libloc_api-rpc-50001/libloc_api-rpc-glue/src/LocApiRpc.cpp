@@ -131,6 +131,17 @@ const rpc_loc_event_mask_type LocApiRpc::locBits[] =
     RPC_LOC_EVENT_WPS_NEEDED_REQUEST
 };
 
+LocApiRpc*
+LocApiRpc::createLocApiRpc(const MsgTask* msgTask,
+                     LOC_API_ADAPTER_EVENT_MASK_T exMask,
+                     ContextBase* context)
+{
+    if (NULL == msgTask) {
+        return NULL;
+    }
+    return new LocApiRpc(msgTask, exMask, context);
+}
+
 // constructor
 LocApiRpc::LocApiRpc(const MsgTask* msgTask,
                      LOC_API_ADAPTER_EVENT_MASK_T exMask,
