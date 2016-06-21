@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014,2016 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -132,6 +132,7 @@ LocApiBase::LocApiBase(const MsgTask* msgTask,
     mMask(0), mSupportedMsg(0), mContext(context)
 {
     memset(mLocAdapters, 0, sizeof(mLocAdapters));
+    memset(mFeaturesSupported, 0, sizeof(mFeaturesSupported));
 }
 
 LOC_API_ADAPTER_EVENT_MASK_T LocApiBase::getEvtMask()
@@ -356,6 +357,11 @@ void LocApiBase::saveSupportedMsgList(uint64_t supportedMsgList)
     mSupportedMsg = supportedMsgList;
 }
 
+void LocApiBase::saveSupportedFeatureList(uint8_t *featureList)
+{
+    memcpy((void *)mFeaturesSupported, (void *)featureList, sizeof(mFeaturesSupported));
+}
+
 void* LocApiBase :: getSibling()
     DEFAULT_IMPL(NULL)
 
@@ -491,6 +497,10 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
+        setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP)
+    DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+
+enum loc_api_adapter_err LocApiBase::
    getWwanZppFix(GpsLocation& zppLoc)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
@@ -551,5 +561,15 @@ DEFAULT_IMPL(-1)
 bool LocApiBase::
     gnssConstellationConfig()
 DEFAULT_IMPL(false)
+
+bool LocApiBase::
+    isFeatureSupported(uint8_t featureVal)
+{
+    uint8_t arrayIndex = featureVal >> 3;
+    uint8_t bitPos = featureVal & 7;
+
+    if (arrayIndex >= MAX_FEATURE_LENGTH) return false;
+    return ((mFeaturesSupported[arrayIndex] >> bitPos ) & 0x1);
+}
 
 } // namespace loc_core

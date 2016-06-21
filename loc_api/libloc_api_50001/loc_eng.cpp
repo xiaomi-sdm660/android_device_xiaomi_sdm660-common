@@ -86,6 +86,8 @@ static const loc_param_s_type gps_conf_table[] =
   {"SUPL_VER",                       &gps_conf.SUPL_VER,                       NULL, 'n'},
   {"LPP_PROFILE",                    &gps_conf.LPP_PROFILE,                    NULL, 'n'},
   {"A_GLONASS_POS_PROTOCOL_SELECT",  &gps_conf.A_GLONASS_POS_PROTOCOL_SELECT,  NULL, 'n'},
+  {"LPPE_CP_TECHNOLOGY",             &gps_conf.LPPE_CP_TECHNOLOGY,             NULL, 'n'},
+  {"LPPE_UP_TECHNOLOGY",             &gps_conf.LPPE_UP_TECHNOLOGY,             NULL, 'n'},
   {"AGPS_CERT_WRITABLE_MASK",        &gps_conf.AGPS_CERT_WRITABLE_MASK,        NULL, 'n'},
   {"SUPL_MODE",                      &gps_conf.SUPL_MODE,                      NULL, 'n'},
   {"SUPL_ES",                        &gps_conf.SUPL_ES,                        NULL, 'n'},
@@ -140,6 +142,10 @@ static void loc_default_parameters(void)
    gps_conf.XTRA_VERSION_CHECK=0;
    /*Use emergency PDN by default*/
    gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL = 1;
+   /* By default no LPPe CP technology is enabled*/
+   gps_conf.LPPE_CP_TECHNOLOGY = 0;
+   /* By default no LPPe UP technology is enabled*/
+   gps_conf.LPPE_UP_TECHNOLOGY = 0;
 
    /*Defaults for sap.conf*/
    sap_conf.GYRO_BIAS_RANDOM_WALK = 0;
@@ -458,6 +464,29 @@ struct LocEngAGlonassProtocol : public LocMsg {
         locallog();
     }
 };
+
+
+struct LocEngLPPeProtocol : public LocMsg {
+    LocEngAdapter* mAdapter;
+    const unsigned long mLPPeCP;
+    const unsigned long mLPPeUP;
+        inline LocEngLPPeProtocol(LocEngAdapter* adapter,
+                                  unsigned long lppeCP, unsigned long lppeUP) :
+        LocMsg(), mAdapter(adapter), mLPPeCP(lppeCP), mLPPeUP(lppeUP)
+    {
+        locallog();
+    }
+    inline virtual void proc() const {
+        mAdapter->setLPPeProtocol(mLPPeCP, mLPPeUP);
+    }
+    inline  void locallog() const {
+        LOC_LOGV("LPPe CP: 0x%lx LPPe UP: 0x%1x", mLPPeCP, mLPPeUP);
+    }
+    inline virtual void log() const {
+        locallog();
+    }
+};
+
 
 //        case LOC_ENG_MSG_SUPL_VERSION:
 struct LocEngSuplVer : public LocMsg {
@@ -1833,6 +1862,8 @@ static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data)
     adapter->sendMsg(new LocEngSensorControlConfig(adapter, sap_conf.SENSOR_USAGE,
                                                    sap_conf.SENSOR_PROVIDER));
     adapter->sendMsg(new LocEngAGlonassProtocol(adapter, gps_conf.A_GLONASS_POS_PROTOCOL_SELECT));
+    adapter->sendMsg(new LocEngLPPeProtocol(adapter, gps_conf.LPPE_CP_TECHNOLOGY,
+                                            gps_conf.LPPE_UP_TECHNOLOGY));
 
     if (!loc_eng_data.generateNmea)
     {

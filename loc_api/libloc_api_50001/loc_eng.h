@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2009-2014, 2016 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -141,6 +141,7 @@ typedef struct loc_eng_data_s
     loc_ext_parser location_ext_parser;
     loc_ext_parser sv_ext_parser;
 } loc_eng_data_s_type;
+
 
 //loc_eng functions
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,
