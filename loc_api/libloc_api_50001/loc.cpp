@@ -52,9 +52,15 @@ using namespace loc_core;
 //Globals defns
 static gps_location_callback gps_loc_cb = NULL;
 static gps_sv_status_callback gps_sv_cb = NULL;
+static gps_ni_notify_callback gps_ni_cb = NULL;
 
 static void local_loc_cb(UlpLocation* location, void* locExt);
 static void local_sv_cb(GpsSvStatus* sv_status, void* svExt);
+static void local_ni_cb(GpsNiNotification *notification, bool esEnalbed);
+
+GpsNiExtCallbacks sGpsNiExtCallbacks = {
+    local_ni_cb
+};
 
 static const GpsGeofencingInterface* get_geofence_interface(void);
 
@@ -967,7 +973,8 @@ SIDE EFFECTS
 void loc_ni_init(GpsNiCallbacks *callbacks)
 {
     ENTRY_LOG();
-    loc_eng_ni_init(loc_afw_data,(GpsNiExtCallbacks*) callbacks);
+    gps_ni_cb = callbacks->notify_cb;
+    loc_eng_ni_init(loc_afw_data, &sGpsNiExtCallbacks);
     EXIT_LOG(%s, VOID_RET);
 }
 
@@ -1080,5 +1087,12 @@ static void local_sv_cb(GpsSvStatus* sv_status, void* svExt)
         gps_sv_cb(sv_status);
     }
     EXIT_LOG(%s, VOID_RET);
+}
+
+static void local_ni_cb(GpsNiNotification *notification, bool esEnalbed)
+{
+    if (NULL != gps_ni_cb) {
+        gps_ni_cb(notification);
+    }
 }
 

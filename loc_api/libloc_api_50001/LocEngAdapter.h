@@ -239,6 +239,11 @@ public:
     {
         return mLocApi->setAGLONASSProtocol(aGlonassProtocol);
     }
+    inline virtual enum loc_api_adapter_err
+        setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP)
+    {
+        return mLocApi->setLPPeProtocol(lppeCP, lppeUP);
+    }
     inline virtual int initDataServiceClient()
     {
         return mLocApi->initDataServiceClient();

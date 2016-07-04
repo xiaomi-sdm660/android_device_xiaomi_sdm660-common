@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2015, 2016 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -87,6 +87,11 @@ enum loc_registration_mask_status {
     LOC_REGISTRATION_MASK_DISABLED
 };
 
+typedef enum {
+    LOC_SUPPORTED_FEATURE_ODCPI_2_V02 = 0, /**<  Support ODCPI version 2 feature  */
+    LOC_SUPPORTED_FEATURE_WIFI_AP_DATA_INJECT_2_V02 /**<  Support Wifi AP data inject version 2 feature  */
+} loc_supported_feature_enum;
+
 typedef struct {
     /** set to sizeof(UlpLocation) */
     size_t          size;
@@ -170,14 +175,14 @@ typedef struct {
 } AGpsExtCallbacks;
 
 
+typedef void (*loc_ni_notify_callback)(GpsNiNotification *notification, bool esEnalbed);
 /** GPS NI callback structure. */
 typedef struct
 {
     /**
      * Sends the notification request from HAL to GPSLocationProvider.
      */
-    gps_ni_notify_callback notify_cb;
-    gps_create_thread create_thread_cb;
+    loc_ni_notify_callback notify_cb;
 } GpsNiExtCallbacks;
 
 typedef enum loc_server_type {
