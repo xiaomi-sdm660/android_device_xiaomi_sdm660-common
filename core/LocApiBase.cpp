@@ -569,11 +569,6 @@ enum loc_api_adapter_err LocApiBase::
     setXtraVersionCheck(enum xtra_version_check check)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
-int LocApiBase::
-    updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
-                           loc_registration_mask_status isEnabled)
-DEFAULT_IMPL(-1)
-
 bool LocApiBase::
     gnssConstellationConfig()
 DEFAULT_IMPL(false)

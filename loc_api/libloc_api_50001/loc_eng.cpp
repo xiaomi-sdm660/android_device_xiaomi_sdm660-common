@@ -1666,29 +1666,6 @@ struct LocEngInstallAGpsCert : public LocMsg {
     }
 };
 
-struct LocEngUpdateRegistrationMask : public LocMsg {
-    loc_eng_data_s_type* mLocEng;
-    LOC_API_ADAPTER_EVENT_MASK_T mMask;
-    loc_registration_mask_status mIsEnabled;
-    inline LocEngUpdateRegistrationMask(loc_eng_data_s_type* locEng,
-                                        LOC_API_ADAPTER_EVENT_MASK_T mask,
-                                        loc_registration_mask_status isEnabled) :
-        LocMsg(), mLocEng(locEng), mMask(mask), mIsEnabled(isEnabled) {
-        locallog();
-    }
-    inline virtual void proc() const {
-        loc_eng_data_s_type *locEng = (loc_eng_data_s_type *)mLocEng;
-        locEng->adapter->updateRegistrationMask(mMask,
-                                                mIsEnabled);
-    }
-    void locallog() const {
-        LOC_LOGV("LocEngUpdateRegistrationMask\n");
-    }
-    virtual void log() const {
-        locallog();
-    }
-};
-
 struct LocEngGnssConstellationConfig : public LocMsg {
     LocEngAdapter* mAdapter;
     inline LocEngGnssConstellationConfig(LocEngAdapter* adapter) :
@@ -3053,10 +3030,7 @@ int loc_eng_gps_measurement_init(loc_eng_data_s_type &loc_eng_data,
 
     // updated the mask
     LOC_API_ADAPTER_EVENT_MASK_T event = LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
-    loc_eng_data.adapter->sendMsg(new LocEngUpdateRegistrationMask(
-                                                        &loc_eng_data,
-                                                        event,
-                                                        LOC_REGISTRATION_MASK_ENABLED));
+    loc_eng_data.adapter->updateEvtMask(event, LOC_REGISTRATION_MASK_ENABLED);
     // set up the callback
     loc_eng_data.gnss_measurement_cb = callbacks->gnss_measurement_callback;
     LOC_LOGD ("%s, event masks updated successfully", __func__);
@@ -3088,10 +3062,7 @@ void loc_eng_gps_measurement_close(loc_eng_data_s_type &loc_eng_data)
 
     // updated the mask
     LOC_API_ADAPTER_EVENT_MASK_T event = LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
-    loc_eng_data.adapter->sendMsg(new LocEngUpdateRegistrationMask(
-                                                          &loc_eng_data,
-                                                          event,
-                                                          LOC_REGISTRATION_MASK_DISABLED));
+    loc_eng_data.adapter->updateEvtMask(event, LOC_REGISTRATION_MASK_DISABLED);
     // set up the callback
     loc_eng_data.gnss_measurement_cb = NULL;
     EXIT_LOG(%d, 0);

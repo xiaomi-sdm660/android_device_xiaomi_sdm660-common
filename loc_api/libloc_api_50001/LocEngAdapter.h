@@ -352,12 +352,6 @@ public:
     }
 
     /*
-      Update Registration Mask
-     */
-    void updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
-                                loc_registration_mask_status isEnabled);
-
-    /*
       Set Gnss Constellation Config
      */
     bool gnssConstellationConfig();
