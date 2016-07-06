@@ -142,7 +142,6 @@ typedef struct loc_eng_data_s
     loc_ext_parser sv_ext_parser;
 } loc_eng_data_s_type;
 
-
 //loc_eng functions
 int  loc_eng_init(loc_eng_data_s_type &loc_eng_data,
                   LocCallbacks* callbacks,

@@ -85,7 +85,10 @@ LocThreadDelegate::LocThreadDelegate(LocThread::tCreate creator,
     if (mThandle) {
         // set thread name
         char lname[16];
-        strlcpy(lname, threadName, sizeof(lname));
+        int len = (sizeof(lname)>sizeof(threadName)) ?
+          (sizeof(threadName) -1):(sizeof(lname) - 1);
+        memcpy(lname, threadName, len);
+        lname[len] = 0;
         // set the thread name here
         pthread_setname_np(mThandle, lname);
 
