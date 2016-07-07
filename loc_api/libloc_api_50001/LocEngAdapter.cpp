@@ -549,9 +549,8 @@ enum loc_api_adapter_err LocEngAdapter::setTime(GpsUtcTime time,
     if (mSupportsTimeInjection) {
         LOC_LOGD("%s:%d]: Injecting time", __func__, __LINE__);
         result = mLocApi->setTime(time, timeReference, uncertainty);
-    } else {
-        mSupportsTimeInjection = true;
     }
+
     return result;
 }
 
