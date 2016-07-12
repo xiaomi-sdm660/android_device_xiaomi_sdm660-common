@@ -460,8 +460,12 @@ static int  loc_set_position_mode(GpsPositionMode mode,
         break;
     }
 
+    // set position sharing option to true
+    bool sharePosition = true;
+
     LocPosMode params(locMode, recurrence, min_interval,
-                      preferred_accuracy, preferred_time, NULL, NULL);
+                      preferred_accuracy, preferred_time,
+                      sharePosition, NULL, NULL);
     ret_val = loc_eng_set_position_mode(loc_afw_data, params);
 
     EXIT_LOG(%d, ret_val);
