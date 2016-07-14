@@ -952,6 +952,9 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	}
 #endif /* defined(FEATURE_IPA_ANDROID)*/
 
+	/* Update the IP Type. */
+	config_ip_type(data->iptype);
+
 	if (data->iptype == IPA_IP_v4)
 	{
 		rt_rule = (struct ipa_ioc_add_rt_rule *)

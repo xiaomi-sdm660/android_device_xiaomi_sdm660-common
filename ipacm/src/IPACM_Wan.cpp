@@ -119,6 +119,8 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 	memset(wan_v6_addr_gw, 0, sizeof(wan_v6_addr_gw));
 	ext_prop = NULL;
+	is_ipv6_frag_firewall_flt_rule_installed = false;
+	ipv6_frag_firewall_flt_rule_hdl = 0;
 
 	num_wan_client = 0;
 	header_name_count = 0;
@@ -204,6 +206,9 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 		IPACMDBG_H("Either tx or rx property is NULL, return.\n");
 		return IPACM_SUCCESS;
 	}
+
+	/* Update the IP Type. */
+	config_ip_type(data->iptype);
 
 	if (data->iptype == IPA_IP_v6)
 	{
@@ -320,9 +325,6 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 				init_fl_rule(data->iptype);
 			}
 		}
-
-		/* Update the IP Type. */
-		config_ip_type(data->iptype);
 
 		/* add WAN DL interface IP specific flt rule for IPv6 when backhaul is not Q6 */
 		if(m_is_sta_mode != Q6_WAN)
@@ -486,9 +488,6 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 				init_fl_rule(data->iptype);
 			}
 		}
-
-		/* Update the IP Type. */
-		config_ip_type(data->iptype);
 
 		wan_v4_addr = data->ipv4_addr;
 		wan_v4_addr_set = true;
@@ -1971,6 +1970,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 		{
 			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 			ipv6_frag_firewall_flt_rule_hdl = m_pFilteringTable->rules[0].flt_rule_hdl;
+			is_ipv6_frag_firewall_flt_rule_installed = true;
 			IPACMDBG_H("Installed IPv6 frag firewall rule, handle %d.\n", ipv6_frag_firewall_flt_rule_hdl);
 		}
 	}
@@ -3120,52 +3120,6 @@ int IPACM_Wan::config_dft_firewall_rules_ex(struct ipa_flt_rule_add *rules, int 
 	return IPACM_SUCCESS;
 }
 
-void IPACM_Wan::config_ip_type(ipa_ip_type iptype)
-{
-
-	/* update the iface ip-type to be IPA_IP_v4, IPA_IP_v6 or both*/
-	if (iptype == IPA_IP_v4)
-	{
-
-		if ((ip_type == IPA_IP_v4) || (ip_type == IPA_IP_MAX))
-		{
-			IPACMDBG_H(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
-			return;
-		}
-
-		if (ip_type == IPA_IP_v6)
-		{
-			ip_type = IPA_IP_MAX;
-		}
-		else
-		{
-			ip_type = IPA_IP_v4;
-		}
-		IPACMDBG_H(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
-	}
-	else
-	{
-		if ((ip_type == IPA_IP_v6) || (ip_type == IPA_IP_MAX))
-		{
-			IPACMDBG_H(" interface(%s:%d) already in ip-type %d\n", dev_name, ipa_if_num, ip_type);
-			return;
-		}
-
-		if (ip_type == IPA_IP_v4)
-		{
-			ip_type = IPA_IP_MAX;
-		}
-		else
-		{
-			ip_type = IPA_IP_v6;
-		}
-
-		IPACMDBG_H(" interface(%s:%d) now ip-type is %d\n", dev_name, ipa_if_num, ip_type);
-	}
-
-	return;
-}
-
 int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 {
 	int res = IPACM_SUCCESS;
@@ -3896,7 +3850,7 @@ int IPACM_Wan::del_dft_firewall_rules(ipa_ip_type iptype)
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 
-		if (firewall_config.firewall_enable == true &&
+		if (is_ipv6_frag_firewall_flt_rule_installed &&
 			check_dft_firewall_rules_attr_mask(&firewall_config))
 		{
 			if (m_filtering.DeleteFilteringHdls(&ipv6_frag_firewall_flt_rule_hdl, IPA_IP_v6, 1) == false)
@@ -3904,6 +3858,7 @@ int IPACM_Wan::del_dft_firewall_rules(ipa_ip_type iptype)
 				IPACMERR("Error deleting IPv6 frag filtering rules.\n");
 				return IPACM_FAILURE;
 			}
+			is_ipv6_frag_firewall_flt_rule_installed = false;
 			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
 		}
 		num_firewall_v6 = 0;
