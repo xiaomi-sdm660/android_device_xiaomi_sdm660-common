@@ -118,6 +118,8 @@ public:
     void reportSv(GnssSvStatus &svStatus,
                   GpsLocationExtended &locationExtended,
                   void* svExt);
+    void reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet);
+    void reportSvPolynomial(GnssSvPolynomial &svPolynomial);
     void reportStatus(GpsStatusValue status);
     void reportNmea(const char* nmea, int length);
     void reportXtraServer(const char* url1, const char* url2,

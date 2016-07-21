@@ -101,6 +101,7 @@ static const loc_param_s_type gps_conf_table[] =
   {"XTRA_SERVER_3",                  &gps_conf.XTRA_SERVER_3,                  NULL, 's'},
   {"USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL",  &gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL,          NULL, 'n'},
   {"AGPS_CONFIG_INJECT",             &gps_conf.AGPS_CONFIG_INJECT,             NULL, 'n'},
+  {"EXTERNAL_DR_ENABLED",            &gps_conf.EXTERNAL_DR_ENABLED,                  NULL, 'n'},
 };
 
 static const loc_param_s_type sap_conf_table[] =
@@ -2229,6 +2230,9 @@ void loc_eng_delete_aiding_data(loc_eng_data_s_type &loc_eng_data, GpsAidingData
 {
     ENTRY_LOG_CALLFLOW();
     INIT_CHECK(loc_eng_data.adapter, return);
+
+    //report delete aiding data to ULP to send to DRPlugin
+    loc_eng_data.adapter->getUlpProxy()->reportDeleteAidingData(f);
 
     loc_eng_data.adapter->sendMsg(new LocEngDelAidData(&loc_eng_data, f));
 
