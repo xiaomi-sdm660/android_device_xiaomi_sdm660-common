@@ -258,24 +258,35 @@ void LocApiBase::reportSv(GnssSvStatus &svStatus,
                   GpsLocationExtended &locationExtended,
                   void* svExt)
 {
+    const char* constellationString[] = { "Unknown", "GPS", "SBAS", "GLONASS",
+        "QZSS", "BEIDOU", "GALILEO" };
+
     // print the SV info before delivering
-    LOC_LOGV("num sv: %d", svStatus.num_svs);
+    LOC_LOGV("num sv: %d\n"
+        "      sv: constellation svid         cN0"
+        "    elevation    azimuth    flags",
+        svStatus.num_svs);
     for (int i = 0; i < svStatus.num_svs && i < GNSS_MAX_SVS; i++) {
-        LOC_LOGV("   %03d:   %02d    %d    %f    %f    %f   0x%02X",
-                 i,
-                 svStatus.gnss_sv_list[i].svid,
-                 svStatus.gnss_sv_list[i].constellation,
-                 svStatus.gnss_sv_list[i].c_n0_dbhz,
-                 svStatus.gnss_sv_list[i].elevation,
-                 svStatus.gnss_sv_list[i].azimuth,
-                 svStatus.gnss_sv_list[i].flags);
+        if (svStatus.gnss_sv_list[i].constellation >
+            sizeof(constellationString) / sizeof(constellationString[0]) - 1) {
+            svStatus.gnss_sv_list[i].constellation = 0;
+        }
+        LOC_LOGV("   %03d: %*s  %02d    %f    %f    %f   0x%02X",
+            i,
+            13,
+            constellationString[svStatus.gnss_sv_list[i].constellation],
+            svStatus.gnss_sv_list[i].svid,
+            svStatus.gnss_sv_list[i].c_n0_dbhz,
+            svStatus.gnss_sv_list[i].elevation,
+            svStatus.gnss_sv_list[i].azimuth,
+            svStatus.gnss_sv_list[i].flags);
     }
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportSv(svStatus,
-                                     locationExtended,
-                                     svExt)
-    );
+            locationExtended,
+            svExt)
+        );
 }
 
 void LocApiBase::reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet)
