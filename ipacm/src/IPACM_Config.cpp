@@ -112,6 +112,7 @@ IPACM_Config::IPACM_Config()
 {
 	iface_table = NULL;
 	alg_table = NULL;
+	pNatIfaces = NULL;
 	memset(&ipa_client_rm_map_tbl, 0, sizeof(ipa_client_rm_map_tbl));
 	memset(&ipa_rm_tbl, 0, sizeof(ipa_rm_tbl));
 	ipa_rm_a2_check=0;
