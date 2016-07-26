@@ -257,11 +257,6 @@ public:
     virtual enum loc_api_adapter_err setXtraVersionCheck(enum xtra_version_check check);
 
     /*
-      Update gps reporting events
-     */
-    virtual int updateRegistrationMask(LOC_API_ADAPTER_EVENT_MASK_T event,
-                                       loc_registration_mask_status isEnabled);
-    /*
       Check if the modem support the service
      */
     virtual bool gnssConstellationConfig();
