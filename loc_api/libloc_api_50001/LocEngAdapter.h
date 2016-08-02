@@ -230,11 +230,6 @@ public:
                                                   algorithmConfig);
     }
     inline virtual enum loc_api_adapter_err
-        setExtPowerConfig(int isBatteryCharging)
-    {
-        return mLocApi->setExtPowerConfig(isBatteryCharging);
-    }
-    inline virtual enum loc_api_adapter_err
         setAGLONASSProtocol(unsigned long aGlonassProtocol)
     {
         return mLocApi->setAGLONASSProtocol(aGlonassProtocol);

@@ -757,29 +757,6 @@ struct LocEngSensorPerfControlConfig : public LocMsg {
     }
 };
 
-//        case LOC_ENG_MSG_EXT_POWER_CONFIG:
-struct LocEngExtPowerConfig : public LocMsg {
-    LocEngAdapter* mAdapter;
-    const int mIsBatteryCharging;
-    inline LocEngExtPowerConfig(LocEngAdapter* adapter,
-                                int isBatteryCharging) :
-        LocMsg(), mAdapter(adapter),
-        mIsBatteryCharging(isBatteryCharging)
-    {
-        locallog();
-    }
-    inline virtual void proc() const {
-        mAdapter->setExtPowerConfig(mIsBatteryCharging);
-    }
-    inline void locallog() const {
-        LOC_LOGV("LocEngExtPowerConfig - isBatteryCharging: %d",
-                 mIsBatteryCharging);
-    }
-    inline virtual void log() const {
-        locallog();
-    }
-};
-
 //        case LOC_ENG_MSG_REPORT_POSITION:
 LocEngReportPosition::LocEngReportPosition(LocAdapterBase* adapter,
                                            UlpLocation &loc,
