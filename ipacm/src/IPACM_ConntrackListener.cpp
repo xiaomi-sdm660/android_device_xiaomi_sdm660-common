@@ -706,27 +706,32 @@ bool IPACM_ConntrackListener::AddIface(
 		}
 	}
 
-	/* check whether non nat iface or not, on Nat iface
-	   add dummy rule by copying public ip to private ip */
-	for (cnt = 0; cnt < MAX_IFACE_ADDRESS; cnt++)
+	if (!isStaMode)
 	{
-		if (nonnat_iface_ipv4_addr[cnt] != 0)
+		/* check whether non nat iface or not, on Non Nat iface
+		   add dummy rule by copying public ip to private ip */
+		for (cnt = 0; cnt < MAX_IFACE_ADDRESS; cnt++)
 		{
-			if (rule->private_ip == nonnat_iface_ipv4_addr[cnt] ||
-				rule->target_ip == nonnat_iface_ipv4_addr[cnt])
+			if (nonnat_iface_ipv4_addr[cnt] != 0)
 			{
-				IPACMDBG("matched non_nat_iface_ipv4_addr entry(%d)\n", cnt);
-				iptodot("AddIface(): Non Nat entry match with ip addr",
-						nonnat_iface_ipv4_addr[cnt]);
+				if (rule->private_ip == nonnat_iface_ipv4_addr[cnt] ||
+					rule->target_ip == nonnat_iface_ipv4_addr[cnt])
+				{
+					IPACMDBG("matched non_nat_iface_ipv4_addr entry(%d)\n", cnt);
+					iptodot("AddIface(): Non Nat entry match with ip addr",
+							nonnat_iface_ipv4_addr[cnt]);
 
-				rule->private_ip = rule->public_ip;
-				rule->private_port = rule->public_port;
-				return true;
+					rule->private_ip = rule->public_ip;
+					rule->private_port = rule->public_port;
+					return true;
+				}
 			}
 		}
+		IPACMDBG_H("Not mtaching with non-nat ifaces\n");
 	}
+	else
+		IPACMDBG("In STA mode, don't compare against non nat ifaces\n");
 
-	IPACMDBG_H("Not mtaching with non-nat ifaces\n");
 	if(pConfig == NULL)
 	{
 		pConfig = IPACM_Config::GetInstance();
