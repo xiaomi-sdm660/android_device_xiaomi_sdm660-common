@@ -112,6 +112,12 @@ public:
        (void)aidingData;
        return false;
     }
+    inline virtual bool reportNmea(const char* nmea, int length)
+    {
+        (void)nmea;
+        (void)length;
+        return false;
+    }
 };
 
 } // namespace loc_core

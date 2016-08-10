@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -433,10 +433,17 @@ void LocEngAdapter::reportStatus(GpsStatusValue status)
     }
 }
 
-inline
-void LocEngAdapter::reportNmea(const char* nmea, int length)
+void LocInternalAdapter::reportNmea(const char* nmea, int length)
 {
-    sendMsg(new LocEngReportNmea(mOwner, nmea, length));
+    sendMsg(new LocEngReportNmea(mLocEngAdapter->getOwner(), nmea, length));
+}
+
+inline void LocEngAdapter::reportNmea(const char* nmea, int length)
+{
+    if (!mUlp->reportNmea(nmea, length)) {
+        //Report it to HAL
+        mInternalAdapter->reportNmea(nmea, length);
+    }
 }
 
 inline

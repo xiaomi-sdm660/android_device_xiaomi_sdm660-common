@@ -63,6 +63,7 @@ public:
     virtual void stopFixInt();
     virtual void getZppInt();
     virtual void setUlpProxy(UlpProxyBase* ulp);
+    virtual void reportNmea(const char* nmea, int length);
 };
 
 typedef void (*loc_msg_sender)(void* loc_eng_data_p, void* msgp);
