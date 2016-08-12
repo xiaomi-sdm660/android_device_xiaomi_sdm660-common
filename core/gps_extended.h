@@ -50,15 +50,17 @@ struct LocPosMode
     uint32_t min_interval;
     uint32_t preferred_accuracy;
     uint32_t preferred_time;
+    bool share_position;
     char credentials[14];
     char provider[8];
     LocPosMode(LocPositionMode m, GpsPositionRecurrence recr,
                uint32_t gap, uint32_t accu, uint32_t time,
-               const char* cred, const char* prov) :
+               bool sp, const char* cred, const char* prov) :
         mode(m), recurrence(recr),
         min_interval(gap < GPS_MIN_POSSIBLE_FIX_INTERVAL_MS ?
-                                 GPS_MIN_POSSIBLE_FIX_INTERVAL_MS : gap),
-        preferred_accuracy(accu), preferred_time(time) {
+                     GPS_MIN_POSSIBLE_FIX_INTERVAL_MS : gap),
+        preferred_accuracy(accu), preferred_time(time),
+        share_position(sp) {
         memset(credentials, 0, sizeof(credentials));
         memset(provider, 0, sizeof(provider));
         if (NULL != cred) {
@@ -73,7 +75,8 @@ struct LocPosMode
         mode(LOC_POSITION_MODE_MS_BASED),
         recurrence(GPS_POSITION_RECURRENCE_PERIODIC),
         min_interval(GPS_DEFAULT_FIX_INTERVAL_MS),
-        preferred_accuracy(50), preferred_time(120000) {
+        preferred_accuracy(50), preferred_time(120000),
+        share_position(true) {
         memset(credentials, 0, sizeof(credentials));
         memset(provider, 0, sizeof(provider));
     }
