@@ -19,7 +19,7 @@ endif
 # Compile Linux Kernel
 #----------------------------------------------------------------------
 ifeq ($(KERNEL_DEFCONFIG),)
-    KERNEL_DEFCONFIG := msmcortex_defconfig
+    KERNEL_DEFCONFIG := msmfalcon_defconfig
 endif
 
 ifeq ($(TARGET_KERNEL_SOURCE),)
