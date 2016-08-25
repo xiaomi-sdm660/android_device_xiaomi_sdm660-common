@@ -779,7 +779,7 @@ int IPACM_Lan::handle_del_ipv6_addr(ipacm_event_data_all *data)
 {
 	uint32_t tx_index;
 	uint32_t rt_hdl;
-	int num_v6, clnt_indx;
+	int num_v6 =0, clnt_indx;
 
 	clnt_indx = get_eth_client_index(data->mac_addr);
 	if (clnt_indx == IPACM_INVALID_INDEX)
