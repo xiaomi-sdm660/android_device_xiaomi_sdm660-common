@@ -157,7 +157,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				IPACMDBG_H("Received IPA_WLAN_LINK_DOWN_EVENT\n");
 				handle_down_evt();
 				/* reset the AP-iface category to unknown */
-				ipa_if_cate = UNKNOWN_IF;
+				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_cat = UNKNOWN_IF;
 				IPACM_Iface::ipacmcfg->DelNatIfaces(dev_name); // delete NAT-iface
 				IPACM_Wlan::total_num_wifi_clients = (IPACM_Wlan::total_num_wifi_clients) - \
                                                                      (num_wifi_client);
