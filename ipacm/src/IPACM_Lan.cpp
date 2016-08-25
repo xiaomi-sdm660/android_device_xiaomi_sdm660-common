@@ -967,7 +967,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		rt_rule_entry->at_rear = false;
 		rt_rule_entry->rule.dst = IPA_CLIENT_APPS_LAN_CONS;  //go to A5
 		rt_rule_entry->rule.attrib.attrib_mask = IPA_FLT_DST_ADDR;
-   		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name);
+		strlcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name, sizeof(rt_rule->rt_tbl_name));
 		rt_rule_entry->rule.attrib.u.v4.dst_addr      = data->ipv4_addr;
 		rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
 #ifdef FEATURE_IPA_V3
@@ -1024,7 +1024,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		rt_rule->commit = 1;
 		rt_rule->num_rules = NUM_RULES;
 		rt_rule->ip = data->iptype;
-		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name);
+		strlcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_v6.name, sizeof(rt_rule->rt_tbl_name));
 
 		rt_rule_entry = &rt_rule->rules[0];
 		rt_rule_entry->at_rear = false;
@@ -1060,7 +1060,7 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		dft_rt_rule_hdl[MAX_DEFAULT_v4_ROUTE_RULES + 2*num_dft_rt_v6] = rt_rule_entry->rt_rule_hdl;
 
 		/* setup same rule for v6_wan table*/
-		strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name);
+		strlcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_wan_v6.name, sizeof(rt_rule->rt_tbl_name));
 		if (false == m_routing.AddRoutingRule(rt_rule))
 		{
 			IPACMERR("Routing rule addition failed!\n");
@@ -2048,7 +2048,7 @@ int IPACM_Lan::handle_odu_hdr_init(uint8_t *mac_addr)
 
 								memset(pHeaderDescriptor->hdr[0].name, 0,
 											 sizeof(pHeaderDescriptor->hdr[0].name));
-								strcpy(pHeaderDescriptor->hdr[0].name, IPA_ODU_HDR_NAME_v4);
+								strlcpy(pHeaderDescriptor->hdr[0].name, IPA_ODU_HDR_NAME_v4, sizeof(pHeaderDescriptor->hdr[0].name));
 								pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 								pHeaderDescriptor->hdr[0].hdr_hdl = -1;
 								pHeaderDescriptor->hdr[0].is_partial = 0;
@@ -2128,7 +2128,7 @@ int IPACM_Lan::handle_odu_hdr_init(uint8_t *mac_addr)
 				memset(pHeaderDescriptor->hdr[0].name, 0,
 					 sizeof(pHeaderDescriptor->hdr[0].name));
 
-				strcpy(pHeaderDescriptor->hdr[0].name, IPA_ODU_HDR_NAME_v6);
+				strlcpy(pHeaderDescriptor->hdr[0].name, IPA_ODU_HDR_NAME_v6, sizeof(pHeaderDescriptor->hdr[0].name));
 				pHeaderDescriptor->hdr[0].hdr_len = sCopyHeader.hdr_len;
 				pHeaderDescriptor->hdr[0].hdr_hdl = -1;
 				pHeaderDescriptor->hdr[0].is_partial = 0;
@@ -2195,13 +2195,13 @@ int IPACM_Lan::handle_odu_route_add()
 
 		if (IPA_IP_v4 == tx_prop->tx[tx_index].ip)
 		{
-			strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v4.name);
+			strlcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v4.name, sizeof(rt_rule->rt_tbl_name));
 			rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v4;
 			rt_rule->ip = IPA_IP_v4;
 		}
 		else
 		{
-			strcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v6.name);
+			strlcpy(rt_rule->rt_tbl_name, IPACM_Iface::ipacmcfg->rt_tbl_odu_v6.name, sizeof(rt_rule->rt_tbl_name));
 			rt_rule_entry->rule.hdr_hdl = ODU_hdr_hdl_v6;
 			rt_rule->ip = IPA_IP_v6;
 		}
