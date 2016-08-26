@@ -730,6 +730,12 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				}
 				else if ((data->iptype == IPA_IP_v6) && (ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
+					if(ipv6_prefix[0] == 0 && ipv6_prefix[1] == 0)
+					{
+						IPACMDBG_H("IPv6 default route comes earlier than global IP, ignore.\n");
+						return;
+					}
+
 					if (active_v6 == false)
 					{
 						IPACMDBG_H("\n get default v6 route (dst:00.00.00.00) upstream\n");
@@ -885,6 +891,12 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						(!data->ipv6_addr[0]) && (!data->ipv6_addr[1]) && (!data->ipv6_addr[2]) && (!data->ipv6_addr[3]) &&
 						(active_v6 == false) &&	(ip_type == IPA_IP_v6 || ip_type == IPA_IP_MAX))
 				{
+					if(ipv6_prefix[0] == 0 && ipv6_prefix[1] == 0)
+					{
+						IPACMDBG_H("IPv6 default route comes earlier than global IP, ignore.\n");
+						return;
+					}
+
 					IPACMDBG_H("\n get default v6 route (dst:00.00.00.00)\n");
 					IPACMDBG_H(" IPV6 dst: %08x:%08x:%08x:%08x \n",
 							data->ipv6_addr[0], data->ipv6_addr[1], data->ipv6_addr[2], data->ipv6_addr[3]);
@@ -1206,8 +1218,6 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 
 	is_default_gateway = true;
 	IPACMDBG_H("Default route is added to iface %s.\n", dev_name);
-	memcpy(backhaul_ipv6_prefix, ipv6_prefix, sizeof(backhaul_ipv6_prefix));
-	IPACMDBG_H("Setup backhaul ipv6 prefix to be 0x%08x%08x.\n", backhaul_ipv6_prefix[0], backhaul_ipv6_prefix[1]);
 
 	if(IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].if_mode == BRIDGE)
 	{
@@ -1533,6 +1543,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	}
 	else
 	{
+		memcpy(backhaul_ipv6_prefix, ipv6_prefix, sizeof(backhaul_ipv6_prefix));
+		IPACMDBG_H("Setup backhaul ipv6 prefix to be 0x%08x%08x.\n", backhaul_ipv6_prefix[0], backhaul_ipv6_prefix[1]);
+
 		IPACM_Wan::wan_up_v6 = true;
 		active_v6 = true;
 		memcpy(IPACM_Wan::wan_up_dev_name,

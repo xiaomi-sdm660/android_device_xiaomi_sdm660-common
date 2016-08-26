@@ -3897,6 +3897,12 @@ int IPACM_Lan::eth_bridge_add_hdr_proc_ctx(ipa_hdr_l2_type peer_l2_hdr_type, uin
 	uint32_t hdr_template;
 	ipa_ioc_add_hdr_proc_ctx* pHeaderProcTable = NULL;
 
+	if(tx_prop == NULL)
+	{
+		IPACMERR("No tx prop.\n");
+		return IPACM_FAILURE;
+	}
+
 	len = sizeof(struct ipa_ioc_add_hdr_proc_ctx) + sizeof(struct ipa_hdr_proc_ctx_add);
 	pHeaderProcTable = (ipa_ioc_add_hdr_proc_ctx*)malloc(len);
 	if(pHeaderProcTable == NULL)
@@ -4059,7 +4065,8 @@ int IPACM_Lan::eth_bridge_modify_rt_rule(uint8_t *mac, uint32_t hdr_proc_ctx_hdl
 	{
 		if (tx_prop->tx[index].ip == iptype)
 		{
-			if (rt_rule->num_rules >= rt_rule_count)
+			if (rt_rule->num_rules >= rt_rule_count ||
+				rt_rule->num_rules >= MAX_NUM_PROP)
 			{
 				IPACMERR("Number of routing rules exceeds limit.\n");
 				res = IPACM_FAILURE;
