@@ -888,6 +888,12 @@ void IPACM_LanToLan_Iface::handle_intra_interface_info()
 {
 	uint32_t hdr_proc_ctx_hdl;
 
+	if(m_p_iface->tx_prop == NULL)
+	{
+		IPACMERR("No tx prop.\n");
+		return;
+	}
+
 	m_intra_interface_info.peer = this;
 
 	snprintf(m_intra_interface_info.rt_tbl_name_for_flt[IPA_IP_v4], IPA_RESOURCE_NAME_MAX,

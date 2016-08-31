@@ -182,6 +182,7 @@ public:
 
 private:
 
+	bool is_ipv6_frag_firewall_flt_rule_installed;
 	uint32_t ipv6_frag_firewall_flt_rule_hdl;
 	uint32_t *wan_route_rule_v4_hdl;
 	uint32_t *wan_route_rule_v6_hdl;
@@ -457,9 +458,6 @@ private:
 	/* configure the initial firewall filter rules */
 	int config_dft_firewall_rules_ex(struct ipa_flt_rule_add* rules, int rule_offset,
 		ipa_ip_type iptype);
-
-	/* Change IP Type.*/
-	void config_ip_type(ipa_ip_type iptype);
 
 	/* init filtering rule in wan dl filtering table */
 	int init_fl_rule_ex(ipa_ip_type iptype);
