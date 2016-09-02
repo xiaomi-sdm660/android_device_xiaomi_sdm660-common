@@ -281,6 +281,10 @@ typedef struct _ipacm_event_data_iptype
 	int if_index;
 	int if_index_tether;
 	enum ipa_ip_type iptype;
+#ifdef IPA_WAN_MSG_IPv6_ADDR_GW_LEN
+	uint32_t  ipv4_addr_gw;
+	uint32_t  ipv6_addr_gw[4];
+#endif
 } ipacm_event_data_iptype;
 
 

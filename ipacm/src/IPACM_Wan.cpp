@@ -719,7 +719,15 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					if (active_v4 == false)
 					{
+#ifdef IPA_WAN_MSG_IPv6_ADDR_GW_LEN
+						IPACMDBG_H("adding routing table(upstream), dev (%s) ip-type(%d) default gw (%x)\n", dev_name,data->iptype, wan_v4_addr_gw);
+						wan_v4_addr_gw = data->ipv4_addr_gw;
+						wan_v4_addr_gw_set = true;
+						/* Check & construct STA header */
+						handle_sta_header_add_evt();
+#else
 						IPACMDBG_H("adding routing table(upstream), dev (%s) ip-type(%d)\n", dev_name,data->iptype);
+#endif
 						handle_route_add_evt(data->iptype);
 					}
 #ifdef FEATURE_IPA_ANDROID
@@ -738,6 +746,17 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 					if (active_v6 == false)
 					{
 						IPACMDBG_H("\n get default v6 route (dst:00.00.00.00) upstream\n");
+#ifdef IPA_WAN_MSG_IPv6_ADDR_GW_LEN
+						IPACMDBG_H(" IPV6 gateway: %08x:%08x:%08x:%08x \n",
+								data->ipv6_addr_gw[0], data->ipv6_addr_gw[1], data->ipv6_addr_gw[2], data->ipv6_addr_gw[3]);
+						wan_v6_addr_gw[0] = data->ipv6_addr_gw[0];
+						wan_v6_addr_gw[1] = data->ipv6_addr_gw[1];
+						wan_v6_addr_gw[2] = data->ipv6_addr_gw[2];
+						wan_v6_addr_gw[3] = data->ipv6_addr_gw[3];
+						wan_v6_addr_gw_set = true;
+						/* Check & construct STA header */
+						handle_sta_header_add_evt();
+#endif
 						handle_route_add_evt(data->iptype);
 					}
 #ifdef FEATURE_IPA_ANDROID
@@ -752,7 +771,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				{
 					IPACMDBG_H("Received v4 IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT for other iface (%s)\n", IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name);
 					IPACMDBG_H("need clean default v4 route (dst:0.0.0.0) for old iface (%s)\n", dev_name);
-//					wan_v4_addr_gw_set = false; /* android requires CnE change too */
+					wan_v4_addr_gw_set = false;
 					if(m_is_sta_mode == Q6_WAN)
 					{
 						del_wan_firewall_rule(IPA_IP_v4);
@@ -795,7 +814,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 				if ((data->iptype == IPA_IP_v4) && (active_v4 == true))
 				{
 					IPACMDBG_H("get del default v4 route (dst:0.0.0.0)\n");
-//					wan_v4_addr_gw_set = false; /* android requires CnE change too */
+					wan_v4_addr_gw_set = false;
 #ifdef FEATURE_IPA_ANDROID
 					/* using ipa_if_index, not netdev_index */
 					post_wan_down_tether_evt(data->iptype, iface_ipa_index_query(data->if_index_tether));

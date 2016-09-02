@@ -49,6 +49,11 @@
 			   <Category>WAN</Category>
 			</Iface>
 			<Iface>
+			   <Name>softap0</Name>
+			   <Category>UNKNOWN</Category>
+			   <WlanMode>full</WlanMode>
+			</Iface>
+			<Iface>
 			   <Name>wlan0</Name>
 			   <Category>UNKNOWN</Category>
 			   <WlanMode>full</WlanMode>
