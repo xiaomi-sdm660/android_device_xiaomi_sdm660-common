@@ -1016,8 +1016,9 @@ typedef enum
 typedef struct
 {
     size_t      size;
-    uint8_t     gnssSvId;
-    /* GPS: 1-32, GLO: 65-96, 0: Invalid
+    uint16_t     gnssSvId;
+    /* GPS: 1-32, GLO: 65-96, 0: Invalid,
+       SBAS: 120-151, BDS:201-237,GAL:301 to 336
        All others are reserved
     */
     int8_t      freqNum;
