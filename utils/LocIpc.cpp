@@ -36,7 +36,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <array>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 #include <string>
 #include <vector>
 #include "gps_extended_c.h"

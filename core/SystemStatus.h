@@ -30,9 +30,10 @@
 #define __SYSTEM_STATUS__
 
 #include <stdint.h>
-#include <string>
+#include <sys/time.h>
 #include <vector>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 #include <MsgTask.h>
 #include <IDataItemCore.h>
 #include <IOsObserver.h>

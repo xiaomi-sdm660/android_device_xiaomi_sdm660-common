@@ -30,9 +30,10 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_core_log"
 
+#include <log_util.h>
 #include <loc_log.h>
 #include <loc_core_log.h>
-#include <platform_lib_includes.h>
+#include <loc_pla.h>
 
 void LocPosMode::logv() const
 {

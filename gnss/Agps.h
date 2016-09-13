@@ -34,7 +34,8 @@
 #include <list>
 #include <MsgTask.h>
 #include <gps_extended_c.h>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 
 /* ATL callback function pointers
  * Passed in by Adapter to AgpsManager */

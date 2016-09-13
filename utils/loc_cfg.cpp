@@ -38,12 +38,12 @@
 #include <unistd.h>
 #include <time.h>
 #include <loc_cfg.h>
-#include <platform_lib_includes.h>
+#include <loc_pla.h>
 #include <loc_misc_utils.h>
 #ifdef USE_GLIB
 #include <glib.h>
 #endif
-#include "platform_lib_includes.h"
+#include "log_util.h"
 
 /*=============================================================================
  *
@@ -70,6 +70,17 @@ typedef struct loc_param_v_type
     int param_int_value;
     double param_double_value;
 }loc_param_v_type;
+
+// Reference below arrays wherever needed to avoid duplicating
+// same conf path string over and again in location code.
+const char LOC_PATH_GPS_CONF[] = LOC_PATH_GPS_CONF_STR;
+const char LOC_PATH_IZAT_CONF[] = LOC_PATH_IZAT_CONF_STR;
+const char LOC_PATH_FLP_CONF[] = LOC_PATH_FLP_CONF_STR;
+const char LOC_PATH_LOWI_CONF[] = LOC_PATH_LOWI_CONF_STR;
+const char LOC_PATH_SAP_CONF[] = LOC_PATH_SAP_CONF_STR;
+const char LOC_PATH_APDR_CONF[] = LOC_PATH_APDR_CONF_STR;
+const char LOC_PATH_XTWIFI_CONF[] = LOC_PATH_XTWIFI_CONF_STR;
+const char LOC_PATH_QUIPC_CONF[] = LOC_PATH_QUIPC_CONF_STR;
 
 /*===========================================================================
 FUNCTION loc_set_config_entry

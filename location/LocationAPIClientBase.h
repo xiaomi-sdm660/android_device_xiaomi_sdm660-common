@@ -36,7 +36,8 @@
 #include <map>
 
 #include "LocationAPI.h"
-#include "platform_lib_log_util.h"
+#include <loc_pla.h>
+#include <log_util.h>
 
 enum SESSION_MODE {
     SESSION_MODE_NONE = 0,

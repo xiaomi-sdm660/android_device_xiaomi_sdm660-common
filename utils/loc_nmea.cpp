@@ -31,7 +31,8 @@
 #define LOG_TAG "LocSvc_nmea"
 #include <loc_nmea.h>
 #include <math.h>
-#include <platform_lib_includes.h>
+#include <log_util.h>
+#include <loc_pla.h>
 
 #define GLONASS_SV_ID_OFFSET 64
 #define MAX_SATELLITES_IN_USE 12

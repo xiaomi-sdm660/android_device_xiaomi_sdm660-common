@@ -29,7 +29,8 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 #include <ClientIndex.h>
 #include <IDataItemObserver.h>
 #include <DataItemId.h>

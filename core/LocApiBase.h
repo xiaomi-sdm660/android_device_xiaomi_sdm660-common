@@ -34,7 +34,7 @@
 #include <gps_extended.h>
 #include <LocationAPI.h>
 #include <MsgTask.h>
-#include <platform_lib_log_util.h>
+#include <log_util.h>
 
 namespace loc_core {
 class ContextBase;
