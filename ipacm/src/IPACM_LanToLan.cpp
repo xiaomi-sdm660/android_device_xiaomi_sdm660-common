@@ -205,11 +205,15 @@ void IPACM_LanToLan::handle_iface_up(ipacm_event_eth_bridge *data)
 		{
 			for(it = ++m_iface.begin(); it != m_iface.end(); it++)
 			{
-				/* populate hdr_proc_ctx and routing table handle */
-				handle_new_iface_up(&front_iface, &(*it));
+				/* add peer info only when both interfaces support inter-interface communication */
+				if(it->get_m_support_inter_iface_offload())
+				{
+					/* populate hdr_proc_ctx and routing table handle */
+					handle_new_iface_up(&front_iface, &(*it));
 
-				/* add client specific routing rule on existing interface */
-				it->add_client_rt_rule_for_new_iface();
+					/* add client specific routing rule on existing interface */
+					it->add_client_rt_rule_for_new_iface();
+				}
 			}
 
 			/* add client specific filtering rule on new interface */
