@@ -1248,16 +1248,7 @@ LocEngReqRelWifi::~LocEngReqRelWifi() {
 }
 void LocEngReqRelWifi::proc() const {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mLocEng;
-    if (locEng->wifi_nif) {
-        WIFISubscriber s(locEng->wifi_nif, mSSID, mPassword, mSenderId);
-        if (mIsReq) {
-            locEng->wifi_nif->subscribeRsrc((Subscriber*)&s);
-        } else {
-            locEng->wifi_nif->unsubscribeRsrc((Subscriber*)&s);
-        }
-    } else {
-        locEng->adapter->atlOpenStatus(mSenderId, 0, NULL, -1, mType);
-    }
+    locEng->adapter->atlOpenStatus(mSenderId, 0, NULL, -1, mType);
 }
 inline void LocEngReqRelWifi::locallog() const {
     LOC_LOGV("%s - senderId: %d, ssid: %s, password: %s",
@@ -2345,12 +2336,10 @@ void loc_eng_agps_init(loc_eng_data_s_type &loc_eng_data, AGpsExtCallbacks* call
         EXIT_LOG(%s, VOID_RET);
         return;
     }
-    bool agpsCapable = ((gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) ||
-                        (gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB));
     LocEngAdapter* adapter = loc_eng_data.adapter;
     loc_eng_data.agps_status_cb = callbacks->status_cb;
 
-    if (agpsCapable && NULL != adapter) {
+    if (NULL != adapter) {
         if (adapter->mSupportsAgpsRequests) {
             adapter->sendMsg(new LocEngAgnssNifInit(&loc_eng_data));
         }
@@ -2373,25 +2362,27 @@ static void createAgnssNifs(loc_eng_data_s_type& locEng) {
     bool agpsCapable = ((gps_conf.CAPABILITIES & GPS_CAPABILITY_MSA) ||
                         (gps_conf.CAPABILITIES & GPS_CAPABILITY_MSB));
     LocEngAdapter* adapter = locEng.adapter;
-    if (agpsCapable && NULL != adapter && adapter->mSupportsAgpsRequests) {
+    if (NULL != adapter && adapter->mSupportsAgpsRequests) {
         if (NULL == locEng.internet_nif) {
             locEng.internet_nif= new AgpsStateMachine(servicerTypeAgps,
                                                        (void *)locEng.agps_status_cb,
                                                        AGPS_TYPE_WWAN_ANY,
                                                        false);
         }
-        if (NULL == locEng.agnss_nif) {
-            locEng.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
-                                                     (void *)locEng.agps_status_cb,
-                                                     AGPS_TYPE_SUPL,
-                                                     false);
-        }
-        if (NULL == locEng.ds_nif &&
-            gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL &&
-            0 == adapter->initDataServiceClient()) {
-            locEng.ds_nif = new DSStateMachine(servicerTypeExt,
-                                                 (void *)dataCallCb,
-                                                 locEng.adapter);
+        if (agpsCapable) {
+            if (NULL == locEng.agnss_nif) {
+                locEng.agnss_nif = new AgpsStateMachine(servicerTypeAgps,
+                                                         (void *)locEng.agps_status_cb,
+                                                         AGPS_TYPE_SUPL,
+                                                         false);
+            }
+            if (NULL == locEng.ds_nif &&
+                gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL &&
+                0 == adapter->initDataServiceClient()) {
+                locEng.ds_nif = new DSStateMachine(servicerTypeExt,
+                                                     (void *)dataCallCb,
+                                                     locEng.adapter);
+            }
         }
     }
 }
@@ -2401,10 +2392,6 @@ static AgpsStateMachine*
 getAgpsStateMachine(loc_eng_data_s_type &locEng, AGpsExtType agpsType) {
     AgpsStateMachine* stateMachine;
     switch (agpsType) {
-    case AGPS_TYPE_WIFI: {
-        stateMachine = locEng.wifi_nif;
-        break;
-    }
     case AGPS_TYPE_INVALID:
     case AGPS_TYPE_SUPL: {
         stateMachine = locEng.agnss_nif;
