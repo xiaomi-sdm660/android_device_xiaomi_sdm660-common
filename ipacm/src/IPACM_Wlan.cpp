@@ -1259,7 +1259,7 @@ int IPACM_Wlan::handle_wlan_client_route_rule(uint8_t *mac_addr, ipa_ip_type ipt
 				rt_rule_entry->rule.attrib.u.v4.dst_addr = get_client_memptr(wlan_client, wlan_index)->v4_addr;
 				rt_rule_entry->rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
 #ifdef FEATURE_IPA_V3
-				rt_rule_entry->rule.hashable = true;
+				rt_rule_entry->rule.hashable = false;
 #endif
 				if (false == m_routing.AddRoutingRule(rt_rule))
 				{
