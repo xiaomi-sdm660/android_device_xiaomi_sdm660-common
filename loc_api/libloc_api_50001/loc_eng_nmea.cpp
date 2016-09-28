@@ -156,6 +156,9 @@ void loc_eng_nmea_send(char *pNmea, int length, loc_eng_data_s_type *loc_eng_dat
     int64_t now = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
     if (loc_eng_data_p->nmea_cb != NULL)
         loc_eng_data_p->nmea_cb(now, pNmea, length);
+
+    loc_eng_data_p->adapter->getUlpProxy()->reportNmea(pNmea, length);
+
     LOC_LOGD("NMEA <%s", pNmea);
 }
 

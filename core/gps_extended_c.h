@@ -78,6 +78,7 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_EXT_DR   0X0080
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
+#define ULP_MAX_NMEA_STRING_SIZE 201
 
 /*Emergency SUPL*/
 #define GPS_NI_TYPE_EMERGENCY_SUPL    4
@@ -109,6 +110,14 @@ typedef struct {
     char            map_url[GPS_LOCATION_MAP_URL_SIZE];
     unsigned char   map_index[GPS_LOCATION_MAP_INDEX_SIZE];
 } UlpLocation;
+
+typedef struct {
+    /** set to sizeof(UlpNmea) */
+    size_t          size;
+    char            nmea_str[ULP_MAX_NMEA_STRING_SIZE];
+    unsigned int    len;
+} UlpNmea;
+
 
 /** AGPS type */
 typedef int16_t AGpsExtType;

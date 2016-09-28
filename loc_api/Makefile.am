@@ -6,7 +6,11 @@ AM_CFLAGS = \
      $(LOCPLA_CFLAGS) \
      -fno-short-enums \
      -D__func__=__PRETTY_FUNCTION__ \
-     -DTARGET_USES_QCOM_BSP
+     -DTARGET_USES_QCOM_BSP \
+     -std=c++11
+
+AM_CPPFLAGS = \
+     -std=c++11
 
 libloc_eng_so_la_h_sources = \
      loc_eng_dmn_conn_glue_msg.h \
