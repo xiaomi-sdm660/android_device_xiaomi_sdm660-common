@@ -2602,54 +2602,6 @@ int IPACM_Lan::handle_down_evt()
 	}
 
 	IPACMDBG_H("Finished delete default iface ipv6 rules \n ");
-	/* clean eth-client header, routing rules */
-	IPACMDBG_H("left %d eth clients need to be deleted \n ", num_eth_client);
-	for (i = 0; i < num_eth_client; i++)
-	{
-			/* First reset nat rules and then route rules */
-			if(get_client_memptr(eth_client, i)->ipv4_set == true)
-			{
-				IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(eth_client, i)->v4_addr);
-				CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, i)->v4_addr);
-			}
-
-			if (delete_eth_rtrules(i, IPA_IP_v4))
-			{
-				IPACMERR("unbale to delete ecm-client v4 route rules for index %d\n", i);
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-
-			if (delete_eth_rtrules(i, IPA_IP_v6))
-			{
-				IPACMERR("unbale to delete ecm-client v6 route rules for index %d\n", i);
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-
-			IPACMDBG_H("Delete %d client header\n", num_eth_client);
-
-
-			if(get_client_memptr(eth_client, i)->ipv4_header_set == true)
-			{
-				if (m_header.DeleteHeaderHdl(get_client_memptr(eth_client, i)->hdr_hdl_v4)
-					== false)
-				{
-					res = IPACM_FAILURE;
-					goto fail;
-				}
-			}
-
-			if(get_client_memptr(eth_client, i)->ipv6_header_set == true)
-			{
-			if (m_header.DeleteHeaderHdl(get_client_memptr(eth_client, i)->hdr_hdl_v6)
-					== false)
-			{
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-			}
-	} /* end of for loop */
 
 	/* free the edm clients cache */
 	IPACMDBG_H("Free ecm clients cache\n");
@@ -2660,11 +2612,6 @@ int IPACM_Lan::handle_down_evt()
 	{
 		IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 		IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
-	}
-	/* check software routing fl rule hdl */
-	if (softwarerouting_act == true && rx_prop != NULL)
-	{
-		handle_software_routing_disable();
 	}
 
 	eth_bridge_post_event(IPA_ETH_BRIDGE_IFACE_DOWN, IPA_IP_MAX, NULL);
@@ -2688,6 +2635,56 @@ int IPACM_Lan::handle_down_evt()
 	}
 #endif /* defined(FEATURE_IPA_ANDROID)*/
 fail:
+	/* clean eth-client header, routing rules */
+	IPACMDBG_H("left %d eth clients need to be deleted \n ", num_eth_client);
+	for (i = 0; i < num_eth_client; i++)
+	{
+		/* First reset nat rules and then route rules */
+		if(get_client_memptr(eth_client, i)->ipv4_set == true)
+		{
+			IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(eth_client, i)->v4_addr);
+			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, i)->v4_addr);
+		}
+
+		if (delete_eth_rtrules(i, IPA_IP_v4))
+		{
+			IPACMERR("unbale to delete ecm-client v4 route rules for index %d\n", i);
+			res = IPACM_FAILURE;
+		}
+
+		if (delete_eth_rtrules(i, IPA_IP_v6))
+		{
+			IPACMERR("unbale to delete ecm-client v6 route rules for index %d\n", i);
+			res = IPACM_FAILURE;
+		}
+
+		IPACMDBG_H("Delete %d client header\n", num_eth_client);
+
+		if(get_client_memptr(eth_client, i)->ipv4_header_set == true)
+		{
+			if (m_header.DeleteHeaderHdl(get_client_memptr(eth_client, i)->hdr_hdl_v4)
+				== false)
+			{
+				res = IPACM_FAILURE;
+			}
+		}
+
+		if(get_client_memptr(eth_client, i)->ipv6_header_set == true)
+		{
+			if (m_header.DeleteHeaderHdl(get_client_memptr(eth_client, i)->hdr_hdl_v6)
+					== false)
+			{
+				res = IPACM_FAILURE;
+			}
+		}
+	} /* end of for loop */
+
+	/* check software routing fl rule hdl */
+	if (softwarerouting_act == true && rx_prop != NULL)
+	{
+		handle_software_routing_disable();
+	}
+
 	if (odu_route_rule_v4_hdl != NULL)
 	{
 		free(odu_route_rule_v4_hdl);

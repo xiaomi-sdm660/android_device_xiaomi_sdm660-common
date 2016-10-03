@@ -1653,66 +1653,7 @@ int IPACM_Wlan::handle_down_evt()
 	}
 	IPACMDBG_H("finished deleting default RT rules\n ");
 
-	/* check software routing fl rule hdl */
-	if (softwarerouting_act == true && rx_prop != NULL )
-	{
-		IPACMDBG_H("Delete sw routing filtering rules\n");
-		IPACM_Iface::handle_software_routing_disable();
-	}
-	IPACMDBG_H("finished delete software-routing filtering rules\n ");
-
-
-	/* clean wifi-client header, routing rules */
-	/* clean wifi client rule*/
-	IPACMDBG_H("left %d wifi clients need to be deleted \n ", num_wifi_client);
-
 	eth_bridge_post_event(IPA_ETH_BRIDGE_IFACE_DOWN, IPA_IP_MAX, NULL);
-
-	for (i = 0; i < num_wifi_client; i++)
-	{
-		/* First reset nat rules and then route rules */
-		if(get_client_memptr(wlan_client, i)->ipv4_set == true)
-		{
-	        IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(wlan_client, i)->v4_addr);
-			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(wlan_client, i)->v4_addr);
-		}
-
-		if (delete_default_qos_rtrules(i, IPA_IP_v4))
-		{
-			IPACMERR("unbale to delete v4 default qos route rules for index: %d\n", i);
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-
-		if (delete_default_qos_rtrules(i, IPA_IP_v6))
-		{
-			IPACMERR("unbale to delete v6 default qos route rules for index: %d\n", i);
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-
-		IPACMDBG_H("Delete %d client header\n", num_wifi_client);
-
-		if(get_client_memptr(wlan_client, i)->ipv4_header_set == true)
-		{
-			if (m_header.DeleteHeaderHdl(get_client_memptr(wlan_client, i)->hdr_hdl_v4)
-				== false)
-			{
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-		}
-
-		if(get_client_memptr(wlan_client, i)->ipv6_header_set == true)
-		{
-			if (m_header.DeleteHeaderHdl(get_client_memptr(wlan_client, i)->hdr_hdl_v6)
-					== false)
-			{
-				res = IPACM_FAILURE;
-				goto fail;
-			}
-		}
-	} /* end of for loop */
 
 	/* free the wlan clients cache */
 	IPACMDBG_H("Free wlan clients cache\n");
@@ -1733,6 +1674,59 @@ int IPACM_Wlan::handle_down_evt()
 #endif /* defined(FEATURE_IPA_ANDROID)*/
 
 fail:
+	/* clean wifi-client header, routing rules */
+	/* clean wifi client rule*/
+	IPACMDBG_H("left %d wifi clients need to be deleted \n ", num_wifi_client);
+	for (i = 0; i < num_wifi_client; i++)
+	{
+		/* First reset nat rules and then route rules */
+		if(get_client_memptr(wlan_client, i)->ipv4_set == true)
+		{
+	        IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(wlan_client, i)->v4_addr);
+			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(wlan_client, i)->v4_addr);
+		}
+
+		if (delete_default_qos_rtrules(i, IPA_IP_v4))
+		{
+			IPACMERR("unbale to delete v4 default qos route rules for index: %d\n", i);
+			res = IPACM_FAILURE;
+		}
+
+		if (delete_default_qos_rtrules(i, IPA_IP_v6))
+		{
+			IPACMERR("unbale to delete v6 default qos route rules for index: %d\n", i);
+			res = IPACM_FAILURE;
+		}
+
+		IPACMDBG_H("Delete %d client header\n", num_wifi_client);
+
+		if(get_client_memptr(wlan_client, i)->ipv4_header_set == true)
+		{
+			if (m_header.DeleteHeaderHdl(get_client_memptr(wlan_client, i)->hdr_hdl_v4)
+				== false)
+			{
+				res = IPACM_FAILURE;
+			}
+		}
+
+		if(get_client_memptr(wlan_client, i)->ipv6_header_set == true)
+		{
+			if (m_header.DeleteHeaderHdl(get_client_memptr(wlan_client, i)->hdr_hdl_v6)
+					== false)
+			{
+				res = IPACM_FAILURE;
+			}
+		}
+	} /* end of for loop */
+
+	/* check software routing fl rule hdl */
+	if (softwarerouting_act == true && rx_prop != NULL )
+	{
+		IPACMDBG_H("Delete sw routing filtering rules\n");
+		IPACM_Iface::handle_software_routing_disable();
+	}
+	IPACMDBG_H("finished delete software-routing filtering rules\n ");
+
 	/* Delete corresponding ipa_rm_resource_name of RX-endpoint after delete all IPV4V6 FT-rule */
 	if (rx_prop != NULL)
 	{
