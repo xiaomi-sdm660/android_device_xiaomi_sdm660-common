@@ -260,7 +260,9 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 {
 	int ret = 0, cnt, num_rules = 0, pos = 0;
 	ipa_install_fltr_rule_req_msg_v01 qmi_rule_msg;
+#ifdef FEATURE_IPA_V3
 	ipa_install_fltr_rule_req_ex_msg_v01 qmi_rule_ex_msg;
+#endif
 
 	int fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
 	if(fd_wwan_ioctl < 0)
