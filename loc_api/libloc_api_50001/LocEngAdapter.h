@@ -240,9 +240,9 @@ public:
     {
         return mLocApi->setLPPeProtocol(lppeCP, lppeUP);
     }
-    inline virtual int initDataServiceClient()
+    inline virtual int initDataServiceClient(bool isDueToSsr)
     {
-        return mLocApi->initDataServiceClient();
+        return mLocApi->initDataServiceClient(isDueToSsr);
     }
     inline virtual int openAndStartDataCall()
     {
@@ -255,6 +255,10 @@ public:
     inline virtual void closeDataCall()
     {
         mLocApi->closeDataCall();
+    }
+    inline virtual void releaseDataServiceClient()
+    {
+        mLocApi->releaseDataServiceClient();
     }
     inline enum loc_api_adapter_err
         getZpp(GpsLocation &zppLoc, LocPosTechMask &tech_mask)
