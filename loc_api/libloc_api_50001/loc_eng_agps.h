@@ -34,7 +34,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <hardware/gps.h>
 #include <gps_extended.h>
 #include <loc_core_log.h>
 #include <linked_list.h>
@@ -68,7 +67,7 @@ typedef enum {
 //DS Callback struct
 typedef struct {
     LocEngAdapter *mAdapter;
-    AGpsStatusValue action;
+    LocAGpsStatusValue action;
 }dsCbData;
 
 // information bundle for subscribers
@@ -171,12 +170,12 @@ public:
 };
 
 class AGpsServicer : public Servicer {
-    void (*callbackAGps)(AGpsStatus* status);
+    void (*callbackAGps)(LocAGpsStatus* status);
 public:
     int requestRsrc(void *cb_data);
     AGpsServicer() {}
     AGpsServicer(void *cb_func)
-    { callbackAGps = (void(*)(AGpsStatus *))(cb_func); }
+    { callbackAGps = (void(*)(LocAGpsStatus *))(cb_func); }
     virtual ~AGpsServicer(){}
     inline virtual char *whoami() {return (char*)"AGpsServicer";}
 };
@@ -232,7 +231,7 @@ public:
     virtual void onRsrcEvent(AgpsRsrcStatus event);
 
     // put the data together and send the FW
-    virtual int sendRsrcRequest(AGpsStatusValue action) const;
+    virtual int sendRsrcRequest(LocAGpsStatusValue action) const;
 
     //if list is empty, linked_list_empty returns 1
     //else if list is not empty, returns 0
@@ -260,7 +259,7 @@ public:
     DSStateMachine(servicerType type,
                    void *cb_func,
                    LocEngAdapter* adapterHandle);
-    int sendRsrcRequest(AGpsStatusValue action) const;
+    int sendRsrcRequest(LocAGpsStatusValue action) const;
     void onRsrcEvent(AgpsRsrcStatus event);
     void retryCallback();
     void informStatus(AgpsRsrcStatus status, int ID) const;

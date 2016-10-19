@@ -63,7 +63,7 @@ public:
         (void)loc_technology_mask;
         return false;
     }
-    inline virtual bool reportSv(GnssSvStatus &svStatus,
+    inline virtual bool reportSv(LocGnssSvStatus &svStatus,
                                  GpsLocationExtended &locationExtended,
                                  void* svExt) {
         (void)svStatus;
@@ -81,7 +81,7 @@ public:
        (void)svPolynomial;
        return false;
     }
-    inline virtual bool reportStatus(GpsStatusValue status) {
+    inline virtual bool reportStatus(LocGpsStatusValue status) {
 
         (void)status;
         return false;
@@ -107,7 +107,7 @@ public:
         (void)number_of_locations;
         return false;
     }
-    inline virtual bool reportDeleteAidingData(GpsAidingData aidingData)
+    inline virtual bool reportDeleteAidingData(LocGpsAidingData aidingData)
     {
        (void)aidingData;
        return false;

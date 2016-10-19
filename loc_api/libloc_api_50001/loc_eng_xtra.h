@@ -30,13 +30,11 @@
 #ifndef LOC_ENG_XTRA_H
 #define LOC_ENG_XTRA_H
 
-#include <hardware/gps.h>
-
 // Module data
 typedef struct
 {
    // loc_eng_ioctl_cb_data_s_type   ioctl_cb_data;
-   gps_xtra_download_request      download_request_cb;
+   loc_gps_xtra_download_request      download_request_cb;
    report_xtra_server             report_xtra_server_cb;
 
    // XTRA data buffer

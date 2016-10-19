@@ -115,28 +115,28 @@ public:
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask =
                                   LOC_POS_TECH_MASK_DEFAULT);
-    void reportSv(GnssSvStatus &svStatus,
+    void reportSv(LocGnssSvStatus &svStatus,
                   GpsLocationExtended &locationExtended,
                   void* svExt);
     void reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet);
     void reportSvPolynomial(GnssSvPolynomial &svPolynomial);
-    void reportStatus(GpsStatusValue status);
+    void reportStatus(LocGpsStatusValue status);
     void reportNmea(const char* nmea, int length);
     void reportXtraServer(const char* url1, const char* url2,
                           const char* url3, const int maxlength);
     void requestXtraData();
     void requestTime();
     void requestLocation();
-    void requestATL(int connHandle, AGpsType agps_type);
+    void requestATL(int connHandle, LocAGpsType agps_type);
     void releaseATL(int connHandle);
     void requestSuplES(int connHandle);
     void reportDataCallOpened();
     void reportDataCallClosed();
-    void requestNiNotify(GpsNiNotification &notify, const void* data);
+    void requestNiNotify(LocGpsNiNotification &notify, const void* data);
     void saveSupportedMsgList(uint64_t supportedMsgList);
-    void reportGnssMeasurementData(GnssData &gnssMeasurementData);
+    void reportGnssMeasurementData(LocGnssData &gnssMeasurementData);
     void saveSupportedFeatureList(uint8_t *featureList);
-    void reportWwanZppFix(GpsLocation &zppLoc);
+    void reportWwanZppFix(LocGpsLocation &zppLoc);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -149,7 +149,7 @@ public:
     virtual enum loc_api_adapter_err
         stopFix();
     virtual enum loc_api_adapter_err
-        deleteAidingData(GpsAidingData f);
+        deleteAidingData(LocGpsAidingData f);
     virtual enum loc_api_adapter_err
         enableData(int enable);
     virtual enum loc_api_adapter_err
@@ -157,13 +157,13 @@ public:
     virtual enum loc_api_adapter_err
         injectPosition(double latitude, double longitude, float accuracy);
     virtual enum loc_api_adapter_err
-        setTime(GpsUtcTime time, int64_t timeReference, int uncertainty);
+        setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
     virtual enum loc_api_adapter_err
         setXtraData(char* data, int length);
     virtual enum loc_api_adapter_err
         requestXtraServer();
     virtual enum loc_api_adapter_err
-        atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType);
+        atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, LocAGpsType agpsType);
     virtual enum loc_api_adapter_err
         atlCloseStatus(int handle, int is_succ);
     virtual enum loc_api_adapter_err
@@ -174,7 +174,7 @@ public:
         setServer(unsigned int ip, int port,
                   LocServerType type);
     virtual enum loc_api_adapter_err
-        informNiResponse(GpsUserResponseType userResponse, const void* passThroughData);
+        informNiResponse(LocGpsUserResponseType userResponse, const void* passThroughData);
     virtual enum loc_api_adapter_err
         setSUPLVersion(uint32_t version);
     virtual enum loc_api_adapter_err
@@ -212,15 +212,15 @@ public:
     virtual enum loc_api_adapter_err
         getWwanZppFix();
     virtual enum loc_api_adapter_err
-        getBestAvailableZppFix(GpsLocation & zppLoc);
+        getBestAvailableZppFix(LocGpsLocation & zppLoc);
     virtual enum loc_api_adapter_err
-        getBestAvailableZppFix(GpsLocation & zppLoc, LocPosTechMask & tech_mask);
+        getBestAvailableZppFix(LocGpsLocation & zppLoc, LocPosTechMask & tech_mask);
     virtual int initDataServiceClient(bool isDueToSsr);
     virtual int openAndStartDataCall();
     virtual void stopDataCall();
     virtual void closeDataCall();
     virtual void releaseDataServiceClient();
-    virtual void installAGpsCert(const DerEncodedCertificate* pData,
+    virtual void installAGpsCert(const LocDerEncodedCertificate* pData,
                                  size_t length,
                                  uint32_t slotBitMask);
     inline virtual void setInSession(bool inSession) {

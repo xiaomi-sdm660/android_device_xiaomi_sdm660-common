@@ -62,10 +62,10 @@ static void* ni_thread_proc(void *args);
 
 struct LocEngInformNiResponse : public LocMsg {
     LocEngAdapter* mAdapter;
-    const GpsUserResponseType mResponse;
+    const LocGpsUserResponseType mResponse;
     const void *mPayload;
     inline LocEngInformNiResponse(LocEngAdapter* adapter,
-                                  GpsUserResponseType resp,
+                                  LocGpsUserResponseType resp,
                                   const void* data) :
         LocMsg(), mAdapter(adapter),
         mResponse(resp), mPayload(data)
@@ -109,7 +109,7 @@ RETURN VALUE
 
 ===========================================================================*/
 void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
-                            const GpsNiNotification *notif,
+                            const LocGpsNiNotification *notif,
                             const void* passThrough)
 {
     ENTRY_LOG();
@@ -122,7 +122,7 @@ void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
         return;
     }
 
-    if (notif->ni_type == GPS_NI_TYPE_EMERGENCY_SUPL) {
+    if (notif->ni_type == LOC_GPS_NI_TYPE_EMERGENCY_SUPL) {
         if (NULL != loc_eng_ni_data_p->sessionEs.rawRequest) {
             LOC_LOGW("loc_eng_ni_request_handler, supl es NI in progress, new supl es NI ignored, type: %d",
                      notif->ni_type);
@@ -153,9 +153,9 @@ void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
         pSession->adapter = loc_eng_data.adapter;
 
         /* Fill in notification */
-        ((GpsNiNotification*)notif)->notification_id = pSession->reqID;
+        ((LocGpsNiNotification*)notif)->notification_id = pSession->reqID;
 
-        if (notif->notify_flags == GPS_NI_PRIVACY_OVERRIDE)
+        if (notif->notify_flags == LOC_GPS_NI_PRIVACY_OVERRIDE)
         {
             loc_eng_mute_one_session(loc_eng_data);
         }
@@ -188,7 +188,7 @@ void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
         }
 
         CALLBACK_LOG_CALLFLOW("ni_notify_cb - id", %d, notif->notification_id);
-        loc_eng_data.ni_notify_cb((GpsNiNotification*)notif, gps_conf.SUPL_ES != 0);
+        loc_eng_data.ni_notify_cb((LocGpsNiNotification*)notif, gps_conf.SUPL_ES != 0);
     }
     EXIT_LOG(%s, VOID_RET);
 }
@@ -224,7 +224,7 @@ static void* ni_thread_proc(void *args)
                                     &expire_time);
         if (rc == ETIMEDOUT)
         {
-            pSession->resp = GPS_NI_RESPONSE_NORESP;
+            pSession->resp = LOC_GPS_NI_RESPONSE_NORESP;
             LOC_LOGD("ni_thread_proc-Thread time out after valting for specified time. Ret Val %d\n",rc );
             break;
         }
@@ -242,8 +242,8 @@ static void* ni_thread_proc(void *args)
     LocEngInformNiResponse *msg = NULL;
 
     if (NULL != pSession->rawRequest) {
-        if (pSession->resp != GPS_NI_RESPONSE_IGNORE) {
-            LOC_LOGD("pSession->resp != GPS_NI_RESPONSE_IGNORE \n");
+        if (pSession->resp != LOC_GPS_NI_RESPONSE_IGNORE) {
+            LOC_LOGD("pSession->resp != LOC_GPS_NI_RESPONSE_IGNORE \n");
             msg = new LocEngInformNiResponse(adapter,
                                              pSession->resp,
                                              pSession->rawRequest);
@@ -369,7 +369,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,
-                        int notif_id, GpsUserResponseType user_response)
+                        int notif_id, LocGpsUserResponseType user_response)
 {
     ENTRY_LOG_CALLFLOW();
     loc_eng_ni_data_s_type* loc_eng_ni_data_p = &loc_eng_data.loc_eng_ni_data;
@@ -384,10 +384,10 @@ void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,
         NULL != loc_eng_ni_data_p->sessionEs.rawRequest) {
         pSession = &loc_eng_ni_data_p->sessionEs;
         // ignore any SUPL NI non-Es session if a SUPL NI ES is accepted
-        if (user_response == GPS_NI_RESPONSE_ACCEPT &&
+        if (user_response == LOC_GPS_NI_RESPONSE_ACCEPT &&
             NULL != loc_eng_ni_data_p->session.rawRequest) {
                 pthread_mutex_lock(&loc_eng_ni_data_p->session.tLock);
-                loc_eng_ni_data_p->session.resp = GPS_NI_RESPONSE_IGNORE;
+                loc_eng_ni_data_p->session.resp = LOC_GPS_NI_RESPONSE_IGNORE;
                 loc_eng_ni_data_p->session.respRecvd = TRUE;
                 pthread_cond_signal(&loc_eng_ni_data_p->session.tCond);
                 pthread_mutex_unlock(&loc_eng_ni_data_p->session.tLock);

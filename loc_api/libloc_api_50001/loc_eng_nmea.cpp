@@ -39,7 +39,7 @@
 typedef struct loc_nmea_sv_meta_s
 {
     char talker[3];
-    GnssConstellationType svType;
+    LocGnssConstellationType svType;
     uint32_t mask;
     uint32_t svIdOffset;
 } loc_nmea_sv_meta;
@@ -61,7 +61,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_eng_data_s_type *loc_eng_data_p,
-        loc_nmea_sv_meta& sv_meta, GnssConstellationType svType, bool needCombine)
+        loc_nmea_sv_meta& sv_meta, LocGnssConstellationType svType, bool needCombine)
 {
     if (!loc_eng_data_p)
         return NULL;
@@ -72,17 +72,17 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_eng_data_s_type *loc_eng_data
 
     switch (svType)
     {
-        case GNSS_CONSTELLATION_GPS:
+        case LOC_GNSS_CONSTELLATION_GPS:
             sv_meta.talker[1] = 'P';
             sv_meta.mask = loc_eng_data_p->gps_used_mask;
             break;
-        case GNSS_CONSTELLATION_GLONASS:
+        case LOC_GNSS_CONSTELLATION_GLONASS:
             sv_meta.talker[1] = 'L';
             sv_meta.mask = loc_eng_data_p->glo_used_mask;
             // GLONASS SV ids are from 65-96
             sv_meta.svIdOffset = GLONASS_SV_ID_OFFSET;
             break;
-        case GNSS_CONSTELLATION_GALILEO:
+        case LOC_GNSS_CONSTELLATION_GALILEO:
             sv_meta.talker[1] = 'A';
             sv_meta.mask = loc_eng_data_p->gal_used_mask;
             break;
@@ -251,7 +251,7 @@ uint32_t loc_eng_nmea_generate_GSA(loc_eng_data_s_type *loc_eng_data_p,
         mask = mask >> 1;
     }
 
-    if (svUsedCount == 0 && GNSS_CONSTELLATION_GPS != sv_meta_p->svType)
+    if (svUsedCount == 0 && LOC_GNSS_CONSTELLATION_GPS != sv_meta_p->svType)
         return 0;
 
     if (svUsedCount == 0)
@@ -345,7 +345,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 void loc_eng_nmea_generate_GSV(loc_eng_data_s_type *loc_eng_data_p,
-                              const GnssSvStatus &svStatus,
+                              const LocGnssSvStatus &svStatus,
                               char* sentence,
                               int bufSize,
                               loc_nmea_sv_meta* sv_meta_p)
@@ -500,7 +500,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         // -------------------
 
         count = loc_eng_nmea_generate_GSA(loc_eng_data_p, locationExtended, sentence, sizeof(sentence),
-                loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, GNSS_CONSTELLATION_GPS, true));
+                loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, LOC_GNSS_CONSTELLATION_GPS, true));
         if (count > 0)
         {
             svUsedCount += count;
@@ -512,7 +512,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         // -------------------
 
         count = loc_eng_nmea_generate_GSA(loc_eng_data_p, locationExtended, sentence, sizeof(sentence),
-                loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, GNSS_CONSTELLATION_GLONASS, true));
+                loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, LOC_GNSS_CONSTELLATION_GLONASS, true));
         if (count > 0)
         {
             svUsedCount += count;
@@ -524,7 +524,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         // -------------------
 
         count = loc_eng_nmea_generate_GSA(loc_eng_data_p, locationExtended, sentence, sizeof(sentence),
-                loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, GNSS_CONSTELLATION_GALILEO, true));
+                loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, LOC_GNSS_CONSTELLATION_GALILEO, true));
         if (count > 0)
         {
             svUsedCount += count;
@@ -538,7 +538,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker = sentence;
         lengthRemaining = sizeof(sentence);
 
-        if (location.gpsLocation.flags & GPS_LOCATION_HAS_BEARING)
+        if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_BEARING)
         {
             float magTrack = location.gpsLocation.bearing;
             if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_MAG_DEV)
@@ -565,7 +565,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (location.gpsLocation.flags & GPS_LOCATION_HAS_SPEED)
+        if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_SPEED)
         {
             float speedKnots = location.gpsLocation.speed * (3600.0/1852.0);
             float speedKmPerHour = location.gpsLocation.speed * 3.6;
@@ -585,7 +585,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
+        if (!(location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG))
             length = snprintf(pMarker, lengthRemaining, "%c", 'N'); // N means no fix
         else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->adapter->getPositionMode().mode)
             length = snprintf(pMarker, lengthRemaining, "%c", 'A'); // A means autonomous
@@ -613,7 +613,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG)
+        if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG)
         {
             double latitude = location.gpsLocation.latitude;
             double longitude = location.gpsLocation.longitude;
@@ -662,7 +662,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (location.gpsLocation.flags & GPS_LOCATION_HAS_SPEED)
+        if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_SPEED)
         {
             float speedKnots = location.gpsLocation.speed * (3600.0/1852.0);
             length = snprintf(pMarker, lengthRemaining, "%.1lf,", speedKnots);
@@ -680,7 +680,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (location.gpsLocation.flags & GPS_LOCATION_HAS_BEARING)
+        if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_BEARING)
         {
             length = snprintf(pMarker, lengthRemaining, "%.1lf,", location.gpsLocation.bearing);
         }
@@ -738,7 +738,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
+        if (!(location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG))
             length = snprintf(pMarker, lengthRemaining, "%c", 'N'); // N means no fix
         else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->adapter->getPositionMode().mode)
             length = snprintf(pMarker, lengthRemaining, "%c", 'A'); // A means autonomous
@@ -766,7 +766,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if (location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG)
+        if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG)
         {
             double latitude = location.gpsLocation.latitude;
             double longitude = location.gpsLocation.longitude;
@@ -816,7 +816,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         lengthRemaining -= length;
 
         char gpsQuality;
-        if (!(location.gpsLocation.flags & GPS_LOCATION_HAS_LAT_LONG))
+        if (!(location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG))
             gpsQuality = '0'; // 0 means no fix
         else if (LOC_POSITION_MODE_STANDALONE == loc_eng_data_p->adapter->getPositionMode().mode)
             gpsQuality = '1'; // 1 means GPS fix
@@ -868,7 +868,7 @@ void loc_eng_nmea_generate_pos(loc_eng_data_s_type *loc_eng_data_p,
         pMarker += length;
         lengthRemaining -= length;
 
-        if ((location.gpsLocation.flags & GPS_LOCATION_HAS_ALTITUDE) &&
+        if ((location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_ALTITUDE) &&
             (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL))
         {
             length = snprintf(pMarker, lengthRemaining, "%.1lf,M,,",
@@ -936,7 +936,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
-                              const GnssSvStatus &svStatus, const GpsLocationExtended &locationExtended)
+                              const LocGnssSvStatus &svStatus, const GpsLocationExtended &locationExtended)
 {
     ENTRY_LOG();
 
@@ -955,29 +955,29 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
     loc_eng_data_p->glo_used_mask = 0;
     loc_eng_data_p->gal_used_mask = 0;
     for(svNumber=1; svNumber <= svCount; svNumber++) {
-        if (GNSS_CONSTELLATION_GPS == svStatus.gnss_sv_list[svNumber - 1].constellation)
+        if (LOC_GNSS_CONSTELLATION_GPS == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
             // cache the used in fix mask, as it will be needed to send $GPGSA
             // during the position report
-            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            if (LOC_GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & LOC_GNSS_SV_FLAGS_USED_IN_FIX))
             {
                 loc_eng_data_p->gps_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
             }
         }
-        else if (GNSS_CONSTELLATION_GLONASS == svStatus.gnss_sv_list[svNumber - 1].constellation)
+        else if (LOC_GNSS_CONSTELLATION_GLONASS == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
             // cache the used in fix mask, as it will be needed to send $GNGSA
             // during the position report
-            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            if (LOC_GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & LOC_GNSS_SV_FLAGS_USED_IN_FIX))
             {
                 loc_eng_data_p->glo_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
             }
         }
-        else if (GNSS_CONSTELLATION_GALILEO == svStatus.gnss_sv_list[svNumber - 1].constellation)
+        else if (LOC_GNSS_CONSTELLATION_GALILEO == svStatus.gnss_sv_list[svNumber - 1].constellation)
         {
             // cache the used in fix mask, as it will be needed to send $GAGSA
             // during the position report
-            if (GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & GNSS_SV_FLAGS_USED_IN_FIX))
+            if (LOC_GNSS_SV_FLAGS_USED_IN_FIX == (svStatus.gnss_sv_list[svNumber - 1].flags & LOC_GNSS_SV_FLAGS_USED_IN_FIX))
             {
                 loc_eng_data_p->gal_used_mask |= (1 << (svStatus.gnss_sv_list[svNumber - 1].svid - 1));
             }
@@ -990,21 +990,21 @@ void loc_eng_nmea_generate_sv(loc_eng_data_s_type *loc_eng_data_p,
     // ------------------
 
     loc_eng_nmea_generate_GSV(loc_eng_data_p, svStatus, sentence, sizeof(sentence),
-            loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, GNSS_CONSTELLATION_GPS, false));
+            loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, LOC_GNSS_CONSTELLATION_GPS, false));
 
     // ------------------
     // ------$GLGSV------
     // ------------------
 
     loc_eng_nmea_generate_GSV(loc_eng_data_p, svStatus, sentence, sizeof(sentence),
-            loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, GNSS_CONSTELLATION_GLONASS, false));
+            loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, LOC_GNSS_CONSTELLATION_GLONASS, false));
 
     // ------------------
     // ------$GAGSV------
     // ------------------
 
     loc_eng_nmea_generate_GSV(loc_eng_data_p, svStatus, sentence, sizeof(sentence),
-            loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, GNSS_CONSTELLATION_GALILEO, false));
+            loc_nmea_sv_meta_init(loc_eng_data_p, sv_meta, LOC_GNSS_CONSTELLATION_GALILEO, false));
 
 
     // For RPC, the DOP are sent during sv report, so cache them

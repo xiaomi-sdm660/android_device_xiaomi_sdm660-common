@@ -20,6 +20,7 @@ libloc_eng_so_la_h_sources = \
      loc_eng_dmn_conn_thread_helper.h
 
 libloc_eng_so_la_SOURCES = \
+    libloc_api_50001/loc.cpp \
     libloc_api_50001/loc_eng.cpp \
     libloc_api_50001/loc_eng_agps.cpp \
     libloc_api_50001/loc_eng_xtra.cpp \
@@ -46,24 +47,6 @@ libloc_eng_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
 libloc_eng_so_la_LIBADD = -lstdc++ -ldl -llog $(LOCPLA_LIBS) ../utils/libgps_utils_so.la ../core/libloc_core.la
-
-
-libgps_default_so_la_SOURCES = \
-      libloc_api_50001/loc.cpp \
-      libloc_api_50001/gps.c
-
-if USE_GLIB
-libgps_default_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
-libgps_default_so_la_LDFLAGS = -lstdc++ -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
-libgps_default_so_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
-else
-libgps_default_so_la_CFLAGS = $(AM_CFLAGS)
-libgps_default_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
-libgps_default_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
-endif
-
-libgps_default_so_la_LIBADD = -lstdc++ -llog $(LOCPLA_LIBS) ../utils/libgps_utils_so.la ../core/libloc_core.la -ldl libloc_eng_so.la
-
 
 libloc_ds_api_CFLAGS = \
      $(QMIF_CFLAGS) \
@@ -134,4 +117,4 @@ library_include_HEADERS = \
 library_includedir = $(pkgincludedir)
 
 #Create and Install libraries
-lib_LTLIBRARIES = libloc_eng_so.la libgps_default_so.la libloc_ds_api.la libloc_api_v02.la
+lib_LTLIBRARIES = libloc_eng_so.la libloc_ds_api.la libloc_api_v02.la

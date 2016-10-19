@@ -20,6 +20,7 @@ LOCAL_SHARED_LIBRARIES := \
     libloc_pla
 
 LOCAL_SRC_FILES += \
+    loc.cpp \
     loc_eng.cpp \
     loc_eng_agps.cpp \
     loc_eng_xtra.cpp \
@@ -84,7 +85,8 @@ ifneq ($(filter $(TARGET_DEVICE), apq8084 msm8960), false)
 endif
 
 LOCAL_SRC_FILES += \
-    loc.cpp \
+    gps_interface.cpp \
+    gps_converter.cpp \
     gps.c
 
 LOCAL_CFLAGS += \

@@ -102,29 +102,29 @@ public:
                                 void* locationExt,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask);
-    virtual void reportSv(GnssSvStatus &svStatus,
+    virtual void reportSv(LocGnssSvStatus &svStatus,
                           GpsLocationExtended &locationExtended,
                           void* svExt);
     virtual void reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomial(GnssSvPolynomial &svPolynomial);
-    virtual void reportStatus(GpsStatusValue status);
+    virtual void reportStatus(LocGpsStatusValue status);
     virtual void reportNmea(const char* nmea, int length);
     virtual bool reportXtraServer(const char* url1, const char* url2,
                                   const char* url3, const int maxlength);
     virtual bool requestXtraData();
     virtual bool requestTime();
     virtual bool requestLocation();
-    virtual bool requestATL(int connHandle, AGpsType agps_type);
+    virtual bool requestATL(int connHandle, LocAGpsType agps_type);
     virtual bool releaseATL(int connHandle);
     virtual bool requestSuplES(int connHandle);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
-    virtual bool requestNiNotify(GpsNiNotification &notify,
+    virtual bool requestNiNotify(LocGpsNiNotification &notify,
                                  const void* data);
     inline virtual bool isInSession() { return false; }
     ContextBase* getContext() const { return mContext; }
-    virtual void reportGnssMeasurementData(GnssData &gnssMeasurementData);
-    virtual bool reportWwanZppFix(GpsLocation &zppLoc);
+    virtual void reportGnssMeasurementData(LocGnssData &gnssMeasurementData);
+    virtual bool reportWwanZppFix(LocGpsLocation &zppLoc);
 };
 
 } // namespace loc_core

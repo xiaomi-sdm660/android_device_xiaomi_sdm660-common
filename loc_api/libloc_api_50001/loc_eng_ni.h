@@ -35,7 +35,7 @@
 
 #define LOC_NI_NO_RESPONSE_TIME            20                      /* secs */
 #define LOC_NI_NOTIF_KEY_ADDRESS           "Address"
-#define GPS_NI_RESPONSE_IGNORE             4
+#define LOC_GPS_NI_RESPONSE_IGNORE             4
 
 typedef struct {
     pthread_t               thread;            /* NI thread */
@@ -43,7 +43,7 @@ typedef struct {
     bool                    respRecvd;   /* NI User reponse received or not from Java layer*/
     void*                   rawRequest;
     int                     reqID;         /* ID to check against response */
-    GpsUserResponseType     resp;
+    LocGpsUserResponseType  resp;
     pthread_cond_t          tCond;
     pthread_mutex_t         tLock;
     LocEngAdapter*          adapter;

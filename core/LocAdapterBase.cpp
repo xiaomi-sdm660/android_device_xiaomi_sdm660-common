@@ -80,7 +80,7 @@ void LocAdapterBase::
 }
 
 void LocAdapterBase::
-    reportSv(GnssSvStatus &svStatus,
+    reportSv(LocGnssSvStatus &svStatus,
              GpsLocationExtended &locationExtended,
              void* svExt)
 DEFAULT_IMPL()
@@ -94,7 +94,7 @@ void LocAdapterBase::
 DEFAULT_IMPL()
 
 void LocAdapterBase::
-    reportStatus(GpsStatusValue status)
+    reportStatus(LocGpsStatusValue status)
 DEFAULT_IMPL()
 
 
@@ -120,7 +120,7 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestATL(int connHandle, AGpsType agps_type)
+    requestATL(int connHandle, LocAGpsType agps_type)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
@@ -140,15 +140,15 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestNiNotify(GpsNiNotification &notify, const void* data)
+    requestNiNotify(LocGpsNiNotification &notify, const void* data)
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
-    reportGnssMeasurementData(GnssData &gnssMeasurementData)
+    reportGnssMeasurementData(LocGnssData &gnssMeasurementData)
 DEFAULT_IMPL()
 
 bool LocAdapterBase::
-    reportWwanZppFix(GpsLocation &zppLoc)
+    reportWwanZppFix(LocGpsLocation &zppLoc)
 DEFAULT_IMPL(false)
 
 } // namespace loc_core

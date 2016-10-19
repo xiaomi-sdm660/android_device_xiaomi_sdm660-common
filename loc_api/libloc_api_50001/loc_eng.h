@@ -85,20 +85,20 @@ typedef struct loc_eng_data_s
 {
     LocEngAdapter                  *adapter;
     loc_location_cb_ext            location_cb;
-    gps_status_callback            status_cb;
+    loc_gps_status_callback        status_cb;
     loc_sv_status_cb_ext           sv_status_cb;
     agps_status_extended           agps_status_cb;
-    gps_nmea_callback              nmea_cb;
+    loc_gps_nmea_callback          nmea_cb;
     loc_ni_notify_callback         ni_notify_cb;
-    gps_set_capabilities           set_capabilities_cb;
-    gps_acquire_wakelock           acquire_wakelock_cb;
-    gps_release_wakelock           release_wakelock_cb;
-    gps_request_utc_time           request_utc_time_cb;
-    gnss_set_system_info           set_system_info_cb;
-    gnss_sv_status_callback        gnss_sv_status_cb;
-    gnss_measurement_callback      gnss_measurement_cb;
+    loc_gps_set_capabilities       set_capabilities_cb;
+    loc_gps_acquire_wakelock       acquire_wakelock_cb;
+    loc_gps_release_wakelock       release_wakelock_cb;
+    loc_gps_request_utc_time       request_utc_time_cb;
+    loc_gnss_set_system_info       set_system_info_cb;
+    loc_gnss_sv_status_callback    gnss_sv_status_cb;
+    loc_gnss_measurement_callback  gnss_measurement_cb;
     boolean                        intermediateFix;
-    AGpsStatusValue                agps_status;
+    LocAGpsStatusValue             agps_status;
     loc_eng_xtra_data_s_type       xtra_module_data;
     loc_eng_ni_data_s_type         loc_eng_ni_data;
 
@@ -109,11 +109,11 @@ typedef struct loc_eng_data_s
     AgpsStateMachine*              ds_nif;
 
     // GPS engine status
-    GpsStatusValue                 engine_status;
-    GpsStatusValue                 fix_session_status;
+    LocGpsStatusValue              engine_status;
+    LocGpsStatusValue              fix_session_status;
 
     // Aiding data information to be deleted, aiding data can only be deleted when GPS engine is off
-    GpsAidingData                  aiding_data_for_deletion;
+    LocGpsAidingData               aiding_data_for_deletion;
 
     // For muting session broadcast
     loc_mute_session_e_type        mute_session_state;
@@ -151,13 +151,13 @@ int  loc_eng_start(loc_eng_data_s_type &loc_eng_data);
 int  loc_eng_stop(loc_eng_data_s_type &loc_eng_data);
 void loc_eng_cleanup(loc_eng_data_s_type &loc_eng_data);
 int  loc_eng_inject_time(loc_eng_data_s_type &loc_eng_data,
-                         GpsUtcTime time, int64_t timeReference,
+                         LocGpsUtcTime time, int64_t timeReference,
                          int uncertainty);
 int  loc_eng_inject_location(loc_eng_data_s_type &loc_eng_data,
                              double latitude, double longitude,
                              float accuracy);
 void loc_eng_delete_aiding_data(loc_eng_data_s_type &loc_eng_data,
-                                GpsAidingData f);
+                                LocGpsAidingData f);
 int  loc_eng_set_position_mode(loc_eng_data_s_type &loc_eng_data,
                                LocPosMode &params);
 const void* loc_eng_get_extension(loc_eng_data_s_type &loc_eng_data,
@@ -177,7 +177,7 @@ int  loc_eng_agps_open_failed(loc_eng_data_s_type &loc_eng_data, AGpsExtType agp
 void loc_eng_agps_ril_update_network_availability(loc_eng_data_s_type &loc_eng_data,
                                                   int avaiable, const char* apn);
 int loc_eng_agps_install_certificates(loc_eng_data_s_type &loc_eng_data,
-                                      const DerEncodedCertificate* certificates,
+                                      const LocDerEncodedCertificate* certificates,
                                       size_t length);
 
 //loc_eng_xtra functions
@@ -192,16 +192,16 @@ void loc_eng_xtra_version_check(loc_eng_data_s_type &loc_eng_data, int check);
 extern void loc_eng_ni_init(loc_eng_data_s_type &loc_eng_data,
                             GpsNiExtCallbacks *callbacks);
 extern void loc_eng_ni_respond(loc_eng_data_s_type &loc_eng_data,
-                               int notif_id, GpsUserResponseType user_response);
+                               int notif_id, LocGpsUserResponseType user_response);
 extern void loc_eng_ni_request_handler(loc_eng_data_s_type &loc_eng_data,
-                                   const GpsNiNotification *notif,
+                                   const LocGpsNiNotification *notif,
                                    const void* passThrough);
 extern void loc_eng_ni_reset_on_engine_restart(loc_eng_data_s_type &loc_eng_data);
 
 void loc_eng_configuration_update (loc_eng_data_s_type &loc_eng_data,
                                    const char* config_data, int32_t length);
 int loc_eng_gps_measurement_init(loc_eng_data_s_type &loc_eng_data,
-                                 GpsMeasurementCallbacks* callbacks);
+                                 LocGpsMeasurementCallbacks* callbacks);
 void loc_eng_gps_measurement_close(loc_eng_data_s_type &loc_eng_data);
 
 #ifdef __cplusplus

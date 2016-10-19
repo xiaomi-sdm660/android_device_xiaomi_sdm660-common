@@ -30,7 +30,6 @@
 #define LOC_ENG_MSG_H
 
 
-#include <hardware/gps.h>
 #include <gps_extended.h>
 #include <stdlib.h>
 #include <string.h>
@@ -105,11 +104,11 @@ struct LocEngReportPosition : public LocMsg {
 
 struct LocEngReportSv : public LocMsg {
     LocAdapterBase* mAdapter;
-    const GnssSvStatus mSvStatus;
+    const LocGnssSvStatus mSvStatus;
     const GpsLocationExtended mLocationExtended;
     const void* mSvExt;
     LocEngReportSv(LocAdapterBase* adapter,
-                   GnssSvStatus &sv,
+                   LocGnssSvStatus &sv,
                    GpsLocationExtended &locExtended,
                    void* svExtended);
     virtual void proc() const;
@@ -120,9 +119,9 @@ struct LocEngReportSv : public LocMsg {
 
 struct LocEngReportStatus : public LocMsg {
     LocAdapterBase* mAdapter;
-    const GpsStatusValue mStatus;
+    const LocGpsStatusValue mStatus;
     LocEngReportStatus(LocAdapterBase* adapter,
-                       GpsStatusValue engineStatus);
+                       LocGpsStatusValue engineStatus);
     virtual void proc() const;
     void locallog() const;
     virtual void log() const;
@@ -254,10 +253,10 @@ struct LocEngRequestTime : public LocMsg {
 
 struct LocEngRequestNi : public LocMsg {
     void* mLocEng;
-    const GpsNiNotification mNotify;
+    const LocGpsNiNotification mNotify;
     const void *mPayload;
     LocEngRequestNi(void* locEng,
-                    GpsNiNotification &notif,
+                    LocGpsNiNotification &notif,
                     const void* data);
     virtual void proc() const;
     void locallog() const;
@@ -291,9 +290,9 @@ struct LocEngGetZpp : public LocMsg {
 
 struct LocEngReportGnssMeasurement : public LocMsg {
     void* mLocEng;
-    const GnssData mGnssData;
+    const LocGnssData mGnssData;
     LocEngReportGnssMeasurement(void* locEng,
-                               GnssData &gnssData);
+                               LocGnssData &gnssData);
     virtual void proc() const;
     void locallog() const;
     virtual void log() const;

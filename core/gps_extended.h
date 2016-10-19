@@ -46,14 +46,14 @@ extern "C" {
 struct LocPosMode
 {
     LocPositionMode mode;
-    GpsPositionRecurrence recurrence;
+    LocGpsPositionRecurrence recurrence;
     uint32_t min_interval;
     uint32_t preferred_accuracy;
     uint32_t preferred_time;
     bool share_position;
     char credentials[14];
     char provider[8];
-    LocPosMode(LocPositionMode m, GpsPositionRecurrence recr,
+    LocPosMode(LocPositionMode m, LocGpsPositionRecurrence recr,
                uint32_t gap, uint32_t accu, uint32_t time,
                bool sp, const char* cred, const char* prov) :
         mode(m), recurrence(recr),
@@ -73,7 +73,7 @@ struct LocPosMode
 
     inline LocPosMode() :
         mode(LOC_POSITION_MODE_MS_BASED),
-        recurrence(GPS_POSITION_RECURRENCE_PERIODIC),
+        recurrence(LOC_GPS_POSITION_RECURRENCE_PERIODIC),
         min_interval(GPS_DEFAULT_FIX_INTERVAL_MS),
         preferred_accuracy(50), preferred_time(120000),
         share_position(true) {

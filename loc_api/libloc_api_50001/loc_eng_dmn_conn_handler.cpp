@@ -53,19 +53,19 @@ int loc_eng_dmn_conn_loc_api_server_if_request_handler(struct ctrl_msgbuf *pmsg,
           case IF_REQUEST_TYPE_SUPL:
           {
             LOC_LOGD("IF_REQUEST_TYPE_SUPL");
-            type = AGPS_TYPE_SUPL;
+            type = LOC_AGPS_TYPE_SUPL;
             break;
           }
           case IF_REQUEST_TYPE_WIFI:
           {
             LOC_LOGD("IF_REQUEST_TYPE_WIFI");
-            type = AGPS_TYPE_WIFI;
+            type = LOC_AGPS_TYPE_WIFI;
             break;
           }
           case IF_REQUEST_TYPE_ANY:
           {
             LOC_LOGD("IF_REQUEST_TYPE_ANY");
-            type = AGPS_TYPE_ANY;
+            type = LOC_AGPS_TYPE_ANY;
             break;
           }
           default:
@@ -149,19 +149,19 @@ int loc_eng_dmn_conn_loc_api_server_if_release_handler(struct ctrl_msgbuf *pmsg,
       case IF_REQUEST_TYPE_SUPL:
       {
         LOC_LOGD("IF_REQUEST_TYPE_SUPL");
-        type = AGPS_TYPE_SUPL;
+        type = LOC_AGPS_TYPE_SUPL;
         break;
       }
       case IF_REQUEST_TYPE_WIFI:
       {
         LOC_LOGD("IF_REQUEST_TYPE_WIFI");
-        type = AGPS_TYPE_WIFI;
+        type = LOC_AGPS_TYPE_WIFI;
         break;
       }
       case IF_REQUEST_TYPE_ANY:
       {
         LOC_LOGD("IF_REQUEST_TYPE_ANY");
-        type = AGPS_TYPE_ANY;
+        type = LOC_AGPS_TYPE_ANY;
         break;
       }
       default:

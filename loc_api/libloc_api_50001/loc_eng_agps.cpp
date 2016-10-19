@@ -156,7 +156,7 @@ bool ATLSubscriber::notifyRsrcStatus(Notification &notification)
         case RSRC_DENIED:
         {
             AGpsExtType type = mBackwardCompatibleMode ?
-                              AGPS_TYPE_INVALID : mStateMachine->getType();
+                              LOC_AGPS_TYPE_INVALID : mStateMachine->getType();
             ((LocEngAdapter*)mLocAdapter)->atlOpenStatus(ID, 0,
                                             (char*)mStateMachine->getAPN(),
                                             mStateMachine->getBearer(),
@@ -166,7 +166,7 @@ bool ATLSubscriber::notifyRsrcStatus(Notification &notification)
         case RSRC_GRANTED:
         {
             AGpsExtType type = mBackwardCompatibleMode ?
-                              AGPS_TYPE_INVALID : mStateMachine->getType();
+                              LOC_AGPS_TYPE_INVALID : mStateMachine->getType();
             ((LocEngAdapter*)mLocAdapter)->atlOpenStatus(ID, 1,
                                             (char*)mStateMachine->getAPN(),
                                             mStateMachine->getBearer(),
@@ -275,7 +275,7 @@ AgpsState* AgpsReleasedState::onRsrcEvent(AgpsRsrcStatus event, void* data)
         //The if condition is added so that if the data call setup fails
         //for DS State Machine, we want to retry in released state.
         //for AGps State Machine, sendRsrcRequest() will always return success
-        if(!mStateMachine->sendRsrcRequest(GPS_REQUEST_AGPS_DATA_CONN)) {
+        if(!mStateMachine->sendRsrcRequest(LOC_GPS_REQUEST_AGPS_DATA_CONN)) {
             // move the state to PENDING
             nextState = mPendingState;
         }
@@ -354,13 +354,13 @@ AgpsState* AgpsPendingState::onRsrcEvent(AgpsRsrcStatus event, void* data)
             nextState = mReleasedState;
 
             // tell connecivity service we can release NIF
-            mStateMachine->sendRsrcRequest(GPS_RELEASE_AGPS_DATA_CONN);
+            mStateMachine->sendRsrcRequest(LOC_GPS_RELEASE_AGPS_DATA_CONN);
         } else if (!mStateMachine->hasActiveSubscribers()) {
             // only inactive subscribers, move to RELEASING state
             nextState = mReleasingState;
 
             // tell connecivity service we can release NIF
-            mStateMachine->sendRsrcRequest(GPS_RELEASE_AGPS_DATA_CONN);
+            mStateMachine->sendRsrcRequest(LOC_GPS_RELEASE_AGPS_DATA_CONN);
         }
     }
     break;
@@ -453,13 +453,13 @@ AgpsState* AgpsAcquiredState::onRsrcEvent(AgpsRsrcStatus event, void* data)
             nextState = mReleasedState;
 
             // tell connecivity service we can release NIF
-            mStateMachine->sendRsrcRequest(GPS_RELEASE_AGPS_DATA_CONN);
+            mStateMachine->sendRsrcRequest(LOC_GPS_RELEASE_AGPS_DATA_CONN);
         } else if (!mStateMachine->hasActiveSubscribers()) {
             // only inactive subscribers, move to RELEASING state
             nextState = mReleasingState;
 
             // tell connecivity service we can release NIF
-            mStateMachine->sendRsrcRequest(GPS_RELEASE_AGPS_DATA_CONN);
+            mStateMachine->sendRsrcRequest(LOC_GPS_RELEASE_AGPS_DATA_CONN);
         }
     }
         break;
@@ -559,7 +559,7 @@ AgpsState* AgpsReleasingState::onRsrcEvent(AgpsRsrcStatus event, void* data)
         if (mStateMachine->hasActiveSubscribers()) {
             nextState = mPendingState;
             // request from connecivity service for NIF
-            mStateMachine->sendRsrcRequest(GPS_REQUEST_AGPS_DATA_CONN);
+            mStateMachine->sendRsrcRequest(LOC_GPS_REQUEST_AGPS_DATA_CONN);
         } else {
             nextState = mReleasedState;
         }
@@ -611,7 +611,7 @@ int ExtServicer :: requestRsrc(void *cb_data)
 
 int AGpsServicer :: requestRsrc(void *cb_data)
 {
-    callbackAGps((AGpsStatus *)cb_data);
+    callbackAGps((LocAGpsStatus *)cb_data);
     return 0;
 }
 
@@ -746,14 +746,14 @@ void AgpsStateMachine::addSubscriber(Subscriber* subscriber) const
     }
 }
 
-int AgpsStateMachine::sendRsrcRequest(AGpsStatusValue action) const
+int AgpsStateMachine::sendRsrcRequest(LocAGpsStatusValue action) const
 {
     Subscriber* s = NULL;
     Notification notification(Notification::BROADCAST_ACTIVE);
     linked_list_search(mSubscribers, (void**)&s, hasSubscriber,
                        (void*)&notification, false);
 
-    if ((NULL == s) == (GPS_RELEASE_AGPS_DATA_CONN == action)) {
+    if ((NULL == s) == (LOC_GPS_RELEASE_AGPS_DATA_CONN == action)) {
         AGpsExtStatus nifRequest;
         nifRequest.size = sizeof(nifRequest);
         nifRequest.type = mType;
@@ -827,7 +827,7 @@ err:
 
 DSStateMachine :: DSStateMachine(servicerType type, void *cb_func,
                                  LocEngAdapter* adapterHandle):
-    AgpsStateMachine(type, cb_func, AGPS_TYPE_INVALID,false),
+    AgpsStateMachine(type, cb_func, LOC_AGPS_TYPE_INVALID,false),
     mLocAdapter(adapterHandle)
 {
     LOC_LOGD("%s:%d]: New DSStateMachine\n", __func__, __LINE__);
@@ -848,7 +848,7 @@ void DSStateMachine :: retryCallback(void)
     return;
 }
 
-int DSStateMachine :: sendRsrcRequest(AGpsStatusValue action) const
+int DSStateMachine :: sendRsrcRequest(LocAGpsStatusValue action) const
 {
     DSSubscriber* s = NULL;
     dsCbData cbData;
@@ -954,13 +954,13 @@ void DSStateMachine :: informStatus(AgpsRsrcStatus status, int ID) const
         break;
     case RSRC_DENIED:
         ((DSStateMachine *)this)->mRetries = 0;
-        mLocAdapter->requestATL(ID, AGPS_TYPE_SUPL);
+        mLocAdapter->requestATL(ID, LOC_AGPS_TYPE_SUPL);
         break;
     case RSRC_GRANTED:
         mLocAdapter->atlOpenStatus(ID, 1,
                                                      NULL,
                                                      AGPS_APN_BEARER_INVALID,
-                                                     AGPS_TYPE_INVALID);
+                                                     LOC_AGPS_TYPE_INVALID);
         break;
     default:
         LOC_LOGW("DSStateMachine :: informStatus - unknown status");

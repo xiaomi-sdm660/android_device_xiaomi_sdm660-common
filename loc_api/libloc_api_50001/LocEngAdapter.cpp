@@ -376,14 +376,14 @@ void LocEngAdapter::reportPosition(UlpLocation &location,
     }
 }
 
-void LocInternalAdapter::reportSv(GnssSvStatus &svStatus,
+void LocInternalAdapter::reportSv(LocGnssSvStatus &svStatus,
                                   GpsLocationExtended &locationExtended,
                                   void* svExt){
     sendMsg(new LocEngReportSv(mLocEngAdapter, svStatus,
                                locationExtended, svExt));
 }
 
-void LocEngAdapter::reportSv(GnssSvStatus &svStatus,
+void LocEngAdapter::reportSv(LocGnssSvStatus &svStatus,
                              GpsLocationExtended &locationExtended,
                              void* svExt)
 {
@@ -422,12 +422,12 @@ void LocEngAdapter::setInSession(bool inSession)
     }
 }
 
-void LocInternalAdapter::reportStatus(GpsStatusValue status)
+void LocInternalAdapter::reportStatus(LocGpsStatusValue status)
 {
     sendMsg(new LocEngReportStatus(mLocEngAdapter, status));
 }
 
-void LocEngAdapter::reportStatus(GpsStatusValue status)
+void LocEngAdapter::reportStatus(LocGpsStatusValue status)
 {
     if (!mUlp->reportStatus(status)) {
         mInternalAdapter->reportStatus(status);
@@ -461,7 +461,7 @@ bool LocEngAdapter::reportXtraServer(const char* url1,
 }
 
 inline
-bool LocEngAdapter::requestATL(int connHandle, AGpsType agps_type)
+bool LocEngAdapter::requestATL(int connHandle, LocAGpsType agps_type)
 {
     if (mSupportsAgpsRequests) {
         sendMsg(new LocEngRequestATL(mOwner,
@@ -498,7 +498,7 @@ bool LocEngAdapter::requestTime()
 }
 
 inline
-bool LocEngAdapter::requestNiNotify(GpsNiNotification &notif, const void* data)
+bool LocEngAdapter::requestNiNotify(LocGpsNiNotification &notif, const void* data)
 {
     if (mSupportsAgpsRequests) {
         notif.size = sizeof(notif);
@@ -545,7 +545,7 @@ void LocEngAdapter::handleEngineUpEvent()
     sendMsg(new LocEngUp(mOwner));
 }
 
-enum loc_api_adapter_err LocEngAdapter::setTime(GpsUtcTime time,
+enum loc_api_adapter_err LocEngAdapter::setTime(LocGpsUtcTime time,
                                                 int64_t timeReference,
                                                 int uncertainty)
 {
@@ -588,7 +588,7 @@ enum loc_api_adapter_err LocEngAdapter::setXtraVersionCheck(int check)
     return ret;
 }
 
-void LocEngAdapter::reportGnssMeasurementData(GnssData &gnssMeasurementData)
+void LocEngAdapter::reportGnssMeasurementData(LocGnssData &gnssMeasurementData)
 {
     sendMsg(new LocEngReportGnssMeasurement(mOwner,
                                            gnssMeasurementData));

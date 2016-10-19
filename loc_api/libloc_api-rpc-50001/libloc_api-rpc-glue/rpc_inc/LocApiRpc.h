@@ -51,8 +51,8 @@ private:
     static rpc_loc_event_mask_type convertMask(LOC_API_ADAPTER_EVENT_MASK_T mask);
     static rpc_loc_lock_e_type convertGpsLockMask(LOC_GPS_LOCK_MASK lockMask);
     static enum loc_api_adapter_err convertErr(int rpcErr);
-    static GpsNiEncodingType convertNiEncodingType(int loc_encoding);
-    static int NIEventFillVerfiyType(GpsNiNotification &notif,
+    static LocGpsNiEncodingType convertNiEncodingType(int loc_encoding);
+    static int NIEventFillVerfiyType(LocGpsNiNotification &notif,
                               rpc_loc_ni_notify_verify_e_type notif_priv);
 
     void reportPosition(const rpc_loc_parsed_position_s_type *location_report_ptr);
@@ -93,13 +93,13 @@ public:
     virtual enum loc_api_adapter_err
         enableData(int enable, boolean force);
     virtual enum loc_api_adapter_err
-        setTime(GpsUtcTime time, int64_t timeReference, int uncertainty);
+        setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
     virtual enum loc_api_adapter_err
         injectPosition(double latitude, double longitude, float accuracy);
     virtual enum loc_api_adapter_err
-        deleteAidingData(GpsAidingData f);
+        deleteAidingData(LocGpsAidingData f);
     virtual enum loc_api_adapter_err
-        informNiResponse(GpsUserResponseType userResponse, const void* passThroughData);
+        informNiResponse(LocGpsUserResponseType userResponse, const void* passThroughData);
     inline virtual enum loc_api_adapter_err
         setAPN(char* apn, int len) { return setAPN(apn, len, false); }
     virtual enum loc_api_adapter_err
@@ -113,7 +113,7 @@ public:
     virtual enum loc_api_adapter_err
         requestXtraServer();
     virtual enum loc_api_adapter_err
-        atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, AGpsType agpsType);
+        atlOpenStatus(int handle, int is_succ, char* apn, AGpsBearerType bear, LocAGpsType agpsType);
     virtual enum loc_api_adapter_err
         atlCloseStatus(int handle, int is_succ);
     virtual enum loc_api_adapter_err

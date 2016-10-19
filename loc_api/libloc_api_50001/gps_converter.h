@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,32 +27,43 @@
  *
  */
 
-#ifndef LOC_CORE_LOG_H
-#define LOC_CORE_LOG_H
+#ifndef __GPS_CONVERTER_H__
+#define __GPS_CONVERTER_H__
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif
+extern "C" {
+#endif /* __cplusplus */
 
 #include <ctype.h>
+#include <hardware/gps.h>
 #include <gps_extended.h>
 
-const char* loc_get_gps_status_name(LocGpsStatusValue gps_status);
-const char* loc_get_position_mode_name(LocGpsPositionMode mode);
-const char* loc_get_position_recurrence_name(LocGpsPositionRecurrence recur);
-const char* loc_get_aiding_data_mask_names(LocGpsAidingData data);
-const char* loc_get_agps_type_name(LocAGpsType type);
-const char* loc_get_ni_type_name(LocGpsNiType type);
-const char* loc_get_ni_response_name(LocGpsUserResponseType response);
-const char* loc_get_ni_encoding_name(LocGpsNiEncodingType encoding);
-const char* loc_get_agps_bear_name(AGpsBearerType bear);
-const char* loc_get_server_type_name(LocServerType type);
-const char* loc_get_position_sess_status_name(enum loc_sess_status status);
-const char* loc_get_agps_status_name(LocAGpsStatusValue status);
+#define A2Q_GpsAidingData(in)           (LocGpsAidingData)in
+#define A2Q_GpsUserResponseType(in)     (LocGpsUserResponseType)in
+#define A2Q_GpsPositionRecurrence(in)   (LocGpsPositionRecurrence)in
+#define A2Q_GpsUtcTime(in)              (LocGpsUtcTime)in
+#define A2Q_GpsPositionMode(in)         (LocGpsPositionMode)in
+#define A2Q_GpsPositionRecurrence(in)   (LocGpsPositionRecurrence)in
+#define A2Q_ApnIpType(in)               (LocApnIpType)in
+#define A2Q_AGpsType(in)                (LocAGpsType)in
+#define A2Q_GpsPositionRecurrence(in)   (LocGpsPositionRecurrence)in
+
+#define Q2A_GpsUtcTime(in)              (GpsUtcTime)in
+
+void A2Q_DerEncodedCertificate(const DerEncodedCertificate& in, LocDerEncodedCertificate& out);
+
+void Q2A_GpsLocation(const LocGpsLocation& in, GpsLocation& out);
+void Q2A_GpsSvStatus(const LocGpsSvStatus& in, GpsSvStatus& out);
+void Q2A_GnssSvStatus(const LocGnssSvStatus& in, GnssSvStatus& out);
+void Q2A_GpsNiNotification(const LocGpsNiNotification& in, GpsNiNotification& out);
+void Q2A_GpsStatus(const LocGpsStatus& in, GpsStatus& out);
+void Q2A_GnssSystemInfo(const LocGnssSystemInfo& in, GnssSystemInfo& out);
+void Q2A_AGpsStatus(const LocAGpsStatus& in, AGpsStatus& out);
+void Q2A_GpsData(const LocGpsData& in, GpsData& out);
+void Q2A_GnssData(const LocGnssData& in, GnssData& out);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-#endif /* LOC_CORE_LOG_H */
+#endif //__GPS_CONVERTER_H__
