@@ -187,14 +187,6 @@ int IPACM_Config::Init(void)
 		goto fail;
 	}
 
-	/* Check wlan AP-AP access mode configuration */
-	if (cfg->num_wlan_guest_ap == 2)
-	{
-		IPACMDBG_H("IPACM_Config::Both wlan APs can not be configured in guest ap mode. \n");
-		IPACMDBG_H("IPACM_Config::configure both APs in full access mode or at least one in guest ap mode. \n");
-		ret = IPACM_FAILURE;
-		goto fail;
-	}
 	/* Construct IPACM Iface table */
 	ipa_num_ipa_interfaces = cfg->iface_config.num_iface_entries;
 	if (iface_table != NULL)
