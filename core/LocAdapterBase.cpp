@@ -146,4 +146,9 @@ DEFAULT_IMPL(false)
 void LocAdapterBase::
     reportGnssMeasurementData(GnssData &gnssMeasurementData)
 DEFAULT_IMPL()
+
+bool LocAdapterBase::
+    reportWwanZppFix(GpsLocation &zppLoc)
+DEFAULT_IMPL(false)
+
 } // namespace loc_core
