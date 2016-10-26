@@ -290,6 +290,7 @@ LocEngStopFix::LocEngStopFix(LocEngAdapter* adapter) :
 inline void LocEngStopFix::proc() const
 {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mAdapter->getOwner();
+    mAdapter->clearGnssSvUsedListData();
     loc_eng_stop_handler(*locEng);
 }
 inline void LocEngStopFix::locallog() const
@@ -806,6 +807,10 @@ void LocEngReportPosition::proc() const {
                         (gps_conf.ACCURACY_THRES != 0) &&
                         (mLocation.gpsLocation.accuracy >
                          gps_conf.ACCURACY_THRES)))) {
+                if (mLocationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA)
+                {
+                    adapter->setGnssSvUsedListData(mLocationExtended.gnss_sv_used_ids);
+                }
                 locEng->location_cb((UlpLocation*)&(mLocation),
                                     (void*)mLocationExt);
                 reported = true;
@@ -880,14 +885,61 @@ void LocEngReportSv::proc() const {
 
     if (locEng->mute_session_state != LOC_MUTE_SESS_IN_SESSION)
     {
+        GnssSvStatus gnssSvStatus;
+        memcpy(&gnssSvStatus,&mSvStatus,sizeof(GnssSvStatus));
+        if (adapter->isGnssSvIdUsedInPosAvail())
+        {
+            GnssSvUsedInPosition gnssSvIdUsedInPosition =
+                                adapter->getGnssSvUsedListData();
+            int numSv = gnssSvStatus.num_svs;
+            int16_t gnssSvId = 0;
+            int prnMin = 0;
+            uint64_t svUsedIdMask = 0;
+            for (int i=0; i < numSv; i++)
+            {
+                gnssSvId = gnssSvStatus.gnss_sv_list[i].svid;
+                if (gnssSvId <= GPS_SV_PRN_MAX)
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.gps_sv_used_ids_mask;
+                    prnMin = GPS_SV_PRN_MIN;
+                }
+                else if ((gnssSvId >= GLO_SV_PRN_MIN) && (gnssSvId <= GLO_SV_PRN_MAX))
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.glo_sv_used_ids_mask;
+                    prnMin = GLO_SV_PRN_MIN;
+                }
+                else if ((gnssSvId >= BDS_SV_PRN_MIN) && (gnssSvId <= BDS_SV_PRN_MAX))
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.bds_sv_used_ids_mask;
+                    prnMin = BDS_SV_PRN_MIN;
+                }
+                else if ((gnssSvId >= GAL_SV_PRN_MIN) && (gnssSvId <= GAL_SV_PRN_MAX))
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.gal_sv_used_ids_mask;
+                    prnMin = GAL_SV_PRN_MIN;
+                }
+
+                // If SV ID was used in previous position fix, then set USED_IN_FIX
+                // flag, else clear the USED_IN_FIX flag.
+                if (svUsedIdMask & (1 << (gnssSvId - prnMin)))
+                {
+                    gnssSvStatus.gnss_sv_list[i].flags |= GNSS_SV_FLAGS_USED_IN_FIX;
+                }
+                else
+                {
+                    gnssSvStatus.gnss_sv_list[i].flags &= ~GNSS_SV_FLAGS_USED_IN_FIX;
+                }
+            }
+        }
+
         if (locEng->gnss_sv_status_cb != NULL) {
             LOC_LOGE("Calling gnss_sv_status_cb");
-            locEng->gnss_sv_status_cb((GnssSvStatus*)&(mSvStatus));
+            locEng->gnss_sv_status_cb((GnssSvStatus*)&(gnssSvStatus));
         }
 
         if (locEng->generateNmea)
         {
-            loc_eng_nmea_generate_sv(locEng, mSvStatus, mLocationExtended);
+            loc_eng_nmea_generate_sv(locEng, gnssSvStatus, mLocationExtended);
         }
     }
 }
