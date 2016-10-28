@@ -124,6 +124,7 @@ public:
     inline virtual bool isInSession() { return false; }
     ContextBase* getContext() const { return mContext; }
     virtual void reportGnssMeasurementData(GnssData &gnssMeasurementData);
+    virtual bool reportWwanZppFix(GpsLocation &zppLoc);
 };
 
 } // namespace loc_core

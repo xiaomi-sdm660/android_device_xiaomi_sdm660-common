@@ -136,6 +136,7 @@ public:
     void saveSupportedMsgList(uint64_t supportedMsgList);
     void reportGnssMeasurementData(GnssData &gnssMeasurementData);
     void saveSupportedFeatureList(uint8_t *featureList);
+    void reportWwanZppFix(GpsLocation &zppLoc);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -209,7 +210,7 @@ public:
     virtual enum loc_api_adapter_err
         setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP);
     virtual enum loc_api_adapter_err
-        getWwanZppFix(GpsLocation & zppLoc);
+        getWwanZppFix();
     virtual enum loc_api_adapter_err
         getBestAvailableZppFix(GpsLocation & zppLoc);
     virtual enum loc_api_adapter_err

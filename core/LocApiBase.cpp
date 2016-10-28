@@ -254,6 +254,12 @@ void LocApiBase::reportPosition(UlpLocation &location,
     );
 }
 
+void LocApiBase::reportWwanZppFix(GpsLocation &zppLoc)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportWwanZppFix(zppLoc));
+}
+
 void LocApiBase::reportSv(GnssSvStatus &svStatus,
                   GpsLocationExtended &locationExtended,
                   void* svExt)
@@ -524,7 +530,7 @@ enum loc_api_adapter_err LocApiBase::
     DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-   getWwanZppFix(GpsLocation& zppLoc)
+   getWwanZppFix()
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
