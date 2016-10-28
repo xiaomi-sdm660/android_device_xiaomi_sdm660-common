@@ -83,3 +83,16 @@ PRODUCT_COPY_FILES += device/qcom/msmfalcon_64/msm_irqbalance.conf:system/vendor
 PRODUCT_PACKAGES += \
     fs_config_files
 
+# Enable logdumpd service only for non-perf bootimage
+ifeq ($(findstring perf,$(KERNEL_DEFCONFIG)),)
+    ifeq ($(TARGET_BUILD_VARIANT),user)
+        PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
+            ro.logdumpd.enabled=0
+    else
+        PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
+            ro.logdumpd.enabled=1
+    endif
+else
+    PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
+        ro.logdumpd.enabled=0
+endif
