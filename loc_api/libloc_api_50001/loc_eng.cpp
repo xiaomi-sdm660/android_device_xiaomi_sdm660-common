@@ -186,6 +186,7 @@ static void loc_default_parameters(void)
 // 2nd half of init(), singled out for
 // modem restart to use.
 static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data);
+static void loc_eng_dsclient_release(loc_eng_data_s_type &loc_eng_data);
 static void loc_eng_agps_reinit(loc_eng_data_s_type &loc_eng_data);
 
 static int loc_eng_set_server(loc_eng_data_s_type &loc_eng_data,
@@ -2360,6 +2361,39 @@ static void loc_eng_agps_reinit(loc_eng_data_s_type &loc_eng_data)
     }
     EXIT_LOG(%s, VOID_RET);
 }
+
+/*===========================================================================
+FUNCTION    loc_eng_dsclient_release
+
+DESCRIPTION
+   Stop/Close/Release DS client when modem SSR happens.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   0
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_eng_dsclient_release(loc_eng_data_s_type &loc_eng_data)
+{
+    ENTRY_LOG();
+    int result = 1;
+    LocEngAdapter* adapter = loc_eng_data.adapter;
+    if (NULL != adapter && gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL)
+    {
+        // stop and close the ds client
+        adapter->stopDataCall();
+        adapter->closeDataCall();
+        adapter->releaseDataServiceClient();
+    }
+    EXIT_LOG(%s, VOID_RET);
+}
+
+
 /*===========================================================================
 FUNCTION    loc_eng_agps_init
 
@@ -2430,7 +2464,7 @@ static void createAgnssNifs(loc_eng_data_s_type& locEng) {
             }
             if (NULL == locEng.ds_nif &&
                 gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL &&
-                0 == adapter->initDataServiceClient()) {
+                0 == adapter->initDataServiceClient(false)) {
                 locEng.ds_nif = new DSStateMachine(servicerTypeExt,
                                                      (void *)dataCallCb,
                                                      locEng.adapter);
@@ -2964,6 +2998,12 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
         if (loc_eng_data.internet_nif)
             loc_eng_data.internet_nif->dropAllSubscribers();
 
+        // reinitialize DS client in SSR mode
+        loc_eng_dsclient_release(loc_eng_data);
+        if (loc_eng_data.adapter->mSupportsAgpsRequests &&
+              gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
+            loc_eng_data.adapter->initDataServiceClient(true);
+        }
         loc_eng_agps_reinit(loc_eng_data);
     }
 

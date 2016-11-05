@@ -554,7 +554,7 @@ enum loc_api_adapter_err LocApiBase::
 }
 
 int LocApiBase::
-    initDataServiceClient()
+    initDataServiceClient(bool isDueToSsr)
 DEFAULT_IMPL(-1)
 
 int LocApiBase::
@@ -567,6 +567,10 @@ DEFAULT_IMPL()
 
 void LocApiBase::
     closeDataCall()
+DEFAULT_IMPL()
+
+void LocApiBase::
+    releaseDataServiceClient()
 DEFAULT_IMPL()
 
 int LocApiBase::
