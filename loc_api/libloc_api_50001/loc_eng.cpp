@@ -186,6 +186,7 @@ static void loc_default_parameters(void)
 // 2nd half of init(), singled out for
 // modem restart to use.
 static int loc_eng_reinit(loc_eng_data_s_type &loc_eng_data);
+static void loc_eng_dsclient_release(loc_eng_data_s_type &loc_eng_data);
 static void loc_eng_agps_reinit(loc_eng_data_s_type &loc_eng_data);
 
 static int loc_eng_set_server(loc_eng_data_s_type &loc_eng_data,
@@ -290,6 +291,7 @@ LocEngStopFix::LocEngStopFix(LocEngAdapter* adapter) :
 inline void LocEngStopFix::proc() const
 {
     loc_eng_data_s_type* locEng = (loc_eng_data_s_type*)mAdapter->getOwner();
+    mAdapter->clearGnssSvUsedListData();
     loc_eng_stop_handler(*locEng);
 }
 inline void LocEngStopFix::locallog() const
@@ -806,6 +808,10 @@ void LocEngReportPosition::proc() const {
                         (gps_conf.ACCURACY_THRES != 0) &&
                         (mLocation.gpsLocation.accuracy >
                          gps_conf.ACCURACY_THRES)))) {
+                if (mLocationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA)
+                {
+                    adapter->setGnssSvUsedListData(mLocationExtended.gnss_sv_used_ids);
+                }
                 locEng->location_cb((UlpLocation*)&(mLocation),
                                     (void*)mLocationExt);
                 reported = true;
@@ -880,14 +886,61 @@ void LocEngReportSv::proc() const {
 
     if (locEng->mute_session_state != LOC_MUTE_SESS_IN_SESSION)
     {
+        GnssSvStatus gnssSvStatus;
+        memcpy(&gnssSvStatus,&mSvStatus,sizeof(GnssSvStatus));
+        if (adapter->isGnssSvIdUsedInPosAvail())
+        {
+            GnssSvUsedInPosition gnssSvIdUsedInPosition =
+                                adapter->getGnssSvUsedListData();
+            int numSv = gnssSvStatus.num_svs;
+            int16_t gnssSvId = 0;
+            int prnMin = 0;
+            uint64_t svUsedIdMask = 0;
+            for (int i=0; i < numSv; i++)
+            {
+                gnssSvId = gnssSvStatus.gnss_sv_list[i].svid;
+                if (gnssSvId <= GPS_SV_PRN_MAX)
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.gps_sv_used_ids_mask;
+                    prnMin = GPS_SV_PRN_MIN;
+                }
+                else if ((gnssSvId >= GLO_SV_PRN_MIN) && (gnssSvId <= GLO_SV_PRN_MAX))
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.glo_sv_used_ids_mask;
+                    prnMin = GLO_SV_PRN_MIN;
+                }
+                else if ((gnssSvId >= BDS_SV_PRN_MIN) && (gnssSvId <= BDS_SV_PRN_MAX))
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.bds_sv_used_ids_mask;
+                    prnMin = BDS_SV_PRN_MIN;
+                }
+                else if ((gnssSvId >= GAL_SV_PRN_MIN) && (gnssSvId <= GAL_SV_PRN_MAX))
+                {
+                    svUsedIdMask = gnssSvIdUsedInPosition.gal_sv_used_ids_mask;
+                    prnMin = GAL_SV_PRN_MIN;
+                }
+
+                // If SV ID was used in previous position fix, then set USED_IN_FIX
+                // flag, else clear the USED_IN_FIX flag.
+                if (svUsedIdMask & (1 << (gnssSvId - prnMin)))
+                {
+                    gnssSvStatus.gnss_sv_list[i].flags |= GNSS_SV_FLAGS_USED_IN_FIX;
+                }
+                else
+                {
+                    gnssSvStatus.gnss_sv_list[i].flags &= ~GNSS_SV_FLAGS_USED_IN_FIX;
+                }
+            }
+        }
+
         if (locEng->gnss_sv_status_cb != NULL) {
             LOC_LOGE("Calling gnss_sv_status_cb");
-            locEng->gnss_sv_status_cb((GnssSvStatus*)&(mSvStatus));
+            locEng->gnss_sv_status_cb((GnssSvStatus*)&(gnssSvStatus));
         }
 
         if (locEng->generateNmea)
         {
-            loc_eng_nmea_generate_sv(locEng, mSvStatus, mLocationExtended);
+            loc_eng_nmea_generate_sv(locEng, gnssSvStatus, mLocationExtended);
         }
     }
 }
@@ -2308,6 +2361,39 @@ static void loc_eng_agps_reinit(loc_eng_data_s_type &loc_eng_data)
     }
     EXIT_LOG(%s, VOID_RET);
 }
+
+/*===========================================================================
+FUNCTION    loc_eng_dsclient_release
+
+DESCRIPTION
+   Stop/Close/Release DS client when modem SSR happens.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   0
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_eng_dsclient_release(loc_eng_data_s_type &loc_eng_data)
+{
+    ENTRY_LOG();
+    int result = 1;
+    LocEngAdapter* adapter = loc_eng_data.adapter;
+    if (NULL != adapter && gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL)
+    {
+        // stop and close the ds client
+        adapter->stopDataCall();
+        adapter->closeDataCall();
+        adapter->releaseDataServiceClient();
+    }
+    EXIT_LOG(%s, VOID_RET);
+}
+
+
 /*===========================================================================
 FUNCTION    loc_eng_agps_init
 
@@ -2378,7 +2464,7 @@ static void createAgnssNifs(loc_eng_data_s_type& locEng) {
             }
             if (NULL == locEng.ds_nif &&
                 gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL &&
-                0 == adapter->initDataServiceClient()) {
+                0 == adapter->initDataServiceClient(false)) {
                 locEng.ds_nif = new DSStateMachine(servicerTypeExt,
                                                      (void *)dataCallCb,
                                                      locEng.adapter);
@@ -2912,6 +2998,12 @@ void loc_eng_handle_engine_up(loc_eng_data_s_type &loc_eng_data)
         if (loc_eng_data.internet_nif)
             loc_eng_data.internet_nif->dropAllSubscribers();
 
+        // reinitialize DS client in SSR mode
+        loc_eng_dsclient_release(loc_eng_data);
+        if (loc_eng_data.adapter->mSupportsAgpsRequests &&
+              gps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
+            loc_eng_data.adapter->initDataServiceClient(true);
+        }
         loc_eng_agps_reinit(loc_eng_data);
     }
 

@@ -237,13 +237,18 @@ void LocApiBase::reportPosition(UlpLocation &location,
     LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  "
              "altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  "
              "timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  "
-             "Session status: %d\n Technology mask: %u",
+             "Session status: %d\n Technology mask: %u\n "
+             "SV used in fix (gps/glo/bds/gal) : (%x/%x/%x/%x)",
              location.gpsLocation.flags, location.position_source,
              location.gpsLocation.latitude, location.gpsLocation.longitude,
              location.gpsLocation.altitude, location.gpsLocation.speed,
              location.gpsLocation.bearing, location.gpsLocation.accuracy,
              location.gpsLocation.timestamp, location.rawDataSize,
-             location.rawData, status, loc_technology_mask);
+             location.rawData, status, loc_technology_mask,
+             locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask,
+             locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask,
+             locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask,
+             locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask);
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportPosition(location,
@@ -549,7 +554,7 @@ enum loc_api_adapter_err LocApiBase::
 }
 
 int LocApiBase::
-    initDataServiceClient()
+    initDataServiceClient(bool isDueToSsr)
 DEFAULT_IMPL(-1)
 
 int LocApiBase::
@@ -562,6 +567,10 @@ DEFAULT_IMPL()
 
 void LocApiBase::
     closeDataCall()
+DEFAULT_IMPL()
+
+void LocApiBase::
+    releaseDataServiceClient()
 DEFAULT_IMPL()
 
 int LocApiBase::
