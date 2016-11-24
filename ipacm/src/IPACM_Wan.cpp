@@ -711,6 +711,13 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_iptype *data = (ipacm_event_data_iptype *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
+			/* add the check see if tether_iface is valid or not */
+			if (iface_ipa_index_query(data->if_index_tether) == INVALID_IFACE)
+			{
+				IPACMERR("UPSTREAM_ROUTE_ADD tether_if(%d), not valid ignore\n", INVALID_IFACE);
+				return;
+			}
+
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG_H("Received IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT (Android) for ip-type (%d)\n", data->iptype);
@@ -808,6 +815,13 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			ipacm_event_data_iptype *data = (ipacm_event_data_iptype *)param;
 			ipa_interface_index = iface_ipa_index_query(data->if_index);
+			/* add the check see if tether_iface is valid or not */
+			if (iface_ipa_index_query(data->if_index_tether) == INVALID_IFACE)
+			{
+				IPACMERR("UPSTREAM_ROUTE_DEL tether_if(%d), not valid ignore\n", INVALID_IFACE);
+				return;
+			}
+
 			if (ipa_interface_index == ipa_if_num)
 			{
 				IPACMDBG_H("Received IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT\n");
