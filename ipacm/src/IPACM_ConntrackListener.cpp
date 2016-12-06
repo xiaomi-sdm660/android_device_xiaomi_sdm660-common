@@ -210,8 +210,8 @@ int IPACM_ConntrackListener::CheckNatIface(
 					sizeof(pNatIfaces[i].iface_name)) == 0)
 		{
 			IPACMDBG_H("Nat iface (%s), entry (%d), dont cache",
-						pNatIfaces[i].iface_name, j);
-			iptodot("with ipv4 address: ", nat_iface_ipv4_addr[j]);
+						pNatIfaces[i].iface_name, i);
+			iptodot("with ipv4 address: ", nat_iface_ipv4_addr[i]);
 			*NatIface = true;
 			return IPACM_SUCCESS;
 		}
