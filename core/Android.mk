@@ -21,6 +21,7 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libgps.utils \
     libdl \
+    liblog \
     libloc_pla
 
 LOCAL_SRC_FILES += \
@@ -51,8 +52,6 @@ LOCAL_COPY_HEADERS:= \
     gps_extended.h \
     loc_core_log.h \
     LocAdapterProxyBase.h
-
-LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
 
