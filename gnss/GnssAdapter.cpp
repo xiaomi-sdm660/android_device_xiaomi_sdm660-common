@@ -1923,27 +1923,30 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
     if (mGnssSvIdUsedInPosAvail) {
         int numSv = svNotify.count;
         int16_t gnssSvId = 0;
-        int prnMin = 0;
         uint64_t svUsedIdMask = 0;
         for (int i=0; i < numSv; i++) {
             gnssSvId = svNotify.gnssSvs[i].svId;
-            if (gnssSvId <= GPS_SV_PRN_MAX) {
-                svUsedIdMask = mGnssSvIdUsedInPosition.gps_sv_used_ids_mask;
-                prnMin = GPS_SV_PRN_MIN;
-            } else if ((gnssSvId >= GLO_SV_PRN_MIN) && (gnssSvId <= GLO_SV_PRN_MAX)) {
-                svUsedIdMask = mGnssSvIdUsedInPosition.glo_sv_used_ids_mask;
-                prnMin = GLO_SV_PRN_MIN;
-            } else if ((gnssSvId >= BDS_SV_PRN_MIN) && (gnssSvId <= BDS_SV_PRN_MAX)) {
-                svUsedIdMask = mGnssSvIdUsedInPosition.bds_sv_used_ids_mask;
-                prnMin = BDS_SV_PRN_MIN;
-            } else if ((gnssSvId >= GAL_SV_PRN_MIN) && (gnssSvId <= GAL_SV_PRN_MAX)) {
-                svUsedIdMask = mGnssSvIdUsedInPosition.gal_sv_used_ids_mask;
-                prnMin = GAL_SV_PRN_MIN;
+            switch (svNotify.gnssSvs[i].type) {
+                case GNSS_SV_TYPE_GPS:
+                    svUsedIdMask = mGnssSvIdUsedInPosition.gps_sv_used_ids_mask;
+                    break;
+                case GNSS_SV_TYPE_GLONASS:
+                    svUsedIdMask = mGnssSvIdUsedInPosition.glo_sv_used_ids_mask;
+                    break;
+                case GNSS_SV_TYPE_BEIDOU:
+                    svUsedIdMask = mGnssSvIdUsedInPosition.bds_sv_used_ids_mask;
+                    break;
+                case GNSS_SV_TYPE_GALILEO:
+                    svUsedIdMask = mGnssSvIdUsedInPosition.gal_sv_used_ids_mask;
+                    break;
+                default:
+                    svUsedIdMask = 0;
+                    break;
             }
 
             // If SV ID was used in previous position fix, then set USED_IN_FIX
             // flag, else clear the USED_IN_FIX flag.
-            if (svUsedIdMask & (1 << (gnssSvId - prnMin))) {
+            if (svUsedIdMask & (1 << (gnssSvId - 1))) {
                 svNotify.gnssSvs[i].gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
             } else {
                 svNotify.gnssSvs[i].gnssSvOptionsMask &= ~GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
