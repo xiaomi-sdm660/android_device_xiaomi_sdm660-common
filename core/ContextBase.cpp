@@ -145,10 +145,8 @@ void ContextBase::readConfig()
    /* inject supl config to modem with config values from config.xml or gps.conf, default 1 */
    mGps_conf.AGPS_CONFIG_INJECT = 1;
 
-   const char* GPS_CONF_FILE = "/etc/gps.conf";
-   const char* SAP_CONF_FILE = "/etc/sap.conf";
-   UTIL_READ_CONF(GPS_CONF_FILE, mGps_conf_table);
-   UTIL_READ_CONF(SAP_CONF_FILE, mSap_conf_table);
+   UTIL_READ_CONF(LOC_PATH_GPS_CONF, mGps_conf_table);
+   UTIL_READ_CONF(LOC_PATH_SAP_CONF, mSap_conf_table);
 }
 
 uint32_t ContextBase::getCarrierCapabilities() {
