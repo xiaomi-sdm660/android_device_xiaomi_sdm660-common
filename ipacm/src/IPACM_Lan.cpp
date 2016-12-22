@@ -74,6 +74,17 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 		return;
 	}
 
+	num_wan_ul_fl_rule_v4 = 0;
+	num_wan_ul_fl_rule_v6 = 0;
+	is_active = true;
+	modem_ul_v4_set = false;
+	modem_ul_v6_set = false;
+	is_mode_switch = false;
+	if_ipv4_subnet =0;
+	each_client_rt_rule_count[IPA_IP_v4] = 0;
+	each_client_rt_rule_count[IPA_IP_v6] = 0;
+	eth_client_len = 0;
+
 	/* support eth multiple clients */
 	if(iface_query != NULL)
 	{
@@ -104,22 +115,14 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 		}
 	}
 
-	num_wan_ul_fl_rule_v4 = 0;
-	num_wan_ul_fl_rule_v6 = 0;
-
 	memset(wan_ul_fl_rule_hdl_v4, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
 	memset(wan_ul_fl_rule_hdl_v6, 0, MAX_WAN_UL_FILTER_RULES * sizeof(uint32_t));
 
-	is_active = true;
 	memset(ipv4_icmp_flt_rule_hdl, 0, NUM_IPV4_ICMP_FLT_RULE * sizeof(uint32_t));
 
-	is_mode_switch = false;
-	if_ipv4_subnet =0;
 	memset(private_fl_rule_hdl, 0, IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(uint32_t));
 	memset(ipv6_prefix_flt_rule_hdl, 0, NUM_IPV6_PREFIX_FLT_RULE * sizeof(uint32_t));
 	memset(ipv6_icmp_flt_rule_hdl, 0, NUM_IPV6_ICMP_FLT_RULE * sizeof(uint32_t));
-	modem_ul_v4_set = false;
-	modem_ul_v6_set = false;
 	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 
 	/* ODU routing table initilization */
@@ -157,8 +160,6 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 		}
 	}
 
-	each_client_rt_rule_count[IPA_IP_v4] = 0;
-	each_client_rt_rule_count[IPA_IP_v6] = 0;
 	if(iface_query != NULL && tx_prop != NULL)
 	{
 		for(i=0; i<iface_query->num_tx_props; i++)

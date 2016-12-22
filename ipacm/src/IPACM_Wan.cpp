@@ -129,6 +129,9 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	is_xlat = false;
 	hdr_hdl_dummy_v6 = 0;
 	hdr_proc_hdl_dummy_v6 = 0;
+	is_default_gateway = false;
+	m_fd_ipa = 0;
+	wan_client_len = 0;
 
 	if(iface_query != NULL)
 	{
