@@ -85,7 +85,6 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== TRACKING ======================================================================= */
     LocationSessionMap mTrackingSessions;
-    GnssSuplMode mSuplMode;
     LocPosMode mUlpPositionMode;
     GnssSvUsedInPosition mGnssSvIdUsedInPosition;
     bool mGnssSvIdUsedInPosAvail;
@@ -160,7 +159,6 @@ public:
     void eraseTrackingSession(LocationAPI* client, uint32_t sessionId);
     void setUlpPositionMode(const LocPosMode& mode) { mUlpPositionMode = mode; }
     LocPosMode& getUlpPositionMode() { return mUlpPositionMode; }
-    void setSuplMode(GnssSuplMode mode) { mSuplMode = mode; }
     LocationError startTrackingMultiplex(const LocationOptions& options);
     LocationError startTracking(const LocationOptions& options);
     LocationError stopTrackingMultiplex(LocationAPI* client, uint32_t id);
@@ -232,30 +230,6 @@ public:
     void reportNmea(const char* nmea, size_t length);
     bool requestNiNotify(const GnssNiNotification& notify, const void* data);
     void reportGnssMeasurementData(const GnssMeasurementsNotification& measurementsNotify);
-
-    /*==== NMEA Generation =============================================================== */
-    /*======== SVS ======================================================================= */
-    void generateNmea(const GnssSvNotification& svNotify);
-    void generateNmeaGSV(const GnssSvNotification& svNotify,
-                         NmeaSvMeta& svMeta, char* sentence, size_t size);
-    /*======== POSITION ================================================================== */
-    void generateNmea(const UlpLocation& ulpLocation,
-                      const GpsLocationExtended& locationExtended);
-    void generateNmeaBlank();
-    uint8_t generateNmeaGSA(const GpsLocationExtended& locationExtended,
-                            NmeaSvMeta& svMeta, char* sentence, size_t size);
-    void generateNmeaVTG(const UlpLocation& ulpLocation,
-                         const GpsLocationExtended& locationExtended,
-                         NmeaSvMeta& svMeta, char* sentence, size_t size);
-    void generateNmeaRMC(const UlpLocation& ulpLocation,
-                         const GpsLocationExtended& locationExtended,
-                         NmeaSvMeta& svMeta, tm& utcTime, char* sentence, size_t size);
-    void generateNmeaGGA(const UlpLocation& ulpLocation,
-                         const GpsLocationExtended& locationExtended,
-                         NmeaSvMeta& svMeta, tm& utcTime, uint32_t svUsedCount,
-                         char* sentence, size_t size);
-    /*======== UTILITIES ================================================================*/
-    int nmeaPutChecksum(char *nmea, size_t maxSize);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);

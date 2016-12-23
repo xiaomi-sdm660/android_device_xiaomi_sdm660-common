@@ -197,7 +197,7 @@ static uint32_t gnssDeleteAidingData(GnssAidingData& data)
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->gnssDeleteAidingDataCommand(data);
     } else {
-        return NULL;
+        return 0;
     }
 }
 

@@ -1,7 +1,8 @@
 AM_CFLAGS = -I./ \
             -I../utils \
             $(LOCPLA_CFLAGS) \
-           -I$(WORKSPACE)/gps-noship/flp \
+            $(GPSUTILS_CFLAGS) \
+            -I$(WORKSPACE)/gps-noship/flp \
             -D__func__=__PRETTY_FUNCTION__ \
             -fno-short-enums
 
@@ -12,9 +13,6 @@ libloc_core_la_h_sources = \
            LocDualContext.h \
            LBSProxyBase.h \
            UlpProxyBase.h \
-           loc_gps.h \
-           gps_extended_c.h \
-           gps_extended.h \
            loc_core_log.h \
            LocAdapterProxyBase.h \
            SystemStatus.h
@@ -43,7 +41,7 @@ libloc_core_la_LDFLAGS = -Wl,-z,defs -lpthread -shared -version-info 1:0:0
 libloc_core_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libloc_core_la_LIBADD = -lstdc++ -ldl $(LOCPLA_LIBS) ../utils/libgps_utils_so.la
+libloc_core_la_LIBADD = -lstdc++ -ldl $(LOCPLA_LIBS) $(GPSUTILS_LIBS)
 
 #Create and Install libraries
 lib_LTLIBRARIES = libloc_core.la

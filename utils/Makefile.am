@@ -1,10 +1,8 @@
 AM_CFLAGS = -Wundef \
-         -MD \
-         -Wno-trigraphs \
-         -g -O0 \
-         -fno-inline \
-         -fno-short-enums \
-         -fpic \
+         -I./ \
+         $(LOCPLA_CFLAGS)
+
+AM_CPPFLAGS = -Wundef \
          -I./ \
          $(LOCPLA_CFLAGS)
 
@@ -19,7 +17,11 @@ libgps_utils_so_la_h_sources = \
         LocHeap.h \
         LocThread.h \
         LocTimer.h \
-        loc_misc_utils.h
+        loc_misc_utils.h \
+        loc_nmea.h \
+        gps_extended_c.h \
+        gps_extended.h \
+        loc_gps.h
 
 libgps_utils_so_la_c_sources = \
         linked_list.c \
@@ -31,9 +33,9 @@ libgps_utils_so_la_c_sources = \
         LocTimer.cpp \
         LocThread.cpp \
         MsgTask.cpp \
-        loc_misc_utils.cpp
+        loc_misc_utils.cpp \
+        loc_nmea.cpp
 
-library_includedir = $(pkgincludedir)/utils
 
 library_include_HEADERS = $(libgps_utils_so_la_h_sources)
 
@@ -53,3 +55,8 @@ libgps_utils_so_la_LIBADD = -lcutils -lstdc++ -llog $(LOCPLA_LIBS)
 
 #Create and Install libraries
 lib_LTLIBRARIES = libgps_utils_so.la
+library_includedir = $(pkgincludedir)
+pkgconfigdir = $(libdir)/pkgconfig
+
+pkgconfig_DATA = gps-utils.pc
+EXTRA_DIST = $(pkgconfig_DATA)

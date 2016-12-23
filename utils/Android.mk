@@ -25,7 +25,8 @@ LOCAL_SRC_FILES += \
     LocTimer.cpp \
     LocThread.cpp \
     MsgTask.cpp \
-    loc_misc_utils.cpp
+    loc_misc_utils.cpp \
+    loc_nmea.cpp
 
 # Flag -std=c++11 is not accepted by compiler when LOCAL_CLANG is set to true
 LOCAL_CFLAGS += \
@@ -40,7 +41,8 @@ LOCAL_LDFLAGS += -Wl,--export-dynamic
 
 ## Includes
 LOCAL_C_INCLUDES:= \
-    $(TARGET_OUT_HEADERS)/libloc_pla
+    $(TARGET_OUT_HEADERS)/libloc_pla \
+    $(TARGET_OUT_HEADERS)/liblocation_api \
 
 LOCAL_COPY_HEADERS_TO:= gps.utils/
 LOCAL_COPY_HEADERS:= \
@@ -56,7 +58,11 @@ LOCAL_COPY_HEADERS:= \
    loc_target.h \
    loc_timer.h \
    LocSharedLock.h \
-   loc_misc_utils.h
+   loc_misc_utils.h \
+   loc_nmea.h \
+   gps_extended_c.h \
+   gps_extended.h \
+   loc_gps.h
 
 LOCAL_MODULE := libgps.utils
 
