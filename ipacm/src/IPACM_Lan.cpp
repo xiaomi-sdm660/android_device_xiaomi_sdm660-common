@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -1796,6 +1796,8 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 	uint32_t tx_index;
 	int eth_index,v6_num;
 	const int NUM = 1;
+	char cmd[200] = {0};
+	uint32_t ipv4_addr;
 
 	if(tx_prop == NULL)
 	{
@@ -1873,6 +1875,17 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
                 IPACMDBG_H("client(%d): v4 header handle:(0x%x)\n",
 		  				 eth_index,
 		  				 get_client_memptr(eth_client, eth_index)->hdr_hdl_v4);
+
+				/* add static arp entry */
+				ipv4_addr = get_client_memptr(eth_client, eth_index)->v4_addr;
+				snprintf(cmd, sizeof(cmd), "ip neighbor change %d.%d.%d.%d lladdr %02x:%02x:%02x:%02x:%02x:%02x dev %s nud permanent",
+					(unsigned char)(ipv4_addr >> 24), (unsigned char)(ipv4_addr >> 16),
+					(unsigned char)(ipv4_addr >> 8), (unsigned char)ipv4_addr,
+					mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5],
+					dev_name);
+				IPACMDBG_H("%s\n", cmd);
+				system(cmd);
+
 				strlcpy(rt_rule->rt_tbl_name,
 								IPACM_Iface::ipacmcfg->rt_tbl_lan_v4.name,
 								sizeof(rt_rule->rt_tbl_name));
@@ -2327,6 +2340,8 @@ int IPACM_Lan::handle_eth_client_down_evt(uint8_t *mac_addr)
 	uint32_t tx_index;
 	int num_eth_client_tmp = num_eth_client;
 	int num_v6;
+	char cmd[200] = {0};
+	uint32_t ipv4_addr;
 
 	IPACMDBG_H("total client: %d\n", num_eth_client_tmp);
 
@@ -2384,6 +2399,13 @@ int IPACM_Lan::handle_eth_client_down_evt(uint8_t *mac_addr)
 	get_client_memptr(eth_client, clt_indx)->ipv6_header_set = false;
 	get_client_memptr(eth_client, clt_indx)->route_rule_set_v4 = false;
 	get_client_memptr(eth_client, clt_indx)->route_rule_set_v6 = 0;
+
+	ipv4_addr = get_client_memptr(eth_client, clt_indx)->v4_addr;
+	snprintf(cmd, sizeof(cmd), "ip neighbor del %d.%d.%d.%d dev %s",
+		(unsigned char)(ipv4_addr >> 24), (unsigned char)(ipv4_addr >> 16),
+		(unsigned char)(ipv4_addr >> 8), (unsigned char)ipv4_addr, dev_name);
+	system(cmd);
+	IPACMDBG_H("%s\n", cmd);
 
 	for (; clt_indx < num_eth_client_tmp - 1; clt_indx++)
 	{
@@ -2450,6 +2472,8 @@ int IPACM_Lan::handle_down_evt()
 {
 	int i;
 	int res = IPACM_SUCCESS;
+	char cmd[200] = {0};
+	uint32_t ipv4_addr;
 
 	IPACMDBG_H("lan handle_down_evt\n ");
 	if (ipa_if_cate == ODU_IF)
@@ -2640,6 +2664,13 @@ fail:
 	IPACMDBG_H("left %d eth clients need to be deleted \n ", num_eth_client);
 	for (i = 0; i < num_eth_client; i++)
 	{
+		ipv4_addr = get_client_memptr(eth_client, i)->v4_addr;
+		snprintf(cmd, sizeof(cmd), "ip neighbor del %d.%d.%d.%d dev %s",
+			(unsigned char)(ipv4_addr >> 24), (unsigned char)(ipv4_addr >> 16),
+			(unsigned char)(ipv4_addr >> 8), (unsigned char)ipv4_addr, dev_name);
+		system(cmd);
+		IPACMDBG_H("%s\n", cmd);
+
 		/* First reset nat rules and then route rules */
 		if(get_client_memptr(eth_client, i)->ipv4_set == true)
 		{
