@@ -76,7 +76,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 				IPACMERR("IPA_WLAN_CLIENT_ADD_EVENT_EX: not supported iface id: %d\n", data->if_index);
 				break;
 			}
-			uint8_t client_mac_addr[6];
+			uint8_t client_mac_addr[6] = {0};
 
 			IPACMDBG_H("Received IPA_WLAN_CLIENT_ADD_EVENT\n");
 			for(i = 0; i < data->num_of_attribs; i++)

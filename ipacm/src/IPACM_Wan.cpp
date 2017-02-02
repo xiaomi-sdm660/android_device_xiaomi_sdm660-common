@@ -129,6 +129,9 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	is_xlat = false;
 	hdr_hdl_dummy_v6 = 0;
 	hdr_proc_hdl_dummy_v6 = 0;
+	is_default_gateway = false;
+	m_fd_ipa = 0;
+	wan_client_len = 0;
 
 	if(iface_query != NULL)
 	{
@@ -4288,7 +4291,8 @@ int IPACM_Wan::config_dft_embms_rules(ipa_ioc_add_flt_rule *pFilteringTable_v4, 
 int IPACM_Wan::handle_down_evt()
 {
 	int res = IPACM_SUCCESS;
-	int i;
+	int i, tether_total;
+	int ipa_if_num_tether_tmp[IPA_MAX_IFACE_ENTRIES];
 
 	IPACMDBG_H(" wan handle_down_evt \n");
 
@@ -4309,22 +4313,50 @@ int IPACM_Wan::handle_down_evt()
 	/* make sure default routing rules and firewall rules are deleted*/
 	if (active_v4)
 	{
-	   	if (rx_prop != NULL)
-	    {
+		if (rx_prop != NULL)
+		{
 			del_dft_firewall_rules(IPA_IP_v4);
 		}
 		handle_route_del_evt(IPA_IP_v4);
 		IPACMDBG_H("Delete default v4 routing rules\n");
+#ifdef IPA_WAN_MSG_IPv6_ADDR_GW_LEN
+		/* posting wan_down_tether for all lan clients */
+		for (i=0; i < IPACM_Wan::ipa_if_num_tether_v4_total; i++)
+		{
+			ipa_if_num_tether_tmp[i] = IPACM_Wan::ipa_if_num_tether_v4[i];
+		}
+		tether_total = IPACM_Wan::ipa_if_num_tether_v4_total;
+		for (i=0; i < tether_total; i++)
+		{
+			post_wan_down_tether_evt(IPA_IP_v4, ipa_if_num_tether_tmp[i]);
+			IPACMDBG_H("post_wan_down_tether_v4 iface(%d: %s)\n", i,
+				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether_tmp[i]].iface_name);
+		}
+#endif
 	}
 
 	if (active_v6)
 	{
-	   	if (rx_prop != NULL)
-	    {
+		if (rx_prop != NULL)
+		{
 			del_dft_firewall_rules(IPA_IP_v6);
 		}
 		handle_route_del_evt(IPA_IP_v6);
 		IPACMDBG_H("Delete default v6 routing rules\n");
+#ifdef IPA_WAN_MSG_IPv6_ADDR_GW_LEN
+		/* posting wan_down_tether for all lan clients */
+		for (i=0; i < IPACM_Wan::ipa_if_num_tether_v6_total; i++)
+		{
+			ipa_if_num_tether_tmp[i] = IPACM_Wan::ipa_if_num_tether_v6[i];
+		}
+		tether_total = IPACM_Wan::ipa_if_num_tether_v6_total;
+		for (i=0; i < tether_total; i++)
+		{
+			post_wan_down_tether_evt(IPA_IP_v6, ipa_if_num_tether_tmp[i]);
+			IPACMDBG_H("post_wan_down_tether_v6 iface(%d: %s)\n", i,
+				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether_tmp[i]].iface_name);
+		}
+#endif
 	}
 
 	/* Delete default v4 RT rule */
