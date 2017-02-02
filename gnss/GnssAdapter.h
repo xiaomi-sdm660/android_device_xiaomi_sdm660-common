@@ -33,6 +33,7 @@
 #include <LocDualContext.h>
 #include <UlpProxyBase.h>
 #include <LocationAPI.h>
+#include <Agps.h>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -94,6 +95,10 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== NI ============================================================================= */
     NiData mNiData;
+
+    /* ==== AGPS ========================================================*/
+    // This must be initialized via initAgps()
+    AgpsManager mAgpsManager;
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const LocationOptions& options);
@@ -177,6 +182,14 @@ public:
     void setConfigCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
     uint32_t gnssDeleteAidingDataCommand(GnssAidingData& data);
+
+    void initAgpsCommand(void* statusV4Cb);
+    void dataConnOpenCommand(
+            AGpsExtType agpsType,
+            const char* apnName, int apnLen, LocApnIpType ipType);
+    void dataConnClosedCommand(AGpsExtType agpsType);
+    void dataConnFailedCommand(AGpsExtType agpsType);
+
     /* ======== RESPONSES ================================================================== */
     void reportResponse(LocationError err, uint32_t sessionId);
     void reportResponse(size_t count, LocationError* errs, uint32_t* ids);
@@ -201,6 +214,13 @@ public:
     virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify);
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
+
+    virtual bool requestATL(int connHandle, LocAGpsType agps_type);
+    virtual bool releaseATL(int connHandle);
+    virtual bool requestSuplES(int connHandle);
+    virtual bool reportDataCallOpened();
+    virtual bool reportDataCallClosed();
+
     /* ======== UTILITIES ================================================================= */
     void reportPosition(const UlpLocation &ulpLocation,
                         const GpsLocationExtended &locationExtended,

@@ -39,6 +39,7 @@
 #include <GnssAdapter.h>
 #include <string>
 #include <loc_log.h>
+#include <Agps.h>
 
 using namespace loc_core;
 
@@ -55,7 +56,8 @@ GnssAdapter::GnssAdapter() :
     mGnssSvIdUsedInPosAvail(false),
     mControlCallbacks(),
     mPowerVoteId(0),
-    mNiData()
+    mNiData(),
+    mAgpsManager()
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mUlpPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -2877,4 +2879,335 @@ GnssAdapter::generateNmeaGGA(const UlpLocation& ulpLocation,
 
     length = nmeaPutChecksum(sentence, size);
     reportNmeaEvent(sentence, length);
+}
+
+/* INIT LOC AGPS MANAGER */
+void GnssAdapter::initAgpsCommand(void* statusV4Cb){
+
+    LOC_LOGI("GnssAdapter::initAgpsCommand");
+
+    /* Set ATL open/close callbacks */
+    AgpsAtlOpenStatusCb atlOpenStatusCb =
+            [this](int handle, int isSuccess, char* apn,
+                    AGpsBearerType bearerType, AGpsExtType agpsType) {
+
+                mLocApi->atlOpenStatus(
+                        handle, isSuccess, apn, bearerType, agpsType);
+            };
+    AgpsAtlCloseStatusCb atlCloseStatusCb =
+            [this](int handle, int isSuccess) {
+
+                mLocApi->atlCloseStatus(handle, isSuccess);
+            };
+
+    /* Register DS Client APIs */
+    AgpsDSClientInitFn dsClientInitFn =
+            [this](bool isDueToSSR) {
+
+                return mLocApi->initDataServiceClient(isDueToSSR);
+            };
+
+    AgpsDSClientOpenAndStartDataCallFn dsClientOpenAndStartDataCallFn =
+            [this] {
+
+                return mLocApi->openAndStartDataCall();
+            };
+
+    AgpsDSClientStopDataCallFn dsClientStopDataCallFn =
+            [this] {
+
+                mLocApi->stopDataCall();
+            };
+
+    AgpsDSClientCloseDataCallFn dsClientCloseDataCallFn =
+            [this] {
+
+                mLocApi->closeDataCall();
+            };
+
+    AgpsDSClientReleaseFn dsClientReleaseFn =
+            [this] {
+
+                mLocApi->releaseDataServiceClient();
+            };
+
+    /* Send Msg function */
+    SendMsgToAdapterMsgQueueFn sendMsgFn =
+            [this](LocMsg* msg) {
+
+                sendMsg(msg);
+            };
+
+    /* Message to initialize AGPS module */
+    struct AgpsMsgInit: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+
+        AgpsFrameworkInterface::AgnssStatusIpV4Cb mFrameworkStatusV4Cb;
+
+        AgpsAtlOpenStatusCb mAtlOpenStatusCb;
+        AgpsAtlCloseStatusCb mAtlCloseStatusCb;
+
+        AgpsDSClientInitFn mDSClientInitFn;
+        AgpsDSClientOpenAndStartDataCallFn mDSClientOpenAndStartDataCallFn;
+        AgpsDSClientStopDataCallFn mDSClientStopDataCallFn;
+        AgpsDSClientCloseDataCallFn mDSClientCloseDataCallFn;
+        AgpsDSClientReleaseFn mDSClientReleaseFn;
+
+        SendMsgToAdapterMsgQueueFn mSendMsgFn;
+
+        inline AgpsMsgInit(AgpsManager* agpsManager,
+                AgpsFrameworkInterface::AgnssStatusIpV4Cb frameworkStatusV4Cb,
+                AgpsAtlOpenStatusCb atlOpenStatusCb,
+                AgpsAtlCloseStatusCb atlCloseStatusCb,
+                AgpsDSClientInitFn dsClientInitFn,
+                AgpsDSClientOpenAndStartDataCallFn dsClientOpenAndStartDataCallFn,
+                AgpsDSClientStopDataCallFn dsClientStopDataCallFn,
+                AgpsDSClientCloseDataCallFn dsClientCloseDataCallFn,
+                AgpsDSClientReleaseFn dsClientReleaseFn,
+                SendMsgToAdapterMsgQueueFn sendMsgFn) :
+                LocMsg(), mAgpsManager(agpsManager), mFrameworkStatusV4Cb(
+                        frameworkStatusV4Cb), mAtlOpenStatusCb(atlOpenStatusCb), mAtlCloseStatusCb(
+                        atlCloseStatusCb), mDSClientInitFn(dsClientInitFn), mDSClientOpenAndStartDataCallFn(
+                        dsClientOpenAndStartDataCallFn), mDSClientStopDataCallFn(
+                        dsClientStopDataCallFn), mDSClientCloseDataCallFn(
+                        dsClientCloseDataCallFn), mDSClientReleaseFn(
+                        dsClientReleaseFn), mSendMsgFn(sendMsgFn) {
+
+            LOC_LOGV("AgpsMsgInit");
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgInit::proc()");
+
+            mAgpsManager->registerCallbacks(mFrameworkStatusV4Cb, mAtlOpenStatusCb,
+                    mAtlCloseStatusCb, mDSClientInitFn,
+                    mDSClientOpenAndStartDataCallFn, mDSClientStopDataCallFn,
+                    mDSClientCloseDataCallFn, mDSClientReleaseFn, mSendMsgFn);
+
+            mAgpsManager->createAgpsStateMachines();
+        }
+    };
+
+    /* Send message to initialize AGPS Manager */
+    sendMsg(new AgpsMsgInit(
+                &mAgpsManager,
+                (AgpsFrameworkInterface::AgnssStatusIpV4Cb)statusV4Cb,
+                atlOpenStatusCb, atlCloseStatusCb,
+                dsClientInitFn, dsClientOpenAndStartDataCallFn,
+                dsClientStopDataCallFn, dsClientCloseDataCallFn,
+                dsClientReleaseFn,
+                sendMsgFn));
+}
+
+/* GnssAdapter::requestATL
+ * Method triggered in QMI thread as part of handling below message:
+ * eQMI_LOC_SERVER_REQUEST_OPEN_V02
+ * Triggers the AGPS state machine to setup AGPS call for below WWAN types:
+ * eQMI_LOC_WWAN_TYPE_INTERNET_V02
+ * eQMI_LOC_WWAN_TYPE_AGNSS_V02 */
+bool GnssAdapter::requestATL(int connHandle, LocAGpsType agpsType){
+
+    LOC_LOGI("GnssAdapter::requestATL");
+
+    sendMsg( new AgpsMsgRequestATL(
+             &mAgpsManager, connHandle, (AGpsExtType)agpsType));
+
+    return true;
+}
+
+/* GnssAdapter::requestSuplES
+ * Method triggered in QMI thread as part of handling below message:
+ * eQMI_LOC_SERVER_REQUEST_OPEN_V02
+ * Triggers the AGPS state machine to setup AGPS call for below WWAN types:
+ * eQMI_LOC_WWAN_TYPE_AGNSS_EMERGENCY_V02 */
+bool GnssAdapter::requestSuplES(int connHandle){
+
+    LOC_LOGI("GnssAdapter::requestSuplES");
+
+    sendMsg( new AgpsMsgRequestATL(
+             &mAgpsManager, connHandle, LOC_AGPS_TYPE_SUPL_ES));
+
+    return true;
+}
+
+/* GnssAdapter::releaseATL
+ * Method triggered in QMI thread as part of handling below message:
+ * eQMI_LOC_SERVER_REQUEST_CLOSE_V02
+ * Triggers teardown of an existing AGPS call */
+bool GnssAdapter::releaseATL(int connHandle){
+
+    LOC_LOGI("GnssAdapter::releaseATL");
+
+    /* Release SUPL/INTERNET/SUPL_ES ATL */
+    struct AgpsMsgReleaseATL: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+        int mConnHandle;
+
+        inline AgpsMsgReleaseATL(AgpsManager* agpsManager, int connHandle) :
+                LocMsg(), mAgpsManager(agpsManager), mConnHandle(connHandle) {
+
+            LOC_LOGV("AgpsMsgReleaseATL");
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgReleaseATL::proc()");
+            mAgpsManager->releaseATL(mConnHandle);
+        }
+    };
+
+    sendMsg( new AgpsMsgReleaseATL(&mAgpsManager, connHandle));
+
+    return true;
+}
+
+/* GnssAdapter::reportDataCallOpened
+ * DS Client data call opened successfully.
+ * Send message to AGPS Manager to handle. */
+bool GnssAdapter::reportDataCallOpened(){
+
+    LOC_LOGI("GnssAdapter::reportDataCallOpened");
+
+    struct AgpsMsgSuplEsOpened: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+
+        inline AgpsMsgSuplEsOpened(AgpsManager* agpsManager) :
+                LocMsg(), mAgpsManager(agpsManager) {
+
+            LOC_LOGV("AgpsMsgSuplEsOpened");
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgSuplEsOpened::proc()");
+            mAgpsManager->reportDataCallOpened();
+        }
+    };
+
+    sendMsg( new AgpsMsgSuplEsOpened(&mAgpsManager));
+
+    return true;
+}
+
+/* GnssAdapter::reportDataCallClosed
+ * DS Client data call closed.
+ * Send message to AGPS Manager to handle. */
+bool GnssAdapter::reportDataCallClosed(){
+
+    LOC_LOGI("GnssAdapter::reportDataCallClosed");
+
+    struct AgpsMsgSuplEsClosed: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+
+        inline AgpsMsgSuplEsClosed(AgpsManager* agpsManager) :
+                LocMsg(), mAgpsManager(agpsManager) {
+
+            LOC_LOGV("AgpsMsgSuplEsClosed");
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgSuplEsClosed::proc()");
+            mAgpsManager->reportDataCallClosed();
+        }
+    };
+
+    sendMsg( new AgpsMsgSuplEsClosed(&mAgpsManager));
+
+    return true;
+}
+
+void GnssAdapter::dataConnOpenCommand(
+        AGpsExtType agpsType,
+        const char* apnName, int apnLen, LocApnIpType ipType){
+
+    LOC_LOGI("GnssAdapter::frameworkDataConnOpen");
+
+    struct AgpsMsgAtlOpenSuccess: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+        AGpsExtType mAgpsType;
+        char* mApnName;
+        int mApnLen;
+        LocApnIpType mIpType;
+
+        inline AgpsMsgAtlOpenSuccess(AgpsManager* agpsManager, AGpsExtType agpsType,
+                const char* apnName, int apnLen, LocApnIpType ipType) :
+                LocMsg(), mAgpsManager(agpsManager), mAgpsType(agpsType), mApnName(
+                        new char[apnLen + 1]), mApnLen(apnLen), mIpType(ipType) {
+
+            LOC_LOGV("AgpsMsgAtlOpenSuccess");
+            memcpy(mApnName, apnName, apnLen);
+            mApnName[apnLen] = 0;
+        }
+
+        inline ~AgpsMsgAtlOpenSuccess() {
+            delete[] mApnName;
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgAtlOpenSuccess::proc()");
+            mAgpsManager->reportAtlOpenSuccess(mAgpsType, mApnName, mApnLen,
+                    mIpType);
+        }
+    };
+
+    sendMsg( new AgpsMsgAtlOpenSuccess(
+            &mAgpsManager, (AGpsExtType)agpsType, apnName, apnLen, ipType));
+}
+
+void GnssAdapter::dataConnClosedCommand(AGpsExtType agpsType){
+
+    LOC_LOGI("GnssAdapter::frameworkDataConnClosed");
+
+    struct AgpsMsgAtlClosed: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+        AGpsExtType mAgpsType;
+
+        inline AgpsMsgAtlClosed(AgpsManager* agpsManager, AGpsExtType agpsType) :
+                LocMsg(), mAgpsManager(agpsManager), mAgpsType(agpsType) {
+
+            LOC_LOGV("AgpsMsgAtlClosed");
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgAtlClosed::proc()");
+            mAgpsManager->reportAtlClosed(mAgpsType);
+        }
+    };
+
+    sendMsg( new AgpsMsgAtlClosed(&mAgpsManager, (AGpsExtType)agpsType));
+}
+
+void GnssAdapter::dataConnFailedCommand(AGpsExtType agpsType){
+
+    LOC_LOGI("GnssAdapter::frameworkDataConnFailed");
+
+    struct AgpsMsgAtlOpenFailed: public LocMsg {
+
+        AgpsManager* mAgpsManager;
+        AGpsExtType mAgpsType;
+
+        inline AgpsMsgAtlOpenFailed(AgpsManager* agpsManager, AGpsExtType agpsType) :
+                LocMsg(), mAgpsManager(agpsManager), mAgpsType(agpsType) {
+
+            LOC_LOGV("AgpsMsgAtlOpenFailed");
+        }
+
+        inline virtual void proc() const {
+
+            LOC_LOGV("AgpsMsgAtlOpenFailed::proc()");
+            mAgpsManager->reportAtlOpenFailed(mAgpsType);
+        }
+    };
+
+    sendMsg( new AgpsMsgAtlOpenFailed(&mAgpsManager, (AGpsExtType)agpsType));
 }

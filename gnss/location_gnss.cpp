@@ -54,6 +54,11 @@ static uint32_t* gnssUpdateConfig(GnssConfig config);
 static void injectLocation(double latitude, double longitude, float accuracy);
 static void injectTime(int64_t time, int64_t timeReference, int32_t uncertainty);
 
+static void agpsInit(void* statusV4Cb);
+static void agpsDataConnOpen(AGpsExtType agpsType, const char* apnName, int apnLen, int ipType);
+static void agpsDataConnClosed(AGpsExtType agpsType);
+static void agpsDataConnFailed(AGpsExtType agpsType);
+
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
     initialize,
@@ -71,7 +76,11 @@ static const GnssInterface gGnssInterface = {
     gnssUpdateConfig,
     gnssDeleteAidingData,
     injectLocation,
-    injectTime
+    injectTime,
+    agpsInit,
+    agpsDataConnOpen,
+    agpsDataConnClosed,
+    agpsDataConnFailed
 };
 
 #ifndef DEBUG_X86
@@ -204,3 +213,29 @@ static void injectTime(int64_t time, int64_t timeReference, int32_t uncertainty)
    }
 }
 
+static void agpsInit(void* statusV4Cb) {
+
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->initAgpsCommand(statusV4Cb);
+    }
+}
+static void agpsDataConnOpen(
+        AGpsExtType agpsType, const char* apnName, int apnLen, int ipType) {
+
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->dataConnOpenCommand(
+                agpsType, apnName, apnLen, ipType);
+    }
+}
+static void agpsDataConnClosed(AGpsExtType agpsType) {
+
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->dataConnClosedCommand(agpsType);
+    }
+}
+static void agpsDataConnFailed(AGpsExtType agpsType) {
+
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->dataConnFailedCommand(agpsType);
+    }
+}

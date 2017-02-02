@@ -23,6 +23,7 @@
 #include <log_util.h>
 #include "Gnss.h"
 #include "AGnss.h"
+#include <gps_extended_c.h>
 
 namespace android {
 namespace hardware {
@@ -30,7 +31,71 @@ namespace gnss {
 namespace V1_0 {
 namespace implementation {
 
+sp<IAGnssCallback> AGnss::sAGnssCbIface = nullptr;
+
 AGnss::AGnss(Gnss* gnss) : mGnss(gnss) {
+}
+
+void AGnss::agnssStatusIpV4Cb(IAGnssCallback::AGnssStatusIpV4 status){
+
+    sAGnssCbIface->agnssStatusIpV4Cb(status);
+}
+
+Return<void> AGnss::setCallback(const sp<IAGnssCallback>& callback) {
+
+    if(mGnss == nullptr || mGnss->getGnssInterface() == nullptr){
+        LOC_LOGE("Null GNSS interface");
+        return Void();
+    }
+
+    // Save the interface
+    sAGnssCbIface = callback;
+
+    mGnss->getGnssInterface()->agpsInit((void*)agnssStatusIpV4Cb);
+    return Void();
+}
+
+Return<bool> AGnss::dataConnClosed() {
+
+    if(mGnss == nullptr || mGnss->getGnssInterface() == nullptr){
+        LOC_LOGE("Null GNSS interface");
+        return false;
+    }
+
+    mGnss->getGnssInterface()->agpsDataConnClosed(LOC_AGPS_TYPE_SUPL);
+    return true;
+}
+
+Return<bool> AGnss::dataConnFailed() {
+
+    if(mGnss == nullptr || mGnss->getGnssInterface() == nullptr){
+        LOC_LOGE("Null GNSS interface");
+        return false;
+    }
+
+    mGnss->getGnssInterface()->agpsDataConnFailed(LOC_AGPS_TYPE_SUPL);
+    return true;
+}
+
+Return<bool> AGnss::dataConnOpen(const hidl_string& apn,
+        IAGnss::ApnIpType apnIpType) {
+
+    if(mGnss == nullptr || mGnss->getGnssInterface() == nullptr){
+        LOC_LOGE("Null GNSS interface");
+        return false;
+    }
+
+    /* Validate */
+    if(apn.empty()){
+        LOC_LOGE("Invalid APN");
+        return false;
+    }
+
+    LOC_LOGD("dataConnOpen APN name = [%s]", apn.c_str());
+
+    mGnss->getGnssInterface()->agpsDataConnOpen(
+            LOC_AGPS_TYPE_SUPL, apn.c_str(), apn.size(), (int)apnIpType);
+    return true;
 }
 
 Return<bool> AGnss::setServer(IAGnssCallback::AGnssType type,

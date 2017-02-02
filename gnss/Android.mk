@@ -20,7 +20,8 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_SRC_FILES += \
     location_gnss.cpp \
-    GnssAdapter.cpp
+    GnssAdapter.cpp \
+    Agps.cpp
 
 LOCAL_CFLAGS += \
      -fno-short-enums \

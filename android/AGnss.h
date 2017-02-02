@@ -40,35 +40,31 @@ using ::android::sp;
 
 struct Gnss;
 struct AGnss : public IAGnss {
+
     AGnss(Gnss* gnss);
     ~AGnss() = default;
     /*
      * Methods from ::android::hardware::gnss::V1_0::IAGnss interface follow.
      * These declarations were generated from IAGnss.hal.
      */
-    inline Return<void> setCallback(const sp<IAGnssCallback>& /*callback*/) override {
-        return Void();
-    }
+    Return<void> setCallback(const sp<IAGnssCallback>& callback) override;
 
-    inline Return<bool> dataConnClosed() override {
-        return false;
-    }
+    Return<bool> dataConnClosed() override;
 
-    inline Return<bool> dataConnFailed() override {
-        return false;
-    }
+    Return<bool> dataConnFailed() override;
 
-    inline Return<bool> dataConnOpen(const hidl_string& /*apn*/,
-                                           IAGnss::ApnIpType /*apnIpType*/) override {
-        return false;
-    }
+    Return<bool> dataConnOpen(const hidl_string& apn,
+            IAGnss::ApnIpType apnIpType) override;
 
     Return<bool> setServer(IAGnssCallback::AGnssType type,
                          const hidl_string& hostname, int32_t port) override;
 
+    /* Data call setup callback passed down to GNSS HAL implementation */
+    static void agnssStatusIpV4Cb(IAGnssCallback::AGnssStatusIpV4 status);
 
  private:
     Gnss* mGnss = nullptr;
+    static sp<IAGnssCallback> sAGnssCbIface;
 };
 
 }  // namespace implementation
