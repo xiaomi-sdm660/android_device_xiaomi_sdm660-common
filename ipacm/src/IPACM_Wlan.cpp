@@ -83,6 +83,7 @@ IPACM_Wlan::IPACM_Wlan(int iface_index) : IPACM_Lan(iface_index)
 	num_wifi_client = 0;
 	header_name_count = 0;
 	wlan_client = NULL;
+	wlan_client_len = 0;
 
 	if(iface_query != NULL)
 	{
