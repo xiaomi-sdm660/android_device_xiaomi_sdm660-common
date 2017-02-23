@@ -17,8 +17,8 @@ LOCAL_SRC_FILES += \
     location_api/LocationUtil.cpp \
     location_api/GnssAPIClient.cpp \
     location_api/GeofenceAPIClient.cpp \
-    location_api/FlpAPIClient.cpp \
-    location_api/GnssMeasurementAPIClient.cpp \
+    location_api/BatchingAPIClient.cpp \
+    location_api/MeasurementAPIClient.cpp \
 
 LOCAL_C_INCLUDES:= \
     $(LOCAL_PATH)/location_api \

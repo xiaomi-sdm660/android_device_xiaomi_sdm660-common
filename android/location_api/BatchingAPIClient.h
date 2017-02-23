@@ -27,14 +27,14 @@
  *
  */
 
-#ifndef GNSS_MEASUREMENT_API_CLINET_H
-#define GNSS_MEASUREMENT_API_CLINET_H
+#ifndef BATCHING_API_CLINET_H
+#define BATCHING_API_CLINET_H
 
+#include <android/hardware/gnss/1.0/IGnssBatching.h>
+#include <android/hardware/gnss/1.0/IGnssBatchingCallback.h>
+#include <pthread.h>
 
-#include <android/hardware/gnss/1.0/IGnssMeasurement.h>
-#include <android/hardware/gnss/1.0/IGnssMeasurementCallback.h>
 #include <LocationAPIClientBase.h>
-#include <hidl/Status.h>
 
 namespace android {
 namespace hardware {
@@ -42,35 +42,29 @@ namespace gnss {
 namespace V1_0 {
 namespace implementation {
 
-using ::android::hardware::gnss::V1_0::IGnssMeasurement;
-using ::android::sp;
-
-class GnssMeasurementAPIClient : public LocationAPIClientBase
+class BatchingAPIClient : public LocationAPIClientBase
 {
 public:
-    GnssMeasurementAPIClient();
-    virtual ~GnssMeasurementAPIClient();
-    GnssMeasurementAPIClient(const GnssMeasurementAPIClient&) = delete;
-    GnssMeasurementAPIClient& operator=(const GnssMeasurementAPIClient&) = delete;
+    BatchingAPIClient(const sp<IGnssBatchingCallback>& callback);
+    ~BatchingAPIClient();
+    int getBatchSize();
+    int startSession(const IGnssBatching::Options& options);
+    int updateSessionOptions(const IGnssBatching::Options& options);
+    int stopSession();
+    void getBatchedLocation(int last_n_locations);
+    void flushBatchedLocations();
 
-    // for GpsMeasurementInterface
-    Return<IGnssMeasurement::GnssMeasurementStatus> gnssMeasurementSetCallback(
-            const sp<IGnssMeasurementCallback>& callback);
-    void gnssMeasurementClose();
+    inline LocationCapabilitiesMask getCapabilities() { return mLocationCapabilitiesMask; }
 
-    // callbacks we are interested in
+    // callbacks
     void onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask) final;
-    void onGnssMeasurementsCb(GnssMeasurementsNotification gnssMeasurementsNotification) final;
+    void onBatchingCb(size_t count, Location* location) final;
 
 private:
-    pthread_mutex_t mLock;
-    pthread_cond_t mCond;
-
-    sp<IGnssMeasurementCallback> mGnssMeasurementCbIface;
-
+    sp<IGnssBatchingCallback> mGnssBatchingCbIface;
+    uint32_t mDefaultId;
+    int mBatchSize;
     LocationCapabilitiesMask mLocationCapabilitiesMask;
-
-    LocationOptions mLocationOptions;
 };
 
 }  // namespace implementation
@@ -78,4 +72,4 @@ private:
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
-#endif // GNSS_MEASUREMENT_API_CLINET_H
+#endif // BATCHING_API_CLINET_H

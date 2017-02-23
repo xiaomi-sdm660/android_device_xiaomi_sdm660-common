@@ -28,13 +28,13 @@
  */
 
 #define LOG_NDDEBUG 0
-#define LOG_TAG "LocSvc_FlpAPIClient"
+#define LOG_TAG "LocSvc_BatchingAPIClient"
 
 #include <log_util.h>
 #include <loc_cfg.h>
 
 #include "LocationUtil.h"
-#include "FlpAPIClient.h"
+#include "BatchingAPIClient.h"
 
 namespace android {
 namespace hardware {
@@ -45,7 +45,7 @@ namespace implementation {
 static void convertBatchOption(const IGnssBatching::Options& in, LocationOptions& out,
         LocationCapabilitiesMask mask);
 
-FlpAPIClient::FlpAPIClient(const sp<IGnssBatchingCallback>& callback) :
+BatchingAPIClient::BatchingAPIClient(const sp<IGnssBatchingCallback>& callback) :
     LocationAPIClientBase(),
     mGnssBatchingCbIface(callback),
     mDefaultId(42),
@@ -74,18 +74,18 @@ FlpAPIClient::FlpAPIClient(const sp<IGnssBatchingCallback>& callback) :
     locAPISetCallbacks(locationCallbacks);
 }
 
-FlpAPIClient::~FlpAPIClient()
+BatchingAPIClient::~BatchingAPIClient()
 {
     LOC_LOGD("%s]: ()", __FUNCTION__);
 }
 
-int FlpAPIClient::flpGetBatchSize()
+int BatchingAPIClient::getBatchSize()
 {
     LOC_LOGD("%s]: ()", __FUNCTION__);
     return locAPIGetBatchSize();
 }
 
-int FlpAPIClient::flpStartSession(const IGnssBatching::Options& opts)
+int BatchingAPIClient::startSession(const IGnssBatching::Options& opts)
 {
     LOC_LOGD("%s]: (%lld %d)", __FUNCTION__,
             static_cast<long long>(opts.periodNanos), static_cast<uint8_t>(opts.flags));
@@ -102,7 +102,7 @@ int FlpAPIClient::flpStartSession(const IGnssBatching::Options& opts)
     return retVal;
 }
 
-int FlpAPIClient::flpUpdateSessionOptions(const IGnssBatching::Options& opts)
+int BatchingAPIClient::updateSessionOptions(const IGnssBatching::Options& opts)
 {
     LOC_LOGD("%s]: (%lld %d)", __FUNCTION__,
             static_cast<long long>(opts.periodNanos), static_cast<uint8_t>(opts.flags));
@@ -120,7 +120,7 @@ int FlpAPIClient::flpUpdateSessionOptions(const IGnssBatching::Options& opts)
     return retVal;
 }
 
-int FlpAPIClient::flpStopSession()
+int BatchingAPIClient::stopSession()
 {
     LOC_LOGD("%s]: ", __FUNCTION__);
     int retVal = -1;
@@ -130,25 +130,25 @@ int FlpAPIClient::flpStopSession()
     return retVal;
 }
 
-void FlpAPIClient::flpGetBatchedLocation(int last_n_locations)
+void BatchingAPIClient::getBatchedLocation(int last_n_locations)
 {
     LOC_LOGD("%s]: (%d)", __FUNCTION__, last_n_locations);
     locAPIGetBatchedLocations(last_n_locations);
 }
 
-void FlpAPIClient::flpFlushBatchedLocations()
+void BatchingAPIClient::flushBatchedLocations()
 {
     LOC_LOGD("%s]: ()", __FUNCTION__);
     locAPIGetBatchedLocations(SIZE_MAX);
 }
 
-void FlpAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
+void BatchingAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 {
     LOC_LOGD("%s]: (%02x)", __FUNCTION__, capabilitiesMask);
     mLocationCapabilitiesMask = capabilitiesMask;
 }
 
-void FlpAPIClient::onBatchingCb(size_t count, Location* location)
+void BatchingAPIClient::onBatchingCb(size_t count, Location* location)
 {
     LOC_LOGD("%s]: (count: %zu)", __FUNCTION__, count);
     if (mGnssBatchingCbIface != nullptr && count > 0) {
