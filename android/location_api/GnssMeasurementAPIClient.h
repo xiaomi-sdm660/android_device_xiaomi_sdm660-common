@@ -27,71 +27,55 @@
  *
  */
 
-#ifndef GNSS_API_CLINET_H
-#define GNSS_API_CLINET_H
+#ifndef GNSS_MEASUREMENT_API_CLINET_H
+#define GNSS_MEASUREMENT_API_CLINET_H
 
-#include <hardware/gps.h>
 
+#include <android/hardware/gnss/1.0/IGnssMeasurement.h>
+#include <android/hardware/gnss/1.0/IGnssMeasurementCallback.h>
 #include <LocationAPIClientBase.h>
+#include <hidl/Status.h>
 
-class GnssAPIClient : public LocationAPIClientBase
+namespace android {
+namespace hardware {
+namespace gnss {
+namespace V1_0 {
+namespace implementation {
+
+using ::android::hardware::gnss::V1_0::IGnssMeasurement;
+using ::android::sp;
+
+class GnssMeasurementAPIClient : public LocationAPIClientBase
 {
 public:
-    GnssAPIClient(GpsCallbacks* gpsCb,
-            GpsNiCallbacks* niCb,
-            GpsMeasurementCallbacks* measurementCb);
-    virtual ~GnssAPIClient();
-    GnssAPIClient(const GnssAPIClient&) = delete;
-    GnssAPIClient& operator=(const GnssAPIClient&) = delete;
-
-    // for GpsInterface
-    void gnssUpdateCallbacks(GpsCallbacks* gpsCb,
-            GpsNiCallbacks* niCb,
-            GpsMeasurementCallbacks* measurementCb);
-    int gnssStart();
-    int gnssStop();
-    void gnssDeleteAidingData(GpsAidingData f);
-    int gnssSetPositionMode(GpsPositionMode mode, GpsPositionRecurrence recurrence,
-            uint32_t min_interval, uint32_t preferred_accuracy,
-            uint32_t preferred_time);
-
-    // for AGpsInterface
-    void gnssAgnssSetServer(AGpsType type, const char *hostname, int port);
-
-    // for GpsNiInterface
-    void gnssNiRespond(int notif_id, GpsUserResponseType user_response);
+    GnssMeasurementAPIClient();
+    virtual ~GnssMeasurementAPIClient();
+    GnssMeasurementAPIClient(const GnssMeasurementAPIClient&) = delete;
+    GnssMeasurementAPIClient& operator=(const GnssMeasurementAPIClient&) = delete;
 
     // for GpsMeasurementInterface
+    Return<IGnssMeasurement::GnssMeasurementStatus> gnssMeasurementSetCallback(
+            const sp<IGnssMeasurementCallback>& callback);
     void gnssMeasurementClose();
-
-    // for GnssConfigurationInterface
-    void gnssConfigurationUpdate(const char* config_data, int32_t length);
-
-    inline LocationCapabilitiesMask gnssGetCapabilities() const {
-        return mLocationCapabilitiesMask;
-    }
 
     // callbacks we are interested in
     void onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask) final;
-    void onTrackingCb(Location location) final;
-    void onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotification) final;
-    void onGnssSvCb(GnssSvNotification gnssSvNotification) final;
-    void onGnssNmeaCb(GnssNmeaNotification gnssNmeaNotification) final;
     void onGnssMeasurementsCb(GnssMeasurementsNotification gnssMeasurementsNotification) final;
-
-    void onStartTrackingCb(LocationError error) final;
-    void onStopTrackingCb(LocationError error) final;
 
 private:
     pthread_mutex_t mLock;
+    pthread_cond_t mCond;
 
-    GpsCallbacks* mGpsCallbacks;
-    GpsNiCallbacks* mGpsNiCallbacks;
+    sp<IGnssMeasurementCallback> mGnssMeasurementCbIface;
 
     LocationCapabilitiesMask mLocationCapabilitiesMask;
 
-    GpsMeasurementCallbacks* mGpsMeasurementCallbacks;
-
     LocationOptions mLocationOptions;
 };
-#endif // GNSS_API_CLINET_H
+
+}  // namespace implementation
+}  // namespace V1_0
+}  // namespace gnss
+}  // namespace hardware
+}  // namespace android
+#endif // GNSS_MEASUREMENT_API_CLINET_H

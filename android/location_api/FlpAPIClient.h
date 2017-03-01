@@ -27,34 +27,51 @@
  *
  */
 
-#ifndef GEOFENCE_API_CLINET_H
-#define GEOFENCE_API_CLINET_H
+#ifndef FLP_API_CLINET_H
+#define FLP_API_CLINET_H
 
-#include <hardware/gps.h>
+#include <android/hardware/gnss/1.0/IGnssBatching.h>
+#include <android/hardware/gnss/1.0/IGnssBatchingCallback.h>
+#include <pthread.h>
+
 #include <LocationAPIClientBase.h>
 
-class GeofenceAPIClient : public LocationAPIClientBase
+#define FLP_CONF_FILE "/etc/flp.conf"
+
+namespace android {
+namespace hardware {
+namespace gnss {
+namespace V1_0 {
+namespace implementation {
+
+class FlpAPIClient : public LocationAPIClientBase
 {
 public:
-    GeofenceAPIClient(GpsGeofenceCallbacks* cbs);
-    virtual ~GeofenceAPIClient() = default;
+    FlpAPIClient(const sp<IGnssBatchingCallback>& callback);
+    ~FlpAPIClient();
+    int flpGetBatchSize();
+    int flpStartSession(const IGnssBatching::Options& options);
+    int flpUpdateSessionOptions(const IGnssBatching::Options& options);
+    int flpStopSession();
+    void flpGetBatchedLocation(int last_n_locations);
+    void flpFlushBatchedLocations();
 
-    void geofenceAdd(uint32_t geofence_id, double latitude, double longitude,
-            double radius_meters, int last_transition, int monitor_transitions,
-            int notification_responsiveness_ms, int unknown_timer_ms);
-    void geofencePause(uint32_t geofence_id);
-    void geofenceResume(uint32_t geofence_id, int monitor_transitions);
-    void geofenceRemove(uint32_t geofence_id);
+    inline LocationCapabilitiesMask flpGetCapabilities() { return mLocationCapabilitiesMask; }
 
     // callbacks
-    void onGeofenceBreachCb(GeofenceBreachNotification geofenceBreachNotification) final;
-    void onGeofenceStatusCb(GeofenceStatusNotification geofenceStatusNotification) final;
-    void onAddGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
-    void onRemoveGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
-    void onPauseGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
-    void onResumeGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
+    void onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask) final;
+    void onBatchingCb(size_t count, Location* location) final;
 
 private:
-    GpsGeofenceCallbacks* mGpsGeofenceCallbacks;
+    sp<IGnssBatchingCallback> mGnssBatchingCbIface;
+    uint32_t mDefaultId;
+    int mBatchSize;
+    LocationCapabilitiesMask mLocationCapabilitiesMask;
 };
-#endif // GEOFENCE_API_CLINET_H
+
+}  // namespace implementation
+}  // namespace V1_0
+}  // namespace gnss
+}  // namespace hardware
+}  // namespace android
+#endif // FLP_API_CLINET_H

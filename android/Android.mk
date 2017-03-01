@@ -1,56 +1,76 @@
-ifneq ($(BUILD_TINY_ANDROID),true)
-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-
-LOCAL_MODULE := gps.$(BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE)
+LOCAL_MODULE := android.hardware.gnss@1.0-impl-qti
 LOCAL_MODULE_OWNER := qti
+LOCAL_MODULE_RELATIVE_PATH := hw
+LOCAL_SRC_FILES := \
+    AGnss.cpp \
+    Gnss.cpp \
+    GnssBatching.cpp \
+    GnssGeofencing.cpp \
+    GnssMeasurement.cpp \
+    GnssNi.cpp \
+    GnssConfiguration.cpp \
 
-LOCAL_MODULE_TAGS := optional
+LOCAL_SRC_FILES += \
+    location_api/LocationUtil.cpp \
+    location_api/GnssAPIClient.cpp \
+    location_api/GeofenceAPIClient.cpp \
+    location_api/FlpAPIClient.cpp \
+    location_api/GnssMeasurementAPIClient.cpp \
 
-## Libs
+LOCAL_C_INCLUDES:= \
+    $(LOCAL_PATH)/location_api \
+    $(TARGET_OUT_HEADERS)/gps.utils \
+    $(TARGET_OUT_HEADERS)/libloc_core \
+    $(TARGET_OUT_HEADERS)/libloc_pla \
+    $(TARGET_OUT_HEADERS)/liblocation_api \
 
 LOCAL_SHARED_LIBRARIES := \
-    libutils \
-    libcutils \
     liblog \
+    libhidlbase \
+    libhidltransport \
+    libhwbinder \
+    libutils \
+    android.hardware.gnss@1.0 \
+
+LOCAL_SHARED_LIBRARIES += \
     libloc_core \
     libgps.utils \
     libdl \
     libloc_pla \
     liblocation_api \
 
-LOCAL_SRC_FILES += \
-    gps.c \
-    loc.cpp \
-    loc_geofence.cpp \
-    GnssAPIClient.cpp \
-    GeofenceAPIClient.cpp \
+include $(BUILD_SHARED_LIBRARY)
 
-LOCAL_CFLAGS += \
-    -Wunused-parameter \
-    -fno-short-enums \
-    -D_ANDROID_ \
+include $(CLEAR_VARS)
+LOCAL_MODULE := android.hardware.gnss@1.0-service-qti
+LOCAL_MODULE_OWNER := qti
+LOCAL_MODULE_RELATIVE_PATH := hw
+LOCAL_INIT_RC := android.hardware.gnss@1.0-service-qti.rc
+LOCAL_SRC_FILES := \
+    service.cpp \
 
-ifeq ($(TARGET_BUILD_VARIANT),user)
-   LOCAL_CFLAGS += -DTARGET_BUILD_VARIANT_USER
-endif
-
-ifeq ($(TARGET_USES_QCOM_BSP), true)
-LOCAL_CFLAGS += -DTARGET_USES_QCOM_BSP
-endif
-
-## Includes
 LOCAL_C_INCLUDES:= \
+    $(LOCAL_PATH)/location_api \
     $(TARGET_OUT_HEADERS)/gps.utils \
     $(TARGET_OUT_HEADERS)/libloc_core \
     $(TARGET_OUT_HEADERS)/libloc_pla \
     $(TARGET_OUT_HEADERS)/liblocation_api \
 
-LOCAL_PRELINK_MODULE := false
-LOCAL_MODULE_RELATIVE_PATH := hw
 
-include $(BUILD_SHARED_LIBRARY)
+LOCAL_SHARED_LIBRARIES := \
+    liblog \
+    libcutils \
+    libdl \
+    libbase \
+    libutils \
 
-endif # not BUILD_TINY_ANDROID
+LOCAL_SHARED_LIBRARIES += \
+    libhwbinder \
+    libhidlbase \
+    libhidltransport \
+    android.hardware.gnss@1.0 \
+
+include $(BUILD_EXECUTABLE)
