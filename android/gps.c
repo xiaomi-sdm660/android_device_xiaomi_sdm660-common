@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, 2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011, 2015-2017 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of The Linux Foundation, nor the names of its
+ *     * Neither the name of The Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -27,32 +27,51 @@
  *
  */
 
-#ifndef LOC_CORE_LOG_H
-#define LOC_CORE_LOG_H
+#include <hardware/gps.h>
 
-#include <ctype.h>
-#include <gps_extended.h>
+#include <stdlib.h>
+#include <string.h>
 
-#ifdef __cplusplus
-extern "C"
+#define UNUSED(...) (void)(__VA_ARGS__)
+
+extern const GpsInterface* get_gps_interface();
+
+const GpsInterface* gps__get_gps_interface(struct gps_device_t* dev)
 {
-#endif
-
-const char* loc_get_gps_status_name(LocGpsStatusValue gps_status);
-const char* loc_get_position_mode_name(LocGpsPositionMode mode);
-const char* loc_get_position_recurrence_name(LocGpsPositionRecurrence recur);
-const char* loc_get_aiding_data_mask_names(LocGpsAidingData data);
-const char* loc_get_agps_type_name(LocAGpsType type);
-const char* loc_get_ni_type_name(LocGpsNiType type);
-const char* loc_get_ni_response_name(LocGpsUserResponseType response);
-const char* loc_get_ni_encoding_name(LocGpsNiEncodingType encoding);
-const char* loc_get_agps_bear_name(AGpsBearerType bear);
-const char* loc_get_server_type_name(LocServerType type);
-const char* loc_get_position_sess_status_name(enum loc_sess_status status);
-const char* loc_get_agps_status_name(LocAGpsStatusValue status);
-
-#ifdef __cplusplus
+    UNUSED(dev);
+    return get_gps_interface();
 }
-#endif
 
-#endif /* LOC_CORE_LOG_H */
+static int open_gps(const struct hw_module_t* module, char const* name,
+        struct hw_device_t** device)
+{
+    UNUSED(name);
+    struct gps_device_t *dev = (struct gps_device_t *) malloc(sizeof(struct gps_device_t));
+
+    if(dev == NULL)
+        return -1;
+
+    memset(dev, 0, sizeof(*dev));
+
+    dev->common.tag = HARDWARE_DEVICE_TAG;
+    dev->common.version = 0;
+    dev->common.module = (struct hw_module_t*)module;
+    dev->get_gps_interface = gps__get_gps_interface;
+
+    *device = (struct hw_device_t*)dev;
+    return 0;
+}
+
+static struct hw_module_methods_t gps_module_methods = {
+    .open = open_gps
+};
+
+struct hw_module_t HAL_MODULE_INFO_SYM = {
+    .tag = HARDWARE_MODULE_TAG,
+    .module_api_version = 1,
+    .hal_api_version = 0,
+    .id = GPS_HARDWARE_MODULE_ID,
+    .name = "loc_api GPS Module",
+    .author = "Qualcomm USA, Inc.",
+    .methods = &gps_module_methods,
+};

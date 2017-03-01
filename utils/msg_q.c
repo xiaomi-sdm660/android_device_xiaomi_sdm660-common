@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012,2014 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2012, 2014, 2017 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -240,8 +240,6 @@ msq_q_err_type msg_q_rcv(void* msg_q_data, void** msg_obj)
    }
 
    msg_q* p_msg_q = (msg_q*)msg_q_data;
-
-   LOC_LOGV("%s: Waiting on message\n", __FUNCTION__);
 
    pthread_mutex_lock(&p_msg_q->list_mutex);
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014,2016 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2017 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -227,14 +227,13 @@ void LocApiBase::handleEngineDownEvent()
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->handleEngineDownEvent());
 }
 
-void LocApiBase::reportPosition(UlpLocation &location,
-                                GpsLocationExtended &locationExtended,
-                                void* locationExt,
+void LocApiBase::reportPosition(UlpLocation& location,
+                                GpsLocationExtended& locationExtended,
                                 enum loc_sess_status status,
                                 LocPosTechMask loc_technology_mask)
 {
     // print the location info before delivering
-    LOC_LOGV("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  "
+    LOC_LOGD("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  "
              "altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  "
              "timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  "
              "Session status: %d\n Technology mask: %u\n "
@@ -251,11 +250,8 @@ void LocApiBase::reportPosition(UlpLocation &location,
              locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask);
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
-        mLocAdapters[i]->reportPosition(location,
-                                        locationExtended,
-                                        locationExt,
-                                        status,
-                                        loc_technology_mask)
+        mLocAdapters[i]->reportPositionEvent(location, locationExtended,
+                                             status, loc_technology_mask)
     );
 }
 
@@ -265,9 +261,7 @@ void LocApiBase::reportWwanZppFix(LocGpsLocation &zppLoc)
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportWwanZppFix(zppLoc));
 }
 
-void LocApiBase::reportSv(LocGnssSvStatus &svStatus,
-                  GpsLocationExtended &locationExtended,
-                  void* svExt)
+void LocApiBase::reportSv(GnssSvNotification& svNotify)
 {
     const char* constellationString[] = { "Unknown", "GPS", "SBAS", "GLONASS",
         "QZSS", "BEIDOU", "GALILEO" };
@@ -276,27 +270,25 @@ void LocApiBase::reportSv(LocGnssSvStatus &svStatus,
     LOC_LOGV("num sv: %d\n"
         "      sv: constellation svid         cN0"
         "    elevation    azimuth    flags",
-        svStatus.num_svs);
-    for (int i = 0; i < svStatus.num_svs && i < LOC_GNSS_MAX_SVS; i++) {
-        if (svStatus.gnss_sv_list[i].constellation >
+        svNotify.count);
+    for (int i = 0; i < svNotify.count && i < LOC_GNSS_MAX_SVS; i++) {
+        if (svNotify.gnssSvs[i].type >
             sizeof(constellationString) / sizeof(constellationString[0]) - 1) {
-            svStatus.gnss_sv_list[i].constellation = 0;
+            svNotify.gnssSvs[i].type = GNSS_SV_TYPE_UNKNOWN;
         }
         LOC_LOGV("   %03d: %*s  %02d    %f    %f    %f   0x%02X",
             i,
             13,
-            constellationString[svStatus.gnss_sv_list[i].constellation],
-            svStatus.gnss_sv_list[i].svid,
-            svStatus.gnss_sv_list[i].c_n0_dbhz,
-            svStatus.gnss_sv_list[i].elevation,
-            svStatus.gnss_sv_list[i].azimuth,
-            svStatus.gnss_sv_list[i].flags);
+            constellationString[svNotify.gnssSvs[i].type],
+            svNotify.gnssSvs[i].svId,
+            svNotify.gnssSvs[i].cN0Dbhz,
+            svNotify.gnssSvs[i].elevation,
+            svNotify.gnssSvs[i].azimuth,
+            svNotify.gnssSvs[i].gnssSvOptionsMask);
     }
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
-        mLocAdapters[i]->reportSv(svStatus,
-            locationExtended,
-            svExt)
+        mLocAdapters[i]->reportSvEvent(svNotify)
         );
 }
 
@@ -304,7 +296,7 @@ void LocApiBase::reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet)
 {
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
-        mLocAdapters[i]->reportSvMeasurement(svMeasurementSet)
+        mLocAdapters[i]->reportSvMeasurementEvent(svMeasurementSet)
     );
 }
 
@@ -312,7 +304,7 @@ void LocApiBase::reportSvPolynomial(GnssSvPolynomial &svPolynomial)
 {
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
-        mLocAdapters[i]->reportSvPolynomial(svPolynomial)
+        mLocAdapters[i]->reportSvPolynomialEvent(svPolynomial)
     );
 }
 
@@ -325,7 +317,7 @@ void LocApiBase::reportStatus(LocGpsStatusValue status)
 void LocApiBase::reportNmea(const char* nmea, int length)
 {
     // loop through adapters, and deliver to all adapters.
-    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportNmea(nmea, length));
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportNmeaEvent(nmea, length));
 }
 
 void LocApiBase::reportXtraServer(const char* url1, const char* url2,
@@ -384,10 +376,10 @@ void LocApiBase::reportDataCallClosed()
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportDataCallClosed());
 }
 
-void LocApiBase::requestNiNotify(LocGpsNiNotification &notify, const void* data)
+void LocApiBase::requestNiNotify(GnssNiNotification &notify, const void* data)
 {
     // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestNiNotify(notify, data));
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestNiNotifyEvent(notify, data));
 }
 
 void LocApiBase::saveSupportedMsgList(uint64_t supportedMsgList)
@@ -406,10 +398,10 @@ void* LocApiBase :: getSibling()
 LocApiProxyBase* LocApiBase :: getLocApiProxy()
     DEFAULT_IMPL(NULL)
 
-void LocApiBase::reportGnssMeasurementData(LocGnssData &gnssMeasurementData)
+void LocApiBase::reportGnssMeasurementData(GnssMeasurementsNotification& measurementsNotify)
 {
     // loop through adapters, and deliver to all adapters.
-    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssMeasurementData(gnssMeasurementData));
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssMeasurementDataEvent(measurementsNotify));
 }
 
 enum loc_api_adapter_err LocApiBase::
@@ -428,9 +420,9 @@ enum loc_api_adapter_err LocApiBase::
     stopFix()
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    deleteAidingData(LocGpsAidingData f)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    deleteAidingData(const GnssAidingData& data)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
     enableData(int enable)
@@ -469,31 +461,29 @@ enum loc_api_adapter_err LocApiBase::
     setPositionMode(const LocPosMode& posMode)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
+LocationError LocApiBase::
     setServer(const char* url, int len)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    setServer(unsigned int ip, int port,
-              LocServerType type)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    setServer(unsigned int ip, int port, LocServerType type)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    informNiResponse(LocGpsUserResponseType userResponse,
-                     const void* passThroughData)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    informNiResponse(GnssNiResponse userResponse, const void* passThroughData)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    setSUPLVersion(uint32_t version)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    setSUPLVersion(GnssConfigSuplVersion version)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
     setNMEATypes (uint32_t typesMask)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    setLPPConfig(uint32_t profile)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    setLPPConfig(GnssConfigLppProfile profile)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
     setSensorControlConfig(int sensorUsage,
@@ -526,13 +516,17 @@ enum loc_api_adapter_err LocApiBase::
                                int algorithmConfig)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    setAGLONASSProtocol(unsigned long aGlonassProtocol)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    setAGLONASSProtocol(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-        setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP)
-    DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    setLPPeProtocolCp(GnssConfigLppeControlPlaneMask lppeCP)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+LocationError LocApiBase::
+    setLPPeProtocolUp(GnssConfigLppeUserPlaneMask lppeUP)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
    getWwanZppFix()
@@ -573,9 +567,9 @@ void LocApiBase::
     releaseDataServiceClient()
 DEFAULT_IMPL()
 
-int LocApiBase::
-    setGpsLock(LOC_GPS_LOCK_MASK lock)
-DEFAULT_IMPL(-1)
+LocationError LocApiBase::
+    setGpsLock(GnssConfigGpsLock lock)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 void LocApiBase::
     installAGpsCert(const LocDerEncodedCertificate* pData,
@@ -587,9 +581,9 @@ int LocApiBase::
     getGpsLock()
 DEFAULT_IMPL(-1)
 
-enum loc_api_adapter_err LocApiBase::
-    setXtraVersionCheck(enum xtra_version_check check)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+LocationError LocApiBase::
+    setXtraVersionCheck(uint32_t check)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 bool LocApiBase::
     gnssConstellationConfig()

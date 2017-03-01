@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2017 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,19 +29,21 @@
 #ifndef GPS_EXTENDED_H
 #define GPS_EXTENDED_H
 
-#include <gps_extended_c.h>
 /**
  * @file
  * @brief C++ declarations for GPS types
  */
 
+#include <gps_extended_c.h>
+#if defined(USE_GLIB) || defined(OFF_TARGET)
+#include <string.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#if defined(USE_GLIB) || defined(OFF_TARGET)
-#include <string.h>
-#endif
+
 
 struct LocPosMode
 {

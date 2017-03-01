@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015, 2016 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2017 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <loc_gps.h>
+#include <LocationAPI.h>
 #include <time.h>
 
 /**
@@ -88,7 +89,8 @@ extern "C" {
 
 enum loc_registration_mask_status {
     LOC_REGISTRATION_MASK_ENABLED,
-    LOC_REGISTRATION_MASK_DISABLED
+    LOC_REGISTRATION_MASK_DISABLED,
+    LOC_REGISTRATION_MASK_SET
 };
 
 typedef enum {

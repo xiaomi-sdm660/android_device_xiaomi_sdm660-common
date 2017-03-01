@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2017 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +32,7 @@
 #include <stddef.h>
 #include <ctype.h>
 #include <gps_extended.h>
+#include <LocationAPI.h>
 #include <MsgTask.h>
 #include <platform_lib_log_util.h>
 
@@ -102,22 +103,18 @@ public:
     inline void sendMsg(const LocMsg* msg) const {
         mMsgTask->sendMsg(msg);
     }
-
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
     // upward calls
     void handleEngineUpEvent();
     void handleEngineDownEvent();
-    void reportPosition(UlpLocation &location,
-                        GpsLocationExtended &locationExtended,
-                        void* locationExt,
+    void reportPosition(UlpLocation& location,
+                        GpsLocationExtended& locationExtended,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask =
                                   LOC_POS_TECH_MASK_DEFAULT);
-    void reportSv(LocGnssSvStatus &svStatus,
-                  GpsLocationExtended &locationExtended,
-                  void* svExt);
+    void reportSv(GnssSvNotification& svNotify);
     void reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet);
     void reportSvPolynomial(GnssSvPolynomial &svPolynomial);
     void reportStatus(LocGpsStatusValue status);
@@ -132,9 +129,9 @@ public:
     void requestSuplES(int connHandle);
     void reportDataCallOpened();
     void reportDataCallClosed();
-    void requestNiNotify(LocGpsNiNotification &notify, const void* data);
+    void requestNiNotify(GnssNiNotification &notify, const void* data);
     void saveSupportedMsgList(uint64_t supportedMsgList);
-    void reportGnssMeasurementData(LocGnssData &gnssMeasurementData);
+    void reportGnssMeasurementData(GnssMeasurementsNotification& measurementsNotify);
     void saveSupportedFeatureList(uint8_t *featureList);
     void reportWwanZppFix(LocGpsLocation &zppLoc);
 
@@ -148,8 +145,8 @@ public:
         startFix(const LocPosMode& posMode);
     virtual enum loc_api_adapter_err
         stopFix();
-    virtual enum loc_api_adapter_err
-        deleteAidingData(LocGpsAidingData f);
+    virtual LocationError
+        deleteAidingData(const GnssAidingData& data);
     virtual enum loc_api_adapter_err
         enableData(int enable);
     virtual enum loc_api_adapter_err
@@ -168,19 +165,17 @@ public:
         atlCloseStatus(int handle, int is_succ);
     virtual enum loc_api_adapter_err
         setPositionMode(const LocPosMode& posMode);
-    virtual enum loc_api_adapter_err
+    virtual LocationError
         setServer(const char* url, int len);
-    virtual enum loc_api_adapter_err
+    virtual LocationError
         setServer(unsigned int ip, int port,
                   LocServerType type);
-    virtual enum loc_api_adapter_err
-        informNiResponse(LocGpsUserResponseType userResponse, const void* passThroughData);
-    virtual enum loc_api_adapter_err
-        setSUPLVersion(uint32_t version);
+    virtual LocationError
+        informNiResponse(GnssNiResponse userResponse, const void* passThroughData);
+    virtual LocationError setSUPLVersion(GnssConfigSuplVersion version);
     virtual enum loc_api_adapter_err
         setNMEATypes (uint32_t typesMask);
-    virtual enum loc_api_adapter_err
-        setLPPConfig(uint32_t profile);
+    virtual LocationError setLPPConfig(GnssConfigLppProfile profile);
     virtual enum loc_api_adapter_err
         setSensorControlConfig(int sensorUsage, int sensorProvider);
     virtual enum loc_api_adapter_err
@@ -205,10 +200,10 @@ public:
                                int gyroSamplesPerBatchHigh,
                                int gyroBatchesPerSecHigh,
                                int algorithmConfig);
-    virtual enum loc_api_adapter_err
-        setAGLONASSProtocol(unsigned long aGlonassProtocol);
-    virtual enum loc_api_adapter_err
-        setLPPeProtocol(unsigned long lppeCP, unsigned long lppeUP);
+    virtual LocationError
+        setAGLONASSProtocol(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol);
+    virtual LocationError setLPPeProtocolCp(GnssConfigLppeControlPlaneMask lppeCP);
+    virtual LocationError setLPPeProtocolUp(GnssConfigLppeUserPlaneMask lppeUP);
     virtual enum loc_api_adapter_err
         getWwanZppFix();
     virtual enum loc_api_adapter_err
@@ -238,15 +233,10 @@ public:
             return (messageChecker & mSupportedMsg) == messageChecker;
         }
     }
+
     void updateEvtMask();
 
-    /*Values for lock
-      1 = Do not lock any position sessions
-      2 = Lock MI position sessions
-      3 = Lock MT position sessions
-      4 = Lock all position sessions
-     */
-    virtual int setGpsLock(LOC_GPS_LOCK_MASK lock);
+    virtual LocationError setGpsLock(GnssConfigGpsLock lock);
     /*
       Returns
       Current value of GPS Lock on success
@@ -254,8 +244,7 @@ public:
      */
     virtual int getGpsLock(void);
 
-    virtual enum loc_api_adapter_err setXtraVersionCheck(enum xtra_version_check check);
-
+    virtual LocationError setXtraVersionCheck(uint32_t check);
     /*
       Check if the modem support the service
      */

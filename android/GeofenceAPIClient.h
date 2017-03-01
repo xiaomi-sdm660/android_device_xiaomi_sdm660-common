@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, 2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,32 +27,34 @@
  *
  */
 
-#ifndef LOC_CORE_LOG_H
-#define LOC_CORE_LOG_H
+#ifndef GEOFENCE_API_CLINET_H
+#define GEOFENCE_API_CLINET_H
 
-#include <ctype.h>
-#include <gps_extended.h>
+#include <hardware/gps.h>
+#include <LocationAPIClientBase.h>
 
-#ifdef __cplusplus
-extern "C"
+class GeofenceAPIClient : public LocationAPIClientBase
 {
-#endif
+public:
+    GeofenceAPIClient(GpsGeofenceCallbacks* cbs);
+    virtual ~GeofenceAPIClient() = default;
 
-const char* loc_get_gps_status_name(LocGpsStatusValue gps_status);
-const char* loc_get_position_mode_name(LocGpsPositionMode mode);
-const char* loc_get_position_recurrence_name(LocGpsPositionRecurrence recur);
-const char* loc_get_aiding_data_mask_names(LocGpsAidingData data);
-const char* loc_get_agps_type_name(LocAGpsType type);
-const char* loc_get_ni_type_name(LocGpsNiType type);
-const char* loc_get_ni_response_name(LocGpsUserResponseType response);
-const char* loc_get_ni_encoding_name(LocGpsNiEncodingType encoding);
-const char* loc_get_agps_bear_name(AGpsBearerType bear);
-const char* loc_get_server_type_name(LocServerType type);
-const char* loc_get_position_sess_status_name(enum loc_sess_status status);
-const char* loc_get_agps_status_name(LocAGpsStatusValue status);
+    void geofenceAdd(uint32_t geofence_id, double latitude, double longitude,
+            double radius_meters, int last_transition, int monitor_transitions,
+            int notification_responsiveness_ms, int unknown_timer_ms);
+    void geofencePause(uint32_t geofence_id);
+    void geofenceResume(uint32_t geofence_id, int monitor_transitions);
+    void geofenceRemove(uint32_t geofence_id);
 
-#ifdef __cplusplus
-}
-#endif
+    // callbacks
+    void onGeofenceBreachCb(GeofenceBreachNotification geofenceBreachNotification) final;
+    void onGeofenceStatusCb(GeofenceStatusNotification geofenceStatusNotification) final;
+    void onAddGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
+    void onRemoveGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
+    void onPauseGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
+    void onResumeGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
 
-#endif /* LOC_CORE_LOG_H */
+private:
+    GpsGeofenceCallbacks* mGpsGeofenceCallbacks;
+};
+#endif // GEOFENCE_API_CLINET_H
