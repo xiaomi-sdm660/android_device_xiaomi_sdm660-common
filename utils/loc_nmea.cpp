@@ -111,35 +111,6 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
 }
 
 /*===========================================================================
-FUNCTION    loc_nmea_count_bits
-
-DESCRIPTION
-   Count how many bits are set in mask
-
-DEPENDENCIES
-   NONE
-
-RETURN VALUE
-   Bits number set in mask
-
-SIDE EFFECTS
-   N/A
-
-===========================================================================*/
-static uint32_t loc_nmea_count_bits(uint32_t mask)
-{
-    uint32_t count = 0;
-    while (mask)
-    {
-        if (mask & 1)
-            count++;
-        mask = mask >> 1;
-    }
-    return count;
-}
-
-
-/*===========================================================================
 FUNCTION    loc_nmea_put_checksum
 
 DESCRIPTION
@@ -337,8 +308,7 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
 
     const char* talker = sv_meta_p->talker;
     uint32_t svIdOffset = sv_meta_p->svIdOffset;
-    uint32_t mask = sv_meta_p->mask;
-    uint32_t svCount = loc_nmea_count_bits(mask);
+    int svCount = svNotify.count;
 
 
     if (svCount <= 0)
@@ -370,12 +340,12 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
         pMarker += length;
         lengthRemaining -= length;
 
-        for (int i=0; (svNumber <= svNotify.count) && (i < 4);  svNumber++)
+        for (int i=0; (svNumber <= svCount) && (i < 4);  svNumber++)
         {
             if (sv_meta_p->svType == svNotify.gnssSvs[svNumber - 1].type)
             {
                 length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
-                        svNotify.gnssSvs[svNumber - 1].svId,
+                        svNotify.gnssSvs[svNumber - 1].svId + svIdOffset,
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].elevation), //float to int
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].azimuth)); //float to int
 
