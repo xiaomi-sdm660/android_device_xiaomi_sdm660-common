@@ -38,7 +38,7 @@ using ::android::hardware::hidl_vec;
 using ::android::hardware::hidl_string;
 using ::android::sp;
 
-class GnssMeasurementAPIClient;
+class MeasurementAPIClient;
 struct GnssMeasurement : public IGnssMeasurement {
     GnssMeasurement();
     ~GnssMeasurement();
@@ -64,7 +64,7 @@ struct GnssMeasurement : public IGnssMeasurement {
  private:
     sp<GnssMeasurementDeathRecipient> mGnssMeasurementDeathRecipient = nullptr;
     sp<IGnssMeasurementCallback> mGnssMeasurementCbIface = nullptr;
-    GnssMeasurementAPIClient* mApi;
+    MeasurementAPIClient* mApi;
 };
 
 }  // namespace implementation

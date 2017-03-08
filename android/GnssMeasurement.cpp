@@ -21,7 +21,7 @@
 #define LOG_TAG "LocSvc_GnssMeasurementInterface"
 
 #include <log_util.h>
-#include <GnssMeasurementAPIClient.h>
+#include <MeasurementAPIClient.h>
 #include "GnssMeasurement.h"
 
 namespace android {
@@ -41,7 +41,7 @@ void GnssMeasurement::GnssMeasurementDeathRecipient::serviceDied(
 
 GnssMeasurement::GnssMeasurement() {
     mGnssMeasurementDeathRecipient = new GnssMeasurementDeathRecipient(this);
-    mApi = new GnssMeasurementAPIClient();
+    mApi = new MeasurementAPIClient();
 }
 
 GnssMeasurement::~GnssMeasurement() {
@@ -74,7 +74,7 @@ Return<IGnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback(
     mGnssMeasurementCbIface = callback;
     mGnssMeasurementCbIface->linkToDeath(mGnssMeasurementDeathRecipient, 0 /*cookie*/);
 
-    return mApi->gnssMeasurementSetCallback(callback);
+    return mApi->measurementSetCallback(callback);
 }
 
 Return<void> GnssMeasurement::close()  {
@@ -87,7 +87,7 @@ Return<void> GnssMeasurement::close()  {
         mGnssMeasurementCbIface->unlinkToDeath(mGnssMeasurementDeathRecipient);
         mGnssMeasurementCbIface = nullptr;
     }
-    mApi->gnssMeasurementClose();
+    mApi->measurementClose();
 
     return Void();
 }

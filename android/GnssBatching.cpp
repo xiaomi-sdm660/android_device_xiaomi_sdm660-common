@@ -21,7 +21,7 @@
 #define LOG_TAG "LocSvc_GnssBatchingInterface"
 
 #include <log_util.h>
-#include <FlpAPIClient.h>
+#include <BatchingAPIClient.h>
 #include "GnssBatching.h"
 
 namespace android {
@@ -59,7 +59,7 @@ Return<bool> GnssBatching::init(const sp<IGnssBatchingCallback>& callback) {
         return false;
     }
 
-    mApi = new FlpAPIClient(callback);
+    mApi = new BatchingAPIClient(callback);
     if (mApi == nullptr) {
         LOC_LOGE("%s]: failed to create mApi", __FUNCTION__);
         return false;
@@ -81,7 +81,7 @@ Return<uint16_t> GnssBatching::getBatchSize() {
     if (mApi == nullptr) {
         LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
     } else {
-        ret = mApi->flpGetBatchSize();
+        ret = mApi->getBatchSize();
     }
     return ret;
 }
@@ -91,7 +91,7 @@ Return<bool> GnssBatching::start(const IGnssBatching::Options& options) {
     if (mApi == nullptr) {
         LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
     } else {
-        ret = mApi->flpStartSession(options);
+        ret = mApi->startSession(options);
     }
     return ret;
 }
@@ -100,7 +100,7 @@ Return<void> GnssBatching::flush() {
     if (mApi == nullptr) {
         LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
     } else {
-        mApi->flpFlushBatchedLocations();
+        mApi->flushBatchedLocations();
     }
     return Void();
 }
@@ -110,7 +110,7 @@ Return<bool> GnssBatching::stop() {
     if (mApi == nullptr) {
         LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
     } else {
-        ret = mApi->flpStopSession();
+        ret = mApi->stopSession();
     }
     return ret;
 }

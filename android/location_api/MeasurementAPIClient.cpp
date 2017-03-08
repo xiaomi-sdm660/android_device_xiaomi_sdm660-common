@@ -28,13 +28,13 @@
  */
 
 #define LOG_NDDEBUG 0
-#define LOG_TAG "LocSvc_GnssMeasurementAPIClient"
+#define LOG_TAG "LocSvc_MeasurementAPIClient"
 
 #include <log_util.h>
 #include <loc_cfg.h>
 
 #include "LocationUtil.h"
-#include "GnssMeasurementAPIClient.h"
+#include "MeasurementAPIClient.h"
 
 namespace android {
 namespace hardware {
@@ -48,7 +48,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         IGnssMeasurementCallback::GnssMeasurement& out);
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out);
 
-GnssMeasurementAPIClient::GnssMeasurementAPIClient() :
+MeasurementAPIClient::MeasurementAPIClient() :
     mGnssMeasurementCbIface(nullptr),
     mLocationCapabilitiesMask(0)
 {
@@ -64,7 +64,7 @@ GnssMeasurementAPIClient::GnssMeasurementAPIClient() :
     mLocationOptions.mode = GNSS_SUPL_MODE_STANDALONE;
 }
 
-GnssMeasurementAPIClient::~GnssMeasurementAPIClient()
+MeasurementAPIClient::~MeasurementAPIClient()
 {
     LOC_LOGD("%s]: ()", __FUNCTION__);
     pthread_cond_destroy(&mCond);
@@ -73,7 +73,7 @@ GnssMeasurementAPIClient::~GnssMeasurementAPIClient()
 
 // for GpsInterface
 Return<IGnssMeasurement::GnssMeasurementStatus>
-GnssMeasurementAPIClient::gnssMeasurementSetCallback(const sp<IGnssMeasurementCallback>& callback)
+MeasurementAPIClient::measurementSetCallback(const sp<IGnssMeasurementCallback>& callback)
 {
     LOC_LOGD("%s]: (%p)", __FUNCTION__, &callback);
 
@@ -118,7 +118,7 @@ GnssMeasurementAPIClient::gnssMeasurementSetCallback(const sp<IGnssMeasurementCa
 }
 
 // for GpsMeasurementInterface
-void GnssMeasurementAPIClient::gnssMeasurementClose() {
+void MeasurementAPIClient::measurementClose() {
     LOC_LOGD("%s]: ()", __FUNCTION__);
     pthread_mutex_lock(&mLock);
     mGnssMeasurementCbIface = nullptr;
@@ -126,7 +126,7 @@ void GnssMeasurementAPIClient::gnssMeasurementClose() {
 }
 
 // callbacks
-void GnssMeasurementAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
+void MeasurementAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 {
     LOC_LOGD("%s]: (%02x)", __FUNCTION__, capabilitiesMask);
     mLocationCapabilitiesMask = capabilitiesMask;
@@ -135,7 +135,7 @@ void GnssMeasurementAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabil
     pthread_mutex_unlock(&mLock);
 }
 
-void GnssMeasurementAPIClient::onGnssMeasurementsCb(
+void MeasurementAPIClient::onGnssMeasurementsCb(
         GnssMeasurementsNotification gnssMeasurementsNotification)
 {
     LOC_LOGD("%s]: (count: %zu)", __FUNCTION__, gnssMeasurementsNotification.count);
