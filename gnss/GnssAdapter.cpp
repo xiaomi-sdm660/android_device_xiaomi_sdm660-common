@@ -1007,6 +1007,18 @@ GnssAdapter::updateClientsEventMask()
             mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
         }
     }
+
+    /*
+    ** For Automotive use cases we need to enable MEASUREMENT and POLY
+    ** when QDR is enabled
+    */
+    if(1 == ContextBase::mGps_conf.EXTERNAL_DR_ENABLED) {
+        mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
+        mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
+
+        LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%x", __func__, mask);
+    }
+
     updateEvtMask(mask, LOC_REGISTRATION_MASK_SET);
 }
 
