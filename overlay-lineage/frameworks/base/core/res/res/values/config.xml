@@ -19,4 +19,18 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <integer name="config_buttonBrightnessSettingDefault">0</integer>
+
+    <!-- Display mode remapping table.
+         If the mode names returned by the backend do not match
+         the predefined and translated strings in the Settings
+         app, they can be remapped here. The format is
+         "oldname:newname", one per entry. -->
+    <string-array name="config_displayModeMappings" translatable="false">
+        <item>A_Standard:standard</item>
+        <item>B_Warm mode:reading</item>
+        <item>D_Cold mode:dynamic</item>
+    </string-array>
+
+    <!-- Should we filter any display modes which are unampped? -->
+    <bool name="config_filterDisplayModes">true</bool>
 </resources>
