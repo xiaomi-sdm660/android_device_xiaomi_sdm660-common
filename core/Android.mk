@@ -30,7 +30,8 @@ LOCAL_SRC_FILES += \
     LocAdapterBase.cpp \
     ContextBase.cpp \
     LocDualContext.cpp \
-    loc_core_log.cpp
+    loc_core_log.cpp \
+    SystemStatus.cpp
 
 LOCAL_CFLAGS += \
      -fno-short-enums \
@@ -53,7 +54,8 @@ LOCAL_COPY_HEADERS:= \
     gps_extended_c.h \
     gps_extended.h \
     loc_core_log.h \
-    LocAdapterProxyBase.h
+    LocAdapterProxyBase.h \
+    SystemStatus.h
 
 include $(BUILD_SHARED_LIBRARY)
 
