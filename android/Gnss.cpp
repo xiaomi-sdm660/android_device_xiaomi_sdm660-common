@@ -121,6 +121,7 @@ Return<bool> Gnss::setCallback(const sp<IGnssCallback>& callback)  {
     if (api != nullptr) {
         api->gnssUpdateCallbacks(mGnssCbIface, mGnssNiCbIface);
         api->locAPIEnable(LOCATION_TECHNOLOGY_TYPE_GNSS);
+        api->requestCapabilities();
     }
     return true;
 }

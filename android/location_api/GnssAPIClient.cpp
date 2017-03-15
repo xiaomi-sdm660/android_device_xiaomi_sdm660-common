@@ -49,7 +49,8 @@ GnssAPIClient::GnssAPIClient(const sp<IGnssCallback>& gpsCb,
     LocationAPIClientBase(),
     mGnssCbIface(nullptr),
     mGnssNiCbIface(nullptr),
-    mLocationCapabilitiesMask(0)
+    mLocationCapabilitiesMask(0),
+    mLocationCapabilitiesCached(false)
 {
     LOC_LOGD("%s]: (%p %p)", __FUNCTION__, &gpsCb, &niCb);
 
@@ -218,11 +219,20 @@ void GnssAPIClient::gnssConfigurationUpdate(const GnssConfig& gnssConfig)
     locAPIGnssUpdateConfig(gnssConfig);
 }
 
+void GnssAPIClient::requestCapabilities() {
+    // only send capablities if it's already cached, otherwise the first time LocationAPI
+    // is initialized, capabilities will be sent by LocationAPI
+    if (mLocationCapabilitiesCached) {
+        onCapabilitiesCb(mLocationCapabilitiesMask);
+    }
+}
+
 // callbacks
 void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 {
     LOC_LOGD("%s]: (%02x)", __FUNCTION__, capabilitiesMask);
     mLocationCapabilitiesMask = capabilitiesMask;
+    mLocationCapabilitiesCached = true;
     if (mGnssCbIface != nullptr) {
         uint32_t data = 0;
         if ((capabilitiesMask & LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT) ||

@@ -74,6 +74,7 @@ public:
     inline LocationCapabilitiesMask gnssGetCapabilities() const {
         return mLocationCapabilitiesMask;
     }
+    void requestCapabilities();
 
     // callbacks we are interested in
     void onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask) final;
@@ -90,6 +91,7 @@ private:
     sp<IGnssNiCallback> mGnssNiCbIface;
 
     LocationCapabilitiesMask mLocationCapabilitiesMask;
+    bool mLocationCapabilitiesCached;
 
     LocationOptions mLocationOptions;
 };
