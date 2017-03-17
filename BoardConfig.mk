@@ -19,8 +19,14 @@ TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := cortex-a53
 
-# SDClang configuration
-SDCLANG := true
+ifeq ($(TARGET_USES_AOSP), true)
+   TARGET_HW_DISK_ENCRYPTION := false
+else
+   # SDClang configuration
+   SDCLANG := true
+   #Enable HW based full disk encryption
+   TARGET_HW_DISK_ENCRYPTION := true
+endif
 
 TARGET_NO_BOOTLOADER := false
 TARGET_USES_UEFI := true
@@ -48,7 +54,10 @@ AB_OTA_PARTITIONS ?= boot system
 BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
 TARGET_NO_RECOVERY := true
 BOARD_USES_RECOVERY_AS_BOOT := true
-TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
+
+ifneq ($(AB_OTA_UPDATER),true)
+   TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
+endif
 
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 3221225472
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 48318382080
@@ -61,7 +70,7 @@ BOARD_CHARGER_ENABLE_SUSPEND := true
 
 TARGET_USES_ION := true
 TARGET_USES_NEW_ION_API :=true
-TARGET_USES_QCOM_BSP :=true
+#TARGET_USES_QCOM_BSP :=true
 
 ifeq ($(BOARD_KERNEL_CMDLINE),)
 ifeq ($(TARGET_KERNEL_VERSION),4.4)
@@ -107,7 +116,7 @@ TARGET_COMPILE_WITH_MSM_KERNEL := true
 TARGET_PD_SERVICE_ENABLED := true
 
 #Enable HW based full disk encryption
-TARGET_HW_DISK_ENCRYPTION := true
+#TARGET_HW_DISK_ENCRYPTION := true
 
 TARGET_CRYPTFS_HW_PATH := device/qcom/common/cryptfs_hw
 
@@ -141,4 +150,3 @@ TARGET_USES_IMS := true
 
 #Add NON-HLOS files for ota upgrade
 ADD_RADIO_FILES := true
-
