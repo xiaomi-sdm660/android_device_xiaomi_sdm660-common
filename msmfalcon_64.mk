@@ -1,7 +1,7 @@
 DEVICE_PACKAGE_OVERLAYS := device/qcom/msmfalcon_64/overlay
 TARGET_KERNEL_VERSION := 4.4
 BOARD_HAVE_QCOM_FM := true
-TARGET_USES_QTIC := false # bring-up hack
+#TARGET_USES_QTIC := false # bring-up hack
 TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
 # Video codec configuration files
 ifeq ($(TARGET_ENABLE_QC_AV_ENHANCEMENTS), true)
