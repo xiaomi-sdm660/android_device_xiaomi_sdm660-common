@@ -1,5 +1,5 @@
 #
-# system.prop for falcon
+# system.prop for sdm660
 #
 
 #rild.libpath=/system/lib/libreference-ril.so
@@ -16,8 +16,11 @@ persist.rild.nitz_short_ons_2=
 persist.rild.nitz_short_ons_3=
 ril.subscription.types=NV,RUIM
 DEVICE_PROVISIONED=1
-# Start in cdma mode
-ro.telephony.default_network=5
+
+#
+# Set network mode to (T/L/G/W/1X/EVDO, T/G/W/L) for 7+5 mode device on DSDS mode
+#
+ro.telephony.default_network=22,20
 
 debug.sf.hw=1
 debug.gralloc.enable_fb_ubwc=1
@@ -40,10 +43,22 @@ media.stagefright.enable-scan=true
 mmp.enable.3g2=true
 media.aac_51_output_enabled=true
 mm.enable.smoothstreaming=true
-#13631487 is decimal sum of supported codecs in AAL
 #codecs:(PARSER_)AAC AC3 AMR_NB AMR_WB ASF AVI DTS FLV 3GP 3G2 MKV MP2PS MP2TS MP3 OGG QCP WAV FLAC AIFF APE DSD
 mm.enable.qcom_parser=13631487
 persist.mm.enable.prefetch=true
+
+#property to enable narrow search range for video encoding
+vidc.enc.target_support_bframe=1
+vidc.enc.disable_bframes=1
+vidc.dec.enable.downscalar=1
+video.disable.ubwc=1
+
+# enable PQ feature by default
+vidc.enc.disable.pq=false
+
+# Additional buffers shared between Camera and Video
+vidc.enc.dcvs.extra-buff-count=2
+
 
 #
 # system props for the data modules
@@ -57,11 +72,13 @@ persist.timed.enable=true
 #
 # system prop for opengles version
 #
-# 196608 is decimal for 0x30000 to report version 3
-ro.opengles.version=196608
+# 196610 is decimal for 0x30002 to report major/minor versions as 3/2
+ro.opengles.version=196610
 
 # system property for maximum number of HFP client connections
 bt.max.hfpclient.connections=1
+#force disable Bluetooth AAC by default
+persist.bt.a2dp.aac_disable=true
 
 # System property for cabl
 ro.qualcomm.cabl=2
@@ -78,10 +95,8 @@ persist.fuse_sdcard=true
 #system prop for Bluetooth SOC type
 qcom.bluetooth.soc=cherokee
 
-#system prop for A4WP profile support
-ro.bluetooth.a4wp=false
-
 #system prop for wipower support
+ro.bluetooth.emb_wp_mode=true
 ro.bluetooth.wipower=true
 
 #
@@ -99,13 +114,29 @@ persist.data.df.mux_count=8
 persist.data.df.iwlan_mux=9
 persist.data.df.dev_name=rmnet_usb0
 
+#
+# system property determining camera HAL to be used for a Video call
+#
+# 1 is camera1
+# 2 or anything else is camera2
+persist.radio.VT_CAM_INTERFACE=2
+
 #property to enable user to access Google WFD settings
 persist.debug.wfd.enable=1
+#Enable stm-events
+persist.debug.coresight.config=stm-events
 ##property to choose between virtual/external wfd display
 persist.sys.wfd.virtual=0
 
 # system prop for NFC DT
 ro.nfc.port=I2C
+
+#property for vendor specific library
+ro.vendor.at_library=libqti-at.so
+
+#min/max cpu in core control
+ro.core_ctl_min_cpu=2
+ro.core_ctl_max_cpu=4
 
 #hwui properties
 ro.hwui.texture_cache_size=72
@@ -120,15 +151,36 @@ ro.hwui.text_small_cache_height=1024
 ro.hwui.text_large_cache_width=2048
 ro.hwui.text_large_cache_height=1024
 
-#config for bringup
-config.disable_telephony=true
-config.disable_networktime=true
-config.disable_atlas=true
-debug.sf.nobootanimation=1
-debug.batt.no_battery=true
-
 # enable navigation bar
 qemu.hw.mainkeys=0
 
+#property to enable VDS WFD solution
+persist.hwc.enable_vds=1
+
 #Increase cached app limit
 ro.sys.fw.bg_apps_limit=60
+
+#Settings to enable sensors
+#Device Orientation sensor
+ro.qti.sensors.dev_ori=true
+#Persistent Motion Detector
+ro.qti.sensors.pmd=true
+#Stationary Detector
+ro.qti.sensors.sta_detect=true
+#Motion Detector
+ro.qti.sensors.mot_detect=true
+#Facing
+ro.qti.sensors.facing=false
+#CMC
+ro.qti.sensors.cmc=false
+#Gesture
+ro.qti.sdk.sensors.gestures=false
+
+#low power mode for camera
+camera.lowpower.record.enable=1
+
+#Expose aux camera for below packages
+camera.aux.packagelist=org.codeaurora.snapcam
+
+# Create zram disk
+ro.config.zram=true

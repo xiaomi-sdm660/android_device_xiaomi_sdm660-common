@@ -19,7 +19,7 @@ endif
 # Compile Linux Kernel
 #----------------------------------------------------------------------
 ifeq ($(KERNEL_DEFCONFIG),)
-    KERNEL_DEFCONFIG := msmfalcon_defconfig
+    KERNEL_DEFCONFIG := sdm660_defconfig
 endif
 
 ifeq ($(TARGET_KERNEL_SOURCE),)
@@ -106,10 +106,23 @@ LOCAL_MODULE_PATH  := $(TARGET_OUT_ETC)/hostapd
 LOCAL_SRC_FILES    := hostapd.deny
 include $(BUILD_PREBUILT)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE       := wifi_concurrency_cfg.txt
+LOCAL_MODULE_TAGS  := optional
+LOCAL_MODULE_CLASS := ETC
+LOCAL_SRC_FILES    := $(LOCAL_MODULE)
+LOCAL_MODULE_PATH  := $(TARGET_OUT_ETC)/wifi
+include $(BUILD_PREBUILT)
+
 # Create symbolic links for WLAN
 $(shell mkdir -p $(TARGET_OUT_ETC)/firmware/wlan/qca_cld; \
 ln -sf /system/etc/wifi/WCNSS_qcom_cfg.ini \
 $(TARGET_OUT_ETC)/firmware/wlan/qca_cld/WCNSS_qcom_cfg.ini)
+
+# Create symbolic links for msadp
+$(shell  mkdir -p $(TARGET_OUT_VENDOR)/firmware; \
+	ln -sf /dev/block/bootdevice/by-name/msadp \
+	$(TARGET_OUT_VENDOR)/firmware/msadp)
 
 #----------------------------------------------------------------------
 # Radio image

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (c) 2016, The Linux Foundation. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+        * Redistributions of source code must retain the above copyright
+          notice, this list of conditions and the following disclaimer.
+        * Redistributions in binary form must reproduce the above
+          copyright notice, this list of conditions and the following
+          disclaimer in the documentation and/or other materials provided
+          with the distribution.
+        * Neither the name of The Linux Foundation nor the names of its
+          contributors may be used to endorse or promote products derived
+          from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+    WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+    ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+    BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+    IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+-->
+
+
+<device name="Android">
+  <!-- Most values are the incremental current used by a feature,
+       in mA (measured at nominal voltage).
+       The default values are deliberately incorrect dummy values.
+       OEM's must measure and provide actual values before
+       shipping a device.
+       Example real-world values are given in comments, but they
+       are totally dependent on the platform and can vary
+       significantly, so should be measured on the shipping platform
+       with a power meter. -->
+  <item name="none">0</item>
+  <item name="screen.on">63</item>  <!-- ~200mA -->
+  <item name="screen.full">261</item>  <!-- ~300mA -->
+
+  <!-- A list of heterogeneous CPU clusters, where the value for each cluster represents the
+       number of CPU cores for that cluster.
+
+       Ex:
+       <array name="cpu.clusters.cores">
+         <value>4</value> // cluster 0 has cpu0, cpu1, cpu2, cpu3
+         <value>2</value> // cluster 1 has cpu4, cpu5
+       </array> -->
+  <array name="cpu.clusters.cores">
+      <value>4</value> <!-- cluster 0 has cpu0, cpu1, cpu2, cpu3 -->
+      <value>4</value> <!-- cluster 1 has cpu4, cpu5, cpu6, cpu7 -->
+  </array>
+
+    <!-- Different CPU speeds for cluster 0 as reported in
+       /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state.
+
+       There must be one of these for each cluster, labeled:
+       cpu.speeds.cluster0, cpu.speeds.cluster1, etc... -->
+  <array name="cpu.speeds.cluster0">
+      <value>633000</value>   <!-- 633  MHz CPU speed -->
+      <value>902000</value>   <!-- 902  MHz CPU speed -->
+      <value>1113000</value>  <!-- 1113 MHz CPU speed -->
+      <value>1401000</value>  <!-- 1401 MHz CPU speed -->
+      <value>1536000</value>  <!-- 1536 MHz CPU speed -->
+      <value>1747000</value>  <!-- 1747 MHz CPU speed -->
+      <value>1843000</value>  <!-- 1843 MHz CPU speed -->
+  </array>
+
+  <!-- Current at each CPU speed for cluster 0, as per 'cpu.speeds.cluster0'.
+       Like cpu.speeds.cluster0, there must be one of these present for
+       each heterogeneous CPU cluster. -->
+  <array name="cpu.active.cluster0">
+      <value>34</value>  <!-- ~34mA -->
+      <value>60</value>  <!-- ~60mA -->
+      <value>85</value>  <!-- ~85mA -->
+      <value>128</value>  <!-- ~128mA -->
+      <value>163</value>  <!-- ~163mA -->
+      <value>202</value>  <!-- ~202mA -->
+      <value>253</value>  <!-- ~253mA -->
+  </array>
+
+   <array name="cpu.speeds.cluster1">
+      <value>1113000</value>  <!-- 1113  MHz CPU speed -->
+      <value>1401000</value>  <!-- 1401  MHz CPU speed -->
+      <value>1747000</value>  <!-- 1747  MHz CPU speed -->
+      <value>1958000</value>  <!-- 1958  MHz CPU speed -->
+      <value>2150000</value>  <!-- 2150  MHz CPU speed -->
+  </array>
+
+  <!-- Current at each CPU speed for cluster 1, as per 'cpu.speeds.cluster1'.
+       Like cpu.speeds.cluster1, there must be one of these present for
+       each heterogeneous CPU cluster. -->
+  <array name="cpu.active.cluster1">
+      <value>226</value>  <!-- ~226mA -->
+      <value>331</value>  <!-- ~331mA -->
+      <value>497</value>  <!-- ~497mA -->
+      <value>614</value>  <!-- ~614mA -->
+      <value>777</value>  <!-- ~777mA -->
+
+  </array>
+
+  <!-- Current when CPU is awake -->
+  <item name="cpu.awake">1.6</item>
+  <!-- Current when CPU is idle -->
+  <item name="cpu.idle">0.1</item>
+
+  <!-- This is the battery capacity in mAh (measured at nominal voltage) -->
+  <item name="battery.capacity">1000</item>
+
+</device>

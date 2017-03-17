@@ -1,2 +1,2 @@
 PRODUCT_MAKEFILES := \
-	$(LOCAL_DIR)/msmfalcon_64.mk
+	$(LOCAL_DIR)/sdm660_64.mk

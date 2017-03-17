@@ -1,4 +1,4 @@
-# Copyright (c) 2013, The Linux Foundation. All rights reserved.
+# Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -27,19 +27,38 @@
 
 # filename              partition
 
-NON-HLOS.bin            /dev/block/platform/bootdevice/by-name/modem
-
-sbl1.mbn                /dev/block/platform/bootdevice/by-name/sbl1
-tz.mbn                  /dev/block/platform/bootdevice/by-name/tz
-rpm.mbn                 /dev/block/platform/bootdevice/by-name/rpm
-emmc_appsboot.mbn       /dev/block/platform/bootdevice/by-name/aboot
+NON-HLOS.bin            /dev/block/bootdevice/by-name/modem
+BTFM.bin                /dev/block/bootdevice/by-name/bluetooth
+sbl1.mbn                /dev/block/bootdevice/by-name/sbl1
+tz.mbn                  /dev/block/bootdevice/by-name/tz
+rpm.mbn                 /dev/block/bootdevice/by-name/rpm
+emmc_appsboot.mbn       /dev/block/bootdevice/by-name/aboot
+hyp.mbn                 /dev/block/bootdevice/by-name/hyp
+pmic.mbn                /dev/block/bootdevice/by-name/pmic
+cmnlib.mbn              /dev/block/bootdevice/by-name/cmnlib
+cmnlib64.mbn            /dev/block/bootdevice/by-name/cmnlib64
+keymaster.mbn           /dev/block/bootdevice/by-name/keymaster
+xbl.elf                 /dev/block/bootdevice/by-name/xbl
+lksecapp.mbn            /dev/block/bootdevice/by-name/lksecapp
+devcfg.mbn              /dev/block/bootdevice/by-name/devcfg
+adspso.mbn              /dev/block/bootdevice/by-name/dsp
+abl.elf                 /dev/block/bootdevice/by-name/abl
 
 # filename + .bak       backup partition
 
-sbl1.mbn.bak            /dev/block/platform/bootdevice/by-name/sbl1bak
-tz.mbn.bak              /dev/block/platform/bootdevice/by-name/tzbak
-rpm.mbn.bak             /dev/block/platform/bootdevice/by-name/rpmbak
-emmc_appsboot.mbn.bak   /dev/block/platform/bootdevice/by-name/abootbak
+sbl1.mbn.bak            /dev/block/bootdevice/by-name/sbl1bak
+tz.mbn.bak              /dev/block/bootdevice/by-name/tzbak
+rpm.mbn.bak             /dev/block/bootdevice/by-name/rpmbak
+emmc_appsboot.mbn.bak   /dev/block/bootdevice/by-name/abootbak
+hyp.mbn.bak             /dev/block/bootdevice/by-name/hypbak
+pmic.mbn.bak            /dev/block/bootdevice/by-name/pmicbak
+cmnlib.mbn.bak          /dev/block/bootdevice/by-name/cmnlibbak
+cmnlib64.mbn.bak        /dev/block/bootdevice/by-name/cmnlib64bak
+keymaster.mbn.bak       /dev/block/bootdevice/by-name/keymasterbak
+xbl.elf.bak             /dev/block/bootdevice/by-name/xblbak
+lksecapp.mbn.bak        /dev/block/bootdevice/by-name/lksecappbak
+devcfg.mbn.bak          /dev/block/bootdevice/by-name/devcfgbak
+abl.elf.bak             /dev/block/bootdevice/by-name/ablbak
 
 # For multiple file firmware images that differ from *.mbn and *.bin
 # you can specify filename.* to direct all files to the same location.
@@ -50,7 +69,7 @@ emmc_appsboot.mbn.bak   /dev/block/platform/bootdevice/by-name/abootbak
 
 # filename              location
 
-modem.*                 /dev/block/platform/bootdevice/by-name/modem
-wcnss.*                 /dev/block/platform/bootdevice/by-name/modem
-widevine.*              /dev/block/platform/bootdevice/by-name/modem
-adsp.*                  /dev/block/platform/bootdevice/by-name/modem
+modem.*                 /dev/block/bootdevice/by-name/modem
+wcnss.*                 /dev/block/bootdevice/by-name/modem
+widevine.*              /dev/block/bootdevice/by-name/modem
+adsp.*                  /dev/block/bootdevice/by-name/modem

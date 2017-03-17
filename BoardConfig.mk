@@ -3,9 +3,9 @@
 # Product-specific compile-time definitions.
 #
 
-TARGET_BOARD_PLATFORM := msmfalcon
+TARGET_BOARD_PLATFORM := sdm660
 TARGET_BOARD_SUFFIX := _64
-TARGET_BOOTLOADER_BOARD_NAME := msmfalcon
+TARGET_BOOTLOADER_BOARD_NAME :=sdm660
 
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
@@ -25,12 +25,12 @@ SDCLANG := true
 TARGET_NO_BOOTLOADER := false
 TARGET_USES_UEFI := true
 TARGET_NO_KERNEL := false
-BOARD_PRESIL_BUILD := true
--include $(QCPATH)/common/msmfalcon_64/BoardConfigVendor.mk
+-include $(QCPATH)/common/sdm660_64/BoardConfigVendor.mk
 MINIMAL_FONT_FOOTPRINT := true
 
 # Some framework code requires this to enable BT
 BOARD_HAVE_BLUETOOTH := true
+BOARD_USES_WIPOWER := true
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/qcom/common
 
 USE_OPENGL_RENDERER := true
@@ -39,29 +39,41 @@ BOARD_USE_LEGACY_UI := true
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x04000000
 
-BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x02000000
+#A/B related defines
+AB_OTA_UPDATER := true
+# Full A/B partiton update set
+# AB_OTA_PARTITIONS := xbl rpm tz hyp pmic modem abl boot keymaster cmnlib cmnlib64 system bluetooth
+# Subset A/B partitions for Android-only image update
+AB_OTA_PARTITIONS ?= boot system
+BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
+TARGET_NO_RECOVERY := true
+BOARD_USES_RECOVERY_AS_BOOT := true
+TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
+
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 3221225472
-BOARD_USERDATAIMAGE_PARTITION_SIZE := 3221225472
-BOARD_CACHEIMAGE_PARTITION_SIZE := 134217728
-BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_USERDATAIMAGE_PARTITION_SIZE := 48318382080
 BOARD_PERSISTIMAGE_PARTITION_SIZE := 33554432
 BOARD_PERSISTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
 
+# Enable suspend during charger mode
+BOARD_CHARGER_ENABLE_SUSPEND := true
+
 TARGET_USES_ION := true
 TARGET_USES_NEW_ION_API :=true
-TARGET_USES_QCOM_BSP := false
+TARGET_USES_QCOM_BSP :=true
 
 ifeq ($(BOARD_KERNEL_CMDLINE),)
 ifeq ($(TARGET_KERNEL_VERSION),4.4)
-     BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc1b0000
+     BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc170000
 else
      BOARD_KERNEL_CMDLINE += console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 earlycon=msm_hsl_uart,0xc1b0000
 endif
-BOARD_KERNEL_CMDLINE += boot_cpus=0-3 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 sched_enable_hmp=1 sched_enable_power_aware=1 androidboot.selinux=permissive service_locator.enable=1
+BOARD_KERNEL_CMDLINE += androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 sched_enable_hmp=1 sched_enable_power_aware=1 service_locator.enable=1 swiotlb=1
 endif
 
-BOARD_EGL_CFG := device/qcom/msmfalcon_64/egl.cfg
+BOARD_EGL_CFG := device/qcom/sdm660_64/egl.cfg
+BOARD_SECCOMP_POLICY := device/qcom/sdm660_32/seccomp
 
 BOARD_KERNEL_BASE        := 0x00000000
 BOARD_KERNEL_PAGESIZE    := 4096
@@ -111,8 +123,22 @@ ifeq ($(HOST_OS),linux)
     endif
 endif
 
+#Enable peripheral manager
+TARGET_PER_MGR_ENABLED := true
+
 #Enable SSC Feature
 TARGET_USES_SSC := true
 
 # Enable sensor multi HAL
 USE_SENSOR_MULTI_HAL := true
+
+#Enable CPUSets
+ENABLE_CPUSETS := true
+ENABLE_SCHEDBOOST := true
+
+#Enabling IMS Feature
+TARGET_USES_IMS := true
+
+#Add NON-HLOS files for ota upgrade
+ADD_RADIO_FILES := true
+
