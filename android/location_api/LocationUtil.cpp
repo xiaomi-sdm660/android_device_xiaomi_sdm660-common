@@ -46,21 +46,23 @@ void convertGnssLocation(Location& in, GnssLocation& out)
         out.gnssLocationFlags |= GnssLocationFlags::HAS_SPEED;
     if (in.flags & LOCATION_HAS_BEARING_BIT)
         out.gnssLocationFlags |= GnssLocationFlags::HAS_BEARING;
-    if (in.flags & LOCATION_HAS_ACCURACY_BIT) {
+    if (in.flags & LOCATION_HAS_ACCURACY_BIT)
         out.gnssLocationFlags |= GnssLocationFlags::HAS_HORIZONTAL_ACCURACY;
-        //out.gnssLocationFlags |= GnssLocationFlags::HAS_VERTICAL_ACCURACY;
-        //out.gnssLocationFlags |= GnssLocationFlags::HAS_SPEED_ACCURACY;
-        //out.gnssLocationFlags |= GnssLocationFlags::HAS_BEARING_ACCURACY;
-    }
+    if (in.flags & LOCATION_HAS_VERTICAL_ACCURACY_BIT)
+        out.gnssLocationFlags |= GnssLocationFlags::HAS_VERTICAL_ACCURACY;
+    if (in.flags & LOCATION_HAS_SPEED_ACCURACY_BIT)
+        out.gnssLocationFlags |= GnssLocationFlags::HAS_SPEED_ACCURACY;
+    if (in.flags & LOCATION_HAS_BEARING_ACCURACY_BIT)
+        out.gnssLocationFlags |= GnssLocationFlags::HAS_BEARING_ACCURACY;
     out.latitudeDegrees = in.latitude;
     out.longitudeDegrees = in.longitude;
     out.altitudeMeters = in.altitude;
     out.speedMetersPerSec = in.speed;
     out.bearingDegrees = in.bearing;
     out.horizontalAccuracyMeters = in.accuracy;
-    //out.verticalAccuracyMeters = in.accuracy;
-    //out.speedAccuracyMetersPerSecond = in.accuracy;
-    //out.bearingAccuracyDegrees = in.accuracy;
+    out.verticalAccuracyMeters = in.verticalAccuracy;
+    out.speedAccuracyMetersPerSecond = in.speedAccuracy;
+    out.bearingAccuracyDegrees = in.bearingAccuracy;
     out.timestamp = static_cast<GnssUtcTime>(in.timestamp);
 }
 
