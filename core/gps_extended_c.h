@@ -876,8 +876,10 @@ typedef struct
     */
     uint64_t                        measurementStatus;
     /**< Bitmask indicating SV measurement status.
-         Valid bitmasks: \n
-         @MASK()
+        Valid bitmasks: \n
+        If any MSB bit in 0xFFC0000000000000 DONT_USE is set, the measurement
+        must not be used by the client.
+        @MASK()
     */
     uint16_t                        CNo;
     /**< Carrier to Noise ratio  \n
