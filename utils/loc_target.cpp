@@ -198,7 +198,7 @@ unsigned int loc_get_target(void)
     static const char hw_platform_dep[]  =
         "/sys/devices/system/soc/soc0/hw_platform";
     static const char id_dep[]           = "/sys/devices/system/soc/soc0/id";
-    static const char mdm[]              = "/dev/mdm"; // No such file or directory
+    static const char mdm[]              = "/target"; // mdm target we are using
 
     char rd_hw_platform[LINE_LEN];
     char rd_id[LINE_LEN];
