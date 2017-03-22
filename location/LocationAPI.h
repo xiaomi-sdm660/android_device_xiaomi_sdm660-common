@@ -295,6 +295,7 @@ typedef enum {
     GNSS_MEASUREMENTS_DATA_CARRIER_PHASE_UNCERTAINTY_BIT    = (1<<14),
     GNSS_MEASUREMENTS_DATA_MULTIPATH_INDICATOR_BIT          = (1<<15),
     GNSS_MEASUREMENTS_DATA_SIGNAL_TO_NOISE_RATIO_BIT        = (1<<16),
+    GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT       = (1<<17),
 } GnssMeasurementsDataFlagsBits;
 
 typedef uint32_t GnssMeasurementsStateMask;
@@ -503,6 +504,7 @@ typedef struct {
     double carrierPhaseUncertainty;
     GnssMeasurementsMultipathIndicator multipathIndicator;
     double signalToNoiseRatioDb;
+    double agcLevelDb;
 } GnssMeasurementsData;
 
 typedef struct {

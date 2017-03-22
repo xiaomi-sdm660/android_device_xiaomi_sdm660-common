@@ -107,6 +107,10 @@ public:
     uint32_t mJammerGlo;
     uint32_t mJammerBds;
     uint32_t mJammerGal;
+    double   mAgcGps;
+    double   mAgcGlo;
+    double   mAgcBds;
+    double   mAgcGal;
     SystemStatusRfAndParams(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusRfAndParams& peer);
     void dump(void);
