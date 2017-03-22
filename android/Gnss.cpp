@@ -309,6 +309,12 @@ Return<sp<IGnssBatching>> Gnss::getExtensionGnssBatching()  {
     return mGnssBatching;
 }
 
+Return<sp<IGnssDebug>> Gnss::getExtensionGnssDebug() {
+    ENTRY_LOG_CALLFLOW();
+    mGnssDebug = new GnssDebug(this);
+    return mGnssDebug;
+}
+
 IGnss* HIDL_FETCH_IGnss(const char* hal) {
     ENTRY_LOG_CALLFLOW();
     IGnss* iface = nullptr;

@@ -27,6 +27,7 @@
 #include <GnssGeofencing.h>
 #include <GnssMeasurement.h>
 #include <GnssNi.h>
+#include <GnssDebug.h>
 
 #include <android/hardware/gnss/1.0/IGnss.h>
 #include <hidl/Status.h>
@@ -102,9 +103,7 @@ struct Gnss : public IGnss {
         return nullptr;
     }
 
-    inline Return<sp<IGnssDebug>> getExtensionGnssDebug() override {
-        return nullptr;
-    }
+    Return<sp<IGnssDebug>> getExtensionGnssDebug() override;
 
     // These methods are not part of the IGnss base class.
     GnssAPIClient* getApi();
@@ -130,6 +129,7 @@ struct Gnss : public IGnss {
     sp<GnssConfiguration> mGnssConfig = nullptr;
     sp<GnssGeofencing> mGnssGeofencingIface = nullptr;
     sp<GnssBatching> mGnssBatching = nullptr;
+    sp<IGnssDebug> mGnssDebug = nullptr;
 
     GnssAPIClient* mApi = nullptr;
     sp<IGnssCallback> mGnssCbIface = nullptr;
