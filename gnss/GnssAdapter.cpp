@@ -2043,7 +2043,6 @@ GnssAdapter::reportNmea(const char* nmea, size_t length)
             it->second.gnssNmeaCb(nmeaNotification);
         }
     }
-
 }
 
 bool
@@ -2374,23 +2373,23 @@ GnssAdapter::generateNmeaBlank()
 
     strlcpy(sentence, "$GPGSA,A,1,,,,,,,,,,,,,,,", sizeof(sentence));
     length = nmeaPutChecksum(sentence, sizeof(sentence));
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 
     strlcpy(sentence, "$GNGSA,A,1,,,,,,,,,,,,,,,", sizeof(sentence));
     length = nmeaPutChecksum(sentence, sizeof(sentence));
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 
     strlcpy(sentence, "$GPVTG,,T,,M,,N,,K,N", sizeof(sentence));
     length = nmeaPutChecksum(sentence, sizeof(sentence));
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 
     strlcpy(sentence, "$GPRMC,,V,,,,,,,,,,N", sizeof(sentence));
     length = nmeaPutChecksum(sentence, sizeof(sentence));
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 
     strlcpy(sentence, "$GPGGA,,,,,,0,,,,,,,,", sizeof(sentence));
     length = nmeaPutChecksum(sentence, sizeof(sentence));
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 }
 
 void
@@ -2425,7 +2424,7 @@ GnssAdapter::generateNmeaGSV(const GnssSvNotification& svNotify, NmeaSvMeta& svM
         // no svs in view, so just send a blank $--GSV sentence
         snprintf(sentence, lengthRemaining, "$%sGSV,1,1,0,", svMeta.talker);
         length = nmeaPutChecksum(sentence, size);
-        reportNmeaEvent(sentence, length);
+        reportNmea(sentence, length);
         return;
     }
 
@@ -2477,7 +2476,7 @@ GnssAdapter::generateNmeaGSV(const GnssSvNotification& svNotify, NmeaSvMeta& svM
         }
 
         length = nmeaPutChecksum(sentence, size);
-        reportNmeaEvent(sentence, length);
+        reportNmea(sentence, length);
         sentenceNumber++;
     }  //while
 }
@@ -2567,7 +2566,7 @@ GnssAdapter::generateNmeaGSA(const GpsLocationExtended& locationExtended,
 
     /* Sentence is ready, add checksum and broadcast */
     length = nmeaPutChecksum(sentence, size);
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 
     return svUsedCount;
 }
@@ -2642,7 +2641,7 @@ GnssAdapter::generateNmeaVTG(const UlpLocation& ulpLocation,
         length = snprintf(pMarker, lengthRemaining, "%c", 'D'); // D means differential
 
     length = nmeaPutChecksum(sentence, size);
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 }
 
 void
@@ -2786,7 +2785,7 @@ GnssAdapter::generateNmeaRMC(const UlpLocation& ulpLocation,
     }
 
     length = nmeaPutChecksum(sentence, size);
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 }
 
 void
@@ -2914,7 +2913,7 @@ GnssAdapter::generateNmeaGGA(const UlpLocation& ulpLocation,
     }
 
     length = nmeaPutChecksum(sentence, size);
-    reportNmeaEvent(sentence, length);
+    reportNmea(sentence, length);
 }
 
 /* INIT LOC AGPS MANAGER */
