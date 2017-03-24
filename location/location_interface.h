@@ -53,6 +53,7 @@ struct GnssInterface {
     void (*agpsDataConnOpen)(short agpsType, const char* apnName, int apnLen, int ipType);
     void (*agpsDataConnClosed)(short agpsType);
     void (*agpsDataConnFailed)(short agpsType);
+    void (*getDebugReport)(GnssDebugReport& report);
 };
 
 struct FlpInterface {

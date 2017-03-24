@@ -1079,12 +1079,37 @@ void SystemStatusPositionFailure::dump()
 }
 
 /******************************************************************************
+ SystemStatusLocation
+******************************************************************************/
+bool SystemStatusLocation::equals(SystemStatusLocation& peer)
+{
+    if ((mLocation.gpsLocation.latitude != peer.mLocation.gpsLocation.latitude) ||
+        (mLocation.gpsLocation.longitude != peer.mLocation.gpsLocation.longitude) ||
+        (mLocation.gpsLocation.altitude != peer.mLocation.gpsLocation.altitude)) {
+        return false;
+    }
+    return true;
+}
+
+void SystemStatusLocation::dump()
+{
+    LOC_LOGV("Location: lat=%f lon=%f alt=%f spd=%f",
+             mLocation.gpsLocation.latitude,
+             mLocation.gpsLocation.longitude,
+             mLocation.gpsLocation.altitude,
+             mLocation.gpsLocation.speed);
+    return;
+}
+
+/******************************************************************************
  SystemStatus
 ******************************************************************************/
 pthread_mutex_t SystemStatus::mMutexSystemStatus = PTHREAD_MUTEX_INITIALIZER;
 
 SystemStatus::SystemStatus()
 {
+    mCache.mLocation.clear();
+
     mCache.mTimeAndClock.clear();
     mCache.mXoState.clear();
     mCache.mRfAndParams.clear();
@@ -1269,7 +1294,7 @@ bool SystemStatus::setNmeaString(const char *data, uint32_t len)
 
     char buf[SystemStatusNmeaBase::NMEA_MAXSIZE + 1] = { 0 };
     strncpy(buf, data, len);
-    LOC_LOGI("setNmeaString-0320a: len=%d str=%d nmea=%s", len, strlen(data), buf);
+    LOC_LOGI("setNmeaString-0321a: nmea=%s", buf);
 
     pthread_mutex_lock(&mMutexSystemStatus);
 
@@ -1330,6 +1355,36 @@ bool SystemStatus::setNmeaString(const char *data, uint32_t len)
 }
 
 /******************************************************************************
+@brief      API to set report position data into internal buffer
+
+@param[In]  UlpLocation
+
+@return     true when successfully done
+******************************************************************************/
+bool SystemStatus::eventPosition(const UlpLocation& location,
+                                 const GpsLocationExtended& locationEx)
+{
+    timespec ts;
+    ts.tv_sec = location.gpsLocation.timestamp / 1000ULL;
+    ts.tv_nsec = (location.gpsLocation.timestamp % 1000ULL) * 1000000ULL;
+    SystemStatusLocation s(location, locationEx, ts);
+    if ((mCache.mLocation.empty()) || !mCache.mLocation.back().equals(s)) {
+        mCache.mLocation.push_back(s);
+        if (mCache.mLocation.size() > maxLocation) {
+            mCache.mLocation.erase(mCache.mLocation.begin());
+        }
+
+        LOC_LOGV("eventPosition - lat=%f lon=%f alt=%f speed=%f",
+                 s.mLocation.gpsLocation.latitude,
+                 s.mLocation.gpsLocation.longitude,
+                 s.mLocation.gpsLocation.altitude,
+                 s.mLocation.gpsLocation.speed);
+
+    }
+    return true;
+}
+
+/******************************************************************************
 @brief      API to get report data into a given buffer
 
 @param[In]  reference to report buffer
@@ -1343,6 +1398,12 @@ bool SystemStatus::getReport(SystemStatusReports& report, bool isLatestOnly) con
 
     if (isLatestOnly) {
         // push back only the latest report and return it
+        report.mLocation.clear();
+        if (mCache.mLocation.size() >= 1) {
+            report.mLocation.push_back(mCache.mLocation.back());
+            report.mLocation.back().dump();
+        }
+
         report.mTimeAndClock.clear();
         if (mCache.mTimeAndClock.size() >= 1) {
             report.mTimeAndClock.push_back(mCache.mTimeAndClock.back());
@@ -1402,6 +1463,8 @@ bool SystemStatus::getReport(SystemStatusReports& report, bool isLatestOnly) con
     }
     else {
         // copy entire reports and return them
+        report.mLocation.clear();
+
         report.mTimeAndClock.clear();
         report.mXoState.clear();
         report.mRfAndParams.clear();

@@ -29,7 +29,16 @@
 #ifndef __SYSTEM_STATUS__
 #define __SYSTEM_STATUS__
 
+#include <stdint.h>
 #include <vector>
+#include <gps_extended_c.h>
+
+#define GPS_MIN  (1)
+#define SBAS_MIN (33)
+#define GLO_MIN  (65)
+#define BDS_MIN  (201)
+#define QZSS_MIN (193)
+#define GAL_MIN  (301)
 
 namespace loc_core
 {
@@ -44,6 +53,21 @@ public:
     SystemStatusItemBase(timespec utctime) : mUtcTime(utctime) { };
     virtual ~SystemStatusItemBase() { };
     virtual void dump(void) { };
+};
+
+class SystemStatusLocation : public SystemStatusItemBase
+{
+public:
+    UlpLocation mLocation;
+    GpsLocationExtended mLocationEx;
+    SystemStatusLocation(const UlpLocation& location,
+                         const GpsLocationExtended& locationEx,
+                         const timespec& ts) :
+        SystemStatusItemBase(ts),
+        mLocation(location),
+        mLocationEx(locationEx){ };
+    bool equals(SystemStatusLocation& peer);
+    void dump(void);
 };
 
 class SystemStatusPQWM1;
@@ -212,6 +236,8 @@ public:
 class SystemStatusReports
 {
 public:
+    std::vector<SystemStatusLocation>         mLocation;
+
     std::vector<SystemStatusTimeAndClock>     mTimeAndClock;
     std::vector<SystemStatusXoState>          mXoState;
     std::vector<SystemStatusRfAndParams>      mRfAndParams;
@@ -233,6 +259,8 @@ class SystemStatus
 {
     static pthread_mutex_t mMutexSystemStatus;
 
+    static const uint32_t                     maxLocation = 5;
+
     static const uint32_t                     maxTimeAndClock = 5;
     static const uint32_t                     maxXoState = 5;
     static const uint32_t                     maxRfAndParams = 5;
@@ -247,6 +275,8 @@ class SystemStatus
     static const uint32_t                     maxPositionFailure = 5;
 
     SystemStatusReports mCache;
+
+    bool setLocation(const UlpLocation& location);
 
     bool setTimeAndCLock(const SystemStatusPQWM1& nmea);
     bool setXoState(const SystemStatusPQWM1& nmea);
@@ -265,6 +295,7 @@ public:
     SystemStatus();
     ~SystemStatus() { }
 
+    bool eventPosition(const UlpLocation& location,const GpsLocationExtended& locationEx);
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
 };

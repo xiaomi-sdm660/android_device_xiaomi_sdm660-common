@@ -29,6 +29,7 @@
 #ifndef LOCATION_H
 #define LOCATION_H
 
+#include <vector>
 #include <stdint.h>
 #include <functional>
 
@@ -552,6 +553,35 @@ typedef struct {
     GnssConfigSuplEmergencyServices suplEmergencyServices;
     GnssConfigSuplModeMask suplModeMask; //bitwise OR of GnssConfigSuplModeBits
 } GnssConfig;
+
+typedef struct {
+    size_t size;                        // set to sizeof
+    Location                            mLocation;
+    double                              verticalAccuracyMeters;
+    double                              speedAccuracyMetersPerSecond;
+    double                              bearingAccuracyDegrees;
+} GnssDebugLocation;
+
+typedef struct {
+    size_t size;                        // set to sizeof
+    int64_t                             timeEstimate;
+    float                               timeUncertaintyNs;
+} GnssDebugTime;
+
+typedef struct {
+    size_t size;                        // set to sizeof
+    uint32_t                            svid;
+    GnssSvType                          constellation;
+    uint32_t                            ephemerisType;
+    float                               ephemerisAgeSeconds;
+} GnssDebugSatelliteInfo;
+
+typedef struct {
+    size_t size;                        // set to sizeof
+    GnssDebugLocation                   mLocation;
+    GnssDebugTime                       mTime;
+    std::vector<GnssDebugSatelliteInfo> mSatelliteInfo;
+} GnssDebugReport;
 
 /* Provides the capabilities of the system
    capabilities callback is called once soon after createInstance is called */
