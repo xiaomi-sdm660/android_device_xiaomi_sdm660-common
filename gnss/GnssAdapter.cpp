@@ -114,6 +114,7 @@ GnssAdapter::convertOptions(LocPosMode& out, const LocationOptions& options)
 
 void
 GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
+                             const GpsLocationExtended& locationExtended,
                              const LocPosTechMask techMask)
 {
     out.size = sizeof(Location);
@@ -137,6 +138,18 @@ GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation
     if (LOC_GPS_LOCATION_HAS_ACCURACY & locGpsLocation.flags) {
         out.flags |= LOCATION_HAS_ACCURACY_BIT;
         out.accuracy = locGpsLocation.accuracy;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_VERT_UNC & locationExtended.flags) {
+        out.flags |= LOCATION_HAS_VERTICAL_ACCURACY_BIT;
+        out.verticalAccuracy = locationExtended.vert_unc;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_SPEED_UNC & locationExtended.flags) {
+        out.flags |= LOCATION_HAS_SPEED_ACCURACY_BIT;
+        out.speedAccuracy = locationExtended.speed_unc;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_BEARING_UNC & locationExtended.flags) {
+        out.flags |= LOCATION_HAS_BEARING_ACCURACY_BIT;
+        out.bearingAccuracy = locationExtended.bearing_unc;
     }
     out.timestamp = locGpsLocation.timestamp;
     if (LOC_POS_TECH_MASK_SATELLITE & techMask) {
@@ -171,18 +184,6 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     if (GPS_LOCATION_EXTENDED_HAS_MAG_DEV & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_MAGNETIC_DEVIATION_BIT;
         out.magneticDeviation = locationExtended.magneticDeviation;
-    }
-    if (GPS_LOCATION_EXTENDED_HAS_VERT_UNC & locationExtended.flags) {
-        out.flags |= GNSS_LOCATION_INFO_VER_ACCURACY_BIT;
-        out.verAccuracy = locationExtended.vert_unc;
-    }
-    if (GPS_LOCATION_EXTENDED_HAS_SPEED_UNC & locationExtended.flags) {
-        out.flags |= GNSS_LOCATION_INFO_SPEED_ACCURACY_BIT;
-        out.speedAccuracy = locationExtended.speed_unc;
-    }
-    if (GPS_LOCATION_EXTENDED_HAS_BEARING_UNC & locationExtended.flags) {
-        out.flags |= GNSS_LOCATION_INFO_BEARING_ACCURACY_BIT;
-        out.bearingAccuracy = locationExtended.bearing_unc;
     }
     if (GPS_LOCATION_EXTENDED_HAS_HOR_RELIABILITY & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_HOR_RELIABILITY_BIT;
@@ -1870,7 +1871,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
             if (nullptr != it->second.trackingCb) {
                 Location location = {};
-                convertLocation(location, ulpLocation.gpsLocation, techMask);
+                convertLocation(location, ulpLocation.gpsLocation, locationExtended, techMask);
                 it->second.trackingCb(location);
             }
             if (nullptr != it->second.gnssLocationInfoCb) {
