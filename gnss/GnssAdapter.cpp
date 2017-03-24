@@ -40,6 +40,7 @@
 #include <string>
 #include <loc_log.h>
 #include <Agps.h>
+#include <SystemStatus.h>
 
 using namespace loc_core;
 
@@ -509,9 +510,16 @@ GnssAdapter::setConfigCommand()
                 mAdapter.convertLppeCp(ContextBase::mGps_conf.LPPE_CP_TECHNOLOGY));
             mApi.setLPPeProtocolUp(
                 mAdapter.convertLppeUp(ContextBase::mGps_conf.LPPE_UP_TECHNOLOGY));
+
+            // set nmea mask type
+            uint32_t mask = 0;
             if (NMEA_PROVIDER_MP == ContextBase::mGps_conf.NMEA_PROVIDER) {
-                mApi.setNMEATypes(LOC_NMEA_ALL_SUPPORTED_MASK);
+                mask = LOC_NMEA_ALL_SUPPORTED_MASK;
+            } else {
+                mask = LOC_NMEA_MASK_DEBUG_V02;
             }
+            mApi.setNMEATypes(mask);
+
             mApi.setXtraVersionCheck(ContextBase::mGps_conf.XTRA_VERSION_CHECK);
             if (ContextBase::mSap_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
                 ContextBase::mSap_conf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
@@ -999,8 +1007,7 @@ GnssAdapter::updateClientsEventMask()
         if (it->second.gnssSvCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_SATELLITE_REPORT;
         }
-        if (it->second.gnssNmeaCb != nullptr &&
-            NMEA_PROVIDER_MP == ContextBase::mGps_conf.NMEA_PROVIDER) {
+        if (it->second.gnssNmeaCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT;
         }
         if (it->second.gnssMeasurementsCb != nullptr) {
@@ -1997,7 +2004,16 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
             delete[] mNmea;
         }
         inline virtual void proc() const {
-            mAdapter.reportNmea(mNmea, mLength);
+            // extract bug report info - this returns true if consumed by systemstatus
+            bool ret = false;
+            SystemStatus* s = LocDualContext::getSystemStatus();
+            if (nullptr != s) {
+                ret = s->setNmeaString(mNmea, mLength);
+            }
+            if (false == ret) {
+                // forward NMEA message to upper layer
+                mAdapter.reportNmea(mNmea, mLength);
+            }
         }
     };
 
