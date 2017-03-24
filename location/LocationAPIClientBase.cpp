@@ -409,17 +409,18 @@ uint32_t LocationAPIClientBase::locAPIAddGeofences(
             delete requests;
         }
         uint32_t* sessions = mLocationAPI->addGeofences(count, options, data);
-        LOC_LOGI("%s:%d] start new sessions: %p", __FUNCTION__, __LINE__, sessions);
-        requests = new RequestQueue(-1);
-        requests->push(new AddGeofencesRequest(*this));
-        mRequestQueues[REQUEST_GEOFENCE] = requests;
+        if (sessions) {
+            LOC_LOGI("%s:%d] start new sessions: %p", __FUNCTION__, __LINE__, sessions);
+            requests = new RequestQueue(-1);
+            requests->push(new AddGeofencesRequest(*this));
+            mRequestQueues[REQUEST_GEOFENCE] = requests;
 
-        for (size_t i = 0; i < count; i++) {
-            mGeofenceBiDict.set(ids[i], sessions[i], options[i].breachTypeMask);
+            for (size_t i = 0; i < count; i++) {
+                mGeofenceBiDict.set(ids[i], sessions[i], options[i].breachTypeMask);
+            }
+            retVal = LOCATION_ERROR_SUCCESS;
         }
         pthread_mutex_unlock(&mMutex);
-
-        retVal = LOCATION_ERROR_SUCCESS;
     }
 
     return retVal;

@@ -100,7 +100,10 @@ void GeofenceAPIClient::geofenceAdd(uint32_t geofence_id, double latitude, doubl
     data.longitude = longitude;
     data.radius = radius_meters;
 
-    locAPIAddGeofences(1, &geofence_id, &options, &data);
+    LocationError err = (LocationError)locAPIAddGeofences(1, &geofence_id, &options, &data);
+    if (LOCATION_ERROR_SUCCESS != err) {
+        onAddGeofencesCb(1, &err, &geofence_id);
+    }
 }
 
 void GeofenceAPIClient::geofencePause(uint32_t geofence_id)
