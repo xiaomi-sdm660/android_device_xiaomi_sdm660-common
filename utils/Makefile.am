@@ -41,11 +41,11 @@ libgps_utils_so_la_SOURCES = $(libgps_utils_so_la_c_sources)
 
 if USE_GLIB
 libgps_utils_so_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
-libgps_utils_so_la_LDFLAGS = -lstdc++ -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
+libgps_utils_so_la_LDFLAGS = -lstdc++ -Wl,-z,defs -lpthread @GLIB_LIBS@ -shared -version-info 1:0:0
 libgps_utils_so_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
 else
 libgps_utils_so_la_CFLAGS = $(AM_CFLAGS)
-libgps_utils_so_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
+libgps_utils_so_la_LDFLAGS = -Wl,-z,defs -lpthread -shared -version-info 1:0:0
 libgps_utils_so_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
