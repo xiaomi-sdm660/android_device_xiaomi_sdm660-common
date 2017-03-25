@@ -128,6 +128,10 @@ public:
     uint32_t mJammerBds;  // x10
     uint32_t mJammerGal;  // x11
     uint32_t mRecErrorRecovery; // x12
+    double   mAgcGps;     // x13
+    double   mAgcGlo;     // x14
+    double   mAgcBds;     // x15
+    double   mAgcGal;     // x16
 };
 
 // parser
@@ -155,6 +159,10 @@ private:
         eJammerBds = 16,
         eJammerGal = 17,
         eRecErrorRecovery = 18,
+        eAgcGps = 19,
+        eAgcGlo = 20,
+        eAgcBds = 21,
+        eAgcGal = 22,
         eMax = eRecErrorRecovery
     };
     SystemStatusPQWM1 mM1;
@@ -177,6 +185,10 @@ public:
     inline uint32_t   getJammerGlo()  { return mM1.mJammerGlo;        }
     inline uint32_t   getJammerBds()  { return mM1.mJammerBds;        }
     inline uint32_t   getJammerGal()  { return mM1.mJammerGal;        }
+    inline uint32_t   getAgcGps()     { return mM1.mAgcGps;           }
+    inline uint32_t   getAgcGlo()     { return mM1.mAgcGlo;           }
+    inline uint32_t   getAgcBds()     { return mM1.mAgcBds;           }
+    inline uint32_t   getAgcGal()     { return mM1.mAgcGal;           }
     inline uint32_t   getRecErrorRecovery() { return mM1.mRecErrorRecovery; }
 
     SystemStatusPQWM1parser(const char *str_in, uint32_t len_in)
@@ -209,6 +221,10 @@ public:
         mM1.mJammerBds = atoi(mField[eJammerBds].c_str());
         mM1.mJammerGal = atoi(mField[eJammerGal].c_str());
         mM1.mRecErrorRecovery = atoi(mField[eRecErrorRecovery].c_str());
+        mM1.mAgcGps = atof(mField[eAgcGps].c_str());
+        mM1.mAgcGlo = atof(mField[eAgcGlo].c_str());
+        mM1.mAgcBds = atof(mField[eAgcBds].c_str());
+        mM1.mAgcGal = atof(mField[eAgcGal].c_str());
     }
 
     inline SystemStatusPQWM1& get() { return mM1;} //getparser
@@ -725,7 +741,11 @@ SystemStatusRfAndParams::SystemStatusRfAndParams(const SystemStatusPQWM1& nmea) 
     mJammerGps(nmea.mJammerGps),
     mJammerGlo(nmea.mJammerGlo),
     mJammerBds(nmea.mJammerBds),
-    mJammerGal(nmea.mJammerGal)
+    mJammerGal(nmea.mJammerGal),
+    mAgcGps(nmea.mAgcGps),
+    mAgcGlo(nmea.mAgcGlo),
+    mAgcBds(nmea.mAgcBds),
+    mAgcGal(nmea.mAgcGal)
 {
 }
 
@@ -739,7 +759,11 @@ bool SystemStatusRfAndParams::equals(SystemStatusRfAndParams& peer)
         (mJammerGps != peer.mJammerGps) ||
         (mJammerGlo != peer.mJammerGlo) ||
         (mJammerBds != peer.mJammerBds) ||
-        (mJammerGal != peer.mJammerGal)) {
+        (mJammerGal != peer.mJammerGal) ||
+        (mAgcGps != peer.mAgcGps) ||
+        (mAgcGlo != peer.mAgcGlo) ||
+        (mAgcBds != peer.mAgcBds) ||
+        (mAgcGal != peer.mAgcGal)) {
         return false;
     }
     return true;
@@ -747,7 +771,9 @@ bool SystemStatusRfAndParams::equals(SystemStatusRfAndParams& peer)
 
 void SystemStatusRfAndParams::dump()
 {
-    LOC_LOGV("RfAndParams: u=%ld:%ld p=%d bi=%d bq=%d ai=%d aq=%d gp=%d gl=%d bd=%d ga=%d",
+    LOC_LOGV("RfAndParams: u=%ld:%ld p=%d bi=%d bq=%d ai=%d aq=%d "
+             "jgp=%d jgl=%d jbd=%d jga=%d "
+             "agp=%lf agl=%lf abd=%lf aga=%lf",
              mUtcTime.tv_sec, mUtcTime.tv_nsec,
              mPgaGain,
              mGpsBpAmpI,
@@ -757,7 +783,11 @@ void SystemStatusRfAndParams::dump()
              mJammerGps,
              mJammerGlo,
              mJammerBds,
-             mJammerGal);
+             mJammerGal,
+             mAgcGps,
+             mAgcGlo,
+             mAgcBds,
+             mAgcGal);
     return;
 }
 

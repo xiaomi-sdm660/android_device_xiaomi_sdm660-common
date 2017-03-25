@@ -166,6 +166,8 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_CARRIER_PHASE;
     if (in.flags & GNSS_MEASUREMENTS_DATA_CARRIER_PHASE_UNCERTAINTY_BIT)
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_CARRIER_PHASE_UNCERTAINTY;
+    if (in.flags & GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT)
+        out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_AUTOMATIC_GAIN_CONTROL;
     out.svid = in.svId;
     convertGnssConstellationType(in.svType, out.constellation);
     out.timeOffsetNs = in.timeOffsetNs;
@@ -226,6 +228,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
     out.multipathIndicator =
         static_cast<IGnssMeasurementCallback::GnssMultipathIndicator>(indicator);
     out.snrDb = in.signalToNoiseRatioDb;
+    out.agcLevelDb = in.agcLevelDb;
 }
 
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out)
