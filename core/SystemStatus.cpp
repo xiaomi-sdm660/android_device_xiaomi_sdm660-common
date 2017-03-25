@@ -34,6 +34,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <platform_lib_log_util.h>
+#include <loc_nmea.h>
 #include <SystemStatus.h>
 
 namespace loc_core
@@ -48,14 +49,10 @@ protected:
     std::vector<std::string> mField;
     timespec setUtcTime(std::string sutctime);
 
-public:
-    static const uint32_t NMEA_MINSIZE = 6;
-    static const uint32_t NMEA_MAXSIZE = 256;
-
     SystemStatusNmeaBase(const char *str_in, uint32_t len_in)
     {
         // check size and talker
-        if (len_in > NMEA_MAXSIZE || len_in < NMEA_MINSIZE || (str_in[0] != '$')) {
+        if (!loc_nmea_is_debug(str_in, len_in)) {
             return;
         }
 
@@ -83,6 +80,10 @@ public:
     }
 
     virtual ~SystemStatusNmeaBase() { }
+
+public:
+    static const uint32_t NMEA_MINSIZE = DEBUG_NMEA_MINSIZE;
+    static const uint32_t NMEA_MAXSIZE = DEBUG_NMEA_MAXSIZE;
 };
 
 timespec SystemStatusNmeaBase::setUtcTime(std::string sutctime)
@@ -1316,9 +1317,7 @@ static uint32_t cnt_s1 = 0;
 bool SystemStatus::setNmeaString(const char *data, uint32_t len)
 {
     bool ret = false;
-    if (NULL == data
-        || (len < SystemStatusNmeaBase::NMEA_MINSIZE)
-        || (len > SystemStatusNmeaBase::NMEA_MAXSIZE)) {
+    if (!loc_nmea_is_debug(data, len)) {
         return false;
     }
 
