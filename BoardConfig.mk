@@ -72,6 +72,10 @@ TARGET_USES_ION := true
 TARGET_USES_NEW_ION_API :=true
 #TARGET_USES_QCOM_BSP :=true
 
+#Gralloc h/w specif flags
+TARGET_USES_HWC2 := true
+TARGET_USES_GRALLOC1 := true
+
 ifeq ($(BOARD_KERNEL_CMDLINE),)
 ifeq ($(TARGET_KERNEL_VERSION),4.4)
      BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc170000
