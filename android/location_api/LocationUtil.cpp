@@ -70,7 +70,7 @@ void convertGnssConstellationType(GnssSvType& in, GnssConstellationType& out)
 {
     switch(in) {
         case GNSS_SV_TYPE_GPS:
-            out = GnssConstellationType::UNKNOWN;
+            out = GnssConstellationType::GPS;
             break;
         case GNSS_SV_TYPE_SBAS:
             out = GnssConstellationType::SBAS;
