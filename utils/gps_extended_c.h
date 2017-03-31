@@ -77,6 +77,13 @@ extern "C" {
 #define ULP_LOCATION_IS_FROM_PIP      0x0040
 /** Position is from external DR solution*/
 #define ULP_LOCATION_IS_FROM_EXT_DR   0X0080
+/** Raw GNSS position fixes */
+#define ULP_LOCATION_IS_FROM_GNSS_RAW   0X0100
+
+/** SVinfo source is GNSS/DR */
+#define ULP_SVINFO_IS_FROM_GNSS         0x0001
+/** Raw SVinfo from GNSS */
+#define ULP_SVINFO_IS_FROM_GNSS_RAW     0x0002
 
 #define ULP_MIN_INTERVAL_INVALID 0xffffffff
 #define ULP_MAX_NMEA_STRING_SIZE 201
