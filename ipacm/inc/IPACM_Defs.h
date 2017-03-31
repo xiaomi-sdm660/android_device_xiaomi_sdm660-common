@@ -185,6 +185,8 @@ typedef enum
 	IPA_ETH_BRIDGE_CLIENT_DEL,                /* ipacm_event_eth_bridge*/
 	IPA_ETH_BRIDGE_WLAN_SCC_MCC_SWITCH,       /* ipacm_event_eth_bridge*/
 	IPA_LAN_DELETE_SELF,                      /* ipacm_event_data_fid */
+	IPA_DOWNSTREAM_ADD,                       /* ipacm_event_ipahal_stream */
+	IPA_DOWNSTREAM_DEL,                       /* ipacm_event_ipahal_stream */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
@@ -350,5 +352,18 @@ typedef struct _ipacm_ifacemgr_data
 	ipacm_wan_iface_type if_type;
 	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
 }ipacm_ifacemgr_data;
+
+typedef struct _ipacm_offload_prefix {
+	enum ipa_ip_type iptype;
+	uint32_t v4Addr;
+	uint32_t v4Mask;
+	uint32_t v6Addr[4];
+	uint32_t v6Mask[4];
+} ipacm_offload_prefix;
+
+typedef struct {
+	int if_index;
+	_ipacm_offload_prefix prefix;
+} ipacm_event_ipahal_stream;
 
 #endif /* IPA_CM_DEFS_H */

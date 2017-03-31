@@ -115,9 +115,12 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 			IPACMDBG_H("Received event: %d with ifname: %s and address: 0x%x\n",
 							 evt, ((ipacm_event_iface_up *)data)->ifname,
 							 ((ipacm_event_iface_up *)data)->ipv4_addr);
-			CreateConnTrackThreads();
-			IPACM_ConntrackClient::UpdateUDPFilters(data, false);
-			IPACM_ConntrackClient::UpdateTCPFilters(data, false);
+			if(isWanUp())
+			{
+				CreateConnTrackThreads();
+				IPACM_ConntrackClient::UpdateUDPFilters(data, false);
+				IPACM_ConntrackClient::UpdateTCPFilters(data, false);
+			}
 			break;
 
 	 case IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT:
