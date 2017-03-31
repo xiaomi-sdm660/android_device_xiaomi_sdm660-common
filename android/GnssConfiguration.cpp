@@ -44,7 +44,9 @@ Return<bool> GnssConfiguration::setSuplEs(bool enabled)  {
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_SUPL_EM_SERVICES_BIT;
-    config.suplEmergencyServices = static_cast<GnssConfigSuplEmergencyServices>(enabled);
+    config.suplEmergencyServices = (enabled ?
+            GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_YES :
+            GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO);
 
     return mGnss->updateConfiguration(config);
 }
@@ -59,7 +61,21 @@ Return<bool> GnssConfiguration::setSuplVersion(uint32_t version)  {
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT;
-    config.suplVersion = static_cast<GnssConfigSuplVersion>(version);
+    switch (version) {
+        case 0x00020002:
+            config.suplVersion = GNSS_CONFIG_SUPL_VERSION_2_0_2;
+            break;
+        case 0x00020000:
+            config.suplVersion = GNSS_CONFIG_SUPL_VERSION_2_0_0;
+            break;
+        case 0x00010000:
+            config.suplVersion = GNSS_CONFIG_SUPL_VERSION_1_0_0;
+            break;
+        default:
+            LOC_LOGE("%s]: invalid version: 0x%x.", __FUNCTION__, version);
+            return false;
+            break;
+    }
 
     return mGnss->updateConfiguration(config);
 }
@@ -74,7 +90,18 @@ Return<bool> GnssConfiguration::setSuplMode(uint8_t mode)  {
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_SUPL_MODE_BIT;
-    config.suplModeMask = static_cast<GnssConfigSuplModeMask>(mode);
+    switch (mode) {
+        case 1:
+            config.suplModeMask = GNSS_CONFIG_SUPL_MODE_MSB;
+            break;
+        case 2:
+            config.suplModeMask = GNSS_CONFIG_SUPL_MODE_MSA;
+            break;
+        default:
+            LOC_LOGE("%s]: invalid mode: %d.", __FUNCTION__, mode);
+            return false;
+            break;
+    }
 
     return mGnss->updateConfiguration(config);
 }
@@ -89,7 +116,24 @@ Return<bool> GnssConfiguration::setLppProfile(uint8_t lppProfile) {
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
-    config.lppProfile = static_cast<GnssConfigLppProfile>(lppProfile);
+    switch (lppProfile) {
+        case 0:
+            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE;
+            break;
+        case 1:
+            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_USER_PLANE;
+            break;
+        case 2:
+            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE;
+            break;
+        case 3:
+            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_USER_PLANE_AND_CONTROL_PLANE;
+            break;
+        default:
+            LOC_LOGE("%s]: invalid lppProfile: %d.", __FUNCTION__, lppProfile);
+            return false;
+            break;
+    }
 
     return mGnss->updateConfiguration(config);
 }
@@ -103,9 +147,20 @@ Return<bool> GnssConfiguration::setGlonassPositioningProtocol(uint8_t protocol) 
     GnssConfig config;
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
+
     config.flags = GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT;
-    config.aGlonassPositionProtocolMask =
-        static_cast<GnssConfigAGlonassPositionProtocolMask>(protocol);
+    if (protocol & (1<<0)) {
+        config.aGlonassPositionProtocolMask |= GNSS_CONFIG_RRC_CONTROL_PLANE_BIT;
+    }
+    if (protocol & (1<<1)) {
+        config.aGlonassPositionProtocolMask |= GNSS_CONFIG_RRLP_USER_PLANE_BIT;
+    }
+    if (protocol & (1<<2)) {
+        config.aGlonassPositionProtocolMask |= GNSS_CONFIG_LLP_USER_PLANE_BIT;
+    }
+    if (protocol & (1<<3)) {
+        config.aGlonassPositionProtocolMask |= GNSS_CONFIG_LLP_CONTROL_PLANE_BIT;
+    }
 
     return mGnss->updateConfiguration(config);
 }
@@ -120,6 +175,24 @@ Return<bool> GnssConfiguration::setGpsLock(uint8_t lock) {
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT;
+    switch (lock) {
+        case 0:
+            config.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
+            break;
+        case 1:
+            config.gpsLock = GNSS_CONFIG_GPS_LOCK_MO;
+            break;
+        case 2:
+            config.gpsLock = GNSS_CONFIG_GPS_LOCK_NI;
+            break;
+        case 3:
+            config.gpsLock = GNSS_CONFIG_GPS_LOCK_MO_AND_NI;
+            break;
+        default:
+            LOC_LOGE("%s]: invalid lock: %d.", __FUNCTION__, lock);
+            return false;
+            break;
+    }
     config.gpsLock = static_cast<GnssConfigGpsLock>(lock);
 
     return mGnss->updateConfiguration(config);
@@ -135,8 +208,9 @@ Return<bool> GnssConfiguration::setEmergencySuplPdn(bool enabled) {
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_EM_PDN_FOR_EM_SUPL_VALID_BIT;
-    config.emergencyPdnForEmergencySupl =
-        static_cast<GnssConfigEmergencyPdnForEmergencySupl>(enabled);
+    config.emergencyPdnForEmergencySupl = (enabled ?
+            GNSS_CONFIG_EMERGENCY_PDN_FOR_EMERGENCY_SUPL_YES :
+            GNSS_CONFIG_EMERGENCY_PDN_FOR_EMERGENCY_SUPL_NO);
 
     return mGnss->updateConfiguration(config);
 }
