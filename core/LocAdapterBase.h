@@ -147,7 +147,7 @@ public:
     virtual bool requestSuplES(int connHandle);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
-    virtual bool requestNiNotifyEvent(GnssNiNotification &notify, const void* data);
+    virtual bool requestNiNotifyEvent(const GnssNiNotification &notify, const void* data);
     inline virtual bool isInSession() { return false; }
     ContextBase* getContext() const { return mContext; }
     virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify);
