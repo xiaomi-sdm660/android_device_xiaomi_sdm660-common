@@ -56,6 +56,7 @@ on fs
     mkdir /persist/data 0700 system system
     mkdir /persist/bms 0700 root system
     restorecon_recursive /persist
+    write /sys/kernel/boot_adsp/boot 1
 
 on post-fs
     start qseecomd
