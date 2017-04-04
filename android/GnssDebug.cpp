@@ -82,7 +82,6 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
     LOC_LOGV("GnssDebug - age=%f", data.position.ageSeconds);
 
     // time block
-    data.time.valid             = true;
     data.time.timeEstimate      = reports.mTime.timeEstimate;
     data.time.timeUncertaintyNs = reports.mTime.timeUncertaintyNs;
 
@@ -96,7 +95,7 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
         memset(&s, 0, sizeof(s));
         s.svid = reports.mSatelliteInfo[i].svid;
         convertGnssConstellationType(reports.mSatelliteInfo[i].constellation, s.constellation);
-        s.ephemerisType = SatelliteEphemerisType::UNKNOWN;
+        s.ephemerisType = SatelliteEphemerisType::NOT_AVAILABLE;
         s.ephemerisAgeSeconds = reports.mSatelliteInfo[i].ephemerisAgeSeconds;
         s_array.push_back(s);
     }
