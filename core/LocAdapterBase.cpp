@@ -149,7 +149,7 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestNiNotifyEvent(GnssNiNotification &notify, const void* data)
+    requestNiNotifyEvent(const GnssNiNotification &notify, const void* data)
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
