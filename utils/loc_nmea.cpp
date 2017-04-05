@@ -40,6 +40,7 @@ typedef struct loc_nmea_sv_meta_s
     char talker[3];
     LocGnssConstellationType svType;
     uint32_t mask;
+    uint32_t svCount;
     uint32_t svIdOffset;
 } loc_nmea_sv_meta;
 
@@ -48,6 +49,12 @@ typedef struct loc_sv_cache_info_s
     uint32_t gps_used_mask;
     uint32_t glo_used_mask;
     uint32_t gal_used_mask;
+    uint32_t gps_count;
+    uint32_t glo_count;
+    uint32_t gal_count;
+    float hdop;
+    float pdop;
+    float vdop;
 } loc_sv_cache_info;
 
 static loc_sv_cache_info sv_cache_info;
@@ -81,16 +88,19 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
         case GNSS_SV_TYPE_GPS:
             sv_meta.talker[1] = 'P';
             sv_meta.mask = sv_cache_info.gps_used_mask;
+            sv_meta.svCount = sv_cache_info.gps_count;
             break;
         case GNSS_SV_TYPE_GLONASS:
             sv_meta.talker[1] = 'L';
             sv_meta.mask = sv_cache_info.glo_used_mask;
+            sv_meta.svCount = sv_cache_info.glo_count;
             // GLONASS SV ids are from 65-96
             sv_meta.svIdOffset = GLONASS_SV_ID_OFFSET;
             break;
         case GNSS_SV_TYPE_GALILEO:
             sv_meta.talker[1] = 'A';
             sv_meta.mask = sv_cache_info.gal_used_mask;
+            sv_meta.svCount = sv_cache_info.gal_count;
             break;
         default:
             LOC_LOGE("NMEA Error unknow constellation type: %d", svType);
@@ -308,8 +318,7 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
 
     const char* talker = sv_meta_p->talker;
     uint32_t svIdOffset = sv_meta_p->svIdOffset;
-    int svCount = svNotify.count;
-
+    int svCount = sv_meta_p->svCount;
 
     if (svCount <= 0)
     {
@@ -340,7 +349,7 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
         pMarker += length;
         lengthRemaining -= length;
 
-        for (int i=0; (svNumber <= svCount) && (i < 4);  svNumber++)
+        for (int i=0; (svNumber <= svNotify.count) && (i < 4);  svNumber++)
         {
             if (sv_meta_p->svType == svNotify.gnssSvs[svNumber - 1].type)
             {
@@ -899,6 +908,10 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
     sv_cache_info.gps_used_mask = 0;
     sv_cache_info.glo_used_mask = 0;
     sv_cache_info.gal_used_mask = 0;
+
+    sv_cache_info.gps_count = 0;
+    sv_cache_info.glo_count = 0;
+    sv_cache_info.gal_count = 0;
     for(svNumber=1; svNumber <= svCount; svNumber++) {
         if (GNSS_SV_TYPE_GPS == svNotify.gnssSvs[svNumber - 1].type)
         {
@@ -910,6 +923,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
             {
                 sv_cache_info.gps_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
+            sv_cache_info.gps_count++;
         }
         else if (GNSS_SV_TYPE_GLONASS == svNotify.gnssSvs[svNumber - 1].type)
         {
@@ -921,6 +935,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
             {
                 sv_cache_info.glo_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
+            sv_cache_info.glo_count++;
         }
         else if (GNSS_SV_TYPE_GALILEO == svNotify.gnssSvs[svNumber - 1].type)
         {
@@ -932,6 +947,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
             {
                 sv_cache_info.gal_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
+            sv_cache_info.gal_count++;
         }
     }
 
