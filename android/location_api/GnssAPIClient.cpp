@@ -379,7 +379,7 @@ void GnssAPIClient::onStopTrackingCb(LocationError error)
     LOC_LOGD("%s]: (%d)", __FUNCTION__, error);
     if (error == LOCATION_ERROR_SUCCESS && mGnssCbIface != nullptr) {
         mGnssCbIface->gnssStatusCb(IGnssCallback::GnssStatusValue::SESSION_END);
-        mGnssCbIface->gnssStatusCb(IGnssCallback::GnssStatusValue::ENGINE_ON);
+        mGnssCbIface->gnssStatusCb(IGnssCallback::GnssStatusValue::ENGINE_OFF);
     }
 }
 
