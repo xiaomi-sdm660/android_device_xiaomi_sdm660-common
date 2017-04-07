@@ -1,13 +1,26 @@
 TARGET_USES_AOSP := true
+TARGET_USES_AOSP_FOR_AUDIO := true
 TARGET_USES_QCOM_BSP := false
 
 ifeq ($(TARGET_USES_AOSP),true)
   TARGET_ENABLE_QC_AV_ENHANCEMENTS := false
+  TARGET_DISABLE_DASH := true
   TARGET_USES_QTIC := false
 else
   DEVICE_PACKAGE_OVERLAYS := device/qcom/sdm660_64/overlay
   TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
   TARGET_USES_QTIC := true
+endif
+
+# Default vendor configuration.
+ifeq ($(ENABLE_VENDOR_IMAGE),)
+ENABLE_VENDOR_IMAGE := false
+endif
+
+# Disable QTIC until it's brought up in split system/vendor
+# configuration to avoid compilation breakage.
+ifeq ($(ENABLE_VENDOR_IMAGE), true)
+TARGET_USES_QTIC := false
 endif
 
 TARGET_KERNEL_VERSION := 4.4
@@ -19,6 +32,9 @@ ifeq ($(TARGET_USES_NQ_NFC),true)
 # Flag to enable and support NQ3XX chipsets
 NQ3XX_PRESENT := true
 endif
+
+# enable the SVA in UI area
+TARGET_USE_UI_SVA := true
 
 #QTIC flag
 -include $(QCPATH)/common/config/qtic-config.mk
@@ -33,6 +49,15 @@ endif #TARGET_ENABLE_QC_AV_ENHANCEMENTS
 PRODUCT_COPY_FILES += device/qcom/sdm660_64/whitelistedapps.xml:system/vendor/etc/whitelistedapps.xml \
                       device/qcom/sdm660_64/gamedwhitelist.xml:system/vendor/etc/gamedwhitelist.xml \
                       device/qcom/sdm660_64/appboosts.xml:system/vendor/etc/appboosts.xml
+
+ifneq ($(TARGET_DISABLE_DASH), true)
+    PRODUCT_BOOT_JARS += qcmediaplayer
+endif
+
+# Power
+PRODUCT_PACKAGES += \
+    android.hardware.power@1.0-service \
+    android.hardware.power@1.0-impl
 
 $(call inherit-product, device/qcom/common/common64.mk)
 
@@ -82,6 +107,8 @@ PRODUCT_COPY_FILES += \
 # Audio configuration file
 -include $(TOPDIR)hardware/qcom/audio/configs/sdm660/sdm660.mk
 
+PRODUCT_PACKAGES += android.hardware.media.omx@1.0-impl
+
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
     device/qcom/sdm660_64/sensors/hals.conf:system/etc/sensors/hals.conf
@@ -107,16 +134,25 @@ PRODUCT_PACKAGES += \
     antradio_app \
     libvolumelistener
 
-# Gralloc
+#Display/Graphics
 PRODUCT_PACKAGES += \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
-    android.hardware.graphics.mapper@2.0-impl
-
-# HW Composer
-PRODUCT_PACKAGES += \
+    android.hardware.graphics.mapper@2.0-impl \
     android.hardware.graphics.composer@2.1-impl \
-    android.hardware.graphics.composer@2.1-service
+    android.hardware.graphics.composer@2.1-service \
+    android.hardware.memtrack@1.0-impl \
+    android.hardware.memtrack@1.0-service \
+    android.hardware.light@2.0-impl \
+    android.hardware.light@2.0-service \
+    android.hardware.configstore@1.0-service
+
+# Camera configuration file. Shared by passthrough/binderized camera HAL
+PRODUCT_PACKAGES += camera.device@3.2-impl
+PRODUCT_PACKAGES += camera.device@1.0-impl
+PRODUCT_PACKAGES += android.hardware.camera.provider@2.4-impl
+# Enable binderized camera HAL
+PRODUCT_PACKAGES += android.hardware.camera.provider@2.4-service
 
 # Sensor features
 PRODUCT_COPY_FILES += \
@@ -132,6 +168,10 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.relative_humidity.xml:system/etc/permissions/android.hardware.sensor.relative_humidity.xml \
     frameworks/native/data/etc/android.hardware.sensor.hifi_sensors.xml:system/etc/permissions/android.hardware.sensor.hifi_sensors.xml
 
+# High performance VR feature
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.vr.high_performance.xml:system/etc/permissions/android.hardware.vr.high_performance.xml
+
 # FBE support
 PRODUCT_COPY_FILES += \
     device/qcom/sdm660_64/init.qti.qseecomd.sh:system/bin/init.qti.qseecomd.sh
@@ -142,6 +182,9 @@ PRODUCT_COPY_FILES += device/qcom/sdm660_64/msm_irqbalance.conf:system/vendor/et
 # dm-verity configuration
 PRODUCT_SUPPORTS_VERITY := true
 PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/bootdevice/by-name/system
+ifeq ($(ENABLE_VENDOR_IMAGE), true)
+PRODUCT_VENDOR_VERITY_PARTITION := /dev/block/bootdevice/by-name/vendor
+endif
 
 #for android_filesystem_config.h
 PRODUCT_PACKAGES += \
@@ -166,15 +209,33 @@ else
         ro.logdumpd.enabled=0
 endif
 
+#for wlan
+PRODUCT_PACKAGES += \
+        wificond \
+        wifilogd
+
 #A/B related packages
 PRODUCT_PACKAGES += update_engine \
                     update_engine_client \
                     update_verifier \
                     bootctrl.sdm660 \
-                    brillo_update_payload
+                    brillo_update_payload \
+                    android.hardware.boot@1.0-impl \
+                    android.hardware.boot@1.0-service
+
 #Boot control HAL test app
 PRODUCT_PACKAGES_DEBUG += bootctl
+
+#Healthd packages
+PRODUCT_PACKAGES += android.hardware.health@1.0-impl \
+                    android.hardware.health@1.0-convert \
+                    android.hardware.health@1.0-service \
+                    libhealthd.msm
 
 #FEATURE_OPENGLES_EXTENSION_PACK support string config file
 PRODUCT_COPY_FILES += \
         frameworks/native/data/etc/android.hardware.opengles.aep.xml:system/etc/permissions/android.hardware.opengles.aep.xml
+
+#Enable keymaster Impl HAL Compilation
+PRODUCT_PACKAGES += android.hardware.keymaster@3.0-impl
+

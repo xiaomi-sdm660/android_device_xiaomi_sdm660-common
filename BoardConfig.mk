@@ -31,6 +31,7 @@ endif
 TARGET_NO_BOOTLOADER := false
 TARGET_USES_UEFI := true
 TARGET_NO_KERNEL := false
+
 -include $(QCPATH)/common/sdm660_64/BoardConfigVendor.mk
 MINIMAL_FONT_FOOTPRINT := true
 
@@ -54,6 +55,11 @@ AB_OTA_PARTITIONS ?= boot system
 BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
 TARGET_NO_RECOVERY := true
 BOARD_USES_RECOVERY_AS_BOOT := true
+ifeq ($(ENABLE_VENDOR_IMAGE), true)
+TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_vendor_variant.fstab
+else
+TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery.fstab
+endif
 
 ifneq ($(AB_OTA_UPDATER),true)
    TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
@@ -64,6 +70,13 @@ BOARD_USERDATAIMAGE_PARTITION_SIZE := 48318382080
 BOARD_PERSISTIMAGE_PARTITION_SIZE := 33554432
 BOARD_PERSISTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
+
+ifeq ($(ENABLE_VENDOR_IMAGE), true)
+BOARD_VENDORIMAGE_PARTITION_SIZE := 1073741824
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+TARGET_COPY_OUT_VENDOR := vendor
+VENDOR_FSTAB_ENTRY := "/dev/block/bootdevice/by-name/vendor     /vendor            ext4   ro,barrier=1,discard                             wait,slotselect,verify"
+endif
 
 # Enable suspend during charger mode
 BOARD_CHARGER_ENABLE_SUSPEND := true
@@ -154,3 +167,6 @@ TARGET_USES_IMS := true
 
 #Add NON-HLOS files for ota upgrade
 ADD_RADIO_FILES := true
+TARGET_RECOVERY_UI_LIB := librecovery_ui_msm
+
+
