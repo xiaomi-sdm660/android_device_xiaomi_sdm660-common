@@ -201,37 +201,14 @@ LocationAPI::~LocationAPI()
 
     auto it = gData.clientData.find(this);
     if (it != gData.clientData.end()) {
-        size_t gnssClientCount = 0;
-        size_t flpClientCount = 0;
-        size_t geofenceClientCount = 0;
-        for (auto it2=gData.clientData.begin(); it2 != gData.clientData.end(); ++it2) {
-            if (isGnssClient(it2->second)) {
-                gnssClientCount++;
-            }
-            if (isFlpClient(it2->second)) {
-                flpClientCount++;
-            }
-            if (isGeofenceClient(it2->second)) {
-                geofenceClientCount++;
-            }
-        }
         if (isGnssClient(it->second) && NULL != gData.gnssInterface) {
             gData.gnssInterface->removeClient(it->first);
-            if (1 == gnssClientCount && NULL == gData.controlAPI) {
-                gData.gnssInterface->deinitialize();
-            }
         }
         if (isFlpClient(it->second) && NULL != gData.flpInterface) {
             gData.flpInterface->removeClient(it->first);
-            if (1 == flpClientCount) {
-                gData.flpInterface->deinitialize();
-            }
         }
         if (isGeofenceClient(it->second) && NULL != gData.geofenceInterface) {
             gData.geofenceInterface->removeClient(it->first);
-            if (1 == geofenceClientCount) {
-                gData.geofenceInterface->deinitialize();
-            }
         }
         gData.clientData.erase(it);
     } else {
@@ -593,16 +570,6 @@ LocationControlAPI::~LocationControlAPI()
     LOC_LOGD("LOCATION CONTROL API DESTRUCTOR");
     pthread_mutex_lock(&gDataMutex);
 
-    size_t gnssClientCount = 0;
-    for (auto it=gData.clientData.begin(); it != gData.clientData.end(); ++it) {
-        if (isGnssClient(it->second)) {
-            gnssClientCount++;
-        }
-    }
-    if (gData.gnssInterface != NULL && 0 == gnssClientCount) {
-        //@todo: we might want to call gData.gnssInterface.disable before deinitialize?
-        gData.gnssInterface->deinitialize();
-    }
     gData.controlAPI = NULL;
 
     pthread_mutex_unlock(&gDataMutex);
