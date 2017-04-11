@@ -901,6 +901,9 @@ GnssAdapter::setUlpProxyCommand(UlpProxyBase* ulp)
             mUlp(ulp) {}
         inline virtual void proc() const {
             mAdapter.setUlpProxy(mUlp);
+            if (mUlp) {
+                mUlp->setCapabilities(ContextBase::getCarrierCapabilities());
+            }
         }
     };
 
