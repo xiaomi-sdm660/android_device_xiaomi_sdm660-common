@@ -39,6 +39,7 @@
 #include <GnssAdapter.h>
 #include <string>
 #include <loc_log.h>
+#include <loc_nmea.h>
 #include <Agps.h>
 #include <SystemStatus.h>
 
@@ -1987,9 +1988,8 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
 void
 GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
 {
-
     // if this event is not called from ULP, then try to call into ULP and return if successfull
-    if (!fromUlp) {
+    if (!fromUlp && !loc_nmea_is_debug(nmea, length)) {
         if (mUlpProxy->reportNmea(nmea, length)) {
             return;
         }
