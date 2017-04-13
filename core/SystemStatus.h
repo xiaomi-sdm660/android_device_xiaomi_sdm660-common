@@ -49,8 +49,16 @@ namespace loc_core
 class SystemStatusItemBase
 {
 public:
-    timespec mUtcTime;
-    SystemStatusItemBase(timespec utctime) : mUtcTime(utctime) { };
+    timespec mUtcTime;     // UTC timestamp when this info was last updated
+    timespec mUtcReported; // UTC timestamp when this info was reported
+
+    SystemStatusItemBase() {
+        timeval tv;
+        gettimeofday(&tv, NULL);
+        mUtcTime.tv_sec  = tv.tv_sec;
+        mUtcTime.tv_nsec = tv.tv_usec *1000ULL;
+        mUtcReported = mUtcTime;
+    };
     virtual ~SystemStatusItemBase() { };
     virtual void dump(void) { };
 };
@@ -61,9 +69,7 @@ public:
     UlpLocation mLocation;
     GpsLocationExtended mLocationEx;
     SystemStatusLocation(const UlpLocation& location,
-                         const GpsLocationExtended& locationEx,
-                         const timespec& ts) :
-        SystemStatusItemBase(ts),
+                         const GpsLocationExtended& locationEx) :
         mLocation(location),
         mLocationEx(locationEx){ };
     bool equals(SystemStatusLocation& peer);
