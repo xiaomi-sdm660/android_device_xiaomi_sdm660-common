@@ -54,6 +54,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef FEATURE_IPA_ANDROID
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 6
+#define IPA_V2_NUM_TCP_WAN_FILTER_RULE_IPV6 3
+#define IPA_V2_NUM_MULTICAST_WAN_FILTER_RULE_IPV6 3
 #else
 #define IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6 3
 #endif
@@ -538,6 +540,8 @@ private:
 	int del_wan_firewall_rule(ipa_ip_type iptype);
 
 	int add_dft_filtering_rule(struct ipa_flt_rule_add* rules, int rule_offset, ipa_ip_type iptype);
+
+	int add_tcpv6_filtering_rule(struct ipa_flt_rule_add* rules, int rule_offset);
 
 	int install_wan_filtering_rule(bool is_sw_routing);
 
