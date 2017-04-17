@@ -144,8 +144,8 @@ IPACM_Config::IPACM_Config()
 
 	qmap_id = ~0;
 
-	memset(flt_rule_count_v4, 0, (IPA_CLIENT_CONS - IPA_CLIENT_PROD)*sizeof(int));
-	memset(flt_rule_count_v6, 0, (IPA_CLIENT_CONS - IPA_CLIENT_PROD)*sizeof(int));
+	memset(flt_rule_count_v4, 0, IPA_CLIENT_MAX*sizeof(int));
+	memset(flt_rule_count_v6, 0, IPA_CLIENT_MAX*sizeof(int));
 	memset(bridge_mac, 0, IPA_MAC_ADDR_SIZE*sizeof(uint8_t));
 
 	IPACMDBG_H(" create IPACM_Config constructor\n");
