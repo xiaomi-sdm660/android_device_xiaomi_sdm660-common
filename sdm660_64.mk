@@ -46,6 +46,11 @@ PRODUCT_COPY_FILES += device/qcom/sdm660_64/media_profiles.xml:system/etc/media_
                       device/qcom/sdm660_64/media_codecs_performance.xml:system/etc/media_codecs_performance.xml
 endif #TARGET_ENABLE_QC_AV_ENHANCEMENTS
 
+# video seccomp policy files
+PRODUCT_COPY_FILES += \
+    device/qcom/sdm660_64/seccomp/mediacodec-seccomp.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/mediacodec.policy \
+    device/qcom/sdm660_64/seccomp/mediaextractor-seccomp.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/mediaextractor.policy
+
 PRODUCT_COPY_FILES += device/qcom/sdm660_64/whitelistedapps.xml:system/vendor/etc/whitelistedapps.xml \
                       device/qcom/sdm660_64/gamedwhitelist.xml:system/vendor/etc/gamedwhitelist.xml \
                       device/qcom/sdm660_64/appboosts.xml:system/vendor/etc/appboosts.xml
