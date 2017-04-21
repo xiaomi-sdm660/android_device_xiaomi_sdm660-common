@@ -316,6 +316,11 @@ Return<sp<IGnssDebug>> Gnss::getExtensionGnssDebug() {
     return mGnssDebug;
 }
 
+Return<sp<IAGnssRil>> Gnss::getExtensionAGnssRil() {
+    mGnssRil = new AGnssRil(this);
+    return mGnssRil;
+}
+
 IGnss* HIDL_FETCH_IGnss(const char* hal) {
     ENTRY_LOG_CALLFLOW();
     IGnss* iface = nullptr;

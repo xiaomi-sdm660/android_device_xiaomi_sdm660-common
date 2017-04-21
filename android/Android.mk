@@ -14,6 +14,7 @@ LOCAL_SRC_FILES := \
     GnssNi.cpp \
     GnssConfiguration.cpp \
     GnssDebug.cpp \
+    AGnssRil.cpp
 
 LOCAL_SRC_FILES += \
     location_api/LocationUtil.cpp \
