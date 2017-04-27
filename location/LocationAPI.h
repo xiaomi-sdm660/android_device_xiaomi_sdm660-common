@@ -37,6 +37,7 @@
 #define GNSS_NI_MESSAGE_ID_MAX 2048
 #define GNSS_SV_MAX 64
 #define GNSS_MEASUREMENTS_MAX 64
+#define GNSS_UTC_TIME_OFFSET   (3657)
 
 typedef enum {
     LOCATION_ERROR_SUCCESS = 0,
@@ -249,6 +250,26 @@ typedef enum {
     GNSS_SV_TYPE_BEIDOU,
     GNSS_SV_TYPE_GALILEO,
 } GnssSvType;
+
+typedef enum {
+    GNSS_EPH_TYPE_UNKNOWN = 0,
+    GNSS_EPH_TYPE_EPHEMERIS,
+    GNSS_EPH_TYPE_ALMANAC,
+} GnssEphemerisType;
+
+typedef enum {
+    GNSS_EPH_SOURCE_UNKNOWN = 0,
+    GNSS_EPH_SOURCE_DEMODULATED,
+    GNSS_EPH_SOURCE_SUPL_PROVIDED,
+    GNSS_EPH_SOURCE_OTHER_SERVER_PROVIDED,
+    GNSS_EPH_SOURCE_LOCAL,
+} GnssEphemerisSource;
+
+typedef enum {
+    GNSS_EPH_HEALTH_UNKNOWN = 0,
+    GNSS_EPH_HEALTH_GOOD,
+    GNSS_EPH_HEALTH_BAD,
+} GnssEphemerisHealth;
 
 typedef uint16_t GnssSvOptionsMask;
 typedef enum {
@@ -558,6 +579,7 @@ typedef struct {
 
 typedef struct {
     size_t size;                        // set to sizeof
+    bool                                mValid;
     Location                            mLocation;
     double                              verticalAccuracyMeters;
     double                              speedAccuracyMetersPerSecond;
@@ -566,16 +588,22 @@ typedef struct {
 
 typedef struct {
     size_t size;                        // set to sizeof
+    bool                                mValid;
     int64_t                             timeEstimate;
     float                               timeUncertaintyNs;
+    float                               frequencyUncertaintyNsPerSec;
 } GnssDebugTime;
 
 typedef struct {
     size_t size;                        // set to sizeof
     uint32_t                            svid;
     GnssSvType                          constellation;
-    uint32_t                            ephemerisType;
+    GnssEphemerisType                   mEphemerisType;
+    GnssEphemerisSource                 mEphemerisSource;
+    GnssEphemerisHealth                 mEphemerisHealth;
     float                               ephemerisAgeSeconds;
+    bool                                serverPredictionIsAvailable;
+    float                               serverPredictionAgeSeconds;
 } GnssDebugSatelliteInfo;
 
 typedef struct {

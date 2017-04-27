@@ -2596,59 +2596,135 @@ void GnssAdapter::dataConnFailedCommand(AGpsExtType agpsType){
 }
 
 void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
-                                  const GnssSvType& in_constellation,
-                                  const SystemStatusReports& in)
+                                       const GnssSvType& in_constellation,
+                                       const SystemStatusReports& in)
 {
-    GnssDebugSatelliteInfo s = {};
-    uint64_t mask = 0ULL;
-    float age = 0.0;
+    uint64_t sv_mask = 0ULL;
     uint32_t svid_min = 0;
-    uint32_t mask_size = 0;
+    uint32_t svid_num = 0;
+    uint32_t svid_idx = 0;
 
+    uint64_t eph_health_good_mask = 0ULL;
+    uint64_t eph_health_bad_mask = 0ULL;
+    uint64_t server_perdiction_available_mask = 0ULL;
+    float server_perdiction_age = 0.0f;
+
+    // set constellationi based parameters
     switch (in_constellation) {
         case GNSS_SV_TYPE_GPS:
             svid_min = GPS_MIN;
-            mask_size = 32;
+            svid_num = GPS_NUM;
+            svid_idx = 0;
+            if (!in.mSvHealth.empty()) {
+                eph_health_good_mask = in.mSvHealth.back().mGpsGoodMask;
+                eph_health_bad_mask  = in.mSvHealth.back().mGpsBadMask;
+            }
+            if (!in.mXtra.empty()) {
+                server_perdiction_available_mask = in.mXtra.back().mGpsXtraValid;
+                server_perdiction_age = (float)(in.mXtra.back().mGpsXtraAge);
+            }
             break;
         case GNSS_SV_TYPE_GLONASS:
             svid_min = GLO_MIN;
-            mask_size = 32;
-            break;
-        case GNSS_SV_TYPE_BEIDOU:
-            svid_min = BDS_MIN;
-            mask_size = 64;
+            svid_num = GLO_NUM;
+            svid_idx = GPS_NUM;
+            if (!in.mSvHealth.empty()) {
+                eph_health_good_mask = in.mSvHealth.back().mGloGoodMask;
+                eph_health_bad_mask  = in.mSvHealth.back().mGloBadMask;
+            }
+            if (!in.mXtra.empty()) {
+                server_perdiction_available_mask = in.mXtra.back().mGloXtraValid;
+                server_perdiction_age = (float)(in.mXtra.back().mGloXtraAge);
+            }
             break;
         case GNSS_SV_TYPE_QZSS:
             svid_min = QZSS_MIN;
-            mask_size = 32;
+            svid_num = QZSS_NUM;
+            svid_idx = GPS_NUM+GLO_NUM;
+            if (!in.mSvHealth.empty()) {
+                eph_health_good_mask = in.mSvHealth.back().mQzssGoodMask;
+                eph_health_bad_mask  = in.mSvHealth.back().mQzssBadMask;
+            }
+            if (!in.mXtra.empty()) {
+                server_perdiction_available_mask = in.mXtra.back().mQzssXtraValid;
+                server_perdiction_age = (float)(in.mXtra.back().mQzssXtraAge);
+            }
+            break;
+        case GNSS_SV_TYPE_BEIDOU:
+            svid_min = BDS_MIN;
+            svid_num = BDS_NUM;
+            svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM;
+            if (!in.mSvHealth.empty()) {
+                eph_health_good_mask = in.mSvHealth.back().mBdsGoodMask;
+                eph_health_bad_mask  = in.mSvHealth.back().mBdsBadMask;
+            }
+            if (!in.mXtra.empty()) {
+                server_perdiction_available_mask = in.mXtra.back().mBdsXtraValid;
+                server_perdiction_age = (float)(in.mXtra.back().mBdsXtraAge);
+            }
             break;
         case GNSS_SV_TYPE_GALILEO:
             svid_min = GAL_MIN;
-            mask_size = 64;
+            svid_num = GAL_NUM;
+            svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM;
+            if (!in.mSvHealth.empty()) {
+                eph_health_good_mask = in.mSvHealth.back().mGalGoodMask;
+                eph_health_bad_mask  = in.mSvHealth.back().mGalBadMask;
+            }
+            if (!in.mXtra.empty()) {
+                server_perdiction_available_mask = in.mXtra.back().mGalXtraValid;
+                server_perdiction_age = (float)(in.mXtra.back().mGalXtraAge);
+            }
             break;
         default:
             return;
     }
 
-    if(!in.mEphemeris.empty()) {
-        mask = in.mEphemeris.back().mGpsEpheValid;
-        if(!in.mXtra.empty()) {
-            age = (float)(in.mXtra.back().mGpsXtraAge);
+    // extract each sv info from systemstatus report
+    for(uint32_t i=0; i<svid_num; i++) {
+
+        GnssDebugSatelliteInfo s = {};
+        s.size = sizeof(s);
+        s.svid = i + svid_min;
+        s.constellation = in_constellation;
+
+        if (!in.mNavData.empty()) {
+            s.mEphemerisType   = in.mNavData.back().mNav[svid_idx+i].mType;
+            s.mEphemerisSource = in.mNavData.back().mNav[svid_idx+i].mSource;
         }
         else {
-            age = 0.0;
+            s.mEphemerisType   = GNSS_EPH_TYPE_UNKNOWN;
+            s.mEphemerisSource = GNSS_EPH_SOURCE_UNKNOWN;
         }
 
-        for(uint32_t i=0; i<mask_size; i++) {
-            if (0 != (mask & (1<<i))) {
-                s.size = sizeof(s);
-                s.svid = i + svid_min;
-                s.constellation = in_constellation;
-                s.ephemerisType = 0;
-                s.ephemerisAgeSeconds = age;
-                out.push_back(s);
-            }
+        sv_mask = 0x1ULL << i;
+        if (eph_health_good_mask & sv_mask) {
+            s.mEphemerisHealth = GNSS_EPH_HEALTH_GOOD;
         }
+        else if (eph_health_bad_mask & sv_mask) {
+            s.mEphemerisHealth = GNSS_EPH_HEALTH_BAD;
+        }
+        else {
+            s.mEphemerisHealth = GNSS_EPH_HEALTH_UNKNOWN;
+        }
+
+        if (!in.mNavData.empty()) {
+            s.ephemerisAgeSeconds =
+                (float)(in.mNavData.back().mNav[svid_idx+i].mAgeSec);
+        }
+        else {
+            s.ephemerisAgeSeconds = 0.0f;
+        }
+
+        if (server_perdiction_available_mask & sv_mask) {
+            s.serverPredictionIsAvailable = true;
+        }
+        else {
+            s.serverPredictionIsAvailable = false;
+        }
+
+        s.serverPredictionAgeSeconds = server_perdiction_age;
+        out.push_back(s);
     }
 
     return;
@@ -2669,47 +2745,85 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
     r.size = sizeof(r);
 
     // location block
-    r.mLocation.size                    = sizeof(r.mLocation);
+    r.mLocation.size = sizeof(r.mLocation);
     if(!reports.mLocation.empty()) {
-        r.mLocation.mLocation.latitude  = reports.mLocation.back().mLocation.gpsLocation.latitude;
-        r.mLocation.mLocation.longitude = reports.mLocation.back().mLocation.gpsLocation.longitude;
-        r.mLocation.mLocation.altitude  = reports.mLocation.back().mLocation.gpsLocation.altitude;
-        r.mLocation.mLocation.speed     = (double)(reports.mLocation.back().mLocation.gpsLocation.speed);
-        r.mLocation.mLocation.bearing   = (double)(reports.mLocation.back().mLocation.gpsLocation.bearing);
-        r.mLocation.mLocation.accuracy  = (double)(reports.mLocation.back().mLocation.gpsLocation.accuracy);
+        r.mLocation.mValid = true;
+        r.mLocation.mLocation.latitude =
+            reports.mLocation.back().mLocation.gpsLocation.latitude;
+        r.mLocation.mLocation.longitude =
+            reports.mLocation.back().mLocation.gpsLocation.longitude;
+        r.mLocation.mLocation.altitude =
+            reports.mLocation.back().mLocation.gpsLocation.altitude;
+        r.mLocation.mLocation.speed =
+            (double)(reports.mLocation.back().mLocation.gpsLocation.speed);
+        r.mLocation.mLocation.bearing =
+            (double)(reports.mLocation.back().mLocation.gpsLocation.bearing);
+        r.mLocation.mLocation.accuracy =
+            (double)(reports.mLocation.back().mLocation.gpsLocation.accuracy);
 
-        r.mLocation.verticalAccuracyMeters = reports.mLocation.back().mLocationEx.vert_unc;
-        r.mLocation.speedAccuracyMetersPerSecond = reports.mLocation.back().mLocationEx.speed_unc;
-        r.mLocation.bearingAccuracyDegrees = reports.mLocation.back().mLocationEx.bearing_unc;
+        r.mLocation.verticalAccuracyMeters =
+            reports.mLocation.back().mLocationEx.vert_unc;
+        r.mLocation.speedAccuracyMetersPerSecond =
+            reports.mLocation.back().mLocationEx.speed_unc;
+        r.mLocation.bearingAccuracyDegrees =
+            reports.mLocation.back().mLocationEx.bearing_unc;
+
+        r.mLocation.mLocation.timestamp =
+            reports.mLocation.back().mLocation.gpsLocation.timestamp;
     }
     else if(!reports.mBestPosition.empty()) {
-        r.mLocation.mLocation.latitude  = (double)(reports.mBestPosition.back().mBestLat);
-        r.mLocation.mLocation.longitude = (double)(reports.mBestPosition.back().mBestLon);
-        r.mLocation.mLocation.altitude  = reports.mBestPosition.back().mBestAlt;
+        r.mLocation.mValid = true;
+        r.mLocation.mLocation.latitude  =
+            (double)(reports.mBestPosition.back().mBestLat);
+        r.mLocation.mLocation.longitude =
+            (double)(reports.mBestPosition.back().mBestLon);
+        r.mLocation.mLocation.altitude  =
+            reports.mBestPosition.back().mBestAlt;
+
+        r.mLocation.mLocation.timestamp =
+            reports.mBestPosition.back().mUtcReported.tv_sec * 1000ULL +
+            reports.mBestPosition.back().mUtcReported.tv_nsec / 1000000ULL;
     }
-    LOC_LOGV("getDebugReport - lat=%f lon=%f alt=%f speed=%f",
-             r.mLocation.mLocation.latitude,
-             r.mLocation.mLocation.longitude,
-             r.mLocation.mLocation.altitude,
-             r.mLocation.mLocation.speed);
+    else {
+        r.mLocation.mValid = false;
+    }
+
+    if (r.mLocation.mValid) {
+        LOC_LOGV("getDebugReport - lat=%f lon=%f alt=%f speed=%f",
+            r.mLocation.mLocation.latitude,
+            r.mLocation.mLocation.longitude,
+            r.mLocation.mLocation.altitude,
+            r.mLocation.mLocation.speed);
+    }
 
     // time block
-    r.mTime.size                  = sizeof(r.mTime);
-    if(!reports.mBestPosition.empty()) {
-        r.mTime.timeEstimate      = reports.mBestPosition.back().mUtcTime.tv_sec;
-    }
+    r.mTime.size = sizeof(r.mTime);
     if(!reports.mTimeAndClock.empty()) {
-        r.mTime.timeUncertaintyNs = (float)(reports.mTimeAndClock.back().mTimeUnc);
+        r.mTime.mValid = true;
+        r.mTime.timeEstimate =
+            (((int64_t)(reports.mTimeAndClock.back().mGpsWeek)*7 +
+                        GNSS_UTC_TIME_OFFSET)*24*60*60 +
+              (int64_t)(reports.mTimeAndClock.back().mLeapSeconds))*1000ULL +
+              (int64_t)(reports.mTimeAndClock.back().mGpsTowMs);
+
+        r.mTime.timeUncertaintyNs =
+            (float)((reports.mTimeAndClock.back().mTimeUnc +
+                     reports.mTimeAndClock.back().mLeapSecUnc)*1000);
+        r.mTime.frequencyUncertaintyNsPerSec =
+            (float)(reports.mTimeAndClock.back().mClockFreqBiasUnc);
+        LOC_LOGV("getDebugReport - timeestimate=%ld", r.mTime.timeEstimate);
     }
-    LOC_LOGV("getDebugReport - timeestimate=%lld", r.mTime.timeEstimate);
+    else {
+        r.mTime.mValid = false;
+    }
 
     // satellite info block
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_GPS, reports);
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_GLONASS, reports);
-    convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_BEIDOU, reports);
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_QZSS, reports);
+    convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_BEIDOU, reports);
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_GALILEO, reports);
-    LOC_LOGV("getDebugReport - satellite=%d", r.mSatelliteInfo.size());
+    LOC_LOGV("getDebugReport - satellite=%lu", r.mSatelliteInfo.size());
 
     return true;
 }

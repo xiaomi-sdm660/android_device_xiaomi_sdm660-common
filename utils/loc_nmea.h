@@ -44,7 +44,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
                                std::vector<std::string> &nmeaArraystr);
 
 #define DEBUG_NMEA_MINSIZE 6
-#define DEBUG_NMEA_MAXSIZE 256
+#define DEBUG_NMEA_MAXSIZE 4096
 inline bool loc_nmea_is_debug(const char* nmea, int length) {
     return ((nullptr != nmea) &&
             (length >= DEBUG_NMEA_MINSIZE) && (length <= DEBUG_NMEA_MAXSIZE) &&
