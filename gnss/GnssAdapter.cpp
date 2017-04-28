@@ -435,10 +435,10 @@ uint32_t
 GnssAdapter::convertSuplMode(const GnssConfigSuplModeMask suplModeMask)
 {
     uint32_t mask = 0;
-    if (GNSS_CONFIG_SUPL_MODE_MSB & suplModeMask) {
+    if (GNSS_CONFIG_SUPL_MODE_MSB_BIT & suplModeMask) {
         mask |= (1<<0);
     }
-    if (GNSS_CONFIG_SUPL_MODE_MSA & suplModeMask) {
+    if (GNSS_CONFIG_SUPL_MODE_MSA_BIT & suplModeMask) {
         mask |= (1<<1);
     }
     return mask;
