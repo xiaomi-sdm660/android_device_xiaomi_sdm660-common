@@ -27,7 +27,7 @@
  *
  */
 
-#define LOG_NDDEBUG 0
+#define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_nmea"
 #include <loc_nmea.h>
 #include <math.h>
