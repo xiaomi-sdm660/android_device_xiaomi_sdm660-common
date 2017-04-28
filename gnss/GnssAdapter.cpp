@@ -2338,6 +2338,7 @@ void GnssAdapter::initAgpsCommand(void* statusV4Cb){
         AgpsDSClientReleaseFn mDSClientReleaseFn;
 
         SendMsgToAdapterMsgQueueFn mSendMsgFn;
+        GnssAdapter& mAdapter;
 
         inline AgpsMsgInit(AgpsManager* agpsManager,
                 AgpsFrameworkInterface::AgnssStatusIpV4Cb frameworkStatusV4Cb,
@@ -2348,14 +2349,16 @@ void GnssAdapter::initAgpsCommand(void* statusV4Cb){
                 AgpsDSClientStopDataCallFn dsClientStopDataCallFn,
                 AgpsDSClientCloseDataCallFn dsClientCloseDataCallFn,
                 AgpsDSClientReleaseFn dsClientReleaseFn,
-                SendMsgToAdapterMsgQueueFn sendMsgFn) :
+                SendMsgToAdapterMsgQueueFn sendMsgFn,
+                GnssAdapter& adapter) :
                 LocMsg(), mAgpsManager(agpsManager), mFrameworkStatusV4Cb(
                         frameworkStatusV4Cb), mAtlOpenStatusCb(atlOpenStatusCb), mAtlCloseStatusCb(
                         atlCloseStatusCb), mDSClientInitFn(dsClientInitFn), mDSClientOpenAndStartDataCallFn(
                         dsClientOpenAndStartDataCallFn), mDSClientStopDataCallFn(
                         dsClientStopDataCallFn), mDSClientCloseDataCallFn(
                         dsClientCloseDataCallFn), mDSClientReleaseFn(
-                        dsClientReleaseFn), mSendMsgFn(sendMsgFn) {
+                        dsClientReleaseFn), mSendMsgFn(sendMsgFn),
+                        mAdapter(adapter) {
 
             LOC_LOGV("AgpsMsgInit");
         }
@@ -2370,6 +2373,10 @@ void GnssAdapter::initAgpsCommand(void* statusV4Cb){
                     mDSClientCloseDataCallFn, mDSClientReleaseFn, mSendMsgFn);
 
             mAgpsManager->createAgpsStateMachines();
+
+            /* Register for AGPS event mask */
+            mAdapter.updateEvtMask(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST,
+                                   LOC_REGISTRATION_MASK_ENABLED);
         }
     };
 
@@ -2381,7 +2388,8 @@ void GnssAdapter::initAgpsCommand(void* statusV4Cb){
                 dsClientInitFn, dsClientOpenAndStartDataCallFn,
                 dsClientStopDataCallFn, dsClientCloseDataCallFn,
                 dsClientReleaseFn,
-                sendMsgFn));
+                sendMsgFn,
+                *this));
 }
 
 /* GnssAdapter::requestATL
