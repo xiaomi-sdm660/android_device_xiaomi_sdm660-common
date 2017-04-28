@@ -654,7 +654,9 @@ void DSStateMachine::notifyEventToSubscriber(
         AgpsEvent event, AgpsSubscriber* subscriberToNotify,
         bool deleteSubscriberPostNotify) {
 
-    LOC_LOGD("DSStateMachine::notifyEventToSubscriber");
+    LOC_LOGD("DSStateMachine::notifyEventToSubscriber(): "
+             "SM %p, Event %d Subscriber %p Delete %d",
+             this, event, subscriberToNotify, deleteSubscriberPostNotify);
 
     switch (event){
 
@@ -781,7 +783,7 @@ void AgpsManager::requestATL(int connHandle, AGpsExtType agpsType){
     }
 
     /* Invoke AGPS SM processing */
-    AgpsSubscriber subscriber(connHandle);
+    AgpsSubscriber subscriber(connHandle, false, false);
     sm->setCurrentSubscriber(&subscriber);
 
     /* If DS State Machine, wait for close complete */

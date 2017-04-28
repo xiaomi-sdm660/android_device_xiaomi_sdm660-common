@@ -173,16 +173,19 @@ public:
     bool mWaitForCloseComplete;
     bool mIsInactive;
 
-    inline AgpsSubscriber(int connHandle) :
-            mConnHandle(connHandle), mWaitForCloseComplete(false),
-            mIsInactive(false) {}
+    inline AgpsSubscriber(
+            int connHandle, bool waitForCloseComplete, bool isInactive) :
+            mConnHandle(connHandle),
+            mWaitForCloseComplete(waitForCloseComplete),
+            mIsInactive(isInactive) {}
     inline virtual ~AgpsSubscriber() {}
 
     inline virtual bool equals(const AgpsSubscriber *s) const
     { return (mConnHandle == s->mConnHandle); }
 
     inline virtual AgpsSubscriber* clone()
-    { return new AgpsSubscriber(mConnHandle); }
+    { return new AgpsSubscriber(
+            mConnHandle, mWaitForCloseComplete, mIsInactive); }
 };
 
 /* AGPS STATE MACHINE */
