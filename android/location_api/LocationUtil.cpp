@@ -87,8 +87,61 @@ void convertGnssConstellationType(GnssSvType& in, GnssConstellationType& out)
         case GNSS_SV_TYPE_GALILEO:
             out = GnssConstellationType::GALILEO;
             break;
+        case GNSS_SV_TYPE_UNKNOWN:
         default:
             out = GnssConstellationType::UNKNOWN;
+            break;
+    }
+}
+
+void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out)
+{
+    switch(in) {
+        case GNSS_EPH_TYPE_EPHEMERIS:
+            out = GnssDebug::SatelliteEphemerisType::EPHEMERIS;
+            break;
+        case GNSS_EPH_TYPE_ALMANAC:
+            out = GnssDebug::SatelliteEphemerisType::ALMANAC_ONLY;
+            break;
+        case GNSS_EPH_TYPE_UNKNOWN:
+        default:
+            out = GnssDebug::SatelliteEphemerisType::NOT_AVAILABLE;
+            break;
+    }
+}
+
+void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out)
+{
+    switch(in) {
+        case GNSS_EPH_SOURCE_DEMODULATED:
+            out = GnssDebug::SatelliteEphemerisSource::DEMODULATED;
+            break;
+        case GNSS_EPH_SOURCE_SUPL_PROVIDED:
+            out = GnssDebug::SatelliteEphemerisSource::SUPL_PROVIDED;
+            break;
+        case GNSS_EPH_SOURCE_OTHER_SERVER_PROVIDED:
+            out = GnssDebug::SatelliteEphemerisSource::OTHER_SERVER_PROVIDED;
+            break;
+        case GNSS_EPH_SOURCE_LOCAL:
+        case GNSS_EPH_SOURCE_UNKNOWN:
+        default:
+            out = GnssDebug::SatelliteEphemerisSource::OTHER;
+            break;
+    }
+}
+
+void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out)
+{
+    switch(in) {
+        case GNSS_EPH_HEALTH_GOOD:
+            out = GnssDebug::SatelliteEphemerisHealth::GOOD;
+            break;
+        case GNSS_EPH_HEALTH_BAD:
+            out = GnssDebug::SatelliteEphemerisHealth::BAD;
+            break;
+        case GNSS_EPH_HEALTH_UNKNOWN:
+        default:
+            out = GnssDebug::SatelliteEphemerisHealth::UNKNOWN;
             break;
     }
 }

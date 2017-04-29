@@ -33,12 +33,20 @@
 #include <vector>
 #include <gps_extended_c.h>
 
-#define GPS_MIN  (1)
+#define GPS_MIN  (1)   //1-32
 #define SBAS_MIN (33)
-#define GLO_MIN  (65)
-#define BDS_MIN  (201)
-#define QZSS_MIN (193)
-#define GAL_MIN  (301)
+#define GLO_MIN  (65)  //65-88
+#define QZSS_MIN (193) //193-197
+#define BDS_MIN  (201) //201-237
+#define GAL_MIN  (301) //301-336
+
+#define GPS_NUM  (32)
+#define SBAS_NUM (32)
+#define GLO_NUM  (24)
+#define QZSS_NUM (5)
+#define BDS_NUM  (37)
+#define GAL_NUM  (36)
+#define SV_ALL_NUM  (GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM+GAL_NUM) //=134
 
 namespace loc_core
 {
@@ -87,6 +95,8 @@ public:
     int32_t  mTimeUnc;
     int32_t  mClockFreqBias;
     int32_t  mClockFreqBiasUnc;
+    int32_t  mLeapSeconds;
+    int32_t  mLeapSecUnc;
     SystemStatusTimeAndClock(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusTimeAndClock& peer);
     void dump(void);
@@ -229,6 +239,23 @@ public:
     void dump(void);
 };
 
+class SystemStatusPQWP7;
+struct SystemStatusNav
+{
+    GnssEphemerisType   mType;
+    GnssEphemerisSource mSource;
+    int32_t             mAgeSec;
+};
+
+class SystemStatusNavData : public SystemStatusItemBase
+{
+public:
+    SystemStatusNav mNav[SV_ALL_NUM];
+    SystemStatusNavData(const SystemStatusPQWP7& nmea);
+    bool equals(SystemStatusNavData& peer);
+    void dump(void);
+};
+
 class SystemStatusPQWS1;
 class SystemStatusPositionFailure : public SystemStatusItemBase
 {
@@ -259,6 +286,8 @@ public:
     std::vector<SystemStatusEphemeris>        mEphemeris;
     std::vector<SystemStatusSvHealth>         mSvHealth;
     std::vector<SystemStatusPdr>              mPdr;
+    std::vector<SystemStatusNavData>          mNavData;
+
     std::vector<SystemStatusPositionFailure>  mPositionFailure;
 };
 
@@ -282,6 +311,8 @@ class SystemStatus
     static const uint32_t                     maxEphemeris = 5;
     static const uint32_t                     maxSvHealth = 5;
     static const uint32_t                     maxPdr = 5;
+    static const uint32_t                     maxNavData = 5;
+
     static const uint32_t                     maxPositionFailure = 5;
 
     SystemStatusReports mCache;
@@ -299,6 +330,8 @@ class SystemStatus
     bool setEphemeris(const SystemStatusPQWP4& nmea);
     bool setSvHealth(const SystemStatusPQWP5& nmea);
     bool setPdr(const SystemStatusPQWP6& nmea);
+    bool setNavData(const SystemStatusPQWP7& nmea);
+
     bool setPositionFailure(const SystemStatusPQWS1& nmea);
 
 public:

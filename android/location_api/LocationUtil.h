@@ -32,6 +32,7 @@
 
 #include <android/hardware/gnss/1.0/types.h>
 #include <LocationAPI.h>
+#include <GnssDebug.h>
 
 namespace android {
 namespace hardware {
@@ -41,6 +42,9 @@ namespace implementation {
 
 void convertGnssLocation(Location& in, GnssLocation& out);
 void convertGnssConstellationType(GnssSvType& in, GnssConstellationType& out);
+void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out);
+void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);
+void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);
 
 }  // namespace implementation
 }  // namespace V1_0

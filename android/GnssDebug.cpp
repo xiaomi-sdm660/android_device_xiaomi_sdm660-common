@@ -30,6 +30,9 @@ namespace implementation {
 
 using ::android::hardware::hidl_vec;
 
+#define GNSS_DEBUG_UNKNOWN_UTC_TIME     (1483228800ULL) // 1/1/2017 00:00 GMT
+#define GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC (1.57783680E17) // 5 years in ns
+
 GnssDebug::GnssDebug(Gnss* gnss) : mGnss(gnss)
 {
 }
@@ -42,7 +45,7 @@ GnssDebug::GnssDebug(Gnss* gnss) : mGnss(gnss)
 */
 Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
 {
-    LOC_LOGI("GnssDebug - 0317a");
+    LOC_LOGI("GnssDebug - 0426a");
 
     DebugData data = { };
 
@@ -57,35 +60,57 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
     mGnss->getGnssInterface()->getDebugReport(reports);
 
     // location block
-    data.position.valid                    = true;
-    data.position.latitudeDegrees          = reports.mLocation.mLocation.latitude;
-    data.position.longitudeDegrees         = reports.mLocation.mLocation.longitude;
-    data.position.altitudeMeters           = reports.mLocation.mLocation.altitude;
-    data.position.speedMetersPerSec        = (double)(reports.mLocation.mLocation.speed);
-    data.position.bearingDegrees           = (double)(reports.mLocation.mLocation.bearing);
-    data.position.horizontalAccuracyMeters = (double)(reports.mLocation.mLocation.accuracy);
-    data.position.verticalAccuracyMeters   = reports.mLocation.verticalAccuracyMeters;
-    data.position.speedAccuracyMetersPerSecond = reports.mLocation.speedAccuracyMetersPerSecond;
-    data.position.bearingAccuracyDegrees   = reports.mLocation.bearingAccuracyDegrees;
+    if (reports.mLocation.mValid) {
+        data.position.valid = true;
+        data.position.latitudeDegrees = reports.mLocation.mLocation.latitude;
+        data.position.longitudeDegrees = reports.mLocation.mLocation.longitude;
+        data.position.altitudeMeters = reports.mLocation.mLocation.altitude;
 
-    LOC_LOGV("GnssDebug - lat=%f lon=%f", data.position.latitudeDegrees, data.position.longitudeDegrees);
+        data.position.speedMetersPerSec =
+            (double)(reports.mLocation.mLocation.speed);
+        data.position.bearingDegrees =
+            (double)(reports.mLocation.mLocation.bearing);
+        data.position.horizontalAccuracyMeters =
+            (double)(reports.mLocation.mLocation.accuracy);
+        data.position.verticalAccuracyMeters =
+            reports.mLocation.verticalAccuracyMeters;
+        data.position.speedAccuracyMetersPerSecond =
+            reports.mLocation.speedAccuracyMetersPerSecond;
+        data.position.bearingAccuracyDegrees =
+            reports.mLocation.bearingAccuracyDegrees;
+        LOC_LOGI("GnssDebug - lat=%f lon=%f",
+                 data.position.latitudeDegrees, data.position.longitudeDegrees);
 
-    timeval tv_now, tv_report;
-    tv_report.tv_sec  = reports.mLocation.mLocation.timestamp / 1000ULL;
-    tv_report.tv_usec = (reports.mLocation.mLocation.timestamp % 1000ULL) * 1000ULL;
-    gettimeofday(&tv_now, NULL);
-    data.position.ageSeconds =
-        (tv_now.tv_sec - tv_report.tv_sec) + (float)((tv_now.tv_usec - tv_report.tv_usec)) / 1000000;
+        timeval tv_now, tv_report;
+        tv_report.tv_sec  = reports.mLocation.mLocation.timestamp / 1000ULL;
+        tv_report.tv_usec =
+            (reports.mLocation.mLocation.timestamp % 1000ULL) * 1000ULL;
+        gettimeofday(&tv_now, NULL);
+        data.position.ageSeconds =
+            (tv_now.tv_sec - tv_report.tv_sec) +
+            (float)((tv_now.tv_usec - tv_report.tv_usec)) / 1000000;
 
-    LOC_LOGV("GnssDebug - time now=%lld:%lld", tv_now.tv_sec, tv_now.tv_usec);
-    LOC_LOGV("GnssDebug - time rep=%lld:%lld", tv_report.tv_sec, tv_report.tv_usec);
-    LOC_LOGV("GnssDebug - age=%f", data.position.ageSeconds);
+        LOC_LOGI("GnssDebug - time now=%lld:%lld", tv_now.tv_sec, tv_now.tv_usec);
+        LOC_LOGI("GnssDebug - time rep=%lld:%lld",tv_report.tv_sec, tv_report.tv_usec);
+        LOC_LOGI("GnssDebug - age=%f", data.position.ageSeconds);
+    }
+    else {
+        data.position.valid = false;
+    }
 
     // time block
-    data.time.timeEstimate      = reports.mTime.timeEstimate;
-    data.time.timeUncertaintyNs = reports.mTime.timeUncertaintyNs;
-
-    LOC_LOGV("GnssDebug - timeestimate=%lld", data.time.timeEstimate);
+    if (reports.mTime.mValid) {
+        data.time.timeEstimate = reports.mTime.timeEstimate;
+        data.time.timeUncertaintyNs = reports.mTime.timeUncertaintyNs;
+        data.time.frequencyUncertaintyNsPerSec =
+            reports.mTime.frequencyUncertaintyNsPerSec;
+    }
+    else {
+        data.time.timeEstimate = GNSS_DEBUG_UNKNOWN_UTC_TIME;
+        data.time.timeUncertaintyNs = (float)(GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC);
+        data.time.frequencyUncertaintyNsPerSec = 0;
+    }
+    LOC_LOGI("GnssDebug - timeestimate=%lld", data.time.timeEstimate);
 
     // satellite data block
     SatelliteData s = { };
@@ -94,18 +119,31 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
     for (uint32_t i=0; i<reports.mSatelliteInfo.size(); i++) {
         memset(&s, 0, sizeof(s));
         s.svid = reports.mSatelliteInfo[i].svid;
-        convertGnssConstellationType(reports.mSatelliteInfo[i].constellation, s.constellation);
-        s.ephemerisType = SatelliteEphemerisType::NOT_AVAILABLE;
-        s.ephemerisAgeSeconds = reports.mSatelliteInfo[i].ephemerisAgeSeconds;
+        convertGnssConstellationType(
+            reports.mSatelliteInfo[i].constellation, s.constellation);
+        convertGnssEphemerisType(
+            reports.mSatelliteInfo[i].mEphemerisType, s.ephemerisType);
+        convertGnssEphemerisSource(
+            reports.mSatelliteInfo[i].mEphemerisSource, s.ephemerisSource);
+        convertGnssEphemerisHealth(
+            reports.mSatelliteInfo[i].mEphemerisHealth, s.ephemerisHealth);
+
+        s.ephemerisAgeSeconds =
+            reports.mSatelliteInfo[i].ephemerisAgeSeconds;
+        s.serverPredictionIsAvailable =
+            reports.mSatelliteInfo[i].serverPredictionIsAvailable;
+        s.serverPredictionAgeSeconds =
+            reports.mSatelliteInfo[i].serverPredictionAgeSeconds;
+
         s_array.push_back(s);
     }
     data.satelliteDataArray = s_array;
-    LOC_LOGV("GnssDebug - satellite=%d", data.satelliteDataArray.size());
+    LOC_LOGI("GnssDebug - satellite=%d", data.satelliteDataArray.size());
 
     // callback HIDL with collected debug data
     _hidl_cb(data);
 
-    LOC_LOGV("GnssDebug - done");
+    LOC_LOGI("GnssDebug - done");
     return Void();
 }
 
