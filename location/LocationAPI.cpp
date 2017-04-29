@@ -82,7 +82,7 @@ static void* loadLocationInterface(const char* library, const char* name) {
         return NULL;
     }
     getLocationInterface* getter = NULL;
-    const char *error;
+    const char *error = NULL;
     dlerror();
     void *handle = dlopen(library, RTLD_NOW);
     if (NULL == handle || (error = dlerror()) != NULL)  {

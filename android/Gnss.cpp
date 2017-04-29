@@ -85,7 +85,7 @@ GnssInterface* Gnss::getGnssInterface() {
     if (nullptr == mGnssInterface && !getGnssInterfaceFailed) {
         LOC_LOGD("%s]: loading libgnss.so::getGnssInterface ...", __func__);
         getLocationInterface* getter = NULL;
-        const char *error;
+        const char *error = NULL;
         dlerror();
         void *handle = dlopen("libgnss.so", RTLD_NOW);
         if (NULL == handle || (error = dlerror()) != NULL)  {
