@@ -280,7 +280,7 @@ void GnssAPIClient::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotificatio
         return;
     }
 
-    IGnssNiCallback::GnssNiNotification notificationGnss;
+    IGnssNiCallback::GnssNiNotification notificationGnss = {};
 
     notificationGnss.notificationId = id;
 
@@ -290,7 +290,9 @@ void GnssAPIClient::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotificatio
         notificationGnss.niType = IGnssNiCallback::GnssNiType::UMTS_SUPL;
     else if (gnssNiNotification.type == GNSS_NI_TYPE_CONTROL_PLANE)
         notificationGnss.niType = IGnssNiCallback::GnssNiType::UMTS_CTRL_PLANE;
-    // GNSS_NI_TYPE_EMERGENCY_SUPL not supported
+    else if (gnssNiNotification.type == GNSS_NI_TYPE_EMERGENCY_SUPL)
+        notificationGnss.niType =
+            static_cast<IGnssNiCallback::GnssNiType>(4/*hardcode until IGnssNiCallback adds value*/);
 
     if (gnssNiNotification.options == GNSS_NI_OPTIONS_NOTIFICATION)
         notificationGnss.notifyFlags =
