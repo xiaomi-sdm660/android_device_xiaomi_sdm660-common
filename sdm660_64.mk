@@ -88,7 +88,7 @@ WLAN_CHIPSET := qca_cld3
 #Android EGL implementation
 PRODUCT_PACKAGES += libGLES_android
 #PRODUCT_BOOT_JARS += tcmiface
-#PRODUCT_BOOT_JARS += telephony-ext
+PRODUCT_BOOT_JARS += telephony-ext
 
 PRODUCT_PACKAGES += telephony-ext
 
