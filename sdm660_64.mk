@@ -40,10 +40,21 @@ TARGET_USE_UI_SVA := true
 -include $(QCPATH)/common/config/qtic-config.mk
 
 # Video codec configuration files
+MEDIA_XML_TARGET := system/vendor/etc
+MEDIA_XML_TARGET_VENDOR := vendor/etc
+MEDIA_XML_TARGET_SYSTEM := etc
 ifeq ($(TARGET_ENABLE_QC_AV_ENHANCEMENTS), true)
-PRODUCT_COPY_FILES += device/qcom/sdm660_64/media_profiles.xml:system/etc/media_profiles.xml \
-                      device/qcom/sdm660_64/media_codecs.xml:system/etc/media_codecs.xml \
-                      device/qcom/sdm660_64/media_codecs_performance.xml:system/etc/media_codecs_performance.xml
+PRODUCT_COPY_FILES += device/qcom/sdm660_64/media_profiles.xml:$(MEDIA_XML_TARGET)/media_profiles.xml \
+                                          device/qcom/sdm660_64/media_profiles.xml:$(MEDIA_XML_TARGET_VENDOR)/media_profiles.xml \
+                                          device/qcom/sdm660_64/media_profiles.xml:$(MEDIA_XML_TARGET_SYSTEM)/media_profiles.xml
+
+PRODUCT_COPY_FILES += device/qcom/sdm660_64/media_codecs.xml:$(MEDIA_XML_TARGET)/media_codecs.xml \
+                                          device/qcom/sdm660_64/media_codecs.xml:$(MEDIA_XML_TARGET_VENDOR)/media_codecs.xml \
+                                          device/qcom/sdm660_64/media_codecs.xml:$(MEDIA_XML_TARGET_SYSTEM)/media_codecs.xml
+
+PRODUCT_COPY_FILES += device/qcom/sdm660_64/media_codecs_performance.xml:$(MEDIA_XML_TARGET)/media_codecs_performance.xml \
+                                          device/qcom/sdm660_64/media_codecs_performance.xml:$(MEDIA_XML_TARGET_VENDOR)/media_codecs_performance.xml \
+                                          device/qcom/sdm660_64/media_codecs_performance.xml:$(MEDIA_XML_TARGET_SYSTEM)/media_codecs_performance.xml
 endif #TARGET_ENABLE_QC_AV_ENHANCEMENTS
 
 PRODUCT_COPY_FILES += device/qcom/sdm660_64/whitelistedapps.xml:system/vendor/etc/whitelistedapps.xml \
