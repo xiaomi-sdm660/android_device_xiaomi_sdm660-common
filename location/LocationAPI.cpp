@@ -370,13 +370,13 @@ LocationAPI::updateTrackingOptions(uint32_t id, LocationOptions& locationOptions
 }
 
 uint32_t
-LocationAPI::startBatching(LocationOptions& locationOptions)
+LocationAPI::startBatching(LocationOptions& locationOptions, BatchingOptions &batchingOptions)
 {
     uint32_t id = 0;
     pthread_mutex_lock(&gDataMutex);
 
     if (gData.flpInterface != NULL) {
-        id = gData.flpInterface->startBatching(this, locationOptions);
+        id = gData.flpInterface->startBatching(this, locationOptions, batchingOptions);
     } else {
         LOC_LOGE("%s:%d]: No flp interface available for Location API client %p ",
                  __func__, __LINE__, this);
@@ -402,14 +402,16 @@ LocationAPI::stopBatching(uint32_t id)
 }
 
 void
-LocationAPI::updateBatchingOptions(uint32_t id, LocationOptions& locationOptions)
+LocationAPI::updateBatchingOptions(uint32_t id,
+        LocationOptions& locationOptions, BatchingOptions& batchOptions)
 {
     pthread_mutex_lock(&gDataMutex);
 
     if (gData.flpInterface != NULL) {
         gData.flpInterface->updateBatchingOptions(this,
                                                   id,
-                                                  locationOptions);
+                                                  locationOptions,
+                                                  batchOptions);
     } else {
         LOC_LOGE("%s:%d]: No flp interface available for Location API client %p ",
                  __func__, __LINE__, this);

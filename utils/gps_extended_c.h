@@ -559,6 +559,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_REPORT_GENFENCE_DWELL_REPORT,      // Geofence dwell report
     LOC_API_ADAPTER_REQUEST_SRN_DATA,                  // request srn data from AP
     LOC_API_ADAPTER_REQUEST_POSITION_INJECTION,        // Position injection request
+    LOC_API_ADAPTER_BATCH_STATUS,                       // batch status
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -593,6 +594,7 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_REPORT_GENFENCE_DWELL            (1<<LOC_API_ADAPTER_REPORT_GENFENCE_DWELL_REPORT)
 #define LOC_API_ADAPTER_BIT_REQUEST_SRN_DATA                 (1<<LOC_API_ADAPTER_REQUEST_SRN_DATA)
 #define LOC_API_ADAPTER_BIT_POSITION_INJECTION_REQUEST       (1<<LOC_API_ADAPTER_REQUEST_POSITION_INJECTION)
+#define LOC_API_ADAPTER_BIT_BATCH_STATUS                     (1<<LOC_API_ADAPTER_BATCH_STATUS)
 
 
 typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
@@ -604,6 +606,7 @@ typedef enum loc_api_adapter_msg_to_check_supported {
     LOC_API_ADAPTER_MESSAGE_ADAPTIVE_LOCATION_BATCHING,      // Batching 1.5
     LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_LOCATION_BATCHING, // Batching 2.0
     LOC_API_ADAPTER_MESSAGE_UPDATE_TBF_ON_THE_FLY,           // Updating Tracking TBF On The Fly
+    LOC_API_ADAPTER_MESSAGE_OUTDOOR_TRIP_BATCHING,           // Outdoor Trip Batching
 
     LOC_API_ADAPTER_MESSAGE_MAX
 } LocCheckingMessagesID;

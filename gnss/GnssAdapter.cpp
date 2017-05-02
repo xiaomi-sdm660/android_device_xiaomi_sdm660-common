@@ -1111,6 +1111,10 @@ GnssAdapter::requestCapabilitiesCommand(LocationAPI* client)
             if (mApi.isMessageSupported(LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_TRACKING)) {
                 mask |= LOCATION_CAPABILITIES_DISTANCE_BASED_TRACKING_BIT;
             }
+            if (mApi.isMessageSupported(LOC_API_ADAPTER_MESSAGE_OUTDOOR_TRIP_BATCHING)) {
+                mask |= LOCATION_CAPABILITIES_OUTDOOR_TRIP_BATCHING_BIT;
+            }
+
             // geofence always supported
             mask |= LOCATION_CAPABILITIES_GEOFENCE_BIT;
             if (mApi.gnssConstellationConfig()) {

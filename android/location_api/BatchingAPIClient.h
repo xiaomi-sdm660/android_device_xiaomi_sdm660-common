@@ -58,7 +58,7 @@ public:
 
     // callbacks
     void onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask) final;
-    void onBatchingCb(size_t count, Location* location) final;
+    void onBatchingCb(size_t count, Location* location, BatchingOptions batchOptions) final;
 
 private:
     sp<IGnssBatchingCallback> mGnssBatchingCbIface;

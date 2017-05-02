@@ -41,6 +41,7 @@ enum SESSION_MODE {
     SESSION_MODE_NONE = 0,
     SESSION_MODE_ON_FULL,
     SESSION_MODE_ON_FIX,
+    SESSION_MODE_ON_TRIP_COMPLETED
 };
 
 enum REQUEST_TYPE {
@@ -194,7 +195,7 @@ public:
     uint32_t locAPIStopSession(uint32_t id);
     uint32_t locAPIUpdateSessionOptions(uint32_t id, uint32_t sessionMode,
             LocationOptions& options);
-    void locAPIGetBatchedLocations(size_t count);
+    void locAPIGetBatchedLocations(uint32_t id, size_t count);
 
     uint32_t locAPIAddGeofences(size_t count, uint32_t* ids,
             GeofenceOption* options, GeofenceInfo* data);
@@ -226,7 +227,12 @@ public:
     inline virtual void onGnssLocationInfoCb(
             GnssLocationInfoNotification /*gnssLocationInfoNotification*/) {}
 
-    inline virtual void onBatchingCb(size_t /*count*/, Location* /*location*/) {}
+    inline virtual void onBatchingCb(size_t /*count*/, Location* /*location*/,
+            BatchingOptions /*batchingOptions*/) {}
+    inline virtual void onBatchingStatusCb(BatchingStatusInfo /*batchingStatus*/,
+            std::list<uint32_t> &/*listOfCompletedTrips*/) {}
+    void beforeBatchingStatusCb(BatchingStatusInfo batchStatus,
+            std::list<uint32_t> & tripCompletedList);
     inline virtual void onStartBatchingCb(LocationError /*error*/) {}
     inline virtual void onStopBatchingCb(LocationError /*error*/) {}
     inline virtual void onUpdateBatchingOptionsCb(LocationError /*error*/) {}
@@ -525,6 +531,7 @@ private:
     pthread_mutex_t mMutex;
 
     geofenceBreachCallback mGeofenceBreachCallback;
+    batchingStatusCallback mBatchingStatusCallback;
 
     LocationAPI* mLocationAPI;
 

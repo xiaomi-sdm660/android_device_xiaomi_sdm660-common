@@ -36,6 +36,9 @@
 #include "LocationUtil.h"
 #include "BatchingAPIClient.h"
 
+#include "limits.h"
+
+
 namespace android {
 namespace hardware {
 namespace gnss {
@@ -48,7 +51,7 @@ static void convertBatchOption(const IGnssBatching::Options& in, LocationOptions
 BatchingAPIClient::BatchingAPIClient(const sp<IGnssBatchingCallback>& callback) :
     LocationAPIClientBase(),
     mGnssBatchingCbIface(callback),
-    mDefaultId(42),
+    mDefaultId(UINT_MAX),
     mLocationCapabilitiesMask(0)
 {
     LOC_LOGD("%s]: (%p)", __FUNCTION__, &callback);
@@ -60,8 +63,9 @@ BatchingAPIClient::BatchingAPIClient(const sp<IGnssBatchingCallback>& callback) 
     locationCallbacks.trackingCb = nullptr;
     locationCallbacks.batchingCb = nullptr;
     if (mGnssBatchingCbIface != nullptr) {
-        locationCallbacks.batchingCb = [this](size_t count, Location* location) {
-            onBatchingCb(count, location);
+        locationCallbacks.batchingCb = [this](size_t count, Location* location,
+            BatchingOptions batchOptions) {
+            onBatchingCb(count, location, batchOptions);
         };
     }
     locationCallbacks.geofenceBreachCb = nullptr;
@@ -134,13 +138,13 @@ int BatchingAPIClient::stopSession()
 void BatchingAPIClient::getBatchedLocation(int last_n_locations)
 {
     LOC_LOGD("%s]: (%d)", __FUNCTION__, last_n_locations);
-    locAPIGetBatchedLocations(last_n_locations);
+    locAPIGetBatchedLocations(mDefaultId, last_n_locations);
 }
 
 void BatchingAPIClient::flushBatchedLocations()
 {
     LOC_LOGD("%s]: ()", __FUNCTION__);
-    locAPIGetBatchedLocations(SIZE_MAX);
+    locAPIGetBatchedLocations(mDefaultId, SIZE_MAX);
 }
 
 void BatchingAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
@@ -149,7 +153,7 @@ void BatchingAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMa
     mLocationCapabilitiesMask = capabilitiesMask;
 }
 
-void BatchingAPIClient::onBatchingCb(size_t count, Location* location)
+void BatchingAPIClient::onBatchingCb(size_t count, Location* location, BatchingOptions batchOptions)
 {
     LOC_LOGD("%s]: (count: %zu)", __FUNCTION__, count);
     if (mGnssBatchingCbIface != nullptr && count > 0) {
