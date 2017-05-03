@@ -98,6 +98,8 @@ typedef uint16_t LocGpsLocationFlags;
 #define LOC_GPS_LOCATION_HAS_BEARING    0x0008
 /** LocGpsLocation has valid accuracy. */
 #define LOC_GPS_LOCATION_HAS_ACCURACY   0x0010
+/** LocGpsLocation has valid vertical uncertainity */
+#define LOC_GPS_LOCATION_HAS_VERT_UNCERTAINITY   0x0020
 
 /** Flags for the loc_gps_set_capabilities callback. */
 
@@ -545,6 +547,8 @@ typedef struct {
     float           bearing;
     /** Represents expected accuracy in meters. */
     float           accuracy;
+    /** Represents the expected vertical uncertainity in meters*/
+    float           vertUncertainity;
     /** Timestamp for the location fix. */
     LocGpsUtcTime      timestamp;
 } LocGpsLocation;
