@@ -808,12 +808,7 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
             mData(data) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_SUCCESS;
-            #ifdef TARGET_BUILD_VARIANT_USER
-                err = LOCATION_ERROR_NOT_SUPPORTED;
-            #endif
-            if (LOCATION_ERROR_SUCCESS == err) {
-                err = mApi.deleteAidingData(mData);
-            }
+            err = mApi.deleteAidingData(mData);
             mAdapter.reportResponse(err, mSessionId);
         }
     };
