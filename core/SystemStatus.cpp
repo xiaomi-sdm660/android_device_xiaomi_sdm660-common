@@ -1396,7 +1396,7 @@ bool SystemStatus::setNmeaString(const char *data, uint32_t len)
     }
 
     char buf[SystemStatusNmeaBase::NMEA_MAXSIZE + 1] = { 0 };
-    strlcpy(buf, data, (len < strlen(data))? len : strlen(data));
+    strlcpy(buf, data, sizeof(buf));
 
     pthread_mutex_lock(&mMutexSystemStatus);
 
