@@ -306,6 +306,8 @@ typedef uint32_t LocNavSolutionMask;
 #define GPS_SV_PRN_MAX      32
 #define GLO_SV_PRN_MIN      65
 #define GLO_SV_PRN_MAX      96
+#define QZSS_SV_PRN_MIN     193
+#define QZSS_SV_PRN_MAX     197
 #define BDS_SV_PRN_MIN      201
 #define BDS_SV_PRN_MAX      235
 #define GAL_SV_PRN_MIN      301
@@ -342,6 +344,7 @@ typedef struct {
     uint64_t glo_sv_used_ids_mask;
     uint64_t gal_sv_used_ids_mask;
     uint64_t bds_sv_used_ids_mask;
+    uint64_t qzss_sv_used_ids_mask;
 } GnssSvUsedInPosition;
 
 /** Represents gps location extended. */
