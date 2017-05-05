@@ -182,5 +182,8 @@ camera.lowpower.record.enable=1
 #Expose aux camera for below packages
 camera.aux.packagelist=org.codeaurora.snapcam
 
+#disable UBWC for camera
+persist.camera.preview.ubwc=0
+
 # Create zram disk
 ro.config.zram=true
