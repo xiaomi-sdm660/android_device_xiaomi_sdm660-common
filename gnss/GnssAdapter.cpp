@@ -1960,8 +1960,6 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             // flag, else clear the USED_IN_FIX flag.
             if (svUsedIdMask & (1 << (gnssSvId - 1))) {
                 svNotify.gnssSvs[i].gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
-            } else {
-                svNotify.gnssSvs[i].gnssSvOptionsMask &= ~GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
             }
         }
     }
