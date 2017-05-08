@@ -55,8 +55,9 @@ GnssBatching::~GnssBatching() {
 // Methods from ::android::hardware::gnss::V1_0::IGnssBatching follow.
 Return<bool> GnssBatching::init(const sp<IGnssBatchingCallback>& callback) {
     if (mApi != nullptr) {
-        LOC_LOGE("%s]: mApi is NOT nullptr", __FUNCTION__);
-        return false;
+        LOC_LOGD("%s]: mApi is NOT nullptr, delete it first", __FUNCTION__);
+        delete mApi;
+        mApi = nullptr;
     }
 
     mApi = new BatchingAPIClient(callback);
