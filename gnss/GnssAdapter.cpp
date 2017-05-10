@@ -2002,9 +2002,9 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
                              size_t length) :
             LocMsg(),
             mAdapter(adapter),
-            mNmea(new char[length]),
+            mNmea(new char[length+1]),
             mLength(length) {
-                memcpy((void*)mNmea, (void*)nmea, length);
+                strlcpy((char*)mNmea, nmea, length+1);
             }
         inline virtual ~MsgReportNmea()
         {
