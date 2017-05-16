@@ -11,11 +11,9 @@ LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
     liblog \
-    libloc_stub \
-    libandroid_runtime
+    libloc_stub
 
 LOCAL_SRC_FILES += \
-        platform_lib_android_runtime.cpp \
         platform_lib_gettid.cpp \
         platform_lib_log_util.cpp \
         platform_lib_property_service.cpp \
@@ -35,7 +33,6 @@ LOCAL_C_INCLUDES:= \
 
 LOCAL_COPY_HEADERS_TO:= libloc_pla/
 LOCAL_COPY_HEADERS:= \
-        ../include/platform_lib_android_runtime.h \
         ../include/platform_lib_gettid.h \
         ../include/platform_lib_includes.h \
         ../include/platform_lib_log_util.h \
