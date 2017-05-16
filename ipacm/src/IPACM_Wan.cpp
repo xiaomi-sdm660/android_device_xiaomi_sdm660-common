@@ -3289,11 +3289,10 @@ int IPACM_Wan::add_icmp_alg_rules(struct ipa_flt_rule_add *rules, int rule_offse
 		IPACM_Wan::num_v4_flt_rule++;
 
 		/* Configure ALG filtering rules */
+		/* maintain meta data mask */
 		memcpy(&flt_rule_entry.rule.attrib,
 					 &rx_prop->rx[0].attrib,
 					 sizeof(flt_rule_entry.rule.attrib));
-		/* remove meta data mask */
-		flt_rule_entry.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_SRC_PORT;
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_PROTOCOL;
 		for(i = 0; i < ipacm_config->ipa_num_alg_ports; i++)
@@ -3317,11 +3316,10 @@ int IPACM_Wan::add_icmp_alg_rules(struct ipa_flt_rule_add *rules, int rule_offse
 			IPACM_Wan::num_v4_flt_rule++;
 		}
 
+		/* maintain meta data mask */
 		memcpy(&flt_rule_entry.rule.attrib,
 					 &rx_prop->rx[0].attrib,
 					 sizeof(flt_rule_entry.rule.attrib));
-		/* remove meta data mask */
-		flt_rule_entry.rule.attrib.attrib_mask &= ~((uint32_t)IPA_FLT_META_DATA);
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_PORT;
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_PROTOCOL;
 		for(i = 0; i < ipacm_config->ipa_num_alg_ports; i++)
