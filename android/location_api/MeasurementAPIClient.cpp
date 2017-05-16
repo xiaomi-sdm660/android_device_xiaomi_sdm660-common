@@ -147,7 +147,11 @@ void MeasurementAPIClient::onGnssMeasurementsCb(
         if (mGnssMeasurementCbIface != nullptr) {
             IGnssMeasurementCallback::GnssData gnssData;
             convertGnssData(gnssMeasurementsNotification, gnssData);
-            mGnssMeasurementCbIface->GnssMeasurementCb(gnssData);
+            auto r = mGnssMeasurementCbIface->GnssMeasurementCb(gnssData);
+            if (!r.isOk()) {
+                LOC_LOGE("%s] Error from GnssMeasurementCb description=%s",
+                    __func__, r.description().c_str());
+            }
         }
         pthread_mutex_unlock(&mLock);
     }

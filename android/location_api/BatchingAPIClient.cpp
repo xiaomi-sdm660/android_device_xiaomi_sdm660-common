@@ -157,7 +157,11 @@ void BatchingAPIClient::onBatchingCb(size_t count, Location* location)
         for (size_t i = 0; i < count; i++) {
             convertGnssLocation(location[i], locationVec[i]);
         }
-        mGnssBatchingCbIface->gnssLocationBatchCb(locationVec);
+        auto r = mGnssBatchingCbIface->gnssLocationBatchCb(locationVec);
+        if (!r.isOk()) {
+            LOC_LOGE("%s] Error from gnssLocationBatchCb description=%s",
+                __func__, r.description().c_str());
+        }
     }
 }
 
