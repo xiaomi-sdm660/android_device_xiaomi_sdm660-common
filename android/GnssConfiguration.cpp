@@ -91,6 +91,9 @@ Return<bool> GnssConfiguration::setSuplMode(uint8_t mode)  {
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_SUPL_MODE_BIT;
     switch (mode) {
+        case 0:
+            config.suplModeMask = 0; // STANDALONE ONLY
+            break;
         case 1:
             config.suplModeMask = GNSS_CONFIG_SUPL_MODE_MSB;
             break;
