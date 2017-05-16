@@ -109,8 +109,8 @@ MeasurementAPIClient::measurementSetCallback(const sp<IGnssMeasurementCallback>&
     }
     if (mLocationCapabilitiesMask & LOCATION_CAPABILITIES_GNSS_MSB_BIT)
         mLocationOptions.mode = GNSS_SUPL_MODE_MSB;
-    else if (mLocationCapabilitiesMask & LOCATION_CAPABILITIES_GNSS_MSA_BIT)
-        mLocationOptions.mode = GNSS_SUPL_MODE_MSA;
+    else
+        mLocationOptions.mode = GNSS_SUPL_MODE_STANDALONE;
     LOC_LOGD("%s]: start tracking session", __FUNCTION__);
     locAPIStartTracking(mLocationOptions);
 
@@ -123,6 +123,7 @@ void MeasurementAPIClient::measurementClose() {
     pthread_mutex_lock(&mLock);
     mGnssMeasurementCbIface = nullptr;
     pthread_mutex_unlock(&mLock);
+    locAPIStopTracking();
 }
 
 // callbacks
