@@ -4657,11 +4657,12 @@ end:
 
 int IPACM_Lan::eth_bridge_add_flt_rule(uint8_t *mac, uint32_t rt_tbl_hdl, ipa_ip_type iptype, uint32_t *flt_rule_hdl)
 {
-	int len, res = IPACM_SUCCESS;
+	int res = IPACM_SUCCESS;
+#ifdef FEATURE_IPA_V3
+	int len;
 	struct ipa_flt_rule_add flt_rule_entry;
 	struct ipa_ioc_add_flt_rule_after *pFilteringTable = NULL;
 
-#ifdef FEATURE_IPA_V3
 	if (rx_prop == NULL || tx_prop == NULL)
 	{
 		IPACMDBG_H("No rx or tx properties registered for iface %s\n", dev_name);
@@ -4720,6 +4721,9 @@ int IPACM_Lan::eth_bridge_add_flt_rule(uint8_t *mac, uint32_t rt_tbl_hdl, ipa_ip
 
 end:
 	free(pFilteringTable);
+#else
+	IPACMDBG_H("Received client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	IPACMDBG_H("Not support rt_tbl_hdl %d flt_rule_hdl %p ip-type %d\n", rt_tbl_hdl, flt_rule_hdl, iptype);
 #endif
 	return res;
 }
