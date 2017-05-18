@@ -30,7 +30,7 @@ namespace implementation {
 
 using ::android::hardware::hidl_vec;
 
-#define GNSS_DEBUG_UNKNOWN_UTC_TIME     (1483228800ULL) // 1/1/2017 00:00 GMT
+#define GNSS_DEBUG_UNKNOWN_UTC_TIME     (1483228800000ULL) // 1/1/2017 00:00 GMT
 #define GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC (1.57783680E17) // 5 years in ns
 
 GnssDebug::GnssDebug(Gnss* gnss) : mGnss(gnss)
@@ -45,7 +45,7 @@ GnssDebug::GnssDebug(Gnss* gnss) : mGnss(gnss)
 */
 Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
 {
-    LOC_LOGI("GnssDebug - 0426a");
+    LOC_LOGD("%s]: ", __func__);
 
     DebugData data = { };
 
@@ -78,21 +78,14 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
             reports.mLocation.speedAccuracyMetersPerSecond;
         data.position.bearingAccuracyDegrees =
             reports.mLocation.bearingAccuracyDegrees;
-        LOC_LOGI("GnssDebug - lat=%f lon=%f",
-                 data.position.latitudeDegrees, data.position.longitudeDegrees);
 
         timeval tv_now, tv_report;
-        tv_report.tv_sec  = reports.mLocation.mLocation.timestamp / 1000ULL;
-        tv_report.tv_usec =
-            (reports.mLocation.mLocation.timestamp % 1000ULL) * 1000ULL;
+        tv_report.tv_sec  = reports.mLocation.mUtcReported.tv_sec;
+        tv_report.tv_usec = reports.mLocation.mUtcReported.tv_nsec / 1000ULL;
         gettimeofday(&tv_now, NULL);
         data.position.ageSeconds =
             (tv_now.tv_sec - tv_report.tv_sec) +
             (float)((tv_now.tv_usec - tv_report.tv_usec)) / 1000000;
-
-        LOC_LOGI("GnssDebug - time now=%lld:%lld", tv_now.tv_sec, tv_now.tv_usec);
-        LOC_LOGI("GnssDebug - time rep=%lld:%lld",tv_report.tv_sec, tv_report.tv_usec);
-        LOC_LOGI("GnssDebug - age=%f", data.position.ageSeconds);
     }
     else {
         data.position.valid = false;
@@ -110,7 +103,6 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
         data.time.timeUncertaintyNs = (float)(GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC);
         data.time.frequencyUncertaintyNsPerSec = 0;
     }
-    LOC_LOGI("GnssDebug - timeestimate=%lld", data.time.timeEstimate);
 
     // satellite data block
     SatelliteData s = { };
@@ -138,12 +130,9 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
         s_array.push_back(s);
     }
     data.satelliteDataArray = s_array;
-    LOC_LOGI("GnssDebug - satellite=%d", data.satelliteDataArray.size());
 
     // callback HIDL with collected debug data
     _hidl_cb(data);
-
-    LOC_LOGI("GnssDebug - done");
     return Void();
 }
 

@@ -39,6 +39,13 @@
 #define GNSS_MEASUREMENTS_MAX 64
 #define GNSS_UTC_TIME_OFFSET   (3657)
 
+#define GNSS_BUGREPORT_GPS_MIN  (1)
+#define GNSS_BUGREPORT_SBAS_MIN (120)
+#define GNSS_BUGREPORT_GLO_MIN  (1)
+#define GNSS_BUGREPORT_QZSS_MIN (193)
+#define GNSS_BUGREPORT_BDS_MIN  (1)
+#define GNSS_BUGREPORT_GAL_MIN  (1)
+
 typedef enum {
     LOCATION_ERROR_SUCCESS = 0,
     LOCATION_ERROR_GENERAL_FAILURE,
@@ -584,6 +591,7 @@ typedef struct {
     double                              verticalAccuracyMeters;
     double                              speedAccuracyMetersPerSecond;
     double                              bearingAccuracyDegrees;
+    timespec                            mUtcReported;
 } GnssDebugLocation;
 
 typedef struct {

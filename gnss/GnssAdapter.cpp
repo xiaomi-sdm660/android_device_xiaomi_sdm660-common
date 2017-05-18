@@ -1814,7 +1814,7 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
             SystemStatus* s = LocDualContext::getSystemStatus();
-            if (nullptr != s) {
+            if ((nullptr != s) && (LOC_SESS_SUCCESS == mStatus)){
                 s->eventPosition(mUlpLocation, mLocationExtended);
             }
             mAdapter.reportPosition(mUlpLocation, mLocationExtended, mStatus, mTechMask);
@@ -2615,7 +2615,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
     // set constellationi based parameters
     switch (in_constellation) {
         case GNSS_SV_TYPE_GPS:
-            svid_min = GPS_MIN;
+            svid_min = GNSS_BUGREPORT_GPS_MIN;
             svid_num = GPS_NUM;
             svid_idx = 0;
             if (!in.mSvHealth.empty()) {
@@ -2628,7 +2628,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
             }
             break;
         case GNSS_SV_TYPE_GLONASS:
-            svid_min = GLO_MIN;
+            svid_min = GNSS_BUGREPORT_GLO_MIN;
             svid_num = GLO_NUM;
             svid_idx = GPS_NUM;
             if (!in.mSvHealth.empty()) {
@@ -2641,7 +2641,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
             }
             break;
         case GNSS_SV_TYPE_QZSS:
-            svid_min = QZSS_MIN;
+            svid_min = GNSS_BUGREPORT_QZSS_MIN;
             svid_num = QZSS_NUM;
             svid_idx = GPS_NUM+GLO_NUM;
             if (!in.mSvHealth.empty()) {
@@ -2654,7 +2654,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
             }
             break;
         case GNSS_SV_TYPE_BEIDOU:
-            svid_min = BDS_MIN;
+            svid_min = GNSS_BUGREPORT_BDS_MIN;
             svid_num = BDS_NUM;
             svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM;
             if (!in.mSvHealth.empty()) {
@@ -2667,7 +2667,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
             }
             break;
         case GNSS_SV_TYPE_GALILEO:
-            svid_min = GAL_MIN;
+            svid_min = GNSS_BUGREPORT_GAL_MIN;
             svid_num = GAL_NUM;
             svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM;
             if (!in.mSvHealth.empty()) {
@@ -2771,8 +2771,8 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
         r.mLocation.bearingAccuracyDegrees =
             reports.mLocation.back().mLocationEx.bearing_unc;
 
-        r.mLocation.mLocation.timestamp =
-            reports.mLocation.back().mLocation.gpsLocation.timestamp;
+        r.mLocation.mUtcReported =
+            reports.mLocation.back().mUtcReported;
     }
     else if(!reports.mBestPosition.empty()) {
         r.mLocation.mValid = true;
@@ -2801,11 +2801,11 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
 
     // time block
     r.mTime.size = sizeof(r.mTime);
-    if(!reports.mTimeAndClock.empty()) {
+    if(!reports.mTimeAndClock.empty() && reports.mTimeAndClock.back().mTimeValid) {
         r.mTime.mValid = true;
         r.mTime.timeEstimate =
             (((int64_t)(reports.mTimeAndClock.back().mGpsWeek)*7 +
-                        GNSS_UTC_TIME_OFFSET)*24*60*60 +
+                        GNSS_UTC_TIME_OFFSET)*24*60*60 -
               (int64_t)(reports.mTimeAndClock.back().mLeapSeconds))*1000ULL +
               (int64_t)(reports.mTimeAndClock.back().mGpsTowMs);
 
@@ -2814,7 +2814,9 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
                      reports.mTimeAndClock.back().mLeapSecUnc)*1000);
         r.mTime.frequencyUncertaintyNsPerSec =
             (float)(reports.mTimeAndClock.back().mClockFreqBiasUnc);
-        LOC_LOGV("getDebugReport - timeestimate=%ld", r.mTime.timeEstimate);
+        LOC_LOGV("getDebugReport - timeestimate=%ld unc=%f frequnc=%f",
+                r.mTime.timeEstimate,
+                r.mTime.timeUncertaintyNs, r.mTime.frequencyUncertaintyNsPerSec);
     }
     else {
         r.mTime.mValid = false;
