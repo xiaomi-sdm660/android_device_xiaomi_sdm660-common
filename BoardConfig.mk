@@ -36,6 +36,7 @@ BOARD_USE_LEGACY_UI := true
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x04000000
 
+ifeq ($(ENABLE_AB), true)
 #A/B related defines
 AB_OTA_UPDATER := true
 # Full A/B partiton update set
@@ -45,14 +46,25 @@ AB_OTA_PARTITIONS ?= boot system
 BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
 TARGET_NO_RECOVERY := true
 BOARD_USES_RECOVERY_AS_BOOT := true
-ifeq ($(ENABLE_VENDOR_IMAGE), true)
-TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_vendor_variant.fstab
 else
-TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery.fstab
+BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x04000000
+BOARD_CACHEIMAGE_PARTITION_SIZE := 268435456
+BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
+#TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
 endif
 
-ifneq ($(AB_OTA_UPDATER),true)
-   TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
+ifeq ($(ENABLE_AB), true)
+  ifeq ($(ENABLE_VENDOR_IMAGE), true)
+    TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_AB_split_variant.fstab
+  else
+    TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_AB_non-split_variant.fstab
+  endif
+else
+  ifeq ($(ENABLE_VENDOR_IMAGE), true)
+    TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_non-AB_split_variant.fstab
+  else
+    TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_non-AB_non-split_variant.fstab
+  endif
 endif
 
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 3221225472
@@ -159,4 +171,6 @@ TARGET_USES_IMS := true
 ADD_RADIO_FILES := true
 TARGET_RECOVERY_UI_LIB := librecovery_ui_msm
 
-
+ifneq ($(AB_OTA_UPDATER),true)
+    TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
+endif
