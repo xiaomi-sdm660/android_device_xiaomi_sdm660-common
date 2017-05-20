@@ -450,12 +450,15 @@ void IPACM_Iface::iface_addr_query
 						freeifaddrs(myaddrs);
 						return ;
 					}
+					memset(data_addr, 0, sizeof(ipacm_event_data_addr));
 					data_addr->iptype = IPA_IP_v4;
 					data_addr->if_index = interface_index;
 					data_addr->ipv4_addr = 	iface_ipv4.s_addr;
 					data_addr->ipv4_addr = ntohl(data_addr->ipv4_addr);
-					IPACMDBG_H("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv4 addr:0x%x\n",
+					strlcpy(data_addr->iface_name, ifr.ifr_name, sizeof(data_addr->iface_name));
+					IPACMDBG_H("Posting IPA_ADDR_ADD_EVENT with if index:%d, if name:%s, ipv4 addr:0x%x\n",
 						data_addr->if_index,
+						data_addr->iface_name,
 						data_addr->ipv4_addr);
 
 					evt_data.event = IPA_ADDR_ADD_EVENT;
@@ -475,6 +478,7 @@ void IPACM_Iface::iface_addr_query
 						freeifaddrs(myaddrs);
 						return ;
 					}
+					memset(data_addr, 0, sizeof(ipacm_event_data_addr));
 					data_addr->iptype = IPA_IP_v6;
 					data_addr->if_index = interface_index;
 					memcpy(data_addr->ipv6_addr,
@@ -484,8 +488,10 @@ void IPACM_Iface::iface_addr_query
 					data_addr->ipv6_addr[1] = ntohl(data_addr->ipv6_addr[1]);
 					data_addr->ipv6_addr[2] = ntohl(data_addr->ipv6_addr[2]);
 					data_addr->ipv6_addr[3] = ntohl(data_addr->ipv6_addr[3]);
-					IPACMDBG_H("Posting IPA_ADDR_ADD_EVENT with if index:%d, ipv6 addr:0x%x:%x:%x:%x\n",
+					strlcpy(data_addr->iface_name, ifr.ifr_name, sizeof(data_addr->iface_name));
+					IPACMDBG_H("Posting IPA_ADDR_ADD_EVENT with if index:%d, if name:%s, ipv6 addr:0x%x:%x:%x:%x\n",
 							data_addr->if_index,
+							data_addr->iface_name,
 							data_addr->ipv6_addr[0], data_addr->ipv6_addr[1], data_addr->ipv6_addr[2], data_addr->ipv6_addr[3]);
 
 					evt_data.event = IPA_ADDR_ADD_EVENT;
