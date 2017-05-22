@@ -104,6 +104,10 @@ public:
 	static bool isWanUP(int ipa_if_num_tether)
 	{
 #ifdef FEATURE_IPA_ANDROID
+#ifdef FEATURE_IPACM_HAL
+		return wan_up;
+#else
+
 		int i;
 		for (i=0; i < ipa_if_num_tether_v4_total;i++)
 		{
@@ -116,6 +120,7 @@ public:
 			}
 		}
 		return false;
+#endif
 #else
 		return wan_up;
 #endif

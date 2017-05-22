@@ -224,6 +224,10 @@ protected:
 
 	uint32_t ipv6_prefix[2];
 
+	bool is_upstream_set[IPA_IP_MAX];
+	bool is_downstream_set[IPA_IP_MAX];
+	_ipacm_offload_prefix prefix[IPA_IP_MAX];
+
 private:
 
 	/* get hdr proc ctx type given source and destination l2 hdr type */

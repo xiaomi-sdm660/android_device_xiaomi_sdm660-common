@@ -68,6 +68,11 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_ConntrackClient.h"
 #include "IPACM_Netlink.h"
 
+#ifdef FEATURE_IPACM_HAL
+#include "IPACM_OffloadManager.h"
+#include <HAL.h>
+#endif
+
 /* not defined(FEATURE_IPA_ANDROID)*/
 #ifndef FEATURE_IPA_ANDROID
 #include "IPACM_LanToLan.h"
@@ -78,7 +83,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPACM_FIREWALL_FILE_NAME    "mobileap_firewall.xml"
 #define IPACM_CFG_FILE_NAME    "IPACM_cfg.xml"
 #ifdef FEATURE_IPA_ANDROID
-#define IPACM_PID_FILE "/data/misc/ipa/ipacm.pid"
+#define IPACM_PID_FILE "/data/vendor/misc/ipa/ipacm.pid"
 #define IPACM_DIR_NAME     "/data"
 #else/* defined(FEATURE_IPA_ANDROID) */
 #define IPACM_PID_FILE "/etc/ipacm.pid"
@@ -218,6 +223,7 @@ void* ipa_driver_msg_notifier(void *param)
 	struct ipa_wlan_msg_ex *event_ex= NULL;
 	struct ipa_get_data_stats_resp_msg_v01 event_data_stats;
 	struct ipa_get_apn_data_stats_resp_msg_v01 event_network_stats;
+	IPACM_OffloadManager* OffloadMng;
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
@@ -671,7 +677,35 @@ void* ipa_driver_msg_notifier(void *param)
 			evt_data.event = IPA_NETWORK_STATS_UPDATE_EVENT;
 			evt_data.evt_data = data_network_stats;
 			break;
-
+#ifdef FEATURE_IPACM_HAL
+		case IPA_QUOTA_REACH:
+			IPACMDBG_H("Received IPA_QUOTA_REACH\n");
+			OffloadMng = IPACM_OffloadManager::GetInstance();
+			if (OffloadMng->elrInstance == NULL) {
+				IPACMERR("OffloadMng->elrInstance is NULL, can't forward to framework!\n");
+			} else {
+				OffloadMng->elrInstance->onLimitReached();
+			}
+			break;
+		case IPA_SSR_BEFORE_SHUTDOWN:
+			IPACMDBG_H("Received IPA_SSR_BEFORE_SHUTDOWN\n");
+			OffloadMng = IPACM_OffloadManager::GetInstance();
+			if (OffloadMng->elrInstance == NULL) {
+				IPACMERR("OffloadMng->elrInstance is NULL, can't forward to framework!\n");
+			} else {
+				OffloadMng->elrInstance->onOffloadStopped(IpaEventRelay::ERROR);
+			}
+			break;
+		case IPA_SSR_AFTER_POWERUP:
+			IPACMDBG_H("Received IPA_SSR_AFTER_POWERUP\n");
+			OffloadMng = IPACM_OffloadManager::GetInstance();
+			if (OffloadMng->elrInstance == NULL) {
+				IPACMERR("OffloadMng->elrInstance is NULL, can't forward to framework!\n");
+			} else {
+				OffloadMng->elrInstance->onOffloadSupportAvailable();
+			}
+			break;
+#endif
 		default:
 			IPACMDBG_H("Unhandled message type: %d\n", event_hdr.msg_type);
 			continue;
@@ -733,6 +767,7 @@ int main(int argc, char **argv)
 	int ret;
 	pthread_t netlink_thread = 0, monitor_thread = 0, ipa_driver_thread = 0;
 	pthread_t cmd_queue_thread = 0;
+	IPACM_OffloadManager* OffloadMng;
 
 	/* check if ipacm is already running or not */
 	ipa_is_ipacm_running();
@@ -740,12 +775,16 @@ int main(int argc, char **argv)
 	IPACMDBG_H("In main()\n");
 	IPACM_Neighbor *neigh = new IPACM_Neighbor();
 	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
+#ifdef FEATURE_IPACM_HAL
+	OffloadMng = IPACM_OffloadManager::GetInstance();
+	HAL *hal = HAL::makeIPAHAL(1, OffloadMng);
+	IPACMDBG_H(" START IPACM_OffloadManager and link to android framework\n");
+#endif
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 	IPACM_LanToLan* lan2lan = new IPACM_LanToLan();
 #endif
 
-	IPACM_ConntrackClient *cc = IPACM_ConntrackClient::GetInstance();
 	CtList = new IPACM_ConntrackListener();
 
 	IPACMDBG_H("Staring IPA main\n");
