@@ -28,7 +28,6 @@
 #
 
 on early-init
-    symlink /data/tombstones /tombstones
 
 on init
     write /dev/stune/foreground/schedtune.sched_boost_no_override 1
@@ -54,9 +53,6 @@ on fs
     mkdir /persist/bms 0700 root system
     restorecon_recursive /persist
 
-    mount ext4 /dev/block/bootdevice/by-name/dsp /dsp ro nosuid nodev barrier=1
-    mount ext4 /dev/block/bootdevice/by-name/dsp_a /dsp ro nosuid nodev barrier=1
-
 on post-fs
     start qseecomd
     exec - root root root -- /system/bin/init.qti.qseecomd.sh
@@ -66,11 +62,10 @@ on init
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
 
 on post-fs-data
-    mkdir /data/tombstones 0771 system system
-    mkdir /tombstones/modem 0771 system system
-    mkdir /tombstones/lpass 0771 system system
-    mkdir /tombstones/wcnss 0771 system system
-    mkdir /tombstones/dsps 0771 system system
+    mkdir /data/tombstones/modem 0771 system system
+    mkdir /data/tombstones/lpass 0771 system system
+    mkdir /data/tombstones/wcnss 0771 system system
+    mkdir /data/tombstones/dsps 0771 system system
     mkdir /data/misc/hbtp 0750 system system
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/misc/tloc 0700 system drmrpc
@@ -88,8 +83,6 @@ on boot
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/foreground/cpus 0-7
     write /dev/cpuset/foreground/boost/cpus 0-7
-    write /dev/cpuset/background/cpus 0
-    write /dev/cpuset/system-background/cpus 0-2
     ####Regionalization config and prop files####
     chmod 0644 /persist/speccfg/spec
     chmod 0644 /persist/speccfg/devicetype
@@ -113,13 +106,13 @@ on boot
    setprop wlan.driver.status "ok"
 
 #Peripheral manager
-service per_mgr /system/bin/pm-service
+service per_mgr /system/vendor/bin/pm-service
     class core
     user system
     group system
     ioprio rt 4
 
-service per_proxy /system/bin/pm-proxy
+service per_proxy /system/vendor/bin/pm-proxy
     class core
     user system
     group system
@@ -183,6 +176,7 @@ service thermal-engine /system/vendor/bin/thermal-engine
    socket thermal-send-client stream 0666 system system
    socket thermal-recv-client stream 0660 system system
    socket thermal-recv-passive-client stream 0666 system system
+   socket thermal-send-rule stream 0660 system system
    group root
 
 #service security-check1 /sbin/security_boot_check system
