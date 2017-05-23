@@ -82,7 +82,7 @@ ifneq (,$(strip $(wildcard $(PRODUCT_RENDERING_ENGINE_REVLIB))))
 endif
 
 # Enable features in video HAL that can compile only on this platform
-TARGET_USES_MEDIA_EXTENSIONS := false
+TARGET_USES_MEDIA_EXTENSIONS := true
 
 # WLAN chipset
 WLAN_CHIPSET := qca_cld3
