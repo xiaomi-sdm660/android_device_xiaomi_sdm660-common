@@ -94,6 +94,26 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl">
+        <name>vendor.display.config</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IDisplayConfig</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>vendor.display.color</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IDisplayColor</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
         <name>android.hardware.configstore</name>
         <transport>hwbinder</transport>
         <impl level="generic"></impl>
@@ -143,7 +163,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <!-- bluetooth -->
     <hal format="hidl">
         <name>android.hardware.bluetooth</name>
-        <transport arch="32+64">toggled</transport>
+        <transport arch="32+64">hwbinder</transport>
         <impl level="generic"></impl>
         <version>1.0</version>
     </hal>
@@ -166,4 +186,83 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <impl level="generic"></impl>
         <version>1.0</version>
     </hal>
+   <!-- RIL -->
+   <hal format="hidl">
+       <name>android.hardware.radio</name>
+       <transport>hwbinder</transport>
+       <impl level="generic"></impl>
+       <version>1.0</version>
+    <interface>
+       <name>IRadio</name>
+       <instance>slot1</instance>
+       <instance>slot2</instance>
+    </interface>
+   </hal>
+   <!-- RIL OEM HOOK -->
+   <hal format="hidl">
+       <name>android.hardware.radio.deprecated</name>
+       <transport>hwbinder</transport>
+       <impl level="generic"></impl>
+       <version>1.0</version>
+    <interface>
+       <name>IOemHook</name>
+       <instance>slot1</instance>
+       <instance>slot2</instance>
+    </interface>
+   </hal>
+   <!-- RIL AUDIO HAL -->
+   <hal format="hidl">
+       <name>vendor.qti.qcril.am</name>
+       <transport>hwbinder</transport>
+       <impl level="generic"></impl>
+       <version>1.0</version>
+       <interface>
+           <name>IQcRilAudio</name>
+           <instance>slot1</instance>
+           <instance>slot2</instance>
+       </interface>
+   </hal>
+    <!-- gnss -->
+    <hal format="hidl">
+        <name>android.hardware.gnss</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IGnss</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- atfwd -->
+    <hal format="hidl">
+        <name>vendor.qti.atcmdfwd</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IAtCmdFwd</name>
+            <instance>AtCmdFwdService</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.vibrator</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IVibrator</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <!-- IMS RTP Service -->
+    <hal format="hidl">
+        <name>com.qualcomm.qti.imsrtpservice</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IRTPService</name>
+            <instance>rtpservice0</instance>
+        </interface>
+    </hal>
 </manifest>
