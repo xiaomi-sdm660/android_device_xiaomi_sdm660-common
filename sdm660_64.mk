@@ -82,7 +82,7 @@ ifneq (,$(strip $(wildcard $(PRODUCT_RENDERING_ENGINE_REVLIB))))
 endif
 
 # Enable features in video HAL that can compile only on this platform
-TARGET_USES_MEDIA_EXTENSIONS := false
+TARGET_USES_MEDIA_EXTENSIONS := true
 
 # WLAN chipset
 WLAN_CHIPSET := qca_cld3
@@ -150,6 +150,15 @@ PRODUCT_PACKAGES += \
     android.hardware.light@2.0-impl \
     android.hardware.light@2.0-service \
     android.hardware.configstore@1.0-service
+
+PRODUCT_PACKAGES += \
+    vendor.display.color@1.0-service \
+    vendor.display.color@1.0-impl
+
+# Vibrator
+PRODUCT_PACKAGES += \
+    android.hardware.vibrator@1.0-impl \
+    android.hardware.vibrator@1.0-service \
 
 # Camera configuration file. Shared by passthrough/binderized camera HAL
 PRODUCT_PACKAGES += camera.device@3.2-impl
