@@ -1697,12 +1697,20 @@ int IPACM_Wlan::handle_down_evt()
 	{
 		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
 		IPACM_Lan::handle_wan_down(IPACM_Wan::backhaul_is_sta_mode);
+#ifdef FEATURE_IPA_ANDROID
+		/* Clean-up tethered-iface list */
+		IPACM_Wan::delete_tether_iface(IPA_IP_v4, ipa_if_num);
+#endif
 	}
 
 	if (IPACM_Wan::isWanUP_V6(ipa_if_num) && rx_prop != NULL)
 	{
 		IPACMDBG_H("LAN IF goes down, backhaul type %d\n", IPACM_Wan::backhaul_is_sta_mode);
 		handle_wan_down_v6(IPACM_Wan::backhaul_is_sta_mode);
+#ifdef FEATURE_IPA_ANDROID
+		/* Clean-up tethered-iface list */
+		IPACM_Wan::delete_tether_iface(IPA_IP_v6, ipa_if_num);
+#endif
 	}
 	IPACMDBG_H("finished deleting wan filtering rules\n ");
 

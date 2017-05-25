@@ -1705,12 +1705,12 @@ int IPACM_Wan::post_wan_up_tether_evt(ipa_ip_type iptype, int ipa_if_num_tether)
 	return IPACM_SUCCESS;
 }
 
+
 /* wan default route/filter rule configuration */
 int IPACM_Wan::post_wan_down_tether_evt(ipa_ip_type iptype, int ipa_if_num_tether)
 {
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_iface_up_tehter *wandown_data;
-	int i, j;
 
 	wandown_data = (ipacm_event_iface_up_tehter *)malloc(sizeof(ipacm_event_iface_up_tehter));
 	if (wandown_data == NULL)
@@ -1736,59 +1736,23 @@ int IPACM_Wan::post_wan_down_tether_evt(ipa_ip_type iptype, int ipa_if_num_tethe
 
 	if (iptype == IPA_IP_v4)
 	{
-		evt_data.event = IPA_HANDLE_WAN_DOWN_TETHER;
-		/* delete support tether ifaces to its array*/
-		for (i=0; i < IPACM_Wan::ipa_if_num_tether_v4_total; i++)
+		if(delete_tether_iface(iptype, ipa_if_num_tether))
 		{
-			if(IPACM_Wan::ipa_if_num_tether_v4[i] == ipa_if_num_tether)
-			{
-				IPACMDBG_H("Found tether client at position %d name(%s)\n", i,
-				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether].iface_name);
-				break;
-			}
-		}
-		if(i == IPACM_Wan::ipa_if_num_tether_v4_total)
-		{
-			IPACMDBG_H("Not finding the tether client.\n");
+			IPACMDBG_H("Not finding the tethered client on ipv4.\n");
 			free(wandown_data);
 			return IPACM_SUCCESS;
 		}
-		for(j = i+1; j < IPACM_Wan::ipa_if_num_tether_v4_total; j++)
-		{
-			IPACM_Wan::ipa_if_num_tether_v4[j-1] = IPACM_Wan::ipa_if_num_tether_v4[j];
-		}
-		IPACM_Wan::ipa_if_num_tether_v4_total--;
-		IPACMDBG_H("Now the total num of ipa_if_num_tether_v4_total is %d on wan-iface(%s)\n",
-			IPACM_Wan::ipa_if_num_tether_v4_total,
-			IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name);
+		evt_data.event = IPA_HANDLE_WAN_DOWN_TETHER;
 	}
 	else
 	{
-		evt_data.event = IPA_HANDLE_WAN_DOWN_V6_TETHER;
-		/* delete support tether ifaces to its array*/
-		for (i=0; i < IPACM_Wan::ipa_if_num_tether_v6_total; i++)
+		if(delete_tether_iface(iptype, ipa_if_num_tether))
 		{
-			if(IPACM_Wan::ipa_if_num_tether_v6[i] == ipa_if_num_tether)
-			{
-				IPACMDBG_H("Found tether client at position %d name(%s)\n", i,
-				IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether].iface_name);
-				break;
-			}
-		}
-		if(i == IPACM_Wan::ipa_if_num_tether_v6_total)
-		{
-			IPACMDBG_H("Not finding the tether client.\n");
+			IPACMDBG_H("Not finding the tethered client on ipv6.\n");
 			free(wandown_data);
 			return IPACM_SUCCESS;
 		}
-		for(j = i+1; j < IPACM_Wan::ipa_if_num_tether_v6_total; j++)
-		{
-			IPACM_Wan::ipa_if_num_tether_v6[j-1] = IPACM_Wan::ipa_if_num_tether_v6[j];
-		}
-		IPACM_Wan::ipa_if_num_tether_v6_total--;
-		IPACMDBG_H("Now the total num of ipa_if_num_tether_v6_total is %d on wan-iface(%s)\n",
-			IPACM_Wan::ipa_if_num_tether_v6_total,
-			IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name);
+		evt_data.event = IPA_HANDLE_WAN_DOWN_V6_TETHER;
 	}
 		evt_data.evt_data = (void *)wandown_data;
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
