@@ -187,8 +187,6 @@ typedef enum
 	IPA_ETH_BRIDGE_CLIENT_DEL,                /* ipacm_event_eth_bridge*/
 	IPA_ETH_BRIDGE_WLAN_SCC_MCC_SWITCH,       /* ipacm_event_eth_bridge*/
 	IPA_LAN_DELETE_SELF,                      /* ipacm_event_data_fid */
-	IPA_DOWNSTREAM_ADD,                       /* ipacm_event_ipahal_stream */
-	IPA_DOWNSTREAM_DEL,                       /* ipacm_event_ipahal_stream */
 #ifdef FEATURE_L2TP
 	IPA_ADD_VLAN_IFACE,                       /* ipa_ioc_vlan_iface_info */
 	IPA_DEL_VLAN_IFACE,                       /* ipa_ioc_vlan_iface_info */

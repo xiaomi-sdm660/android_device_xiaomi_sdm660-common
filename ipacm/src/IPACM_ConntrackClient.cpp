@@ -104,6 +104,7 @@ int IPACM_ConntrackClient::IPAConntrackEventCB
 	ipacm_cmd_q_data evt_data;
 	ipacm_ct_evt_data *ct_data;
 	uint8_t ip_type = 0;
+	data = NULL;
 
 	IPACMDBG("Event callback called with msgtype: %d\n",type);
 
@@ -175,7 +176,7 @@ int IPACM_ConntrackClient::IPA_Conntrack_Filters_Ignore_Bridge_Addrs
 
 	if(strlen(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name) >= sizeof(ifr.ifr_name))
 	{
-		IPACMERR("interface name overflows: len %d\n",
+		IPACMERR("interface name overflows: len %zu\n",
 			strlen(IPACM_Iface::ipacmcfg->ipa_virtual_iface_name));
 		close(fd);
 		return -1;
@@ -388,6 +389,7 @@ void* IPACM_ConntrackClient::UDPConnTimeoutUpdate(void *ptr)
 {
 
 	NatApp *nat_inst = NULL;
+	ptr = NULL;
 #ifdef IPACM_DEBUG
 	IPACMDBG("\n");
 #endif
@@ -601,7 +603,6 @@ ctcatch:
 /* Thread to initialize TCP Conntrack Filters*/
 void IPACM_ConntrackClient::UNRegisterWithConnTrack(void)
 {
-	int ret;
 	IPACM_ConntrackClient *pClient = NULL;
 
 	IPACMDBG("\n");

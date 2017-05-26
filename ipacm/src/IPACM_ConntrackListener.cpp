@@ -142,7 +142,7 @@ void IPACM_ConntrackListener::event_callback(ipa_cm_event_id evt,
 int IPACM_ConntrackListener::CheckNatIface(
    ipacm_event_data_all *data, bool *NatIface)
 {
-	int fd = 0, len = 0, cnt, i, j;
+	int fd = 0, len = 0, cnt, i;
 	struct ifreq ifr;
 	*NatIface = false;
 

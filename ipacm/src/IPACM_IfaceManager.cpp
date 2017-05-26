@@ -72,7 +72,9 @@ void IPACM_IfaceManager::event_callback(ipa_cm_event_id event, void *param)
 	ipacm_event_data_fid *evt_data = (ipacm_event_data_fid *)param;
 	ipacm_event_data_mac *StaData = (ipacm_event_data_mac *)param;
 	ipacm_event_data_all *data_all = (ipacm_event_data_all *)param;
-	ipacm_ifacemgr_data ifmgr_data = {0};
+	ipacm_ifacemgr_data ifmgr_data;
+
+	memset(&ifmgr_data,0,sizeof(ifmgr_data));
 
 	switch(event)
 	{

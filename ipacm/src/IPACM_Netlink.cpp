@@ -607,7 +607,7 @@ static int ipa_nl_decode_nlmsg
 	 )
 {
 	char dev_name[IF_NAME_LEN]={0};
-	int ret_val, mask_value, mask_index, mask_value_v6;
+	int ret_val, mask_index, mask_value_v6;
 	struct nlmsghdr *nlh = (struct nlmsghdr *)buffer;
 
 	uint32_t if_ipv4_addr =0, if_ipipv4_addr_mask =0, temp =0, if_ipv4_addr_gw =0;

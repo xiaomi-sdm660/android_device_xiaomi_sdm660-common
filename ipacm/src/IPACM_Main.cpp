@@ -106,9 +106,17 @@ bool ipacm_logging = true;
 void ipa_is_ipacm_running(void);
 int ipa_get_if_index(char *if_name, int *if_index);
 
+IPACM_Neighbor *neigh;
+IPACM_IfaceManager *ifacemgr;
+#ifdef FEATURE_IPACM_HAL
+	IPACM_OffloadManager* OffloadMng;
+	HAL *hal;
+#endif
+
 /* start netlink socket monitor*/
 void* netlink_start(void *param)
 {
+	param = NULL;
 	ipa_nl_sk_fd_set_info_t sk_fdset;
 	int ret_val = 0;
 	memset(&sk_fdset, 0, sizeof(ipa_nl_sk_fd_set_info_t));
@@ -137,6 +145,7 @@ void* firewall_monitor(void *param)
 	ipacm_cmd_q_data evt_data;
 	uint32_t mask = IN_MODIFY | IN_MOVE;
 
+	param = NULL;
 	inotify_fd = inotify_init();
 	if (inotify_fd < 0)
 	{
@@ -234,7 +243,6 @@ void* ipa_driver_msg_notifier(void *param)
 	ipacm_event_data_wlan_ex *data_ex;
 	ipa_get_data_stats_resp_msg_v01 *data_tethering_stats = NULL;
 	ipa_get_apn_data_stats_resp_msg_v01 *data_network_stats = NULL;
-
 #ifdef FEATURE_L2TP
 	ipa_ioc_vlan_iface_info *vlan_info = NULL;
 	ipa_ioc_l2tp_vlan_mapping_info *mapping = NULL;
@@ -242,6 +250,7 @@ void* ipa_driver_msg_notifier(void *param)
 	ipacm_cmd_q_data new_neigh_evt;
 	ipacm_event_data_all* new_neigh_data;
 
+	param = NULL;
 	fd = open(IPA_DRIVER, O_RDWR);
 	if (fd < 0)
 	{
@@ -784,7 +793,6 @@ void* ipa_driver_msg_notifier(void *param)
 
 void IPACM_Sig_Handler(int sig)
 {
-	int cnt;
 	ipacm_cmd_q_data evt_data;
 
 	printf("Received Signal: %d\n", sig);
@@ -823,19 +831,19 @@ int main(int argc, char **argv)
 	int ret;
 	pthread_t netlink_thread = 0, monitor_thread = 0, ipa_driver_thread = 0;
 	pthread_t cmd_queue_thread = 0;
-#ifdef FEATURE_IPACM_HAL
-	IPACM_OffloadManager* OffloadMng;
-#endif
 
 	/* check if ipacm is already running or not */
 	ipa_is_ipacm_running();
 
 	IPACMDBG_H("In main()\n");
-	IPACM_Neighbor *neigh = new IPACM_Neighbor();
-	IPACM_IfaceManager *ifacemgr = new IPACM_IfaceManager();
+	(void)argc;
+	(void)argv;
+
+	neigh = new IPACM_Neighbor();
+	ifacemgr = new IPACM_IfaceManager();
 #ifdef FEATURE_IPACM_HAL
 	OffloadMng = IPACM_OffloadManager::GetInstance();
-	HAL *hal = HAL::makeIPAHAL(1, OffloadMng);
+	hal = HAL::makeIPAHAL(1, OffloadMng);
 	IPACMDBG_H(" START IPACM_OffloadManager and link to android framework\n");
 #endif
 

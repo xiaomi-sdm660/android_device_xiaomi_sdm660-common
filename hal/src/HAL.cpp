@@ -88,7 +88,7 @@ void HAL::registerAsSystemService(const char* name) {
     status_t ret = 0;
 
     ret = IOffloadControl::registerAsService();
-    if (ret != 0) ALOGE("Failed to register IOffloadControl (%d)", ret);
+    if (ret != 0) ALOGE("Failed to register IOffloadControl (%d) name(%s)", ret, name);
     else if (DBG) {
         ALOGI("Successfully registered IOffloadControl");
     }

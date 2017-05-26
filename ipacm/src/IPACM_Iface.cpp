@@ -237,8 +237,6 @@ fail:
 int IPACM_Iface::handle_software_routing_disable(void)
 {
 	int res = IPACM_SUCCESS;
-	ipa_ip_type ip;
-	uint32_t flt_hdl;
 
 	if (rx_prop == NULL)
 	{
@@ -964,7 +962,7 @@ int IPACM_Iface::ipa_get_if_index
 
 	if(strlen(if_name) >= sizeof(ifr.ifr_name))
 	{
-		IPACMERR("interface name overflows: len %d\n", strlen(if_name));
+		IPACMERR("interface name overflows: len %zu\n", strlen(if_name));
 		close(fd);
 		return IPACM_FAILURE;
 	}

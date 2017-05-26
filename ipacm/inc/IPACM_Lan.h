@@ -297,7 +297,7 @@ private:
 
 	int header_name_count;
 
-	int num_eth_client;
+	uint32_t num_eth_client;
 
 	NatApp *Nat_App;
 

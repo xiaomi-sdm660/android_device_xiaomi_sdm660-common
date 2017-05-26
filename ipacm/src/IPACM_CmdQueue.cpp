@@ -122,6 +122,8 @@ void* MessageQueue::Process(void *param)
 	MessageQueue *MsgQueueInternal = NULL;
 	MessageQueue *MsgQueueExternal = NULL;
 	Message *item = NULL;
+	param = NULL;
+
 	IPACMDBG("MessageQueue::Process()\n");
 
 	MsgQueueInternal = MessageQueue::getInstanceInternal();
