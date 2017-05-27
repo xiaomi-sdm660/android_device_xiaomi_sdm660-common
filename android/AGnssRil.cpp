@@ -64,7 +64,7 @@ static inline int createSocket() {
         LOC_LOGe("create socket error. reason:%s", strerror(errno));
 
      } else {
-        const char* socketPath = "/data/misc/location/xtra/socket_hal_xtra";
+        const char* socketPath = "/data/vendor/location/xtra/socket_hal_xtra";
         struct sockaddr_un addr = { .sun_family = AF_UNIX };
         snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", socketPath);
 
