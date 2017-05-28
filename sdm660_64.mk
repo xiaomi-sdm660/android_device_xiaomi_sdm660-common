@@ -151,6 +151,15 @@ PRODUCT_PACKAGES += \
     android.hardware.light@2.0-service \
     android.hardware.configstore@1.0-service
 
+PRODUCT_PACKAGES += \
+    vendor.display.color@1.0-service \
+    vendor.display.color@1.0-impl
+
+# Vibrator
+PRODUCT_PACKAGES += \
+    android.hardware.vibrator@1.0-impl \
+    android.hardware.vibrator@1.0-service \
+
 # Camera configuration file. Shared by passthrough/binderized camera HAL
 PRODUCT_PACKAGES += camera.device@3.2-impl
 PRODUCT_PACKAGES += camera.device@1.0-impl
