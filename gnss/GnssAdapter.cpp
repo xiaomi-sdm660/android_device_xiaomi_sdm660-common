@@ -1951,6 +1951,9 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                 case GNSS_SV_TYPE_GALILEO:
                     svUsedIdMask = mGnssSvIdUsedInPosition.gal_sv_used_ids_mask;
                     break;
+                case GNSS_SV_TYPE_QZSS:
+                    svUsedIdMask = mGnssSvIdUsedInPosition.qzss_sv_used_ids_mask;
+                    break;
                 default:
                     svUsedIdMask = 0;
                     break;
