@@ -115,7 +115,7 @@ PRODUCT_PACKAGES += android.hardware.media.omx@1.0-impl
 
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
-    device/qcom/sdm660_64/sensors/hals.conf:system/etc/sensors/hals.conf
+    device/qcom/sdm660_64/sensors/hals.conf:vendor/etc/sensors/hals.conf
 
 # WLAN host driver
 ifneq ($(WLAN_CHIPSET),)
