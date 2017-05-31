@@ -269,13 +269,13 @@ service audiod /system/bin/audiod
 #    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch
 #
 #
-service imsqmidaemon /system/bin/imsqmidaemon
+service imsqmidaemon /system/vendor/bin/imsqmidaemon
     class main
     user system
     socket ims_qmid stream 0660 system radio
     group radio log diag
 
-service imsdatadaemon /system/bin/imsdatadaemon
+service imsdatadaemon /system/vendor/bin/imsdatadaemon
     class main
     user system
     socket ims_datad stream 0660 system radio
@@ -353,14 +353,13 @@ service pd_mapper /system/vendor/bin/pd-mapper
 on property:sys.ims.QMI_DAEMON_STATUS=1
     start imsdatadaemon
 
-service ims_rtp_daemon /system/bin/ims_rtp_daemon
+service ims_rtp_daemon /system/vendor/bin/ims_rtp_daemon
    class main
    user system
-   socket ims_rtpd stream 0660 system radio
    group radio diag inet log
    disabled
 
-service imscmservice /system/bin/imscmservice
+service imscmservice /system/vendor/bin/imscmservice
    class main
    user system
    group radio diag inet log
