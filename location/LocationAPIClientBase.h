@@ -50,6 +50,7 @@ enum REQUEST_TYPE {
     REQUEST_NIRESPONSE,
     REQUEST_DELETEAIDINGDATA,
     REQUEST_CONTROL,
+    REQUEST_CONFIG,
     REQUEST_MAX,
 };
 
@@ -446,7 +447,6 @@ private:
     };
 
     LocationAPIRequest* getRequestBySession(uint32_t session);
-    LocationAPIRequest* getGeofencesRequest();
 
 private:
     pthread_mutex_t mMutex;
@@ -462,6 +462,7 @@ private:
     RequestQueue* mRequestQueues[REQUEST_MAX];
     std::map<uint32_t, SessionEntity> mSessionMap;
     int32_t mBatchSize;
+    bool mEnabled;
 
     GnssConfig mConfig;
 };
