@@ -28,19 +28,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <manifest version="1.0">
     <hal format="hidl">
         <name>android.hardware.audio</name>
-        <transport arch="32+64">passthrough</transport>
+        <transport>hwbinder</transport>
         <impl level="generic"></impl>
         <version>2.0</version>
     </hal>
     <hal format="hidl">
         <name>android.hardware.audio.effect</name>
-        <transport arch="32+64">passthrough</transport>
+        <transport>hwbinder</transport>
         <impl level="generic"></impl>
         <version>2.0</version>
     </hal>
     <hal format="hidl">
         <name>android.hardware.soundtrigger</name>
-        <transport arch="32+64">passthrough</transport>
+        <transport>hwbinder</transport>
         <impl level="generic"></impl>
         <version>2.0</version>
         <interface>
@@ -167,6 +167,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <impl level="generic"></impl>
         <version>1.0</version>
     </hal>
+    <hal format="hidl">
+        <name>com.qualcomm.qti.bluetooth_audio</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IBluetoothAudio</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
     <!-- bluetooth -->
     <hal format="hidl">
         <name>android.hardware.power</name>
@@ -254,6 +264,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <instance>default</instance>
         </interface>
     </hal>
+
+   <!-- dpm QMI hal service -->
+    <hal format="hidl">
+        <name>com.qualcomm.qti.dpm.api</name>
+        <transport>hwbinder</transport>
+        <impl level="generic"></impl>
+        <version>1.0</version>
+        <interface>
+            <name>IdpmQmi</name>
+            <instance>dpmQmiService</instance>
+        </interface>
+    </hal>
+
     <!-- IMS RTP Service -->
     <hal format="hidl">
         <name>com.qualcomm.qti.imsrtpservice</name>
