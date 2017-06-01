@@ -31,7 +31,6 @@ TARGET_USES_UEFI := true
 TARGET_NO_KERNEL := false
 
 -include $(QCPATH)/common/sdm660_64/BoardConfigVendor.mk
-MINIMAL_FONT_FOOTPRINT := true
 
 # Some framework code requires this to enable BT
 BOARD_HAVE_BLUETOOTH := true
