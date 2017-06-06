@@ -74,12 +74,16 @@ public:
 class SystemStatusLocation : public SystemStatusItemBase
 {
 public:
+    bool mValid;
     UlpLocation mLocation;
     GpsLocationExtended mLocationEx;
-    SystemStatusLocation(const UlpLocation& location,
+    inline SystemStatusLocation() :
+        mValid(false) {}
+    inline SystemStatusLocation(const UlpLocation& location,
                          const GpsLocationExtended& locationEx) :
+        mValid(true),
         mLocation(location),
-        mLocationEx(locationEx){ };
+        mLocationEx(locationEx) { }
     bool equals(SystemStatusLocation& peer);
     void dump(void);
 };
@@ -97,7 +101,17 @@ public:
     int32_t  mClockFreqBiasUnc;
     int32_t  mLeapSeconds;
     int32_t  mLeapSecUnc;
-    SystemStatusTimeAndClock(const SystemStatusPQWM1& nmea);
+    inline SystemStatusTimeAndClock() :
+        mGpsWeek(0),
+        mGpsTowMs(0),
+        mTimeValid(0),
+        mTimeSource(0),
+        mTimeUnc(0),
+        mClockFreqBias(0),
+        mClockFreqBiasUnc(0),
+        mLeapSeconds(0),
+        mLeapSecUnc(0) {}
+    inline SystemStatusTimeAndClock(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusTimeAndClock& peer);
     void dump(void);
 };
@@ -106,7 +120,9 @@ class SystemStatusXoState : public SystemStatusItemBase
 {
 public:
     uint8_t  mXoState;
-    SystemStatusXoState(const SystemStatusPQWM1& nmea);
+    inline SystemStatusXoState() :
+        mXoState(0) {}
+    inline SystemStatusXoState(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusXoState& peer);
     void dump(void);
 };
@@ -127,7 +143,21 @@ public:
     double   mAgcGlo;
     double   mAgcBds;
     double   mAgcGal;
-    SystemStatusRfAndParams(const SystemStatusPQWM1& nmea);
+    inline SystemStatusRfAndParams() :
+        mPgaGain(0),
+        mGpsBpAmpI(0),
+        mGpsBpAmpQ(0),
+        mAdcI(0),
+        mAdcQ(0),
+        mJammerGps(0),
+        mJammerGlo(0),
+        mJammerBds(0),
+        mJammerGal(0),
+        mAgcGps(0),
+        mAgcGlo(0),
+        mAgcBds(0),
+        mAgcGal(0) {}
+    inline SystemStatusRfAndParams(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusRfAndParams& peer);
     void dump(void);
 };
@@ -136,7 +166,9 @@ class SystemStatusErrRecovery : public SystemStatusItemBase
 {
 public:
     uint32_t mRecErrorRecovery;
-    SystemStatusErrRecovery(const SystemStatusPQWM1& nmea);
+    inline SystemStatusErrRecovery() :
+        mRecErrorRecovery(0) {};
+    inline SystemStatusErrRecovery(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusErrRecovery& peer);
     void dump(void);
 };
@@ -152,7 +184,15 @@ public:
     float    mEpiHepe;
     float    mEpiAltUnc;
     uint8_t  mEpiSrc;
-    SystemStatusInjectedPosition(const SystemStatusPQWP1& nmea);
+    inline SystemStatusInjectedPosition() :
+        mEpiValidity(0),
+        mEpiLat(0),
+        mEpiLon(0),
+        mEpiAlt(0),
+        mEpiHepe(0),
+        mEpiAltUnc(0),
+        mEpiSrc(0) {}
+    inline SystemStatusInjectedPosition(const SystemStatusPQWP1& nmea);
     bool equals(SystemStatusInjectedPosition& peer);
     void dump(void);
 };
@@ -161,12 +201,20 @@ class SystemStatusPQWP2;
 class SystemStatusBestPosition : public SystemStatusItemBase
 {
 public:
+    bool     mValid;
     float    mBestLat;
     float    mBestLon;
     float    mBestAlt;
     float    mBestHepe;
     float    mBestAltUnc;
-    SystemStatusBestPosition(const SystemStatusPQWP2& nmea);
+    inline SystemStatusBestPosition() :
+        mValid(false),
+        mBestLat(0),
+        mBestLon(0),
+        mBestAlt(0),
+        mBestHepe(0),
+        mBestAltUnc(0) {}
+    inline SystemStatusBestPosition(const SystemStatusPQWP2& nmea);
     bool equals(SystemStatusBestPosition& peer);
     void dump(void);
 };
@@ -186,7 +234,19 @@ public:
     uint64_t  mBdsXtraValid;
     uint64_t  mGalXtraValid;
     uint8_t   mQzssXtraValid;
-    SystemStatusXtra(const SystemStatusPQWP3& nmea);
+    inline SystemStatusXtra() :
+        mXtraValidMask(0),
+        mGpsXtraAge(0),
+        mGloXtraAge(0),
+        mBdsXtraAge(0),
+        mGalXtraAge(0),
+        mQzssXtraAge(0),
+        mGpsXtraValid(0),
+        mGloXtraValid(0),
+        mBdsXtraValid(0ULL),
+        mGalXtraValid(0ULL),
+        mQzssXtraValid(0) {}
+    inline SystemStatusXtra(const SystemStatusPQWP3& nmea);
     bool equals(SystemStatusXtra& peer);
     void dump(void);
 };
@@ -200,7 +260,13 @@ public:
     uint64_t  mBdsEpheValid;
     uint64_t  mGalEpheValid;
     uint8_t   mQzssEpheValid;
-    SystemStatusEphemeris(const SystemStatusPQWP4& nmea);
+    inline SystemStatusEphemeris() :
+        mGpsEpheValid(0),
+        mGloEpheValid(0),
+        mBdsEpheValid(0ULL),
+        mGalEpheValid(0ULL),
+        mQzssEpheValid(0) {}
+    inline SystemStatusEphemeris(const SystemStatusPQWP4& nmea);
     bool equals(SystemStatusEphemeris& peer);
     void dump(void);
 };
@@ -224,7 +290,23 @@ public:
     uint64_t  mBdsBadMask;
     uint64_t  mGalBadMask;
     uint8_t   mQzssBadMask;
-    SystemStatusSvHealth(const SystemStatusPQWP5& nmea);
+    inline SystemStatusSvHealth() :
+        mGpsUnknownMask(0),
+        mGloUnknownMask(0),
+        mBdsUnknownMask(0ULL),
+        mGalUnknownMask(0ULL),
+        mQzssUnknownMask(0),
+        mGpsGoodMask(0),
+        mGloGoodMask(0),
+        mBdsGoodMask(0ULL),
+        mGalGoodMask(0ULL),
+        mQzssGoodMask(0),
+        mGpsBadMask(0),
+        mGloBadMask(0),
+        mBdsBadMask(0ULL),
+        mGalBadMask(0ULL),
+        mQzssBadMask(0) {}
+    inline SystemStatusSvHealth(const SystemStatusPQWP5& nmea);
     bool equals(SystemStatusSvHealth& peer);
     void dump(void);
 };
@@ -234,7 +316,9 @@ class SystemStatusPdr : public SystemStatusItemBase
 {
 public:
     uint32_t  mFixInfoMask;
-    SystemStatusPdr(const SystemStatusPQWP6& nmea);
+    inline SystemStatusPdr() :
+        mFixInfoMask(0) {}
+    inline SystemStatusPdr(const SystemStatusPQWP6& nmea);
     bool equals(SystemStatusPdr& peer);
     void dump(void);
 };
@@ -251,7 +335,14 @@ class SystemStatusNavData : public SystemStatusItemBase
 {
 public:
     SystemStatusNav mNav[SV_ALL_NUM];
-    SystemStatusNavData(const SystemStatusPQWP7& nmea);
+    inline SystemStatusNavData() {
+        for (uint32_t i=0; i<SV_ALL_NUM; i++) {
+            mNav[i].mType = GNSS_EPH_TYPE_UNKNOWN;
+            mNav[i].mSource = GNSS_EPH_SOURCE_UNKNOWN;
+            mNav[i].mAgeSec = 0;
+        }
+    }
+    inline SystemStatusNavData(const SystemStatusPQWP7& nmea);
     bool equals(SystemStatusNavData& peer);
     void dump(void);
 };
@@ -262,7 +353,10 @@ class SystemStatusPositionFailure : public SystemStatusItemBase
 public:
     uint32_t  mFixInfoMask;
     uint32_t  mHepeLimit;
-    SystemStatusPositionFailure(const SystemStatusPQWS1& nmea);
+    inline SystemStatusPositionFailure() :
+        mFixInfoMask(0),
+        mHepeLimit(0) {}
+    inline SystemStatusPositionFailure(const SystemStatusPQWS1& nmea);
     bool equals(SystemStatusPositionFailure& peer);
     void dump(void);
 };
@@ -341,6 +435,7 @@ public:
     bool eventPosition(const UlpLocation& location,const GpsLocationExtended& locationEx);
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
+    bool setDefaultReport(void);
 };
 
 } // namespace loc_core
