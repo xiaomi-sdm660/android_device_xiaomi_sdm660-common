@@ -1294,7 +1294,6 @@ LocationError
 GnssAdapter::startTrackingMultiplex(const LocationOptions& options)
 {
     LocationError err = LOCATION_ERROR_SUCCESS;
-    bool updateTrackingSession = false;
 
     if (mTrackingSessions.empty()) {
         err = startTracking(options);
@@ -1420,7 +1419,7 @@ GnssAdapter::updateTrackingOptionsCommand(LocationAPI* client, uint32_t id,
                     err = LOCATION_ERROR_INVALID_PARAMETER;
                 } else {
                     // Api doesn't support multiple clients for time based tracking, so mutiplex
-                    err = mAdapter.startTrackingMultiplex(mOptions);
+                    err = mAdapter.updateTrackingMultiplex(mClient, mSessionId, mOptions);
                     if (LOCATION_ERROR_SUCCESS == err) {
                         mAdapter.saveTrackingSession(mClient, mSessionId, mOptions);
                     }
@@ -1434,6 +1433,45 @@ GnssAdapter::updateTrackingOptionsCommand(LocationAPI* client, uint32_t id,
     };
 
     sendMsg(new MsgUpdateTracking(*this, *mLocApi, client, id, options));
+}
+
+LocationError
+GnssAdapter::updateTrackingMultiplex(LocationAPI* client, uint32_t id,
+                                     const LocationOptions& options)
+{
+    LocationError err = LOCATION_ERROR_SUCCESS;
+
+    if (1 == mTrackingSessions.size()) {
+        err = startTracking(options);
+    } else {
+        LocationSessionKey key(client, id);
+
+        // get the session we are updating
+        auto it = mTrackingSessions.find(key);
+        if (it != mTrackingSessions.end()) {
+            // find the smallest interval, other than the session we are updating
+            LocationOptions smallestIntervalOptions = {}; // size is 0 until set for the first time
+            for (auto it2 = mTrackingSessions.begin(); it2 != mTrackingSessions.end(); ++it2) {
+                // if session is not the one we are updating and either smallest interval is not set
+                // or there is a new smallest interval, then set the new smallest interval
+                if (it2->first != key && (0 == smallestIntervalOptions.size ||
+                    it2->second.minInterval < smallestIntervalOptions.minInterval)) {
+                     smallestIntervalOptions = it2->second;
+                }
+            }
+            // if session we are updating has smaller interval then next smallest
+            if (options.minInterval < smallestIntervalOptions.minInterval) {
+                // restart time based tracking with the newly updated interval
+                err = startTracking(options);
+            // else if the session we are updating used to be the smallest
+            } else if (it->second.minInterval < smallestIntervalOptions.minInterval) {
+                // restart time based tracking with the next smallest
+                err = startTracking(smallestIntervalOptions);
+            }
+        }
+    }
+
+    return err;
 }
 
 void
@@ -1489,7 +1527,7 @@ GnssAdapter::stopTrackingMultiplex(LocationAPI* client, uint32_t id)
         auto it = mTrackingSessions.find(key);
         if (it != mTrackingSessions.end()) {
             // find the next smallest interval, other than the session we are stopping
-            LocationOptions smallestIntervalOptions; // size will be zero until set for the first time
+            LocationOptions smallestIntervalOptions = {}; // size is 0 until set for the first time
             for (auto it2 = mTrackingSessions.begin(); it2 != mTrackingSessions.end(); ++it2) {
                 // if session is not the one we are stopping and either smallest interval is not set
                 // or there is a new smallest interval, then set the new smallest interval

@@ -163,6 +163,8 @@ public:
     LocationError startTracking(const LocationOptions& options);
     LocationError stopTrackingMultiplex(LocationAPI* client, uint32_t id);
     LocationError stopTracking();
+    LocationError updateTrackingMultiplex(LocationAPI* client, uint32_t id,
+                                          const LocationOptions& options);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
