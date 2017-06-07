@@ -182,6 +182,7 @@
     <ctl name="I2S TX2 INP1" value="ZERO" />
     <ctl name="I2S TX2 INP2" value="ZERO" />
     <ctl name="INT4_MI2S_RX Audio Mixer MultiMedia4" value="0" />
+    <ctl name="ADC1_INP1 Switch" value="0" />
     <ctl name="PRI_MI2S_RX Audio Mixer MultiMedia4" value="0" />
     <ctl name="HDMI Mixer MultiMedia4" value="0" />
     <ctl name="INT4_MI2S_RX_VI_FB_MONO_CH_MUX" value="ZERO" />
