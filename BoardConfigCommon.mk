@@ -266,6 +266,9 @@ PRODUCT_ACTIONABLE_COMPATIBLE_PROPERTY_DISABLE :=true
 # Timeservice
 BOARD_USES_QC_TIME_SERVICES := true
 
+# Use mke2fs to create ext4 images
+TARGET_USES_MKE2FS := true
+
 # Wifi
 BOARD_HAS_QCOM_WLAN := true
 BOARD_WLAN_DEVICE := qcwcn
