@@ -222,10 +222,14 @@ PRODUCT_COMPATIBILITY_MATRIX_LEVEL_OVERRIDE := 27
 PRODUCT_VENDOR_MOVE_ENABLED := true
 TARGET_VENDOR_PROP += $(PLATFORM_PATH)/vendor.prop
 
+
 # TWRP Support
 ifeq ($(WITH_TWRP),true)
 -include $(PLATFORM_PATH)/twrp.mk
 endif
+
+# Use mke2fs to create ext4 images
+TARGET_USES_MKE2FS := true
 
 # Wifi
 BOARD_HAS_QCOM_WLAN := true
