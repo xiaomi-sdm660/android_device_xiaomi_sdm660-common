@@ -494,6 +494,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_REQUEST_TIMEZONE,                  // Timezone injection request
     LOC_API_ADAPTER_REPORT_GENFENCE_DWELL_REPORT,      // Geofence dwell report
     LOC_API_ADAPTER_REQUEST_SRN_DATA,                  // request srn data from AP
+    LOC_API_ADAPTER_REQUEST_POSITION_INJECTION,        // Position injection request
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -527,6 +528,7 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_REQUEST_TIMEZONE                 (1<<LOC_API_ADAPTER_REQUEST_TIMEZONE)
 #define LOC_API_ADAPTER_BIT_REPORT_GENFENCE_DWELL            (1<<LOC_API_ADAPTER_REPORT_GENFENCE_DWELL_REPORT)
 #define LOC_API_ADAPTER_BIT_REQUEST_SRN_DATA                 (1<<LOC_API_ADAPTER_REQUEST_SRN_DATA)
+#define LOC_API_ADAPTER_BIT_POSITION_INJECTION_REQUEST       (1<<LOC_API_ADAPTER_REQUEST_POSITION_INJECTION)
 
 
 typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
