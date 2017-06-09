@@ -42,7 +42,8 @@ LocationAPIClientBase::LocationAPIClientBase() :
     mGeofenceBreachCallback(nullptr),
     mLocationAPI(nullptr),
     mLocationControlAPI(nullptr),
-    mBatchSize(-1)
+    mBatchSize(-1),
+    mEnabled(false)
 {
 
     // use recursive mutex, in case callback come from the same thread
@@ -139,7 +140,7 @@ uint32_t LocationAPIClientBase::locAPIStartTracking(LocationOptions& options)
         RequestQueue* requests = mRequestQueues[REQUEST_TRACKING];
         if (requests) {
             delete requests;
-            requests = nullptr;
+            mRequestQueues[REQUEST_TRACKING] = nullptr;
         }
         uint32_t session = mLocationAPI->startTracking(options);
         LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, session);
@@ -226,7 +227,7 @@ uint32_t LocationAPIClientBase::locAPIStartSession(uint32_t id, uint32_t session
                 RequestQueue* requests = mRequestQueues[REQUEST_TRACKING];
                 if (requests) {
                     delete requests;
-                    requests = nullptr;
+                    mRequestQueues[REQUEST_TRACKING] = nullptr;
                 }
                 trackingSession = mLocationAPI->startTracking(options);
                 LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, trackingSession);
@@ -237,7 +238,7 @@ uint32_t LocationAPIClientBase::locAPIStartSession(uint32_t id, uint32_t session
                 RequestQueue* requests = mRequestQueues[REQUEST_BATCHING];
                 if (requests) {
                     delete requests;
-                    requests = nullptr;
+                    mRequestQueues[REQUEST_BATCHING] = nullptr;
                 }
                 batchingSession = mLocationAPI->startBatching(options);
                 LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, batchingSession);
@@ -338,7 +339,7 @@ uint32_t LocationAPIClientBase::locAPIUpdateSessionOptions(uint32_t id, uint32_t
                         RequestQueue* requests = mRequestQueues[REQUEST_TRACKING];
                         if (requests) {
                             delete requests;
-                            requests = nullptr;
+                            mRequestQueues[REQUEST_TRACKING] = nullptr;
                         }
                         trackingSession = mLocationAPI->startTracking(options);
                         LOC_LOGI("%s:%d] start new session: %d",
@@ -364,7 +365,7 @@ uint32_t LocationAPIClientBase::locAPIUpdateSessionOptions(uint32_t id, uint32_t
                         RequestQueue* requests = mRequestQueues[REQUEST_BATCHING];
                         if (requests) {
                             delete requests;
-                            requests = nullptr;
+                            mRequestQueues[REQUEST_BATCHING] = nullptr;
                         }
                         batchingSession = mLocationAPI->startBatching(options);
                         LOC_LOGI("%s:%d] start new session: %d",
@@ -589,7 +590,7 @@ void LocationAPIClientBase::locAPIGnssNiResponse(uint32_t id, GnssNiResponse res
         RequestQueue* requests = mRequestQueues[REQUEST_NIRESPONSE];
         if (requests) {
             delete requests;
-            requests = nullptr;
+            mRequestQueues[REQUEST_NIRESPONSE] = nullptr;
         }
         uint32_t session = id;
         mLocationAPI->gnssNiResponse(id, response);
@@ -609,7 +610,7 @@ uint32_t LocationAPIClientBase::locAPIGnssDeleteAidingData(GnssAidingData& data)
         RequestQueue* requests = mRequestQueues[REQUEST_DELETEAIDINGDATA];
         if (requests) {
             delete requests;
-            requests = nullptr;
+            mRequestQueues[REQUEST_DELETEAIDINGDATA] = nullptr;
         }
         uint32_t session = mLocationControlAPI->gnssDeleteAidingData(data);
         LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, session);
@@ -628,19 +629,24 @@ uint32_t LocationAPIClientBase::locAPIEnable(LocationTechnologyType techType)
 {
     uint32_t retVal = LOCATION_ERROR_GENERAL_FAILURE;
     pthread_mutex_lock(&mMutex);
-    if (mLocationControlAPI) {
+    if (mEnabled) {
+        // just return success if already enabled
+        retVal = LOCATION_ERROR_SUCCESS;
+    } else if (mLocationControlAPI) {
         RequestQueue* requests = mRequestQueues[REQUEST_CONTROL];
         if (requests) {
             delete requests;
-            requests = nullptr;
+            mRequestQueues[REQUEST_CONTROL] = nullptr;
         }
         uint32_t session = mLocationControlAPI->enable(techType);
         LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, session);
         requests = new RequestQueue(session);
-        requests->push(new EnableRequest(*this));
         mRequestQueues[REQUEST_CONTROL] = requests;
-
-        retVal = LOCATION_ERROR_SUCCESS;
+        if (requests) {
+            requests->push(new EnableRequest(*this));
+            retVal = LOCATION_ERROR_SUCCESS;
+            mEnabled = true;
+        }
     }
     pthread_mutex_unlock(&mMutex);
 
@@ -650,7 +656,7 @@ uint32_t LocationAPIClientBase::locAPIEnable(LocationTechnologyType techType)
 void LocationAPIClientBase::locAPIDisable()
 {
     pthread_mutex_lock(&mMutex);
-    if (mLocationControlAPI) {
+    if (mEnabled && mLocationControlAPI) {
         uint32_t session = 0;
         RequestQueue* requests = mRequestQueues[REQUEST_CONTROL];
         if (requests) {
@@ -658,6 +664,7 @@ void LocationAPIClientBase::locAPIDisable()
             if (session > 0) {
                 requests->push(new DisableRequest(*this));
                 mLocationControlAPI->disable(session);
+                mEnabled = false;
             }
         }
     }
@@ -668,7 +675,8 @@ uint32_t LocationAPIClientBase::locAPIGnssUpdateConfig(GnssConfig config)
 {
     uint32_t retVal = LOCATION_ERROR_GENERAL_FAILURE;
     if (memcmp(&mConfig, &config, sizeof(GnssConfig)) == 0) {
-        LOC_LOGE("%s:%d] GnssConfig is identical to previous call", __FUNCTION__, __LINE__);
+        LOC_LOGV("%s:%d] GnssConfig is identical to previous call", __FUNCTION__, __LINE__);
+        retVal = LOCATION_ERROR_SUCCESS;
         return retVal;
     }
 
@@ -678,17 +686,17 @@ uint32_t LocationAPIClientBase::locAPIGnssUpdateConfig(GnssConfig config)
         memcpy(&mConfig, &config, sizeof(GnssConfig));
 
         uint32_t session = 0;
-        RequestQueue* requests = mRequestQueues[REQUEST_CONTROL];
-        if (requests) {
-            session = requests->getSession();
-            if (session > 0) {
-                requests->push(new GnssUpdateConfigRequest(*this));
-                uint32_t* idArray = mLocationControlAPI->gnssUpdateConfig(config);
-                LOC_LOGV("%s:%d] gnssUpdateConfig return array: %p", __FUNCTION__, __LINE__, idArray);
-            }
+        RequestQueue* requests = mRequestQueues[REQUEST_CONFIG];
+        uint32_t* idArray = mLocationControlAPI->gnssUpdateConfig(config);
+        LOC_LOGV("%s:%d] gnssUpdateConfig return array: %p", __FUNCTION__, __LINE__, idArray);
+        if (!requests && idArray != nullptr) {
+            requests = new RequestQueue(idArray[0]);
+            mRequestQueues[REQUEST_CONFIG] = requests;
         }
-
-        retVal = LOCATION_ERROR_SUCCESS;
+        if (requests) {
+            requests->push(new GnssUpdateConfigRequest(*this));
+            retVal = LOCATION_ERROR_SUCCESS;
+        }
     }
     pthread_mutex_unlock(&mMutex);
     return retVal;
@@ -753,10 +761,11 @@ void LocationAPIClientBase::onCollectiveResponseCb(
         }
     }
     LocationAPIRequest* request = nullptr;
-    if (count > 0 && ids)
-        request = getRequestBySession(ids[0]);
-    if (!request)
-        request = getGeofencesRequest();
+    pthread_mutex_lock(&mMutex);
+    if (mRequestQueues[REQUEST_GEOFENCE] != nullptr) {
+        request = mRequestQueues[REQUEST_GEOFENCE]->pop();
+    }
+    pthread_mutex_unlock(&mMutex);
     if (request) {
         request->onCollectiveResponse(count, errors, ids);
         delete request;
@@ -788,8 +797,11 @@ void LocationAPIClientBase::onCtrlCollectiveResponseCb(
         }
     }
     LocationAPIRequest* request = nullptr;
-    if (count > 0 && ids)
-        request = getRequestBySession(ids[0]);
+    pthread_mutex_lock(&mMutex);
+    if (mRequestQueues[REQUEST_CONFIG] != nullptr) {
+        request = mRequestQueues[REQUEST_CONFIG]->pop();
+    }
+    pthread_mutex_unlock(&mMutex);
     if (request) {
         request->onCollectiveResponse(count, errors, ids);
         delete request;
@@ -803,23 +815,12 @@ LocationAPIClientBase::getRequestBySession(uint32_t session)
     LocationAPIRequest* request = nullptr;
     for (int i = 0; i < REQUEST_MAX; i++) {
         if (i != REQUEST_GEOFENCE &&
+                i != REQUEST_CONFIG &&
                 mRequestQueues[i] &&
                 mRequestQueues[i]->getSession() == session) {
             request = mRequestQueues[i]->pop();
             break;
         }
-    }
-    pthread_mutex_unlock(&mMutex);
-    return request;
-}
-
-LocationAPIClientBase::LocationAPIRequest*
-LocationAPIClientBase::getGeofencesRequest()
-{
-    pthread_mutex_lock(&mMutex);
-    LocationAPIRequest* request = nullptr;
-    if (mRequestQueues[REQUEST_GEOFENCE]) {
-        request = mRequestQueues[REQUEST_GEOFENCE]->pop();
     }
     pthread_mutex_unlock(&mMutex);
     return request;
