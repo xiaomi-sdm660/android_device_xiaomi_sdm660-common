@@ -303,14 +303,13 @@ void GnssAPIClient::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotificatio
     else if (gnssNiNotification.type == GNSS_NI_TYPE_CONTROL_PLANE)
         notificationGnss.niType = IGnssNiCallback::GnssNiType::UMTS_CTRL_PLANE;
     else if (gnssNiNotification.type == GNSS_NI_TYPE_EMERGENCY_SUPL)
-        notificationGnss.niType =
-            static_cast<IGnssNiCallback::GnssNiType>(4/*hardcode until IGnssNiCallback adds value*/);
+        notificationGnss.niType = IGnssNiCallback::GnssNiType::EMERGENCY_SUPL;
 
     if (gnssNiNotification.options & GNSS_NI_OPTIONS_NOTIFICATION_BIT)
         notificationGnss.notifyFlags |= IGnssNiCallback::GnssNiNotifyFlags::NEED_NOTIFY;
-    else if (gnssNiNotification.options & GNSS_NI_OPTIONS_VERIFICATION_BIT)
+    if (gnssNiNotification.options & GNSS_NI_OPTIONS_VERIFICATION_BIT)
         notificationGnss.notifyFlags |= IGnssNiCallback::GnssNiNotifyFlags::NEED_VERIFY;
-    else if (gnssNiNotification.options & GNSS_NI_OPTIONS_PRIVACY_OVERRIDE_BIT)
+    if (gnssNiNotification.options & GNSS_NI_OPTIONS_PRIVACY_OVERRIDE_BIT)
         notificationGnss.notifyFlags |= IGnssNiCallback::GnssNiNotifyFlags::PRIVACY_OVERRIDE;
 
     notificationGnss.timeoutSec = gnssNiNotification.timeout;
