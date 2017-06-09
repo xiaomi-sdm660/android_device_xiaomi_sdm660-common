@@ -2750,7 +2750,7 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
 
     // location block
     r.mLocation.size = sizeof(r.mLocation);
-    if(!reports.mLocation.empty()) {
+    if(!reports.mLocation.empty() && reports.mLocation.back().mValid) {
         r.mLocation.mValid = true;
         r.mLocation.mLocation.latitude =
             reports.mLocation.back().mLocation.gpsLocation.latitude;
@@ -2775,7 +2775,7 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
         r.mLocation.mUtcReported =
             reports.mLocation.back().mUtcReported;
     }
-    else if(!reports.mBestPosition.empty()) {
+    else if(!reports.mBestPosition.empty() && reports.mBestPosition.back().mValid) {
         r.mLocation.mValid = true;
         r.mLocation.mLocation.latitude  =
             (double)(reports.mBestPosition.back().mBestLat);
