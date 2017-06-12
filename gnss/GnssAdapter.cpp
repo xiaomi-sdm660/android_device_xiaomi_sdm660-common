@@ -1067,7 +1067,9 @@ GnssAdapter::restartSessions()
         }
     }
 
-    startTracking(smallestIntervalOptions);
+    LocPosMode locPosMode = {};
+    convertOptions(locPosMode, smallestIntervalOptions);
+    mLocApi->startFix(locPosMode);
 }
 
 void
