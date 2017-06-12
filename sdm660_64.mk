@@ -149,7 +149,8 @@ PRODUCT_PACKAGES += \
     android.hardware.memtrack@1.0-service \
     android.hardware.light@2.0-impl \
     android.hardware.light@2.0-service \
-    android.hardware.configstore@1.0-service
+    android.hardware.configstore@1.0-service \
+    android.hardware.broadcastradio@1.0-impl
 
 PRODUCT_PACKAGES += \
     vendor.display.color@1.0-service \
@@ -198,6 +199,8 @@ PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/bootdevice/by-name/system
 ifeq ($(ENABLE_VENDOR_IMAGE), true)
 PRODUCT_VENDOR_VERITY_PARTITION := /dev/block/bootdevice/by-name/vendor
 endif
+
+PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 #for android_filesystem_config.h
 PRODUCT_PACKAGES += \
@@ -248,7 +251,4 @@ PRODUCT_PACKAGES += android.hardware.health@1.0-impl \
 #FEATURE_OPENGLES_EXTENSION_PACK support string config file
 PRODUCT_COPY_FILES += \
         frameworks/native/data/etc/android.hardware.opengles.aep.xml:system/etc/permissions/android.hardware.opengles.aep.xml
-
-#Enable keymaster Impl HAL Compilation
-PRODUCT_PACKAGES += android.hardware.keymaster@3.0-impl
 
