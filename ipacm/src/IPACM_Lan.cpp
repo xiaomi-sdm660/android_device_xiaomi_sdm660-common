@@ -79,6 +79,10 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	is_active = true;
 	modem_ul_v4_set = false;
 	modem_ul_v6_set = false;
+
+	sta_ul_v4_set = false;
+	sta_ul_v6_set = false;
+
 	is_mode_switch = false;
 	if_ipv4_subnet =0;
 	each_client_rt_rule_count[IPA_IP_v4] = 0;
@@ -1081,6 +1085,7 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 			return IPACM_FAILURE;
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, 1);
+		sta_ul_v4_set = false;
 	}
 
 	close(fd);
@@ -1375,6 +1380,11 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 
 	if(ip_type == IPA_IP_v4)
 	{
+		if(sta_ul_v4_set == true)
+		{
+			IPACMDBG_H("Filetring rule for IPV4 of STA mode is already configured, sta_ul_v4_set: %d\n",sta_ul_v4_set);
+			return IPACM_FAILURE;
+		}
 		len = sizeof(struct ipa_ioc_add_flt_rule) + (1 * sizeof(struct ipa_flt_rule_add));
 		m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
 		if (m_pFilteringTable == NULL)
@@ -1447,13 +1457,18 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 							 m_pFilteringTable->rules[0].status);
 		}
 
-
+		sta_ul_v4_set = true;
 		/* copy filter hdls  */
 		lan_wan_fl_rule_hdl[0] = m_pFilteringTable->rules[0].flt_rule_hdl;
 		free(m_pFilteringTable);
 	}
 	else if(ip_type == IPA_IP_v6)
 	{
+		if(sta_ul_v6_set == true)
+		{
+			IPACMDBG_H("Filetring rule for IPV6 of STA mode is already configured, sta_ul_v6_set: %d\n",sta_ul_v6_set);
+			return IPACM_FAILURE;
+		}
 		/* add default v6 filter rule */
 		m_pFilteringTable = (struct ipa_ioc_add_flt_rule *)
 			 calloc(1, sizeof(struct ipa_ioc_add_flt_rule) +
@@ -1529,6 +1544,7 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 			IPACMDBG_H("flt rule hdl0=0x%x, status=0x%x\n", m_pFilteringTable->rules[0].flt_rule_hdl, m_pFilteringTable->rules[0].status);
 		}
 
+		sta_ul_v6_set = true;
 		/* copy filter hdls */
 		dft_v6fl_rule_hdl[IPV6_DEFAULT_FILTERTING_RULES] = m_pFilteringTable->rules[0].flt_rule_hdl;
 		free(m_pFilteringTable);
@@ -3248,6 +3264,7 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 			return IPACM_FAILURE;
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
+		sta_ul_v6_set = false;
 	}
 	close(fd);
 	return IPACM_SUCCESS;
