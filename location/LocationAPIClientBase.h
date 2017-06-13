@@ -159,7 +159,7 @@ private:
         BiDict() {
             pthread_mutex_init(&mBiDictMutex, nullptr);
         }
-        ~BiDict() {
+        virtual ~BiDict() {
             pthread_mutex_destroy(&mBiDictMutex);
         }
         bool hasId(uint32_t id) {
@@ -249,9 +249,9 @@ private:
     public:
         LocationAPIRequest(LocationAPIClientBase& API) : mAPI(API) {}
         virtual ~LocationAPIRequest() {}
-        virtual void onResponse(LocationError /*error*/) {};
+        virtual void onResponse(LocationError /*error*/) {}
         virtual void onCollectiveResponse(
-                size_t /*count*/, LocationError* /*errors*/, uint32_t* /*ids*/) {};
+                size_t /*count*/, LocationError* /*errors*/, uint32_t* /*ids*/) {}
         LocationAPIClientBase& mAPI;
     };
 
@@ -419,15 +419,19 @@ private:
 
     class RequestQueue {
     public:
-        RequestQueue(uint32_t session): mSession(session) {
+        RequestQueue(): mSession(0) {
         }
-        ~RequestQueue() {
+        virtual ~RequestQueue() {
+            reset(0);
+        }
+        void reset(uint32_t session) {
             LocationAPIRequest* request = nullptr;
             while (!mQueue.empty()) {
                 request = mQueue.front();
                 mQueue.pop();
                 delete request;
             }
+            mSession = session;
         }
         void push(LocationAPIRequest* request) {
             mQueue.push(request);
@@ -451,15 +455,13 @@ private:
 private:
     pthread_mutex_t mMutex;
 
-    trackingCallback mTrackingCallback;
-    batchingCallback mBatchingCallback;
     geofenceBreachCallback mGeofenceBreachCallback;
 
     LocationAPI* mLocationAPI;
     LocationControlAPI* mLocationControlAPI;
 
+    RequestQueue mRequestQueues[REQUEST_MAX];
     BiDict mGeofenceBiDict;
-    RequestQueue* mRequestQueues[REQUEST_MAX];
     std::map<uint32_t, SessionEntity> mSessionMap;
     int32_t mBatchSize;
     bool mEnabled;
