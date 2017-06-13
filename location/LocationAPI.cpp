@@ -330,7 +330,7 @@ LocationAPI::stopTracking(uint32_t id)
         if (gData.flpInterface != NULL) {
             gData.flpInterface->stopTracking(this, id);
         }
-        if (gData.flpInterface != NULL && gData.gnssInterface != NULL) {
+        if (gData.flpInterface == NULL && gData.gnssInterface == NULL) {
             LOC_LOGE("%s:%d]: No gnss/flp interface available for Location API client %p ",
                      __func__, __LINE__, this);
         }
@@ -357,7 +357,7 @@ LocationAPI::updateTrackingOptions(uint32_t id, LocationOptions& locationOptions
         if (gData.flpInterface != NULL) {
             gData.flpInterface->updateTrackingOptions(this, id, locationOptions);
         }
-        if (gData.flpInterface != NULL && gData.gnssInterface != NULL) {
+        if (gData.flpInterface == NULL && gData.gnssInterface == NULL) {
             LOC_LOGE("%s:%d]: No gnss/flp interface available for Location API client %p ",
                      __func__, __LINE__, this);
         }

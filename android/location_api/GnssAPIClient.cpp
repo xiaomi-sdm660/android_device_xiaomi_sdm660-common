@@ -194,6 +194,7 @@ bool GnssAPIClient::gnssSetPositionMode(IGnss::GnssPositionMode mode,
         mLocationOptions.mode = GNSS_SUPL_MODE_MSB;
     else if (mode ==  IGnss::GnssPositionMode::MS_ASSISTED)
         mLocationOptions.mode = GNSS_SUPL_MODE_MSA;
+    locAPIUpdateTrackingOptions(mLocationOptions);
     return retVal;
 }
 
