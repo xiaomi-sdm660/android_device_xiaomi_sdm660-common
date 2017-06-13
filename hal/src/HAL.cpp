@@ -86,16 +86,16 @@ HAL::HAL(IOffloadManager* mgr) : mLogs("HAL Function Calls", 50) {
 void HAL::registerAsSystemService(const char* name) {
     status_t ret = 0;
 
-    ret = IOffloadControl::registerAsService(name);
+    ret = IOffloadControl::registerAsService();
     if (ret != 0) ALOGE("Failed to register IOffloadControl (%d)", ret);
     else if (DBG) {
-        ALOGI("Successfully registered IOffloadControl (%s)", name);
+        ALOGI("Successfully registered IOffloadControl");
     }
 
-    IOffloadConfig::registerAsService(name);
+    IOffloadConfig::registerAsService();
     if (ret != 0) ALOGE("Failed to register IOffloadConfig (%d)", ret);
     else if (DBG) {
-        ALOGI("Successfully registered IOffloadConfig (%s)", name);
+        ALOGI("Successfully registered IOffloadConfig");
     }
 } /* registerAsSystemService */
 

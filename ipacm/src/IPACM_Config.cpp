@@ -181,8 +181,11 @@ int IPACM_Config::Init(void)
 	{
 		IPACMERR("Failed opening %s.\n", DEVICE_NAME);
 	}
+#ifdef FEATURE_IPACM_HAL
+	strncpy(IPACM_config_file, "/vendor/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
+#else
 	strncpy(IPACM_config_file, "/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
-
+#endif
 	IPACMDBG_H("\n IPACM XML file is %s \n", IPACM_config_file);
 	if (IPACM_SUCCESS == ipacm_read_cfg_xml(IPACM_config_file, cfg))
 	{
