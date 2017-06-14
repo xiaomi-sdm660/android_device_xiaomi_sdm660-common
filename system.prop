@@ -49,12 +49,12 @@ persist.mm.enable.prefetch=true
 
 #property to enable narrow search range for video encoding
 vidc.enc.target_support_bframe=1
-vidc.enc.disable_bframes=1
-vidc.dec.enable.downscalar=1
+vendor.vidc.enc.disable_bframes=1
+vendor.vidc.dec.enable.downscalar=1
 video.disable.ubwc=1
 
 # enable PQ feature by default
-vidc.enc.disable.pq=false
+vendor.vidc.enc.disable.pq=false
 
 # Additional buffers shared between Camera and Video
 vidc.enc.dcvs.extra-buff-count=2
@@ -162,19 +162,19 @@ ro.sys.fw.bg_apps_limit=60
 
 #Settings to enable sensors
 #Device Orientation sensor
-ro.qti.sensors.dev_ori=true
+ro.vendor.sensors.dev_ori=true
 #Persistent Motion Detector
-ro.qti.sensors.pmd=true
+ro.vendor.sensors.pmd=true
 #Stationary Detector
-ro.qti.sensors.sta_detect=true
+ro.vendor.sensors.sta_detect=true
 #Motion Detector
-ro.qti.sensors.mot_detect=true
+ro.vendor.sensors.mot_detect=true
 #Facing
-ro.qti.sensors.facing=false
+ro.vendor.sensors.facing=false
 #CMC
-ro.qti.sensors.cmc=false
+ro.vendor.sensors.cmc=false
 #Gesture
-ro.qti.sdk.sensors.gestures=false
+ro.vendor.sdk.sensors.gestures=false
 
 #low power mode for camera
 camera.lowpower.record.enable=1
