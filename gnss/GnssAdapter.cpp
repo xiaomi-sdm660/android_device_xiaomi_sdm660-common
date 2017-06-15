@@ -1922,7 +1922,12 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
     }
 
     if (NMEA_PROVIDER_AP == ContextBase::mGps_conf.NMEA_PROVIDER && !mTrackingSessions.empty()) {
-        uint8_t generate_nmea = (reported && status != LOC_SESS_FAILURE);
+        /*Only BlankNMEA sentence needs to be processed and sent, if both lat, long is 0 &
+          horReliability is not set. */
+        bool blank_fix = ((0 == ulpLocation.gpsLocation.latitude) &&
+                          (0 == ulpLocation.gpsLocation.longitude) &&
+                          (LOC_RELIABILITY_NOT_SET == locationExtended.horizontal_reliability));
+        uint8_t generate_nmea = (reported && status != LOC_SESS_FAILURE && !blank_fix);
         std::vector<std::string> nmeaArraystr;
         loc_nmea_generate_pos(ulpLocation, locationExtended, generate_nmea, nmeaArraystr);
         for (auto sentence : nmeaArraystr) {
