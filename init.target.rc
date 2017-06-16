@@ -40,8 +40,8 @@ on init
 
 on fs
     wait /dev/block/bootdevice
-    mount_all fstab.qcom
-    swapon_all fstab.qcom
+    mount_all /vendor/etc/fstab.qcom
+    swapon_all /vendor/etc/fstab.qcom
 
     # Keeping following partitions outside fstab file. As user may not have
     # these partition flashed on the device. Failure to mount any partition in fstab file
@@ -156,7 +156,7 @@ service qseecomd /vendor/bin/qseecomd
    user root
    group root
 
-#service mpdecision /system/bin/mpdecision --avg_comp
+#service mpdecision /system/vendor/bin/mpdecision --avg_comp
 #   user root
 #   disabled
 #
@@ -182,12 +182,12 @@ service thermal-engine /system/vendor/bin/thermal-engine
 #    class core
 #    oneshot
 #
-service time_daemon /system/bin/time_daemon
+service time_daemon /system/vendor/bin/time_daemon
    class late_start
    user root
    group root
 
-service adsprpcd /system/bin/adsprpcd audiopd
+service adsprpcd /system/vendor/bin/adsprpcd audiopd
    class main
    user media
    group media
@@ -198,49 +198,49 @@ service hbtp /system/vendor/bin/hbtp_daemon
     group system
     disabled
 
-service audiod /system/bin/audiod
+service audiod /system/vendor/bin/audiod
    class late_start
    user system
    group system
 #
-#service usf_tester /system/bin/usf_tester
+#service usf_tester /system/vendor/bin/usf_tester
 #    user system
 #    group system inet
 #    disabled
 #
-#service usf_epos /system/bin/usf_epos
+#service usf_epos /system/vendor/bin/usf_epos
 #    user system
 #    group system inet
 #    disabled
 #
-#service usf_gesture /system/bin/usf_gesture
-#    user system
-#    group system inet
-#    disabled
-#
-
-#service usf_sync_gesture /system/bin/usf_sync_gesture
+#service usf_gesture /system/vendor/bin/usf_gesture
 #    user system
 #    group system inet
 #    disabled
 #
 
-#service usf_p2p /system/bin/usf_p2p
+#service usf_sync_gesture /system/vendor/bin/usf_sync_gesture
 #    user system
 #    group system inet
 #    disabled
 #
-#service usf_hovering /system/bin/usf_hovering
+
+#service usf_p2p /system/vendor/bin/usf_p2p
 #    user system
 #    group system inet
 #    disabled
 #
-#service usf_proximity /system/bin/usf_proximity
+#service usf_hovering /system/vendor/bin/usf_hovering
 #    user system
 #    group system inet
 #    disabled
 #
-#service usf-post-boot /system/bin/sh /system/etc/usf_post_boot.sh
+#service usf_proximity /system/vendor/bin/usf_proximity
+#    user system
+#    group system inet
+#    disabled
+#
+#service usf-post-boot /system/vendor/bin/sh /system/etc/usf_post_boot.sh
 #    class late_start
 #    user root
 #    disabled
@@ -402,7 +402,7 @@ on charger
 #    user system
 #    group drmrpc
 #
-#service adsprpcd /system/bin/adsprpcd
+#service adsprpcd /system/vendor/bin/adsprpcd
 #   class main
 #   user media
 #   group media
@@ -414,7 +414,7 @@ on charger
 #    user system
 #    group system
 
-service seempd /system/bin/seempd
+service seempd /system/vendor/bin/seempd
 class late_start
 user system
 group system sdcard_rw
