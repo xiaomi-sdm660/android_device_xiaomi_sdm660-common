@@ -30,6 +30,7 @@
 #define LOCATION_INTERFACE_H
 
 #include <LocationAPI.h>
+#include <gps_extended_c.h>
 
 struct GnssInterface {
     size_t size;
@@ -49,7 +50,7 @@ struct GnssInterface {
     uint32_t (*gnssDeleteAidingData)(GnssAidingData& data);
     void (*injectLocation)(double latitude, double longitude, float accuracy);
     void (*injectTime)(int64_t time, int64_t timeReference, int32_t uncertainty);
-    void (*agpsInit)(void* statusV4Cb);
+    void (*agpsInit)(const AgpsCbInfo& cbInfo);
     void (*agpsDataConnOpen)(short agpsType, const char* apnName, int apnLen, int ipType);
     void (*agpsDataConnClosed)(short agpsType);
     void (*agpsDataConnFailed)(short agpsType);
