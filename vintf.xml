@@ -177,6 +177,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <hal format="hidl">
         <name>com.qualcomm.qti.ant</name>
         <transport>hwbinder</transport>
+        <impl level="generic"></impl>
         <version>1.0</version>
         <interface>
             <name>IAntHci</name>
@@ -236,7 +237,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl">
-        <name>vendor.qti.qcril.am</name>
+       <name>vendor.qti.hardware.radio.am</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
         <interface>
@@ -259,12 +260,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <transport>hwbinder</transport>
         <version>1.0</version>
         <interface>
-            <name>IGnssVendor</name>
+            <name>ILocHidlGnss</name>
             <instance>gnss_vendor</instance>
         </interface>
     </hal>
     <hal format="hidl">
-        <name>vendor.qti.atcmdfwd</name>
+        <name>vendor.qti.hardware.radio.atcmdfwd</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
         <interface>
@@ -312,7 +313,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl">
-        <name>com.qualcomm.qti.qtiradio</name>
+        <name>vendor.qti.hardware.radio.qtiradio</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
         <interface>
@@ -333,6 +334,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <hal format="hidl">
         <name>android.hardware.keymaster</name>
         <transport>hwbinder</transport>
+        <impl level="generic"></impl>
         <version>3.0</version>
         <interface>
             <name>IKeymasterDevice</name>
@@ -342,6 +344,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <hal format="hidl">
         <name>android.hardware.gatekeeper</name>
         <transport>hwbinder</transport>
+        <impl level="generic"></impl>
         <version>1.0</version>
         <interface>
             <name>IGatekeeper</name>
@@ -351,6 +354,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <hal format="hidl">
         <name>android.hardware.broadcastradio</name>
         <transport>hwbinder</transport>
+        <impl level="generic"></impl>
         <version>1.0</version>
         <interface>
             <name>IBroadcastRadioFactory</name>
@@ -367,22 +371,45 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl">
-        <name>com.qualcomm.qti.ims.radio</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IImsRadio</name>
-            <instance>imsradio0</instance>
-        </interface>
+        <name>vendor.qti.hardware.radio.ims</name>
+           <transport>hwbinder</transport>
+           <version>1.0</version>
+           <interface>
+               <name>IImsRadio</name>
+               <instance>imsradio0</instance>
+               <instance>imsradio1</instance>
+           </interface>
     </hal>
     <hal format="hidl">
-        <name>com.qualcomm.qti.qcril.qcrilhook</name>
+        <name>vendor.qti.hardware.radio.qcrilhook</name>
+           <transport>hwbinder</transport>
+           <version>1.0</version>
+           <interface>
+               <name>IQtiOemHook</name>
+               <instance>oemhook0</instance>
+               <instance>oemhook1</instance>
+           </interface>
+    </hal>
+    <hal format="hidl">
+        <name>vendor.qti.hardware.radio.config</name>
+           <transport>hwbinder</transport>
+           <version>1.0</version>
+           <interface>
+               <name>IConfig</name>
+               <instance>radioconfig0</instance>
+               <instance>radioconfig1</instance>
+           </interface>
+    </hal>
+
+    <!-- Alarm HAL service -->
+    <hal format="hidl">
+        <name>vendor.qti.hardware.alarm</name>
         <transport>hwbinder</transport>
+        <impl level="generic"></impl>
         <version>1.0</version>
         <interface>
-            <name>IQtiOemHook</name>
-            <instance>oemhook0</instance>
-            <instance>oemhook1</instance>
+            <name>IAlarm</name>
+            <instance>default</instance>
         </interface>
     </hal>
 </manifest>
