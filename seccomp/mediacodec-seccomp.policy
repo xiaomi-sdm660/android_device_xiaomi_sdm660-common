@@ -12,3 +12,8 @@ ARM_cacheflush: 1
 inotify_init1: 1
 inotify_add_watch: 1
 inotify_rm_watch: 1
+uname: 1
+ueventd: 1
+timer_create: 1
+timer_settime: 1
+rt_sigtimedwait: 1
