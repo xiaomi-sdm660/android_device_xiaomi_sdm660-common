@@ -140,39 +140,39 @@ void GnssAPIClient::gnssDeleteAidingData(IGnss::GnssAidingData aidingDataFlags)
     LOC_LOGD("%s]: (%02hx)", __FUNCTION__, aidingDataFlags);
     GnssAidingData data;
     memset(&data, 0, sizeof (GnssAidingData));
-    data.sv.svTypeMask = GNSS_AIDING_DATA_SV_TYPE_GPS |
-        GNSS_AIDING_DATA_SV_TYPE_GLONASS |
-        GNSS_AIDING_DATA_SV_TYPE_QZSS |
-        GNSS_AIDING_DATA_SV_TYPE_BEIDOU |
-        GNSS_AIDING_DATA_SV_TYPE_GALILEO;
+    data.sv.svTypeMask = GNSS_AIDING_DATA_SV_TYPE_GPS_BIT |
+        GNSS_AIDING_DATA_SV_TYPE_GLONASS_BIT |
+        GNSS_AIDING_DATA_SV_TYPE_QZSS_BIT |
+        GNSS_AIDING_DATA_SV_TYPE_BEIDOU_BIT |
+        GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT;
 
     if (aidingDataFlags == IGnss::GnssAidingData::DELETE_ALL)
         data.deleteAll = true;
     else {
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_EPHEMERIS)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_EPHEMERIS_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_ALMANAC)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_ALMANAC;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_ALMANAC_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_POSITION)
-            data.common.mask |= GNSS_AIDING_DATA_COMMON_POSITION;
+            data.common.mask |= GNSS_AIDING_DATA_COMMON_POSITION_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_TIME)
-            data.common.mask |= GNSS_AIDING_DATA_COMMON_TIME;
+            data.common.mask |= GNSS_AIDING_DATA_COMMON_TIME_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_IONO)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_IONOSPHERE_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_UTC)
-            data.common.mask |= GNSS_AIDING_DATA_COMMON_UTC;
+            data.common.mask |= GNSS_AIDING_DATA_COMMON_UTC_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_HEALTH)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_HEALTH;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_HEALTH_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_SVDIR)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_DIRECTION;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_DIRECTION_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_SVSTEER)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_STEER;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_STEER_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_SADATA)
-            data.sv.svMask |= GNSS_AIDING_DATA_SV_SA_DATA;
+            data.sv.svMask |= GNSS_AIDING_DATA_SV_SA_DATA_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_RTI)
-            data.common.mask |= GNSS_AIDING_DATA_COMMON_RTI;
+            data.common.mask |= GNSS_AIDING_DATA_COMMON_RTI_BIT;
         if (aidingDataFlags & IGnss::GnssAidingData::DELETE_CELLDB_INFO)
-            data.common.mask |= GNSS_AIDING_DATA_COMMON_CELLDB;
+            data.common.mask |= GNSS_AIDING_DATA_COMMON_CELLDB_BIT;
     }
     locAPIGnssDeleteAidingData(data);
 }
@@ -307,15 +307,12 @@ void GnssAPIClient::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotificatio
         notificationGnss.niType =
             static_cast<IGnssNiCallback::GnssNiType>(4/*hardcode until IGnssNiCallback adds value*/);
 
-    if (gnssNiNotification.options == GNSS_NI_OPTIONS_NOTIFICATION)
-        notificationGnss.notifyFlags =
-            static_cast<uint32_t>(IGnssNiCallback::GnssNiNotifyFlags::NEED_NOTIFY);
-    else if (gnssNiNotification.options == GNSS_NI_OPTIONS_VERIFICATION)
-        notificationGnss.notifyFlags =
-            static_cast<uint32_t>(IGnssNiCallback::GnssNiNotifyFlags::NEED_VERIFY);
-    else if (gnssNiNotification.options == GNSS_NI_OPTIONS_PRIVACY_OVERRIDE)
-        notificationGnss.notifyFlags =
-            static_cast<uint32_t>(IGnssNiCallback::GnssNiNotifyFlags::PRIVACY_OVERRIDE);
+    if (gnssNiNotification.options & GNSS_NI_OPTIONS_NOTIFICATION_BIT)
+        notificationGnss.notifyFlags |= IGnssNiCallback::GnssNiNotifyFlags::NEED_NOTIFY;
+    else if (gnssNiNotification.options & GNSS_NI_OPTIONS_VERIFICATION_BIT)
+        notificationGnss.notifyFlags |= IGnssNiCallback::GnssNiNotifyFlags::NEED_VERIFY;
+    else if (gnssNiNotification.options & GNSS_NI_OPTIONS_PRIVACY_OVERRIDE_BIT)
+        notificationGnss.notifyFlags |= IGnssNiCallback::GnssNiNotifyFlags::PRIVACY_OVERRIDE;
 
     notificationGnss.timeoutSec = gnssNiNotification.timeout;
 
