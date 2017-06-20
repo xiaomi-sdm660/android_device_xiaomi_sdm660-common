@@ -61,12 +61,6 @@
 #define LENGTH(s) (sizeof(s) - 1)
 #define GPS_CHECK_NO_ERROR 0
 #define GPS_CHECK_NO_GPS_HW 1
-/* When system server is started, it uses 20 seconds as ActivityManager
- * timeout. After that it sends SIGSTOP signal to process.
- */
-#define QCA1530_DETECT_TIMEOUT 15
-#define QCA1530_DETECT_PRESENT "yes"
-#define QCA1530_DETECT_PROGRESS "detect"
 
 static unsigned int gTarget = (unsigned int)-1;
 
@@ -90,63 +84,6 @@ static int read_a_line(const char * file_path, char * line, int line_size)
         fclose(fp);
     }
     return result;
-}
-
-/*!
- * \brief Checks if QCA1530 is avalable.
- *
- * Function verifies if qca1530 SoC is configured on the device. The test is
- * based on property value. For 1530 scenario, the value shall be one of the
- * following: "yes", "no", "detect". All other values are treated equally to
- * "no". When the value is "detect" the system waits for SoC detection to
- * finish before returning result.
- *
- * \retval true - QCA1530 is available.
- * \retval false - QCA1530 is not available.
- */
-static bool is_qca1530(void)
-{
-    static const char qca1530_property_name[] = "sys.qca1530";
-    bool res = false;
-    int ret, i;
-    char buf[PROPERTY_VALUE_MAX];
-
-    memset(buf, 0, sizeof(buf));
-
-    for (i = 0; i < QCA1530_DETECT_TIMEOUT; ++i)
-    {
-        ret = platform_lib_abstraction_property_get(qca1530_property_name, buf, NULL);
-        if (ret < 0)
-        {
-            LOC_LOGV( "qca1530: property %s is not accessible, ret=%d",
-                  qca1530_property_name,
-                  ret);
-
-            break;
-        }
-
-        LOC_LOGV( "qca1530: property %s is set to %s",
-                  qca1530_property_name,
-                  buf);
-
-        if (!memcmp(buf, QCA1530_DETECT_PRESENT,
-                    sizeof(QCA1530_DETECT_PRESENT)))
-        {
-            res = true;
-            break;
-        }
-        if (!memcmp(buf, QCA1530_DETECT_PROGRESS,
-                    sizeof(QCA1530_DETECT_PROGRESS)))
-        {
-            LOC_LOGV("qca1530: SoC detection is in progress.");
-            sleep(1);
-            continue;
-        }
-        break;
-    }
-
-    LOC_LOGD("qca1530: detected=%s", res ? "true" : "false");
-    return res;
 }
 
 /*The character array passed to this function should have length
@@ -209,11 +146,6 @@ unsigned int loc_get_target(void)
     char baseband[LINE_LEN];
     char rd_auto_platform[LINE_LEN];
 
-    if (is_qca1530()) {
-        gTarget = TARGET_QCA1530;
-        goto detected;
-    }
-
     loc_get_target_baseband(baseband, sizeof(baseband));
 
     if (!access(hw_platform, F_OK)) {
@@ -242,42 +174,35 @@ unsigned int loc_get_target(void)
     }
 
     if( !memcmp(baseband, STR_APQ, LENGTH(STR_APQ)) ||
-            !memcmp(baseband, STR_SDC, LENGTH(STR_SDC)) ){
+        !memcmp(baseband, STR_SDC, LENGTH(STR_SDC)) ) {
 
         if( !memcmp(rd_id, MPQ8064_ID_1, LENGTH(MPQ8064_ID_1))
             && IS_STR_END(rd_id[LENGTH(MPQ8064_ID_1)]) )
             gTarget = TARGET_NO_GNSS;
         else
             gTarget = TARGET_APQ_SA;
-    }
-    else {
-        if( (!memcmp(rd_hw_platform, STR_LIQUID, LENGTH(STR_LIQUID))
-             && IS_STR_END(rd_hw_platform[LENGTH(STR_LIQUID)])) ||
-            (!memcmp(rd_hw_platform, STR_SURF,   LENGTH(STR_SURF))
-             && IS_STR_END(rd_hw_platform[LENGTH(STR_SURF)])) ||
-            (!memcmp(rd_hw_platform, STR_MTP,   LENGTH(STR_MTP))
-             && IS_STR_END(rd_hw_platform[LENGTH(STR_MTP)]))) {
-
-            if (!read_a_line( mdm, rd_mdm, LINE_LEN))
-                gTarget = TARGET_MDM;
-        }
-
-        else if( (!memcmp(rd_id, MSM8930_ID_1, LENGTH(MSM8930_ID_1))
-                   && IS_STR_END(rd_id[LENGTH(MSM8930_ID_1)])) ||
-                  (!memcmp(rd_id, MSM8930_ID_2, LENGTH(MSM8930_ID_2))
-                   && IS_STR_END(rd_id[LENGTH(MSM8930_ID_2)])) )
-             gTarget = TARGET_MSM_NO_SSC;
-
-        else if ( !memcmp(baseband, STR_MSM, LENGTH(STR_MSM)) ||
-                    !memcmp(baseband, STR_SDM, LENGTH(STR_SDM)) )
-             gTarget = TARGET_DEFAULT;
-
-        else
-             gTarget = TARGET_UNKNOWN;
+    } else if (((!memcmp(rd_hw_platform, STR_LIQUID, LENGTH(STR_LIQUID))
+                 && IS_STR_END(rd_hw_platform[LENGTH(STR_LIQUID)])) ||
+                (!memcmp(rd_hw_platform, STR_SURF,   LENGTH(STR_SURF))
+                 && IS_STR_END(rd_hw_platform[LENGTH(STR_SURF)])) ||
+                (!memcmp(rd_hw_platform, STR_MTP,   LENGTH(STR_MTP))
+                 && IS_STR_END(rd_hw_platform[LENGTH(STR_MTP)]))) &&
+               !read_a_line( mdm, rd_mdm, LINE_LEN)) {
+        gTarget = TARGET_MDM;
+    } else if( (!memcmp(rd_id, MSM8930_ID_1, LENGTH(MSM8930_ID_1))
+                && IS_STR_END(rd_id[LENGTH(MSM8930_ID_1)])) ||
+               (!memcmp(rd_id, MSM8930_ID_2, LENGTH(MSM8930_ID_2))
+                && IS_STR_END(rd_id[LENGTH(MSM8930_ID_2)])) ) {
+        gTarget = TARGET_MSM_NO_SSC;
+    } else if ( !memcmp(baseband, STR_MSM, LENGTH(STR_MSM)) ||
+                !memcmp(baseband, STR_SDM, LENGTH(STR_SDM)) ) {
+        gTarget = TARGET_DEFAULT;
+    } else {
+        gTarget = TARGET_UNKNOWN;
     }
 
 detected:
-    LOC_LOGD("HAL: %s returned %d", __FUNCTION__, gTarget);
+    LOC_LOGW("HAL: %s returned %d", __FUNCTION__, gTarget);
     return gTarget;
 }
 
