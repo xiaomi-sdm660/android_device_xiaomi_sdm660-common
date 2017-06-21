@@ -289,7 +289,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 													neighbor_client[circular_index].mac_addr[5],
 													num_neighbor_client,
 													circular_index);
-									circular_index++;
+									circular_index = (circular_index + 1) % IPA_MAX_NUM_NEIGHBOR_CLIENTS;
 								}
 							}
 						}
@@ -556,7 +556,7 @@ void IPACM_Neighbor::event_callback(ipa_cm_event_id event, void *param)
 												neighbor_client[circular_index].mac_addr[5],
 												num_neighbor_client,
 												circular_index);
-								circular_index++;
+								circular_index = (circular_index + 1) % IPA_MAX_NUM_NEIGHBOR_CLIENTS;
 								return;
 							}
 						}
