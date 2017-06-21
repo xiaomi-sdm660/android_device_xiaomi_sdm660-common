@@ -120,7 +120,7 @@ Return<bool> Gnss::setCallback(const sp<IGnssCallback>& callback)  {
     GnssAPIClient* api = getApi();
     if (api != nullptr) {
         api->gnssUpdateCallbacks(mGnssCbIface, mGnssNiCbIface);
-        api->locAPIEnable(LOCATION_TECHNOLOGY_TYPE_GNSS);
+        api->gnssEnable(LOCATION_TECHNOLOGY_TYPE_GNSS);
         api->requestCapabilities();
     }
     return true;
@@ -140,7 +140,7 @@ Return<bool> Gnss::updateConfiguration(GnssConfig& gnssConfig) {
     ENTRY_LOG_CALLFLOW();
     GnssAPIClient* api = getApi();
     if (api) {
-        api->locAPIGnssUpdateConfig(gnssConfig);
+        api->gnssConfigurationUpdate(gnssConfig);
     } else if (gnssConfig.flags != 0) {
         // api is not ready yet, update mPendingConfig with gnssConfig
         mPendingConfig.size = sizeof(GnssConfig);
@@ -220,7 +220,7 @@ Return<void> Gnss::cleanup()  {
     ENTRY_LOG_CALLFLOW();
 
     if (mApi != nullptr) {
-        mApi->locAPIDisable();
+        mApi->gnssDisable();
     }
 
     return Void();

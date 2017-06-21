@@ -47,7 +47,7 @@ AGnssRil::~AGnssRil() {
     ENTRY_LOG_CALLFLOW();
 }
 
-Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool roaming) {
+Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool /*roaming*/) {
     ENTRY_LOG_CALLFLOW();
 
     // for XTRA
