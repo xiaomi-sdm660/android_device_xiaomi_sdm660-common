@@ -425,7 +425,7 @@ service tlocd /system/bin/tloc_daemon
     user system
     group drmrpc
 
-service hvdcp_opti /system/bin/hvdcp_opti
+service hvdcp_opti /system/vendor/bin/hvdcp_opti
      class main
      user root
      group system wakelock
