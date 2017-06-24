@@ -80,6 +80,7 @@ MeasurementAPIClient::measurementSetCallback(const sp<IGnssMeasurementCallback>&
     mGnssMeasurementCbIface = callback;
 
     LocationCallbacks locationCallbacks;
+    memset(&locationCallbacks, 0, sizeof(LocationCallbacks));
     locationCallbacks.size = sizeof(LocationCallbacks);
 
     locationCallbacks.trackingCb = nullptr;

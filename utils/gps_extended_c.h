@@ -160,6 +160,17 @@ typedef int16_t AGpsBearerType;
 #define AGPS_APN_BEARER_IPV6        1
 #define AGPS_APN_BEARER_IPV4V6      2
 
+typedef enum {
+    AGPS_CB_PRIORITY_LOW  = 1,
+    AGPS_CB_PRIORITY_MED  = 2,
+    AGPS_CB_PRIORITY_HIGH = 3
+} AgpsCbPriority;
+
+typedef struct {
+    void* statusV4Cb;
+    AgpsCbPriority cbPriority;
+} AgpsCbInfo;
+
 /** GPS extended callback structure. */
 typedef struct {
     /** set to sizeof(LocGpsCallbacks) */

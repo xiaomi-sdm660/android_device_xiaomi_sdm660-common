@@ -51,7 +51,11 @@ Return<void> AGnss::setCallback(const sp<IAGnssCallback>& callback) {
     // Save the interface
     sAGnssCbIface = callback;
 
-    mGnss->getGnssInterface()->agpsInit((void*)agnssStatusIpV4Cb);
+    AgpsCbInfo cbInfo = {};
+    cbInfo.statusV4Cb = (void*)agnssStatusIpV4Cb;
+    cbInfo.cbPriority = AGPS_CB_PRIORITY_LOW;
+
+    mGnss->getGnssInterface()->agpsInit(cbInfo);
     return Void();
 }
 
