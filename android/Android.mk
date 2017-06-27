@@ -24,11 +24,12 @@ LOCAL_SRC_FILES += \
     location_api/MeasurementAPIClient.cpp \
 
 LOCAL_C_INCLUDES:= \
-    $(LOCAL_PATH)/location_api \
-    $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core \
-    $(TARGET_OUT_HEADERS)/libloc_pla \
-    $(TARGET_OUT_HEADERS)/liblocation_api \
+    $(LOCAL_PATH)/location_api
+LOCAL_HEADER_LIBRARIES := \
+    libgps.utils_headers \
+    libloc_core_headers \
+    libloc_pla_headers \
+    liblocation_api_headers
 
 LOCAL_SHARED_LIBRARIES := \
     liblog \
@@ -64,11 +65,12 @@ LOCAL_SRC_FILES := \
     service.cpp \
 
 LOCAL_C_INCLUDES:= \
-    $(LOCAL_PATH)/location_api \
-    $(TARGET_OUT_HEADERS)/gps.utils \
-    $(TARGET_OUT_HEADERS)/libloc_core \
-    $(TARGET_OUT_HEADERS)/libloc_pla \
-    $(TARGET_OUT_HEADERS)/liblocation_api \
+    $(LOCAL_PATH)/location_api
+LOCAL_HEADER_LIBRARIES := \
+    libgps.utils_headers \
+    libloc_core_headers \
+    libloc_pla_headers \
+    liblocation_api_headers
 
 
 LOCAL_SHARED_LIBRARIES := \

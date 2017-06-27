@@ -40,29 +40,9 @@ endif
 LOCAL_LDFLAGS += -Wl,--export-dynamic
 
 ## Includes
-LOCAL_C_INCLUDES:= \
-    $(TARGET_OUT_HEADERS)/libloc_pla \
-    $(TARGET_OUT_HEADERS)/liblocation_api \
-
-LOCAL_COPY_HEADERS_TO:= gps.utils/
-LOCAL_COPY_HEADERS:= \
-   loc_log.h \
-   loc_cfg.h \
-   log_util.h \
-   linked_list.h \
-   msg_q.h \
-   MsgTask.h \
-   LocHeap.h \
-   LocThread.h \
-   LocTimer.h \
-   loc_target.h \
-   loc_timer.h \
-   LocSharedLock.h \
-   loc_misc_utils.h \
-   loc_nmea.h \
-   gps_extended_c.h \
-   gps_extended.h \
-   loc_gps.h
+LOCAL_HEADER_LIBRARIES := \
+    libloc_pla_headers \
+    liblocation_api_headers
 
 LOCAL_MODULE := libgps.utils
 LOCAL_MODULE_PATH_32 := $(TARGET_OUT_VENDOR)/lib
@@ -72,6 +52,11 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libgps.utils_headers
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+include $(BUILD_HEADER_LIBRARY)
 
 include $(addsuffix /Android.mk, $(addprefix $(LOCAL_PATH)/, platform_lib_abstractions))
 endif # not BUILD_TINY_ANDROID
