@@ -55,7 +55,7 @@ on fs
 
 on post-fs
     start qseecomd
-    exec - root root root -- /system/bin/init.qti.qseecomd.sh
+    exec - system system -- /vendor/bin/init.qti.qseecomd.sh
     write /dev/ipa 1
 
 on init
