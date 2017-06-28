@@ -706,8 +706,10 @@ typedef enum
     /**< COMPASS satellite. */
     GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
     /**< GLONASS satellite. */
-    GNSS_LOC_SV_SYSTEM_BDS                    = 6
+    GNSS_LOC_SV_SYSTEM_BDS                    = 6,
     /**< BDS satellite. */
+    GNSS_LOC_SV_SYSTEM_QZSS                   = 7
+    /**< QZSS satellite. */
 } Gnss_LocSvSystemEnumType;
 
 typedef enum
