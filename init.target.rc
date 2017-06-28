@@ -39,7 +39,8 @@ on init
     write /dev/stune/top-app/schedtune.colocate 1
 
 on fs
-    wait /dev/block/bootdevice
+    wait /dev/block/platform/soc/${ro.boot.bootdevice}
+    symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
     mount_all /vendor/etc/fstab.qcom
     swapon_all /vendor/etc/fstab.qcom
 
