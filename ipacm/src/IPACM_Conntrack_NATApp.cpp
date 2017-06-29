@@ -498,17 +498,17 @@ void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
 
 	if(rule->dst_nat == false)
 	{
-		entry.src.ipAddr = rule->private_ip;
+		entry.src.ipAddr = htonl(rule->private_ip);
 		entry.src.port = rule->private_port;
-		entry.dst.ipAddr = rule->target_ip;
+		entry.dst.ipAddr = htonl(rule->target_ip);
 		entry.dst.port = rule->target_port;
 		IPACMDBG("dst nat is not set\n");
 	}
 	else
 	{
-		entry.src.ipAddr = rule->target_ip;
+		entry.src.ipAddr = htonl(rule->target_ip);
 		entry.src.port = rule->target_port;
-		entry.dst.ipAddr = pub_ip_addr;
+		entry.dst.ipAddr = htonl(pub_ip_addr);
 		entry.dst.port = rule->public_port;
 		IPACMDBG("dst nat is set\n");
 	}
