@@ -857,6 +857,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 #ifdef FEATURE_L2TP
 				else if(is_l2tp_event(data->iface_name) && ipa_if_cate == ODU_IF)
 				{
+					if(tx_prop != NULL)
+					{
+						IPACMDBG_H("add rm dependency for L2TP interface.\n");
+						IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
+					}
 					eth_bridge_post_event(IPA_ETH_BRIDGE_CLIENT_ADD, IPA_IP_MAX, data->mac_addr, NULL, data->iface_name);
 				}
 				else
