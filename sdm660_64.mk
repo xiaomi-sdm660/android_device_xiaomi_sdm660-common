@@ -188,7 +188,7 @@ PRODUCT_COPY_FILES += \
 
 # FBE support
 PRODUCT_COPY_FILES += \
-    device/qcom/sdm660_64/init.qti.qseecomd.sh:system/bin/init.qti.qseecomd.sh
+    device/qcom/sdm660_64/init.qti.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.qseecomd.sh
 
 # MSM IRQ Balancer configuration file
 PRODUCT_COPY_FILES += device/qcom/sdm660_64/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf

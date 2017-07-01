@@ -19,13 +19,6 @@ TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := cortex-a53
 
-ifeq ($(TARGET_USES_AOSP), true)
-   TARGET_HW_DISK_ENCRYPTION := false
-else
-   #Enable HW based full disk encryption
-   TARGET_HW_DISK_ENCRYPTION := true
-endif
-
 TARGET_NO_BOOTLOADER := false
 TARGET_USES_UEFI := true
 TARGET_NO_KERNEL := false
@@ -130,7 +123,7 @@ TARGET_COMPILE_WITH_MSM_KERNEL := true
 TARGET_PD_SERVICE_ENABLED := true
 
 #Enable HW based full disk encryption
-#TARGET_HW_DISK_ENCRYPTION := true
+TARGET_HW_DISK_ENCRYPTION := true
 
 TARGET_CRYPTFS_HW_PATH := device/qcom/common/cryptfs_hw
 
