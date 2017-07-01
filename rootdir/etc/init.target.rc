@@ -162,8 +162,7 @@ on boot
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
     class core
-    user system
-    group system
+    user root
     ioprio rt 4
 
 service vendor.per_proxy /system/vendor/bin/pm-proxy
