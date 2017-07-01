@@ -117,8 +117,7 @@ on boot
 #Peripheral manager
 service per_mgr /system/vendor/bin/pm-service
     class core
-    user system
-    group system
+    user root
     ioprio rt 4
 
 service per_proxy /system/vendor/bin/pm-proxy
