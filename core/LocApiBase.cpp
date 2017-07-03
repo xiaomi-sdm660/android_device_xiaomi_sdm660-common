@@ -30,6 +30,7 @@
 #define LOG_TAG "LocSvc_LocApiBase"
 
 #include <dlfcn.h>
+#include <inttypes.h>
 #include <LocApiBase.h>
 #include <LocAdapterBase.h>
 #include <platform_lib_log_util.h>
@@ -96,10 +97,10 @@ struct LocSsrMsg : public LocMsg {
         mLocApi->close();
         mLocApi->open(mLocApi->getEvtMask());
     }
-    inline void locallog() {
+    inline void locallog() const {
         LOC_LOGV("LocSsrMsg");
     }
-    inline virtual void log() {
+    inline virtual void log() const {
         locallog();
     }
 };
@@ -116,11 +117,11 @@ struct LocOpenMsg : public LocMsg {
     inline virtual void proc() const {
         mLocApi->open(mMask);
     }
-    inline void locallog() {
+    inline void locallog() const {
         LOC_LOGV("%s:%d]: LocOpen Mask: %x\n",
                  __func__, __LINE__, mMask);
     }
-    inline virtual void log() {
+    inline virtual void log() const {
         locallog();
     }
 };
@@ -128,8 +129,8 @@ struct LocOpenMsg : public LocMsg {
 LocApiBase::LocApiBase(const MsgTask* msgTask,
                        LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
                        ContextBase* context) :
-    mExcludedMask(excludedMask), mMsgTask(msgTask),
-    mMask(0), mSupportedMsg(0), mContext(context)
+    mMsgTask(msgTask), mContext(context), mSupportedMsg(0),
+    mMask(0), mExcludedMask(excludedMask)
 {
     memset(mLocAdapters, 0, sizeof(mLocAdapters));
     memset(mFeaturesSupported, 0, sizeof(mFeaturesSupported));
@@ -235,9 +236,10 @@ void LocApiBase::reportPosition(UlpLocation& location,
     // print the location info before delivering
     LOC_LOGD("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  "
              "altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  "
-             "timestamp: %lld\n  rawDataSize: %d\n  rawData: %p\n  "
+             "timestamp: %" PRId64 "\n  rawDataSize: %d\n  rawData: %p\n  "
              "Session status: %d\n Technology mask: %u\n "
-             "SV used in fix (gps/glo/bds/gal/qzss) : (%x/%x/%x/%x/%x)",
+             "SV used in fix (gps/glo/bds/gal/qzss) : \
+             (%" PRIx64 "/%" PRIx64 "/%" PRIx64 "/%" PRIx64 "/%" PRIx64 ")",
              location.gpsLocation.flags, location.position_source,
              location.gpsLocation.latitude, location.gpsLocation.longitude,
              location.gpsLocation.altitude, location.gpsLocation.speed,
@@ -268,16 +270,16 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
         "QZSS", "BEIDOU", "GALILEO" };
 
     // print the SV info before delivering
-    LOC_LOGV("num sv: %d\n"
+    LOC_LOGV("num sv: %zu\n"
         "      sv: constellation svid         cN0"
         "    elevation    azimuth    flags",
         svNotify.count);
-    for (int i = 0; i < svNotify.count && i < LOC_GNSS_MAX_SVS; i++) {
+    for (size_t i = 0; i < svNotify.count && i < LOC_GNSS_MAX_SVS; i++) {
         if (svNotify.gnssSvs[i].type >
             sizeof(constellationString) / sizeof(constellationString[0]) - 1) {
             svNotify.gnssSvs[i].type = GNSS_SV_TYPE_UNKNOWN;
         }
-        LOC_LOGV("   %03d: %*s  %02d    %f    %f    %f   0x%02X",
+        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f   0x%02X",
             i,
             13,
             constellationString[svNotify.gnssSvs[i].type],
@@ -406,7 +408,7 @@ void LocApiBase::reportGnssMeasurementData(GnssMeasurementsNotification& measure
 }
 
 enum loc_api_adapter_err LocApiBase::
-   open(LOC_API_ADAPTER_EVENT_MASK_T mask)
+   open(LOC_API_ADAPTER_EVENT_MASK_T /*mask*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
@@ -414,7 +416,7 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    startFix(const LocPosMode& posMode)
+    startFix(const LocPosMode& /*posMode*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
@@ -422,27 +424,27 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 LocationError LocApiBase::
-    deleteAidingData(const GnssAidingData& data)
+    deleteAidingData(const GnssAidingData& /*data*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    enableData(int enable)
+    enableData(int /*enable*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setAPN(char* apn, int len)
+    setAPN(char* /*apn*/, int /*len*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    injectPosition(double latitude, double longitude, float accuracy)
+    injectPosition(double /*latitude*/, double /*longitude*/, float /*accuracy*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty)
+    setTime(LocGpsUtcTime /*time*/, int64_t /*timeReference*/, int /*uncertainty*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setXtraData(char* data, int length)
+    setXtraData(char* /*data*/, int /*length*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
@@ -450,83 +452,83 @@ enum loc_api_adapter_err LocApiBase::
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-   atlOpenStatus(int handle, int is_succ, char* apn,
-                 AGpsBearerType bear, LocAGpsType agpsType)
+   atlOpenStatus(int /*handle*/, int /*is_succ*/, char* /*apn*/,
+                 AGpsBearerType /*bear*/, LocAGpsType /*agpsType*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    atlCloseStatus(int handle, int is_succ)
+    atlCloseStatus(int /*handle*/, int /*is_succ*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setPositionMode(const LocPosMode& posMode)
+    setPositionMode(const LocPosMode& /*posMode*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 LocationError LocApiBase::
-    setServer(const char* url, int len)
+    setServer(const char* /*url*/, int /*len*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 LocationError LocApiBase::
-    setServer(unsigned int ip, int port, LocServerType type)
+    setServer(unsigned int /*ip*/, int /*port*/, LocServerType /*type*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 LocationError LocApiBase::
-    informNiResponse(GnssNiResponse userResponse, const void* passThroughData)
+    informNiResponse(GnssNiResponse /*userResponse*/, const void* /*passThroughData*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 LocationError LocApiBase::
-    setSUPLVersion(GnssConfigSuplVersion version)
+    setSUPLVersion(GnssConfigSuplVersion /*version*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setNMEATypes (uint32_t typesMask)
+    setNMEATypes (uint32_t /*typesMask*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 LocationError LocApiBase::
-    setLPPConfig(GnssConfigLppProfile profile)
+    setLPPConfig(GnssConfigLppProfile /*profile*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setSensorControlConfig(int sensorUsage,
-                           int sensorProvider)
+    setSensorControlConfig(int /*sensorUsage*/,
+                           int /*sensorProvider*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setSensorProperties(bool gyroBiasVarianceRandomWalk_valid,
-                        float gyroBiasVarianceRandomWalk,
-                        bool accelBiasVarianceRandomWalk_valid,
-                        float accelBiasVarianceRandomWalk,
-                        bool angleBiasVarianceRandomWalk_valid,
-                        float angleBiasVarianceRandomWalk,
-                        bool rateBiasVarianceRandomWalk_valid,
-                        float rateBiasVarianceRandomWalk,
-                        bool velocityBiasVarianceRandomWalk_valid,
-                        float velocityBiasVarianceRandomWalk)
+    setSensorProperties(bool /*gyroBiasVarianceRandomWalk_valid*/,
+                        float /*gyroBiasVarianceRandomWalk*/,
+                        bool /*accelBiasVarianceRandomWalk_valid*/,
+                        float /*accelBiasVarianceRandomWalk*/,
+                        bool /*angleBiasVarianceRandomWalk_valid*/,
+                        float /*angleBiasVarianceRandomWalk*/,
+                        bool /*rateBiasVarianceRandomWalk_valid*/,
+                        float /*rateBiasVarianceRandomWalk*/,
+                        bool /*velocityBiasVarianceRandomWalk_valid*/,
+                        float /*velocityBiasVarianceRandomWalk*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
-    setSensorPerfControlConfig(int controlMode,
-                               int accelSamplesPerBatch,
-                               int accelBatchesPerSec,
-                               int gyroSamplesPerBatch,
-                               int gyroBatchesPerSec,
-                               int accelSamplesPerBatchHigh,
-                               int accelBatchesPerSecHigh,
-                               int gyroSamplesPerBatchHigh,
-                               int gyroBatchesPerSecHigh,
-                               int algorithmConfig)
+    setSensorPerfControlConfig(int /*controlMode*/,
+                               int /*accelSamplesPerBatch*/,
+                               int /*accelBatchesPerSec*/,
+                               int /*gyroSamplesPerBatch*/,
+                               int /*gyroBatchesPerSec*/,
+                               int /*accelSamplesPerBatchHigh*/,
+                               int /*accelBatchesPerSecHigh*/,
+                               int /*gyroSamplesPerBatchHigh*/,
+                               int /*gyroBatchesPerSecHigh*/,
+                               int /*algorithmConfig*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 LocationError LocApiBase::
-    setAGLONASSProtocol(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol)
+    setAGLONASSProtocol(GnssConfigAGlonassPositionProtocolMask /*aGlonassProtocol*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 LocationError LocApiBase::
-    setLPPeProtocolCp(GnssConfigLppeControlPlaneMask lppeCP)
+    setLPPeProtocolCp(GnssConfigLppeControlPlaneMask /*lppeCP*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 LocationError LocApiBase::
-    setLPPeProtocolUp(GnssConfigLppeUserPlaneMask lppeUP)
+    setLPPeProtocolUp(GnssConfigLppeUserPlaneMask /*lppeUP*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
@@ -549,7 +551,7 @@ enum loc_api_adapter_err LocApiBase::
 }
 
 int LocApiBase::
-    initDataServiceClient(bool isDueToSsr)
+    initDataServiceClient(bool /*isDueToSsr*/)
 DEFAULT_IMPL(-1)
 
 int LocApiBase::
@@ -569,13 +571,13 @@ void LocApiBase::
 DEFAULT_IMPL()
 
 LocationError LocApiBase::
-    setGpsLock(GnssConfigGpsLock lock)
+    setGpsLock(GnssConfigGpsLock /*lock*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 void LocApiBase::
-    installAGpsCert(const LocDerEncodedCertificate* pData,
-                    size_t length,
-                    uint32_t slotBitMask)
+    installAGpsCert(const LocDerEncodedCertificate* /*pData*/,
+                    size_t /*length*/,
+                    uint32_t /*slotBitMask*/)
 DEFAULT_IMPL()
 
 int LocApiBase::
@@ -583,7 +585,7 @@ int LocApiBase::
 DEFAULT_IMPL(-1)
 
 LocationError LocApiBase::
-    setXtraVersionCheck(uint32_t check)
+    setXtraVersionCheck(uint32_t /*check*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 bool LocApiBase::

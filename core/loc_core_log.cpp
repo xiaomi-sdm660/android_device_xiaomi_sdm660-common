@@ -120,7 +120,7 @@ static const loc_name_val_s_type loc_eng_aiding_data_bits[] =
 };
 static const int loc_eng_aiding_data_bit_num = sizeof(loc_eng_aiding_data_bits) / sizeof(loc_name_val_s_type);
 
-const char* loc_get_aiding_data_mask_names(LocGpsAidingData data)
+const char* loc_get_aiding_data_mask_names(LocGpsAidingData /*data*/)
 {
     return NULL;
 }

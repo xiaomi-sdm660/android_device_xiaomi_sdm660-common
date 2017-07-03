@@ -165,7 +165,7 @@ bool GnssAPIClient::gnssSetPositionMode(IGnss::GnssPositionMode mode,
     else if (mode ==  IGnss::GnssPositionMode::MS_ASSISTED)
         mLocationOptions.mode = GNSS_SUPL_MODE_MSA;
     else {
-        LOC_LOGD("%s]: invalid GnssPositionMode: %d", __FUNCTION__, mode);
+        LOC_LOGD("%s]: invalid GnssPositionMode: %d", __FUNCTION__, (int)mode);
         retVal = false;
     }
     locAPIUpdateTrackingOptions(mLocationOptions);
@@ -185,7 +185,7 @@ void GnssAPIClient::gnssNiRespond(int32_t notifId,
     else if (userResponse == IGnssNiCallback::GnssUserResponseType::RESPONSE_NORESP)
         data = GNSS_NI_RESPONSE_NO_RESPONSE;
     else {
-        LOC_LOGD("%s]: invalid GnssUserResponseType: %d", __FUNCTION__, userResponse);
+        LOC_LOGD("%s]: invalid GnssUserResponseType: %d", __FUNCTION__, (int)userResponse);
         return;
     }
     locAPIGnssNiResponse(notifId, data);

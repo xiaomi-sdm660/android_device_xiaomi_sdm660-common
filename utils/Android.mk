@@ -51,6 +51,8 @@ LOCAL_MODULE_TAGS := optional
 
 LOCAL_PRELINK_MODULE := false
 
+LOCAL_CFLAGS += $(GNSS_CFLAGS)
+
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

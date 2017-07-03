@@ -1,3 +1,21 @@
+GNSS_CFLAGS := \
+    -Werror \
+    -Wno-error=unused-parameter \
+    -Wno-error=format \
+    -Wno-error=macro-redefined \
+    -Wno-error=reorder \
+    -Wno-error=missing-braces \
+    -Wno-error=self-assign \
+    -Wno-error=enum-conversion \
+    -Wno-error=logical-op-parentheses \
+    -Wno-error=null-arithmetic \
+    -Wno-error=null-conversion \
+    -Wno-error=parentheses-equality \
+    -Wno-error=undefined-bool-conversion \
+    -Wno-error=tautological-compare \
+    -Wno-error=switch \
+    -Wno-error=date-time
+
 ifneq ($(BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE),)
 ifneq ($(BUILD_TINY_ANDROID),true)
 #Compile this library only for builds with the latest modem image
@@ -38,7 +56,7 @@ LOCAL_MODULE_PATH_64 := $(TARGET_OUT_VENDOR)/lib64
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_PRELINK_MODULE := false
-
+LOCAL_CFLAGS += $(GNSS_CFLAGS)
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

@@ -36,6 +36,8 @@ LOCAL_HEADER_LIBRARIES := \
     libloc_pla_headers \
     liblocation_api_headers
 
+LOCAL_CFLAGS += $(GNSS_CFLAGS)
+
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
