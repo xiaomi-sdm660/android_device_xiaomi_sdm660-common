@@ -344,6 +344,7 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 		}
 		else
 		{
+			memset(&nat_rule, 0, sizeof(nat_rule));
 			nat_rule.private_ip = rule->private_ip;
 			nat_rule.target_ip = rule->target_ip;
 			nat_rule.target_port = rule->target_port;
