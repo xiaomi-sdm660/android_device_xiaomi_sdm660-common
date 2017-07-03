@@ -1096,7 +1096,7 @@ GnssAdapter::requestCapabilitiesCommand(LocationAPI* client)
                 return;
             }
 
-            LocationCapabilitiesMask mask = {};
+            LocationCapabilitiesMask mask = 0;
             // time based tracking always supported
             mask |= LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT;
             if (mApi.isMessageSupported(LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_LOCATION_BATCHING)){
@@ -2741,7 +2741,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
     }
 
     // extract each sv info from systemstatus report
-    for(uint32_t i=0; i<svid_num; i++) {
+    for(uint32_t i=0; i<svid_num && (svid_idx+i)<SV_ALL_NUM; i++) {
 
         GnssDebugSatelliteInfo s = {};
         s.size = sizeof(s);
