@@ -1978,38 +1978,51 @@ GnssAdapter::reportSvEvent(const GnssSvNotification& svNotify,
 void
 GnssAdapter::reportSv(GnssSvNotification& svNotify)
 {
-    if (mGnssSvIdUsedInPosAvail) {
-        int numSv = svNotify.count;
-        int16_t gnssSvId = 0;
-        uint64_t svUsedIdMask = 0;
-        for (int i=0; i < numSv; i++) {
-            gnssSvId = svNotify.gnssSvs[i].svId;
-            switch (svNotify.gnssSvs[i].type) {
-                case GNSS_SV_TYPE_GPS:
+    int numSv = svNotify.count;
+    int16_t gnssSvId = 0;
+    uint64_t svUsedIdMask = 0;
+    for (int i=0; i < numSv; i++) {
+        svUsedIdMask = 0;
+        gnssSvId = svNotify.gnssSvs[i].svId;
+        switch (svNotify.gnssSvs[i].type) {
+            case GNSS_SV_TYPE_GPS:
+                if (mGnssSvIdUsedInPosAvail) {
                     svUsedIdMask = mGnssSvIdUsedInPosition.gps_sv_used_ids_mask;
-                    break;
-                case GNSS_SV_TYPE_GLONASS:
+                }
+                break;
+            case GNSS_SV_TYPE_GLONASS:
+                if (mGnssSvIdUsedInPosAvail) {
                     svUsedIdMask = mGnssSvIdUsedInPosition.glo_sv_used_ids_mask;
-                    break;
-                case GNSS_SV_TYPE_BEIDOU:
+                }
+                break;
+            case GNSS_SV_TYPE_BEIDOU:
+                if (mGnssSvIdUsedInPosAvail) {
                     svUsedIdMask = mGnssSvIdUsedInPosition.bds_sv_used_ids_mask;
-                    break;
-                case GNSS_SV_TYPE_GALILEO:
+                }
+                break;
+            case GNSS_SV_TYPE_GALILEO:
+                if (mGnssSvIdUsedInPosAvail) {
                     svUsedIdMask = mGnssSvIdUsedInPosition.gal_sv_used_ids_mask;
-                    break;
-                case GNSS_SV_TYPE_QZSS:
+                }
+                break;
+            case GNSS_SV_TYPE_QZSS:
+                if (mGnssSvIdUsedInPosAvail) {
                     svUsedIdMask = mGnssSvIdUsedInPosition.qzss_sv_used_ids_mask;
-                    break;
-                default:
-                    svUsedIdMask = 0;
-                    break;
-            }
+                }
+                // QZSS SV id's need to reported as it is to framework, since
+                // framework expects it as it is. See GnssStatus.java.
+                // SV id passed to here by LocApi is 1-based.
+                svNotify.gnssSvs[i].svId += (QZSS_SV_PRN_MIN - 1);
+                break;
+            default:
+                svUsedIdMask = 0;
+                break;
+        }
 
-            // If SV ID was used in previous position fix, then set USED_IN_FIX
-            // flag, else clear the USED_IN_FIX flag.
-            if (svUsedIdMask & (1 << (gnssSvId - 1))) {
-                svNotify.gnssSvs[i].gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
-            }
+        // If SV ID was used in previous position fix, then set USED_IN_FIX
+        // flag, else clear the USED_IN_FIX flag.
+        if (svUsedIdMask & (1 << (gnssSvId - 1))) {
+            svNotify.gnssSvs[i].gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
         }
     }
 
