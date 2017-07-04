@@ -583,6 +583,11 @@ void LocationAPIClientBase::locAPIRemoveGeofences(size_t count, uint32_t* ids)
     pthread_mutex_lock(&mMutex);
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (sessions == NULL) {
+            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+                    __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            return;
+        }
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
             size_t j = 0;
@@ -612,6 +617,11 @@ void LocationAPIClientBase::locAPIModifyGeofences(
     pthread_mutex_lock(&mMutex);
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (sessions == NULL) {
+            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+                    __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            return;
+        }
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
             size_t j = 0;
@@ -641,6 +651,11 @@ void LocationAPIClientBase::locAPIPauseGeofences(size_t count, uint32_t* ids)
     pthread_mutex_lock(&mMutex);
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (sessions == NULL) {
+            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+                    __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            return;
+        }
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
             size_t j = 0;
@@ -670,6 +685,11 @@ void LocationAPIClientBase::locAPIResumeGeofences(
     pthread_mutex_lock(&mMutex);
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (sessions == NULL) {
+            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+                    __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            return;
+        }
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
             size_t j = 0;
@@ -703,6 +723,11 @@ void LocationAPIClientBase::locAPIRemoveAllGeofences()
         std::vector<uint32_t> sessionsVec = mGeofenceBiDict.getAllSessions();
         size_t count = sessionsVec.size();
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
+        if (sessions == NULL) {
+            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+                    __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            return;
+        }
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
             size_t j = 0;
@@ -746,6 +771,13 @@ void LocationAPIClientBase::beforeGeofenceBreachCb(
     uint32_t* backup = geofenceBreachNotification.ids;
     size_t n = geofenceBreachNotification.count;
     geofenceBreachCallback genfenceCallback = nullptr;
+
+    if (ids == NULL) {
+        LOC_LOGE("%s:%d] Failed to alloc %d bytes",
+                __FUNCTION__, __LINE__,
+                sizeof(uint32_t) * geofenceBreachNotification.count);
+        return;
+    }
 
     pthread_mutex_lock(&mMutex);
     if (mGeofenceBreachCallback != nullptr) {
