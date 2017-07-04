@@ -55,6 +55,7 @@ struct GnssInterface {
     void (*agpsDataConnClosed)(short agpsType);
     void (*agpsDataConnFailed)(short agpsType);
     void (*getDebugReport)(GnssDebugReport& report);
+    void (*updateConnectionStatus)(bool connected, uint8_t type);
 };
 
 struct FlpInterface {

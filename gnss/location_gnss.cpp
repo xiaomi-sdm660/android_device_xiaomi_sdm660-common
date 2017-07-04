@@ -59,6 +59,7 @@ static void agpsDataConnOpen(AGpsExtType agpsType, const char* apnName, int apnL
 static void agpsDataConnClosed(AGpsExtType agpsType);
 static void agpsDataConnFailed(AGpsExtType agpsType);
 static void getDebugReport(GnssDebugReport& report);
+static void updateConnectionStatus(bool connected, uint8_t type);
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -83,6 +84,7 @@ static const GnssInterface gGnssInterface = {
     agpsDataConnClosed,
     agpsDataConnFailed,
     getDebugReport,
+    updateConnectionStatus,
 };
 
 #ifndef DEBUG_X86
@@ -246,5 +248,11 @@ static void getDebugReport(GnssDebugReport& report) {
 
     if (NULL != gGnssAdapter) {
         gGnssAdapter->getDebugReport(report);
+    }
+}
+
+static void updateConnectionStatus(bool connected, uint8_t type) {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->updateConnectionStatusCommand(connected, type);
     }
 }

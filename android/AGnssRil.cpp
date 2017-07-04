@@ -37,7 +37,6 @@ namespace gnss {
 namespace V1_0 {
 namespace implementation {
 
-static bool sendConnectionEvent(const bool connected, const uint8_t type);
 
 AGnssRil::AGnssRil(Gnss* gnss) : mGnss(gnss) {
     ENTRY_LOG_CALLFLOW();
@@ -51,73 +50,10 @@ Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool
     ENTRY_LOG_CALLFLOW();
 
     // for XTRA
-    sendConnectionEvent(connected, (uint8_t)type);
-
+    if (nullptr != mGnss && ( nullptr != mGnss->getGnssInterface() )) {
+        mGnss->getGnssInterface()->updateConnectionStatus(connected, (uint8_t)type);
+    }
     return true;
-}
-
-// for XTRA
-static inline int createSocket() {
-    int socketFd = -1;
-
-    if ((socketFd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-        LOC_LOGe("create socket error. reason:%s", strerror(errno));
-
-     } else {
-        const char* socketPath = "/data/vendor/location/xtra/socket_hal_xtra";
-        struct sockaddr_un addr = { .sun_family = AF_UNIX };
-        snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", socketPath);
-
-        if (::connect(socketFd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-            LOC_LOGe("cannot connect to XTRA. reason:%s", strerror(errno));
-            if (::close(socketFd)) {
-                LOC_LOGe("close socket error. reason:%s", strerror(errno));
-            }
-            socketFd = -1;
-        }
-    }
-
-    return socketFd;
-}
-
-static inline void closeSocket(const int socketFd) {
-    if (socketFd >= 0) {
-        if(::close(socketFd)) {
-            LOC_LOGe("close socket error. reason:%s", strerror(errno));
-        }
-    }
-}
-
-static inline bool sendConnectionEvent(const bool connected, const uint8_t type) {
-    int socketFd = createSocket();
-    if (socketFd < 0) {
-        LOC_LOGe("XTRA unreachable. sending failed.");
-        return false;
-    }
-
-    std::stringstream ss;
-    ss <<  "connection";
-    ss << " " << (connected ? "1" : "0");
-    ss << " " << (int)type;
-    ss << "\n"; // append seperator
-
-    const std::string& data = ss.str();
-    int remain = data.length();
-    ssize_t sent = 0;
-
-    while (remain > 0 &&
-          (sent = ::send(socketFd, data.c_str() + (data.length() - remain),
-                       remain, MSG_NOSIGNAL)) > 0) {
-        remain -= sent;
-    }
-
-    if (sent < 0) {
-        LOC_LOGe("sending error. reason:%s", strerror(errno));
-    }
-
-    closeSocket(socketFd);
-
-    return (remain == 0);
 }
 
 }  // namespace implementation

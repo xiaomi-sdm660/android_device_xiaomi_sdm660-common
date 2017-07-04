@@ -35,6 +35,7 @@
 #include <LocationAPI.h>
 #include <Agps.h>
 #include <SystemStatus.h>
+#include <XtraSystemStatusObserver.h>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -105,6 +106,7 @@ class GnssAdapter : public LocAdapterBase {
     // This must be initialized via initAgps()
     AgpsManager mAgpsManager;
     AgpsCbInfo mAgpsCbInfo;
+    XtraSystemStatusObserver mXtraObserver;
 
     /* === SystemStatus ===================================================================== */
     SystemStatus* mSystemStatus;
@@ -274,6 +276,10 @@ public:
 
     void injectLocationCommand(double latitude, double longitude, float accuracy);
     void injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty);
+
+    inline void updateConnectionStatusCommand(bool connected, uint8_t type) {
+        mXtraObserver.updateConnectionStatus(connected, type);
+    }
 
 };
 
