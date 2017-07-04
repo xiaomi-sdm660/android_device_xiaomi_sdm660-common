@@ -24,18 +24,17 @@ LOCAL_SRC_FILES += \
 LOCAL_CFLAGS += \
      -fno-short-enums
 
-LOCAL_C_INCLUDES:= \
-    $(TARGET_OUT_HEADERS)/gps.utils
-
-LOCAL_COPY_HEADERS_TO:= liblocation_api/
-LOCAL_COPY_HEADERS:= \
-    LocationAPI.h \
-    LocationAPIClientBase.h \
-    location_interface.h
+LOCAL_HEADER_LIBRARIES := \
+    libgps.utils_headers
 
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := liblocation_api_headers
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+include $(BUILD_HEADER_LIBRARY)
 
 endif # not BUILD_TINY_ANDROID
 endif # BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE
