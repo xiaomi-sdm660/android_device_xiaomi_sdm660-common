@@ -541,10 +541,12 @@ enum loc_api_adapter_err LocApiBase::
 }
 
 enum loc_api_adapter_err LocApiBase::
-   getBestAvailableZppFix(LocGpsLocation & zppLoc, LocPosTechMask & tech_mask)
+   getBestAvailableZppFix(LocGpsLocation & zppLoc, GpsLocationExtended & locationExtended,
+           LocPosTechMask & tech_mask)
 {
    memset(&zppLoc, 0, sizeof(zppLoc));
    memset(&tech_mask, 0, sizeof(tech_mask));
+   memset(&locationExtended, 0, sizeof (locationExtended));
    DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 }
 

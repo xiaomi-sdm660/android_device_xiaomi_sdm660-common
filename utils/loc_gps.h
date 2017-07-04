@@ -99,7 +99,7 @@ typedef uint16_t LocGpsLocationFlags;
 /** LocGpsLocation has valid accuracy. */
 #define LOC_GPS_LOCATION_HAS_ACCURACY   0x0010
 /** LocGpsLocation has valid vertical uncertainity */
-#define LOC_GPS_LOCATION_HAS_VERT_UNCERTAINITY   0x0020
+#define LOC_GPS_LOCATION_HAS_VERT_UNCERTAINITY   0x0040
 
 /** Flags for the loc_gps_set_capabilities callback. */
 
@@ -541,7 +541,7 @@ typedef struct {
      * Represents altitude in meters above the WGS 84 reference ellipsoid.
      */
     double          altitude;
-    /** Represents speed in meters per second. */
+    /** Represents horizontal speed in meters per second. */
     float           speed;
     /** Represents heading in degrees. */
     float           bearing;
