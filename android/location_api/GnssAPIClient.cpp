@@ -168,6 +168,7 @@ bool GnssAPIClient::gnssSetPositionMode(IGnss::GnssPositionMode mode,
         LOC_LOGD("%s]: invalid GnssPositionMode: %d", __FUNCTION__, mode);
         retVal = false;
     }
+    locAPIUpdateTrackingOptions(mLocationOptions);
     return retVal;
 }
 
