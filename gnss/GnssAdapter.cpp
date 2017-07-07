@@ -2700,7 +2700,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
         case GNSS_SV_TYPE_QZSS:
             svid_min = GNSS_BUGREPORT_QZSS_MIN;
             svid_num = QZSS_NUM;
-            svid_idx = GPS_NUM+GLO_NUM;
+            svid_idx = GPS_NUM+GLO_NUM+BDS_NUM+GAL_NUM;
             if (!in.mSvHealth.empty()) {
                 eph_health_good_mask = in.mSvHealth.back().mQzssGoodMask;
                 eph_health_bad_mask  = in.mSvHealth.back().mQzssBadMask;
@@ -2713,7 +2713,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
         case GNSS_SV_TYPE_BEIDOU:
             svid_min = GNSS_BUGREPORT_BDS_MIN;
             svid_num = BDS_NUM;
-            svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM;
+            svid_idx = GPS_NUM+GLO_NUM;
             if (!in.mSvHealth.empty()) {
                 eph_health_good_mask = in.mSvHealth.back().mBdsGoodMask;
                 eph_health_bad_mask  = in.mSvHealth.back().mBdsBadMask;
@@ -2726,7 +2726,7 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
         case GNSS_SV_TYPE_GALILEO:
             svid_min = GNSS_BUGREPORT_GAL_MIN;
             svid_num = GAL_NUM;
-            svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM;
+            svid_idx = GPS_NUM+GLO_NUM+BDS_NUM;
             if (!in.mSvHealth.empty()) {
                 eph_health_good_mask = in.mSvHealth.back().mGalGoodMask;
                 eph_health_bad_mask  = in.mSvHealth.back().mGalBadMask;
