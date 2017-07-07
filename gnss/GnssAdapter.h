@@ -92,6 +92,7 @@ class GnssAdapter : public LocAdapterBase {
     /* ==== CONTROL ======================================================================== */
     LocationControlCallbacks mControlCallbacks;
     uint32_t mPowerVoteId;
+    uint32_t mNmeaMask;
 
     /* ==== NI ============================================================================= */
     NiData mNiData;
