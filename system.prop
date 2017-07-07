@@ -192,3 +192,5 @@ vendor.display.enable_default_color_mode=true
 
 # Property for backup NTP Server
 persist.backup.ntpServer="0.pool.ntp.org"
+# enable IZat OptInApp overlay
+persist.vendor.overlay.izat.optin=rro
