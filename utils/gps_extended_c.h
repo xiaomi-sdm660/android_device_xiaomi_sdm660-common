@@ -270,7 +270,7 @@ typedef enum loc_position_mode_type {
 #define GPS_DEFAULT_FIX_INTERVAL_MS      1000
 
 /** Flags to indicate which values are valid in a GpsLocationExtended. */
-typedef uint16_t GpsLocationExtendedFlags;
+typedef uint32_t GpsLocationExtendedFlags;
 /** GpsLocationExtended has valid pdop, hdop, vdop. */
 #define GPS_LOCATION_EXTENDED_HAS_DOP 0x0001
 /** GpsLocationExtended has valid altitude mean sea level. */
@@ -301,6 +301,12 @@ typedef uint16_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_NAV_SOLUTION_MASK 0x2000
 /** GpsLocationExtended has valid LocPosTechMask */
 #define GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK   0x4000
+/** GpsLocationExtended has valid LocSvInfoSource */
+#define GPS_LOCATION_EXTENDED_HAS_SV_SOURCE_INFO   0x8000
+/** GpsLocationExtended has valid position dynamics data */
+#define GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA   0x10000
+/** GpsLocationExtended has GPS Time */
+#define GPS_LOCATION_EXTENDED_HAS_GPS_TIME   0x20000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -311,6 +317,18 @@ typedef uint32_t LocNavSolutionMask;
 #define LOC_NAV_MASK_SBAS_CORRECTION_LONG ((LocNavSolutionMask)0x0004)
 /**<  Bitmask to specify whether SBAS integrity information is used  */
 #define LOC_NAV_MASK_SBAS_INTEGRITY ((LocNavSolutionMask)0x0008)
+
+typedef uint32_t LocPosDataMask;
+/* Bitmask to specify whether Navigation data has Forward Acceleration  */
+#define LOC_NAV_DATA_HAS_LONG_ACCEL ((LocPosDataMask)0x0001)
+/* Bitmask to specify whether Navigation data has Sideward Acceleration */
+#define LOC_NAV_DATA_HAS_LAT_ACCEL ((LocPosDataMask)0x0002)
+/* Bitmask to specify whether Navigation data has Vertical Acceleration */
+#define LOC_NAV_DATA_HAS_VERT_ACCEL ((LocPosDataMask)0x0004)
+/* Bitmask to specify whether Navigation data has Heading Rate */
+#define LOC_NAV_DATA_HAS_YAW_RATE ((LocPosDataMask)0x0008)
+/* Bitmask to specify whether Navigation data has Body pitch */
+#define LOC_NAV_DATA_HAS_PITCH ((LocPosDataMask)0x0010)
 
 /** GPS PRN Range */
 #define GPS_SV_PRN_MIN      1
@@ -358,12 +376,40 @@ typedef struct {
     uint64_t qzss_sv_used_ids_mask;
 } GnssSvUsedInPosition;
 
+/* Body Frame parameters */
+typedef struct {
+    /** Contains Body frame LocPosDataMask bits. */
+   uint32_t        bodyFrameDatamask;
+   /* Forward Acceleration in body frame (m/s2)*/
+   float           longAccel;
+   /* Sideward Acceleration in body frame (m/s2)*/
+   float           latAccel;
+   /* Vertical Acceleration in body frame (m/s2)*/
+   float           vertAccel;
+   /* Heading Rate (Radians/second) */
+   float           yawRate;
+   /* Body pitch (Radians) */
+   float           pitch;
+}LocPositionDynamics;
+
+/* GPS Time structure */
+typedef struct {
+
+  /**<   Current GPS week as calculated from midnight, Jan. 6, 1980. \n
+       - Units: Weeks */
+  uint16_t gpsWeek;
+
+  /**<   Amount of time into the current GPS week. \n
+       - Units: Milliseconds */
+  uint32_t gpsTimeOfWeekMs;
+}GPSTimeStruct;
+
 /** Represents gps location extended. */
 typedef struct {
     /** set to sizeof(GpsLocationExtended) */
     size_t          size;
     /** Contains GpsLocationExtendedFlags bits. */
-    uint16_t        flags;
+    uint32_t        flags;
     /** Contains the Altitude wrt mean sea level */
     float           altitudeMeanSeaLevel;
     /** Contains Position Dilusion of Precision. */
@@ -398,6 +444,12 @@ typedef struct {
     LocNavSolutionMask  navSolutionMask;
     /** Position technology used in computing this fix */
     LocPosTechMask tech_mask;
+    /** SV Info source used in computing this fix */
+    LocSvInfoSource sv_source;
+    /** Body Frame Dynamics: 4wayAcceleration and pitch set with validity */
+    LocPositionDynamics bodyFrameData;
+    /** GPS Time */
+    GPSTimeStruct gpsTime;
 } GpsLocationExtended;
 
 enum loc_sess_status {
