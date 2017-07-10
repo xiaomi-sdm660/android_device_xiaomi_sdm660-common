@@ -220,6 +220,9 @@ protected:
 	bool modem_ul_v4_set;
 	bool modem_ul_v6_set;
 
+	bool sta_ul_v4_set;
+	bool sta_ul_v6_set;
+
 	uint32_t if_ipv4_subnet;
 
 	uint32_t ipv6_prefix[2];
