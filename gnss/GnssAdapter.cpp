@@ -61,6 +61,7 @@ GnssAdapter::GnssAdapter() :
     mGnssSvIdUsedInPosAvail(false),
     mControlCallbacks(),
     mPowerVoteId(0),
+    mNmeaMask(0),
     mNiData(),
     mAgpsManager(),
     mAgpsCbInfo()
@@ -520,11 +521,15 @@ GnssAdapter::setConfigCommand()
             // set nmea mask type
             uint32_t mask = 0;
             if (NMEA_PROVIDER_MP == ContextBase::mGps_conf.NMEA_PROVIDER) {
-                mask = LOC_NMEA_ALL_SUPPORTED_MASK;
-            } else {
-                mask = LOC_NMEA_MASK_DEBUG_V02;
+                mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
             }
-            mApi.setNMEATypes(mask);
+            if (mApi.isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
+                mask |= LOC_NMEA_MASK_DEBUG_V02;
+            }
+            if (mask != 0) {
+                mApi.setNMEATypes(mask);
+            }
+            mAdapter.mNmeaMask= mask;
 
             mApi.setXtraVersionCheck(ContextBase::mGps_conf.XTRA_VERSION_CHECK);
             if (ContextBase::mSap_conf.GYRO_BIAS_RANDOM_WALK_VALID ||
@@ -1011,7 +1016,7 @@ GnssAdapter::updateClientsEventMask()
         if (it->second.gnssSvCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_SATELLITE_REPORT;
         }
-        if (it->second.gnssNmeaCb != nullptr) {
+        if ((it->second.gnssNmeaCb != nullptr) && (mNmeaMask)) {
             mask |= LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT;
         }
         if (it->second.gnssMeasurementsCb != nullptr) {
