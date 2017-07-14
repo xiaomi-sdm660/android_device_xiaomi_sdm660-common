@@ -1123,6 +1123,9 @@ GnssAdapter::requestCapabilitiesCommand(LocationAPI* client)
             if (LOC_GPS_CAPABILITY_MSA & carrierCapabilities) {
                 mask |= LOCATION_CAPABILITIES_GNSS_MSA_BIT;
             }
+            if (mApi.isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
+                mask |= LOCATION_CAPABILITIES_DEBUG_NMEA_BIT;
+            }
 
             callbacks.capabilitiesCb(mask);
         }

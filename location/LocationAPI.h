@@ -138,6 +138,8 @@ typedef enum {
     LOCATION_CAPABILITIES_GNSS_MSB_BIT                      = (1<<6),
     // supports startTracking/startBatching API with LocationOptions.mode of MSA (MS Assisted)
     LOCATION_CAPABILITIES_GNSS_MSA_BIT                      = (1<<7),
+    // supports debug nmea sentences in the debugNmeaCallback
+    LOCATION_CAPABILITIES_DEBUG_NMEA_BIT                    = (1<<8),
 } LocationCapabilitiesBits;
 
 typedef enum {
