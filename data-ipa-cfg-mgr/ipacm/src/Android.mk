@@ -26,7 +26,7 @@ LOCAL_CFLAGS += -DFEATURE_IPACM_RESTART
 LOCAL_CFLAGS += -DFEATURE_ETH_BRIDGE_LE
 
 LOCAL_CFLAGS += -DFEATURE_IPACM_HAL -Wall -Werror -Wno-error=macro-redefined
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
+ifneq (,$(filter eng, $(TARGET_BUILD_VARIANT)))
 LOCAL_CFLAGS += -DDEBUG
 endif
 
