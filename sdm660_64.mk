@@ -75,11 +75,11 @@ PRODUCT_CHARACTERISTICS := nosdcard
 
 # When can normal compile this module,  need module owner enable below commands
 # font rendering engine feature switch
--include $(QCPATH)/common/config/rendering-engine.mk
-ifneq (,$(strip $(wildcard $(PRODUCT_RENDERING_ENGINE_REVLIB))))
-    MULTI_LANG_ENGINE := REVERIE
+#-include $(QCPATH)/common/config/rendering-engine.mk
+#ifneq (,$(strip $(wildcard $(PRODUCT_RENDERING_ENGINE_REVLIB))))
+#    MULTI_LANG_ENGINE := REVERIE
 #    MULTI_LANG_ZAWGYI := REVERIE
-endif
+#endif
 
 # Enable features in video HAL that can compile only on this platform
 TARGET_USES_MEDIA_EXTENSIONS := true
