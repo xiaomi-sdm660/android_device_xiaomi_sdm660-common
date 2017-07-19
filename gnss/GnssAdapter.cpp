@@ -771,6 +771,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                     ContextBase::mGps_conf.SUPL_MODE = newSuplMode;
                     mAdapter.getUlpProxy()->setCapabilities(
                         ContextBase::getCarrierCapabilities());
+                    mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
                 }
                 err = LOCATION_ERROR_SUCCESS;
                 if (index < mCount) {
@@ -1085,14 +1086,11 @@ GnssAdapter::requestCapabilitiesCommand(LocationAPI* client)
 
     struct MsgRequestCapabilities : public LocMsg {
         GnssAdapter& mAdapter;
-        LocApiBase& mApi;
         LocationAPI* mClient;
         inline MsgRequestCapabilities(GnssAdapter& adapter,
-                                      LocApiBase& api,
                                       LocationAPI* client) :
             LocMsg(),
             mAdapter(adapter),
-            mApi(api),
             mClient(client) {}
         inline virtual void proc() const {
             LocationCallbacks callbacks = mAdapter.getClientCallbacks(mClient);
@@ -1101,41 +1099,58 @@ GnssAdapter::requestCapabilitiesCommand(LocationAPI* client)
                 return;
             }
 
-            LocationCapabilitiesMask mask = 0;
-            // time based tracking always supported
-            mask |= LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT;
-            if (mApi.isMessageSupported(LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_LOCATION_BATCHING)){
-                mask |= LOCATION_CAPABILITIES_TIME_BASED_BATCHING_BIT |
-                        LOCATION_CAPABILITIES_DISTANCE_BASED_BATCHING_BIT;
-            }
-            if (mApi.isMessageSupported(LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_TRACKING)) {
-                mask |= LOCATION_CAPABILITIES_DISTANCE_BASED_TRACKING_BIT;
-            }
-            if (mApi.isMessageSupported(LOC_API_ADAPTER_MESSAGE_OUTDOOR_TRIP_BATCHING)) {
-                mask |= LOCATION_CAPABILITIES_OUTDOOR_TRIP_BATCHING_BIT;
-            }
-
-            // geofence always supported
-            mask |= LOCATION_CAPABILITIES_GEOFENCE_BIT;
-            if (mApi.gnssConstellationConfig()) {
-                mask |= LOCATION_CAPABILITIES_GNSS_MEASUREMENTS_BIT;
-            }
-            uint32_t carrierCapabilities = ContextBase::getCarrierCapabilities();
-            if (carrierCapabilities & LOC_GPS_CAPABILITY_MSB) {
-                mask |= LOCATION_CAPABILITIES_GNSS_MSB_BIT;
-            }
-            if (LOC_GPS_CAPABILITY_MSA & carrierCapabilities) {
-                mask |= LOCATION_CAPABILITIES_GNSS_MSA_BIT;
-            }
-            if (mApi.isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
-                mask |= LOCATION_CAPABILITIES_DEBUG_NMEA_BIT;
-            }
-
+            LocationCapabilitiesMask mask = mAdapter.getCapabilities();
             callbacks.capabilitiesCb(mask);
         }
     };
 
-    sendMsg(new MsgRequestCapabilities(*this, *mLocApi, client));
+    sendMsg(new MsgRequestCapabilities(*this, client));
+}
+
+LocationCapabilitiesMask
+GnssAdapter::getCapabilities()
+{
+    LocationCapabilitiesMask mask = 0;
+    uint32_t carrierCapabilities = ContextBase::getCarrierCapabilities();
+    // time based tracking always supported
+    mask |= LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT;
+    // geofence always supported
+    mask |= LOCATION_CAPABILITIES_GEOFENCE_BIT;
+    if (carrierCapabilities & LOC_GPS_CAPABILITY_MSB) {
+        mask |= LOCATION_CAPABILITIES_GNSS_MSB_BIT;
+    }
+    if (LOC_GPS_CAPABILITY_MSA & carrierCapabilities) {
+        mask |= LOCATION_CAPABILITIES_GNSS_MSA_BIT;
+    }
+    if (mLocApi == nullptr)
+        return mask;
+    if (mLocApi->isMessageSupported(LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_LOCATION_BATCHING)) {
+        mask |= LOCATION_CAPABILITIES_TIME_BASED_BATCHING_BIT |
+                LOCATION_CAPABILITIES_DISTANCE_BASED_BATCHING_BIT;
+    }
+    if (mLocApi->isMessageSupported(LOC_API_ADAPTER_MESSAGE_DISTANCE_BASE_TRACKING)) {
+        mask |= LOCATION_CAPABILITIES_DISTANCE_BASED_TRACKING_BIT;
+    }
+    if (mLocApi->isMessageSupported(LOC_API_ADAPTER_MESSAGE_OUTDOOR_TRIP_BATCHING)) {
+        mask |= LOCATION_CAPABILITIES_OUTDOOR_TRIP_BATCHING_BIT;
+    }
+    if (mLocApi->gnssConstellationConfig()) {
+        mask |= LOCATION_CAPABILITIES_GNSS_MEASUREMENTS_BIT;
+    }
+    if (mLocApi->isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
+        mask |= LOCATION_CAPABILITIES_DEBUG_NMEA_BIT;
+    }
+    return mask;
+}
+
+void
+GnssAdapter::broadcastCapabilities(LocationCapabilitiesMask mask)
+{
+    for (auto it = mClientData.begin(); it != mClientData.end(); ++it) {
+        if (nullptr != it->second.capabilitiesCb) {
+            it->second.capabilitiesCb(mask);
+        }
+    }
 }
 
 LocationCallbacks
