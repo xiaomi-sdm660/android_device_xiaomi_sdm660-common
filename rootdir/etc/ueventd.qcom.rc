@@ -236,7 +236,9 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/tsc_ci0              0660   media       media
 
 # sensors
-/dev/sensors              0660   system     system
+# /dev/sensors only supports an ioctl to get the current SLPI timestamp
+# allow the sensors daemon to perform this as non-root
+/dev/sensors              0660   root       system
 /sys/devices/i2c-12/12-*  pollrate_ms 0664 system system
 /sys/devices/f9925000.i2c/i2c-0/0-*                 enable         0660    input    system
 /sys/devices/f9925000.i2c/i2c-0/0-*                 poll_delay     0660    input    system
@@ -412,7 +414,6 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/class/graphics/fb0     msm_cmd_autorefresh_en   0664    system  graphics
 /sys/class/graphics/fb0     dynamic_bitclk           0664    system  graphics
 /sys/devices/virtual/hdcp/msm_hdcp  min_level_change 0664    system  graphics
-
 
 #QG device
 /dev/qg               0660   system     system

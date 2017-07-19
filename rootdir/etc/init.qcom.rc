@@ -419,6 +419,7 @@ on post-fs-data
     # Create /data/time folder for time-services
     mkdir /data/vendor/time/ 0700 system system
 
+
     setprop vold.post_fs_data_done 1
 
     #Create a folder for SRS to be able to create a usercfg file
@@ -630,15 +631,20 @@ service vendor.sensors /vendor/bin/sscrpcd
     disabled
 
 service vendor.sensors.qti /vendor/bin/sensors.qti
-    class core
+    class main
     user system
     group system
+    # Grants the ability for this daemon to bind IPC router ports so it can
+    # register QMI services
+    capabilities NET_BIND_SERVICE
 
 service vendor.sensors.qcom /vendor/bin/sensors.qcom
-    class core
-    user root
-    group root
-    writepid /dev/cpuset/system-background/tasks
+    class main
+    user system
+    group system
+    # Grants the ability for this daemon to bind IPC router ports so it can
+    # register QMI services
+    capabilities NET_BIND_SERVICE
 
 on property:ro.vendor.use_data_netmgrd=false
     # netmgr not supported on specific target
