@@ -1,5 +1,4 @@
 TARGET_USES_AOSP := true
-TARGET_USES_QCOM_BSP := false
 
 ifneq ($(TARGET_USES_AOSP),true)
   DEVICE_PACKAGE_OVERLAYS := device/qcom/sdm660_64/overlay
