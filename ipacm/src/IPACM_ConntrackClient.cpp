@@ -606,28 +606,43 @@ void IPACM_ConntrackClient::UNRegisterWithConnTrack(void)
 
 	IPACMDBG("\n");
 
+	pClient = IPACM_ConntrackClient::GetInstance();
+	if(pClient == NULL)
+	{
+		IPACMERR("unable to retrieve instance of conntrack client\n");
+		return;
+	}
+
 	/* destroy the TCP filter.. this will not detach the filter */
-	nfct_filter_destroy(pClient->tcp_filter);
-	pClient->tcp_filter = NULL;
+	if (pClient->tcp_filter) {
+		nfct_filter_destroy(pClient->tcp_filter);
+		pClient->tcp_filter = NULL;
+	}
 
 	/* de-register the callback */
-	nfct_callback_unregister(pClient->tcp_hdl);
-	/* close the handle */
-	nfct_close(pClient->tcp_hdl);
-	pClient->tcp_hdl = NULL;
+	if (pClient->tcp_hdl) {
+		nfct_callback_unregister(pClient->tcp_hdl);
+		/* close the handle */
+		nfct_close(pClient->tcp_hdl);
+		pClient->tcp_hdl = NULL;
+	}
 
 	/* destroy the filter.. this will not detach the filter */
-	nfct_filter_destroy(pClient->udp_filter);
-	pClient->udp_filter = NULL;
+	if (pClient->udp_filter) {
+		nfct_filter_destroy(pClient->udp_filter);
+		pClient->udp_filter = NULL;
+	}
 
 	/* de-register the callback */
-	nfct_callback_unregister(pClient->udp_hdl);
-	/* close the handle */
-	nfct_close(pClient->udp_hdl);
-	pClient->udp_hdl = NULL;
+	if (pClient->udp_hdl) {
+		nfct_callback_unregister(pClient->udp_hdl);
+		/* close the handle */
+		nfct_close(pClient->udp_hdl);
+		pClient->udp_hdl = NULL;
+	}
 
-	pClient->fd_tcp = 0;
-	pClient->fd_udp = 0;
+	pClient->fd_tcp = -1;
+	pClient->fd_udp = -1;
 
 	return;
 }
