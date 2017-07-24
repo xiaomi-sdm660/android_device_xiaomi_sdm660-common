@@ -4,12 +4,15 @@ AM_CFLAGS = \
      -I./ \
      -I../utils \
      -I../core \
+     -I../core/data-items \
+     -I../core/observer \
      -I../location \
      -std=c++11
 
 libgnss_la_SOURCES = \
     location_gnss.cpp \
     GnssAdapter.cpp \
+    XtraSystemStatusObserver.cpp \
     Agps.cpp
 
 if USE_GLIB

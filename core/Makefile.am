@@ -1,6 +1,9 @@
 AM_CFLAGS = -I./ \
             -I../utils \
             -I../location \
+            -I./data-items \
+            -I./data-items/common \
+            -I./observer \
             $(LOCPLA_CFLAGS) \
             $(GPSUTILS_CFLAGS) \
             -I$(WORKSPACE)/gps-noship/flp \
