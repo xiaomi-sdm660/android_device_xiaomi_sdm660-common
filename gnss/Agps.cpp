@@ -209,7 +209,10 @@ void AgpsStateMachine::processAgpsEventReleased(){
     switch (mState){
 
         case AGPS_STATE_RELEASED:
-            LOC_LOGE("Unexpected event RELEASED in state %d", mState);
+            /* Subscriber list should be empty if we are in released state */
+            if (!mSubscriberList.empty()) {
+                LOC_LOGE("Unexpected event RELEASED in RELEASED state");
+            }
             break;
 
         case AGPS_STATE_ACQUIRED:
