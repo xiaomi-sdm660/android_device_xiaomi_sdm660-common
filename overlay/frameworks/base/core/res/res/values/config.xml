@@ -217,6 +217,15 @@
         <item>"wlan0"</item>
         <item>"wigig0"</item>
     </string-array>
+    
+    <!-- dual sap mode is supported on this device. -->
+    <bool name="config_wifi_dual_sap_mode_enabled">true</bool>
+
+    <!-- list of interface names for SoftAp in Dual mode. -->
+    <string-array translatable="false" name="config_wifi_dual_sap_interfaces">
+        <item>"softap1"</item>
+        <item>"softap2"</item>
+    </string-array>
 
     <!-- List of regexpressions describing the interface (if any) that represent tetherable
          bluetooth interfaces.  If the device doesn't want to support tethering over bluetooth this
