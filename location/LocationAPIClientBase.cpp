@@ -600,6 +600,7 @@ void LocationAPIClientBase::locAPIRemoveGeofences(size_t count, uint32_t* ids)
         if (sessions == NULL) {
             LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            pthread_mutex_unlock(&mMutex);
             return;
         }
 
@@ -634,6 +635,7 @@ void LocationAPIClientBase::locAPIModifyGeofences(
         if (sessions == NULL) {
             LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            pthread_mutex_unlock(&mMutex);
             return;
         }
 
@@ -668,6 +670,7 @@ void LocationAPIClientBase::locAPIPauseGeofences(size_t count, uint32_t* ids)
         if (sessions == NULL) {
             LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            pthread_mutex_unlock(&mMutex);
             return;
         }
 
@@ -702,6 +705,7 @@ void LocationAPIClientBase::locAPIResumeGeofences(
         if (sessions == NULL) {
             LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            pthread_mutex_unlock(&mMutex);
             return;
         }
 
@@ -740,6 +744,7 @@ void LocationAPIClientBase::locAPIRemoveAllGeofences()
         if (sessions == NULL) {
             LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
+            pthread_mutex_unlock(&mMutex);
             return;
         }
 
