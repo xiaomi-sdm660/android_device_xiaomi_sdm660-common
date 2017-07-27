@@ -1,9 +1,11 @@
 AM_CFLAGS = -Wundef \
          -I./ \
+         -std=c++11 \
          $(LOCPLA_CFLAGS)
 
 AM_CPPFLAGS = -Wundef \
          -I./ \
+         -std=c++11 \
          $(LOCPLA_CFLAGS)
 
 libgps_utils_so_la_h_sources = \

@@ -25,6 +25,7 @@ LOCAL_CFLAGS += \
      -fno-short-enums
 
 LOCAL_HEADER_LIBRARIES := \
+    libloc_pla_headers \
     libgps.utils_headers
 
 LOCAL_PRELINK_MODULE := false

@@ -29,7 +29,7 @@
 
 #include <location_interface.h>
 #include <dlfcn.h>
-#include <log_util.h>
+#include <platform_lib_log_util.h>
 #include <pthread.h>
 #include <map>
 

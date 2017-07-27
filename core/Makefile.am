@@ -1,10 +1,12 @@
 AM_CFLAGS = -I./ \
             -I../utils \
+            -I../location \
             $(LOCPLA_CFLAGS) \
             $(GPSUTILS_CFLAGS) \
             -I$(WORKSPACE)/gps-noship/flp \
             -D__func__=__PRETTY_FUNCTION__ \
-            -fno-short-enums
+            -fno-short-enums \
+            -std=c++11
 
 libloc_core_la_h_sources = \
            LocApiBase.h \
