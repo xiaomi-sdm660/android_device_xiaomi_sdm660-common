@@ -539,6 +539,7 @@ private:
     BiDict<GeofenceBreachTypeMask> mGeofenceBiDict;
     BiDict<SessionEntity> mSessionBiDict;
     int32_t mBatchSize;
+    bool mTracking;
 };
 
 #endif /* LOCATION_API_CLINET_BASE_H */

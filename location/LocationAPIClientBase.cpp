@@ -223,7 +223,8 @@ LocationAPIClientBase::LocationAPIClientBase() :
     mGeofenceBreachCallback(nullptr),
     mBatchingStatusCallback(nullptr),
     mLocationAPI(nullptr),
-    mBatchSize(-1)
+    mBatchSize(-1),
+    mTracking(false)
 {
 
     // use recursive mutex, in case callback come from the same thread
@@ -303,14 +304,18 @@ uint32_t LocationAPIClientBase::locAPIStartTracking(LocationOptions& options)
     uint32_t retVal = LOCATION_ERROR_GENERAL_FAILURE;
     pthread_mutex_lock(&mMutex);
     if (mLocationAPI) {
-        uint32_t session = mLocationAPI->startTracking(options);
-        LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, session);
-        // onResponseCb might be called from other thread immediately after
-        // startTracking returns, so we are not going to unlock mutex
-        // until StartTrackingRequest is pushed into mRequestQueues[REQUEST_TRACKING]
-        mRequestQueues[REQUEST_TRACKING].reset(session);
-        mRequestQueues[REQUEST_TRACKING].push(new StartTrackingRequest(*this));
-
+        if (mTracking) {
+            LOC_LOGW("%s:%d] Existing tracking session present", __FUNCTION__, __LINE__);
+        } else {
+            uint32_t session = mLocationAPI->startTracking(options);
+            LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, session);
+            // onResponseCb might be called from other thread immediately after
+            // startTracking returns, so we are not going to unlock mutex
+            // until StartTrackingRequest is pushed into mRequestQueues[REQUEST_TRACKING]
+            mRequestQueues[REQUEST_TRACKING].reset(session);
+            mRequestQueues[REQUEST_TRACKING].push(new StartTrackingRequest(*this));
+            mTracking = true;
+        }
 
         retVal = LOCATION_ERROR_SUCCESS;
     }
@@ -328,6 +333,7 @@ void LocationAPIClientBase::locAPIStopTracking()
         if (session > 0) {
             mRequestQueues[REQUEST_TRACKING].push(new StopTrackingRequest(*this));
             mLocationAPI->stopTracking(session);
+            mTracking = false;
         } else {
             LOC_LOGE("%s:%d] invalid session: %d.", __FUNCTION__, __LINE__, session);
         }
