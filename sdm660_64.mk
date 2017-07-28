@@ -108,7 +108,7 @@ endif #BOARD_HAVE_QCOM_FM
 
 # add vendor manifest file
 PRODUCT_COPY_FILES += \
-    device/qcom/sdm660_64/vintf.xml:$(TARGET_COPY_OUT_VENDOR)/manifest.xml
+    device/qcom/sdm660_64/manifest.xml:$(TARGET_COPY_OUT_VENDOR)/manifest.xml
 
 # Audio configuration file
 -include $(TOPDIR)hardware/qcom/audio/configs/sdm660/sdm660.mk
