@@ -1725,16 +1725,17 @@ int IPACM_Wlan::handle_down_evt()
 			goto fail;
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, NUM_IPV4_ICMP_FLT_RULE);
-
-		if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
+		if (dft_v4fl_rule_hdl[0] != 0)
 		{
-			IPACMERR("Error Deleting Filtering Rule, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
+			if (m_filtering.DeleteFilteringHdls(dft_v4fl_rule_hdl, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES) == false)
+			{
+				IPACMERR("Error Deleting Filtering Rule, aborting...\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES);
+			IPACMDBG_H("Deleted default v4 filter rules successfully.\n");
 		}
-		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPV4_DEFAULT_FILTERTING_RULES);
-		IPACMDBG_H("Deleted default v4 filter rules successfully.\n");
-
 		/* delete private-ipv4 filter rules */
 #ifdef FEATURE_IPA_ANDROID
 		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES) == false)
@@ -1770,14 +1771,17 @@ int IPACM_Wlan::handle_down_evt()
 		}
 		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, NUM_IPV6_ICMP_FLT_RULE);
 
-		if (m_filtering.DeleteFilteringHdls(dft_v6fl_rule_hdl, IPA_IP_v6, IPV6_DEFAULT_FILTERTING_RULES) == false)
+		if (dft_v6fl_rule_hdl[0] != 0)
 		{
-			IPACMERR("Error Adding RuleTable(1) to Filtering, aborting...\n");
-			res = IPACM_FAILURE;
-			goto fail;
+			if (m_filtering.DeleteFilteringHdls(dft_v6fl_rule_hdl, IPA_IP_v6, IPV6_DEFAULT_FILTERTING_RULES) == false)
+			{
+				IPACMERR("Error Adding RuleTable(1) to Filtering, aborting...\n");
+				res = IPACM_FAILURE;
+				goto fail;
+			}
+			IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, IPV6_DEFAULT_FILTERTING_RULES);
+			IPACMDBG_H("Deleted default v6 filter rules successfully.\n");
 		}
-		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, IPV6_DEFAULT_FILTERTING_RULES);
-		IPACMDBG_H("Deleted default v6 filter rules successfully.\n");
 	}
 	IPACMDBG_H("finished delete filtering rules\n ");
 
