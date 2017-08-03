@@ -419,11 +419,11 @@ on charger
 #    user system
 #    group system
 
-service seempd /system/vendor/bin/seempd
-class late_start
-user system
-group system sdcard_rw
-socket seempdw dgram 0666 system system
+service seempd /system/bin/seempd
+    class late_start
+    user system
+    group system sdcard_rw
+    socket seempdw dgram 0666 system system
 
 service tlocd /system/bin/tloc_daemon
     class late_start
