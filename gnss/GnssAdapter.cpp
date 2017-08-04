@@ -1900,17 +1900,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                             LocPosTechMask techMask)
 {
     bool reported = false;
-    if (LOC_SESS_FAILURE == status) {
-        Location invalidLocation = {};
-        invalidLocation.size = sizeof(Location);
-        for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-            if (nullptr != it->second.trackingCb) {
-                it->second.trackingCb(invalidLocation);
-            }
-        }
-        reported = true;
-    }
-    // what's in the else if is... (line by line)
+    // what's in the if is... (line by line)
     // 1. this is a final fix; and
     //   1.1 it is a Satellite fix; or
     //   1.2 it is a sensor fix
@@ -1920,7 +1910,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
     //   2.2.1 there is inaccuracy; and
     //   2.2.2 we care about inaccuracy; and
     //   2.2.3 the inaccuracy exceeds our tolerance
-    else if ((LOC_SESS_SUCCESS == status &&
+    if ((LOC_SESS_SUCCESS == status &&
               ((LOC_POS_TECH_MASK_SATELLITE |
                 LOC_POS_TECH_MASK_SENSORS   |
                 LOC_POS_TECH_MASK_HYBRID) &
