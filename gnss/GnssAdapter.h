@@ -139,6 +139,8 @@ public:
     void updateClientsEventMask();
     void stopClientSessions(LocationAPI* client);
     LocationCallbacks getClientCallbacks(LocationAPI* client);
+    LocationCapabilitiesMask getCapabilities();
+    void broadcastCapabilities(LocationCapabilitiesMask);
 
     /* ==== TRACKING ======================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
