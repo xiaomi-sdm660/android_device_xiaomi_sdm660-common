@@ -93,6 +93,13 @@ TARGET_USES_MEDIA_EXTENSIONS := true
 # WLAN chipset
 WLAN_CHIPSET := qca_cld3
 
+#
+# system prop for opengles version
+#
+# 196610 is decimal for 0x30002 to report major/minor versions as 3/2
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.opengles.version=196610
+
 #Android EGL implementation
 PRODUCT_PACKAGES += libGLES_android
 PRODUCT_BOOT_JARS += tcmiface
