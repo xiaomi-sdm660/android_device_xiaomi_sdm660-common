@@ -38,6 +38,7 @@ libloc_ds_api_CFLAGS = \
      $(QMIF_CFLAGS) \
      $(QMI_CFLAGS) \
      $(DATA_CFLAGS) \
+     $(GPSUTILS_CFLAGS) \
      -I$(WORKSPACE)/qcom-opensource/location/loc_api/ds_api
 
 libloc_ds_api_la_SOURCES = \
@@ -55,11 +56,11 @@ libloc_ds_api_la_LDFLAGS += -Wl,--export-dynamic
 libloc_ds_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_ds_api_CFLAGS)
 endif
 
-libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices -ldsi_netctrl $(GPSUTILS_LIBS) $(LOCPLA_LIBS) \
-$(GPSUTILS_LIBS)
+libloc_ds_api_la_LIBADD = -lstdc++ $(QMIF_LIBS) -lqmiservices -ldsi_netctrl $(GPSUTILS_LIBS) $(LOCPLA_LIBS)
 
 libloc_api_v02_CFLAGS = \
      $(QMIF_CFLAGS) \
+     $(GPSUTILS_CFLAGS) \
      -I$(WORKSPACE)/qcom-opensource/location/loc_api/ds_api \
      -I$(WORKSPACE)/qcom-opensource/location/loc_api/loc_api_v02
 
@@ -81,7 +82,7 @@ libloc_api_v02_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS) $(libloc_api_v02_CFLAGS
 endif
 
 libloc_api_v02_la_CXXFLAGS = -std=c++0x
-libloc_api_v02_la_LIBADD = -lstdc++ -lqmi_cci -lqmi_common_so $(QMIF_LIBS) $(LOCPLA_LIBS) ../core/libloc_core.la libloc_ds_api.la
+libloc_api_v02_la_LIBADD = -lstdc++ -lqmi_cci -lqmi_common_so $(QMIF_LIBS) $(GPSUTILS_LIBS) $(LOCPLA_LIBS) ../core/libloc_core.la libloc_ds_api.la
 
 library_include_HEADERS = \
    $(WORKSPACE)/qcom-opensource/location/loc_api/ds_api/ds_client.h \

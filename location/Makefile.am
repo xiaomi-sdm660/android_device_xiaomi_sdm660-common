@@ -1,5 +1,6 @@
 AM_CFLAGS = \
      $(LOCPLA_CFLAGS) \
+     $(GPSUTILS_CFLAGS) \
      $(LOCHAL_CFLAGS) \
      -I./ \
      -I../utils \
@@ -19,7 +20,7 @@ liblocation_api_la_LDFLAGS = -lpthread -shared -version-info 1:0:0
 liblocation_api_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-liblocation_api_la_LIBADD = -lstdc++ $(LOCPLA_LIBS) $(LOCHAL_LIBS)
+liblocation_api_la_LIBADD = -lstdc++ $(LOCPLA_LIBS) $(GPSUTILS_LIBS) $(LOCHAL_LIBS)
 
 library_include_HEADERS = \
     LocationAPI.h \
