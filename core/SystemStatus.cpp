@@ -28,6 +28,7 @@
  */
 #define LOG_TAG "LocSvc_SystemStatus"
 
+#include <inttypes.h>
 #include <string>
 #include <stdlib.h>
 #include <string.h>
@@ -183,7 +184,7 @@ public:
     {
         memset(&mM1, 0, sizeof(mM1));
         if (mField.size() < eMax) {
-            LOC_LOGE("PQWM1parser - invalid size=%d", mField.size());
+            LOC_LOGE("PQWM1parser - invalid size=%zu", mField.size());
             mM1.mTimeValid = 0;
             return;
         }
@@ -615,7 +616,7 @@ public:
         : SystemStatusNmeaBase(str_in, len_in)
     {
         if (mField.size() < eMax) {
-            LOC_LOGE("PQWP7parser - invalid size=%d", mField.size());
+            LOC_LOGE("PQWP7parser - invalid size=%zu", mField.size());
             return;
         }
         for (uint32_t i=0; i<SV_ALL_NUM; i++) {
@@ -944,7 +945,7 @@ bool SystemStatusXtra::equals(SystemStatusXtra& peer)
 
 void SystemStatusXtra::dump()
 {
-    LOC_LOGV("SystemStatusXtra: u=%ld:%ld m=%x a=%d:%d:%d:%d:%d v=%x:%x:%x:%x:%x",
+    LOC_LOGV("SystemStatusXtra: u=%ld:%ld m=%x a=%d:%d:%d:%d:%d v=%x:%x:%" PRIx64 ":%" PRIx64":%x",
              mUtcTime.tv_sec, mUtcTime.tv_nsec,
              mXtraValidMask,
              mGpsXtraAge,
@@ -986,7 +987,7 @@ bool SystemStatusEphemeris::equals(SystemStatusEphemeris& peer)
 
 void SystemStatusEphemeris::dump()
 {
-    LOC_LOGV("Ephemeris: u=%ld:%ld ev=%x:%x:%x:%x:%x",
+    LOC_LOGV("Ephemeris: u=%ld:%ld ev=%x:%x:%" PRIx64 ":%" PRIx64 ":%x",
              mUtcTime.tv_sec, mUtcTime.tv_nsec,
              mGpsEpheValid,
              mGloEpheValid,
@@ -1042,7 +1043,10 @@ bool SystemStatusSvHealth::equals(SystemStatusSvHealth& peer)
 
 void SystemStatusSvHealth::dump()
 {
-    LOC_LOGV("SvHealth: u=%ld:%ld u=%x:%x:%x:%x:%x g=%x:%x:%x:%x:%x b=%x:%x:%x:%x:%x",
+    LOC_LOGV("SvHealth: u=%ld:%ld \
+             u=%x:%x:%" PRIx64 ":%" PRIx64 ":%x \
+             g=%x:%x:%" PRIx64 ":%" PRIx64 ":%x \
+             b=%x:%x:%" PRIx64 ":%" PRIx64 ":%x",
              mUtcTime.tv_sec, mUtcTime.tv_nsec,
              mGpsUnknownMask,
              mGloUnknownMask,

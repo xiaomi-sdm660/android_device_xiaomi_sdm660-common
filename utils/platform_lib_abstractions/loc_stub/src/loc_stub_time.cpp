@@ -31,7 +31,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-int64_t systemTime(int clock)
+int64_t systemTime(int /*clock*/)
 {
     struct timeval t;
     t.tv_sec = t.tv_usec = 0;

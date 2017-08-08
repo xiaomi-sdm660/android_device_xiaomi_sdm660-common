@@ -79,7 +79,7 @@ void LocAdapterBase::
                         const GpsLocationExtended& locationExtended,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask,
-                        bool fromUlp) {
+                        bool /*fromUlp*/) {
     if (mLocAdapterProxyBase != NULL) {
         mLocAdapterProxyBase->reportPositionEvent((UlpLocation&)location,
                                                    (GpsLocationExtended&)locationExtended,
@@ -91,29 +91,29 @@ void LocAdapterBase::
 }
 
 void LocAdapterBase::
-    reportSvEvent(const GnssSvNotification& svNotify, bool fromUlp)
+    reportSvEvent(const GnssSvNotification& /*svNotify*/, bool /*fromUlp*/)
 DEFAULT_IMPL()
 
 void LocAdapterBase::
-    reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet)
+    reportSvMeasurementEvent(GnssSvMeasurementSet &/*svMeasurementSet*/)
 DEFAULT_IMPL()
 
 void LocAdapterBase::
-    reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
+    reportSvPolynomialEvent(GnssSvPolynomial &/*svPolynomial*/)
 DEFAULT_IMPL()
 
 void LocAdapterBase::
-    reportStatus(LocGpsStatusValue status)
+    reportStatus(LocGpsStatusValue /*status*/)
 DEFAULT_IMPL()
 
 
 void LocAdapterBase::
-    reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
+    reportNmeaEvent(const char* /*nmea*/, size_t /*length*/, bool /*fromUlp*/)
 DEFAULT_IMPL()
 
 bool LocAdapterBase::
-    reportXtraServer(const char* url1, const char* url2,
-                     const char* url3, const int maxlength)
+    reportXtraServer(const char* /*url1*/, const char* /*url2*/,
+                     const char* /*url3*/, const int /*maxlength*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
@@ -129,15 +129,15 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestATL(int connHandle, LocAGpsType agps_type)
+    requestATL(int /*connHandle*/, LocAGpsType /*agps_type*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    releaseATL(int connHandle)
+    releaseATL(int /*connHandle*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestSuplES(int connHandle)
+    requestSuplES(int /*connHandle*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
@@ -149,15 +149,15 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestNiNotifyEvent(const GnssNiNotification &notify, const void* data)
+    requestNiNotifyEvent(const GnssNiNotification &/*notify*/, const void* /*data*/)
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
-    reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify)
+    reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& /*measurementsNotify*/)
 DEFAULT_IMPL()
 
 bool LocAdapterBase::
-    reportWwanZppFix(LocGpsLocation &zppLoc)
+    reportWwanZppFix(LocGpsLocation &/*zppLoc*/)
 DEFAULT_IMPL(false)
 
 } // namespace loc_core

@@ -46,6 +46,7 @@ LOCAL_SHARED_LIBRARIES += \
     libloc_pla \
     liblocation_api \
 
+LOCAL_CFLAGS += $(GNSS_CFLAGS)
 include $(BUILD_SHARED_LIBRARY)
 
 BUILD_GNSS_HIDL_SERVICE := true
@@ -86,5 +87,6 @@ LOCAL_SHARED_LIBRARIES += \
     libhidltransport \
     android.hardware.gnss@1.0 \
 
+LOCAL_CFLAGS += $(GNSS_CFLAGS)
 include $(BUILD_EXECUTABLE)
 endif # BUILD_GNSS_HIDL_SERVICE

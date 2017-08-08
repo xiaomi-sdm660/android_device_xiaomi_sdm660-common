@@ -30,6 +30,7 @@
 #define LOG_TAG "LocSvc_APIClientBase"
 
 #include <platform_lib_log_util.h>
+#include <inttypes.h>
 #include <loc_cfg.h>
 #include "LocationAPIClientBase.h"
 
@@ -604,7 +605,7 @@ void LocationAPIClientBase::locAPIRemoveGeofences(size_t count, uint32_t* ids)
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
         if (sessions == NULL) {
-            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+            LOC_LOGE("%s:%d] Failed to allocate %zu bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
             pthread_mutex_unlock(&mMutex);
             return;
@@ -639,7 +640,7 @@ void LocationAPIClientBase::locAPIModifyGeofences(
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
         if (sessions == NULL) {
-            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+            LOC_LOGE("%s:%d] Failed to allocate %zu bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
             pthread_mutex_unlock(&mMutex);
             return;
@@ -674,7 +675,7 @@ void LocationAPIClientBase::locAPIPauseGeofences(size_t count, uint32_t* ids)
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
         if (sessions == NULL) {
-            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+            LOC_LOGE("%s:%d] Failed to allocate %zu bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
             pthread_mutex_unlock(&mMutex);
             return;
@@ -709,7 +710,7 @@ void LocationAPIClientBase::locAPIResumeGeofences(
     if (mLocationAPI) {
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
         if (sessions == NULL) {
-            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+            LOC_LOGE("%s:%d] Failed to allocate %zu bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
             pthread_mutex_unlock(&mMutex);
             return;
@@ -748,7 +749,7 @@ void LocationAPIClientBase::locAPIRemoveAllGeofences()
         size_t count = sessionsVec.size();
         uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
         if (sessions == NULL) {
-            LOC_LOGE("%s:%d] Failed to allocate %d bytes !",
+            LOC_LOGE("%s:%d] Failed to allocate %zu bytes !",
                     __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
             pthread_mutex_unlock(&mMutex);
             return;
@@ -798,7 +799,7 @@ void LocationAPIClientBase::beforeGeofenceBreachCb(
     geofenceBreachCallback genfenceCallback = nullptr;
 
     if (ids == NULL) {
-        LOC_LOGE("%s:%d] Failed to alloc %d bytes",
+        LOC_LOGE("%s:%d] Failed to alloc %zu bytes",
                 __FUNCTION__, __LINE__,
                 sizeof(uint32_t) * geofenceBreachNotification.count);
         return;
