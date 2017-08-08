@@ -59,18 +59,12 @@ public:
     void measurementClose();
 
     // callbacks we are interested in
-    void onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask) final;
     void onGnssMeasurementsCb(GnssMeasurementsNotification gnssMeasurementsNotification) final;
 
 private:
-    pthread_mutex_t mLock;
-    pthread_cond_t mCond;
-
     sp<IGnssMeasurementCallback> mGnssMeasurementCbIface;
 
-    LocationCapabilitiesMask mLocationCapabilitiesMask;
-
-    LocationOptions mLocationOptions;
+    bool mTracking;
 };
 
 }  // namespace implementation
