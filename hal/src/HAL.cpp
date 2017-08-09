@@ -463,11 +463,17 @@ Return<void> HAL::setDataLimit
     fl.addArg("upstream", upstream);
     fl.addArg("limit", limit);
 
-    RET ipaReturn = mIPA->setQuota(upstream.c_str(), limit);
-    BoolResult res = ipaResultToBoolResult(ipaReturn);
-    hidl_cb(res.success, res.errMsg);
+    if (!isInitialized()) {
+        BoolResult res = makeInputCheckFailure("Not initialized (setDataLimit)");
+        hidl_cb(res.success, res.errMsg);
+        fl.setResult(res.success, res.errMsg);
+    } else {
+        RET ipaReturn = mIPA->setQuota(upstream.c_str(), limit);
+        BoolResult res = ipaResultToBoolResult(ipaReturn);
+        hidl_cb(res.success, res.errMsg);
+        fl.setResult(res.success, res.errMsg);
+    }
 
-    fl.setResult(res.success, res.errMsg);
     mLogs.addLog(fl);
     return Void();
 } /* setDataLimit */
