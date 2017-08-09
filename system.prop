@@ -88,9 +88,6 @@ telephony.lteOnCdmaDevice=1
 #
 persist.fuse_sdcard=true
 
-#system prop for Bluetooth SOC type
-qcom.bluetooth.soc=cherokee
-
 #system prop for wipower support
 ro.bluetooth.emb_wp_mode=true
 ro.bluetooth.wipower=true
@@ -146,9 +143,6 @@ ro.hwui.text_small_cache_width=1024
 ro.hwui.text_small_cache_height=1024
 ro.hwui.text_large_cache_width=2048
 ro.hwui.text_large_cache_height=1024
-
-# enable navigation bar
-qemu.hw.mainkeys=0
 
 #property to enable VDS WFD solution
 persist.hwc.enable_vds=1
