@@ -150,7 +150,8 @@ public:
     virtual bool requestNiNotifyEvent(const GnssNiNotification &notify, const void* data);
     inline virtual bool isInSession() { return false; }
     ContextBase* getContext() const { return mContext; }
-    virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify);
+    virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
+                                                int msInWeek);
     virtual bool reportWwanZppFix(LocGpsLocation &zppLoc);
 };
 

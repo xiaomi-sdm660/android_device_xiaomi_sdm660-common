@@ -217,7 +217,8 @@ public:
     virtual void reportSvEvent(const GnssSvNotification& svNotify, bool fromUlp=false);
     virtual void reportNmeaEvent(const char* nmea, size_t length, bool fromUlp=false);
     virtual bool requestNiNotifyEvent(const GnssNiNotification& notify, const void* data);
-    virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify);
+    virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
+                                                int msInWeek);
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
 
@@ -235,10 +236,12 @@ public:
     void reportSv(GnssSvNotification& svNotify);
     void reportNmea(const char* nmea, size_t length);
     bool requestNiNotify(const GnssNiNotification& notify, const void* data);
-    void reportGnssMeasurementData(const GnssMeasurementsNotification& measurementsNotify);
+    void reportGnssMeasurementData(const GnssMeasurementsNotification& measurements);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
+    /* get AGC information from system status and fill it */
+    static void getAgcInformation(GnssMeasurementsNotification& measurements, int msInWeek);
 
     /*==== CONVERSION ===================================================================*/
     static uint32_t convertGpsLock(const GnssConfigGpsLock gpsLock);
