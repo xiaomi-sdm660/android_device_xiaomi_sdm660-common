@@ -42,7 +42,7 @@ void AgpsStateMachine::processAgpsEvent(AgpsEvent event){
     LOC_LOGD("processAgpsEvent(): SM %p, Event %d, State %d",
                this, event, mState);
 
-    switch (event){
+    switch (event) {
 
         case AGPS_EVENT_SUBSCRIBE:
             processAgpsEventSubscribe();
@@ -71,7 +71,7 @@ void AgpsStateMachine::processAgpsEvent(AgpsEvent event){
 
 void AgpsStateMachine::processAgpsEventSubscribe(){
 
-    switch (mState){
+    switch (mState) {
 
         case AGPS_STATE_RELEASED:
             /* Add subscriber to list
@@ -83,7 +83,7 @@ void AgpsStateMachine::processAgpsEventSubscribe(){
              * fails for DS State Machine, we want to retry in released state.
              * for Agps State Machine, sendRsrcRequest() will always return
              * success. */
-            if(requestOrReleaseDataConn(true) == 0){
+            if (requestOrReleaseDataConn(true) == 0) {
                 // If data request successful, move to pending state
                 transitionState(AGPS_STATE_PENDING);
             }
@@ -115,7 +115,7 @@ void AgpsStateMachine::processAgpsEventSubscribe(){
 
 void AgpsStateMachine::processAgpsEventUnsubscribe(){
 
-    switch (mState){
+    switch (mState) {
 
         case AGPS_STATE_RELEASED:
             notifyEventToSubscriber(
@@ -127,12 +127,10 @@ void AgpsStateMachine::processAgpsEventUnsubscribe(){
             /* If the subscriber wishes to wait for connection close,
              * before being removed from list, move to inactive state
              * and notify */
-            if(mCurrentSubscriber->mWaitForCloseComplete){
+            if (mCurrentSubscriber->mWaitForCloseComplete) {
                 mCurrentSubscriber->mIsInactive = true;
-                notifyEventToSubscriber(
-                        AGPS_EVENT_UNSUBSCRIBE, mCurrentSubscriber, false);
             }
-            else{
+            else {
                 /* Notify only current subscriber and then delete it from
                  * subscriberList */
                 notifyEventToSubscriber(
@@ -140,13 +138,13 @@ void AgpsStateMachine::processAgpsEventUnsubscribe(){
             }
 
             /* If no subscribers in list, release data connection */
-            if(mSubscriberList.empty()){
+            if (mSubscriberList.empty()) {
                 transitionState(AGPS_STATE_RELEASED);
                 requestOrReleaseDataConn(false);
             }
             /* Some subscribers in list, but all inactive;
              * Release data connection */
-            else if(!anyActiveSubscribers()){
+            else if(!anyActiveSubscribers()) {
                 transitionState(AGPS_STATE_RELEASING);
                 requestOrReleaseDataConn(false);
             }
@@ -156,12 +154,10 @@ void AgpsStateMachine::processAgpsEventUnsubscribe(){
             /* If the subscriber wishes to wait for connection close,
              * before being removed from list, move to inactive state
              * and notify */
-            if(mCurrentSubscriber->mWaitForCloseComplete){
+            if (mCurrentSubscriber->mWaitForCloseComplete) {
                 mCurrentSubscriber->mIsInactive = true;
-                notifyEventToSubscriber(
-                        AGPS_EVENT_UNSUBSCRIBE, mCurrentSubscriber, false);
             }
-            else{
+            else {
                 /* Notify only current subscriber and then delete it from
                  * subscriberList */
                 notifyEventToSubscriber(
@@ -171,7 +167,7 @@ void AgpsStateMachine::processAgpsEventUnsubscribe(){
             /* If no subscribers in list, just move the state.
              * Request for releasing data connection should already have been
              * sent */
-            if(mSubscriberList.empty()){
+            if (mSubscriberList.empty()) {
                 transitionState(AGPS_STATE_RELEASED);
             }
             break;
@@ -183,7 +179,7 @@ void AgpsStateMachine::processAgpsEventUnsubscribe(){
 
 void AgpsStateMachine::processAgpsEventGranted(){
 
-    switch (mState){
+    switch (mState) {
 
         case AGPS_STATE_RELEASED:
         case AGPS_STATE_ACQUIRED:
@@ -206,7 +202,7 @@ void AgpsStateMachine::processAgpsEventGranted(){
 
 void AgpsStateMachine::processAgpsEventReleased(){
 
-    switch (mState){
+    switch (mState) {
 
         case AGPS_STATE_RELEASED:
             /* Subscriber list should be empty if we are in released state */
@@ -232,12 +228,12 @@ void AgpsStateMachine::processAgpsEventReleased(){
 
             /* If we have active subscribers now, they must be waiting for
              * data conn setup */
-            if(anyActiveSubscribers()){
+            if (anyActiveSubscribers()) {
                 transitionState(AGPS_STATE_PENDING);
                 requestOrReleaseDataConn(true);
             }
             /* No active subscribers, move to released state */
-            else{
+            else {
                 transitionState(AGPS_STATE_RELEASED);
             }
             break;
@@ -253,7 +249,7 @@ void AgpsStateMachine::processAgpsEventReleased(){
 
 void AgpsStateMachine::processAgpsEventDenied(){
 
-    switch (mState){
+    switch (mState) {
 
         case AGPS_STATE_RELEASED:
             LOC_LOGE("Unexpected event DENIED in state %d", mState);
@@ -271,12 +267,12 @@ void AgpsStateMachine::processAgpsEventDenied(){
 
             /* If we have active subscribers now, they must be waiting for
              * data conn setup */
-            if(anyActiveSubscribers()){
+            if (anyActiveSubscribers()) {
                 transitionState(AGPS_STATE_PENDING);
                 requestOrReleaseDataConn(true);
             }
             /* No active subscribers, move to released state */
-            else{
+            else {
                 transitionState(AGPS_STATE_RELEASED);
             }
             break;
@@ -304,12 +300,11 @@ int AgpsStateMachine::requestOrReleaseDataConn(bool request){
 
     nifRequest.type = (AgpsFrameworkInterface::AGnssType)mAgpsType;
 
-    if(request){
+    if (request) {
         LOC_LOGD("AGPS Data Conn Request");
         nifRequest.status = (AgpsFrameworkInterface::AGnssStatusValue)
                                 LOC_GPS_REQUEST_AGPS_DATA_CONN;
-    }
-    else{
+    } else {
         LOC_LOGD("AGPS Data Conn Release");
         nifRequest.status = (AgpsFrameworkInterface::AGnssStatusValue)
                                 LOC_GPS_RELEASE_AGPS_DATA_CONN;
@@ -328,11 +323,11 @@ void AgpsStateMachine::notifyAllSubscribers(
             this, event, deleteSubscriberPostNotify, notificationType);
 
     std::list<AgpsSubscriber*>::const_iterator it = mSubscriberList.begin();
-    while ( it != mSubscriberList.end() ){
+    while ( it != mSubscriberList.end() ) {
 
         AgpsSubscriber* subscriber = *it;
 
-        if(notificationType == AGPS_NOTIFICATION_TYPE_FOR_ALL_SUBSCRIBERS ||
+        if (notificationType == AGPS_NOTIFICATION_TYPE_FOR_ALL_SUBSCRIBERS ||
                 (notificationType == AGPS_NOTIFICATION_TYPE_FOR_INACTIVE_SUBSCRIBERS &&
                         subscriber->mIsInactive) ||
                 (notificationType == AGPS_NOTIFICATION_TYPE_FOR_ACTIVE_SUBSCRIBERS &&
@@ -342,13 +337,13 @@ void AgpsStateMachine::notifyAllSubscribers(
              * through subscriber list, inefficient; hence pass in false*/
             notifyEventToSubscriber(event, subscriber, false);
 
-            if(deleteSubscriberPostNotify){
+            if (deleteSubscriberPostNotify) {
                 it = mSubscriberList.erase(it);
                 delete subscriber;
-            } else{
+            } else {
                 it++;
             }
-        } else{
+        } else {
             it++;
         }
     }
@@ -362,7 +357,7 @@ void AgpsStateMachine::notifyEventToSubscriber(
             "SM %p, Event %d Subscriber %p Delete %d",
             this, event, subscriberToNotify, deleteSubscriberPostNotify);
 
-    switch (event){
+    switch (event) {
 
         case AGPS_EVENT_GRANTED:
             mAgpsManager->mAtlOpenStatusCb(
@@ -409,9 +404,9 @@ void AgpsStateMachine::addSubscriber(AgpsSubscriber* subscriberToAdd){
     // Check if subscriber is already present in the current list
     // If not, then add
     std::list<AgpsSubscriber*>::const_iterator it = mSubscriberList.begin();
-    for(; it != mSubscriberList.end(); it++){
+    for (; it != mSubscriberList.end(); it++) {
         AgpsSubscriber* subscriber = *it;
-        if(subscriber->equals(subscriberToAdd)){
+        if (subscriber->equals(subscriberToAdd)) {
             LOC_LOGE("Subscriber already in list");
             return;
         }
@@ -431,11 +426,11 @@ void AgpsStateMachine::deleteSubscriber(AgpsSubscriber* subscriberToDelete){
     while ( it != mSubscriberList.end() ) {
 
         AgpsSubscriber* subscriber = *it;
-        if(subscriber && subscriber->equals(subscriberToDelete)){
+        if (subscriber && subscriber->equals(subscriberToDelete)) {
 
             it = mSubscriberList.erase(it);
             delete subscriber;
-        }else{
+        } else {
             it++;
         }
     }
@@ -444,9 +439,9 @@ void AgpsStateMachine::deleteSubscriber(AgpsSubscriber* subscriberToDelete){
 bool AgpsStateMachine::anyActiveSubscribers(){
 
     std::list<AgpsSubscriber*>::const_iterator it = mSubscriberList.begin();
-    for(; it != mSubscriberList.end(); it++){
+    for (; it != mSubscriberList.end(); it++) {
         AgpsSubscriber* subscriber = *it;
-        if(!subscriber->mIsInactive){
+        if (!subscriber->mIsInactive) {
             return true;
         }
     }
@@ -459,7 +454,7 @@ void AgpsStateMachine::setAPN(char* apn, unsigned int len){
         delete mAPN;
     }
 
-    if(apn == NULL || len <= 0){
+    if (apn == NULL || len <= 0) {
         LOC_LOGD("Invalid apn len (%d) or null apn", len);
         mAPN = NULL;
         mAPNLen = 0;
@@ -477,9 +472,9 @@ AgpsSubscriber* AgpsStateMachine::getSubscriber(int connHandle){
 
     /* Go over the subscriber list */
     std::list<AgpsSubscriber*>::const_iterator it = mSubscriberList.begin();
-    for(; it != mSubscriberList.end(); it++){
+    for (; it != mSubscriberList.end(); it++) {
         AgpsSubscriber* subscriber = *it;
-        if(subscriber->mConnHandle == connHandle){
+        if (subscriber->mConnHandle == connHandle) {
             return subscriber;
         }
     }
@@ -492,9 +487,9 @@ AgpsSubscriber* AgpsStateMachine::getFirstSubscriber(bool isInactive){
 
     /* Go over the subscriber list */
     std::list<AgpsSubscriber*>::const_iterator it = mSubscriberList.begin();
-    for(; it != mSubscriberList.end(); it++){
+    for (; it != mSubscriberList.end(); it++) {
         AgpsSubscriber* subscriber = *it;
-        if(subscriber->mIsInactive == isInactive){
+        if(subscriber->mIsInactive == isInactive) {
             return subscriber;
         }
     }
@@ -509,7 +504,7 @@ void AgpsStateMachine::dropAllSubscribers(){
 
     /* Go over the subscriber list */
     std::list<AgpsSubscriber*>::const_iterator it = mSubscriberList.begin();
-    while ( it != mSubscriberList.end() ){
+    while ( it != mSubscriberList.end() ) {
         AgpsSubscriber* subscriber = *it;
         it = mSubscriberList.erase(it);
         delete subscriber;
@@ -524,14 +519,14 @@ const int DSStateMachine::DATA_CALL_RETRY_DELAY_MSEC = 500;
 
 /* Overridden method
  * DS SM needs to handle one scenario differently */
-void DSStateMachine::processAgpsEvent(AgpsEvent event){
+void DSStateMachine::processAgpsEvent(AgpsEvent event) {
 
     LOC_LOGD("DSStateMachine::processAgpsEvent() %d", event);
 
     /* DS Client call setup APIs don't return failure/closure separately.
      * Hence we receive RELEASED event in both cases.
      * If we are in pending, we should consider RELEASED as DENIED */
-    if(event == AGPS_EVENT_RELEASED && mState == AGPS_STATE_PENDING){
+    if (event == AGPS_EVENT_RELEASED && mState == AGPS_STATE_PENDING) {
 
         LOC_LOGD("Translating RELEASED to DENIED event");
         event = AGPS_EVENT_DENIED;
@@ -549,7 +544,7 @@ void delay_callback(void *callbackData, int result)
 
     (void)result;
 
-    if(callbackData == NULL) {
+    if (callbackData == NULL) {
         LOC_LOGE("delay_callback(): NULL argument received !");
         return;
     }
@@ -566,7 +561,7 @@ void DSStateMachine :: retryCallback()
     /* Request SUPL ES
      * There must be at least one active subscriber in list */
     AgpsSubscriber* subscriber = getFirstSubscriber(false);
-    if(subscriber == NULL) {
+    if (subscriber == NULL) {
 
         LOC_LOGE("No active subscriber for DS Client call setup");
         return;
@@ -590,7 +585,7 @@ int DSStateMachine::requestOrReleaseDataConn(bool request){
              "request %d", request);
 
     /* Release data connection required ? */
-    if(!request && mAgpsManager->mDSClientStopDataCallFn){
+    if (!request && mAgpsManager->mDSClientStopDataCallFn) {
 
         mAgpsManager->mDSClientStopDataCallFn();
         LOC_LOGD("DS Client release data call request sent !");
@@ -600,14 +595,14 @@ int DSStateMachine::requestOrReleaseDataConn(bool request){
     /* Setup data connection request
      * There must be at least one active subscriber in list */
     AgpsSubscriber* subscriber = getFirstSubscriber(false);
-    if(subscriber == NULL) {
+    if (subscriber == NULL) {
 
         LOC_LOGE("No active subscriber for DS Client call setup");
         return -1;
     }
 
     /* DS Client Fn registered ? */
-    if(!mAgpsManager->mDSClientOpenAndStartDataCallFn){
+    if (!mAgpsManager->mDSClientOpenAndStartDataCallFn) {
 
         LOC_LOGE("DS Client start fn not registered, fallback to SUPL ATL");
         notifyEventToSubscriber(AGPS_EVENT_DENIED, subscriber, false);
@@ -623,7 +618,7 @@ int DSStateMachine::requestOrReleaseDataConn(bool request){
         case LOC_API_ADAPTER_ERR_ENGINE_BUSY:
             LOC_LOGE("DS Client open call failed, err: %d", ret);
             mRetries++;
-            if(mRetries > MAX_START_DATA_CALL_RETRIES) {
+            if (mRetries > MAX_START_DATA_CALL_RETRIES) {
 
                 LOC_LOGE("DS Client call retries exhausted, "
                          "falling back to normal SUPL ATL");
@@ -661,7 +656,7 @@ void DSStateMachine::notifyEventToSubscriber(
              "SM %p, Event %d Subscriber %p Delete %d",
              this, event, subscriberToNotify, deleteSubscriberPostNotify);
 
-    switch (event){
+    switch (event) {
 
         case AGPS_EVENT_GRANTED:
             mAgpsManager->mAtlOpenStatusCb(
@@ -721,14 +716,14 @@ void AgpsManager::createAgpsStateMachines() {
             LOC_LOGD("AGNSS NIF: %p", mAgnssNif);
         }
         if (NULL == mDsNif &&
-                loc_core::ContextBase::mGps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL){
+                loc_core::ContextBase::mGps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
 
             if(!mDSClientInitFn){
 
                 LOC_LOGE("DS Client Init Fn not registered !");
                 return;
             }
-            if(mDSClientInitFn(false) != 0){
+            if (mDSClientInitFn(false) != 0) {
 
                 LOC_LOGE("Failed to init data service client");
                 return;
@@ -747,7 +742,7 @@ AgpsStateMachine* AgpsManager::getAgpsStateMachine(AGpsExtType agpsType) {
 
         case LOC_AGPS_TYPE_INVALID:
         case LOC_AGPS_TYPE_SUPL:
-            if(mAgnssNif == NULL){
+            if (mAgnssNif == NULL) {
                 LOC_LOGE("NULL AGNSS NIF !");
             }
             return mAgnssNif;
@@ -777,7 +772,7 @@ void AgpsManager::requestATL(int connHandle, AGpsExtType agpsType){
 
     AgpsStateMachine* sm = getAgpsStateMachine(agpsType);
 
-    if(sm == NULL){
+    if (sm == NULL) {
 
         LOC_LOGE("No AGPS State Machine for agpsType: %d", agpsType);
         mAtlOpenStatusCb(
@@ -790,7 +785,7 @@ void AgpsManager::requestATL(int connHandle, AGpsExtType agpsType){
     sm->setCurrentSubscriber(&subscriber);
 
     /* If DS State Machine, wait for close complete */
-    if(agpsType == LOC_AGPS_TYPE_SUPL_ES){
+    if (agpsType == LOC_AGPS_TYPE_SUPL_ES) {
         subscriber.mWaitForCloseComplete = true;
     }
 
@@ -820,7 +815,7 @@ void AgpsManager::releaseATL(int connHandle){
         sm = mDsNif;
     }
 
-    if(sm == NULL){
+    if (sm == NULL) {
         LOC_LOGE("Subscriber with connHandle %d not found in any SM",
                     connHandle);
         mAtlCloseStatusCb(connHandle, 0);
@@ -909,19 +904,19 @@ void AgpsManager::handleModemSSR(){
     LOC_LOGD("AgpsManager::handleModemSSR");
 
     /* Drop subscribers from all state machines */
-    if (mAgnssNif){
+    if (mAgnssNif) {
         mAgnssNif->dropAllSubscribers();
     }
-    if (mInternetNif){
+    if (mInternetNif) {
         mInternetNif->dropAllSubscribers();
     }
-    if(mDsNif){
+    if (mDsNif) {
         mDsNif->dropAllSubscribers();
     }
 
     // reinitialize DS client in SSR mode
-    if(loc_core::ContextBase::mGps_conf.
-            USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL){
+    if (loc_core::ContextBase::mGps_conf.
+            USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
 
         mDSClientStopDataCallFn();
         mDSClientCloseDataCallFn();
