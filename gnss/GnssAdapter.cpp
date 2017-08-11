@@ -124,6 +124,7 @@ GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation
                              const GpsLocationExtended& locationExtended,
                              const LocPosTechMask techMask)
 {
+    memset(&out, 0, sizeof(Location));
     out.size = sizeof(Location);
     if (LOC_GPS_LOCATION_HAS_LAT_LONG & locGpsLocation.flags) {
         out.flags |= LOCATION_HAS_LAT_LONG_BIT;
