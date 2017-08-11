@@ -17,6 +17,13 @@ libloc_core_la_h_sources = \
            UlpProxyBase.h \
            loc_core_log.h \
            LocAdapterProxyBase.h \
+           data-items/DataItemId.h \
+           data-items/IDataItemCore.h \
+           observer/IDataItemObserver.h \
+           observer/IDataItemSubscription.h \
+           observer/IFrameworkActionReq.h \
+           observer/IOsObserver.h \
+           SystemStatusOsObserver.h \
            SystemStatus.h
 
 libloc_core_la_c_sources = \
@@ -25,6 +32,11 @@ libloc_core_la_c_sources = \
            ContextBase.cpp \
            LocDualContext.cpp \
            loc_core_log.cpp \
+           data-items/DataItemsFactoryProxy.cpp \
+           data-items/common/ClientIndex.cpp \
+           data-items/common/DataItemIndex.cpp \
+           data-items/common/IndexFactory.cpp \
+           SystemStatusOsObserver.cpp \
            SystemStatus.cpp
 
 library_includedir = $(pkgincludedir)/core

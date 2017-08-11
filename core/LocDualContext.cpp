@@ -35,7 +35,6 @@
 #include <msg_q.h>
 #include <platform_lib_log_util.h>
 #include <loc_log.h>
-#include <SystemStatus.h>
 
 namespace loc_core {
 
@@ -57,7 +56,6 @@ const MsgTask* LocDualContext::mMsgTask = NULL;
 ContextBase* LocDualContext::mFgContext = NULL;
 ContextBase* LocDualContext::mBgContext = NULL;
 ContextBase* LocDualContext::mInjectContext = NULL;
-SystemStatus* LocDualContext::mSystemStatus = NULL;
 // the name must be shorter than 15 chars
 const char* LocDualContext::mLocationHalName = "Loc_hal_worker";
 #ifndef USE_GLIB
@@ -147,16 +145,6 @@ LocDualContext::LocDualContext(const MsgTask* msgTask,
                                LOC_API_ADAPTER_EVENT_MASK_T exMask) :
     ContextBase(msgTask, exMask, mLBSLibName)
 {
-}
-
-SystemStatus* LocDualContext::getSystemStatus(void)
-{
-    pthread_mutex_lock(&LocDualContext::mGetLocContextMutex);
-    if (NULL == mSystemStatus) {
-        mSystemStatus = new SystemStatus();
-    }
-    pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
-    return  mSystemStatus;
 }
 
 }

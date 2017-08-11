@@ -75,6 +75,10 @@ typedef struct {
 
 using namespace loc_core;
 
+namespace loc_core {
+    class SystemStatus;
+}
+
 class GnssAdapter : public LocAdapterBase {
     /* ==== ULP ============================================================================ */
     UlpProxyBase* mUlpProxy;
@@ -102,6 +106,9 @@ class GnssAdapter : public LocAdapterBase {
     AgpsManager mAgpsManager;
     AgpsCbInfo mAgpsCbInfo;
 
+    /* === SystemStatus ===================================================================== */
+    SystemStatus* mSystemStatus;
+
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const LocationOptions& options);
     static void convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
@@ -113,7 +120,7 @@ class GnssAdapter : public LocAdapterBase {
 public:
 
     GnssAdapter();
-    virtual ~GnssAdapter();
+    virtual inline ~GnssAdapter() { delete mUlpProxy; }
 
     /* ==== SSR ============================================================================ */
     /* ======== EVENTS ====(Called from QMI Thread)========================================= */
@@ -241,7 +248,10 @@ public:
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
     /* get AGC information from system status and fill it */
-    static void getAgcInformation(GnssMeasurementsNotification& measurements, int msInWeek);
+    void getAgcInformation(GnssMeasurementsNotification& measurements, int msInWeek);
+
+    /*==== SYSTEM STATUS ================================================================*/
+    inline SystemStatus* getSystemStatus(void) { return mSystemStatus; }
 
     /*==== CONVERSION ===================================================================*/
     static uint32_t convertGpsLock(const GnssConfigGpsLock gpsLock);

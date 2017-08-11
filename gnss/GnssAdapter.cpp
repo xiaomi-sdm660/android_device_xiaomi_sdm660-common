@@ -65,20 +65,13 @@ GnssAdapter::GnssAdapter() :
     mNmeaMask(0),
     mNiData(),
     mAgpsManager(),
-    mAgpsCbInfo()
+    mAgpsCbInfo(),
+    mSystemStatus(SystemStatus::getInstance(mMsgTask))
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mUlpPositionMode.mode = LOC_POSITION_MODE_INVALID;
     readConfigCommand();
     setConfigCommand();
-
-}
-
-inline
-GnssAdapter::~GnssAdapter()
-{
-    LOC_LOGD("%s]: Destructor", __func__);
-    delete mUlpProxy;
 }
 
 void
@@ -818,7 +811,7 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
             LocationError err = LOCATION_ERROR_SUCCESS;
             err = mApi.deleteAidingData(mData);
             mAdapter.reportResponse(err, mSessionId);
-            SystemStatus* s = LocDualContext::getSystemStatus();
+            SystemStatus* s = mAdapter.getSystemStatus();
             if ((nullptr != s) && (mData.deleteAll)) {
                 s->setDefaultReport();
             }
@@ -1886,7 +1879,7 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
             mTechMask(techMask) {}
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
-            SystemStatus* s = LocDualContext::getSystemStatus();
+            SystemStatus* s = mAdapter.getSystemStatus();
             if ((nullptr != s) && (LOC_SESS_SUCCESS == mStatus)){
                 s->eventPosition(mUlpLocation, mLocationExtended);
             }
@@ -2095,7 +2088,7 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
             bool ret = false;
-            SystemStatus* s = LocDualContext::getSystemStatus();
+            SystemStatus* s = mAdapter.getSystemStatus();
             if (nullptr != s) {
                 ret = s->setNmeaString(mNmea, mLength);
             }
@@ -2308,7 +2301,7 @@ GnssAdapter::reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& 
                 mAdapter(adapter),
                 mMeasurementsNotify(measurements) {
             if (-1 != msInWeek) {
-                getAgcInformation(mMeasurementsNotify, msInWeek);
+                mAdapter.getAgcInformation(mMeasurementsNotify, msInWeek);
             }
         }
         inline virtual void proc() const {
@@ -2835,7 +2828,7 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
 {
     LOC_LOGD("%s]: ", __func__);
 
-    SystemStatus* systemstatus = LocDualContext::getSystemStatus();
+    SystemStatus* systemstatus = getSystemStatus();
     if (nullptr == systemstatus) {
         return false;
     }
@@ -2935,7 +2928,7 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
 void
 GnssAdapter::getAgcInformation(GnssMeasurementsNotification& measurements, int msInWeek)
 {
-    SystemStatus* systemstatus = LocDualContext::getSystemStatus();
+    SystemStatus* systemstatus = getSystemStatus();
 
     if (nullptr != systemstatus) {
         SystemStatusReports reports = {};
