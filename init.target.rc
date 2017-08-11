@@ -398,6 +398,7 @@ on charger
     load_system_props
     start qcom-post-boot
     start hvdcp_opti
+    setprop sys.usb.configfs 1
 
 #
 #service nqs /system/bin/nqs
