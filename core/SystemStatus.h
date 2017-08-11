@@ -34,6 +34,7 @@
 #include <vector>
 #include <platform_lib_log_util.h>
 #include <MsgTask.h>
+#include <IDataItemCore.h>
 #include <IOsObserver.h>
 #include <SystemStatusOsObserver.h>
 
@@ -368,18 +369,182 @@ public:
 };
 
 /******************************************************************************
+ SystemStatus report data structure - from DataItem observer
+******************************************************************************/
+class SystemStatusGpsState : public SystemStatusItemBase, public IDataItemCore
+{
+public:
+    inline SystemStatusGpsState() :
+            mEnabled(false) {}
+    inline SystemStatusGpsState(bool enabled) :
+            mEnabled(enabled) {}
+
+    bool mEnabled;
+
+    inline bool equals(SystemStatusGpsState& peer) {
+        return (mEnabled == peer.mEnabled);
+    }
+    inline void dump(void) {
+        LOC_LOGD("GpsState: state=%u", mEnabled);
+    }
+    inline DataItemId getId() {
+        return GPSSTATE_DATA_ITEM_ID;
+    }
+    inline void stringify(string& valueStr) {
+        valueStr.clear();
+        valueStr += "GpsState: enabled=";
+        valueStr += to_string(mEnabled);
+    }
+    inline int32_t copy(IDataItemCore* src, bool* dataItemCopied = nullptr) {
+        SystemStatusGpsState* gpsstate = static_cast<SystemStatusGpsState*>(src);
+        mEnabled = gpsstate->mEnabled;
+        if (dataItemCopied) {
+            *dataItemCopied = true;
+        }
+        return 1;
+    }
+};
+
+class SystemStatusNetworkInfo : public SystemStatusItemBase, public IDataItemCore
+{
+public:
+    inline SystemStatusNetworkInfo() :
+            mType(0),
+            mTypeName(""),
+            mSubTypeName(""),
+            mAvailable(false),
+            mConnected(false),
+            mRoaming(false) {}
+    inline SystemStatusNetworkInfo(
+            uint32_t type,
+            std::string typeName,
+            std::string subTypeName,
+            bool available,
+            bool connected,
+            bool roaming) :
+            mType(type),
+            mTypeName(typeName),
+            mSubTypeName(subTypeName),
+            mAvailable(available),
+            mConnected(connected),
+            mRoaming(roaming) {}
+
+    uint32_t mType;
+    std::string mTypeName;
+    std::string mSubTypeName;
+    bool mAvailable;
+    bool mConnected;
+    bool mRoaming;
+
+    inline bool equals(SystemStatusNetworkInfo& peer) {
+        if ((mType != peer.mType) ||
+            (mTypeName != peer.mTypeName) ||
+            (mSubTypeName != peer.mSubTypeName) ||
+            (mAvailable != peer.mAvailable) ||
+            (mConnected != peer.mConnected) ||
+            (mRoaming != peer.mRoaming)) {
+            return false;
+        }
+        return true;
+    }
+    inline void dump(void) {
+        LOC_LOGD("NetworkInfo: type=%u connected=%u", mType, mConnected);
+    }
+    inline DataItemId getId() {
+        return NETWORKINFO_DATA_ITEM_ID;
+    }
+    inline void stringify(string& /*valueStr*/) { }
+    inline int32_t copy(IDataItemCore* src, bool* dataItemCopied = nullptr) {
+        SystemStatusNetworkInfo* networkinfo = static_cast<SystemStatusNetworkInfo*>(src);
+        mType = networkinfo->mType;
+        mTypeName = networkinfo->mTypeName;
+        mSubTypeName = networkinfo->mSubTypeName;
+        mAvailable = networkinfo->mAvailable;
+        mConnected = networkinfo->mConnected;
+        mRoaming = networkinfo->mRoaming;
+        if (dataItemCopied) {
+            *dataItemCopied = true;
+        }
+        return 1;
+    }
+};
+
+class SystemStatusTac : public SystemStatusItemBase, public IDataItemCore
+{
+public:
+    inline SystemStatusTac() :
+            mValue("") {}
+    inline SystemStatusTac(std::string value) :
+            mValue(value) {}
+
+    std::string mValue;
+
+    inline bool equals(SystemStatusTac& peer) {
+        return (mValue == peer.mValue);
+    }
+    inline void dump(void) {
+        LOC_LOGD("Tac: value=%s", mValue.c_str());
+    }
+    inline DataItemId getId() {
+        return TAC_DATA_ITEM_ID;
+    }
+    inline void stringify(string& /*valueStr*/) { }
+    inline int32_t copy(IDataItemCore* src, bool* dataItemCopied = nullptr) {
+        SystemStatusTac* tac = static_cast<SystemStatusTac*>(src);
+        mValue = tac->mValue;
+        if (dataItemCopied) {
+            *dataItemCopied = true;
+        }
+        return 1;
+    }
+};
+
+class SystemStatusMccMnc : public SystemStatusItemBase, public IDataItemCore
+{
+public:
+    inline SystemStatusMccMnc() :
+            mValue("") {}
+    inline SystemStatusMccMnc(std::string value) :
+            mValue(value) {}
+
+    std::string mValue;
+
+    inline bool equals(SystemStatusMccMnc& peer) {
+        return (mValue == peer.mValue);
+    }
+    inline void dump(void) {
+        LOC_LOGD("TacMccMnc value=%s", mValue.c_str());
+    }
+    inline DataItemId getId() {
+        return MCCMNC_DATA_ITEM_ID;
+    }
+    inline void stringify(string& /*valueStr*/) { }
+    inline int32_t copy(IDataItemCore* src, bool* dataItemCopied = nullptr) {
+        SystemStatusMccMnc* mccmnc = static_cast<SystemStatusMccMnc*>(src);
+        mValue = mccmnc->mValue;
+        if (dataItemCopied) {
+            *dataItemCopied = true;
+        }
+        return 1;
+    }
+};
+
+/******************************************************************************
  SystemStatusReports
 ******************************************************************************/
 class SystemStatusReports
 {
 public:
+    // from QMI_LOC indication
     std::vector<SystemStatusLocation>         mLocation;
 
+    // from ME debug NMEA
     std::vector<SystemStatusTimeAndClock>     mTimeAndClock;
     std::vector<SystemStatusXoState>          mXoState;
     std::vector<SystemStatusRfAndParams>      mRfAndParams;
     std::vector<SystemStatusErrRecovery>      mErrRecovery;
 
+    // from PE debug NMEA
     std::vector<SystemStatusInjectedPosition> mInjectedPosition;
     std::vector<SystemStatusBestPosition>     mBestPosition;
     std::vector<SystemStatusXtra>             mXtra;
@@ -388,7 +553,14 @@ public:
     std::vector<SystemStatusPdr>              mPdr;
     std::vector<SystemStatusNavData>          mNavData;
 
+    // from SM debug NMEA
     std::vector<SystemStatusPositionFailure>  mPositionFailure;
+
+    // from dataitems observer
+    std::vector<SystemStatusGpsState>         mGpsState;
+    std::vector<SystemStatusNetworkInfo>      mNetworkInfo;
+    std::vector<SystemStatusTac>              mTac;
+    std::vector<SystemStatusMccMnc>           mMccMnc;
 };
 
 /******************************************************************************
@@ -424,7 +596,13 @@ private:
 
     static const uint32_t                     maxPositionFailure = 5;
 
+    static const uint32_t                     maxGpsState = 5;
+    static const uint32_t                     maxNetworkInfo = 5;
+    static const uint32_t                     maxTac = 5;
+    static const uint32_t                     maxMccMnc = 5;
+
     SystemStatusReports mCache;
+    bool mConnected;
 
     bool setLocation(const UlpLocation& location);
 
@@ -443,6 +621,8 @@ private:
 
     bool setPositionFailure(const SystemStatusPQWS1& nmea);
 
+    bool setNetworkInfo(IDataItemCore* dataitem);
+
 public:
     // Static methods
     static SystemStatus* getInstance(const MsgTask* msgTask);
@@ -451,9 +631,11 @@ public:
 
     // Helpers
     bool eventPosition(const UlpLocation& location,const GpsLocationExtended& locationEx);
+    bool eventDataItemNotify(IDataItemCore* dataitem);
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
     bool setDefaultReport(void);
+    bool eventConnectionStatus(bool connected, uint8_t type);
 };
 
 } // namespace loc_core
