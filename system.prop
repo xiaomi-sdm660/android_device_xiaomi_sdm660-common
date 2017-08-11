@@ -54,7 +54,6 @@ persist.mm.enable.prefetch=true
 vidc.enc.target_support_bframe=1
 vendor.vidc.enc.disable_bframes=1
 vendor.vidc.dec.enable.downscalar=1
-video.disable.ubwc=1
 
 # enable PQ feature by default
 vendor.vidc.enc.disable.pq=false
