@@ -177,6 +177,9 @@ typedef uint16_t GnssConfigLppeControlPlaneMask;
 typedef enum {
     GNSS_CONFIG_LPPE_CONTROL_PLANE_DBH_BIT                  = (1<<0), // DBH
     GNSS_CONFIG_LPPE_CONTROL_PLANE_WLAN_AP_MEASUREMENTS_BIT = (1<<1), // WLAN_AP_MEASUREMENTS
+    GNSS_CONFIG_LPPE_CONTROL_PLANE_SRN_AP_MEASUREMENTS_BIT = (1<<2), // SRN_AP_MEASUREMENTS
+    GNSS_CONFIG_LPPE_CONTROL_PLANE_SENSOR_BARO_MEASUREMENTS_BIT = (1<<3),
+                                                             // SENSOR_BARO_MEASUREMENTS
 } GnssConfigLppeControlPlaneBits;
 
 // Technology for LPPe User Plane
@@ -184,6 +187,9 @@ typedef uint16_t GnssConfigLppeUserPlaneMask;
 typedef enum {
     GNSS_CONFIG_LPPE_USER_PLANE_DBH_BIT                  = (1<<0), // DBH
     GNSS_CONFIG_LPPE_USER_PLANE_WLAN_AP_MEASUREMENTS_BIT = (1<<1), // WLAN_AP_MEASUREMENTS
+    GNSS_CONFIG_LPPE_USER_PLANE_SRN_AP_MEASUREMENTS_BIT = (1<<2), // SRN_AP_MEASUREMENTS
+    GNSS_CONFIG_LPPE_USER_PLANE_SENSOR_BARO_MEASUREMENTS_BIT = (1<<3),
+                                                            // SENSOR_BARO_MEASUREMENTS
 } GnssConfigLppeUserPlaneBits;
 
 // Positioning Protocol on A-GLONASS system
