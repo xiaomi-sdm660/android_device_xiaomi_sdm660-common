@@ -75,6 +75,10 @@ typedef struct {
 
 using namespace loc_core;
 
+namespace loc_core {
+    class SystemStatus;
+}
+
 class GnssAdapter : public LocAdapterBase {
     /* ==== ULP ============================================================================ */
     UlpProxyBase* mUlpProxy;
@@ -102,6 +106,9 @@ class GnssAdapter : public LocAdapterBase {
     AgpsManager mAgpsManager;
     AgpsCbInfo mAgpsCbInfo;
 
+    /* === SystemStatus ===================================================================== */
+    SystemStatus* mSystemStatus;
+
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const LocationOptions& options);
     static void convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
@@ -113,7 +120,7 @@ class GnssAdapter : public LocAdapterBase {
 public:
 
     GnssAdapter();
-    virtual ~GnssAdapter();
+    virtual inline ~GnssAdapter() { delete mUlpProxy; }
 
     /* ==== SSR ============================================================================ */
     /* ======== EVENTS ====(Called from QMI Thread)========================================= */
@@ -217,7 +224,8 @@ public:
     virtual void reportSvEvent(const GnssSvNotification& svNotify, bool fromUlp=false);
     virtual void reportNmeaEvent(const char* nmea, size_t length, bool fromUlp=false);
     virtual bool requestNiNotifyEvent(const GnssNiNotification& notify, const void* data);
-    virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify);
+    virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
+                                                int msInWeek);
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
 
@@ -235,10 +243,15 @@ public:
     void reportSv(GnssSvNotification& svNotify);
     void reportNmea(const char* nmea, size_t length);
     bool requestNiNotify(const GnssNiNotification& notify, const void* data);
-    void reportGnssMeasurementData(const GnssMeasurementsNotification& measurementsNotify);
+    void reportGnssMeasurementData(const GnssMeasurementsNotification& measurements);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
+    /* get AGC information from system status and fill it */
+    void getAgcInformation(GnssMeasurementsNotification& measurements, int msInWeek);
+
+    /*==== SYSTEM STATUS ================================================================*/
+    inline SystemStatus* getSystemStatus(void) { return mSystemStatus; }
 
     /*==== CONVERSION ===================================================================*/
     static uint32_t convertGpsLock(const GnssConfigGpsLock gpsLock);

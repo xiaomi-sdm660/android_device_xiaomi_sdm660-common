@@ -153,7 +153,8 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
-    reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& /*measurementsNotify*/)
+    reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& /*measurements*/,
+                                   int /*msInWeek*/)
 DEFAULT_IMPL()
 
 bool LocAdapterBase::

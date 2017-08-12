@@ -65,20 +65,13 @@ GnssAdapter::GnssAdapter() :
     mNmeaMask(0),
     mNiData(),
     mAgpsManager(),
-    mAgpsCbInfo()
+    mAgpsCbInfo(),
+    mSystemStatus(SystemStatus::getInstance(mMsgTask))
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mUlpPositionMode.mode = LOC_POSITION_MODE_INVALID;
     readConfigCommand();
     setConfigCommand();
-
-}
-
-inline
-GnssAdapter::~GnssAdapter()
-{
-    LOC_LOGD("%s]: Destructor", __func__);
-    delete mUlpProxy;
 }
 
 void
@@ -819,6 +812,10 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
             LocationError err = LOCATION_ERROR_SUCCESS;
             err = mApi.deleteAidingData(mData);
             mAdapter.reportResponse(err, mSessionId);
+            SystemStatus* s = mAdapter.getSystemStatus();
+            if ((nullptr != s) && (mData.deleteAll)) {
+                s->setDefaultReport();
+            }
         }
     };
 
@@ -1883,7 +1880,7 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
             mTechMask(techMask) {}
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
-            SystemStatus* s = LocDualContext::getSystemStatus();
+            SystemStatus* s = mAdapter.getSystemStatus();
             if ((nullptr != s) && (LOC_SESS_SUCCESS == mStatus)){
                 s->eventPosition(mUlpLocation, mLocationExtended);
             }
@@ -2092,7 +2089,7 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
             bool ret = false;
-            SystemStatus* s = LocDualContext::getSystemStatus();
+            SystemStatus* s = mAdapter.getSystemStatus();
             if (nullptr != s) {
                 ret = s->setNmeaString(mNmea, mLength);
             }
@@ -2290,32 +2287,38 @@ GnssAdapter::requestNiNotify(const GnssNiNotification& notify, const void* data)
 }
 
 void
-GnssAdapter::reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurementsNotify)
+GnssAdapter::reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
+                                            int msInWeek)
 {
     LOC_LOGD("%s]: ", __func__);
 
     struct MsgReportGnssMeasurementData : public LocMsg {
         GnssAdapter& mAdapter;
-        const GnssMeasurementsNotification mMeasurementsNotify;
+        GnssMeasurementsNotification mMeasurementsNotify;
         inline MsgReportGnssMeasurementData(GnssAdapter& adapter,
-                                           const GnssMeasurementsNotification& measurementsNotify) :
-            LocMsg(),
-            mAdapter(adapter),
-            mMeasurementsNotify(measurementsNotify) {}
+                                            const GnssMeasurementsNotification& measurements,
+                                            int msInWeek) :
+                LocMsg(),
+                mAdapter(adapter),
+                mMeasurementsNotify(measurements) {
+            if (-1 != msInWeek) {
+                mAdapter.getAgcInformation(mMeasurementsNotify, msInWeek);
+            }
+        }
         inline virtual void proc() const {
             mAdapter.reportGnssMeasurementData(mMeasurementsNotify);
         }
     };
 
-    sendMsg(new MsgReportGnssMeasurementData(*this, measurementsNotify));
+    sendMsg(new MsgReportGnssMeasurementData(*this, measurements, msInWeek));
 }
 
 void
-GnssAdapter::reportGnssMeasurementData(const GnssMeasurementsNotification& measurementsNotify)
+GnssAdapter::reportGnssMeasurementData(const GnssMeasurementsNotification& measurements)
 {
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
         if (nullptr != it->second.gnssMeasurementsCb) {
-            it->second.gnssMeasurementsCb(measurementsNotify);
+            it->second.gnssMeasurementsCb(measurements);
         }
     }
 }
@@ -2826,7 +2829,7 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
 {
     LOC_LOGD("%s]: ", __func__);
 
-    SystemStatus* systemstatus = LocDualContext::getSystemStatus();
+    SystemStatus* systemstatus = getSystemStatus();
     if (nullptr == systemstatus) {
         return false;
     }
@@ -2920,5 +2923,60 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
     LOC_LOGV("getDebugReport - satellite=%zu", r.mSatelliteInfo.size());
 
     return true;
+}
+
+/* get AGC information from system status and fill it */
+void
+GnssAdapter::getAgcInformation(GnssMeasurementsNotification& measurements, int msInWeek)
+{
+    SystemStatus* systemstatus = getSystemStatus();
+
+    if (nullptr != systemstatus) {
+        SystemStatusReports reports = {};
+        systemstatus->getReport(reports, true);
+
+        if ((!reports.mRfAndParams.empty()) && (!reports.mTimeAndClock.empty()) &&
+            reports.mTimeAndClock.back().mTimeValid &&
+            (abs(msInWeek - (int)reports.mTimeAndClock.back().mGpsTowMs) < 2000)) {
+
+            for (size_t i = 0; i < measurements.count; i++) {
+                switch (measurements.measurements[i].svType) {
+                case GNSS_SV_TYPE_GPS:
+                    measurements.measurements[i].agcLevelDb =
+                            reports.mRfAndParams.back().mAgcGps;
+                    measurements.measurements[i].flags |=
+                            GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
+                    break;
+
+                case GNSS_SV_TYPE_GALILEO:
+                    measurements.measurements[i].agcLevelDb =
+                            reports.mRfAndParams.back().mAgcGal;
+                    measurements.measurements[i].flags |=
+                            GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
+                    break;
+
+                case GNSS_SV_TYPE_GLONASS:
+                    measurements.measurements[i].agcLevelDb =
+                            reports.mRfAndParams.back().mAgcGlo;
+                    measurements.measurements[i].flags |=
+                            GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
+                    break;
+
+                case GNSS_SV_TYPE_BEIDOU:
+                    measurements.measurements[i].agcLevelDb =
+                            reports.mRfAndParams.back().mAgcBds;
+                    measurements.measurements[i].flags |=
+                            GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT;
+                    break;
+
+                case GNSS_SV_TYPE_QZSS:
+                case GNSS_SV_TYPE_SBAS:
+                case GNSS_SV_TYPE_UNKNOWN:
+                default:
+                    break;
+                }
+            }
+        }
+    }
 }
 

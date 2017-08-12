@@ -35,8 +35,10 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <platform_lib_log_util.h>
+#include <MsgTask.h>
 #include <loc_nmea.h>
 #include <SystemStatus.h>
+#include <SystemStatusOsObserver.h>
 
 namespace loc_core
 {
@@ -1176,10 +1178,44 @@ void SystemStatusLocation::dump()
 /******************************************************************************
  SystemStatus
 ******************************************************************************/
-pthread_mutex_t SystemStatus::mMutexSystemStatus = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t   SystemStatus::mMutexSystemStatus = PTHREAD_MUTEX_INITIALIZER;
+SystemStatus*     SystemStatus::mInstance = NULL;
 
-SystemStatus::SystemStatus()
+SystemStatus* SystemStatus::getInstance(const MsgTask* msgTask)
 {
+    pthread_mutex_lock(&mMutexSystemStatus);
+
+    if (!mInstance) {
+        // Instantiating for the first time. msgTask should not be NULL
+        if (msgTask == NULL) {
+            LOC_LOGE("SystemStatus: msgTask is NULL!!");
+            pthread_mutex_unlock(&mMutexSystemStatus);
+            return NULL;
+        }
+        mInstance = new (nothrow) SystemStatus(msgTask);
+        LOC_LOGD("SystemStatus::getInstance:%p. Msgtask:%p", mInstance, msgTask);
+    }
+
+    pthread_mutex_unlock(&mMutexSystemStatus);
+    return mInstance;
+}
+
+void SystemStatus::destroyInstance()
+{
+    delete mInstance;
+    mInstance = NULL;
+}
+
+IOsObserver* SystemStatus::getOsObserver()
+{
+    return &mSysStatusObsvr;
+}
+
+SystemStatus::SystemStatus(const MsgTask* msgTask) :
+    mSysStatusObsvr(msgTask)
+{
+    int result = 0;
+    ENTRY_LOG ();
     mCache.mLocation.clear();
 
     mCache.mTimeAndClock.clear();
@@ -1196,6 +1232,8 @@ SystemStatus::SystemStatus()
     mCache.mNavData.clear();
 
     mCache.mPositionFailure.clear();
+
+    EXIT_LOG_WITH_ERROR ("%d",result);
 }
 
 /******************************************************************************

@@ -36,8 +36,6 @@
 
 namespace loc_core {
 
-class SystemStatus;
-
 class LocDualContext : public ContextBase {
     static const MsgTask* mMsgTask;
     static ContextBase* mFgContext;
@@ -47,7 +45,6 @@ class LocDualContext : public ContextBase {
                                      const char* name, bool joinable = true);
     static const MsgTask* getMsgTask(const char* name, bool joinable = true);
     static pthread_mutex_t mGetLocContextMutex;
-    static SystemStatus* mSystemStatus;
 
 protected:
     LocDualContext(const MsgTask* msgTask,
@@ -72,7 +69,6 @@ public:
     }
 
     static void injectFeatureConfig(ContextBase *context);
-    static SystemStatus* getSystemStatus(void);
 };
 
 }

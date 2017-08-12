@@ -401,10 +401,11 @@ void* LocApiBase :: getSibling()
 LocApiProxyBase* LocApiBase :: getLocApiProxy()
     DEFAULT_IMPL(NULL)
 
-void LocApiBase::reportGnssMeasurementData(GnssMeasurementsNotification& measurementsNotify)
+void LocApiBase::reportGnssMeasurementData(GnssMeasurementsNotification& measurements,
+                                           int msInWeek)
 {
     // loop through adapters, and deliver to all adapters.
-    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssMeasurementDataEvent(measurementsNotify));
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssMeasurementDataEvent(measurements, msInWeek));
 }
 
 enum loc_api_adapter_err LocApiBase::

@@ -30,7 +30,13 @@
 #define __SYSTEM_STATUS__
 
 #include <stdint.h>
+#include <string>
 #include <vector>
+#include <platform_lib_log_util.h>
+#include <MsgTask.h>
+#include <IOsObserver.h>
+#include <SystemStatusOsObserver.h>
+
 #include <gps_extended_c.h>
 
 #define GPS_MIN  (1)   //1-32
@@ -390,7 +396,16 @@ public:
 ******************************************************************************/
 class SystemStatus
 {
-    static pthread_mutex_t mMutexSystemStatus;
+private:
+    static SystemStatus                       *mInstance;
+    SystemStatusOsObserver                    mSysStatusObsvr;
+    // ctor
+    SystemStatus(const MsgTask* msgTask);
+    // dtor
+    inline ~SystemStatus() {}
+
+    // Data members
+    static pthread_mutex_t                    mMutexSystemStatus;
 
     static const uint32_t                     maxLocation = 5;
 
@@ -429,9 +444,12 @@ class SystemStatus
     bool setPositionFailure(const SystemStatusPQWS1& nmea);
 
 public:
-    SystemStatus();
-    ~SystemStatus() { }
+    // Static methods
+    static SystemStatus* getInstance(const MsgTask* msgTask);
+    static void destroyInstance();
+    IOsObserver* getOsObserver();
 
+    // Helpers
     bool eventPosition(const UlpLocation& location,const GpsLocationExtended& locationEx);
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
