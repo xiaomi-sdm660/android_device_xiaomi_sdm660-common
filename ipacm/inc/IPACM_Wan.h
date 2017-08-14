@@ -130,7 +130,12 @@ public:
 	static bool isWanUP_V6(int ipa_if_num_tether)
 	{
 #ifdef FEATURE_IPA_ANDROID
-		int i;
+#ifdef FEATURE_IPACM_HAL
+		/*To avoid -Wall -Werror error */
+		IPACMDBG_H("ipa_if_num_tether: %d\n",ipa_if_num_tether);
+		return wan_up_v6;
+#else
+		uint32_t i;
 		for (i=0; i < ipa_if_num_tether_v6_total;i++)
 		{
 			if (ipa_if_num_tether_v6[i] == ipa_if_num_tether)
@@ -142,6 +147,7 @@ public:
 			}
 		}
 		return false;
+#endif
 #else
 		return wan_up_v6;
 #endif

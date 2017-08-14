@@ -268,6 +268,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					handle_private_subnet(data->iptype);
 #endif
 
+#ifndef FEATURE_IPACM_HAL
 					if (IPACM_Wan::isWanUP(ipa_if_num))
 					{
 						if(data->iptype == IPA_IP_v4 || data->iptype == IPA_IP_MAX)
@@ -309,6 +310,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					} else {
 						IPACMDBG_H("Wan_V6 haven't up yet \n");
 					}
+#endif
 					/* checking if SW-RT_enable */
 					if (IPACM_Iface::ipacmcfg->ipa_sw_rt_enable == true)
 					{
@@ -536,7 +538,13 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					if(ip_type == IPA_IP_MAX || ip_type == data->prefix.iptype)
 					{
 						if (data->prefix.iptype == IPA_IP_v6) /* ipv6 only */
-							install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
+						{
+							/* Only offload clients has same prefix as Android gave */
+							ipv6_prefix[0] = data->prefix.v6Addr[0];
+							ipv6_prefix[1] = data->prefix.v6Addr[1];
+							IPACMDBG_H("ipv6_prefix0x%x:%x\n", ipv6_prefix[0], ipv6_prefix[1]);
+							install_ipv6_prefix_flt_rule(ipv6_prefix);
+						}
 
 						if (IPACM_Wan::backhaul_is_sta_mode == false) /* LTE */
 						{
@@ -1258,6 +1266,7 @@ int IPACM_Wlan::handle_wlan_client_ipaddr(ipacm_event_data_all *data)
 				memcmp(ipv6_prefix, data->ipv6_addr, sizeof(ipv6_prefix)) != 0)
 			{
 				IPACMDBG_H("This IPv6 address is not global IPv6 address with correct prefix, ignore.\n");
+				IPACMDBG_H("ipv6 address: 0x%x:%x ipv6_prefix0x%x:%x\n", data->ipv6_addr[0], data->ipv6_addr[1], ipv6_prefix[0], ipv6_prefix[1]);
 				return IPACM_FAILURE;
 			}
 

@@ -45,6 +45,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.Z
 #include "IPACM_ConntrackListener.h"
 #include "IPACM_Iface.h"
 #include "IPACM_Config.h"
+#include <unistd.h>
 
 const char *IPACM_OffloadManager::DEVICE_NAME = "/dev/wwan_ioctl";
 
@@ -120,8 +121,14 @@ RET IPACM_OffloadManager::provideFd(int fd, unsigned int groups)
 		return FAIL_HARDWARE;
 	}
 
+	/* add the check if getting FDs already or not */
+	if(cc->fd_tcp > -1 && cc->fd_udp > -1) {
+		IPACMDBG_H("has valid FDs fd_tcp %d, fd_udp %d, ignore fd %d.\n", cc->fd_tcp, cc->fd_udp, fd);
+		return SUCCESS;
+	}
+
 	if (groups == cc->subscrips_tcp) {
-		cc->fd_tcp = fd;
+		cc->fd_tcp = dup(fd);
 		IPACMDBG_H("Received fd %d with groups %d.\n", fd, groups);
 		/* set netlink buf */
 		rel = setsockopt(cc->fd_tcp, SOL_NETLINK, NETLINK_NO_ENOBUFS, &on, sizeof(int) );
@@ -130,7 +137,7 @@ RET IPACM_OffloadManager::provideFd(int fd, unsigned int groups)
 			IPACMERR( "setsockopt returned error code %d ( %s )", errno, strerror( errno ) );
 		}
 	} else if (groups == cc->subscrips_udp) {
-		cc->fd_udp = fd;
+		cc->fd_udp = dup(fd);
 		IPACMDBG_H("Received fd %d with groups %d.\n", fd, groups);
 		/* set netlink buf */
 		rel = setsockopt(cc->fd_tcp, SOL_NETLINK, NETLINK_NO_ENOBUFS, &on, sizeof(int) );
@@ -150,16 +157,9 @@ RET IPACM_OffloadManager::provideFd(int fd, unsigned int groups)
 
 RET IPACM_OffloadManager::clearAllFds()
 {
-	IPACM_ConntrackClient *cc;
 
-	cc = IPACM_ConntrackClient::GetInstance();
-	if(!cc)
-	{
-		IPACMERR("Init clear: cc %p \n", cc);
-		return FAIL_HARDWARE;
-	}
-	cc->UNRegisterWithConnTrack();
-
+	/* IPACM needs to kee old FDs, can't clear */
+	IPACMDBG_H("Still use old Fds, can't clear \n");
 	return SUCCESS;
 }
 
@@ -181,6 +181,14 @@ RET IPACM_OffloadManager::addDownstream(const char * downstream_name, const Pref
 	ipacm_event_ipahal_stream *evt_data;
 
 	IPACMDBG_H("addDownstream name(%s), ip-family(%d) \n", downstream_name, prefix.fam);
+
+	/* ideal behavior: ipacm should return try-again if downstream netdev driver not ready */
+	if (IPACM_Iface::ipacmcfg->CheckNatIfaces(downstream_name))
+	{
+		IPACMDBG_H("addDownstream name(%s) currently not support in ipa \n", downstream_name);
+		return FAIL_TRY_AGAIN;
+	}
+
 	if (prefix.fam == V4) {
 		IPACMDBG_H("subnet info v4Addr (%x) v4Mask (%x)\n", prefix.v4Addr, prefix.v4Mask);
 	} else {
@@ -267,7 +275,6 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 			IPACMERR("no previous upstream set before\n");
 			return FAIL_INPUT_CHECK;
 		}
-
 		if (gw_addr_v4.fam == V4 && upstream_v4_up == true) {
 			IPACMDBG_H("clean upstream(%s) for ipv4-fam(%d) upstream_v4_up(%d)\n", upstream_name, gw_addr_v4.fam, upstream_v4_up);
 			post_route_evt(IPA_IP_v4, default_gw_index, IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT, gw_addr_v4);
@@ -282,6 +289,14 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 	}
 	else
 	{
+
+		/* ideal behavior: ipacm should return try-again if upstream netdev driver not ready */
+		if (IPACM_Iface::ipacmcfg->CheckNatIfaces(upstream_name))
+		{
+			IPACMDBG_H("addDownstream name(%s) currently not support in ipa \n", upstream_name);
+			return FAIL_TRY_AGAIN;
+		}
+
 		if(ipa_get_if_index(upstream_name, &index))
 		{
 			IPACMERR("fail to get iface index.\n");
@@ -362,7 +377,13 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 
 RET IPACM_OffloadManager::stopAllOffload()
 {
-	return SUCCESS;
+	Prefix v4gw, v6gw;
+	memset(&v4gw, 0, sizeof(v4gw));
+	memset(&v6gw, 0, sizeof(v6gw));
+	v4gw.fam = V4;
+	v6gw.fam = V6;
+	IPACMDBG_H("posting setUpstream(NULL), ipv4-fam(%d) ipv6-fam(%d)\n", v4gw.fam, v6gw.fam);
+	return setUpstream(NULL, v4gw, v6gw);
 }
 
 RET IPACM_OffloadManager::setQuota(const char * upstream_name /* upstream */, uint64_t mb/* limit */)

@@ -88,6 +88,8 @@ const char *ipacm_event_name[] = {
 	__stringify(IPA_WAN_XLAT_CONNECT_EVENT),               /* ipacm_event_data_fid */
 	__stringify(IPA_TETHERING_STATS_UPDATE_EVENT),         /* ipacm_event_data_fid */
 	__stringify(IPA_NETWORK_STATS_UPDATE_EVENT),           /* ipacm_event_data_fid */
+	__stringify(IPA_DOWNSTREAM_ADD),                       /* ipacm_event_ipahal_stream */
+	__stringify(IPA_DOWNSTREAM_DEL),                       /* ipacm_event_ipahal_stream */
 	__stringify(IPA_EXTERNAL_EVENT_MAX),
 	__stringify(IPA_HANDLE_WAN_UP),                        /* ipacm_event_iface_up  */
 	__stringify(IPA_HANDLE_WAN_DOWN),                      /* ipacm_event_iface_up  */
@@ -501,7 +503,7 @@ int IPACM_Config::DelNatIfaces(char *dev_name)
 	{
 		if (strcmp(dev_name, pNatIfaces[i].iface_name) == 0)
 		{
-			IPACMDBG_H("Find Nat IfaceName: %s ,previous nat-ifaces number: %d\n",
+			IPACMDBG_H("Found Nat IfaceName: %s with nat-ifaces number: %d\n",
 							 pNatIfaces[i].iface_name, ipa_nat_iface_entries);
 
 			/* Reset the matched entry */
@@ -524,6 +526,26 @@ int IPACM_Config::DelNatIfaces(char *dev_name)
 	IPACMDBG_H("Can't find Nat IfaceName: %s with total nat-ifaces number: %d\n",
 					    dev_name, ipa_nat_iface_entries);
 	return 0;
+}
+
+int IPACM_Config::CheckNatIfaces(const char *dev_name)
+{
+	int i = 0;
+	IPACMDBG_H("Check iface %s from NAT-ifaces, currently it has %d nat ifaces\n",
+					 dev_name, ipa_nat_iface_entries);
+
+	for (i = 0; i < ipa_nat_iface_entries; i++)
+	{
+		if (strcmp(dev_name, pNatIfaces[i].iface_name) == 0)
+		{
+			IPACMDBG_H("Find Nat IfaceName: %s ,previous nat-ifaces number: %d\n",
+							 pNatIfaces[i].iface_name, ipa_nat_iface_entries);
+			return 0;
+		}
+	}
+	IPACMDBG_H("Can't find Nat IfaceName: %s with total nat-ifaces number: %d\n",
+					    dev_name, ipa_nat_iface_entries);
+	return -1;
 }
 
 /* for IPACM resource manager dependency usage

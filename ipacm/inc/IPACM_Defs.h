@@ -166,6 +166,8 @@ typedef enum
 	IPA_WAN_XLAT_CONNECT_EVENT,               /* ipacm_event_data_fid */
 	IPA_TETHERING_STATS_UPDATE_EVENT,         /* ipacm_event_data_fid */
 	IPA_NETWORK_STATS_UPDATE_EVENT,           /* ipacm_event_data_fid */
+	IPA_DOWNSTREAM_ADD,                       /* ipacm_event_ipahal_stream */
+	IPA_DOWNSTREAM_DEL,                       /* ipacm_event_ipahal_stream */
 
 	IPA_EXTERNAL_EVENT_MAX,
 

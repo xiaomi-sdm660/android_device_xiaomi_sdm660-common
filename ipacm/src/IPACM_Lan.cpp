@@ -186,6 +186,21 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(is_downstream_set, 0, sizeof(is_downstream_set));
 	memset(is_upstream_set, 0, sizeof(is_upstream_set));
 	memset(&prefix, 0, sizeof(prefix));
+
+#ifdef FEATURE_IPACM_HAL
+		/* check if Upstream was set before */
+		if (IPACM_Wan::isWanUP(ipa_if_num))
+		{
+				IPACMDBG_H("Upstream was set previously for ipv4, change is_upstream_set flag\n");
+				is_upstream_set[IPA_IP_v4] = true;
+		}
+
+		if (IPACM_Wan::isWanUP_V6(ipa_if_num))
+		{
+				IPACMDBG_H("Upstream was set previously for ipv6, change is_upstream_set flag\n");
+				is_upstream_set[IPA_IP_v6] = true;
+		}
+#endif
 	return;
 }
 
@@ -378,6 +393,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						handle_private_subnet(data->iptype);
 #endif
 
+#ifndef FEATURE_IPACM_HAL
 						if (IPACM_Wan::isWanUP(ipa_if_num))
 						{
 							if(data->iptype == IPA_IP_v4 || data->iptype == IPA_IP_MAX)
@@ -418,7 +434,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 						} else {
 							IPACMDBG_H("Wan_V6 haven't up yet\n");
 						}
-
+#endif
 						/* Post event to NAT */
 						if (data->iptype == IPA_IP_v4)
 						{
@@ -666,7 +682,13 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 					if (ip_type == IPA_IP_MAX || ip_type == data->prefix.iptype)
 					{
 						if (data->prefix.iptype == IPA_IP_v6) /* ipv6 only */
-							install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
+						{
+							/* Only offload clients has same prefix as Andorid gave */
+							ipv6_prefix[0] = data->prefix.v6Addr[0];
+							ipv6_prefix[1] = data->prefix.v6Addr[1];
+							IPACMDBG_H("ipv6_prefix0x%x:%x\n", ipv6_prefix[0], ipv6_prefix[1]);
+							install_ipv6_prefix_flt_rule(ipv6_prefix);
+						}
 
 						if (IPACM_Wan::backhaul_is_sta_mode == false) /* LTE */
 						{
@@ -1065,7 +1087,7 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 		return IPACM_FAILURE;
 	}
 
-	if(is_sta_mode == false)
+	if(is_sta_mode == false && modem_ul_v4_set == true) //sky
 	{
 		if (num_wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES)
 		{
@@ -1554,14 +1576,14 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 /* only offload UL traffic of certain clients */
 #ifdef FEATURE_IPACM_HAL
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
-		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[0] = prefix[IPA_IP_v6].v6Mask[0];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[1] = prefix[IPA_IP_v6].v6Mask[1];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[2] = prefix[IPA_IP_v6].v6Mask[2];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = prefix[IPA_IP_v6].v6Mask[3];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr[0] = prefix[IPA_IP_v6].v6Addr[0];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr[1] = prefix[IPA_IP_v6].v6Addr[1];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr[2] = prefix[IPA_IP_v6].v6Addr[2];
-		flt_rule_entry.rule.attrib.u.v6.dst_addr[3] = prefix[IPA_IP_v6].v6Addr[3];
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[0] = ntohl(prefix[IPA_IP_v6].v6Mask[0]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[1] = ntohl(prefix[IPA_IP_v6].v6Mask[1]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[2] = ntohl(prefix[IPA_IP_v6].v6Mask[2]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[3] = ntohl(prefix[IPA_IP_v6].v6Mask[3]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr[0] = ntohl(prefix[IPA_IP_v6].v6Addr[0]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr[1] = ntohl(prefix[IPA_IP_v6].v6Addr[1]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr[2] = ntohl(prefix[IPA_IP_v6].v6Addr[2]);
+		flt_rule_entry.rule.attrib.u.v6.src_addr[3] = ntohl(prefix[IPA_IP_v6].v6Addr[3]);
 
 #endif
 		memcpy(&(m_pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
@@ -1618,7 +1640,7 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop *ext_prop, ipa_ip_type iptype, ui
 	}
 
 	/* check only add static UL filter rule once */
-	if (num_dft_rt_v6 ==1 && iptype ==IPA_IP_v6 && modem_ul_v6_set == false)
+	if (iptype ==IPA_IP_v6 && modem_ul_v6_set == false)
 	{
 		IPACMDBG_H("IPA_IP_v6 num_dft_rt_v6 %d xlat_mux_id: %d modem_ul_v6_set: %d\n", num_dft_rt_v6, xlat_mux_id, modem_ul_v6_set);
 		ret = handle_uplink_filter_rule(ext_prop, iptype, xlat_mux_id);
@@ -3109,6 +3131,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 			if(flt_rule_entry.rule.eq_attrib.num_offset_meq_32 <= IPA_IPFLTR_NUM_MEQ_32_EQNS)
 			{
 				eq_index = flt_rule_entry.rule.eq_attrib.num_offset_meq_32 - 1;
+#ifdef FEATURE_IPA_V3
 				if(eq_index == 0)
 				{
 					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<5);
@@ -3117,6 +3140,16 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 				{
 					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<6);
 				}
+#else
+				if(eq_index == 0)
+				{
+					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<2);
+				}
+				else
+				{
+					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<3);
+				}
+#endif
 				flt_rule_entry.rule.eq_attrib.offset_meq_32[eq_index].offset = 12;
 				flt_rule_entry.rule.eq_attrib.offset_meq_32[eq_index].mask = prefix[IPA_IP_v4].v4Mask;
 				flt_rule_entry.rule.eq_attrib.offset_meq_32[eq_index].value = prefix[IPA_IP_v4].v4Addr;
@@ -3133,6 +3166,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 			if(flt_rule_entry.rule.eq_attrib.num_offset_meq_128 <= IPA_IPFLTR_NUM_MEQ_128_EQNS)
 			{
 				eq_index = flt_rule_entry.rule.eq_attrib.num_offset_meq_128 - 1;
+#ifdef FEATURE_IPA_V3
 				if(eq_index == 0)
 				{
 					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<3);
@@ -3141,23 +3175,33 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 				{
 					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<4);
 				}
+#else
+				if(eq_index == 0)
+				{
+					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<9);
+				}
+				else
+				{
+					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<10);
+				}
+#endif
 				flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].offset = 8;
 				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 0)
-					= prefix[IPA_IP_v6].v6Mask[0];
-				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 4)
-					= prefix[IPA_IP_v6].v6Mask[1];
-				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 8)
-					= prefix[IPA_IP_v6].v6Mask[2];
-				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 12)
 					= prefix[IPA_IP_v6].v6Mask[3];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 4)
+					= prefix[IPA_IP_v6].v6Mask[2];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 8)
+					= prefix[IPA_IP_v6].v6Mask[1];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 12)
+					= prefix[IPA_IP_v6].v6Mask[0];
 				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 0)
-					= prefix[IPA_IP_v6].v6Addr[0];
-				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 4)
-					= prefix[IPA_IP_v6].v6Addr[1];
-				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 8)
-					= prefix[IPA_IP_v6].v6Addr[2];
-				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 12)
 					= prefix[IPA_IP_v6].v6Addr[3];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 4)
+					= prefix[IPA_IP_v6].v6Addr[2];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 8)
+					= prefix[IPA_IP_v6].v6Addr[1];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 12)
+					= prefix[IPA_IP_v6].v6Addr[0];
 			}
 			else
 			{
@@ -3253,7 +3297,7 @@ int IPACM_Lan::handle_wan_down_v6(bool is_sta_mode)
 
 	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 
-	if(is_sta_mode == false)
+	if(is_sta_mode == false && modem_ul_v6_set == true)
 	{
 		if (num_wan_ul_fl_rule_v6 > MAX_WAN_UL_FILTER_RULES)
 		{

@@ -234,6 +234,8 @@ public:
 
 	int DelNatIfaces(char *dev_name);
 
+	int CheckNatIfaces(const char *dev_name);
+
 	inline void SetQmapId(uint8_t id)
 	{
 		qmap_id = id;
