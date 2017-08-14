@@ -1,8 +1,6 @@
 TARGET_USES_AOSP := true
 
-ifneq ($(TARGET_USES_AOSP),true)
-  DEVICE_PACKAGE_OVERLAYS := device/qcom/sdm660_64/overlay
-endif
+DEVICE_PACKAGE_OVERLAYS := device/qcom/sdm660_64/overlay
 
 # Default vendor configuration.
 ifeq ($(ENABLE_VENDOR_IMAGE),)
