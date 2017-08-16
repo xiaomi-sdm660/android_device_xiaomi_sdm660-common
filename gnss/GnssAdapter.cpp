@@ -1661,7 +1661,8 @@ GnssAdapter::getZppCommand()
             GpsLocationExtended locationExtended = {};
             locationExtended.size = sizeof(locationExtended);
 
-            mApi.getBestAvailableZppFix(location.gpsLocation, techMask);
+            mApi.getBestAvailableZppFix(location.gpsLocation, locationExtended,
+                    techMask);
             //Mark the location source as from ZPP
             location.gpsLocation.flags |= LOCATION_HAS_SOURCE_INFO;
             location.position_source = ULP_LOCATION_IS_FROM_ZPP;
