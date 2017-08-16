@@ -1815,6 +1815,8 @@ GnssAdapter::enableCommand(LocationTechnologyType techType)
                 mContext.modemPowerVote(true);
                 mAdapter.setPowerVoteId(mSessionId);
                 mApi.setGpsLock(GNSS_CONFIG_GPS_LOCK_NONE);
+                mAdapter.mXtraObserver.updateLockStatus(
+                        mAdapter.convertGpsLock(GNSS_CONFIG_GPS_LOCK_NONE));
             }
             mAdapter.reportResponse(err, mSessionId);
         }
@@ -1857,6 +1859,8 @@ GnssAdapter::disableCommand(uint32_t id)
                 mContext.modemPowerVote(false);
                 mAdapter.setPowerVoteId(0);
                 mApi.setGpsLock(mAdapter.convertGpsLock(ContextBase::mGps_conf.GPS_LOCK));
+                mAdapter.mXtraObserver.updateLockStatus(
+                        mAdapter.convertGpsLock(ContextBase::mGps_conf.GPS_LOCK));
             }
             mAdapter.reportResponse(err, mSessionId);
         }
