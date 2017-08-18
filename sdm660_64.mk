@@ -36,6 +36,10 @@ TARGET_USE_UI_SVA := true
 #QTIC flag
 -include $(QCPATH)/common/config/qtic-config.mk
 
+# Add soft home, back and multitask keys
+PRODUCT_PROPERTY_OVERRIDES += \
+    qemu.hw.mainkeys=0
+
 # Video codec configuration files
 ifeq ($(TARGET_ENABLE_QC_AV_ENHANCEMENTS), true)
 PRODUCT_COPY_FILES += \
@@ -114,6 +118,10 @@ PRODUCT_BOOT_JARS += WfdCommon
 #Android oem shutdown hook
 PRODUCT_BOOT_JARS += oem-services
 endif
+
+# system prop for Bluetooth SOC type
+PRODUCT_PROPERTY_OVERRIDES += \
+    qcom.bluetooth.soc=cherokee
 
 ifeq ($(strip $(BOARD_HAVE_QCOM_FM)),true)
 PRODUCT_BOOT_JARS += qcom.fmradio
