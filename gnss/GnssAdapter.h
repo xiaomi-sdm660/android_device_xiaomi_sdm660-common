@@ -200,6 +200,7 @@ public:
     void setConfigCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
     uint32_t gnssDeleteAidingDataCommand(GnssAidingData& data);
+    void gnssUpdateXtraThrottleCommand(const bool enabled);
 
     void initDefaultAgpsCommand();
     void initAgpsCommand(const AgpsCbInfo& cbInfo);

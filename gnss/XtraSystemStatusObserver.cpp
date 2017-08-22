@@ -84,6 +84,13 @@ bool XtraSystemStatusObserver::updateMccMnc(const string& mccmnc) {
     return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
+bool XtraSystemStatusObserver::updateXtraThrottle(const bool enabled) {
+    stringstream ss;
+    ss <<  "xtrathrottle";
+    ss << " " << (enabled ? 1 : 0);
+    return ( send(LOC_IPC_XTRA, ss.str()) );
+}
+
 void XtraSystemStatusObserver::onReceive(const std::string& data) {
     if (!strncmp(data.c_str(), "ping", sizeof("ping") - 1)) {
         LOC_LOGd("ping received");
@@ -121,11 +128,11 @@ void XtraSystemStatusObserver::getName(string& name)
 
 void XtraSystemStatusObserver::notify(const list<IDataItemCore*>& dlist)
 {
-    struct handleOsObserverUpdateMsg : public LocMsg {
+    struct HandleOsObserverUpdateMsg : public LocMsg {
         XtraSystemStatusObserver* mXtraSysStatObj;
         list <IDataItemCore*> mDataItemList;
 
-        inline handleOsObserverUpdateMsg(XtraSystemStatusObserver* xtraSysStatObs,
+        inline HandleOsObserverUpdateMsg(XtraSystemStatusObserver* xtraSysStatObs,
                 const list<IDataItemCore*>& dataItemList) :
                 mXtraSysStatObj(xtraSysStatObs) {
             for (auto eachItem : dataItemList) {
@@ -141,7 +148,7 @@ void XtraSystemStatusObserver::notify(const list<IDataItemCore*>& dlist)
             }
         }
 
-        inline ~handleOsObserverUpdateMsg() {
+        inline ~HandleOsObserverUpdateMsg() {
             for (auto each : mDataItemList) {
                 delete each;
             }
@@ -182,7 +189,7 @@ void XtraSystemStatusObserver::notify(const list<IDataItemCore*>& dlist)
             }
         }
     };
-    mMsgTask->sendMsg(new (nothrow) handleOsObserverUpdateMsg(this, dlist));
+    mMsgTask->sendMsg(new (nothrow) HandleOsObserverUpdateMsg(this, dlist));
 }
 
 #ifdef USE_GLIB

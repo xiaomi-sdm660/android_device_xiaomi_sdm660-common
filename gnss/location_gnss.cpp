@@ -45,6 +45,7 @@ static void stopTracking(LocationAPI* client, uint32_t id);
 
 static void gnssNiResponse(LocationAPI* client, uint32_t id, GnssNiResponse response);
 static uint32_t gnssDeleteAidingData(GnssAidingData& data);
+static void gnssUpdateXtraThrottle(const bool enabled);
 
 static void setControlCallbacks(LocationControlCallbacks& controlCallbacks);
 static uint32_t enable(LocationTechnologyType techType);
@@ -77,6 +78,7 @@ static const GnssInterface gGnssInterface = {
     disable,
     gnssUpdateConfig,
     gnssDeleteAidingData,
+    gnssUpdateXtraThrottle,
     injectLocation,
     injectTime,
     agpsInit,
@@ -200,6 +202,13 @@ static uint32_t gnssDeleteAidingData(GnssAidingData& data)
         return gGnssAdapter->gnssDeleteAidingDataCommand(data);
     } else {
         return 0;
+    }
+}
+
+static void gnssUpdateXtraThrottle(const bool enabled)
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->gnssUpdateXtraThrottleCommand(enabled);
     }
 }
 
