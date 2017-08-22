@@ -587,7 +587,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.wifi@1.0-service \
     hostapd \
-    libqsap_sdk \
     libwifi-hal-qcom \
     TetheringConfigOverlay \
     WifiOverlay \
