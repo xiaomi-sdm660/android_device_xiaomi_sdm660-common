@@ -48,6 +48,8 @@
 #include <vector>
 #include <string>
 
+#define RAD2DEG    (180.0 / M_PI)
+
 using namespace loc_core;
 
 GnssAdapter::GnssAdapter() :
@@ -2897,16 +2899,12 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
     }
     else if(!reports.mBestPosition.empty() && reports.mBestPosition.back().mValid) {
         r.mLocation.mValid = true;
-        r.mLocation.mLocation.latitude  =
-            (double)(reports.mBestPosition.back().mBestLat);
+        r.mLocation.mLocation.latitude =
+                (double)(reports.mBestPosition.back().mBestLat) * RAD2DEG;
         r.mLocation.mLocation.longitude =
-            (double)(reports.mBestPosition.back().mBestLon);
-        r.mLocation.mLocation.altitude  =
-            reports.mBestPosition.back().mBestAlt;
-
-        r.mLocation.mLocation.timestamp =
-            reports.mBestPosition.back().mUtcReported.tv_sec * 1000ULL +
-            reports.mBestPosition.back().mUtcReported.tv_nsec / 1000000ULL;
+                (double)(reports.mBestPosition.back().mBestLon) * RAD2DEG;
+        r.mLocation.mLocation.altitude = reports.mBestPosition.back().mBestAlt;
+        r.mLocation.mUtcReported = reports.mBestPosition.back().mUtcReported;
     }
     else {
         r.mLocation.mValid = false;
