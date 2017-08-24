@@ -51,14 +51,16 @@
 
 using namespace loc_core;
 
-#define XTRA_HAL_SOCKET_NAME "/data/vendor/location/xtra/socket_hal_xtra"
+#ifdef LOG_TAG
+#undef LOG_TAG
+#endif
+#define LOG_TAG "LocSvc_XSSO"
 
 bool XtraSystemStatusObserver::updateLockStatus(uint32_t lock) {
     stringstream ss;
     ss <<  "gpslock";
     ss << " " << lock;
-    ss << "\n"; // append seperator
-    return ( sendEvent(ss) );
+    return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
 bool XtraSystemStatusObserver::updateConnectionStatus(bool connected, int32_t type) {
@@ -66,79 +68,28 @@ bool XtraSystemStatusObserver::updateConnectionStatus(bool connected, int32_t ty
     ss <<  "connection";
     ss << " " << (connected ? "1" : "0");
     ss << " " << type;
-    ss << "\n"; // append seperator
-    return ( sendEvent(ss) );
+    return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 bool XtraSystemStatusObserver::updateTac(const string& tac) {
     stringstream ss;
     ss <<  "tac";
     ss << " " << tac.c_str();
-    ss << "\n"; // append seperator
-    return ( sendEvent(ss) );
+    return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
 bool XtraSystemStatusObserver::updateMccMnc(const string& mccmnc) {
     stringstream ss;
     ss <<  "mncmcc";
     ss << " " << mccmnc.c_str();
-    ss << "\n"; // append seperator
-    return ( sendEvent(ss) );
+    return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
-bool XtraSystemStatusObserver::sendEvent(const stringstream& event) {
-    int socketFd = createSocket();
-    if (socketFd < 0) {
-        LOC_LOGe("XTRA unreachable. sending failed.");
-        return false;
-    }
+void XtraSystemStatusObserver::onReceive(const std::string& data) {
+    if (!strncmp(data.c_str(), "ping", sizeof("ping") - 1)) {
+        LOC_LOGd("ping received");
 
-    const string& data = event.str();
-    int remain = data.length();
-    ssize_t sent = 0;
-    while (remain > 0 &&
-          (sent = ::send(socketFd, data.c_str() + (data.length() - remain),
-                       remain, MSG_NOSIGNAL)) > 0) {
-        remain -= sent;
-    }
-
-    if (sent < 0) {
-        LOC_LOGe("sending error. reason:%s", strerror(errno));
-    }
-
-    closeSocket(socketFd);
-
-    return (remain == 0);
-}
-
-
-int XtraSystemStatusObserver::createSocket() {
-    int socketFd = -1;
-
-    if ((socketFd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-        LOC_LOGe("create socket error. reason:%s", strerror(errno));
-
-     } else {
-        const char* socketPath = XTRA_HAL_SOCKET_NAME ;
-        struct sockaddr_un addr = { .sun_family = AF_UNIX };
-        snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", socketPath);
-
-        if (::connect(socketFd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-            LOC_LOGe("cannot connect to XTRA. reason:%s", strerror(errno));
-            if (::close(socketFd)) {
-                LOC_LOGe("close socket error. reason:%s", strerror(errno));
-            }
-            socketFd = -1;
-        }
-    }
-
-    return socketFd;
-}
-
-void XtraSystemStatusObserver::closeSocket(const int socketFd) {
-    if (socketFd >= 0) {
-        if(::close(socketFd)) {
-            LOC_LOGe("close socket error. reason:%s", strerror(errno));
-        }
+    } else {
+        LOC_LOGw("unknown event: %s", data.c_str());
     }
 }
 
