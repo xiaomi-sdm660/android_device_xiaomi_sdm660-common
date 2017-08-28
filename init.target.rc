@@ -52,7 +52,7 @@ on fs
     # results in failure to launch late-start class.
 
     wait /dev/block/bootdevice/by-name/persist
-    mount ext4 /dev/block/bootdevice/by-name/persist /persist nosuid nodev barrier=1
+    mount ext4 /dev/block/bootdevice/by-name/persist /persist nosuid nodev noatime barrier=1
     mkdir /persist/data 0700 system system
     mkdir /persist/bms 0700 root system
     restorecon_recursive /persist
