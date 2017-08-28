@@ -166,9 +166,6 @@ ro.vendor.sensors.cmc=false
 #Gesture
 ro.vendor.sdk.sensors.gestures=false
 
-#low power mode for camera
-camera.lowpower.record.enable=1
-
 #Expose aux camera for below packages
 camera.aux.packagelist=org.codeaurora.snapcam
 
