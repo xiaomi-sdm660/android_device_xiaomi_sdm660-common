@@ -462,9 +462,11 @@ void AgpsStateMachine::setAPN(char* apn, unsigned int len){
 
     if (NULL != apn) {
         mAPN = new char[len+1];
-        memcpy(mAPN, apn, len);
-        mAPN[len] = '\0';
-        mAPNLen = len;
+        if (NULL != mAPN) {
+            memcpy(mAPN, apn, len);
+            mAPN[len] = '\0';
+            mAPNLen = len;
+        }
     }
 }
 
