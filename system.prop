@@ -148,7 +148,7 @@ ro.hwui.text_large_cache_height=1024
 persist.hwc.enable_vds=1
 
 #Increase cached app limit
-ro.sys.fw.bg_apps_limit=60
+ro.vendor.qti.sys.fw.bg_apps_limit=60
 
 #Settings to enable sensors
 #Device Orientation sensor
