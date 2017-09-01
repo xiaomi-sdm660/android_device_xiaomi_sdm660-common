@@ -111,9 +111,9 @@
         <MediaCodec name="OMX.google.hevc.decoder" type="video/hevc" update="true">
             <Limit name="measured-frame-rate-352x288" range="458-458" />
             <Limit name="measured-frame-rate-640x360" range="210-215" />
-            <Limit name="measured-frame-rate-720x480" range="344-344" />
+            <Limit name="measured-frame-rate-720x480" range="120-125" />
             <Limit name="measured-frame-rate-1280x720" range="90-95" />
-            <Limit name="measured-frame-rate-1920x1080" range="50-55" />
+            <Limit name="measured-frame-rate-1920x1080" range="16-18" />
         </MediaCodec>
         <MediaCodec name="OMX.google.h263.decoder" type="video/3gpp" update="true">
             <Limit name="measured-frame-rate-176x144" range="190-210" />
