@@ -52,7 +52,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_ConntrackListener.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
-
+#ifdef FEATURE_IPACM_HAL
+#include "IPACM_OffloadManager.h"
+#endif
 bool IPACM_Lan::odu_up = false;
 
 IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
@@ -1087,7 +1089,7 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 		return IPACM_FAILURE;
 	}
 
-	if(is_sta_mode == false && modem_ul_v4_set == true) //sky
+	if(is_sta_mode == false && modem_ul_v4_set == true)
 	{
 		if (num_wan_ul_fl_rule_v4 > MAX_WAN_UL_FILTER_RULES)
 		{
@@ -1155,6 +1157,9 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 	const int NUM_RULES = 1;
 	int num_ipv6_addr;
 	int res = IPACM_SUCCESS;
+#ifdef FEATURE_IPACM_HAL
+	IPACM_OffloadManager* OffloadMng;
+#endif
 
 	IPACMDBG_H("set route/filter rule ip-type: %d \n", data->iptype);
 
@@ -1319,6 +1324,17 @@ int IPACM_Lan::handle_addr_evt(ipacm_event_data_addr *data)
 		num_dft_rt_v6++;
 		IPACMDBG_H("number of default route rules %d\n", num_dft_rt_v6);
 	}
+
+#ifdef FEATURE_IPACM_HAL
+	/* check if having pending add_downstream cache*/
+	OffloadMng = IPACM_OffloadManager::GetInstance();
+	if (OffloadMng == NULL) {
+		IPACMERR("failed to get IPACM_OffloadManager instance !\n");
+	} else {
+		IPACMDBG_H(" check iface %s if having add_downstream cache events\n", dev_name);
+		OffloadMng->search_framwork_cache(dev_name);
+	}
+#endif
 
 	IPACMDBG_H("finish route/filter rule ip-type: %d, res(%d)\n", data->iptype, res);
 

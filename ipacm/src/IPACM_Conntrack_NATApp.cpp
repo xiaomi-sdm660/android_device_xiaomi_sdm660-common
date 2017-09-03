@@ -978,8 +978,13 @@ void NatApp::CacheEntry(const nat_table_entry *rule)
 }
 
 void NatApp::Read_TcpUdp_Timeout(void) {
+#ifdef FEATURE_IPACM_HAL
+	tcp_timeout = 432000;
+	udp_timeout = 180;
+	IPACMDBG_H("udp timeout value: %d\n", udp_timeout);
+	IPACMDBG_H("tcp timeout value: %d\n", tcp_timeout);
+#else
 	FILE *udp_fd = NULL, *tcp_fd = NULL;
-
 	/* Read UDP timeout value */
 	udp_fd = fopen(IPACM_UDP_FULL_FILE_NAME, "r");
 	if (udp_fd == NULL) {
@@ -1013,6 +1018,6 @@ fail:
 	if (tcp_fd) {
 		fclose(tcp_fd);
 	}
-
+#endif
 	return;
 }

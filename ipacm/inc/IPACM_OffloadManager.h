@@ -43,7 +43,17 @@ using natTimeoutUpdate_t = ::IOffloadManager::ConntrackTimeoutUpdater::natTimeou
 //using UDP = ::IOffloadManager::ConntrackTimeoutUpdater::UDP;
 //using TCP = ::IOffloadManager::ConntrackTimeoutUpdater::TCP;
 
+#define MAX_EVENT_CACHE  10
 
+typedef struct _framework_event_cache
+{
+	/* IPACM interface name */
+	ipa_cm_event_id event;
+	char dev_name[IF_NAME_LEN];
+	Prefix prefix_cache;
+	Prefix prefix_cache_v6; //for setupstream use
+	bool valid;
+}framework_event_cache;
 
 class IPACM_OffloadManager : public IOffloadManager
 {
@@ -82,6 +92,8 @@ public:
 
 	ConntrackTimeoutUpdater *touInstance;
 
+	bool search_framwork_cache(char * interface_name);
+
 private:
 
 	bool upstream_v4_up;
@@ -97,6 +109,12 @@ private:
 	int resetTetherStats(const char *upstream_name);
 
 	static const char *DEVICE_NAME;
+
+	/* cache the add_downstream events if netdev is not ready */
+	framework_event_cache event_cache[MAX_EVENT_CACHE];
+
+	/* latest update cache entry */
+	int latest_cache_index;
 
 }; /* IPACM_OffloadManager */
 
