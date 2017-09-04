@@ -1,5 +1,6 @@
 AM_CFLAGS = -I./ \
             -I../utils \
+            -I../gnss \
             -I../location \
             -I./data-items \
             -I./data-items/common \
