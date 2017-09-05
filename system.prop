@@ -173,7 +173,7 @@ camera.aux.packagelist=org.codeaurora.snapcam
 persist.camera.preview.ubwc=0
 
 # Create zram disk
-ro.config.zram=true
+ro.vendor.qti.config.zram=true
 
 #set maximum supported adapter voltage
 persist.charger.max_voltage_mv=9000
