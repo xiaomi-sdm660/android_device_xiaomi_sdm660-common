@@ -238,6 +238,8 @@ public:
     virtual bool reportDataCallClosed();
 
     /* ======== UTILITIES ================================================================= */
+    bool needReport(const UlpLocation& ulpLocation,
+            enum loc_sess_status status, LocPosTechMask techMask);
     void reportPosition(const UlpLocation &ulpLocation,
                         const GpsLocationExtended &locationExtended,
                         enum loc_sess_status status,

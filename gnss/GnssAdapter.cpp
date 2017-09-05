@@ -1922,34 +1922,41 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
     sendMsg(new MsgReportPosition(*this, ulpLocation, locationExtended, status, techMask));
 }
 
+bool
+GnssAdapter::needReport(const UlpLocation& ulpLocation,
+                        enum loc_sess_status status,
+                        LocPosTechMask techMask) {
+    bool reported = false;
+    if (LOC_SESS_SUCCESS == status) {
+        // this is a final fix
+        LocPosTechMask mask =
+                LOC_POS_TECH_MASK_SATELLITE | LOC_POS_TECH_MASK_SENSORS | LOC_POS_TECH_MASK_HYBRID;
+        // it is a Satellite fix or a sensor fix
+        reported = (mask & techMask);
+    } else if (LOC_SESS_INTERMEDIATE == status &&
+            LOC_SESS_INTERMEDIATE == ContextBase::mGps_conf.INTERMEDIATE_POS) {
+        // this is a intermediate fix and we accepte intermediate
+
+        // it is NOT the case that
+        // there is inaccuracy; and
+        // we care about inaccuracy; and
+        // the inaccuracy exceeds our tolerance
+        reported = !((ulpLocation.gpsLocation.flags & LOC_GPS_LOCATION_HAS_ACCURACY) &&
+                (ContextBase::mGps_conf.ACCURACY_THRES != 0) &&
+                (ulpLocation.gpsLocation.accuracy > ContextBase::mGps_conf.ACCURACY_THRES));
+    }
+
+    return reported;
+}
+
 void
 GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                             const GpsLocationExtended& locationExtended,
                             enum loc_sess_status status,
                             LocPosTechMask techMask)
 {
-    bool reported = false;
-    // what's in the if is... (line by line)
-    // 1. this is a final fix; and
-    //   1.1 it is a Satellite fix; or
-    //   1.2 it is a sensor fix
-    // 2. (must be intermediate fix... implicit)
-    //   2.1 we accepte intermediate; and
-    //   2.2 it is NOT the case that
-    //   2.2.1 there is inaccuracy; and
-    //   2.2.2 we care about inaccuracy; and
-    //   2.2.3 the inaccuracy exceeds our tolerance
-    if ((LOC_SESS_SUCCESS == status &&
-              ((LOC_POS_TECH_MASK_SATELLITE |
-                LOC_POS_TECH_MASK_SENSORS   |
-                LOC_POS_TECH_MASK_HYBRID) &
-               techMask)) ||
-             (LOC_SESS_INTERMEDIATE == ContextBase::mGps_conf.INTERMEDIATE_POS &&
-              !((ulpLocation.gpsLocation.flags &
-                 LOC_GPS_LOCATION_HAS_ACCURACY) &&
-                (ContextBase::mGps_conf.ACCURACY_THRES != 0) &&
-                (ulpLocation.gpsLocation.accuracy >
-                 ContextBase::mGps_conf.ACCURACY_THRES)))) {
+    bool reported = needReport(ulpLocation, status, techMask);
+    if (reported) {
         if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA) {
             mGnssSvIdUsedInPosAvail = true;
             mGnssSvIdUsedInPosition = locationExtended.gnss_sv_used_ids;
@@ -1966,7 +1973,6 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                 it->second.gnssLocationInfoCb(locationInfo);
             }
         }
-        reported = true;
     }
 
     if (NMEA_PROVIDER_AP == ContextBase::mGps_conf.NMEA_PROVIDER && !mTrackingSessions.empty()) {
