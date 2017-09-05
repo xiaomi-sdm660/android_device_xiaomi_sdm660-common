@@ -40,6 +40,7 @@
 #include <DataItemsFactoryProxy.h>
 #include <SystemStatus.h>
 #include <SystemStatusOsObserver.h>
+#include <DataItemConcreteTypesBase.h>
 
 namespace loc_core
 {
@@ -1420,7 +1421,7 @@ bool SystemStatus::setPositionFailure(const SystemStatusPQWS1& nmea)
 ******************************************************************************/
 bool SystemStatus::setNetworkInfo(IDataItemCore* dataitem)
 {
-    SystemStatusNetworkInfo* data = reinterpret_cast<SystemStatusNetworkInfo*>(dataitem);
+    NetworkInfoDataItemBase* data = reinterpret_cast<NetworkInfoDataItemBase*>(dataitem);
     SystemStatusNetworkInfo s(data->mType,data->mTypeName,data->mSubTypeName,
                               data->mAvailable,data->mConnected,data->mRoaming);
     s.dump();
