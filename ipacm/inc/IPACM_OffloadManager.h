@@ -29,7 +29,7 @@
 #ifndef _IPACM_OFFLOAD_MANAGER_H_
 #define _IPACM_OFFLOAD_MANAGER_H_
 
-
+#include <list>
 #include <stdint.h>
 #include <IOffloadManager.h>
 #include "IPACM_Defs.h"
@@ -95,6 +95,8 @@ public:
 	bool search_framwork_cache(char * interface_name);
 
 private:
+
+	std::list<const char *> valid_ifaces;
 
 	bool upstream_v4_up;
 

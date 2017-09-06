@@ -263,6 +263,13 @@ RET IPACM_OffloadManager::addDownstream(const char * downstream_name, const Pref
 		return SUCCESS;
 	}
 
+	/* Iface is valid, add to list if not present */
+	if (std::find(valid_ifaces.begin(), valid_ifaces.end(), downstream_name) == valid_ifaces.end())
+	{
+		/* Iface is new, add it to the list */
+		valid_ifaces.push_back(downstream_name);
+	}
+
 	evt_data = (ipacm_event_ipahal_stream*)malloc(sizeof(ipacm_event_ipahal_stream));
 	if(evt_data == NULL)
 	{
@@ -291,6 +298,17 @@ RET IPACM_OffloadManager::removeDownstream(const char * downstream_name, const P
 	ipacm_event_ipahal_stream *evt_data;
 
 	IPACMDBG_H("removeDownstream name(%s), ip-family(%d) \n", downstream_name, prefix.fam);
+	if(strnlen(downstream_name, sizeof(downstream_name)) == 0)
+	{
+		IPACMERR("iface length is 0.\n");
+		return FAIL_HARDWARE;
+	}
+	if (std::find(valid_ifaces.begin(), valid_ifaces.end(), downstream_name) == valid_ifaces.end())
+	{
+		IPACMERR("iface is not present in list.\n");
+		return FAIL_HARDWARE;
+	}
+
 	if(ipa_get_if_index(downstream_name, &index))
 	{
 		IPACMERR("fail to get iface index.\n");
