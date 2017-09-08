@@ -416,7 +416,7 @@ public:
             mConnected(false),
             mRoaming(false) {}
     inline SystemStatusNetworkInfo(
-            uint32_t type,
+            int32_t type,
             std::string typeName,
             std::string subTypeName,
             bool available,
@@ -429,7 +429,7 @@ public:
             mConnected(connected),
             mRoaming(roaming) {}
 
-    uint32_t mType;
+    int32_t mType;
     std::string mTypeName;
     std::string mSubTypeName;
     bool mAvailable;
@@ -635,7 +635,7 @@ public:
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
     bool setDefaultReport(void);
-    bool eventConnectionStatus(bool connected, uint8_t type);
+    bool eventConnectionStatus(bool connected, int8_t type);
 };
 
 } // namespace loc_core

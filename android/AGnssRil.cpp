@@ -51,7 +51,7 @@ Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool
 
     // for XTRA
     if (nullptr != mGnss && ( nullptr != mGnss->getGnssInterface() )) {
-        mGnss->getGnssInterface()->updateConnectionStatus(connected, (uint8_t)type);
+        mGnss->getGnssInterface()->updateConnectionStatus(connected, (int8_t)type);
     }
     return true;
 }

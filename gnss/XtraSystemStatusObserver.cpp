@@ -61,11 +61,11 @@ bool XtraSystemStatusObserver::updateLockStatus(uint32_t lock) {
     return ( sendEvent(ss) );
 }
 
-bool XtraSystemStatusObserver::updateConnectionStatus(bool connected, uint32_t type) {
+bool XtraSystemStatusObserver::updateConnectionStatus(bool connected, int32_t type) {
     stringstream ss;
     ss <<  "connection";
     ss << " " << (connected ? "1" : "0");
-    ss << " " << (int)type;
+    ss << " " << type;
     ss << "\n"; // append seperator
     return ( sendEvent(ss) );
 }

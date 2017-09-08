@@ -1764,7 +1764,7 @@ bool SystemStatus::setDefaultReport(void)
 
 @return     true when successfully done
 ******************************************************************************/
-bool SystemStatus::eventConnectionStatus(bool connected, uint8_t type)
+bool SystemStatus::eventConnectionStatus(bool connected, int8_t type)
 {
     if (connected != mConnected) {
         mConnected = connected;
