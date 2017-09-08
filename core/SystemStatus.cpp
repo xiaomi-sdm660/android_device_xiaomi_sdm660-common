@@ -37,6 +37,7 @@
 #include <platform_lib_log_util.h>
 #include <MsgTask.h>
 #include <loc_nmea.h>
+#include <DataItemsFactoryProxy.h>
 #include <SystemStatus.h>
 #include <SystemStatusOsObserver.h>
 
@@ -1212,7 +1213,8 @@ IOsObserver* SystemStatus::getOsObserver()
 }
 
 SystemStatus::SystemStatus(const MsgTask* msgTask) :
-    mSysStatusObsvr(msgTask)
+    mSysStatusObsvr(msgTask),
+    mConnected(false)
 {
     int result = 0;
     ENTRY_LOG ();
@@ -1414,6 +1416,28 @@ bool SystemStatus::setPositionFailure(const SystemStatusPQWS1& nmea)
 }
 
 /******************************************************************************
+ SystemStatus - storing dataitems
+******************************************************************************/
+bool SystemStatus::setNetworkInfo(IDataItemCore* dataitem)
+{
+    SystemStatusNetworkInfo* data = reinterpret_cast<SystemStatusNetworkInfo*>(dataitem);
+    SystemStatusNetworkInfo s(data->mType,data->mTypeName,data->mSubTypeName,
+                              data->mAvailable,data->mConnected,data->mRoaming);
+    s.dump();
+    mConnected = data->mConnected;
+
+    if (!mCache.mNetworkInfo.empty() && mCache.mNetworkInfo.back().equals(s)) {
+        mCache.mNetworkInfo.back().mUtcReported = s.mUtcReported;
+    } else {
+        mCache.mNetworkInfo.push_back(s);
+        if (mCache.mNetworkInfo.size() > maxNetworkInfo) {
+            mCache.mNetworkInfo.erase(mCache.mNetworkInfo.begin());
+        }
+    }
+    return true;
+}
+
+/******************************************************************************
 @brief      API to set report data into internal buffer
 
 @param[In]  data pointer to the NMEA string
@@ -1530,6 +1554,26 @@ bool SystemStatus::eventPosition(const UlpLocation& location,
              s.mLocation.gpsLocation.longitude,
              s.mLocation.gpsLocation.altitude,
              s.mLocation.gpsLocation.speed);
+    return true;
+}
+
+/******************************************************************************
+@brief      API to set report DataItem event into internal buffer
+
+@param[In]  DataItem
+
+@return     true when successfully done
+******************************************************************************/
+bool SystemStatus::eventDataItemNotify(IDataItemCore* dataitem)
+{
+    pthread_mutex_lock(&mMutexSystemStatus);
+    switch(dataitem->getId())
+    {
+        case NETWORKINFO_DATA_ITEM_ID:
+            setNetworkInfo(dataitem);
+            break;
+    }
+    pthread_mutex_unlock(&mMutexSystemStatus);
     return true;
 }
 
@@ -1709,6 +1753,34 @@ bool SystemStatus::setDefaultReport(void)
     }
 
     pthread_mutex_unlock(&mMutexSystemStatus);
+    return true;
+}
+
+/******************************************************************************
+@brief      API to handle connection status update event from GnssRil
+
+@param[In]  Connection status
+
+@return     true when successfully done
+******************************************************************************/
+bool SystemStatus::eventConnectionStatus(bool connected, uint8_t type)
+{
+    if (connected != mConnected) {
+        mConnected = connected;
+
+        // send networkinof dataitem to systemstatus observer clients
+        SystemStatusNetworkInfo s(type, "", "", false, connected, false);
+        IDataItemCore *networkinfo =
+                DataItemsFactoryProxy::createNewDataItem(NETWORKINFO_DATA_ITEM_ID);
+        if (nullptr == networkinfo) {
+            LOC_LOGE("Unable to create dataitemd");
+            return false;
+        }
+        networkinfo->copy(&s);
+        list<IDataItemCore*> dl(0);
+        dl.push_back(networkinfo);
+        mSysStatusObsvr.notify(dl);
+    }
     return true;
 }
 

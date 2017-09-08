@@ -29,25 +29,42 @@
 #ifndef XTRA_SYSTEM_STATUS_OBS_H
 #define XTRA_SYSTEM_STATUS_OBS_H
 
-#include <stdint.h>
+#include <cinttypes>
+#include <MsgTask.h>
+
+using namespace std;
+using loc_core::IOsObserver;
+using loc_core::IDataItemObserver;
+using loc_core::IDataItemCore;
 
 
-class XtraSystemStatusObserver {
+class XtraSystemStatusObserver : public IDataItemObserver {
 public :
     // constructor & destructor
-    XtraSystemStatusObserver() {
+    inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
+            mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask) {
+        subscribe(true);
     }
+    inline XtraSystemStatusObserver() {};
+    inline virtual ~XtraSystemStatusObserver() { subscribe(false); }
 
-    virtual ~XtraSystemStatusObserver() {
-    }
+    // IDataItemObserver overrides
+    inline virtual void getName(string& name);
+    virtual void notify(const list<IDataItemCore*>& dlist);
 
     bool updateLockStatus(uint32_t lock);
-    bool updateConnectionStatus(bool connected, uint8_t type);
+    bool updateConnectionStatus(bool connected, uint32_t type);
+    bool updateTac(const string& tac);
+    bool updateMccMnc(const string& mccmnc);
+    inline const MsgTask* getMsgTask() { return mMsgTask; }
+    void subscribe(bool yes);
 
 private:
     int createSocket();
     void closeSocket(const int32_t socketFd);
-    bool sendEvent(std::stringstream& event);
+    bool sendEvent(const stringstream& event);
+    IOsObserver*    mSystemStatusObsrvr;
+    const MsgTask* mMsgTask;
 
 };
 
