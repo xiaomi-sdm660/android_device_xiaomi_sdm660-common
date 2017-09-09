@@ -31,17 +31,72 @@
 
 #include <cinttypes>
 #include <MsgTask.h>
+#ifdef USE_GLIB
+#include <LocThread.h>
+#endif
 
 using namespace std;
 using loc_core::IOsObserver;
 using loc_core::IDataItemObserver;
 using loc_core::IDataItemCore;
 
+#ifdef USE_GLIB
+// XtraHalListenerSocket class
+// listener socket for getting msgs from xtra-daemon in LE for invoking
+// LocNetIface functions
+// TBD - this will be removed once bidirectional socket changes in
+// xtra-daemon will be implemented
+class XtraHalListenerSocket: public LocRunnable {
+public :
+    // constructor & destructor
+    XtraHalListenerSocket(IOsObserver* sysStatObs) :
+            mThread(NULL),
+            mRunning(false) {
+        mSystemStatusObsrvr = sysStatObs;
+        mRunning = true;
+        // create listener socket in a thread
+        startListenerThread();
+    }
+    XtraHalListenerSocket() {}
+    inline virtual ~XtraHalListenerSocket() {
+        if (mThread) {
+            stopListenXtraDaemon();
+            delete mThread;
+            mThread = NULL;
+        }
+    }
+
+    // Overrides of LocRunnable methods
+    // This method will be repeated called until it returns false; or
+    // until thread is stopped.
+    virtual bool run();
+
+    // The method to be run before thread loop (conditionally repeatedly)
+    // calls run()
+    inline virtual void prerun() {}
+
+    // The method to be run after thread loop (conditionally repeatedly)
+    // calls run()
+    inline virtual void postrun() {}
+
+private:
+    IOsObserver*    mSystemStatusObsrvr;
+    int mSocketFd;
+    LocThread* mThread;
+    bool mRunning;
+    void startListenerThread();
+    void stopListenXtraDaemon();
+    void receiveData(const int socketFd);
+};
+#endif
 
 class XtraSystemStatusObserver : public IDataItemObserver {
 public :
     // constructor & destructor
     inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
+#ifdef USE_GLIB
+            mHalListenerSocket(sysStatObs),
+#endif
             mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask) {
         subscribe(true);
     }
@@ -51,6 +106,12 @@ public :
     // IDataItemObserver overrides
     inline virtual void getName(string& name);
     virtual void notify(const list<IDataItemCore*>& dlist);
+
+#ifdef USE_GLIB
+    // IFrameworkActionReq functions reqd
+    virtual bool connectBackhaul();
+    virtual bool disconnectBackhaul();
+#endif
 
     bool updateLockStatus(uint32_t lock);
     bool updateConnectionStatus(bool connected, uint32_t type);
@@ -65,6 +126,12 @@ private:
     bool sendEvent(const stringstream& event);
     IOsObserver*    mSystemStatusObsrvr;
     const MsgTask* mMsgTask;
+#ifdef USE_GLIB
+    // XtraHalListenerSocket class
+    // TBD - this will be removed once bidirectional socket changes in
+    // xtra-daemon will be implemented
+    XtraHalListenerSocket mHalListenerSocket;
+#endif
 
 };
 

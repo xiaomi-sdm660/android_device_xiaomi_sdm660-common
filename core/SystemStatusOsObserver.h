@@ -85,6 +85,12 @@ public:
     // To set the framework action request object
     inline void setFrameworkActionReqObj(IFrameworkActionReq* frameworkActionReqObj) {
         mContext.mFrameworkActionReqObj = frameworkActionReqObj;
+#ifdef USE_GLIB
+        if (mBackHaulConnectReqCount > 0) {
+            connectBackhaul();
+            mBackHaulConnectReqCount = 0;
+        }
+#endif
     }
 
     // IDataItemSubscription Overrides
@@ -103,6 +109,10 @@ public:
     // IFrameworkActionReq Overrides
     virtual void turnOn(DataItemId dit, int timeOut = 0);
     virtual void turnOff(DataItemId dit);
+#ifdef USE_GLIB
+    virtual bool connectBackhaul();
+    virtual bool disconnectBackhaul();
+#endif
 
 private:
     SystemContext                                    mContext;
@@ -117,6 +127,10 @@ private:
     ObserverReqCache mReqDataCache;
     void cacheObserverRequest(ObserverReqCache& reqCache,
             const list<DataItemId>& l, IDataItemObserver* client);
+#ifdef USE_GLIB
+    // Cache the framework action request for connect/disconnect
+    int         mBackHaulConnectReqCount;
+#endif
 
     // Helpers
     void sendFirstResponse(const list<DataItemId>& l, IDataItemObserver* to);
