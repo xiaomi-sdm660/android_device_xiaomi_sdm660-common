@@ -32,6 +32,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.dirac.acs.controller=qem \
 	persist.dirac.acs.storeSettings=1 \
 	persist.dirac.acs.ignore_error=1 \
+	ro.af.client_heap_size_kbyte=7168 \
 	ro.audio.flinger_standbytime_ms=300 \
 	ro.audio.soundfx.dirac=true \
 	ro.vendor.audio.sdk.fluencetype=fluence \
@@ -55,6 +56,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	vendor.audio.use.sw.ape.decoder=true \
 	vendor.fm.a2dp.conc.disabled=true \
 	vendor.voice.path.for.pcm.voip=true
+
 
 # Bluetooth
 PRODUCT_PROPERTY_OVERRIDES += \
