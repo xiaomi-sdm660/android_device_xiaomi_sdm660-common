@@ -116,6 +116,7 @@ PRODUCT_COPY_FILES += \
     $(TOPDIR)frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:/$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
     
 PRODUCT_PROPERTY_OVERRIDES += \
+	ro.af.client_heap_size_kbyte=7168 \
 	ro.config.media_vol_steps=25 \
     ro.config.vc_call_vol_steps=7
 
