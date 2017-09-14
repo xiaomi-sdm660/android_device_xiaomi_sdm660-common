@@ -28,8 +28,6 @@
     IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 -->
 <resources>
-   <!-- Operating volatage for bluetooth controller. 0 by default-->
-   <integer translatable="false" name="config_bluetooth_operating_voltage_mv">3300</integer>
    <!-- The duration (in milliseconds) for the outgoing sms authorization request to timeout.-->
    <integer name="config_sms_authorization_timeout_ms">15000</integer>
    <!-- Enable SMS authorization support -->
