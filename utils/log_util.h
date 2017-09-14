@@ -30,12 +30,12 @@
 #ifndef __LOG_UTIL_H__
 #define __LOG_UTIL_H__
 
-#ifndef USE_GLIB
+#if defined (USE_ANDROID_LOGGING) || defined (ANDROID)
+// Android and LE targets with logcat support
 #include <utils/Log.h>
-#endif /* USE_GLIB */
 
-#ifdef USE_GLIB
-
+#elif defined (USE_GLIB)
+// LE targets with no logcat support
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -45,7 +45,7 @@
 
 #endif  // LOG_TAG
 
-#endif /* USE_GLIB */
+#endif /* #if defined (USE_ANDROID_LOGGING) || defined (ANDROID) */
 
 #ifdef __cplusplus
 extern "C"

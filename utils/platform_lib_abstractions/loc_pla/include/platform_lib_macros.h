@@ -33,19 +33,23 @@
 extern "C" {
 #endif
 
-#ifdef USE_GLIB
 #include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
-#ifndef OFF_TARGET
+
+#ifdef USE_GLIB
 #include <glib.h>
+#ifndef OFF_TARGET
 #define strlcat g_strlcat
 #define strlcpy g_strlcpy
 #else
 #define strlcat strncat
 #define strlcpy strncpy
 #endif
+#endif /* USE_GLIB */
 
+#if defined (USE_GLIB) && !defined (USE_ANDROID_LOGGING)
+// LE targets with no logcat support
 #define TS_PRINTF(format, x...)                                \
 {                                                              \
   struct timeval tv;                                           \
@@ -64,7 +68,7 @@ extern "C" {
 #define ALOGD(format, x...) TS_PRINTF("D/%s (%d): " format , LOG_TAG, getpid(), ##x)
 #define ALOGV(format, x...) TS_PRINTF("V/%s (%d): " format , LOG_TAG, getpid(), ##x)
 
-#endif /* USE_GLIB */
+#endif /* #if defined (USE_GLIB) && !defined (USE_ANDROID_LOGGING) */
 
 
 // Below are the location conf file paths

@@ -7,4 +7,4 @@ Name: loc-pla
 Description: QTI GPS Location Platform Library Abstractions
 Version: @VERSION@
 Libs: -L${libdir} -lloc_pla
-Cflags: -I${includedir}/loc-pla
+Cflags: -I${includedir}/loc-pla -I${includedir}/gps-utils

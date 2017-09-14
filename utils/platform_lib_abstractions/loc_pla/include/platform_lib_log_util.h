@@ -30,11 +30,6 @@
 #define __PLATFORM_LIB_LOG_UTIL_H__
 
 #include "platform_lib_macros.h"
-
-#ifndef USE_GLIB
-#include <log_util.h>
-#else
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +41,11 @@
 #define LOG_TAG "GPS_UTILS"
 #endif /* LOG_TAG */
 
+#if defined (USE_ANDROID_LOGGING)  || defined (ANDROID)
+// Android and LE targets with logcat support
+#include <log_util.h>
+#else
+// LE targets without logcat support
 #ifdef __cplusplus
 extern "C"
 {
@@ -169,6 +169,6 @@ char* get_timestamp(char* str, unsigned long buf_size);
 }
 #endif
 
-#endif /* USE_GLIB */
+#endif /* else of #if defined (USE_ANDROID_LOGGING)  || defined (ANDROID) */
 
 #endif /* __PLATFORM_LIB_LOG_UTIL_H__ */
