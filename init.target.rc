@@ -447,7 +447,7 @@ service hvdcp_opti /system/vendor/bin/hvdcp_opti
      user root
      group system wakelock
 
-service smcinvoked /system/vendor/bin/smcinvoked
+service smcinvoked /system/bin/smcinvoked
    class main
    user system
    group system
