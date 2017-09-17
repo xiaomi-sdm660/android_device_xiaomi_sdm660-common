@@ -20,5 +20,9 @@
 /data/gf_data/frr_database.db                   u:object_r:fingerprint_data_file:s0
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
 
+# USB HAL
+/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.0-service\.xiaomi_8996       u:object_r:hal_usb_default_exec:s0
+
 # IR
  /dev/spidev7.1                                  u:object_r:spidev_device:s0
+
