@@ -106,6 +106,7 @@ class GnssAdapter : public LocAdapterBase {
     // This must be initialized via initAgps()
     AgpsManager mAgpsManager;
     AgpsCbInfo mAgpsCbInfo;
+    void initAgps(const AgpsCbInfo& cbInfo);
 
     /* === SystemStatus ===================================================================== */
     SystemStatus* mSystemStatus;

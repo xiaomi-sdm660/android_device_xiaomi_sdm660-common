@@ -277,32 +277,27 @@ public:
         mAgnssNif(NULL), mInternetNif(NULL), mDsNif(NULL) {}
 
     /* Register callbacks */
-    void registerCallbacks(
-            AgnssStatusIpV4Cb                   frameworkStatusV4Cb,
-
-            AgpsAtlOpenStatusCb                 atlOpenStatusCb,
+    inline void registerATLCallbacks(AgpsAtlOpenStatusCb  atlOpenStatusCb,
             AgpsAtlCloseStatusCb                atlCloseStatusCb,
-
             AgpsDSClientInitFn                  dsClientInitFn,
             AgpsDSClientOpenAndStartDataCallFn  dsClientOpenAndStartDataCallFn,
             AgpsDSClientStopDataCallFn          dsClientStopDataCallFn,
             AgpsDSClientCloseDataCallFn         dsClientCloseDataCallFn,
             AgpsDSClientReleaseFn               dsClientReleaseFn,
-
-            SendMsgToAdapterMsgQueueFn          sendMsgToAdapterQueueFn ){
-
-        mFrameworkStatusV4Cb = frameworkStatusV4Cb;
+            SendMsgToAdapterMsgQueueFn          sendMsgToAdapterQueueFn) {
 
         mAtlOpenStatusCb = atlOpenStatusCb;
         mAtlCloseStatusCb = atlCloseStatusCb;
-
         mDSClientInitFn = dsClientInitFn;
         mDSClientOpenAndStartDataCallFn = dsClientOpenAndStartDataCallFn;
         mDSClientStopDataCallFn = dsClientStopDataCallFn;
         mDSClientCloseDataCallFn = dsClientCloseDataCallFn;
         mDSClientReleaseFn = dsClientReleaseFn;
-
         mSendMsgToAdapterQueueFn = sendMsgToAdapterQueueFn;
+    }
+
+    inline void registerFrameworkStatusCallback(AgnssStatusIpV4Cb frameworkStatusV4Cb) {
+        mFrameworkStatusV4Cb = frameworkStatusV4Cb;
     }
 
     /* Create all AGPS state machines */

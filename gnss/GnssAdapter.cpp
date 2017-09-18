@@ -80,6 +80,62 @@ GnssAdapter::GnssAdapter() :
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mUlpPositionMode.mode = LOC_POSITION_MODE_INVALID;
+
+    /* Set ATL open/close callbacks */
+    AgpsAtlOpenStatusCb atlOpenStatusCb =
+            [this](int handle, int isSuccess, char* apn,
+                    AGpsBearerType bearerType, AGpsExtType agpsType) {
+
+                mLocApi->atlOpenStatus(
+                        handle, isSuccess, apn, bearerType, agpsType);
+            };
+    AgpsAtlCloseStatusCb atlCloseStatusCb =
+            [this](int handle, int isSuccess) {
+
+                mLocApi->atlCloseStatus(handle, isSuccess);
+            };
+
+    /* Register DS Client APIs */
+    AgpsDSClientInitFn dsClientInitFn =
+            [this](bool isDueToSSR) {
+
+                return mLocApi->initDataServiceClient(isDueToSSR);
+            };
+
+    AgpsDSClientOpenAndStartDataCallFn dsClientOpenAndStartDataCallFn =
+            [this] {
+
+                return mLocApi->openAndStartDataCall();
+            };
+
+    AgpsDSClientStopDataCallFn dsClientStopDataCallFn =
+            [this] {
+
+                mLocApi->stopDataCall();
+            };
+
+    AgpsDSClientCloseDataCallFn dsClientCloseDataCallFn =
+            [this] {
+
+                mLocApi->closeDataCall();
+            };
+
+    AgpsDSClientReleaseFn dsClientReleaseFn =
+            [this] {
+
+                mLocApi->releaseDataServiceClient();
+            };
+
+    /* Send Msg function */
+    SendMsgToAdapterMsgQueueFn sendMsgFn =
+            [this](LocMsg* msg) {
+
+                sendMsg(msg);
+            };
+    mAgpsManager.registerATLCallbacks(atlOpenStatusCb, atlCloseStatusCb,
+            dsClientInitFn, dsClientOpenAndStartDataCallFn, dsClientStopDataCallFn,
+            dsClientCloseDataCallFn, dsClientReleaseFn, sendMsgFn);
+
     readConfigCommand();
     setConfigCommand();
     initDefaultAgpsCommand();
@@ -1085,6 +1141,10 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
 
         LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%x", __func__, mask);
+    }
+
+    if (mAgpsCbInfo.statusV4Cb != NULL) {
+        mask |= LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST;
     }
 
     updateEvtMask(mask, LOC_REGISTRATION_MASK_SET);
@@ -2423,16 +2483,9 @@ GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
 void GnssAdapter::initDefaultAgps() {
     LOC_LOGD("%s]: ", __func__);
 
-    LocationCapabilitiesMask mask = getCapabilities();
-    if (!(mask & LOCATION_CAPABILITIES_GNSS_MSB_BIT) &&
-            !(mask & LOCATION_CAPABILITIES_GNSS_MSA_BIT)) {
-        LOC_LOGI("%s]: Target does not support MSB and MSA.", __func__);
-        return;
-    }
-
     void *handle = nullptr;
     if ((handle = dlopen("libloc_net_iface.so", RTLD_NOW)) == nullptr) {
-        LOC_LOGE("%s]: libloc_net_iface.so not found !", __func__);
+        LOC_LOGD("%s]: libloc_net_iface.so not found !", __func__);
         return;
     }
 
@@ -2450,7 +2503,7 @@ void GnssAdapter::initDefaultAgps() {
         return;
     }
 
-    initAgpsCommand(cbInfo);
+    initAgps(cbInfo);
 }
 
 void GnssAdapter::initDefaultAgpsCommand() {
@@ -2461,7 +2514,6 @@ void GnssAdapter::initDefaultAgpsCommand() {
         inline MsgInitDefaultAgps(GnssAdapter& adapter) :
             LocMsg(),
             mAdapter(adapter) {
-                LOC_LOGV("MsgInitDefaultAgps");
             }
         inline virtual void proc() const {
             mAdapter.initDefaultAgps();
@@ -2472,141 +2524,53 @@ void GnssAdapter::initDefaultAgpsCommand() {
 }
 
 /* INIT LOC AGPS MANAGER */
+
+void GnssAdapter::initAgps(const AgpsCbInfo& cbInfo) {
+    LOC_LOGD("%s]: mAgpsCbInfo.cbPriority - %d;  cbInfo.cbPriority - %d",
+            __func__, mAgpsCbInfo.cbPriority, cbInfo.cbPriority)
+
+    if (!((ContextBase::mGps_conf.CAPABILITIES & LOC_GPS_CAPABILITY_MSB) ||
+            (ContextBase::mGps_conf.CAPABILITIES & LOC_GPS_CAPABILITY_MSA))) {
+        return;
+    }
+
+    if (mAgpsCbInfo.cbPriority > cbInfo.cbPriority) {
+        return;
+    } else {
+        mAgpsCbInfo = cbInfo;
+
+        mAgpsManager.registerFrameworkStatusCallback((AgnssStatusIpV4Cb)cbInfo.statusV4Cb);
+
+        mAgpsManager.createAgpsStateMachines();
+
+        /* Register for AGPS event mask */
+        updateEvtMask(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST,
+                LOC_REGISTRATION_MASK_ENABLED);
+    }
+}
+
 void GnssAdapter::initAgpsCommand(const AgpsCbInfo& cbInfo){
-
     LOC_LOGI("GnssAdapter::initAgpsCommand");
-
-    /* Set ATL open/close callbacks */
-    AgpsAtlOpenStatusCb atlOpenStatusCb =
-            [this](int handle, int isSuccess, char* apn,
-                    AGpsBearerType bearerType, AGpsExtType agpsType) {
-
-                mLocApi->atlOpenStatus(
-                        handle, isSuccess, apn, bearerType, agpsType);
-            };
-    AgpsAtlCloseStatusCb atlCloseStatusCb =
-            [this](int handle, int isSuccess) {
-
-                mLocApi->atlCloseStatus(handle, isSuccess);
-            };
-
-    /* Register DS Client APIs */
-    AgpsDSClientInitFn dsClientInitFn =
-            [this](bool isDueToSSR) {
-
-                return mLocApi->initDataServiceClient(isDueToSSR);
-            };
-
-    AgpsDSClientOpenAndStartDataCallFn dsClientOpenAndStartDataCallFn =
-            [this] {
-
-                return mLocApi->openAndStartDataCall();
-            };
-
-    AgpsDSClientStopDataCallFn dsClientStopDataCallFn =
-            [this] {
-
-                mLocApi->stopDataCall();
-            };
-
-    AgpsDSClientCloseDataCallFn dsClientCloseDataCallFn =
-            [this] {
-
-                mLocApi->closeDataCall();
-            };
-
-    AgpsDSClientReleaseFn dsClientReleaseFn =
-            [this] {
-
-                mLocApi->releaseDataServiceClient();
-            };
-
-    /* Send Msg function */
-    SendMsgToAdapterMsgQueueFn sendMsgFn =
-            [this](LocMsg* msg) {
-
-                sendMsg(msg);
-            };
 
     /* Message to initialize AGPS module */
     struct AgpsMsgInit: public LocMsg {
-
-        AgpsManager* mAgpsManager;
-
-        AgnssStatusIpV4Cb mFrameworkStatusV4Cb;
-
-        AgpsAtlOpenStatusCb mAtlOpenStatusCb;
-        AgpsAtlCloseStatusCb mAtlCloseStatusCb;
-
-        AgpsDSClientInitFn mDSClientInitFn;
-        AgpsDSClientOpenAndStartDataCallFn mDSClientOpenAndStartDataCallFn;
-        AgpsDSClientStopDataCallFn mDSClientStopDataCallFn;
-        AgpsDSClientCloseDataCallFn mDSClientCloseDataCallFn;
-        AgpsDSClientReleaseFn mDSClientReleaseFn;
-
-        SendMsgToAdapterMsgQueueFn mSendMsgFn;
+        const AgpsCbInfo& mCbInfo;
         GnssAdapter& mAdapter;
 
-        inline AgpsMsgInit(AgpsManager* agpsManager,
-                AgnssStatusIpV4Cb frameworkStatusV4Cb,
-                AgpsAtlOpenStatusCb atlOpenStatusCb,
-                AgpsAtlCloseStatusCb atlCloseStatusCb,
-                AgpsDSClientInitFn dsClientInitFn,
-                AgpsDSClientOpenAndStartDataCallFn dsClientOpenAndStartDataCallFn,
-                AgpsDSClientStopDataCallFn dsClientStopDataCallFn,
-                AgpsDSClientCloseDataCallFn dsClientCloseDataCallFn,
-                AgpsDSClientReleaseFn dsClientReleaseFn,
-                SendMsgToAdapterMsgQueueFn sendMsgFn,
+        inline AgpsMsgInit(const AgpsCbInfo& cbInfo,
                 GnssAdapter& adapter) :
-                LocMsg(), mAgpsManager(agpsManager), mFrameworkStatusV4Cb(
-                        frameworkStatusV4Cb), mAtlOpenStatusCb(atlOpenStatusCb), mAtlCloseStatusCb(
-                        atlCloseStatusCb), mDSClientInitFn(dsClientInitFn), mDSClientOpenAndStartDataCallFn(
-                        dsClientOpenAndStartDataCallFn), mDSClientStopDataCallFn(
-                        dsClientStopDataCallFn), mDSClientCloseDataCallFn(
-                        dsClientCloseDataCallFn), mDSClientReleaseFn(
-                        dsClientReleaseFn), mSendMsgFn(sendMsgFn),
-                        mAdapter(adapter) {
-
+                LocMsg(), mCbInfo(cbInfo), mAdapter(adapter) {
             LOC_LOGV("AgpsMsgInit");
         }
 
         inline virtual void proc() const {
-
             LOC_LOGV("AgpsMsgInit::proc()");
-
-            mAgpsManager->registerCallbacks(mFrameworkStatusV4Cb, mAtlOpenStatusCb,
-                    mAtlCloseStatusCb, mDSClientInitFn,
-                    mDSClientOpenAndStartDataCallFn, mDSClientStopDataCallFn,
-                    mDSClientCloseDataCallFn, mDSClientReleaseFn, mSendMsgFn);
-
-            mAgpsManager->createAgpsStateMachines();
-
-            /* Register for AGPS event mask */
-            mAdapter.updateEvtMask(LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST,
-                                   LOC_REGISTRATION_MASK_ENABLED);
+            mAdapter.initAgps(mCbInfo);
         }
     };
 
-    if (mAgpsCbInfo.cbPriority > cbInfo.cbPriority) {
-        LOC_LOGI("Higher priority AGPS CB already registered (%d > %d) !",
-                mAgpsCbInfo.cbPriority, cbInfo.cbPriority);
-        return;
-    } else {
-        mAgpsCbInfo = cbInfo;
-        LOC_LOGI("Registering AGPS CB %p with priority %d",
-                mAgpsCbInfo.statusV4Cb, mAgpsCbInfo.cbPriority);
-    }
-
     /* Send message to initialize AGPS Manager */
-    sendMsg(new AgpsMsgInit(
-                &mAgpsManager,
-                (AgnssStatusIpV4Cb)cbInfo.statusV4Cb,
-                atlOpenStatusCb, atlCloseStatusCb,
-                dsClientInitFn, dsClientOpenAndStartDataCallFn,
-                dsClientStopDataCallFn, dsClientCloseDataCallFn,
-                dsClientReleaseFn,
-                sendMsgFn,
-                *this));
+    sendMsg(new AgpsMsgInit(cbInfo, *this));
 }
 
 /* GnssAdapter::requestATL
