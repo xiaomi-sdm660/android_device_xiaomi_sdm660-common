@@ -691,7 +691,7 @@ void* ipa_driver_msg_notifier(void *param)
 			} else {
 				OffloadMng->elrInstance->onLimitReached();
 			}
-			break;
+			continue;
 		case IPA_SSR_BEFORE_SHUTDOWN:
 			IPACMDBG_H("Received IPA_SSR_BEFORE_SHUTDOWN\n");
 			OffloadMng = IPACM_OffloadManager::GetInstance();
@@ -700,7 +700,7 @@ void* ipa_driver_msg_notifier(void *param)
 			} else {
 				OffloadMng->elrInstance->onOffloadStopped(IpaEventRelay::ERROR);
 			}
-			break;
+			continue;
 		case IPA_SSR_AFTER_POWERUP:
 			IPACMDBG_H("Received IPA_SSR_AFTER_POWERUP\n");
 			OffloadMng = IPACM_OffloadManager::GetInstance();
@@ -709,7 +709,7 @@ void* ipa_driver_msg_notifier(void *param)
 			} else {
 				OffloadMng->elrInstance->onOffloadSupportAvailable();
 			}
-			break;
+			continue;
 #endif
 #ifdef FEATURE_L2TP
 		case ADD_VLAN_IFACE:
