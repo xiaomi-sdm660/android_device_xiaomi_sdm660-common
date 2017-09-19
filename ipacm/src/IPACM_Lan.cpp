@@ -330,6 +330,21 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				}
 			}
 #endif
+
+#ifdef FEATURE_ETH_BRIDGE_LE
+			if(rx_prop != NULL)
+			{
+				free(rx_prop);
+			}
+			if(tx_prop != NULL)
+			{
+				free(tx_prop);
+			}
+			if(iface_query != NULL)
+			{
+				free(iface_query);
+			}
+#endif
 			delete this;
 		}
 		break;
@@ -3025,14 +3040,16 @@ fail:
 		IPACMDBG_H("depend Got pipe %d rm index : %d \n", rx_prop->rx[0].src_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
 		IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
 		IPACMDBG_H("Finished delete dependency \n ");
+#ifndef FEATURE_ETH_BRIDGE_LE
 		free(rx_prop);
+#endif
 	}
 
 	if (eth_client != NULL)
 	{
 		free(eth_client);
 	}
-
+#ifndef FEATURE_ETH_BRIDGE_LE
 	if (tx_prop != NULL)
 	{
 		free(tx_prop);
@@ -3041,7 +3058,7 @@ fail:
 	{
 		free(iface_query);
 	}
-
+#endif
 	is_active = false;
 	post_del_self_evt();
 
