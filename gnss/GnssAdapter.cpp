@@ -641,6 +641,10 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
     uint32_t* ids = NULL;
     if (count > 0) {
         ids = new uint32_t[count];
+        if (ids == nullptr) {
+            LOC_LOGE("%s] new allocation failed, fatal error.", __func__);
+            return nullptr;
+        }
         for (size_t i=0; i < count; ++i) {
             ids[i] = generateSessionId();
             IF_LOC_LOGD {
@@ -677,6 +681,11 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             LocationError* errs = new LocationError[mCount];
             LocationError err = LOCATION_ERROR_SUCCESS;
             uint32_t index = 0;
+
+            if (errs == nullptr) {
+                LOC_LOGE("%s] new allocation failed, fatal error.", __func__);
+                return;
+            }
 
             if (mConfig.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
                 uint32_t newGpsLock = mAdapter.convertGpsLock(mConfig.gpsLock);
@@ -2146,6 +2155,10 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
             mAdapter(adapter),
             mNmea(new char[length+1]),
             mLength(length) {
+                if (mNmea == nullptr) {
+                    LOC_LOGE("%s] new allocation failed, fatal error.", __func__);
+                    return;
+                }
                 strlcpy((char*)mNmea, nmea, length+1);
             }
         inline virtual ~MsgReportNmea()
@@ -2737,6 +2750,10 @@ void GnssAdapter::dataConnOpenCommand(
                         new char[apnLen + 1]), mApnLen(apnLen), mBearerType(bearerType) {
 
             LOC_LOGV("AgpsMsgAtlOpenSuccess");
+            if (mApnName == nullptr) {
+                LOC_LOGE("%s] new allocation failed, fatal error.", __func__);
+                return;
+            }
             memcpy(mApnName, apnName, apnLen);
             mApnName[apnLen] = 0;
         }
