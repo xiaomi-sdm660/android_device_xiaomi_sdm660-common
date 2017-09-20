@@ -223,7 +223,9 @@ void* ipa_driver_msg_notifier(void *param)
 	struct ipa_wlan_msg_ex *event_ex= NULL;
 	struct ipa_get_data_stats_resp_msg_v01 event_data_stats;
 	struct ipa_get_apn_data_stats_resp_msg_v01 event_network_stats;
+#ifdef FEATURE_IPACM_HAL
 	IPACM_OffloadManager* OffloadMng;
+#endif
 
 	ipacm_cmd_q_data evt_data;
 	ipacm_event_data_mac *data = NULL;
@@ -819,7 +821,9 @@ int main(int argc, char **argv)
 	int ret;
 	pthread_t netlink_thread = 0, monitor_thread = 0, ipa_driver_thread = 0;
 	pthread_t cmd_queue_thread = 0;
+#ifdef FEATURE_IPACM_HAL
 	IPACM_OffloadManager* OffloadMng;
+#endif
 
 	/* check if ipacm is already running or not */
 	ipa_is_ipacm_running();
