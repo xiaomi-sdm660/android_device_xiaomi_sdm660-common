@@ -681,6 +681,7 @@ void DSStateMachine::notifyEventToSubscriber(
 
         case AGPS_EVENT_RELEASED:
             mAgpsManager->mDSClientCloseDataCallFn();
+            mAgpsManager->mAtlCloseStatusCb(subscriberToNotify->mConnHandle, 1);
             break;
 
         default:
