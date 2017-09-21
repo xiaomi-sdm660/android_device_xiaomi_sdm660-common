@@ -308,6 +308,8 @@ typedef uint32_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA   0x10000
 /** GpsLocationExtended has GPS Time */
 #define GPS_LOCATION_EXTENDED_HAS_GPS_TIME   0x20000
+/** GpsLocationExtended has Extended Dilution of Precision */
+#define GPS_LOCATION_EXTENDED_HAS_EXT_DOP   0x40000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -393,6 +395,29 @@ typedef struct {
    float           pitch;
 }LocPositionDynamics;
 
+typedef struct {
+
+  /**  Position dilution of precision.
+       Range: 1 (highest accuracy) to 50 (lowest accuracy) */
+  float PDOP;
+
+  /**  Horizontal dilution of precision.
+       Range: 1 (highest accuracy) to 50 (lowest accuracy) */
+  float HDOP;
+
+  /**  Vertical dilution of precision.
+       Range: 1 (highest accuracy) to 50 (lowest accuracy) */
+  float VDOP;
+
+  /**  geometric  dilution of precision.
+       Range: 1 (highest accuracy) to 50 (lowest accuracy) */
+  float GDOP;
+
+  /**  time dilution of precision.
+       Range: 1 (highest accuracy) to 50 (lowest accuracy) */
+  float TDOP;
+}LocExtDOP;
+
 /* GPS Time structure */
 typedef struct {
 
@@ -451,6 +476,8 @@ typedef struct {
     LocPositionDynamics bodyFrameData;
     /** GPS Time */
     GPSTimeStruct gpsTime;
+    /** Dilution of precision associated with this position*/
+    LocExtDOP extDOP;
 } GpsLocationExtended;
 
 enum loc_sess_status {
