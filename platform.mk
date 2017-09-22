@@ -225,6 +225,10 @@ PRODUCT_PACKAGES += \
     libsensorndkbridge \
     libvehiclenetwork-native
 
+# Health
+PRODUCT_PACKAGES += \
+    android.hardware.health@2.0-service
+
 # HIDL
 PRODUCT_PACKAGES += \
     android.hidl.base@1.0 \
@@ -407,15 +411,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.vr.high_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vr.high_performance.xml
     
-#Healthd packages
-PRODUCT_PACKAGES += android.hardware.health@1.0-impl \
-                    android.hardware.health@1.0-convert \
-                    android.hardware.health@1.0-service \
-                    libhealthd.msm
-                    
-# SOTER
-TARGET_SUPPORT_SOTER := true
-
 # rild
 PRODUCT_PROPERTY_OVERRIDES += rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so
 
