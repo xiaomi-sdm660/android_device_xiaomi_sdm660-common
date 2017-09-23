@@ -465,13 +465,7 @@ private:
     public:
         RemoveGeofencesRequest(LocationAPIClientBase& API) : mAPI(API) {}
         inline void onCollectiveResponse(size_t count, LocationError* errors, uint32_t* sessions) {
-            uint32_t *ids = (uint32_t*)malloc(sizeof(uint32_t) * count);
-            for (size_t i = 0; i < count; i++) {
-                ids[i] = mAPI.mGeofenceBiDict.getId(sessions[i]);
-                mAPI.mGeofenceBiDict.rmBySession(sessions[i]);
-            }
-            mAPI.onRemoveGeofencesCb(count, errors, ids);
-            free(ids);
+            // No need to handle collectiveResponse, cbs already notified
         }
         LocationAPIClientBase& mAPI;
     };

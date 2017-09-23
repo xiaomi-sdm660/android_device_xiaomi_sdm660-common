@@ -613,12 +613,22 @@ void LocationAPIClientBase::locAPIRemoveGeofences(size_t count, uint32_t* ids)
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
             size_t j = 0;
+            uint32_t id_cb;
+            LocationError err;
             for (size_t i = 0; i < count; i++) {
                 sessions[j] = mGeofenceBiDict.getSession(ids[i]);
+                id_cb = ids[i];
                 if (sessions[j] > 0) {
+                    mGeofenceBiDict.rmBySession(sessions[j]);
+                    err = LOCATION_ERROR_SUCCESS;
+                    onRemoveGeofencesCb(1, &err, &id_cb);
                     j++;
+                } else {
+                    err = LOCATION_ERROR_ID_UNKNOWN;
+                    onRemoveGeofencesCb(1, &err, &id_cb);
                 }
             }
+
             if (j > 0) {
                 mRequestQueues[REQUEST_GEOFENCE].push(new RemoveGeofencesRequest(*this));
                 mLocationAPI->removeGeofences(j, sessions);
@@ -743,38 +753,8 @@ void LocationAPIClientBase::locAPIResumeGeofences(
 
 void LocationAPIClientBase::locAPIRemoveAllGeofences()
 {
-    pthread_mutex_lock(&mMutex);
-    if (mLocationAPI) {
-        std::vector<uint32_t> sessionsVec = mGeofenceBiDict.getAllSessions();
-        size_t count = sessionsVec.size();
-        uint32_t* sessions = (uint32_t*)malloc(sizeof(uint32_t) * count);
-        if (sessions == NULL) {
-            LOC_LOGE("%s:%d] Failed to allocate %zu bytes !",
-                    __FUNCTION__, __LINE__, sizeof(uint32_t) * count);
-            pthread_mutex_unlock(&mMutex);
-            return;
-        }
-
-        if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
-            size_t j = 0;
-            for (size_t i = 0; i < count; i++) {
-                sessions[j] = sessionsVec[i];
-                if (sessions[j] > 0) {
-                    j++;
-                }
-            }
-            if (j > 0) {
-                mRequestQueues[REQUEST_GEOFENCE].push(new RemoveGeofencesRequest(*this));
-                mLocationAPI->removeGeofences(j, sessions);
-            }
-        } else {
-            LOC_LOGE("%s:%d] invalid session: %d.", __FUNCTION__, __LINE__,
-                    mRequestQueues[REQUEST_GEOFENCE].getSession());
-        }
-
-        free(sessions);
-    }
-    pthread_mutex_unlock(&mMutex);
+    std::vector<uint32_t> sessionsVec = mGeofenceBiDict.getAllSessions();
+    locAPIRemoveGeofences(sessionsVec.size(), &sessionsVec[0]);
 }
 
 void LocationAPIClientBase::locAPIGnssNiResponse(uint32_t id, GnssNiResponse response)
