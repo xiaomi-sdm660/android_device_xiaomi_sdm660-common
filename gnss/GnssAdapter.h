@@ -151,6 +151,7 @@ public:
     LocationCallbacks getClientCallbacks(LocationAPI* client);
     LocationCapabilitiesMask getCapabilities();
     void broadcastCapabilities(LocationCapabilitiesMask);
+    LocationError setSuplHostServer(const char* server, int port);
 
     /* ==== TRACKING ======================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */

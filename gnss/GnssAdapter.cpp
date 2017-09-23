@@ -522,6 +522,33 @@ GnssAdapter::readConfigCommand()
     }
 }
 
+LocationError
+GnssAdapter::setSuplHostServer(const char* server, int port)
+{
+    LocationError locErr = LOCATION_ERROR_SUCCESS;
+    if (ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
+        char serverUrl[MAX_URL_LEN] = {};
+        int32_t length = 0;
+        const char noHost[] = "NONE";
+        if ((NULL == server) || (server[0] == 0) || (port == 0) ||
+                (strncasecmp(noHost, server, sizeof(noHost)) == 0)) {
+            locErr = LOCATION_ERROR_INVALID_PARAMETER;
+        } else {
+            length = snprintf(serverUrl, sizeof(serverUrl), "%s:%u", server, port);
+            if (length > 0 && strncasecmp(getServerUrl().c_str(),
+                                          serverUrl, sizeof(serverUrl)) != 0) {
+                setServerUrl(serverUrl);
+                locErr = mLocApi->setServer(serverUrl, length);
+                if (locErr != LOCATION_ERROR_SUCCESS) {
+                    LOC_LOGE("%s]:Error while setting SUPL_HOST server:%s",
+                            __func__, serverUrl);
+                }
+            }
+        }
+    }
+    return locErr;
+}
+
 void
 GnssAdapter::setConfigCommand()
 {
@@ -541,6 +568,8 @@ GnssAdapter::setConfigCommand()
                 mApi.setLPPConfig(mAdapter.convertLppProfile(ContextBase::mGps_conf.LPP_PROFILE));
                 mApi.setAGLONASSProtocol(ContextBase::mGps_conf.A_GLONASS_POS_PROTOCOL_SELECT);
             }
+            mAdapter.setSuplHostServer(ContextBase::mGps_conf.SUPL_HOST,
+                                       ContextBase::mGps_conf.SUPL_PORT);
             mApi.setSensorControlConfig(ContextBase::mSap_conf.SENSOR_USAGE,
                                         ContextBase::mSap_conf.SENSOR_PROVIDER);
             mApi.setLPPeProtocolCp(
@@ -674,30 +703,8 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             }
             if (mConfig.flags & GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT) {
                 if (GNSS_ASSISTANCE_TYPE_SUPL == mConfig.assistanceServer.type) {
-                    if (ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
-                        char serverUrl[MAX_URL_LEN] = {};
-                        int32_t length = 0;
-                        const char noHost[] = "NONE";
-                        if (NULL == mConfig.assistanceServer.hostName ||
-                            strncasecmp(noHost,
-                                        mConfig.assistanceServer.hostName,
-                                        sizeof(noHost)) == 0) {
-                            err = LOCATION_ERROR_INVALID_PARAMETER;
-                        } else {
-                            length = snprintf(serverUrl, sizeof(serverUrl), "%s:%u",
-                                              mConfig.assistanceServer.hostName,
-                                              mConfig.assistanceServer.port);
-                        }
-
-                        if (length > 0 && strncasecmp(mAdapter.getServerUrl().c_str(),
-                                                      serverUrl, sizeof(serverUrl)) != 0) {
-                            mAdapter.setServerUrl(serverUrl);
-                            err = mApi.setServer(serverUrl, length);
-                        }
-
-                    } else {
-                        err = LOCATION_ERROR_SUCCESS;
-                    }
+                    err = mAdapter.setSuplHostServer(mConfig.assistanceServer.hostName,
+                                                     mConfig.assistanceServer.port);
                 } else if (GNSS_ASSISTANCE_TYPE_C2K == mConfig.assistanceServer.type) {
                     if (ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
                         struct in_addr addr;
