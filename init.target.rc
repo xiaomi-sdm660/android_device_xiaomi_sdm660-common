@@ -406,6 +406,7 @@ on charger
     start qcom-post-boot
     start hvdcp_opti
     setprop sys.usb.configfs 1
+    start power_off_alarm
 
 #
 #service nqs /system/bin/nqs
