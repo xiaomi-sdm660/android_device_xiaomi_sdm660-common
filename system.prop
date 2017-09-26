@@ -61,6 +61,8 @@ vendor.vidc.enc.disable.pq=false
 # Additional buffers shared between Camera and Video
 vidc.enc.dcvs.extra-buff-count=2
 
+#Netflix custom property
+ro.netflix.bsp_rev=Q660-13149-1
 
 #
 # system props for the data modules
