@@ -477,12 +477,22 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 RET IPACM_OffloadManager::stopAllOffload()
 {
 	Prefix v4gw, v6gw;
+	RET result = SUCCESS;
+
 	memset(&v4gw, 0, sizeof(v4gw));
 	memset(&v6gw, 0, sizeof(v6gw));
 	v4gw.fam = V4;
 	v6gw.fam = V6;
 	IPACMDBG_H("posting setUpstream(NULL), ipv4-fam(%d) ipv6-fam(%d)\n", v4gw.fam, v6gw.fam);
-	return setUpstream(NULL, v4gw, v6gw);
+	result = setUpstream(NULL, v4gw, v6gw);
+
+	/* reset the event cache */
+	default_gw_index = INVALID_IFACE;
+	upstream_v4_up = false;
+	upstream_v6_up = false;
+	memset(event_cache, 0, MAX_EVENT_CACHE*sizeof(framework_event_cache));
+	latest_cache_index = 0;
+	return result;
 }
 
 RET IPACM_OffloadManager::setQuota(const char * upstream_name /* upstream */, uint64_t mb/* limit */)
