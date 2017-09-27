@@ -150,6 +150,12 @@ public:
     double   mAgcGlo;
     double   mAgcBds;
     double   mAgcGal;
+    uint32_t mGloBpAmpI;
+    uint32_t mGloBpAmpQ;
+    uint32_t mBdsBpAmpI;
+    uint32_t mBdsBpAmpQ;
+    uint32_t mGalBpAmpI;
+    uint32_t mGalBpAmpQ;
     inline SystemStatusRfAndParams() :
         mPgaGain(0),
         mGpsBpAmpI(0),
@@ -163,7 +169,13 @@ public:
         mAgcGps(0),
         mAgcGlo(0),
         mAgcBds(0),
-        mAgcGal(0) {}
+        mAgcGal(0),
+        mGloBpAmpI(0),
+        mGloBpAmpQ(0),
+        mBdsBpAmpI(0),
+        mBdsBpAmpQ(0),
+        mGalBpAmpI(0),
+        mGalBpAmpQ(0) {}
     inline SystemStatusRfAndParams(const SystemStatusPQWM1& nmea);
     bool equals(SystemStatusRfAndParams& peer);
     void dump(void);

@@ -120,6 +120,12 @@ public:
     double   mAgcGal;     // x16
     int32_t  mLeapSeconds;// x17
     int32_t  mLeapSecUnc; // x18
+    uint32_t mGloBpAmpI;  // x19
+    uint32_t mGloBpAmpQ;  // x1A
+    uint32_t mBdsBpAmpI;  // x1B
+    uint32_t mBdsBpAmpQ;  // x1C
+    uint32_t mGalBpAmpI;  // x1D
+    uint32_t mGalBpAmpQ;  // x1E
 };
 
 // parser
@@ -153,6 +159,12 @@ private:
         eAgcGal = 22,
         eLeapSeconds = 23,
         eLeapSecUnc = 24,
+        eGloBpAmpI = 25,
+        eGloBpAmpQ = 26,
+        eBdsBpAmpI = 27,
+        eBdsBpAmpQ = 28,
+        eGalBpAmpI = 29,
+        eGalBpAmpQ = 30,
         eMax
     };
     SystemStatusPQWM1 mM1;
@@ -182,6 +194,12 @@ public:
     inline uint32_t   getRecErrorRecovery() { return mM1.mRecErrorRecovery; }
     inline int32_t    getLeapSeconds(){ return mM1.mLeapSeconds; }
     inline int32_t    getLeapSecUnc() { return mM1.mLeapSecUnc; }
+    inline uint32_t   getGloBpAmpI()  { return mM1.mGloBpAmpI; }
+    inline uint32_t   getGloBpAmpQ()  { return mM1.mGloBpAmpQ; }
+    inline uint32_t   getBdsBpAmpI()  { return mM1.mBdsBpAmpI; }
+    inline uint32_t   getBdsBpAmpQ()  { return mM1.mBdsBpAmpQ; }
+    inline uint32_t   getGalBpAmpI()  { return mM1.mGalBpAmpI; }
+    inline uint32_t   getGalBpAmpQ()  { return mM1.mGalBpAmpQ; }
 
     SystemStatusPQWM1parser(const char *str_in, uint32_t len_in)
         : SystemStatusNmeaBase(str_in, len_in)
@@ -216,6 +234,12 @@ public:
         mM1.mAgcGal = atof(mField[eAgcGal].c_str());
         mM1.mLeapSeconds = atoi(mField[eLeapSeconds].c_str());
         mM1.mLeapSecUnc = atoi(mField[eLeapSecUnc].c_str());
+        mM1.mGloBpAmpI = atoi(mField[eGloBpAmpI].c_str());
+        mM1.mGloBpAmpQ = atoi(mField[eGloBpAmpQ].c_str());
+        mM1.mBdsBpAmpI = atoi(mField[eBdsBpAmpI].c_str());
+        mM1.mBdsBpAmpQ = atoi(mField[eBdsBpAmpQ].c_str());
+        mM1.mGalBpAmpI = atoi(mField[eGalBpAmpI].c_str());
+        mM1.mGalBpAmpQ = atoi(mField[eGalBpAmpQ].c_str());
     }
 
     inline SystemStatusPQWM1& get() { return mM1;} //getparser
@@ -762,7 +786,13 @@ SystemStatusRfAndParams::SystemStatusRfAndParams(const SystemStatusPQWM1& nmea) 
     mAgcGps(nmea.mAgcGps),
     mAgcGlo(nmea.mAgcGlo),
     mAgcBds(nmea.mAgcBds),
-    mAgcGal(nmea.mAgcGal)
+    mAgcGal(nmea.mAgcGal),
+    mGloBpAmpI(nmea.mGloBpAmpI),
+    mGloBpAmpQ(nmea.mGloBpAmpQ),
+    mBdsBpAmpI(nmea.mBdsBpAmpI),
+    mBdsBpAmpQ(nmea.mBdsBpAmpQ),
+    mGalBpAmpI(nmea.mGalBpAmpI),
+    mGalBpAmpQ(nmea.mGalBpAmpQ)
 {
 }
 
@@ -780,7 +810,13 @@ bool SystemStatusRfAndParams::equals(SystemStatusRfAndParams& peer)
         (mAgcGps != peer.mAgcGps) ||
         (mAgcGlo != peer.mAgcGlo) ||
         (mAgcBds != peer.mAgcBds) ||
-        (mAgcGal != peer.mAgcGal)) {
+        (mAgcGal != peer.mAgcGal) ||
+        (mGloBpAmpI != peer.mGloBpAmpI) ||
+        (mGloBpAmpQ != peer.mGloBpAmpQ) ||
+        (mBdsBpAmpI != peer.mBdsBpAmpI) ||
+        (mBdsBpAmpQ != peer.mBdsBpAmpQ) ||
+        (mGalBpAmpI != peer.mGalBpAmpI) ||
+        (mGalBpAmpQ != peer.mGalBpAmpQ)) {
         return false;
     }
     return true;
