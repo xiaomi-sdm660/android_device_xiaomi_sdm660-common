@@ -157,6 +157,7 @@ IPACM_Config::IPACM_Config()
 	memset(flt_rule_count_v4, 0, IPA_CLIENT_MAX*sizeof(int));
 	memset(flt_rule_count_v6, 0, IPA_CLIENT_MAX*sizeof(int));
 	memset(bridge_mac, 0, IPA_MAC_ADDR_SIZE*sizeof(uint8_t));
+	ver = IPA_HW_None;
 
 	IPACMDBG_H(" create IPACM_Config constructor\n");
 	return;
@@ -846,4 +847,21 @@ const char* IPACM_Config::getEventName(ipa_cm_event_id event_id)
 	}
 
 	return ipacm_event_name[event_id];
+}
+
+enum ipa_hw_type IPACM_Config::GetIPAVer()
+{
+	int ret;
+
+	if(ver != IPA_HW_None)
+		return ver;
+
+	ret = ioctl(m_fd, IPA_IOC_GET_HW_VERSION, &ver);
+	if(ret != 0)
+	{
+		IPACMERR("Failed to get IPA version with error %d.\n", ret);
+		return IPA_HW_None;
+	}
+	IPACMDBG_H("IPA version is %d.\n", ver);
+	return ver;
 }
