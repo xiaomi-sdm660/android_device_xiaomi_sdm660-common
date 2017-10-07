@@ -19,6 +19,7 @@ libgps_utils_so_la_h_sources = \
         LocHeap.h \
         LocThread.h \
         LocTimer.h \
+        LocIpc.h \
         loc_misc_utils.h \
         loc_nmea.h \
         gps_extended_c.h \
@@ -34,6 +35,7 @@ libgps_utils_so_la_c_sources = \
         LocHeap.cpp \
         LocTimer.cpp \
         LocThread.cpp \
+        LocIpc.cpp \
         MsgTask.cpp \
         loc_misc_utils.cpp \
         loc_nmea.cpp
