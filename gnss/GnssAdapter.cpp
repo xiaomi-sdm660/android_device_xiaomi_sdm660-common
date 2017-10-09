@@ -2554,7 +2554,7 @@ void GnssAdapter::initAgpsCommand(const AgpsCbInfo& cbInfo){
 
     /* Message to initialize AGPS module */
     struct AgpsMsgInit: public LocMsg {
-        const AgpsCbInfo& mCbInfo;
+        const AgpsCbInfo mCbInfo;
         GnssAdapter& mAdapter;
 
         inline AgpsMsgInit(const AgpsCbInfo& cbInfo,
