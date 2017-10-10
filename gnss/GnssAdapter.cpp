@@ -932,6 +932,26 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
 }
 
 void
+GnssAdapter::gnssUpdateXtraThrottleCommand(const bool enabled)
+{
+    LOC_LOGD("%s] enabled:%d", __func__, enabled);
+
+    struct UpdateXtraThrottleMsg : public LocMsg {
+        GnssAdapter& mAdapter;
+        const bool mEnabled;
+        inline UpdateXtraThrottleMsg(GnssAdapter& adapter, const bool enabled) :
+            LocMsg(),
+            mAdapter(adapter),
+            mEnabled(enabled) {}
+        inline virtual void proc() const {
+                mAdapter.mXtraObserver.updateXtraThrottle(mEnabled);
+        }
+    };
+
+    sendMsg(new UpdateXtraThrottleMsg(*this, enabled));
+}
+
+void
 GnssAdapter::injectLocationCommand(double latitude, double longitude, float accuracy)
 {
     LOC_LOGD("%s]: latitude %8.4f longitude %8.4f accuracy %8.4f",
