@@ -93,7 +93,8 @@ class IPACM_Wan : public IPACM_Iface
 {
 
 public:
-
+	/* IPACM pm_depency q6 check*/
+	static int ipa_pm_q6_check;
 	static bool wan_up;
 	static bool wan_up_v6;
 	static uint8_t xlat_mux_id;
