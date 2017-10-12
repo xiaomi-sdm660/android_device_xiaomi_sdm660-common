@@ -187,3 +187,6 @@ vendor.display.enable_default_color_mode=1
 persist.backup.ntpServer="0.pool.ntp.org"
 # enable IZat OptInApp overlay
 persist.vendor.overlay.izat.optin=rro
+
+#Disable Skip Validate
+sdm.debug.disable_skip_validate=1
