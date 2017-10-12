@@ -506,8 +506,7 @@ Return<void> HAL::setUpstreamParameters
         BoolResult res = makeInputCheckFailure("Not initialized (setUpstreamParameters)");
         hidl_cb(res.success, res.errMsg);
         fl.setResult(res.success, res.errMsg);
-    }
-    else if (!v4AddrParser.addV4(v4Addr) && !v4Addr.empty()) {
+    } else if (!v4AddrParser.addV4(v4Addr) && !v4Addr.empty()) {
         BoolResult res = makeInputCheckFailure(v4AddrParser.getLastErrAsStr());
         hidl_cb(res.success, res.errMsg);
         fl.setResult(res.success, res.errMsg);
@@ -519,9 +518,18 @@ Return<void> HAL::setUpstreamParameters
         BoolResult res = makeInputCheckFailure(v6GwParser.getLastErrAsStr());
         hidl_cb(res.success, res.errMsg);
         fl.setResult(res.success, res.errMsg);
-    } else {
+    } else if (iface.size()>= 1) {
         RET ipaReturn = mIPA->setUpstream(
                 iface.c_str(),
+                v4GwParser.getFirstPrefix(),
+                v6GwParser.getFirstPrefix());
+        BoolResult res = ipaResultToBoolResult(ipaReturn);
+        hidl_cb(res.success, res.errMsg);
+        fl.setResult(res.success, res.errMsg);
+    } else {
+	/* send NULL iface string when upstream down */
+        RET ipaReturn = mIPA->setUpstream(
+                NULL,
                 v4GwParser.getFirstPrefix(),
                 v6GwParser.getFirstPrefix());
         BoolResult res = ipaResultToBoolResult(ipaReturn);
