@@ -235,6 +235,21 @@ public:
     inline virtual DataItemId getId() { return mId; }
     virtual void stringify(string& /*valueStr*/) {}
     virtual int32_t copy(IDataItemCore* /*src*/, bool* /*dataItemCopied = NULL*/) {return 1;}
+    enum NetworkType {
+        TYPE_UNKNOWN,
+        TYPE_MOBILE,
+        TYPE_WIFI,
+        TYPE_ETHERNET,
+        TYPE_BLUETOOTH,
+        TYPE_MMS,
+        TYPE_SUPL,
+        TYPE_DUN,
+        TYPE_HIPRI,
+        TYPE_WIMAX
+    };
+    inline virtual NetworkType getType(void) const {
+        return (NetworkType)mType;
+    }
 // Data members
     int32_t mType;
     string mTypeName;

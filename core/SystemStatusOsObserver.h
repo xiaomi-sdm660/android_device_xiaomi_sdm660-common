@@ -70,12 +70,13 @@ typedef map<IDataItemObserver*, list<DataItemId>> ObserverReqCache;
 // subscribe with OSObserver using IDataItemSubscription interface.
 // Such clients would need to implement IDataItemObserver interface
 // to receive data when it becomes available.
+class SystemStatus;
 class SystemStatusOsObserver : public IOsObserver {
 
 public:
     // ctor
-    SystemStatusOsObserver(const MsgTask* msgTask);
-
+    SystemStatusOsObserver(
+            SystemStatus* systemstatus, const MsgTask* msgTask);
     // dtor
     ~SystemStatusOsObserver();
 
@@ -115,6 +116,7 @@ public:
 #endif
 
 private:
+    SystemStatus*                                    mSystemStatus;
     SystemContext                                    mContext;
     const string                                     mAddress;
     IClientIndex<IDataItemObserver*, DataItemId>*    mClientIndex;
