@@ -234,9 +234,11 @@ void* ipa_driver_msg_notifier(void *param)
 	ipacm_event_data_wlan_ex *data_ex;
 	ipa_get_data_stats_resp_msg_v01 *data_tethering_stats = NULL;
 	ipa_get_apn_data_stats_resp_msg_v01 *data_network_stats = NULL;
+
+#ifdef FEATURE_L2TP
 	ipa_ioc_vlan_iface_info *vlan_info = NULL;
 	ipa_ioc_l2tp_vlan_mapping_info *mapping = NULL;
-
+#endif
 	ipacm_cmd_q_data new_neigh_evt;
 	ipacm_event_data_all* new_neigh_data;
 

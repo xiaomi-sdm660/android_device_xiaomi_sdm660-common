@@ -169,6 +169,7 @@ public:
 	/* delete header processing context */
 	int eth_bridge_del_hdr_proc_ctx(uint32_t hdr_proc_ctx_hdl);
 
+#ifdef FEATURE_L2TP
 	/* add l2tp rt rule for l2tp client */
 	int add_l2tp_rt_rule(ipa_ip_type iptype, uint8_t *dst_mac, ipa_hdr_l2_type peer_l2_hdr_type,
 		uint32_t l2tp_session_id, uint32_t vlan_id, uint8_t *vlan_client_mac, uint32_t *vlan_iface_ipv6_addr,
@@ -198,6 +199,7 @@ public:
 
 	/* delete l2tp flt rule on non l2tp interface */
 	int del_l2tp_flt_rule(ipa_ip_type iptype, uint32_t first_pass_flt_rule_hdl, uint32_t second_pass_flt_rule_hdl);
+#endif
 
 protected:
 
@@ -209,15 +211,16 @@ protected:
 	void eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, uint8_t *mac,
 		uint32_t *ipv6_addr, char *iface_name);
 
+#ifdef FEATURE_L2TP
 	/* check if the event is associated with vlan interface */
 	bool is_vlan_event(char *event_iface_name);
-
 	/* check if the event is associated with l2tp interface */
 	bool is_l2tp_event(char *event_iface_name);
 
 	/* check if the IPv6 address is unique local address */
 	bool is_unique_local_ipv6_addr(uint32_t *ipv6_addr);
 
+#endif
 	virtual int add_dummy_private_subnet_flt_rule(ipa_ip_type iptype);
 
 	int handle_private_subnet_android(ipa_ip_type iptype);

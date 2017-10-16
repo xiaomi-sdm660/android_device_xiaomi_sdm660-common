@@ -107,12 +107,14 @@ const char *ipacm_event_name[] = {
 	__stringify(IPA_ETH_BRIDGE_CLIENT_DEL),                /* ipacm_event_eth_bridge*/
 	__stringify(IPA_ETH_BRIDGE_WLAN_SCC_MCC_SWITCH),       /* ipacm_event_eth_bridge*/
 	__stringify(IPA_LAN_DELETE_SELF),                      /* ipacm_event_data_fid */
+#ifdef FEATURE_L2TP
 	__stringify(IPA_ADD_VLAN_IFACE),                       /* ipa_ioc_vlan_iface_info */
 	__stringify(IPA_DEL_VLAN_IFACE),                       /* ipa_ioc_vlan_iface_info */
 	__stringify(IPA_ADD_L2TP_VLAN_MAPPING),                /* ipa_ioc_l2tp_vlan_mapping_info */
 	__stringify(IPA_DEL_L2TP_VLAN_MAPPING),                /* ipa_ioc_l2tp_vlan_mapping_info */
 	__stringify(IPA_VLAN_CLIENT_INFO),                     /* ipacm_event_data_all */
 	__stringify(IPA_VLAN_IFACE_INFO),                      /* ipacm_event_data_all */
+#endif
 	__stringify(IPACM_EVENT_MAX),
 };
 

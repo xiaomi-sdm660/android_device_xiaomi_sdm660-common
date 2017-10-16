@@ -871,8 +871,12 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 				}
 			}
 
-			if (ipa_interface_index == ipa_if_num || is_vlan_event(data->iface_name)
-				|| (is_l2tp_event(data->iface_name) && ipa_if_cate == ODU_IF))
+			if (ipa_interface_index == ipa_if_num
+#ifdef FEATURE_L2TP
+				|| is_vlan_event(data->iface_name)
+				|| (is_l2tp_event(data->iface_name) && ipa_if_cate == ODU_IF)
+#endif
+				)
 			{
 				IPACMDBG_H("ETH iface got client \n");
 				if(ipa_interface_index == ipa_if_num)
@@ -931,7 +935,10 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			}
 
 			if (ipa_interface_index == ipa_if_num
-				|| (is_l2tp_event(data->iface_name) && ipa_if_cate == ODU_IF))
+#ifdef FEATURE_L2TP
+				|| (is_l2tp_event(data->iface_name) && ipa_if_cate == ODU_IF)
+#endif
+				)
 			{
 				if(ipa_interface_index == ipa_if_num)
 				{
@@ -2171,7 +2178,7 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 		   	        continue;
 		    }
 
-  	   	    rt_rule_entry = &rt_rule->rules[0];
+			rt_rule_entry = &rt_rule->rules[0];
 			rt_rule_entry->at_rear = 0;
 
 			if (iptype == IPA_IP_v4)
@@ -2197,20 +2204,19 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 #ifdef FEATURE_IPA_V3
 				rt_rule_entry->rule.hashable = false;
 #endif
-			    if (false == m_routing.AddRoutingRule(rt_rule))
-  	            {
-  	          	            IPACMERR("Routing rule addition failed!\n");
-  	          	            free(rt_rule);
-  	          	            return IPACM_FAILURE;
-			    }
+				if (false == m_routing.AddRoutingRule(rt_rule))
+				{
+					IPACMERR("Routing rule addition failed!\n");
+					free(rt_rule);
+					return IPACM_FAILURE;
+				}
 
 			    /* copy ipv4 RT hdl */
 		        get_client_memptr(eth_client, eth_index)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v4 =
   	   	        rt_rule->rules[0].rt_rule_hdl;
 		        IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
 		      	get_client_memptr(eth_client, eth_index)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v4, iptype);
-
-  	   	    } else {
+			} else {
 
 		        for(v6_num = get_client_memptr(eth_client, eth_index)->route_rule_set_v6;v6_num < get_client_memptr(eth_client, eth_index)->ipv6_set;v6_num++)
 			    {
@@ -2239,12 +2245,12 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 #ifdef FEATURE_IPA_V3
 					rt_rule_entry->rule.hashable = true;
 #endif
-   	                if (false == m_routing.AddRoutingRule(rt_rule))
-  	                {
-  	                	    IPACMERR("Routing rule addition failed!\n");
-  	                	    free(rt_rule);
-  	                	    return IPACM_FAILURE;
-			        }
+			if (false == m_routing.AddRoutingRule(rt_rule))
+			{
+				IPACMERR("Routing rule addition failed!\n");
+				free(rt_rule);
+				return IPACM_FAILURE;
+			}
 
 		            get_client_memptr(eth_client, eth_index)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6[v6_num] = rt_rule->rules[0].rt_rule_hdl;
 		            IPACMDBG_H("tx:%d, rt rule hdl=%x ip-type: %d\n", tx_index,
@@ -2284,7 +2290,7 @@ int IPACM_Lan::handle_eth_client_route_rule(uint8_t *mac_addr, ipa_ip_type iptyp
 			    }
 			}
 
-  	    } /* end of for loop */
+		} /* end of for loop */
 
 		free(rt_rule);
 
@@ -2651,7 +2657,7 @@ int IPACM_Lan::handle_eth_client_down_evt(uint8_t *mac_addr)
 	{
 			IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(eth_client, clt_indx)->v4_addr);
 			CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, clt_indx)->v4_addr);
- 	}
+	}
 
 	if (delete_eth_rtrules(clt_indx, IPA_IP_v4))
 	{
@@ -4327,6 +4333,7 @@ void IPACM_Lan::eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, u
 	memset(&eth_bridge_evt, 0, sizeof(ipacm_cmd_q_data));
 	eth_bridge_evt.event = evt;
 
+#ifdef FEATURE_L2TP
 	if(evt == IPA_HANDLE_VLAN_CLIENT_INFO || evt == IPA_HANDLE_VLAN_IFACE_INFO)
 	{
 		evt_data_all = (ipacm_event_data_all*)malloc(sizeof(*evt_data_all));
@@ -4357,6 +4364,7 @@ void IPACM_Lan::eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, u
 		eth_bridge_evt.evt_data = (void*)evt_data_all;
 	}
 	else
+#endif
 	{
 		evt_data_eth_bridge = (ipacm_event_eth_bridge*)malloc(sizeof(*evt_data_eth_bridge));
 		if(evt_data_eth_bridge == NULL)
@@ -4382,7 +4390,6 @@ void IPACM_Lan::eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, u
 		}
 		eth_bridge_evt.evt_data = (void*)evt_data_eth_bridge;
 	}
-
 	IPACMDBG_H("Posting event %s\n",
 		IPACM_Iface::ipacmcfg->getEventName(evt));
 	IPACM_EvtDispatcher::PostEvt(&eth_bridge_evt);
@@ -4726,6 +4733,7 @@ int IPACM_Lan::eth_bridge_del_hdr_proc_ctx(uint32_t hdr_proc_ctx_hdl)
 	return IPACM_SUCCESS;
 }
 
+#ifdef FEATURE_L2TP
 /* check if the event is associated with vlan interface */
 bool IPACM_Lan::is_vlan_event(char *event_iface_name)
 {
@@ -5545,6 +5553,7 @@ bool IPACM_Lan::is_unique_local_ipv6_addr(uint32_t* ipv6_addr)
 	}
 	return false;
 }
+#endif
 
 /* add tcp syn flt rule */
 int IPACM_Lan::add_tcp_syn_flt_rule(ipa_ip_type iptype)
