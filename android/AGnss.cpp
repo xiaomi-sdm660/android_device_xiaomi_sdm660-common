@@ -72,7 +72,10 @@ void AGnss::agnssStatusIpV4Cb(AGnssExtStatusIpV4 status){
     }
     st.ipV4Addr = status.ipV4Addr;
 
-    sAGnssCbIface->agnssStatusIpV4Cb(st);
+    auto r = sAGnssCbIface->agnssStatusIpV4Cb(st);
+    if (!r.isOk()) {
+        LOC_LOGE("Error invoking AGNSS status cb %s", r.description().c_str());
+    }
 }
 
 Return<void> AGnss::setCallback(const sp<IAGnssCallback>& callback) {
