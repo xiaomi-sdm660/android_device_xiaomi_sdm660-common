@@ -47,7 +47,8 @@ public :
     // constructor & destructor
     inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
             mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask),
-            mGpsLock(-1), mXtraThrottle(true), mReqStatusReceived(false), mDelayLocTimer(*this) {
+            mGpsLock(-1), mXtraThrottle(true), mReqStatusReceived(false), mDelayLocTimer(*this),
+            mIsConnectivityStatusKnown (false) {
         subscribe(true);
         startListeningNonBlocking(LOC_IPC_HAL);
         mDelayLocTimer.start(100 /*.1 sec*/,  false);
@@ -80,6 +81,7 @@ private:
     string mMccmnc;
     bool mXtraThrottle;
     bool mReqStatusReceived;
+    bool mIsConnectivityStatusKnown;
 
     class DelayLocTimer : public LocTimer {
         XtraSystemStatusObserver& mXSSO;
