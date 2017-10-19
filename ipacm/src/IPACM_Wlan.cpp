@@ -202,6 +202,20 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 
 			IPACMDBG_H("Received IPA_LAN_DELETE_SELF event.\n");
 			IPACMDBG_H("ipa_WLAN (%s):ipa_index (%d) instance close \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+#ifdef FEATURE_ETH_BRIDGE_LE
+			if(rx_prop != NULL)
+			{
+				free(rx_prop);
+			}
+			if(tx_prop != NULL)
+			{
+				free(tx_prop);
+			}
+			if(iface_query != NULL)
+			{
+				free(iface_query);
+			}
+#endif
 			delete this;
 		}
 		break;
@@ -1926,7 +1940,9 @@ fail:
 		IPACMDBG_H("dev %s add producer dependency\n", dev_name);
 		IPACMDBG_H("depend Got pipe %d rm index : %d \n", rx_prop->rx[0].src_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
 		IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[rx_prop->rx[0].src_pipe]);
+#ifndef FEATURE_ETH_BRIDGE_LE
 		free(rx_prop);
+#endif
 	}
 
 	for (i = 0; i < num_wifi_client; i++)
@@ -1940,6 +1956,7 @@ fail:
 	{
 		free(wlan_client);
 	}
+#ifndef FEATURE_ETH_BRIDGE_LE
 	if (tx_prop != NULL)
 	{
 		free(tx_prop);
@@ -1949,6 +1966,7 @@ fail:
 	{
 		free(iface_query);
 	}
+#endif
 
 	is_active = false;
 	post_del_self_evt();

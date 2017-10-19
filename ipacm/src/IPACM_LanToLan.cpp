@@ -594,6 +594,7 @@ void IPACM_LanToLan::handle_add_l2tp_vlan_mapping(ipa_ioc_l2tp_vlan_mapping_info
 	list<l2tp_vlan_mapping_info>::iterator it_mapping;
 	list<vlan_iface_info>::iterator it_vlan;
 	list<IPACM_LanToLan_Iface>::iterator it_iface;
+	IPACM_LanToLan_Iface *l2tp_iface;
 	l2tp_vlan_mapping_info new_mapping;
 	bool has_l2tp_iface = false;
 
@@ -637,6 +638,8 @@ void IPACM_LanToLan::handle_add_l2tp_vlan_mapping(ipa_ioc_l2tp_vlan_mapping_info
 		if(it_iface->set_l2tp_iface(data->vlan_iface_name) == true)
 		{
 			has_l2tp_iface = true;
+			l2tp_iface = &(*it_iface);
+			break;
 		}
 	}
 
@@ -651,6 +654,7 @@ void IPACM_LanToLan::handle_add_l2tp_vlan_mapping(ipa_ioc_l2tp_vlan_mapping_info
 				it_iface->handle_l2tp_enable();
 			}
 		}
+		l2tp_iface->switch_to_l2tp_iface();
 	}
 	return;
 }
@@ -1941,7 +1945,6 @@ bool IPACM_LanToLan_Iface::set_l2tp_iface(char *vlan_iface_name)
 		{
 			IPACMDBG_H("This interface is l2tp interface.\n");
 			m_is_l2tp_iface = true;
-			switch_to_l2tp_iface();
 		}
 	}
 	return m_is_l2tp_iface;
