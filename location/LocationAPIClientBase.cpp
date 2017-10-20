@@ -614,26 +614,24 @@ void LocationAPIClientBase::locAPIRemoveGeofences(size_t count, uint32_t* ids)
         }
 
         if (mRequestQueues[REQUEST_GEOFENCE].getSession() == GEOFENCE_SESSION_ID) {
+            BiDict<GeofenceBreachTypeMask>* removedGeofenceBiDict =
+                    new BiDict<GeofenceBreachTypeMask>();
             size_t j = 0;
-            uint32_t id_cb;
-            LocationError err;
             for (size_t i = 0; i < count; i++) {
                 sessions[j] = mGeofenceBiDict.getSession(ids[i]);
-                id_cb = ids[i];
                 if (sessions[j] > 0) {
+                    GeofenceBreachTypeMask type = mGeofenceBiDict.getExtBySession(sessions[j]);
                     mGeofenceBiDict.rmBySession(sessions[j]);
-                    err = LOCATION_ERROR_SUCCESS;
-                    onRemoveGeofencesCb(1, &err, &id_cb);
+                    removedGeofenceBiDict->set(ids[i], sessions[j], type);
                     j++;
-                } else {
-                    err = LOCATION_ERROR_ID_UNKNOWN;
-                    onRemoveGeofencesCb(1, &err, &id_cb);
                 }
             }
-
             if (j > 0) {
-                mRequestQueues[REQUEST_GEOFENCE].push(new RemoveGeofencesRequest(*this));
+                mRequestQueues[REQUEST_GEOFENCE].push(new RemoveGeofencesRequest(*this,
+                        removedGeofenceBiDict));
                 mLocationAPI->removeGeofences(j, sessions);
+            } else {
+                delete(removedGeofenceBiDict);
             }
         } else {
             LOC_LOGE("%s:%d] invalid session: %d.", __FUNCTION__, __LINE__,
