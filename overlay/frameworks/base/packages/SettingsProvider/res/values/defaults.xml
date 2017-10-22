@@ -26,5 +26,11 @@
 
     <!-- 30 seconds for default screen timeout -->
     <integer name="def_screen_off_timeout">30000</integer>
+    
+    <!-- Disable UI touch sounds by default -->
+    <bool name="def_sound_effects_enabled">false</bool>
+
+    <!-- Disable UI touch haptic feedback by default -->
+    <bool name="def_haptic_feedback">false</bool>
 
 </resources>
