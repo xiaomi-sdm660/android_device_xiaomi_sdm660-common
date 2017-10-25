@@ -59,6 +59,8 @@ IPACM_OffloadManager::IPACM_OffloadManager()
 	upstream_v6_up = false;
 	memset(event_cache, 0, MAX_EVENT_CACHE*sizeof(framework_event_cache));
 	latest_cache_index = 0;
+	elrInstance = NULL;
+	touInstance = NULL;
 	return ;
 }
 
