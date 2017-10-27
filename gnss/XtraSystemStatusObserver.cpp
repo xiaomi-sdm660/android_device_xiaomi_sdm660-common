@@ -57,6 +57,12 @@ using namespace loc_core;
 #define LOG_TAG "LocSvc_XSSO"
 
 bool XtraSystemStatusObserver::updateLockStatus(uint32_t lock) {
+    mGpsLock = lock;
+
+    if (!mReqStatusReceived) {
+        return true;
+    }
+
     stringstream ss;
     ss <<  "gpslock";
     ss << " " << lock;
@@ -64,13 +70,34 @@ bool XtraSystemStatusObserver::updateLockStatus(uint32_t lock) {
 }
 
 bool XtraSystemStatusObserver::updateConnectionStatus(bool connected, int32_t type) {
+    if (connected) {
+        mConnections.insert(type);
+    } else {
+        if (-1 == type) { // -1 for disconnecting all connections
+            mConnections.clear();
+        } else {
+            mConnections.erase(type);
+        }
+    }
+
+    if (!mReqStatusReceived) {
+        return true;
+    }
+
     stringstream ss;
     ss <<  "connection";
     ss << " " << (connected ? "1" : "0");
     ss << " " << type;
     return ( send(LOC_IPC_XTRA, ss.str()) );
 }
+
 bool XtraSystemStatusObserver::updateTac(const string& tac) {
+    mTac = tac;
+
+    if (!mReqStatusReceived) {
+        return true;
+    }
+
     stringstream ss;
     ss <<  "tac";
     ss << " " << tac.c_str();
@@ -78,6 +105,12 @@ bool XtraSystemStatusObserver::updateTac(const string& tac) {
 }
 
 bool XtraSystemStatusObserver::updateMccMnc(const string& mccmnc) {
+    mMccmnc = mccmnc;
+
+    if (!mReqStatusReceived) {
+        return true;
+    }
+
     stringstream ss;
     ss <<  "mncmcc";
     ss << " " << mccmnc.c_str();
@@ -85,15 +118,66 @@ bool XtraSystemStatusObserver::updateMccMnc(const string& mccmnc) {
 }
 
 bool XtraSystemStatusObserver::updateXtraThrottle(const bool enabled) {
+    mXtraThrottle = enabled;
+
+    if (!mReqStatusReceived) {
+        return true;
+    }
+
     stringstream ss;
     ss <<  "xtrathrottle";
     ss << " " << (enabled ? 1 : 0);
     return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
+static inline ostream& operator<<(ostream& os, CONNECTIONS& data) {
+    for (auto elem : data) {
+        os << elem << ' ';
+    }
+    return os;
+}
+
+inline bool XtraSystemStatusObserver::onStatusRequested(int32_t xtraStatusUpdated) {
+    mReqStatusReceived = true;
+
+    if (xtraStatusUpdated) {
+        return true;
+    }
+
+    stringstream ss;
+
+    ss << "respondStatus" << endl;
+    (mGpsLock == -1 ? ss : ss << mGpsLock) << endl << mConnections << endl
+            << mTac << endl << mMccmnc;
+
+    return ( send(LOC_IPC_XTRA, ss.str()) );
+}
+
 void XtraSystemStatusObserver::onReceive(const std::string& data) {
     if (!strncmp(data.c_str(), "ping", sizeof("ping") - 1)) {
         LOC_LOGd("ping received");
+
+#ifdef USE_GLIB
+    } else if (!strncmp(data.c_str(), "connectBackhaul", sizeof("connectBackhaul") - 1)) {
+        mSystemStatusObsrvr->connectBackhaul();
+
+    } else if (!strncmp(data.c_str(), "disconnectBackhaul", sizeof("disconnectBackhaul") - 1)) {
+        mSystemStatusObsrvr->disconnectBackhaul();
+#endif
+
+    } else if (!strncmp(data.c_str(), "requestStatus", sizeof("requestStatus") - 1)) {
+        int32_t xtraStatusUpdated = 0;
+        sscanf(data.c_str(), "%*s %d", &xtraStatusUpdated);
+
+        struct HandleStatusRequestMsg : public LocMsg {
+            XtraSystemStatusObserver& mXSSO;
+            int32_t mXtraStatusUpdated;
+            inline HandleStatusRequestMsg(XtraSystemStatusObserver& xsso,
+                    int32_t xtraStatusUpdated) :
+                    mXSSO(xsso), mXtraStatusUpdated(xtraStatusUpdated) {}
+            inline void proc() const override { mXSSO.onStatusRequested(mXtraStatusUpdated); }
+        };
+        mMsgTask->sendMsg(new (nothrow) HandleStatusRequestMsg(*this, xtraStatusUpdated));
 
     } else {
         LOC_LOGw("unknown event: %s", data.c_str());
@@ -191,129 +275,3 @@ void XtraSystemStatusObserver::notify(const list<IDataItemCore*>& dlist)
     };
     mMsgTask->sendMsg(new (nothrow) HandleOsObserverUpdateMsg(this, dlist));
 }
-
-#ifdef USE_GLIB
-bool XtraSystemStatusObserver::connectBackhaul()
-{
-    return mSystemStatusObsrvr->connectBackhaul();
-}
-
-bool XtraSystemStatusObserver::disconnectBackhaul()
-{
-    return mSystemStatusObsrvr->disconnectBackhaul();
-}
-
-// XtraHalListenerSocket class
-// TBD - this will be removed once bidirectional socket changes in
-// xtra-daemon will be implemented
-void XtraHalListenerSocket::receiveData(const int socketFd) {
-    string data;
-    array<char, 128> buf;
-    const char* bin_msg_conn_backhaul = "connectBackhaul";
-    const char* bin_msg_disconn_backhaul = "disconnectBackhaul";
-
-    while (true) {
-        ssize_t len = recv(socketFd, buf.data(), buf.size(), 0);
-        if (len > 0) {
-            LOC_LOGd("received %lu bytes", len);
-            data.append(buf.data(), len);
-
-            size_t pos = data.find("\n");
-            if (pos == string::npos) {
-                continue;
-            }
-
-            if (!strncmp(data.c_str(), bin_msg_conn_backhaul,
-                                       sizeof(bin_msg_conn_backhaul) - 1)) {
-                mSystemStatusObsrvr->connectBackhaul();
-            } else if (!strncmp(data.c_str(), bin_msg_disconn_backhaul,
-                                            sizeof(bin_msg_disconn_backhaul) - 1)) {
-                mSystemStatusObsrvr->disconnectBackhaul();
-            }
-            else {
-                LOC_LOGw("unknown event: %s", data.c_str());
-            }
-            break;
-
-        } else {
-            LOC_LOGd("XtraHalListenerSocket connection broken.");
-            break;
-        }
-    }
-}
-
-void XtraHalListenerSocket::startListenerThread() {
-    mThread = new (std::nothrow) LocThread();
-    if (!mThread) {
-        LOC_LOGe("create thread failed");
-    }
-    mRunning = true;
-    if (!mThread->start("XtraHalListenerSocketThread", this, true)) {
-        delete mThread;
-        mThread = NULL;
-    }
-
-    LOC_LOGd("Create listener socket in XtraHalListenerSocket");
-    // create socket
-    int socketFd;
-    if ((socketFd = ::socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-        LOC_LOGe("create socket error. reason:%s", strerror(errno));
-        return;
-    }
-
-    const char* socketPath = "/data/vendor/location/xtra/socket_xtra_locnetiface";
-    unlink(socketPath);
-
-    struct sockaddr_un addr = { .sun_family = AF_UNIX };
-    snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", socketPath);
-
-    umask(0157);
-
-    if (::bind(socketFd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        LOC_LOGe("bind socket error. reason:%s", strerror(errno));
-        return;
-    }
-
-    // set up connection
-    if (::listen(socketFd, 5/*backlog*/) < 0) {
-        LOC_LOGe("cannot bind socket. reason:%s", strerror(errno));
-        return;
-    }
-    mSocketFd = socketFd;
-
-}
-
-bool XtraHalListenerSocket::run() {
-    // infinite while loop till mRunning is false when stopListenXtraDaemon
-    // is called
-    while (mRunning) {
-        int clientFd = -1;
-        LOC_LOGd("XtraHalListenerSocket - waiting for msg...");
-        if ( (clientFd = ::accept(mSocketFd, NULL, NULL)) < 0) {
-            LOC_LOGe("connection error. reason:%s", strerror(errno));
-        } else {
-            LOC_LOGd("XtraHalListenerSocket - receiving data ...");
-            receiveData(clientFd);
-            if (::close(clientFd)) {
-                LOC_LOGe("close connection fail.");
-            }
-            clientFd = -1;
-        }
-    }
-
-    // return false once we reach there
-    return false;
-}
-
-void XtraHalListenerSocket::stopListenXtraDaemon() {
-    if (mSocketFd >= 0) {
-        if (::close(mSocketFd)) {
-            LOC_LOGe("close hal connection fail.");
-        }
-        mSocketFd = -1;
-    }
-    mRunning = false;
-    mThread->stop();
-}
-
-#endif
