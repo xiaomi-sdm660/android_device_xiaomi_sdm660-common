@@ -178,7 +178,7 @@ persist.camera.preview.ubwc=0
 ro.vendor.qti.config.zram=true
 
 #set maximum supported adapter voltage
-persist.charger.max_voltage_mv=9000
+persist.chg.max_volt_mv=9000
 
 #Property to enable display default color mode
 vendor.display.enable_default_color_mode=1
