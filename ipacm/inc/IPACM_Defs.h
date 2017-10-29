@@ -341,6 +341,7 @@ typedef struct _ipacm_event_iface_up
 	uint32_t ipv6_prefix[2];
 	bool is_sta;
 	uint8_t xlat_mux_id;
+	uint8_t mux_id;
 }ipacm_event_iface_up;
 
 typedef struct _ipacm_event_iface_up_tether

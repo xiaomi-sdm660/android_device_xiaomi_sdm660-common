@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -373,7 +373,7 @@ void IPACM_ConntrackListener::TriggerWANUp(void *in_param)
 
 	 if(nat_inst != NULL)
 	 {
-		 nat_inst->AddTable(wanup_data->ipv4_addr);
+		 nat_inst->AddTable(wanup_data->ipv4_addr, wanup_data->mux_id);
 	 }
 
 	 IPACMDBG("creating nat threads\n");
