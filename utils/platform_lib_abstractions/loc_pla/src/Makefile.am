@@ -1,5 +1,6 @@
 AM_CFLAGS = \
      $(LOCSTUB_CFLAGS) \
+     -I$(WORKSPACE)/hardware/qcom/gps/utils/ \
      -I../include \
      -D__func__=__PRETTY_FUNCTION__ \
      -fno-short-enums

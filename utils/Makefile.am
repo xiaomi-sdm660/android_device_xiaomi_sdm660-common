@@ -1,5 +1,6 @@
 AM_CFLAGS = -Wundef \
          -I./ \
+         -I$(WORKSPACE)/system/core/include \
          -std=c++11 \
          $(LOCPLA_CFLAGS)
 
@@ -24,7 +25,8 @@ libgps_utils_so_la_h_sources = \
         loc_nmea.h \
         gps_extended_c.h \
         gps_extended.h \
-        loc_gps.h
+        loc_gps.h \
+        log_util.h
 
 libgps_utils_so_la_c_sources = \
         linked_list.c \
