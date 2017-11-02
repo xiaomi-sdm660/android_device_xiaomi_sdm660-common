@@ -252,7 +252,7 @@ public:
 
 	int DelExtProp(ipa_ip_type ip_type);
 
-	enum ipa_hw_type GetIPAVer();
+	enum ipa_hw_type GetIPAVer(bool get = false);
 
 	int Init(void);
 
