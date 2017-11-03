@@ -562,10 +562,16 @@ uint32_t LocationAPIClientBase::locAPIGetBatchedLocations(uint32_t id, size_t co
     if (mLocationAPI) {
         if (mSessionBiDict.hasId(id)) {
             SessionEntity entity = mSessionBiDict.getExtById(id);
-            uint32_t batchingSession = entity.batchingSession;
-            mRequestQueues[REQUEST_SESSION].push(new GetBatchedLocationsRequest(*this));
-            mLocationAPI->getBatchedLocations(batchingSession, count);
-            retVal = LOCATION_ERROR_SUCCESS;
+            if (entity.sessionMode != SESSION_MODE_ON_FIX) {
+                uint32_t batchingSession = entity.batchingSession;
+                mRequestQueues[REQUEST_SESSION].push(new GetBatchedLocationsRequest(*this));
+                mLocationAPI->getBatchedLocations(batchingSession, count);
+                retVal = LOCATION_ERROR_SUCCESS;
+            }  else {
+                LOC_LOGE("%s:%d] Unsupported for session id: %d, mode is SESSION_MODE_ON_FIX",
+                            __FUNCTION__, __LINE__, id);
+                retVal = LOCATION_ERROR_NOT_SUPPORTED;
+            }
         }  else {
             retVal = LOCATION_ERROR_ID_UNKNOWN;
             LOC_LOGE("%s:%d] invalid session: %d.", __FUNCTION__, __LINE__, id);
