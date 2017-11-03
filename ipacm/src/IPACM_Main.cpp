@@ -713,7 +713,10 @@ void* ipa_driver_msg_notifier(void *param)
 				IPACMERR("calling OffloadMng->elrInstance->onOffloadStopped \n");
 				OffloadMng->elrInstance->onOffloadStopped(IpaEventRelay::ERROR);
 			}
-			continue;
+			/* WA to clean up wlan instances during SSR */
+			evt_data.event = IPA_SSR_NOTICE;
+			evt_data.evt_data = NULL;
+			break;
 		case IPA_SSR_AFTER_POWERUP:
 			IPACMDBG_H("Received IPA_SSR_AFTER_POWERUP\n");
 			OffloadMng = IPACM_OffloadManager::GetInstance();
