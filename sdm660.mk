@@ -137,6 +137,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_BOOT_JARS += \
     org.ifaa.android.manager
 
+# Bluetooth
+PRODUCT_PACKAGES += \
+    libbthost_if
+
 PRODUCT_PACKAGES += \
     Snap
 
