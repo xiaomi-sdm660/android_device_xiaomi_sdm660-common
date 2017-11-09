@@ -641,8 +641,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         pMarker = sentence;
         lengthRemaining = sizeof(sentence);
 
-        // hardcode Navigation Status field to 'V'
-        length = snprintf(pMarker, lengthRemaining, "$%sRMC,%02d%02d%02d.%02d,A,V" ,
+        length = snprintf(pMarker, lengthRemaining, "$%sRMC,%02d%02d%02d.%02d,A," ,
                           talker, utcHours, utcMinutes, utcSeconds,utcMSeconds/10);
 
         if (length < 0 || length >= lengthRemaining)
@@ -789,6 +788,14 @@ void loc_nmea_generate_pos(const UlpLocation &location,
             length = snprintf(pMarker, lengthRemaining, "%c", 'E');
         else  // A means autonomous
             length = snprintf(pMarker, lengthRemaining, "%c", 'A');
+
+        pMarker += length;
+        lengthRemaining -= length;
+
+        // hardcode Navigation Status field to 'V'
+        length = snprintf(pMarker, lengthRemaining, ",%c", 'V');
+        pMarker += length;
+        lengthRemaining -= length;
 
         length = loc_nmea_put_checksum(sentence, sizeof(sentence));
         nmeaArraystr.push_back(sentence);
@@ -949,7 +956,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         length = loc_nmea_put_checksum(sentence, sizeof(sentence));
         nmeaArraystr.push_back(sentence);
 
-        strlcpy(sentence, "$GPRMC,,V,,,,,,,,,,N", sizeof(sentence));
+        strlcpy(sentence, "$GPRMC,,V,,,,,,,,,,N,V", sizeof(sentence));
         length = loc_nmea_put_checksum(sentence, sizeof(sentence));
         nmeaArraystr.push_back(sentence);
 
