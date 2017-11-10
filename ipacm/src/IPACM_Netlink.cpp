@@ -1625,7 +1625,7 @@ int ipa_get_if_name
 		return IPACM_FAILURE;
 	}
 
-	(void)strncpy(if_name, ifr.ifr_name, sizeof(ifr.ifr_name));
+	(void)strlcpy(if_name, ifr.ifr_name, sizeof(ifr.ifr_name));
 	IPACMDBG("interface name %s\n", ifr.ifr_name);
 	close(fd);
 

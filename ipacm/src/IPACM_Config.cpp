@@ -185,9 +185,9 @@ int IPACM_Config::Init(void)
 		IPACMERR("Failed opening %s.\n", DEVICE_NAME);
 	}
 #ifdef FEATURE_IPACM_HAL
-	strncpy(IPACM_config_file, "/vendor/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
+	strlcpy(IPACM_config_file, "/vendor/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
 #else
-	strncpy(IPACM_config_file, "/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
+	strlcpy(IPACM_config_file, "/etc/IPACM_cfg.xml", sizeof(IPACM_config_file));
 #endif
 	IPACMDBG_H("\n IPACM XML file is %s \n", IPACM_config_file);
 	if (IPACM_SUCCESS == ipacm_read_cfg_xml(IPACM_config_file, cfg))
@@ -220,7 +220,7 @@ int IPACM_Config::Init(void)
 
 	for (i = 0; i < cfg->iface_config.num_iface_entries; i++)
 	{
-		strncpy(iface_table[i].iface_name, cfg->iface_config.iface_entries[i].iface_name, sizeof(iface_table[i].iface_name));
+		strlcpy(iface_table[i].iface_name, cfg->iface_config.iface_entries[i].iface_name, sizeof(iface_table[i].iface_name));
 		iface_table[i].if_cat = cfg->iface_config.iface_entries[i].if_cat;
 		iface_table[i].if_mode = cfg->iface_config.iface_entries[i].if_mode;
 		iface_table[i].wlan_mode = cfg->iface_config.iface_entries[i].wlan_mode;
@@ -320,28 +320,28 @@ int IPACM_Config::Init(void)
 
 	/* Construct the routing table ictol name in iface static member*/
 	rt_tbl_default_v4.ip = IPA_IP_v4;
-	strncpy(rt_tbl_default_v4.name, V4_DEFAULT_ROUTE_TABLE_NAME, sizeof(rt_tbl_default_v4.name));
+	strlcpy(rt_tbl_default_v4.name, V4_DEFAULT_ROUTE_TABLE_NAME, sizeof(rt_tbl_default_v4.name));
 
 	rt_tbl_lan_v4.ip = IPA_IP_v4;
-	strncpy(rt_tbl_lan_v4.name, V4_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan_v4.name));
+	strlcpy(rt_tbl_lan_v4.name, V4_LAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_lan_v4.name));
 
 	rt_tbl_wan_v4.ip = IPA_IP_v4;
-	strncpy(rt_tbl_wan_v4.name, V4_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v4.name));
+	strlcpy(rt_tbl_wan_v4.name, V4_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v4.name));
 
 	rt_tbl_v6.ip = IPA_IP_v6;
-	strncpy(rt_tbl_v6.name, V6_COMMON_ROUTE_TABLE_NAME, sizeof(rt_tbl_v6.name));
+	strlcpy(rt_tbl_v6.name, V6_COMMON_ROUTE_TABLE_NAME, sizeof(rt_tbl_v6.name));
 
 	rt_tbl_wan_v6.ip = IPA_IP_v6;
-	strncpy(rt_tbl_wan_v6.name, V6_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v6.name));
+	strlcpy(rt_tbl_wan_v6.name, V6_WAN_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_v6.name));
 
 	rt_tbl_odu_v4.ip = IPA_IP_v4;
-	strncpy(rt_tbl_odu_v4.name, V4_ODU_ROUTE_TABLE_NAME, sizeof(rt_tbl_odu_v4.name));
+	strlcpy(rt_tbl_odu_v4.name, V4_ODU_ROUTE_TABLE_NAME, sizeof(rt_tbl_odu_v4.name));
 
 	rt_tbl_odu_v6.ip = IPA_IP_v6;
-	strncpy(rt_tbl_odu_v6.name, V6_ODU_ROUTE_TABLE_NAME, sizeof(rt_tbl_odu_v6.name));
+	strlcpy(rt_tbl_odu_v6.name, V6_ODU_ROUTE_TABLE_NAME, sizeof(rt_tbl_odu_v6.name));
 
 	rt_tbl_wan_dl.ip = IPA_IP_MAX;
-	strncpy(rt_tbl_wan_dl.name, WAN_DL_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_dl.name));
+	strlcpy(rt_tbl_wan_dl.name, WAN_DL_ROUTE_TABLE_NAME, sizeof(rt_tbl_wan_dl.name));
 
 	/* Construct IPACM ipa_client map to rm_resource table */
 	ipa_client_rm_map_tbl[IPA_CLIENT_WLAN1_PROD]= IPA_RM_RESOURCE_WLAN_PROD;
