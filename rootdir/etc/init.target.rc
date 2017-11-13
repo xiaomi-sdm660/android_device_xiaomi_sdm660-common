@@ -36,7 +36,7 @@ on init
 
     chown media media /dev/dbmdx-1
     chmod 0770 /dev/dbmdx-1
-    
+
     # Set up schedtune
     write /dev/stune/foreground/schedtune.prefer_idle 1
     write /dev/stune/top-app/schedtune.boost 10
@@ -171,11 +171,9 @@ on post-fs-data
 on boot
     start vendor.rmt_storage
     write /dev/cpuset/top-app/cpus 0-7
-    write /dev/cpuset/foreground/cpus 0-7
-    write /dev/cpuset/foreground/boost/cpus 0-7
-    write /dev/cpuset/background/cpus 0-7
-    write /dev/cpuset/system-background/cpus 0-7
-    write /dev/cpuset/restricted/cpus 0-7
+    write /dev/cpuset/background/cpus 0-1
+    write /dev/cpuset/system-background/cpus 0-3
+    write /dev/cpuset/camera-daemon/cpus 0-3
 
     ####Regionalization config and prop files####
     chmod 0644 /mnt/vendor/persist/speccfg/spec
