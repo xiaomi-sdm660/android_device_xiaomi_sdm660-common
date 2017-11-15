@@ -74,7 +74,7 @@ public:
     // Argument name contains the name of the target unix socket. data contains the
     // message to be sent out. Convert your message to a string before calling this function.
     // The function will return true on success, and false on failure.
-    bool send(const char name[], const std::string& data);
+    static bool send(const char name[], const std::string& data);
 
 private:
     int mIpcFd;
