@@ -49,7 +49,7 @@ namespace loc_util {
 #endif
 #define LOG_TAG "LocSvc_LocIpc"
 
-#define LOC_MSG_BUF_LEN 1024
+#define LOC_MSG_BUF_LEN 8192
 #define LOC_MSG_HEAD "$MSGLEN$"
 
 class LocIpcRunnable : public LocRunnable {
@@ -101,28 +101,32 @@ bool LocIpc::startListeningBlocking(const std::string& name) {
     mIpcFd = fd;
 
     ssize_t nBytes = 0;
-    std::vector<char> buf(LOC_MSG_BUF_LEN);
-    while ((nBytes = ::recvfrom(mIpcFd, buf.data(), buf.size(), 0, NULL, NULL)) >= 0) {
-        if (nBytes == 0) {
+    std::string msg = "";
+    while (1) {
+        msg.resize(LOC_MSG_BUF_LEN);
+        nBytes = ::recvfrom(mIpcFd, (void*)(msg.data()), msg.size(), 0, NULL, NULL);
+        if (nBytes < 0) {
+            break;
+        } else if (nBytes == 0) {
             continue;
         }
 
-        std::string msg;
-        if (strncmp(buf.data(), LOC_MSG_HEAD, sizeof(LOC_MSG_HEAD) - 1)) {
+        if (strncmp(msg.data(), LOC_MSG_HEAD, sizeof(LOC_MSG_HEAD) - 1)) {
             // short message
-            msg.append(buf.data(), nBytes);
+            msg.resize(nBytes);
             onReceive(msg);
-
         } else {
             // long message
             size_t msgLen = 0;
-            sscanf(buf.data(), LOC_MSG_HEAD"%zu", &msgLen);
-            while (msg.length() < msgLen &&
-                    (nBytes = recvfrom(mIpcFd, buf.data(), buf.size(), 0, NULL, NULL)) >= 0) {
-                msg.append(buf.data(), nBytes);
+            sscanf(msg.data(), LOC_MSG_HEAD"%zu", &msgLen);
+            msg.resize(msgLen);
+            size_t msgLenReceived = 0;
+            while ((msgLenReceived < msgLen) && (nBytes > 0)) {
+                nBytes = recvfrom(mIpcFd, (void*)&(msg[msgLenReceived]),
+                        msg.size() - msgLenReceived, 0, NULL, NULL);
+                msgLenReceived += nBytes;
             }
-
-            if (nBytes >= 0) {
+            if (nBytes > 0) {
                 onReceive(msg);
             } else {
                 break;
@@ -154,7 +158,13 @@ void LocIpc::stopListening() {
 }
 
 bool LocIpc::send(const char name[], const std::string& data) {
-    int fd  = ::socket(AF_UNIX, SOCK_DGRAM, 0);
+    return send(name, (const uint8_t*)data.c_str(), data.length());
+}
+
+bool LocIpc::send(const char name[], const uint8_t data[], uint32_t length) {
+
+    bool result = true;
+    int fd = ::socket(AF_UNIX, SOCK_DGRAM, 0);
     if (fd < 0) {
         LOC_LOGe("create socket error. reason:%s", strerror(errno));
         return false;
@@ -163,28 +173,38 @@ bool LocIpc::send(const char name[], const std::string& data) {
     struct sockaddr_un addr = { .sun_family = AF_UNIX };
     snprintf(addr.sun_path, sizeof(addr.sun_path), "%s", name);
 
+    result = sendData(fd, addr, data, length);
+
+    (void)::close(fd);
+    return result;
+}
+
+
+bool LocIpc::sendData(int fd, const sockaddr_un &addr, const uint8_t data[], uint32_t length) {
+
     bool result = true;
-    if (data.length() <= LOC_MSG_BUF_LEN) {
-        if (::sendto(fd, data.c_str(), data.length(), 0,
+
+    if (length <= LOC_MSG_BUF_LEN) {
+        if (::sendto(fd, data, length, 0,
                 (struct sockaddr*)&addr, sizeof(addr)) < 0) {
             LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
             result = false;
         }
     } else {
         std::string head = LOC_MSG_HEAD;
-        head.append(std::to_string(data.length()));
+        head.append(std::to_string(length));
         if (::sendto(fd, head.c_str(), head.length(), 0,
                 (struct sockaddr*)&addr, sizeof(addr)) < 0) {
             LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
             result = false;
         } else {
             size_t sentBytes = 0;
-            while(sentBytes < data.length()) {
-                size_t partLen = data.length() - sentBytes;
+            while(sentBytes < length) {
+                size_t partLen = length - sentBytes;
                 if (partLen > LOC_MSG_BUF_LEN) {
                     partLen = LOC_MSG_BUF_LEN;
                 }
-                ssize_t rv = ::sendto(fd, data.c_str() + sentBytes, partLen, 0,
+                ssize_t rv = ::sendto(fd, data + sentBytes, partLen, 0,
                         (struct sockaddr*)&addr, sizeof(addr));
                 if (rv < 0) {
                     LOC_LOGe("cannot send to socket. reason:%s", strerror(errno));
@@ -195,8 +215,6 @@ bool LocIpc::send(const char name[], const std::string& data) {
             }
         }
     }
-
-    (void)::close(fd);
     return result;
 }
 
