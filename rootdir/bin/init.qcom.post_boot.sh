@@ -2592,7 +2592,6 @@ case "$target" in
             do
                 echo "bw_hwmon" > $cpubw/governor
                 echo 50 > $cpubw/polling_interval
-                echo 762 > $cpubw/min_freq
                 echo "1525 3143 5859 7759 9887 10327 11863 13763" > $cpubw/bw_hwmon/mbps_zones
                 echo 4 > $cpubw/bw_hwmon/sample_ms
                 echo 85 > $cpubw/bw_hwmon/io_percent
