@@ -1124,6 +1124,12 @@ int IPACM_Lan::handle_wan_down(bool is_sta_mode)
 			close(fd);
 			return IPACM_FAILURE;
 		}
+		if (num_wan_ul_fl_rule_v4 == 0)
+		{
+			IPACMERR("No modem UL rules were installed, return...\n");
+			close(fd);
+			return IPACM_FAILURE;
+		}
 		if (m_filtering.DeleteFilteringHdls(wan_ul_fl_rule_hdl_v4,
 			IPA_IP_v4, num_wan_ul_fl_rule_v4) == false)
 		{
