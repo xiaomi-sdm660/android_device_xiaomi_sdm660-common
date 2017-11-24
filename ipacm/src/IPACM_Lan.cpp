@@ -3297,17 +3297,6 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 				{
 					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<4);
 				}
-#else
-				if(eq_index == 0)
-				{
-					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<9);
-				}
-				else
-				{
-					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<10);
-				}
-#endif
-				flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].offset = 8;
 				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 0)
 					= prefix[IPA_IP_v6].v6Mask[3];
 				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 4)
@@ -3324,7 +3313,34 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 					= prefix[IPA_IP_v6].v6Addr[1];
 				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 12)
 					= prefix[IPA_IP_v6].v6Addr[0];
-			}
+#else
+				if(eq_index == 0)
+				{
+					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<9);
+				}
+				else
+				{
+					flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<10);
+				}
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 0)
+					= prefix[IPA_IP_v6].v6Mask[0];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 4)
+					= prefix[IPA_IP_v6].v6Mask[1];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 8)
+					= prefix[IPA_IP_v6].v6Mask[2];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].mask + 12)
+					= prefix[IPA_IP_v6].v6Mask[3];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 0)
+					= prefix[IPA_IP_v6].v6Addr[0];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 4)
+					= prefix[IPA_IP_v6].v6Addr[1];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 8)
+					= prefix[IPA_IP_v6].v6Addr[2];
+				*(uint32_t *)(flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].value + 12)
+					= prefix[IPA_IP_v6].v6Addr[3];
+#endif
+				flt_rule_entry.rule.eq_attrib.offset_meq_128[eq_index].offset = 8;
+		}
 			else
 			{
 				IPACMERR("Run out of MEQ128 equation.\n");
