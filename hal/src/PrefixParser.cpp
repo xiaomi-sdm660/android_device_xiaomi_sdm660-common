@@ -111,6 +111,12 @@ Prefix PrefixParser::getFirstPrefix() {
     return makeBlankPrefix(IP_FAM::INVALID);
 } /* getFirstPrefix */
 
+Prefix PrefixParser::getFirstPrefix(IP_FAM famHint) {
+    if (size() >= 1)
+        return mPrefixes[0];
+    return makeBlankPrefix(famHint);
+} /* getFirstPrefix */
+
 string PrefixParser::getLastErrAsStr() {
     return mLastErr;
 } /* getLastErrAsStr */
