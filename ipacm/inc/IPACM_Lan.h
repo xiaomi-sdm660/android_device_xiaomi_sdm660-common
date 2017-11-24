@@ -263,7 +263,9 @@ protected:
 
 	bool is_active;
 	bool modem_ul_v4_set;
+	uint8_t v4_mux_id;
 	bool modem_ul_v6_set;
+	uint8_t v6_mux_id;
 
 	bool sta_ul_v4_set;
 	bool sta_ul_v6_set;
