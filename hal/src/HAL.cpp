@@ -40,7 +40,7 @@
 
 /* External Includes */
 #include <cutils/log.h>
-#include <string>
+#include <cstring>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <vector>
@@ -406,6 +406,8 @@ Return<void> HAL::setLocalPrefixes
 
     LocalLogBuffer::FunctionLog fl(__func__);
     fl.addArg("prefixes", prefixesStr);
+
+    memset(&res,0,sizeof(BoolResult));
 
     if (!isInitialized()) {
         BoolResult res = makeInputCheckFailure("Not initialized");
