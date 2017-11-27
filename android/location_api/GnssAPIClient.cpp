@@ -405,7 +405,11 @@ void GnssAPIClient::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotificatio
         notificationGnss.notificationIdEncoding =
             IGnssNiCallback::GnssNiEncodingType::ENC_SUPL_UCS2;
 
-    gnssNiCbIface->niNotifyCb(notificationGnss);
+    auto r = gnssNiCbIface->niNotifyCb(notificationGnss);
+    if (!r.isOk()) {
+        LOC_LOGE("%s] Error from niNotifyCb description=%s",
+                __func__, r.description().c_str());
+    }
 }
 
 void GnssAPIClient::onGnssSvCb(GnssSvNotification gnssSvNotification)
