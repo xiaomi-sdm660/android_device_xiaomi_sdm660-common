@@ -648,6 +648,9 @@ int IPACM_OffloadManager::post_route_evt(enum ipa_ip_type iptype, int index, ipa
 	evt_data_route->if_index_tether = 0;
 	evt_data_route->iptype = iptype;
 
+	IPACMDBG_H("gw_addr.v4Addr: %d, gw_addr.v6Addr: %08x:%08x:%08x:%08x \n",
+			gw_addr.v4Addr,gw_addr.v6Addr[0],gw_addr.v6Addr[1],gw_addr.v6Addr[2],gw_addr.v6Addr[3]);
+
 #ifdef IPA_WAN_MSG_IPv6_ADDR_GW_LEN
 	evt_data_route->ipv4_addr_gw = gw_addr.v4Addr;
 	evt_data_route->ipv6_addr_gw[0] = gw_addr.v6Addr[0];
