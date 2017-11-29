@@ -70,6 +70,8 @@ bool XtraSystemStatusObserver::updateLockStatus(uint32_t lock) {
 }
 
 bool XtraSystemStatusObserver::updateConnectionStatus(bool connected, int32_t type) {
+    mIsConnectivityStatusKnown = true;
+
     if (connected) {
         mConnections.insert(type);
     } else {
@@ -148,7 +150,7 @@ inline bool XtraSystemStatusObserver::onStatusRequested(int32_t xtraStatusUpdate
 
     ss << "respondStatus" << endl;
     (mGpsLock == -1 ? ss : ss << mGpsLock) << endl << mConnections << endl
-            << mTac << endl << mMccmnc;
+            << mTac << endl << mMccmnc << endl << mIsConnectivityStatusKnown;
 
     return ( send(LOC_IPC_XTRA, ss.str()) );
 }
