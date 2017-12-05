@@ -93,7 +93,7 @@ void HAL::registerAsSystemService(const char* name) {
         ALOGI("Successfully registered IOffloadControl");
     }
 
-    IOffloadConfig::registerAsService();
+    ret = IOffloadConfig::registerAsService();
     if (ret != 0) ALOGE("Failed to register IOffloadConfig (%d)", ret);
     else if (DBG) {
         ALOGI("Successfully registered IOffloadConfig");
@@ -523,8 +523,8 @@ Return<void> HAL::setUpstreamParameters
     } else if (iface.size()>= 1) {
         RET ipaReturn = mIPA->setUpstream(
                 iface.c_str(),
-                v4GwParser.getFirstPrefix(IP_FAM::V4),
-                v6GwParser.getFirstPrefix(IP_FAM::V6));
+                v4GwParser.getFirstPrefix(),
+                v6GwParser.getFirstPrefix());
         BoolResult res = ipaResultToBoolResult(ipaReturn);
         hidl_cb(res.success, res.errMsg);
         fl.setResult(res.success, res.errMsg);
