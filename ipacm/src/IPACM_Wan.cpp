@@ -1619,8 +1619,11 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		{
 			IPACM_Wan::xlat_mux_id = 0;
 			wanup_data->xlat_mux_id = 0;
-			wanup_data->mux_id = ext_prop->ext[0].mux_id;
-			IPACMDBG_H("No xlat configuratio:\n");
+			if(m_is_sta_mode == Q6_WAN)
+				wanup_data->mux_id = ext_prop->ext[0].mux_id;
+			else
+				wanup_data->mux_id = 0;
+			IPACMDBG_H("No xlat configuration\n");
 		}
 		evt_data.event = IPA_HANDLE_WAN_UP;
 		evt_data.evt_data = (void *)wanup_data;
