@@ -122,6 +122,11 @@ endif #BOARD_HAVE_QCOM_FM
 DEVICE_MANIFEST_FILE := $(LOCAL_PATH)/manifest.xml
 DEVICE_MATRIX_FILE   := device/qcom/common/compatibility_matrix.xml
 
+# HIDL
+PRODUCT_PACKAGES += \
+    android.hidl.base@1.0 \
+    android.hidl.manager@1.0
+
 # Audio configuration file
 -include $(TOPDIR)hardware/qcom/audio/configs/sdm660/sdm660.mk
 
