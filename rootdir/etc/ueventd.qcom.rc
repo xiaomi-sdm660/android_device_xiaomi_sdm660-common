@@ -137,6 +137,9 @@
 /dev/system_health_monitor 0644  radio      system
 /dev/mdss_rotator         0664   system     system
 
+# QDSS
+/dev/byte-cntr            0660   system    oem_2902
+
 # wlan
 /dev/wcnss_wlan           0660   system     system
 /dev/wcnss_ctrl           0660   system     system
