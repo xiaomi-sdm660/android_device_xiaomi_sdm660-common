@@ -808,7 +808,7 @@ public:
     bool eventDataItemNotify(IDataItemCore* dataitem);
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
-    bool setDefaultReport(void);
+    bool setDefaultGnssEngineStates(void);
     bool eventConnectionStatus(bool connected, int8_t type);
 };
 
