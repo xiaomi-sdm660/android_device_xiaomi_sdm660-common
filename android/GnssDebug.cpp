@@ -79,13 +79,11 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
         data.position.bearingAccuracyDegrees =
             reports.mLocation.bearingAccuracyDegrees;
 
-        timeval tv_now, tv_report;
-        tv_report.tv_sec  = reports.mLocation.mUtcReported.tv_sec;
-        tv_report.tv_usec = reports.mLocation.mUtcReported.tv_nsec / 1000ULL;
-        gettimeofday(&tv_now, NULL);
+        struct timespec tv_now;
+        clock_gettime(CLOCK_MONOTONIC, &tv_now);
         data.position.ageSeconds =
-            (tv_now.tv_sec - tv_report.tv_sec) +
-            (float)((tv_now.tv_usec - tv_report.tv_usec)) / 1000000;
+            (tv_now.tv_sec - reports.mLocation.mUtcReported.tv_sec) +
+            (float)((tv_now.tv_nsec - reports.mLocation.mUtcReported.tv_nsec)) / 1000000000LL;
     }
     else {
         data.position.valid = false;

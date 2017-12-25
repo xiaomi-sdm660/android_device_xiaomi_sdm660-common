@@ -33,10 +33,10 @@
 
 int64_t systemTime(int /*clock*/)
 {
-    struct timeval t;
-    t.tv_sec = t.tv_usec = 0;
-    gettimeofday(&t, NULL);
-    return t.tv_sec*1000000LL + t.tv_usec;
+    struct timespec t;
+    t.tv_sec = t.tv_nsec = 0;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return t.tv_sec*1000000LL + t.tv_nsec/1000LL;
 }
 
 int64_t elapsedMicrosSinceBoot()

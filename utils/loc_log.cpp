@@ -165,15 +165,15 @@ RETURN VALUE
 ===========================================================================*/
 char *loc_get_time(char *time_string, size_t buf_size)
 {
-   struct timeval now;     /* sec and usec     */
+   struct timespec now;     /* sec and usec     */
    struct tm now_tm;       /* broken-down time */
    char hms_string[80];    /* HH:MM:SS         */
 
-   gettimeofday(&now, NULL);
+   clock_gettime(CLOCK_MONOTONIC, &now);
    localtime_r(&now.tv_sec, &now_tm);
 
    strftime(hms_string, sizeof hms_string, "%H:%M:%S", &now_tm);
-   snprintf(time_string, buf_size, "%s.%03d", hms_string, (int) (now.tv_usec / 1000));
+   snprintf(time_string, buf_size, "%s.%03d", hms_string, (int) (now.tv_nsec / 1000000LL));
 
    return time_string;
 }
@@ -224,14 +224,13 @@ SIDE EFFECTS
 ===========================================================================*/
 char * get_timestamp(char *str, unsigned long buf_size)
 {
-  struct timeval tv;
-  struct timezone tz;
+  struct timespec tv;
   int hh, mm, ss;
-  gettimeofday(&tv, &tz);
+  clock_gettime(CLOCK_MONOTONIC, &tv);
   hh = tv.tv_sec/3600%24;
   mm = (tv.tv_sec%3600)/60;
   ss = tv.tv_sec%60;
-  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_usec);
+  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_nsec / 1000);
   return str;
 }
 
