@@ -1,3 +1,7 @@
 allow hal_power_default proc:file rw_file_perms;
 allow hal_power_default sysfs_tap_to_wake:file rw_file_perms;
 allow hal_power_default debugfs:file { read open getattr };
+allow hal_power_default sysfs_msm_subsys:dir search;
+allow hal_power_default sysfs_msm_subsys:file w_file_perms;
+allow hal_power_default sysfs_devices_system_cpu:file w_file_perms;
+allow hal_power_default latency_device:chr_file w_file_perms;

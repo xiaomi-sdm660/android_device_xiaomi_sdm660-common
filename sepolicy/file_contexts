@@ -44,6 +44,9 @@
 # Mlipay
 /(vendor|system/vendor)/bin/mlipayd                 u:object_r:hal_mlipay_default_exec:s0
 
+# Power HAL
+ /(vendor|system/vendor)/bin/hw/android\.hardware\.power@1\.2-service.sdm660-libperfmgr u:object_r:hal_power_default_exec:s0
+
 # Shell Script
 /(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
 /(vendor|system/vendor)/bin/init\.qcom\.power\.sh   u:object_r:qti_init_shell_exec:s0
