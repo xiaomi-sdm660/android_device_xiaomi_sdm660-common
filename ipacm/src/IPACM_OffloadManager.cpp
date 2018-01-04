@@ -430,6 +430,17 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 		/* reset the stats when switch from LTE->STA */
 		if (index != default_gw_index) {
 			IPACMDBG_H(" interface switched to %s\n", upstream_name);
+			if (upstream_v4_up == true) {
+				IPACMDBG_H("clean upstream for ipv4-fam(%d) upstream_v4_up(%d)\n", gw_addr_v4.fam, upstream_v4_up);
+				post_route_evt(IPA_IP_v4, default_gw_index, IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT, gw_addr_v4);
+				upstream_v4_up = false;
+			}
+			if (upstream_v6_up == true) {
+				IPACMDBG_H("clean upstream for ipv6-fam(%d) upstream_v6_up(%d)\n", gw_addr_v6.fam, upstream_v6_up);
+				post_route_evt(IPA_IP_v6, default_gw_index, IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT, gw_addr_v6);
+				upstream_v6_up = false;
+			}
+			default_gw_index = INVALID_IFACE;
 			if(memcmp(upstream_name, "wlan0", sizeof("wlan0")) == 0)
 			{
 				IPACMDBG_H("switch to STA mode, need reset wlan-fw stats\n");
