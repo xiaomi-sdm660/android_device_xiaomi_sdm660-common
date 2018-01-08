@@ -1655,7 +1655,7 @@ bool SystemStatus::getReport(SystemStatusReports& report, bool isLatestOnly) con
 
 @return     true when successfully done
 ******************************************************************************/
-bool SystemStatus::setDefaultReport(void)
+bool SystemStatus::setDefaultGnssEngineStates(void)
 {
     pthread_mutex_lock(&mMutexSystemStatus);
 
@@ -1675,29 +1675,6 @@ bool SystemStatus::setDefaultReport(void)
     setDefaultIteminReport(mCache.mNavData, SystemStatusNavData());
 
     setDefaultIteminReport(mCache.mPositionFailure, SystemStatusPositionFailure());
-
-    setDefaultIteminReport(mCache.mAirplaneMode, SystemStatusAirplaneMode());
-    setDefaultIteminReport(mCache.mENH, SystemStatusENH());
-    setDefaultIteminReport(mCache.mGPSState, SystemStatusGpsState());
-    setDefaultIteminReport(mCache.mNLPStatus, SystemStatusNLPStatus());
-    setDefaultIteminReport(mCache.mWifiHardwareState, SystemStatusWifiHardwareState());
-    setDefaultIteminReport(mCache.mNetworkInfo, SystemStatusNetworkInfo());
-    setDefaultIteminReport(mCache.mRilServiceInfo, SystemStatusServiceInfo());
-    setDefaultIteminReport(mCache.mRilCellInfo, SystemStatusRilCellInfo());
-    setDefaultIteminReport(mCache.mServiceStatus, SystemStatusServiceStatus());
-    setDefaultIteminReport(mCache.mModel, SystemStatusModel());
-    setDefaultIteminReport(mCache.mManufacturer, SystemStatusManufacturer());
-    setDefaultIteminReport(mCache.mAssistedGps, SystemStatusAssistedGps());
-    setDefaultIteminReport(mCache.mScreenState, SystemStatusScreenState());
-    setDefaultIteminReport(mCache.mPowerConnectState, SystemStatusPowerConnectState());
-    setDefaultIteminReport(mCache.mTimeZoneChange, SystemStatusTimeZoneChange());
-    setDefaultIteminReport(mCache.mTimeChange, SystemStatusTimeChange());
-    setDefaultIteminReport(mCache.mWifiSupplicantStatus, SystemStatusWifiSupplicantStatus());
-    setDefaultIteminReport(mCache.mShutdownState, SystemStatusShutdownState());
-    setDefaultIteminReport(mCache.mTac, SystemStatusTac());
-    setDefaultIteminReport(mCache.mMccMnc, SystemStatusMccMnc());
-    setDefaultIteminReport(mCache.mBtDeviceScanDetail, SystemStatusBtDeviceScanDetail());
-    setDefaultIteminReport(mCache.mBtLeDeviceScanDetail, SystemStatusBtleDeviceScanDetail());
 
     pthread_mutex_unlock(&mMutexSystemStatus);
     return true;
