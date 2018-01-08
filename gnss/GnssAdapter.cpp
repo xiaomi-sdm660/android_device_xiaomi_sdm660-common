@@ -3002,6 +3002,9 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
         r.mLocation.mLocation.longitude =
                 (double)(reports.mBestPosition.back().mBestLon) * RAD2DEG;
         r.mLocation.mLocation.altitude = reports.mBestPosition.back().mBestAlt;
+        r.mLocation.mLocation.accuracy =
+                (double)(reports.mBestPosition.back().mBestHepe);
+
         r.mLocation.mUtcReported = reports.mBestPosition.back().mUtcReported;
     }
     else {
