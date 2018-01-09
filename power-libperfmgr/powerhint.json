@@ -1,19 +1,6 @@
 {
   "Nodes": [
     {
-      "Name": "CPULittleClusterMinFreq",
-      "Path": "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq",
-      "Values": [
-        "1900800",
-        "1555200",
-        "1512000",
-        "1478400",
-        "1134000",
-        "384000"
-      ],
-      "ResetOnInit": true
-    },
-    {
       "Name": "CPULittleClusterMaxFreq",
       "Path": "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
       "Values": [
@@ -25,15 +12,15 @@
       "ResetOnInit": true
     },
     {
-      "Name": "CPUBigClusterMinFreq",
-      "Path": "/sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq",
+      "Name": "CPULittleClusterMinFreq",
+      "Path": "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq",
       "Values": [
-        "2457600",
-        "1574400",
-        "1420800",
-        "1344000",
-        "1132800",
-        "300000"
+        "1900800",
+        "1555200",
+        "1512000",
+        "1478400",
+        "1134000",
+        "384000"
       ],
       "ResetOnInit": true
     },
@@ -51,12 +38,15 @@
       "ResetOnInit": true
     },
     {
-      "Name": "GPUMinFreq",
-      "Path": "/sys/class/kgsl/kgsl-3d0/devfreq/min_freq",
+      "Name": "CPUBigClusterMinFreq",
+      "Path": "/sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq",
       "Values": [
-        "515000000",
-        "414000000",
-        "257000000"
+        "2457600",
+        "1574400",
+        "1420800",
+        "1344000",
+        "1132800",
+        "300000"
       ],
       "ResetOnInit": true
     },
@@ -68,6 +58,16 @@
         "414000000",
         "515000000",
         "710000000"
+      ],
+      "ResetOnInit": true
+    },
+    {
+      "Name": "GPUMinFreq",
+      "Path": "/sys/class/kgsl/kgsl-3d0/devfreq/min_freq",
+      "Values": [
+        "515000000",
+        "414000000",
+        "257000000"
       ],
       "ResetOnInit": true
     },
