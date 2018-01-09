@@ -584,21 +584,27 @@ GnssAdapter::setSuplHostServer(const char* server, int port)
     LocationError locErr = LOCATION_ERROR_SUCCESS;
     if (ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
         char serverUrl[MAX_URL_LEN] = {};
-        int32_t length = 0;
+        int32_t length = -1;
         const char noHost[] = "NONE";
-        if ((NULL == server) || (server[0] == 0) || (port == 0) ||
+
+        locErr = LOCATION_ERROR_INVALID_PARAMETER;
+
+        if ((NULL == server) || (server[0] == 0) ||
                 (strncasecmp(noHost, server, sizeof(noHost)) == 0)) {
-            locErr = LOCATION_ERROR_INVALID_PARAMETER;
-        } else {
+            serverUrl[0] = NULL;
+            length = 0;
+            mServerUrl.clear();
+        } else if (port > 0) {
             length = snprintf(serverUrl, sizeof(serverUrl), "%s:%u", server, port);
-            if (length > 0 && strncasecmp(getServerUrl().c_str(),
-                                          serverUrl, sizeof(serverUrl)) != 0) {
-                setServerUrl(serverUrl);
-                locErr = mLocApi->setServer(serverUrl, length);
-                if (locErr != LOCATION_ERROR_SUCCESS) {
-                    LOC_LOGE("%s]:Error while setting SUPL_HOST server:%s",
-                            __func__, serverUrl);
-                }
+        }
+
+        if (length >= 0 && strncasecmp(getServerUrl().c_str(),
+                                       serverUrl, sizeof(serverUrl)) != 0) {
+            setServerUrl(serverUrl);
+            locErr = mLocApi->setServer(serverUrl, length);
+            if (locErr != LOCATION_ERROR_SUCCESS) {
+                LOC_LOGE("%s]:Error while setting SUPL_HOST server:%s",
+                         __func__, serverUrl);
             }
         }
     }
