@@ -236,7 +236,7 @@ void LocApiBase::reportPosition(UlpLocation& location,
     // print the location info before delivering
     LOC_LOGD("flags: %d\n  source: %d\n  latitude: %f\n  longitude: %f\n  "
              "altitude: %f\n  speed: %f\n  bearing: %f\n  accuracy: %f\n  "
-             "timestamp: %" PRId64 "\n  rawDataSize: %d\n  rawData: %p\n  "
+             "timestamp: %" PRId64 "\n"
              "Session status: %d\n Technology mask: %u\n "
              "SV used in fix (gps/glo/bds/gal/qzss) : \
              (%" PRIx64 "/%" PRIx64 "/%" PRIx64 "/%" PRIx64 "/%" PRIx64 ")",
@@ -244,8 +244,7 @@ void LocApiBase::reportPosition(UlpLocation& location,
              location.gpsLocation.latitude, location.gpsLocation.longitude,
              location.gpsLocation.altitude, location.gpsLocation.speed,
              location.gpsLocation.bearing, location.gpsLocation.accuracy,
-             location.gpsLocation.timestamp, location.rawDataSize,
-             location.rawData, status, loc_technology_mask,
+             location.gpsLocation.timestamp, status, loc_technology_mask,
              locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask,
              locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask,
              locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask,

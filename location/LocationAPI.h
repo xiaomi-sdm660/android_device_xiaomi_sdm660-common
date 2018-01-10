@@ -88,6 +88,40 @@ typedef enum {
     LOCATION_RELIABILITY_HIGH,
 } LocationReliability;
 
+typedef uint32_t GnssLocationNavSolutionMask;
+typedef enum {
+    LOCATION_SBAS_CORRECTION_IONO_BIT  = (1<<0), // SBAS ionospheric correction is used
+    LOCATION_SBAS_CORRECTION_FAST_BIT  = (1<<1), // SBAS fast correction is used
+    LOCATION_SBAS_CORRECTION_LONG_BIT  = (1<<2), // SBAS long-tem correction is used
+    LOCATION_SBAS_INTEGRITY_BIT        = (1<<3), // SBAS integrity information is used
+    LOCATION_NAV_CORRECTION_DGNSS_BIT  = (1<<4), // Position Report is DGNSS corrected
+    LOCATION_NAV_CORRECTION_RTK_BIT    = (1<<5), // Position Report is RTK corrected
+    LOCATION_NAV_CORRECTION_PPP_BIT    = (1<<6) // Position Report is PPP corrected
+} GnssLocationNavSolutionBits;
+
+typedef uint32_t GnssLocationPosTechMask;
+typedef enum {
+    LOCATION_POS_TECH_DEFAULT_BIT                  = 0,
+    LOCATION_POS_TECH_SATELLITE_BIT                = (1<<0),
+    LOCATION_POS_TECH_CELLID_BIT                   = (1<<1),
+    LOCATION_POS_TECH_WIFI_BIT                     = (1<<2),
+    LOCATION_POS_TECH_SENSORS_BIT                  = (1<<3),
+    LOCATION_POS_TECH_REFERENCE_LOCATION_BIT       = (1<<4),
+    LOCATION_POS_TECH_INJECTED_COARSE_POSITION_BIT = (1<<5),
+    LOCATION_POS_TECH_AFLT_BIT                     = (1<<6),
+    LOCATION_POS_TECH_HYBRID_BIT                   = (1<<7),
+    LOCATION_POS_TECH_PPE_BIT                      = (1<<8)
+} GnssLocationPosTechBits;
+
+typedef uint32_t GnssLocationPosDataMask;
+typedef enum {
+    LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT  = (1<<0), // Navigation data has Forward Acceleration
+    LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT   = (1<<1), // Navigation data has Sideward Acceleration
+    LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT  = (1<<2), // Navigation data has Vertical Acceleration
+    LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3), // Navigation data has Heading Rate
+    LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4)  // Navigation data has Body pitch
+} GnssLocationPosDataBits;
+
 typedef uint32_t GnssLocationInfoFlagMask;
 typedef enum {
     GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT      = (1<<0), // valid altitude mean sea level
@@ -97,7 +131,14 @@ typedef enum {
     GNSS_LOCATION_INFO_VER_RELIABILITY_BIT              = (1<<4), // valid vertical reliability
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MAJOR_BIT = (1<<5), // valid elipsode semi major
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MINOR_BIT = (1<<6), // valid elipsode semi minor
-    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT    = (1<<7),// valid accuracy elipsode azimuth
+    GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT    = (1<<7), // valid accuracy elipsode azimuth
+    GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT            = (1<<8), // valid gnss sv used in pos data
+    GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT            = (1<<9), // valid navSolutionMask
+    GNSS_LOCATION_INFO_POS_TECH_MASK_BIT                = (1<<10),// valid LocPosTechMask
+    GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<11),// valid LocSvInfoSource
+    GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT            = (1<<12),// valid position dynamics data
+    GNSS_LOCATION_INFO_GPS_TIME_BIT                     = (1<<13),// valid GPS Time
+    GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<14) // valid gdop, tdop
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -411,6 +452,45 @@ typedef enum {
     GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT  = (1<<4),
 } GnssAidingDataSvTypeBits;
 
+typedef enum
+{
+    GNSS_LOC_SV_SYSTEM_GPS                    = 1,
+    /**< GPS satellite. */
+    GNSS_LOC_SV_SYSTEM_GALILEO                = 2,
+    /**< GALILEO satellite. */
+    GNSS_LOC_SV_SYSTEM_SBAS                   = 3,
+    /**< SBAS satellite. */
+    GNSS_LOC_SV_SYSTEM_COMPASS                = 4,
+    /**< COMPASS satellite. */
+    GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
+    /**< GLONASS satellite. */
+    GNSS_LOC_SV_SYSTEM_BDS                    = 6,
+    /**< BDS satellite. */
+    GNSS_LOC_SV_SYSTEM_QZSS                   = 7
+    /**< QZSS satellite. */
+} Gnss_LocSvSystemEnumType;
+
+typedef uint32_t GnssSystemTimeStructTypeFlags;
+typedef enum {
+    GNSS_SYSTEM_TIME_WEEK_VALID             = (1 << 0),
+    GNSS_SYSTEM_TIME_WEEK_MS_VALID          = (1 << 1),
+    GNSS_SYSTEM_CLK_TIME_BIAS_VALID         = (1 << 2),
+    GNSS_SYSTEM_CLK_TIME_BIAS_UNC_VALID     = (1 << 3),
+    GNSS_SYSTEM_REF_FCOUNT_VALID            = (1 << 4),
+    GNSS_SYSTEM_NUM_CLOCK_RESETS_VALID      = (1 << 5)
+} GnssSystemTimeTypeBits;
+
+typedef uint32_t GnssGloTimeStructTypeFlags;
+typedef enum {
+    GNSS_CLO_DAYS_VALID                     = (1 << 0),
+    GNSS_GLOS_MSEC_VALID                    = (1 << 1),
+    GNSS_GLO_CLK_TIME_BIAS_VALID            = (1 << 2),
+    GNSS_GLO_CLK_TIME_BIAS_UNC_VALID        = (1 << 3),
+    GNSS_GLO_REF_FCOUNT_VALID               = (1 << 4),
+    GNSS_GLO_NUM_CLOCK_RESETS_VALID         = (1 << 5),
+    GNSS_GLO_FOUR_YEAR_VALID                = (1 << 6)
+} GnssGloTimeTypeBits;
+
 typedef struct {
     GnssAidingDataSvMask svMask;         // bitwise OR of GnssAidingDataSvBits
     GnssAidingDataSvTypeMask svTypeMask; // bitwise OR of GnssAidingDataSvTypeBits
@@ -500,18 +580,141 @@ typedef struct {
 } GeofenceStatusNotification;
 
 typedef struct {
+    uint64_t gpsSvUsedIdsMask;
+    uint64_t gloSvUsedIdsMask;
+    uint64_t galSvUsedIdsMask;
+    uint64_t bdsSvUsedIdsMask;
+    uint64_t qzssSvUsedIdsMask;
+} GnssLocationSvUsedInPosition;
+
+/** @struct
+    Body Frame parameters
+*/
+typedef struct {
+    GnssLocationPosDataMask bodyFrameDataMask; // Contains Body frame LocPosDataMask bits
+    float longAccel;                           // Forward Acceleration in body frame (m/s2)
+    float latAccel;                            // Sideward Acceleration in body frame (m/s2)
+    float vertAccel;                           // Vertical Acceleration in body frame (m/s2)
+    float yawRate;                             // Heading Rate (Radians/second)
+    float pitch;                               // Body pitch (Radians)
+} GnssLocationPositionDynamics;
+
+typedef struct {
+    /** Validity mask for below fields */
+    GnssSystemTimeStructTypeFlags validityMask;
+    /** Extended week number at reference tick.
+    Unit: Week.
+    Set to 65535 if week number is unknown.
+    For GPS:
+      Calculated from midnight, Jan. 6, 1980.
+      OTA decoded 10 bit GPS week is extended to map between:
+      [NV6264 to (NV6264 + 1023)].
+      NV6264: Minimum GPS week number configuration.
+      Default value of NV6264: 1738
+    For BDS:
+      Calculated from 00:00:00 on January 1, 2006 of Coordinated Universal Time (UTC).
+    For GAL:
+      Calculated from 00:00 UT on Sunday August 22, 1999 (midnight between August 21 and August 22).
+   */
+    uint16_t systemWeek;
+    /** Time in to the current week at reference tick.
+       Unit: Millisecond. Range: 0 to 604799999.
+       Check for systemClkTimeUncMs before use */
+    uint32_t systemMsec;
+    /** System clock time bias (sub-millisecond)
+        Units: Millisecond
+        Note: System time (TOW Millisecond) = systemMsec - systemClkTimeBias.
+        Check for systemClkTimeUncMs before use. */
+    float systemClkTimeBias;
+    /** Single sided maximum time bias uncertainty
+        Units: Millisecond */
+    float systemClkTimeUncMs;
+    /** FCount (free running HW timer) value. Don't use for relative time purpose
+         due to possible discontinuities.
+         Unit: Millisecond */
+    uint32_t refFCount;
+    /** Number of clock resets/discontinuities detected, affecting the local hardware counter value. */
+    uint32_t numClockResets;
+} GnssSystemTimeStructType;
+
+typedef struct {
+    /** GLONASS day number in four years. Refer to GLONASS ICD.
+        Applicable only for GLONASS and shall be ignored for other constellations.
+        If unknown shall be set to 65535 */
+    uint16_t gloDays;
+    /** Validity mask for below fields */
+    GnssGloTimeStructTypeFlags validityMask;
+    /** GLONASS time of day in Millisecond. Refer to GLONASS ICD.
+        Units: Millisecond
+        Check for gloClkTimeUncMs before use */
+    uint32_t gloMsec;
+    /** GLONASS clock time bias (sub-millisecond)
+        Units: Millisecond
+        Note: GLO time (TOD Millisecond) = gloMsec - gloClkTimeBias.
+        Check for gloClkTimeUncMs before use. */
+    float gloClkTimeBias;
+    /** Single sided maximum time bias uncertainty
+        Units: Millisecond */
+    float gloClkTimeUncMs;
+    /** FCount (free running HW timer) value. Don't use for relative time purpose
+        due to possible discontinuities.
+        Unit: Millisecond */
+    uint32_t  refFCount;
+    /** Number of clock resets/discontinuities detected, affecting the local hardware counter value. */
+    uint32_t numClockResets;
+    /** GLONASS four year number from 1996. Refer to GLONASS ICD.
+        Applicable only for GLONASS and shall be ignored for other constellations.
+        If unknown shall be set to 255 */
+    uint8_t gloFourYear;
+} GnssGloTimeStructType;
+
+typedef union {
+    GnssSystemTimeStructType gpsSystemTime;
+    GnssSystemTimeStructType galSystemTime;
+    GnssSystemTimeStructType bdsSystemTime;
+    GnssSystemTimeStructType qzssSystemTime;
+    GnssGloTimeStructType gloSytemTime;
+} SystemTimeStructUnion;
+    /** Time applicability of PVT report */
+typedef struct {
+    /** Specifies GNSS system time reported. Mandatory field */
+    Gnss_LocSvSystemEnumType gnssSystemTimeSrc;
+    /** Reporting of GPS system time is recommended.
+      If GPS time is unknown & other satellite system time is known,
+      it should be reported.
+      Mandatory field
+     */
+    SystemTimeStructUnion u;
+} GnssSystemTime;
+
+typedef struct {
     size_t size;                        // set to sizeof(GnssLocationInfo)
     GnssLocationInfoFlagMask flags;     // bitwise OR of GnssLocationInfoBits for param validity
     float altitudeMeanSeaLevel;         // altitude wrt mean sea level
     float pdop;                         // position dilusion of precision
     float hdop;                         // horizontal dilusion of precision
     float vdop;                         // vertical dilusion of precision
+    float gdop;                         // geometric  dilution of precision
+    float tdop;                         // time dilution of precision
     float magneticDeviation;            // magnetic deviation
     LocationReliability horReliability; // horizontal reliability
     LocationReliability verReliability; // vertical reliability
     float horUncEllipseSemiMajor;       // horizontal elliptical accuracy semi-major axis
     float horUncEllipseSemiMinor;       // horizontal elliptical accuracy semi-minor axis
     float horUncEllipseOrientAzimuth;   // horizontal elliptical accuracy azimuth
+    float northVelocity;                // North Velocity.Unit: Meters/sec
+    float eastVelocity;                 // East Velocity
+    float upVelocity;
+    float northVelocityStdDeviation;
+    float eastVelocityStdDeviation;
+    float upVelocityStdDeviation;
+    GnssLocationSvUsedInPosition svUsedInPosition;// Gnss sv used in position data
+    GnssLocationNavSolutionMask navSolutionMask;  // Nav solution mask to indicate sbas corrections
+    GnssLocationPosTechMask posTechMask;          // Position technology used in computing this fix
+    GnssLocationPositionDynamics bodyFrameData;   // Body Frame Dynamics: 4wayAcceleration and
+                                                  // pitch set with validity
+    GnssSystemTime gnssSystemTime;            // GNSS System Time
+    Location location;
 } GnssLocationInfoNotification;
 
 typedef struct {
