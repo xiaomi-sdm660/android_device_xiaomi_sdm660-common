@@ -1574,8 +1574,8 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 /* only offload UL traffic of certain clients */
 #ifdef FEATURE_IPACM_HAL
 		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
-		flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = prefix[IPA_IP_v4].v4Mask;
-		flt_rule_entry.rule.attrib.u.v4.dst_addr = prefix[IPA_IP_v4].v4Addr;
+		flt_rule_entry.rule.attrib.u.v4.src_addr_mask = prefix[IPA_IP_v4].v4Mask;
+		flt_rule_entry.rule.attrib.u.v4.src_addr = prefix[IPA_IP_v4].v4Addr;
 #endif
 		memcpy(&m_pFilteringTable->rules[0], &flt_rule_entry, sizeof(flt_rule_entry));
 		if (false == m_filtering.AddFilteringRule(m_pFilteringTable))
@@ -4381,6 +4381,7 @@ void IPACM_Lan::eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, u
 {
 	ipacm_cmd_q_data eth_bridge_evt;
 	ipacm_event_eth_bridge *evt_data_eth_bridge;
+	const char *eventName = IPACM_Iface::ipacmcfg->getEventName(evt);
 #ifdef FEATURE_L2TP
 	ipacm_event_data_all *evt_data_all;
 #endif
@@ -4449,8 +4450,11 @@ void IPACM_Lan::eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, u
 		}
 		eth_bridge_evt.evt_data = (void*)evt_data_eth_bridge;
 	}
-	IPACMDBG_H("Posting event %s\n",
-		IPACM_Iface::ipacmcfg->getEventName(evt));
+	if (eventName != NULL)
+	{
+		IPACMDBG_H("Posting event %s\n",
+				eventName);
+	}
 	IPACM_EvtDispatcher::PostEvt(&eth_bridge_evt);
 }
 
