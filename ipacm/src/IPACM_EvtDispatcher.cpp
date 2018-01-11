@@ -36,6 +36,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	@Author
 
 */
+#include <bits/in_addr.h>
 #include <string.h>
 #include <pthread.h>
 #include <IPACM_EvtDispatcher.h>
