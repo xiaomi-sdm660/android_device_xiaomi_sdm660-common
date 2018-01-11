@@ -52,13 +52,14 @@ extern "C" {
 // LE targets with no logcat support
 #define TS_PRINTF(format, x...)                                \
 {                                                              \
-  struct timespec tv;                                          \
+  struct timeval tv;                                           \
+  struct timezone tz;                                          \
   int hh, mm, ss;                                              \
-  clock_gettime(CLOCK_MONOTONIC, &tv);                         \
+  gettimeofday(&tv, &tz);                                      \
   hh = tv.tv_sec/3600%24;                                      \
   mm = (tv.tv_sec%3600)/60;                                    \
   ss = tv.tv_sec%60;                                           \
-  fprintf(stdout,"%02d:%02d:%02d.%06ld]" format "\n", hh, mm, ss, tv.tv_nsec/1000, ##x);    \
+  fprintf(stdout,"%02d:%02d:%02d.%06ld]" format "\n", hh, mm, ss, tv.tv_usec, ##x);    \
 }
 
 #define ALOGE(format, x...) TS_PRINTF("E/%s (%d): " format , LOG_TAG, getpid(), ##x)

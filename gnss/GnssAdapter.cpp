@@ -81,6 +81,13 @@ GnssAdapter::GnssAdapter() :
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mUlpPositionMode.mode = LOC_POSITION_MODE_INVALID;
 
+    pthread_condattr_t condAttr;
+    pthread_condattr_init(&condAttr);
+    pthread_condattr_setclock(&condAttr, CLOCK_MONOTONIC);
+    pthread_cond_init(&mNiData.session.tCond, &condAttr);
+    pthread_cond_init(&mNiData.sessionEs.tCond, &condAttr);
+    pthread_condattr_destroy(&condAttr);
+
     /* Set ATL open/close callbacks */
     AgpsAtlOpenStatusCb atlOpenStatusCb =
             [this](int handle, int isSuccess, char* apn,
@@ -2268,9 +2275,9 @@ GnssAdapter::reportNmea(const char* nmea, size_t length)
     GnssNmeaNotification nmeaNotification = {};
     nmeaNotification.size = sizeof(GnssNmeaNotification);
 
-    struct timespec tv;
-    clock_gettime(CLOCK_MONOTONIC, &tv);
-    int64_t now = tv.tv_sec * 1000LL + tv.tv_nsec / 1000000LL;
+    struct timeval tv;
+    gettimeofday(&tv, (struct timezone *) NULL);
+    int64_t now = tv.tv_sec * 1000LL + tv.tv_usec / 1000;
     nmeaNotification.timestamp = now;
     nmeaNotification.nmea = nmea;
     nmeaNotification.length = length;
