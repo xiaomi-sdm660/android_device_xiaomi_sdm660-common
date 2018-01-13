@@ -115,7 +115,9 @@ enum loc_registration_mask_status {
 typedef enum {
     LOC_SUPPORTED_FEATURE_ODCPI_2_V02 = 0, /**<  Support ODCPI version 2 feature  */
     LOC_SUPPORTED_FEATURE_WIFI_AP_DATA_INJECT_2_V02, /**<  Support Wifi AP data inject version 2 feature  */
-    LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02 /**< Support debug NMEA feature */
+    LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02, /**< Support debug NMEA feature */
+    LOC_SUPPORTED_FEATURE_GNSS_ONLY_POSITION_REPORT, /**< Support GNSS Only position reports */
+    LOC_SUPPORTED_FEATURE_FDCL /**< Support FDCL */
 } loc_supported_feature_enum;
 
 typedef struct {
@@ -586,7 +588,8 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_REPORT_GENFENCE_DWELL_REPORT,      // Geofence dwell report
     LOC_API_ADAPTER_REQUEST_SRN_DATA,                  // request srn data from AP
     LOC_API_ADAPTER_REQUEST_POSITION_INJECTION,        // Position injection request
-    LOC_API_ADAPTER_BATCH_STATUS,                       // batch status
+    LOC_API_ADAPTER_BATCH_STATUS,                      // batch status
+    LOC_API_ADAPTER_FDCL_SERVICE_REQ,                  // FDCL service request
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -622,9 +625,10 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_REQUEST_SRN_DATA                 (1<<LOC_API_ADAPTER_REQUEST_SRN_DATA)
 #define LOC_API_ADAPTER_BIT_POSITION_INJECTION_REQUEST       (1<<LOC_API_ADAPTER_REQUEST_POSITION_INJECTION)
 #define LOC_API_ADAPTER_BIT_BATCH_STATUS                     (1<<LOC_API_ADAPTER_BATCH_STATUS)
+#define LOC_API_ADAPTER_BIT_FDCL_SERVICE_REQ                 (1ULL<<LOC_API_ADAPTER_FDCL_SERVICE_REQ)
 
 
-typedef unsigned int LOC_API_ADAPTER_EVENT_MASK_T;
+typedef uint64_t LOC_API_ADAPTER_EVENT_MASK_T;
 
 typedef enum loc_api_adapter_msg_to_check_supported {
     LOC_API_ADAPTER_MESSAGE_LOCATION_BATCHING,               // Batching 1.0
