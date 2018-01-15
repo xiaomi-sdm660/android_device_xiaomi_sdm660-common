@@ -296,16 +296,16 @@ Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
             if (data) {
                 // Hint until canceled
                 mHintManager->DoHint("AUDIO_STREAMING");
-                ALOGD("AUDIO LOW LATENCY ON");
+                ALOGD("AUDIO STREAMING ON");
             } else {
                 mHintManager->EndHint("AUDIO_STREAMING");
-                ALOGD("AUDIO LOW LATENCY OFF");
+                ALOGD("AUDIO STREAMING OFF");
             }
             break;
         case PowerHint_1_2::CAMERA_LAUNCH:
             if (data > 0) {
                 mHintManager->DoHint("CAMERA_LAUNCH", std::chrono::milliseconds(data));
-                ALOGD("CAMERA LAUNCH ON: %d MS", data);
+                ALOGD("CAMERA LAUNCH ON: %d MS, LAUNCH ON: 2500 MS", data);
                 // boosts 2.5s for launching
                 mHintManager->DoHint("LAUNCH", std::chrono::milliseconds(2500));
             } else if (data == 0) {
