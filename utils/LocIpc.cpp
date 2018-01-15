@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -76,6 +76,7 @@ bool LocIpc::startListeningNonBlocking(const std::string& name) {
 }
 
 bool LocIpc::startListeningBlocking(const std::string& name) {
+
     int fd = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (fd < 0) {
         LOC_LOGe("create socket error. reason:%s", strerror(errno));
@@ -99,6 +100,9 @@ bool LocIpc::startListeningBlocking(const std::string& name) {
     }
 
     mIpcFd = fd;
+
+    // inform that the socket is ready to receive message
+    onListenerReady();
 
     ssize_t nBytes = 0;
     std::string msg = "";
