@@ -30,13 +30,14 @@
 
 char * get_timestamp(char *str, unsigned long buf_size)
 {
-  struct timespec tv;
+  struct timeval tv;
+  struct timezone tz;
   int hh, mm, ss;
-  clock_gettime(CLOCK_MONOTONIC, &tv);
+  gettimeofday(&tv, &tz);
   hh = tv.tv_sec/3600%24;
   mm = (tv.tv_sec%3600)/60;
   ss = tv.tv_sec%60;
-  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_nsec / 1000);
+  snprintf(str, buf_size, "%02d:%02d:%02d.%06ld", hh, mm, ss, tv.tv_usec);
   return str;
 }
 
