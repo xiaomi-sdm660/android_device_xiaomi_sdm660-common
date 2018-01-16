@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -66,15 +66,6 @@ public:
     // Stop listening to new messages.
     void stopListening();
 
-    // Callback function for receiving incoming messages.
-    // Override this function in your derived class to process incoming messages.
-    // For each received message, this callback function will be called once.
-    // This callback function will be called in the calling thread of startListeningBlocking
-    // or in the new LocThread created by startListeningNonBlocking.
-    //
-    // Argument data contains the received message. You need to parse it.
-    virtual void onReceive(const std::string& /*data*/) {}
-
     // Send out a message.
     // Call this function to send a message in argument data to socket in argument name.
     //
@@ -83,6 +74,20 @@ public:
     // The function will return true on success, and false on failure.
     static bool send(const char name[], const std::string& data);
     static bool send(const char name[], const uint8_t data[], uint32_t length);
+
+protected:
+    // Callback function for receiving incoming messages.
+    // Override this function in your derived class to process incoming messages.
+    // For each received message, this callback function will be called once.
+    // This callback function will be called in the calling thread of startListeningBlocking
+    // or in the new LocThread created by startListeningNonBlocking.
+    //
+    // Argument data contains the received message. You need to parse it.
+    inline virtual void onReceive(const std::string& /*data*/) {}
+
+    // LocIpc client can overwrite this function to get notification
+    // when the socket for LocIpc is ready to receive messages.
+    inline virtual void onListenerReady() {}
 
 private:
     static bool sendData(int fd, const sockaddr_un& addr,

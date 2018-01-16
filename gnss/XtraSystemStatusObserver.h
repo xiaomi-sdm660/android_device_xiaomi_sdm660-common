@@ -70,6 +70,7 @@ public :
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     void subscribe(bool yes);
 
+protected:
     void onReceive(const std::string& data) override;
 
 private:
