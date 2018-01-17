@@ -75,7 +75,7 @@ GnssAdapter::GnssAdapter() :
     mAgpsManager(),
     mAgpsCbInfo(),
     mSystemStatus(SystemStatus::getInstance(mMsgTask)),
-    mServerUrl(""),
+    mServerUrl(":"),
     mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
@@ -600,7 +600,6 @@ GnssAdapter::setSuplHostServer(const char* server, int port)
                 (strncasecmp(noHost, server, sizeof(noHost)) == 0)) {
             serverUrl[0] = NULL;
             length = 0;
-            mServerUrl.clear();
         } else if (port > 0) {
             length = snprintf(serverUrl, sizeof(serverUrl), "%s:%u", server, port);
         }
