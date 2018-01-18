@@ -655,6 +655,12 @@ service vendor.qcom-sh /vendor/bin/init.qcom.sh
 on property:ro.vendor.ril.mbn_copy_completed=1
     write /data/vendor/radio/copy_complete 1
 
+service vendor.qcom-power /vendor/bin/init.qcom.power.sh
+    class main
+    user root
+    disabled
+    oneshot
+
 service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
     class late_start
     user root

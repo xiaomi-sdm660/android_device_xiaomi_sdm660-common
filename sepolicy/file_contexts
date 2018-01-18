@@ -49,6 +49,7 @@
 
 # Shell Script
 /(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
+/(vendor|system/vendor)/bin/init\.qcom\.power\.sh   u:object_r:qti_init_shell_exec:s0
 
 # Video4linux sysfs nodes
 /sys/devices/soc/ca00000\.qcom,msm-cam/video4linux/video0(/.*)? u:object_r:sysfs_graphics:s0
