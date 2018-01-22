@@ -33,29 +33,14 @@ on early-init
     mkdir /dsp 0771 media media
 
 on init
-    # Set up schedtune
-    write /dev/stune/foreground/schedtune.sched_boost_no_override 1
-    write /dev/stune/top-app/schedtune.sched_boost_no_override 1
-    write /dev/stune/schedtune.colocate 0
-    write /dev/stune/background/schedtune.colocate 0
-    write /dev/stune/system-background/schedtune.colocate 0
-    write /dev/stune/foreground/schedtune.colocate 0
-    write /dev/stune/top-app/schedtune.colocate 1
+
     chown media media /dev/dbmdx-1
     chmod 0770 /dev/dbmdx-1
-
- # Set up big.little scheduler
-    write /proc/sys/kernel/sched_migration_fixup 1
-    write /proc/sys/kernel/sched_upmigrate 95
-    write /proc/sys/kernel/sched_downmigrate 90
-    write /proc/sys/kernel/sched_group_upmigrate 100
-    write /proc/sys/kernel/sched_group_downmigrate 95
-    write /proc/sys/kernel/sched_select_prev_cpu_us 0
-    write /proc/sys/kernel/sched_freq_inc_notify 400000
-    write /proc/sys/kernel/sched_freq_dec_notify 400000
-    write /proc/sys/kernel/sched_spill_nr_run 5
-    write /proc/sys/kernel/sched_restrict_cluster_spill 1
-    write /proc/sys/kernel/sched_prefer_sync_wakee_to_waker 1
+    
+    # Set up schedtune
+    write /dev/stune/foreground/schedtune.prefer_idle 1
+    write /dev/stune/top-app/schedtune.boost 10
+    write /dev/stune/top-app/schedtune.prefer_idle 1
 
     # disable thermal hotplug for configuration
     write /sys/module/msm_thermal/core_control/enabled 0
