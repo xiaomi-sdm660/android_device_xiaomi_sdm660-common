@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -94,11 +94,7 @@ int NatApp::Init(void)
 		}
 		memset(pALGPorts, 0, sizeof(ipacm_alg) * nALGPort);
 
-		if(pConfig->GetAlgPorts(nALGPort, pALGPorts) != 0)
-		{
-			IPACMERR("Unable to retrieve ALG prots\n");
-			goto fail;
-		}
+		pConfig->GetAlgPorts(nALGPort, pALGPorts);
 
 		IPACMDBG("Printing %d alg ports information\n", nALGPort);
 		for(int cnt=0; cnt<nALGPort; cnt++)
@@ -106,12 +102,23 @@ int NatApp::Init(void)
 			IPACMDBG("%d: Proto[%d], port[%d]\n", cnt, pALGPorts[cnt].protocol, pALGPorts[cnt].port);
 		}
 	}
+	else
+	{
+		IPACMERR("Unable to retrieve ALG prot count\n");
+		goto fail;
+	}
 
 	return 0;
 
 fail:
-	free(cache);
-	free(pALGPorts);
+	if(cache != NULL)
+	{
+		free(cache);
+	}
+	if(pALGPorts != NULL)
+	{
+		free(pALGPorts);
+	}
 	return -1;
 }
 
