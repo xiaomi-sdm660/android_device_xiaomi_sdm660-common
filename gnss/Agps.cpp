@@ -360,13 +360,13 @@ void AgpsStateMachine::notifyEventToSubscriber(
 
         case AGPS_EVENT_GRANTED:
             mAgpsManager->mAtlOpenStatusCb(
-                    subscriberToNotify->mConnHandle, 1, getAPN(),
+                    subscriberToNotify->mConnHandle, 1, getAPN(), getAPNLen(),
                     getBearer(), mAgpsType);
             break;
 
         case AGPS_EVENT_DENIED:
             mAgpsManager->mAtlOpenStatusCb(
-                    subscriberToNotify->mConnHandle, 0, getAPN(),
+                    subscriberToNotify->mConnHandle, 0, getAPN(), getAPNLen(),
                     getBearer(), mAgpsType);
             break;
 
@@ -661,7 +661,7 @@ void DSStateMachine::notifyEventToSubscriber(
 
         case AGPS_EVENT_GRANTED:
             mAgpsManager->mAtlOpenStatusCb(
-                    subscriberToNotify->mConnHandle, 1, NULL,
+                    subscriberToNotify->mConnHandle, 1, NULL, 0,
                     AGPS_APN_BEARER_INVALID, LOC_AGPS_TYPE_SUPL_ES);
             break;
 
@@ -778,7 +778,7 @@ void AgpsManager::requestATL(int connHandle, AGpsExtType agpsType){
 
         LOC_LOGE("No AGPS State Machine for agpsType: %d", agpsType);
         mAtlOpenStatusCb(
-                connHandle, 0, NULL, AGPS_APN_BEARER_INVALID, agpsType);
+                connHandle, 0, NULL, 0, AGPS_APN_BEARER_INVALID, agpsType);
         return;
     }
 

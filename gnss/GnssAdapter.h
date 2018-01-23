@@ -157,7 +157,7 @@ public:
     LocationCallbacks getClientCallbacks(LocationAPI* client);
     LocationCapabilitiesMask getCapabilities();
     void broadcastCapabilities(LocationCapabilitiesMask);
-    LocationError setSuplHostServer(const char* server, int port);
+    void setSuplHostServer(const char* server, int port);
 
     /* ==== TRACKING ======================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -180,12 +180,16 @@ public:
     void eraseTrackingSession(LocationAPI* client, uint32_t sessionId);
     bool setUlpPositionMode(const LocPosMode& mode);
     LocPosMode& getUlpPositionMode() { return mUlpPositionMode; }
-    LocationError startTrackingMultiplex(const LocationOptions& options);
-    LocationError startTracking(const LocationOptions& options);
-    LocationError stopTrackingMultiplex(LocationAPI* client, uint32_t id);
-    LocationError stopTracking();
-    LocationError updateTrackingMultiplex(LocationAPI* client, uint32_t id,
+    bool startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
+                                         const LocationOptions& options);
+    bool startTracking(LocationAPI* client, uint32_t sessionId,
+                                const LocationOptions& options);
+    bool stopTrackingMultiplex(LocationAPI* client, uint32_t id);
+    bool stopTracking(LocationAPI* client, uint32_t id);
+    bool updateTrackingMultiplex(LocationAPI* client, uint32_t id,
                                           const LocationOptions& options);
+    bool updateTracking(LocationAPI* client, uint32_t sessionId,
+        const LocationOptions& updatedOptions, const LocationOptions& oldOptions);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -203,9 +207,11 @@ public:
     void setControlCallbacksCommand(LocationControlCallbacks& controlCallbacks);
     void readConfigCommand();
     void setConfigCommand();
+    void requestUlpCommand();
     void initEngHubProxyCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
     uint32_t gnssDeleteAidingDataCommand(GnssAidingData& data);
+    void deleteAidingData(const GnssAidingData &data, uint32_t sessionId);
     void gnssUpdateXtraThrottleCommand(const bool enabled);
 
     void initDefaultAgpsCommand();
@@ -224,7 +230,6 @@ public:
     { mControlCallbacks = controlCallbacks; }
     void setPowerVoteId(uint32_t id) { mPowerVoteId = id; }
     uint32_t getPowerVoteId() { return mPowerVoteId; }
-    bool resolveInAddress(const char* hostAddress, struct in_addr* inAddress);
     virtual bool isInSession() { return !mTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();
@@ -252,6 +257,8 @@ public:
     virtual bool requestSuplES(int connHandle);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
+    virtual bool reportZppBestAvailableFix(LocGpsLocation &zppLoc,
+            GpsLocationExtended &location_extended, LocPosTechMask tech_mask);
 
     /* ======== UTILITIES ================================================================= */
     bool needReport(const UlpLocation& ulpLocation,
@@ -279,15 +286,11 @@ public:
     static uint32_t convertGpsLock(const GnssConfigGpsLock gpsLock);
     static GnssConfigGpsLock convertGpsLock(const uint32_t gpsLock);
     static uint32_t convertSuplVersion(const GnssConfigSuplVersion suplVersion);
-    static GnssConfigSuplVersion convertSuplVersion(const uint32_t suplVersion);
     static uint32_t convertLppProfile(const GnssConfigLppProfile lppProfile);
-    static GnssConfigLppProfile convertLppProfile(const uint32_t lppProfile);
     static uint32_t convertEP4ES(const GnssConfigEmergencyPdnForEmergencySupl);
     static uint32_t convertSuplEs(const GnssConfigSuplEmergencyServices suplEmergencyServices);
     static uint32_t convertLppeCp(const GnssConfigLppeControlPlaneMask lppeControlPlaneMask);
-    static GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
     static uint32_t convertLppeUp(const GnssConfigLppeUserPlaneMask lppeUserPlaneMask);
-    static GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
     static uint32_t convertAGloProt(const GnssConfigAGlonassPositionProtocolMask);
     static uint32_t convertSuplMode(const GnssConfigSuplModeMask suplModeMask);
     static void convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,

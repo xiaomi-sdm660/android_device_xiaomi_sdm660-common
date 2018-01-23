@@ -116,6 +116,7 @@ protected:
     const MsgTask* mMsgTask;
     LocApiBase* mLocApi;
     LocApiProxyBase *mLocApiProxy;
+
 public:
     ContextBase(const MsgTask* msgTask,
                 LOC_API_ADAPTER_EVENT_MASK_T exMask,
@@ -140,11 +141,110 @@ public:
 
     static loc_gps_cfg_s_type mGps_conf;
     static loc_sap_cfg_s_type mSap_conf;
+    static bool sIsEngineCapabilitiesKnown;
+    static uint64_t sSupportedMsgMask;
+    static uint8_t sFeaturesSupported[MAX_FEATURE_LENGTH];
+    static bool sGnssMeasurementSupported;
 
     void readConfig();
     static uint32_t getCarrierCapabilities();
+    void setEngineCapabilities(uint64_t supportedMsgMask,
+            uint8_t *featureList, bool gnssMeasurementSupported);
+
+    static inline bool isEngineCapabilitiesKnown() {
+        return sIsEngineCapabilitiesKnown;
+    }
+
+    static inline bool isMessageSupported(LocCheckingMessagesID msgID) {
+
+        // confirm if msgID is not larger than the number of bits in
+        // mSupportedMsg
+        if ((uint64_t)msgID > (sizeof(sSupportedMsgMask) << 3)) {
+            return false;
+        } else {
+            uint32_t messageChecker = 1 << msgID;
+            return (messageChecker & sSupportedMsgMask) == messageChecker;
+        }
+    }
+
+    /*
+        Check if a feature is supported
+    */
+    static bool isFeatureSupported(uint8_t featureVal);
+
+    /*
+        Check if gnss measurement is supported
+    */
+    static bool gnssConstellationConfig();
 
 };
+
+struct LocApiResponse: LocMsg {
+    private:
+        ContextBase& mContext;
+        std::function<void (LocationError err)> mProcImpl;
+        inline virtual void proc() const {
+            mProcImpl(mLocationError);
+        }
+    protected:
+        LocationError mLocationError;
+    public:
+        inline LocApiResponse(ContextBase& context,
+                              std::function<void (LocationError err)> procImpl ) :
+                              mContext(context), mProcImpl(procImpl) {}
+
+        void returnToSender(const LocationError err) {
+            mLocationError = err;
+            mContext.sendMsg(this);
+        }
+};
+
+struct LocApiCollectiveResponse: LocMsg {
+    private:
+        ContextBase& mContext;
+        std::function<void (std::vector<LocationError> errs)> mProcImpl;
+        inline virtual void proc() const {
+            mProcImpl(mLocationErrors);
+        }
+    protected:
+        std::vector<LocationError> mLocationErrors;
+    public:
+        inline LocApiCollectiveResponse(ContextBase& context,
+                              std::function<void (std::vector<LocationError> errs)> procImpl ) :
+                              mContext(context), mProcImpl(procImpl) {}
+        inline virtual ~LocApiCollectiveResponse() {
+        }
+
+        void returnToSender(std::vector<LocationError>& errs) {
+            mLocationErrors = errs;
+            mContext.sendMsg(this);
+        }
+};
+
+
+template <typename DATA>
+struct LocApiResponseData: LocMsg {
+    private:
+        ContextBase& mContext;
+        std::function<void (LocationError err, DATA data)> mProcImpl;
+        inline virtual void proc() const {
+            mProcImpl(mLocationError, mData);
+        }
+    protected:
+        LocationError mLocationError;
+        DATA mData;
+    public:
+        inline LocApiResponseData(ContextBase& context,
+                              std::function<void (LocationError err, DATA data)> procImpl ) :
+                              mContext(context), mProcImpl(procImpl) {}
+
+        void returnToSender(const LocationError err, const DATA data) {
+            mLocationError = err;
+            mData = data;
+            mContext.sendMsg(this);
+        }
+};
+
 
 } // namespace loc_core
 
