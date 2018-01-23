@@ -40,7 +40,7 @@
 /* ATL callback function pointers
  * Passed in by Adapter to AgpsManager */
 typedef std::function<void(
-        int handle, int isSuccess, char* apn,
+        int handle, int isSuccess, char* apn, uint32_t apnLen,
         AGpsBearerType bearerType, AGpsExtType agpsType)>  AgpsAtlOpenStatusCb;
 
 typedef std::function<void(int handle, int isSuccess)>     AgpsAtlCloseStatusCb;
@@ -169,6 +169,7 @@ public:
     /* Getter/Setter methods */
     void setAPN(char* apn, unsigned int len);
     inline char* getAPN() const { return (char*)mAPN; }
+    inline uint32_t getAPNLen() const { return mAPNLen; }
     inline void setBearer(AGpsBearerType bearer) { mBearer = bearer; }
     inline AGpsBearerType getBearer() const { return mBearer; }
     inline AGpsExtType getType() const { return mAgpsType; }

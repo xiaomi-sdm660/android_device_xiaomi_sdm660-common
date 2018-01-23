@@ -107,7 +107,7 @@ public:
     }
 
     inline bool isFeatureSupported(uint8_t featureVal) {
-        return mLocApi->isFeatureSupported(featureVal);
+        return ContextBase::isFeatureSupported(featureVal);
     }
 
     uint32_t generateSessionId();
@@ -153,6 +153,8 @@ public:
     virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
                                                 int msInWeek);
     virtual bool reportWwanZppFix(LocGpsLocation &zppLoc);
+    virtual bool reportZppBestAvailableFix(LocGpsLocation &zppLoc,
+            GpsLocationExtended &location_extended, LocPosTechMask tech_mask);
 };
 
 } // namespace loc_core

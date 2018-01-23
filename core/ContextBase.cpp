@@ -42,6 +42,10 @@ namespace loc_core {
 
 loc_gps_cfg_s_type ContextBase::mGps_conf {};
 loc_sap_cfg_s_type ContextBase::mSap_conf {};
+bool ContextBase::sIsEngineCapabilitiesKnown = false;
+uint64_t ContextBase::sSupportedMsgMask = 0;
+bool ContextBase::sGnssMeasurementSupported = false;
+uint8_t ContextBase::sFeaturesSupported[MAX_FEATURE_LENGTH];
 
 const loc_param_s_type ContextBase::mGps_conf_table[] =
 {
@@ -215,7 +219,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
     // Check the target
     if (TARGET_NO_GNSS != loc_get_target()){
 
-        if (NULL == (locApi = mLBSProxy->getLocApi(mMsgTask, exMask, this))) {
+        if (NULL == (locApi = mLBSProxy->getLocApi(exMask, this))) {
             void *handle = NULL;
             //try to see if LocApiV02 is present
             if ((handle = dlopen("libloc_api_v02.so", RTLD_NOW)) != NULL) {
@@ -224,7 +228,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
                 if (getter != NULL) {
                     LOC_LOGD("%s:%d]: getter is not NULL for LocApiV02", __func__,
                             __LINE__);
-                    locApi = (*getter)(mMsgTask, exMask, this);
+                    locApi = (*getter)(exMask, this);
                 }
             }
             // only RPC is the option now
@@ -237,7 +241,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
                     if (NULL != getter) {
                         LOC_LOGD("%s:%d]: getter is not NULL in RPC", __func__,
                                 __LINE__);
-                        locApi = (*getter)(mMsgTask, exMask, this);
+                        locApi = (*getter)(exMask, this);
                     }
                 }
             }
@@ -247,7 +251,7 @@ LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
     // locApi could still be NULL at this time
     // we would then create a dummy one
     if (NULL == locApi) {
-        locApi = new LocApiBase(mMsgTask, exMask, this);
+        locApi = new LocApiBase(exMask, this);
     }
 
     return locApi;
@@ -261,6 +265,35 @@ ContextBase::ContextBase(const MsgTask* msgTask,
     mLocApi(createLocApi(exMask)),
     mLocApiProxy(mLocApi->getLocApiProxy())
 {
+}
+
+void ContextBase::setEngineCapabilities(uint64_t supportedMsgMask,
+       uint8_t *featureList, bool gnssMeasurementSupported) {
+
+    if (ContextBase::sIsEngineCapabilitiesKnown == false) {
+        ContextBase::sSupportedMsgMask = supportedMsgMask;
+        ContextBase::sGnssMeasurementSupported = gnssMeasurementSupported;
+        if (featureList != NULL) {
+            memcpy((void *)ContextBase::sFeaturesSupported,
+                    (void *)featureList, sizeof(ContextBase::sFeaturesSupported));
+        }
+
+        ContextBase::sIsEngineCapabilitiesKnown = true;
+    }
+}
+
+
+bool ContextBase::isFeatureSupported(uint8_t featureVal)
+{
+    uint8_t arrayIndex = featureVal >> 3;
+    uint8_t bitPos = featureVal & 7;
+
+    if (arrayIndex >= MAX_FEATURE_LENGTH) return false;
+    return ((ContextBase::sFeaturesSupported[arrayIndex] >> bitPos ) & 0x1);
+}
+
+bool ContextBase::gnssConstellationConfig() {
+    return sGnssMeasurementSupported;
 }
 
 }
