@@ -193,6 +193,14 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 	memset(&prefix, 0, sizeof(prefix));
 
 #ifdef FEATURE_IPACM_HAL
+
+		/* check if Upstream was set before as WIFI with RNDIS case */
+		if(ipa_if_cate == LAN_IF && IPACM_Wan::backhaul_is_sta_mode == true)  /* LTE */
+		{
+			IPACMDBG_H(" Skip the Upstream falg set on LAN instance (%d) with WIFI backhaul (%d)\n", ipa_if_cate, IPACM_Wan::backhaul_is_sta_mode ); /* RNDIS+WIFI not support on msm*/
+			return;
+		}
+
 		/* check if Upstream was set before */
 		if (IPACM_Wan::isWanUP(ipa_if_num))
 		{
@@ -227,6 +235,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 	}
 
 	int ipa_interface_index;
+	uint32_t i;
 	ipacm_ext_prop* ext_prop;
 	ipacm_event_iface_up_tehter* data_wan_tether;
 
@@ -526,6 +535,45 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		if (data_wan_tether->if_index_tether != ipa_if_num)
 		{
 			IPACMERR("IPA_HANDLE_WAN_UP_TETHER tether_if(%d), not valid (%d) ignore\n", data_wan_tether->if_index_tether, ipa_if_num);
+			return;
+		}
+#else /* not offload rndis on WIFI mode on MSM targets sky*/
+		if (data_wan_tether->is_sta)
+		{
+			IPACMERR("Not support RNDIS offload on WIFI mode, dun install UL filter rules for WIFI mode\n");
+
+			/* clean rndis  header, routing rules */
+			IPACMDBG_H("left %d eth clients need to be deleted \n ", num_eth_client);
+			for (i = 0; i < num_eth_client; i++)
+			{
+				/* First reset nat rules and then route rules */
+				if(get_client_memptr(eth_client, i)->ipv4_set == true)
+				{
+					IPACMDBG_H("Clean Nat Rules for ipv4:0x%x\n", get_client_memptr(eth_client, i)->v4_addr);
+					CtList->HandleNeighIpAddrDelEvt(get_client_memptr(eth_client, i)->v4_addr);
+				}
+				if (delete_eth_rtrules(i, IPA_IP_v4))
+					IPACMERR("unbale to delete usb-client v4 route rules for index %d\n", i);
+
+				if (delete_eth_rtrules(i, IPA_IP_v6))
+					IPACMERR("unbale to delete ecm-client v6 route rules for index %d\n", i);
+
+				IPACMDBG_H("Delete %d client header\n", num_eth_client);
+
+				if(get_client_memptr(eth_client, i)->ipv4_header_set == true)
+				{
+					if (m_header.DeleteHeaderHdl(get_client_memptr(eth_client, i)->hdr_hdl_v4)
+						== false)
+						IPACMERR("unbale to delete usb-client v4 header for index %d\n", i);
+				}
+
+				if(get_client_memptr(eth_client, i)->ipv6_header_set == true)
+				{
+					if (m_header.DeleteHeaderHdl(get_client_memptr(eth_client, i)->hdr_hdl_v6)
+							== false)
+						IPACMERR("unbale to delete usb-client v6 header for index %d\n", i);
+				}
+			} /* end of for loop */
 			return;
 		}
 #endif
@@ -859,6 +907,14 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMDBG_H("Recieved IPA_NEIGH_CLIENT_IP_ADDR_ADD_EVENT event \n");
 			IPACMDBG_H("check iface %s category: %d\n", dev_name, ipa_if_cate);
 
+			/* if RNDIS under WIFI mode in MSM, dun add RT rule*/
+#ifdef FEATURE_IPACM_HAL
+			if(IPACM_Wan::backhaul_is_sta_mode == true) /* WIFI */
+			{
+				IPACMDBG_H(" dun construct header and RT-rules for RNDIS-PC in WIFI mode on MSM targets (STA %d) \n", IPACM_Wan::backhaul_is_sta_mode);
+				return;
+			}
+#endif
 			if (ipa_interface_index == ipa_if_num && ipa_if_cate == ODU_IF)
 			{
 				IPACMDBG_H("ODU iface got v4-ip \n");
