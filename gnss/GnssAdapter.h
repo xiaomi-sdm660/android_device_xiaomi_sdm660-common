@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +32,7 @@
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
 #include <UlpProxyBase.h>
+#include <EngineHubProxyBase.h>
 #include <LocationAPI.h>
 #include <Agps.h>
 #include <SystemStatus.h>
@@ -83,6 +84,9 @@ namespace loc_core {
 class GnssAdapter : public LocAdapterBase {
     /* ==== ULP ============================================================================ */
     UlpProxyBase* mUlpProxy;
+
+    /* ==== Engine Hub ===================================================================== */
+    EngineHubProxyBase* mEngHubProxy;
 
     /* ==== CLIENT ========================================================================= */
     typedef std::map<LocationAPI*, LocationCallbacks> ClientDataMap;
@@ -198,6 +202,7 @@ public:
     void setControlCallbacksCommand(LocationControlCallbacks& controlCallbacks);
     void readConfigCommand();
     void setConfigCommand();
+    void initEngHubProxyCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
     uint32_t gnssDeleteAidingDataCommand(GnssAidingData& data);
     void gnssUpdateXtraThrottleCommand(const bool enabled);
@@ -221,6 +226,7 @@ public:
     bool resolveInAddress(const char* hostAddress, struct in_addr* inAddress);
     virtual bool isInSession() { return !mTrackingSessions.empty(); }
     void initDefaultAgps();
+    bool initEngHubProxy();
 
     /* ==== REPORTS ======================================================================== */
     /* ======== EVENTS ====(Called from QMI/ULP Thread)===================================== */
@@ -286,7 +292,6 @@ public:
 
     void injectLocationCommand(double latitude, double longitude, float accuracy);
     void injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty);
-
 };
 
 #endif //GNSS_ADAPTER_H
