@@ -1,0 +1,1 @@
+allow hal_vibrator_default sysfs_vibrator:dir r_dir_perms;
