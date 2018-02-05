@@ -602,7 +602,7 @@ service vendor.cnd /system/vendor/bin/cnd
 service dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main
     user system
-    group system
+    group radio system
 
 service vendor.qrtr-ns /vendor/bin/qrtr-ns -f -i 1
     class core
