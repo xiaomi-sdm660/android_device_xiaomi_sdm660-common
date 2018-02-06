@@ -449,6 +449,9 @@
     <!-- Default value for led color when battery is fully charged -->
     <integer name="config_notificationsBatteryFullARGB">0xFFFFFFFF</integer>
 
+    <!-- Multicolor Led Support -->
+    <bool name="config_multiColorBatteryLed">false</bool>
+
     <!-- Whether a software navigation bar should be shown. NOTE: in the future this may be
                   autodetected from the Configuration. -->
     <bool name="config_showNavigationBar">true</bool>
