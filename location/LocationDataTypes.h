@@ -345,9 +345,10 @@ typedef enum {
 
 typedef uint16_t GnssSvOptionsMask;
 typedef enum {
-    GNSS_SV_OPTIONS_HAS_EPHEMER_BIT = (1<<0),
-    GNSS_SV_OPTIONS_HAS_ALMANAC_BIT = (1<<1),
-    GNSS_SV_OPTIONS_USED_IN_FIX_BIT = (1<<2),
+    GNSS_SV_OPTIONS_HAS_EPHEMER_BIT             = (1<<0),
+    GNSS_SV_OPTIONS_HAS_ALMANAC_BIT             = (1<<1),
+    GNSS_SV_OPTIONS_USED_IN_FIX_BIT             = (1<<2),
+    GNSS_SV_OPTIONS_HAS_CARRIER_FREQUENCY_BIT   = (1<<3),
 } GnssSvOptionsBits;
 
 typedef enum {
@@ -454,6 +455,7 @@ typedef enum {
     GNSS_AIDING_DATA_SV_NO_EXIST_BIT     = (1<<8), // SV does not exist
     GNSS_AIDING_DATA_SV_IONOSPHERE_BIT   = (1<<9), // ionosphere correction
     GNSS_AIDING_DATA_SV_TIME_BIT         = (1<<10),// reset satellite time
+    GNSS_AIDING_DATA_SV_MB_DATA          = (1 << 11),// delete multiband data
 } GnssAidingDataSvBits;
 
 typedef uint32_t GnssAidingDataSvTypeMask;
@@ -794,6 +796,7 @@ typedef struct {
     float elevation;   // elevation of SV (in degrees)
     float azimuth;     // azimuth of SV (in degrees)
     GnssSvOptionsMask gnssSvOptionsMask; // Bitwise OR of GnssSvOptionsBits
+    float carrierFrequencyHz; // carrier frequency of the signal tracked
 } GnssSv;
 
 struct GnssConfigSetAssistanceServer {

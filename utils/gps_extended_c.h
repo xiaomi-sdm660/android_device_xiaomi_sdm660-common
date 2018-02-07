@@ -57,6 +57,8 @@ extern "C" {
 /** LocGpsLocation has valid map index */
 #define LOC_GPS_LOCATION_HAS_MAP_INDEX   0x0200
 
+#define GNSS_INVALID_JAMMER_IND 0x7FFFFFFF
+
 /** Sizes for indoor fields */
 #define GPS_LOCATION_MAP_URL_SIZE 400
 #define GPS_LOCATION_MAP_INDEX_SIZE 16

@@ -151,6 +151,7 @@ typedef uint16_t LocGpsAidingData;
 #define LOC_GPS_DELETE_SVSTEER          0x0100
 #define LOC_GPS_DELETE_SADATA           0x0200
 #define LOC_GPS_DELETE_RTI              0x0400
+#define LOC_GPS_DELETE_MB_DATA          0x0800
 #define LOC_GPS_DELETE_CELLDB_INFO      0x8000
 #define LOC_GPS_DELETE_ALL              0xFFFF
 

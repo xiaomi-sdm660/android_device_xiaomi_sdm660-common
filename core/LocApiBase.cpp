@@ -320,7 +320,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
             sizeof(constellationString) / sizeof(constellationString[0]) - 1) {
             svNotify.gnssSvs[i].type = GNSS_SV_TYPE_UNKNOWN;
         }
-        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f   0x%02X",
+        LOC_LOGV("   %03zu: %*s  %02d    %f    %f    %f    %f    0x%02X",
             i,
             13,
             constellationString[svNotify.gnssSvs[i].type],
@@ -328,6 +328,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
             svNotify.gnssSvs[i].cN0Dbhz,
             svNotify.gnssSvs[i].elevation,
             svNotify.gnssSvs[i].azimuth,
+            svNotify.gnssSvs[i].carrierFrequencyHz,
             svNotify.gnssSvs[i].gnssSvOptionsMask);
     }
     // loop through adapters, and deliver to all adapters.
