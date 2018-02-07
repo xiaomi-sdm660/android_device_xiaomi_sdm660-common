@@ -47,6 +47,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef struct
 {
   char iface_name[IPA_IFACE_NAME_LEN];
+  bool v4_up;
+  bool v6_up;
 }NatIfaces;
 
 /* for IPACM rm dependency use*/
@@ -230,11 +232,11 @@ public:
 
 	void DelRmDepend(ipa_rm_resource_name rm1);
 
-	int AddNatIfaces(char *dev_name);
+	int AddNatIfaces(char *dev_name, ipa_ip_type ip_type);
 
 	int DelNatIfaces(char *dev_name);
 
-	int CheckNatIfaces(const char *dev_name);
+	int CheckNatIfaces(const char *dev_name, ipa_ip_type ip_type);
 
 	inline void SetQmapId(uint8_t id)
 	{

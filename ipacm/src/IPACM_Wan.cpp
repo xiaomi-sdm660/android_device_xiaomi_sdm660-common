@@ -509,12 +509,12 @@ int IPACM_Wan::handle_addr_evt(ipacm_event_data_addr *data)
 	}
 
 #ifdef FEATURE_IPACM_HAL
-	/* check if having pending add_downstream cache*/
+	/* check if having pending set_upstream cache*/
 	OffloadMng = IPACM_OffloadManager::GetInstance();
 	if (OffloadMng == NULL) {
 		IPACMERR("failed to get IPACM_OffloadManager instance !\n");
 	} else {
-		IPACMDBG_H(" check iface %s if having add_downstream cache events\n", dev_name);
+		IPACMDBG_H(" check iface %s if having set_upstream cache events\n", dev_name);
 		OffloadMng->search_framwork_cache(dev_name);
 	}
 #endif
@@ -3205,6 +3205,13 @@ int IPACM_Wan::init_fl_rule_ex(ipa_ip_type iptype)
 		goto fail;
 	}
 	install_wan_filtering_rule(false);
+
+	/* Add Natting iface to IPACM_Config if there is  Rx/Tx property */
+	if (rx_prop != NULL || tx_prop != NULL)
+	{
+		IPACMDBG_H(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
+		IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name, iptype);
+	}
 
 fail:
 	return res;

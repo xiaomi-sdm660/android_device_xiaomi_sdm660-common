@@ -261,7 +261,7 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 			if (rx_prop != NULL || tx_prop != NULL)
 			{
 				IPACMDBG_H(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
-				IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name);
+				IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name, IPA_IP_MAX);
 			}
 		}
 		break;
