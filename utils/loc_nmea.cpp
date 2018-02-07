@@ -992,12 +992,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
     ENTRY_LOG();
 
     char sentence[NMEA_SENTENCE_MAX_LENGTH] = {0};
-    char* pMarker = sentence;
-    int lengthRemaining = sizeof(sentence);
-    int length = 0;
     int svCount = svNotify.count;
-    int sentenceCount = 0;
-    int sentenceNumber = 1;
     int svNumber = 1;
 
     //Count GPS SVs for saparating GPS from GLONASS and throw others

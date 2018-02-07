@@ -153,7 +153,6 @@ uint32_t LocationAPIControlClient::locAPIGnssUpdateConfig(GnssConfig config)
 
         memcpy(&mConfig, &config, sizeof(GnssConfig));
 
-        uint32_t session = 0;
         uint32_t* idArray = mLocationControlAPI->gnssUpdateConfig(config);
         LOC_LOGV("%s:%d] gnssUpdateConfig return array: %p", __FUNCTION__, __LINE__, idArray);
         if (idArray != nullptr) {

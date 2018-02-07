@@ -598,7 +598,7 @@ GnssAdapter::setSuplHostServer(const char* server, int port)
 
         if ((NULL == server) || (server[0] == 0) ||
                 (strncasecmp(noHost, server, sizeof(noHost)) == 0)) {
-            serverUrl[0] = NULL;
+            serverUrl[0] = '\0';
             length = 0;
             mServerUrl.clear();
         } else if (port > 0) {
@@ -1173,7 +1173,7 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
 
-        LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%x", __func__, mask);
+        LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%" PRIu64 "", __func__, mask);
     }
 
     if (mAgpsCbInfo.statusV4Cb != NULL) {

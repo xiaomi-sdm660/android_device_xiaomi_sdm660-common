@@ -153,7 +153,7 @@ void BatchingAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMa
     mLocationCapabilitiesMask = capabilitiesMask;
 }
 
-void BatchingAPIClient::onBatchingCb(size_t count, Location* location, BatchingOptions batchOptions)
+void BatchingAPIClient::onBatchingCb(size_t count, Location* location, BatchingOptions /*batchOptions*/)
 {
     LOC_LOGD("%s]: (count: %zu)", __FUNCTION__, count);
     if (mGnssBatchingCbIface != nullptr && count > 0) {

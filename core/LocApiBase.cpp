@@ -118,7 +118,7 @@ struct LocOpenMsg : public LocMsg {
         mLocApi->open(mMask);
     }
     inline void locallog() const {
-        LOC_LOGV("%s:%d]: LocOpen Mask: %x\n",
+        LOC_LOGV("%s:%d]: LocOpen Mask: %" PRIu64 "\n",
                  __func__, __LINE__, mMask);
     }
     inline virtual void log() const {

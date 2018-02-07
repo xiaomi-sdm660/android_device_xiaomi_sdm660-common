@@ -63,7 +63,6 @@ public:
 private:
     sp<IGnssBatchingCallback> mGnssBatchingCbIface;
     uint32_t mDefaultId;
-    int mBatchSize;
     LocationCapabilitiesMask mLocationCapabilitiesMask;
 };
 
