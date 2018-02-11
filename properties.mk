@@ -97,6 +97,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     sys.use_fifo_ui=1
 
+# Fling
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.min.fling_velocity=160 \
+    ro.max.fling_velocity=20000
+
 # GMS
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.com.google.clientidbase.ms=android-xiaomi-rev2
