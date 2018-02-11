@@ -155,8 +155,12 @@ void* MessageQueue::Process(void *param)
 			item = MsgQueueExternal->dequeue();
 			if(item)
 			{
-				IPACMDBG("Get event %s from external queue.\n",
-					IPACM_Iface::ipacmcfg->getEventName(item->evt.data.event));
+				eventName = IPACM_Iface::ipacmcfg->getEventName(item->evt.data.event);
+				if (eventName != NULL)
+				{
+					IPACMDBG("Get event %s from external queue.\n",
+							eventName);
+				}
 			}
 		}
 		else
