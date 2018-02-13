@@ -41,6 +41,10 @@ extern "C" {
 #include <cutils/properties.h>
 #include <cutils/threads.h>
 #include <cutils/sched_policy.h>
+#include <private/android_filesystem_config.h>
+
+#define UID_GPS (AID_GPS)
+#define GID_GPS (AID_GPS)
 
 #define LOC_PATH_GPS_CONF_STR      "/vendor/etc/gps.conf"
 #define LOC_PATH_IZAT_CONF_STR     "/vendor/etc/izat.conf"
