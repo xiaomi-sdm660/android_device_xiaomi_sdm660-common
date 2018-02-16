@@ -31,48 +31,53 @@ typedef struct {
     } vendor;
 } device_t;
 
-static android::Mutex vendor_mutex;
+static android::Mutex load_mutex;
 
-static union {
-    const fingerprint_module_t *module;
-    const hw_module_t *hw_module;
-} vendor;
-
-static bool try_hal(const char *class_name, const char *device_name)
+static int open_device_for_vendor(device_t *device, const char *class_name)
 {
-    const hw_module_t *module;
+    const hw_module_t *hw_module = NULL;
+    int rv;
 
-    int rv = hw_get_module_by_class("fingerprint", class_name, &module);
+    rv = hw_get_module_by_class("fingerprint", class_name, &hw_module);
     if (rv) {
-        ALOGE("Failed to open fingerprint module: class %s, error %d", class_name, rv);
-        vendor.module = NULL;
-    } else {
-        hw_device_t *device;
-
-        ALOGI("loaded fingerprint module, class %s: %s version %x", class_name, module->name,
-            module->module_api_version);
-        if (module->methods->open(module, device_name, &device) == 0) {
-             device->close(device);
-             ALOGI("Successfully loaded the device for fingerprint module, class %s", class_name);
-             vendor.hw_module = module;
-        } else {
-             ALOGE("Failed to open a device using fingerprint HAL, class %s", class_name);
-        }
+        ALOGE("Failed to get fingerprint module: class %s, error %d", class_name, rv);
+        return rv;
     }
-    return vendor.module != NULL;
+
+    if (!hw_module->methods->open) {
+        ALOGE("Failed to find fingerprint module open method");
+        return -EINVAL;
+    }
+
+    rv = hw_module->methods->open(hw_module, NULL, &device->vendor.hw_device);
+    if (rv) {
+        ALOGE("Failed to open fingerprint device: error %d", rv);
+        return rv;
+    }
+
+    ALOGI("Successfully loaded fingerprint module: class %s", class_name);
+    return 0;
 }
 
-static bool ensure_vendor_module_is_loaded(const char *device_name)
+static int load_fingerprint_device(device_t *device)
 {
-    android::Mutex::Autolock lock(vendor_mutex);
+    int rv;
 
-    if (!vendor.module) {
-        if (!try_hal("fpc", device_name)) {
-            try_hal("goodix", device_name);
-        }
+    android::Mutex::Autolock lock(load_mutex);
+
+    rv = open_device_for_vendor(device, "fpc");
+    if (rv) {
+        ALOGE("Failed to load fpc fingerprint module");
+    } else {
+        return rv;
     }
 
-    return vendor.module != NULL;
+    rv = open_device_for_vendor(device, "goodix");
+    if (rv) {
+        ALOGE("Failed to load goodix fingerprint module");
+    }
+
+    return rv;
 }
 
 static int set_notify(struct fingerprint_device *dev, fingerprint_notify_t notify)
@@ -154,14 +159,10 @@ static int device_close(hw_device_t *hw_device)
     return rv;
 }
 
-static int device_open(const hw_module_t *module, const char *name, hw_device_t **device_out)
+static int device_open(const hw_module_t *module, const char* /* name */, hw_device_t **device_out)
 {
-    int rv;
     device_t *device;
-
-    if (!ensure_vendor_module_is_loaded(name)) {
-        return -EINVAL;
-    }
+    int rv;
 
     device = (device_t *) calloc(sizeof(*device), 1);
     if (!device) {
@@ -169,9 +170,8 @@ static int device_open(const hw_module_t *module, const char *name, hw_device_t 
         return -ENOMEM;
     }
 
-    rv = vendor.module->common.methods->open(vendor.hw_module, name, &device->vendor.hw_device);
+    rv = load_fingerprint_device(device);
     if (rv) {
-        ALOGE("%s: failed to open, error %d\n", __func__, rv);
         free(device);
         return rv;
     }
