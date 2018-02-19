@@ -177,6 +177,9 @@ ifeq ($(HOST_OS),linux)
   endif
 endif
 
+# EXFAT
+TARGET_EXFAT_DRIVER := sdfat
+
 # FM
 AUDIO_FEATURE_ENABLED_FM_POWER_OPT := true
 BOARD_HAS_QCA_FM_SOC := cherokee
