@@ -1129,7 +1129,9 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     }
 
 err:
-    fclose(conf_fp);
+    if (conf_fp) {
+        fclose(conf_fp);
+    }
     if (ret != 0) {
         LOC_LOGE("%s:%d]: ret: %d", __func__, __LINE__, ret);
         if (child_proc) {
