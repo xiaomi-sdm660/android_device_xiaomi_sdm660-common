@@ -127,13 +127,6 @@ typedef struct {
     /* Provider indicator for HYBRID or GPS */
     uint16_t        position_source;
     LocPosTechMask  tech_mask;
-    /*allows HAL to pass additional information related to the location */
-    int             rawDataSize;         /* in # of bytes */
-    void            * rawData;
-    bool            is_indoor;
-    float           floor_number;
-    char            map_url[GPS_LOCATION_MAP_URL_SIZE];
-    unsigned char   map_index[GPS_LOCATION_MAP_INDEX_SIZE];
 } UlpLocation;
 
 typedef struct {
@@ -727,25 +720,6 @@ enum ulp_gnss_sv_poly_valid_flags{
 #define ULP_GNSS_SV_POLY_BIT_ELEVATIONUNC           (1<<ULP_GNSS_SV_POLY_ELEVATIONUNC)
 #define ULP_GNSS_SV_POLY_BIT_VELO_COEFF             (1<<ULP_GNSS_SV_POLY_VELO_COEFF)
 #define ULP_GNSS_SV_POLY_BIT_ENHANCED_IOD           (1<<ULP_GNSS_SV_POLY_ENHANCED_IOD)
-
-
-typedef enum
-{
-    GNSS_LOC_SV_SYSTEM_GPS                    = 1,
-    /**< GPS satellite. */
-    GNSS_LOC_SV_SYSTEM_GALILEO                = 2,
-    /**< GALILEO satellite. */
-    GNSS_LOC_SV_SYSTEM_SBAS                   = 3,
-    /**< SBAS satellite. */
-    GNSS_LOC_SV_SYSTEM_COMPASS                = 4,
-    /**< COMPASS satellite. */
-    GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
-    /**< GLONASS satellite. */
-    GNSS_LOC_SV_SYSTEM_BDS                    = 6,
-    /**< BDS satellite. */
-    GNSS_LOC_SV_SYSTEM_QZSS                   = 7
-    /**< QZSS satellite. */
-} Gnss_LocSvSystemEnumType;
 
 typedef enum
 {

@@ -119,7 +119,7 @@ class GnssAdapter : public LocAdapterBase {
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const LocationOptions& options);
-    static void convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
+    static void convertLocation(Location& out, const UlpLocation& ulpLocation,
                                 const GpsLocationExtended& locationExtended,
                                 const LocPosTechMask techMask);
     static void convertLocationInfo(GnssLocationInfoNotification& out,

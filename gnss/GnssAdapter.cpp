@@ -190,32 +190,32 @@ GnssAdapter::convertOptions(LocPosMode& out, const LocationOptions& options)
 }
 
 void
-GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
+GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
                              const GpsLocationExtended& locationExtended,
                              const LocPosTechMask techMask)
 {
     memset(&out, 0, sizeof(Location));
     out.size = sizeof(Location);
-    if (LOC_GPS_LOCATION_HAS_LAT_LONG & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_LAT_LONG & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_LAT_LONG_BIT;
-        out.latitude = locGpsLocation.latitude;
-        out.longitude = locGpsLocation.longitude;
+        out.latitude = ulpLocation.gpsLocation.latitude;
+        out.longitude = ulpLocation.gpsLocation.longitude;
     }
-    if (LOC_GPS_LOCATION_HAS_ALTITUDE & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_ALTITUDE & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_ALTITUDE_BIT;
-        out.altitude = locGpsLocation.altitude;
+        out.altitude = ulpLocation.gpsLocation.altitude;
     }
-    if (LOC_GPS_LOCATION_HAS_SPEED & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_SPEED & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_SPEED_BIT;
-        out.speed = locGpsLocation.speed;
+        out.speed = ulpLocation.gpsLocation.speed;
     }
-    if (LOC_GPS_LOCATION_HAS_BEARING & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_BEARING & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_BEARING_BIT;
-        out.bearing = locGpsLocation.bearing;
+        out.bearing = ulpLocation.gpsLocation.bearing;
     }
-    if (LOC_GPS_LOCATION_HAS_ACCURACY & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_ACCURACY & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_ACCURACY_BIT;
-        out.accuracy = locGpsLocation.accuracy;
+        out.accuracy = ulpLocation.gpsLocation.accuracy;
     }
     if (GPS_LOCATION_EXTENDED_HAS_VERT_UNC & locationExtended.flags) {
         out.flags |= LOCATION_HAS_VERTICAL_ACCURACY_BIT;
@@ -229,7 +229,7 @@ GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation
         out.flags |= LOCATION_HAS_BEARING_ACCURACY_BIT;
         out.bearingAccuracy = locationExtended.bearing_unc;
     }
-    out.timestamp = locGpsLocation.timestamp;
+    out.timestamp = ulpLocation.gpsLocation.timestamp;
     if (LOC_POS_TECH_MASK_SATELLITE & techMask) {
         out.techMask |= LOCATION_TECHNOLOGY_GNSS_BIT;
     }
@@ -258,6 +258,11 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.pdop = locationExtended.pdop;
         out.hdop = locationExtended.hdop;
         out.vdop = locationExtended.vdop;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EXT_DOP & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_EXT_DOP_BIT;
+        out.gdop = locationExtended.extDOP.GDOP;
+        out.tdop = locationExtended.extDOP.TDOP;
     }
     if (GPS_LOCATION_EXTENDED_HAS_MAG_DEV & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_MAGNETIC_DEVIATION_BIT;
@@ -314,6 +319,53 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     if (GPS_LOCATION_EXTENDED_HAS_HOR_ELIP_UNC_AZIMUTH & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT;
         out.horUncEllipseOrientAzimuth = locationExtended.horUncEllipseOrientAzimuth;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT;
+        out.svUsedInPosition.gpsSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask;
+        out.svUsedInPosition.gloSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask;
+        out.svUsedInPosition.galSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask;
+        out.svUsedInPosition.bdsSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask;
+        out.svUsedInPosition.qzssSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NAV_SOLUTION_MASK & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT;
+        out.navSolutionMask = locationExtended.navSolutionMask;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK;
+        out.posTechMask = locationExtended.tech_mask;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA;
+        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+                LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+                LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+                LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_RATE_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_PITCH_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_BIT;
+        }
+        out.bodyFrameData.longAccel = locationExtended.bodyFrameData.longAccel;
+        out.bodyFrameData.latAccel = locationExtended.bodyFrameData.latAccel;
+        out.bodyFrameData.vertAccel = locationExtended.bodyFrameData.vertAccel;
+        out.bodyFrameData.yawRate = locationExtended.bodyFrameData.yawRate;
+        out.bodyFrameData.pitch = locationExtended.bodyFrameData.pitch;
     }
 }
 
@@ -1151,7 +1203,7 @@ GnssAdapter::updateClientsEventMask()
 {
     LOC_API_ADAPTER_EVENT_MASK_T mask = 0;
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-        if (it->second.trackingCb != nullptr) {
+        if (it->second.trackingCb != nullptr || it->second.gnssLocationInfoCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
         }
         if (it->second.gnssNiCb != nullptr) {
@@ -1340,7 +1392,7 @@ bool
 GnssAdapter::hasTrackingCallback(LocationAPI* client)
 {
     auto it = mClientData.find(client);
-    return (it != mClientData.end() && it->second.trackingCb);
+    return (it != mClientData.end() && (it->second.trackingCb || it->second.gnssLocationInfoCb));
 }
 
 bool
@@ -2126,15 +2178,15 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
             mGnssSvIdUsedInPosition = locationExtended.gnss_sv_used_ids;
         }
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-            if (nullptr != it->second.trackingCb) {
-                Location location = {};
-                convertLocation(location, ulpLocation.gpsLocation, locationExtended, techMask);
-                it->second.trackingCb(location);
-            }
             if (nullptr != it->second.gnssLocationInfoCb) {
                 GnssLocationInfoNotification locationInfo = {};
                 convertLocationInfo(locationInfo, locationExtended);
+                convertLocation(locationInfo.location, ulpLocation, locationExtended, techMask);
                 it->second.gnssLocationInfoCb(locationInfo);
+            } else if (nullptr != it->second.trackingCb) {
+                Location location = {};
+                convertLocation(location, ulpLocation, locationExtended, techMask);
+                it->second.trackingCb(location);
             }
         }
     }
@@ -2151,15 +2203,6 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         for (auto sentence : nmeaArraystr) {
             reportNmea(sentence.c_str(), sentence.length());
         }
-    }
-
-    // Free the allocated memory for rawData
-    UlpLocation* gp = (UlpLocation*)&(ulpLocation);
-    if (gp != NULL && gp->rawData != NULL)
-    {
-        delete (char*)gp->rawData;
-        gp->rawData = NULL;
-        gp->rawDataSize = 0;
     }
 }
 
