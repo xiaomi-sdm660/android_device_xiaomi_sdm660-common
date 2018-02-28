@@ -61,7 +61,7 @@ PRODUCT_PACKAGES += \
 
 # Boot control
 PRODUCT_PACKAGES += \
-    android.hardware.boot@1.0-impl \
+    android.hardware.boot@1.0-impl:64 \
     android.hardware.boot@1.0-impl.recovery \
     android.hardware.boot@1.0-service \
     android.hardware.health@2.1-impl.recovery \
