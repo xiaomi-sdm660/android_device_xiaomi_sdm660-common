@@ -352,6 +352,15 @@ on post-fs-data
     mkdir /data/vendor/audio/acdbdata 0770 media audio
     mkdir /data/vendor/audio/acdbdata/delta 0770 media audio
 
+    # Create directory used by the DASH client
+    mkdir /data/misc/dash 0770 media audio
+
+    mkdir /data/vendor/audio/ 0770 media audio
+
+   # Create a folder for audio delta files
+    mkdir /data/vendor/audio/acdbdata 0770 media audio
+    mkdir /data/vendor/audio/acdbdata/delta 0770 media audio
+
     # Create directory for radio
     mkdir /data/vendor/radio 0770 system radio
 
@@ -399,9 +408,6 @@ on post-fs-data
 
     # Create /data/time folder for time-services
     mkdir /data/vendor/time/ 0700 system system
-
-    # Create /data/vendor/diag_logs folder for on-device-logging
-    #mkdir /data/vendor/diag_logs 0770 system system
 
     setprop vold.post_fs_data_done 1
 
