@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -3043,6 +3043,9 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
         r.mLocation.mLocation.longitude =
                 (double)(reports.mBestPosition.back().mBestLon) * RAD2DEG;
         r.mLocation.mLocation.altitude = reports.mBestPosition.back().mBestAlt;
+        r.mLocation.mLocation.accuracy =
+                (double)(reports.mBestPosition.back().mBestHepe);
+
         r.mLocation.mUtcReported = reports.mBestPosition.back().mUtcReported;
     }
     else {
