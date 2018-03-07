@@ -3310,7 +3310,8 @@ GnssAdapter::initEngHubProxy() {
 
         getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
         if(getter != nullptr) {
-            EngineHubProxyBase* hubProxy = (*getter) (mMsgTask, reportPositionEventCb,
+            EngineHubProxyBase* hubProxy = (*getter) (mMsgTask, mSystemStatus->getOsObserver(),
+                                                      reportPositionEventCb,
                                                       reportSvEventCb);
             if (hubProxy != nullptr) {
                 mEngHubProxy = hubProxy;

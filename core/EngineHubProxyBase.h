@@ -101,6 +101,7 @@ typedef std::function<void(const GnssSvNotification& svNotify, bool fromUlp)>
 // potential parameters: message queue: MsgTask * msgTask;
 // callback function to report back dr and ppe position and sv report
 typedef EngineHubProxyBase* (getEngHubProxyFn)(const MsgTask * msgTask,
+                                               IOsObserver* osObserver,
                                                GnssAdapterReportPositionEventCb positionEventCb,
                                                GnssAdapterReportSvEventCb svEventCb);
 

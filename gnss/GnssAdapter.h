@@ -32,6 +32,7 @@
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
 #include <UlpProxyBase.h>
+#include <IOsObserver.h>
 #include <EngineHubProxyBase.h>
 #include <LocationAPI.h>
 #include <Agps.h>
