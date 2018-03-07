@@ -37,7 +37,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <time.h>
-#include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <loc_cfg.h>
 #include <loc_pla.h>
@@ -826,18 +826,17 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
 
         child_proc[j].num_groups = 0;
         ngroups = loc_util_split_string(conf.group_list, split_strings, MAX_NUM_STRINGS, ' ');
-#ifdef __ANDROID__
         for(i=0; i<ngroups; i++) {
-            struct passwd* pwd = getpwnam(split_strings[i]);
-            if (pwd) {
-                child_proc[j].group_list[i] = pwd->pw_gid;
+            struct group* grp = getgrnam(split_strings[i]);
+            if (grp) {
+                child_proc[j].group_list[i] = grp->gr_gid;
                 child_proc[j].num_groups++;
                 LOC_LOGD("%s:%d]:Group %s = %d matches child_group: %d\n",
                          __func__, __LINE__, split_strings[i],
-                         pwd->pw_gid,child_proc[j].group_list[i]);
+                         grp->gr_gid,child_proc[j].group_list[i]);
             }
         }
-#endif
+
         nstrings = loc_util_split_string(conf.platform_list, split_strings, MAX_NUM_STRINGS, ' ');
         if(strcmp("all", split_strings[0]) == 0) {
             if (nstrings == 1 || (nstrings == 2 && (strcmp("exclude", split_strings[1]) == 0))) {

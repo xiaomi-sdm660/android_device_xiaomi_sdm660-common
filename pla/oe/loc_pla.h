@@ -51,6 +51,9 @@ extern "C" {
 #define strlcpy strncpy
 #endif
 
+#define UID_GPS (1021)
+#define GID_GPS (1021)
+
 #define LOC_PATH_GPS_CONF_STR      "/etc/gps.conf"
 #define LOC_PATH_IZAT_CONF_STR     "/etc/izat.conf"
 #define LOC_PATH_FLP_CONF_STR      "/etc/flp.conf"
