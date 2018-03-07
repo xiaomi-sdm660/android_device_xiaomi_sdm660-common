@@ -585,6 +585,7 @@ service vendor.cnd /system/vendor/bin/cnd
     class main
     user system
     group system wifi inet radio wakelock net_admin
+	writepid /dev/cpuset/system-background/tasks
 
 service vendor.dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main
@@ -595,6 +596,7 @@ service vendor.irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class core
     user root
     oneshot
+	writepid /dev/cpuset/system-background/tasks
 
 service vendor.rmt_storage /vendor/bin/rmt_storage
     class core
@@ -618,6 +620,7 @@ service vendor.start_hci_filter /system/vendor/bin/wcnss_filter
     group bluetooth diag system wakelock
     seclabel u:r:bluetooth:s0
     disabled
+	writepid /dev/cpuset/system-background/tasks
 
 service bt-dun /system/bin/dun-server /dev/smd7 /dev/rfcomm0
     class late_start
@@ -690,18 +693,21 @@ service vendor.ipacm /system/vendor/bin/ipacm
     user radio
     group radio inet
     disabled
+	writepid /dev/cpuset/system-background/tasks
 
 service vendor.dataqti /system/vendor/bin/qti
     class main
     user radio
     group radio oem_2901 diag usb net_admin
     disabled
+	writepid /dev/cpuset/system-background/tasks
 
 service vendor.sensors /vendor/bin/sensors.qcom
     class core
     user root
     group root
     disabled
+	writepid /dev/cpuset/system-background/tasks
 
 on property:ro.use_data_netmgrd=false
     # netmgr not supported on specific target
@@ -746,6 +752,7 @@ service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
     socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
+	writepid /dev/cpuset/system-background/tasks
 
 service vendor.wigig_supplicant /vendor/bin/hw/wpa_supplicant \
     -iwigig0 -Dnl80211 -c/data/vendor/wifi/wigig_supplicant.conf \
@@ -887,6 +894,7 @@ service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     user system
     group system inet net_admin wifi
     capabilities NET_ADMIN
+	writepid /dev/cpuset/system-background/tasks
 
 on property:sys.shutdown.requested=*
     stop vendor.cnss-daemon
@@ -940,6 +948,7 @@ service vendor.loc_launcher /system/vendor/bin/loc_launcher
     class late_start
     user gps
     group gps
+	writepid /dev/cpuset/system-background/tasks
 
 on property:crypto.driver.load=1
      insmod /system/lib/modules/qce.ko
@@ -998,6 +1007,7 @@ service vendor.qvop-daemon /vendor/bin/qvop-daemon
     class late_start
     user system
     group system drmrpc
+	writepid /dev/cpuset/system-background/tasks
 
 service vendor.atfwd /vendor/bin/ATFWD-daemon
     class late_start
