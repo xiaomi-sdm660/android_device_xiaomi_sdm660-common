@@ -15,3 +15,8 @@ service fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-servi
     class late_start
     user system
     group system input
+
+service goodix_script /vendor/bin/init.goodix.sh
+    class late_start
+    user root
+    oneshot
