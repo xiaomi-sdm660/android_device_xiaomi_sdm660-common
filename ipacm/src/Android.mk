@@ -15,17 +15,6 @@ include $(CLEAR_VARS)
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../src
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../inc
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../ipanat/inc
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../hal/inc
-ifeq ($(call is-platform-sdk-version-at-least,20),true)
-LOCAL_C_INCLUDES += external/icu/icu4c/source/common
-else
-LOCAL_C_INCLUDES += external/icu4c/common
-endif
-#LOCAL_C_INCLUDES += external/dhcpcd
-LOCAL_C_INCLUDES += external/libxml2/include
-LOCAL_C_INCLUDES += external/libnetfilter_conntrack/include
-LOCAL_C_INCLUDES += external/libnfnetlink/include
 
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
