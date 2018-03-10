@@ -76,6 +76,28 @@ static void init_finger_print_properties()
     }
 }
 
+static void init_setup_model_properties()
+{
+    std::ifstream fin;
+    std::string buf;
+
+    std::string product = GetProperty("ro.product.name", "");
+    if (product.find("wayne") == std::string::npos)
+        return;
+
+    fin.open("/proc/cmdline");
+    while (std::getline(fin, buf, ' '))
+        if (buf.find("hwversion") != std::string::npos)
+            break;
+    fin.close();
+
+    if (buf.find("2.31.0") != std::string::npos) {
+        property_set("ro.product.model", "MI 6X MIKU");
+    } else {
+        property_set("ro.product.model", "MI 6X");
+    }
+}
+
 static void init_alarm_boot_properties()
 {
     char const *boot_reason_file = "/proc/sys/kernel/boot_reason";
@@ -138,6 +160,7 @@ void vendor_load_properties()
     init_alarm_boot_properties();
     check_device();
     init_finger_print_properties();
+    init_setup_model_properties();
 
     property_set("dalvik.vm.heapstartsize", heapstartsize);
     property_set("dalvik.vm.heapgrowthlimit", heapgrowthlimit);

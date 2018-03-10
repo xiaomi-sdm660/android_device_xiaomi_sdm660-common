@@ -28,7 +28,6 @@ PRODUCT_BRAND := Xiaomi
 PRODUCT_DEVICE := wayne
 PRODUCT_MANUFACTURER := Xiaomi
 PRODUCT_NAME := lineage_wayne
-PRODUCT_MODEL := MI 6X
 
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
 
@@ -38,3 +37,6 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     PRIVATE_BUILD_DESC="wayne-user 8.1.0 OPM1.171019.011 V9.5.11.0.ODCCNFA release-keys"
 
 BUILD_FINGERPRINT := xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys
+
+PRODUCT_SYSTEM_PROPERTY_BLACKLIST += \
+    ro.product.model
