@@ -673,7 +673,7 @@ typedef union {
     GnssSystemTimeStructType galSystemTime;
     GnssSystemTimeStructType bdsSystemTime;
     GnssSystemTimeStructType qzssSystemTime;
-    GnssGloTimeStructType gloSytemTime;
+    GnssGloTimeStructType gloSystemTime;
 } SystemTimeStructUnion;
     /** Time applicability of PVT report */
 typedef struct {
