@@ -283,11 +283,8 @@ public:
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
 
-    virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask);
+    virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask apn_type_mask);
     virtual bool releaseATL(int connHandle);
-    virtual bool requestSuplES(int connHandle, LocApnTypeMask mask);
-    virtual bool reportDataCallOpened();
-    virtual bool reportDataCallClosed();
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
 
     /* ======== UTILITIES ================================================================= */

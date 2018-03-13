@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2010, 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,8 +156,12 @@ typedef uint16_t LocGpsAidingData;
 
 /** AGPS type */
 typedef uint16_t LocAGpsType;
+#define LOC_AGPS_TYPE_ANY           0
 #define LOC_AGPS_TYPE_SUPL          1
 #define LOC_AGPS_TYPE_C2K           2
+#define LOC_AGPS_TYPE_WWAN_ANY      3
+#define LOC_AGPS_TYPE_WIFI          4
+#define LOC_AGPS_TYPE_SUPL_ES       5
 
 typedef uint16_t LocAGpsSetIDType;
 #define LOC_AGPS_SETID_TYPE_NONE    0

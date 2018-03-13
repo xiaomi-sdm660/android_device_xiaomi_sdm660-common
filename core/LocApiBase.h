@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -147,11 +147,8 @@ public:
     void requestXtraData();
     void requestTime();
     void requestLocation();
-    void requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask);
+    void requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask apn_type_mask);
     void releaseATL(int connHandle);
-    void requestSuplES(int connHandle, LocApnTypeMask mask);
-    void reportDataCallOpened();
-    void reportDataCallClosed();
     void requestNiNotify(GnssNiNotification &notify, const void* data);
     void reportGnssMeasurementData(GnssMeasurementsNotification& measurements, int msInWeek);
     void reportWwanZppFix(LocGpsLocation &zppLoc);
@@ -186,7 +183,8 @@ public:
 
     virtual void
         atlOpenStatus(int handle, int is_succ, char* apn, uint32_t apnLen,
-                AGpsBearerType bear, LocAGpsType agpsType, LocApnTypeMask mask);
+                      AGpsBearerType bear, LocAGpsType agpsType,
+                      LocApnTypeMask mask);
     virtual void
         atlCloseStatus(int handle, int is_succ);
     virtual void
@@ -237,11 +235,6 @@ public:
 
     virtual void getWwanZppFix();
     virtual void getBestAvailableZppFix();
-    virtual int initDataServiceClient(bool isDueToSsr);
-    virtual int openAndStartDataCall();
-    virtual void stopDataCall();
-    virtual void closeDataCall();
-    virtual void releaseDataServiceClient();
     virtual void installAGpsCert(const LocDerEncodedCertificate* pData,
                                  size_t length,
                                  uint32_t slotBitMask);
