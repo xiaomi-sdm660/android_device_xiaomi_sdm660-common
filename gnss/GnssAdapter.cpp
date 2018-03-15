@@ -367,6 +367,35 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.bodyFrameData.yawRate = locationExtended.bodyFrameData.yawRate;
         out.bodyFrameData.pitch = locationExtended.bodyFrameData.pitch;
     }
+    if (GPS_LOCATION_EXTENDED_HAS_GPS_TIME & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_GPS_TIME;
+        out.gnssSystemTime.gnssSystemTimeSrc = locationExtended.gnssSystemTime.gnssSystemTimeSrc;
+        out.gnssSystemTime.u = locationExtended.gnssSystemTime.u;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL;
+        out.northVelocity = locationExtended.northVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_VEL & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL;
+        out.eastVelocity = locationExtended.eastVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_UP_VEL & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL;
+        out.upVelocity = locationExtended.upVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC;
+        out.northVelocityStdDeviation = locationExtended.northVelocityStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC;
+        out.eastVelocityStdDeviation = locationExtended.eastVelocityStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC;
+        out.upVelocityStdDeviation = locationExtended.upVelocityStdDeviation;
+    }
 }
 
 inline uint32_t
