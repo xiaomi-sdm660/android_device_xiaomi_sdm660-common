@@ -27,5 +27,11 @@ LOCAL_SRC_FILES := init_wayne.cpp
 LOCAL_STATIC_LIBRARIES := \
     libbase \
     libselinux
+LOCAL_CFLAGS := -Wall
+
+ifneq ($(TARGET_LIBINIT_WAYNE_DEFINES_FILE),)
+    LOCAL_CFLAGS += -DTARGET_HAVE_LIBINIT
+    LOCAL_SRC_FILES += ../../../../$(TARGET_LIBINIT_WAYNE_DEFINES_FILE)
+endif
 
 include $(BUILD_STATIC_LIBRARY)
