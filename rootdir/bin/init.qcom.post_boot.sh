@@ -2609,12 +2609,6 @@ case "$target" in
                 echo 1600 > $cpubw/bw_hwmon/idle_mbps
             done
 
-            for memlat in /sys/class/devfreq/*qcom,memlat-cpu*
-            do
-                echo "mem_latency" > $memlat/governor
-                echo 10 > $memlat/polling_interval
-                echo 400 > $memlat/mem_latency/ratio_ceil
-            done
             echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 
             # Start cdsprpcd only for sdm660 and disable for sdm630
