@@ -32,7 +32,6 @@
 
 #include <string>
 #include <memory>
-#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -96,7 +95,7 @@ private:
     int mIpcFd;
     bool mStopRequested;
     LocThread mThread;
-    std::unique_ptr<LocRunnable> mRunnable;
+    LocRunnable *mRunnable;
 };
 
 class LocIpcSender {
