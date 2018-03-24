@@ -248,6 +248,9 @@ on post-fs-data
     # create QDMA dropbox
     mkdir /data/vendor/qdmastats 0700 system system
     mkdir /data/vendor/qdma 0770 system system
+	
+    # Create folder of camera
+    mkdir /data/vendor/camera 0770 camera camera
 
     # Create directory for apps access via QTEEConnector
     mkdir /data/vendor/qtee 0770 system system
