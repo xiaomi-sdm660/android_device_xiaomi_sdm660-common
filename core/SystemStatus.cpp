@@ -1694,9 +1694,7 @@ bool SystemStatus::eventConnectionStatus(bool connected, int8_t type)
 
         // send networkinof dataitem to systemstatus observer clients
         SystemStatusNetworkInfo s(type, "", "", false, connected, false);
-        list<IDataItemCore*> dl(0);
-        dl.push_back(&s);
-        mSysStatusObsvr.notify(dl);
+        mSysStatusObsvr.notify({&s});
     }
     return true;
 }
