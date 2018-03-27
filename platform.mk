@@ -179,6 +179,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.configstore@1.0-service \
     android.hardware.broadcastradio@1.0-impl
+    
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.display.disable_rotator_downscale=1 \
 
 # Doze
 PRODUCT_PACKAGES += \
