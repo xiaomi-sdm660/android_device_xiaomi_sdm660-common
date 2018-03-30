@@ -312,3 +312,6 @@ PRODUCT_PROPERTY_OVERRIDES += rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.
 #Thermal
 PRODUCT_PACKAGES += android.hardware.thermal@1.0-impl \
                     android.hardware.thermal@1.0-service
+
+#Property for setting the max timeout of autosuspend
+PRODUCT_PROPERTY_OVERRIDES += sys.autosuspend.timeout=500000
