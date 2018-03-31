@@ -92,10 +92,13 @@ typedef std::function<void(const UlpLocation& ulpLocation,
                            const GpsLocationExtended& locationExtended,
                            enum loc_sess_status status,
                            LocPosTechMask techMask,
-                           bool fromUlp)>
+                           bool fromUlp,
+                           bool fromEngineHub)>
         GnssAdapterReportPositionEventCb;
 
-typedef std::function<void(const GnssSvNotification& svNotify, bool fromUlp)>
+typedef std::function<void(const GnssSvNotification& svNotify,
+                           bool fromUlp,
+                           bool fromEngineHub)>
         GnssAdapterReportSvEventCb;
 
 // potential parameters: message queue: MsgTask * msgTask;

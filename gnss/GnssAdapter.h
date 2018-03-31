@@ -235,8 +235,11 @@ public:
                                      const GpsLocationExtended& locationExtended,
                                      enum loc_sess_status status,
                                      LocPosTechMask techMask,
-                                     bool fromUlp=false);
-    virtual void reportSvEvent(const GnssSvNotification& svNotify, bool fromUlp=false);
+                                     bool fromUlp=false,
+                                     bool fromEngineHub=false);
+    virtual void reportSvEvent(const GnssSvNotification& svNotify,
+                               bool fromUlp=false,
+                               bool fromEngineHub=false);
     virtual void reportNmeaEvent(const char* nmea, size_t length, bool fromUlp=false);
     virtual bool requestNiNotifyEvent(const GnssNiNotification& notify, const void* data);
     virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
