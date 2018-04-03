@@ -131,8 +131,7 @@ public:
     inline bool send(const uint8_t data[], uint32_t length) {
         bool rtv = false;
         if (nullptr != mSocket && nullptr != data) {
-            ssize_t rv = LocIpc::sendData(*mSocket, mDestAddr, data, length);
-            rtv = (rv == (int)length);
+            rtv = LocIpc::sendData(*mSocket, mDestAddr, data, length);
         }
         return rtv;
     }

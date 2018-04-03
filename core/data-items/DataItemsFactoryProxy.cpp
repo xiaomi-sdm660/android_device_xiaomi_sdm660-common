@@ -32,7 +32,8 @@
 #include <DataItemId.h>
 #include <IDataItemCore.h>
 #include <DataItemsFactoryProxy.h>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 
 namespace loc_core
 {

@@ -33,7 +33,7 @@
 #include <inttypes.h>
 #include <LocApiBase.h>
 #include <LocAdapterBase.h>
-#include <platform_lib_log_util.h>
+#include <log_util.h>
 #include <LocDualContext.h>
 
 namespace loc_core {

@@ -37,13 +37,14 @@
 #elif defined (USE_GLIB)
 // LE targets with no logcat support
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cutils/log.h>
 
 #ifndef LOG_TAG
 #define LOG_TAG "GPS_UTILS"
-
-#endif  // LOG_TAG
+#endif /* LOG_TAG */
 
 #endif /* #if defined (USE_ANDROID_LOGGING) || defined (ANDROID) */
 

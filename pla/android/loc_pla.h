@@ -26,30 +26,33 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "loc_stub_time.h"
-#include <stdlib.h>
-#include <sys/time.h>
-#include <time.h>
+#ifndef __LOC_PLA__
+#define __LOC_PLA__
 
-int64_t systemTime(int /*clock*/)
-{
-    struct timespec t;
-    t.tv_sec = t.tv_nsec = 0;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    return t.tv_sec*1000000LL + t.tv_nsec/1000LL;
-}
+#ifdef __cplusplus
+#include <utils/SystemClock.h>
+#define uptimeMillis android::uptimeMillis
+#endif
 
-int64_t elapsedMicrosSinceBoot()
-{
-    struct timespec ts;
-    int64_t time_ms = 0;
-    clock_gettime(CLOCK_BOOTTIME, &ts);
-    time_ms += (ts.tv_sec * 1000000000LL);     /* Seconds to nanoseconds */
-    time_ms += ts.tv_nsec;   /* Add Nanoseconds  */
-    return time_ms;
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int64_t elapsedMillisSinceBoot()
-{
-    return (int64_t) (elapsedMicrosSinceBoot() /1000000LL);
+#include <cutils/properties.h>
+#include <cutils/threads.h>
+#include <cutils/sched_policy.h>
+
+#define LOC_PATH_GPS_CONF_STR      "/vendor/etc/gps.conf"
+#define LOC_PATH_IZAT_CONF_STR     "/vendor/etc/izat.conf"
+#define LOC_PATH_FLP_CONF_STR      "/vendor/etc/flp.conf"
+#define LOC_PATH_LOWI_CONF_STR     "/vendor/etc/lowi.conf"
+#define LOC_PATH_SAP_CONF_STR      "/vendor/etc/sap.conf"
+#define LOC_PATH_APDR_CONF_STR     "/vendor/etc/apdr.conf"
+#define LOC_PATH_XTWIFI_CONF_STR   "/vendor/etc/xtwifi.conf"
+#define LOC_PATH_QUIPC_CONF_STR    "/vendor/etc/quipc.conf"
+
+#ifdef __cplusplus
 }
+#endif /*__cplusplus */
+
+#endif /* __LOC_PLA__ */

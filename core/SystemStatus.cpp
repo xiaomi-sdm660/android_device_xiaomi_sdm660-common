@@ -34,8 +34,8 @@
 #include <string.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include <platform_lib_log_util.h>
-#include <MsgTask.h>
+#include <loc_pla.h>
+#include <log_util.h>
 #include <loc_nmea.h>
 #include <DataItemsFactoryProxy.h>
 #include <SystemStatus.h>

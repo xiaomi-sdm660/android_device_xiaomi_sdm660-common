@@ -31,7 +31,8 @@
 #include <algorithm>
 #include <iterator>
 #include <DataItemIndex.h>
-#include <platform_lib_log_util.h>
+#include <loc_pla.h>
+#include <log_util.h>
 #include <IDataItemObserver.h>
 #include <DataItemId.h>
 

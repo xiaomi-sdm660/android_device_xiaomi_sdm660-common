@@ -43,7 +43,6 @@ LOCAL_SHARED_LIBRARIES += \
     libloc_core \
     libgps.utils \
     libdl \
-    libloc_pla \
     liblocation_api \
 
 LOCAL_CFLAGS += $(GNSS_CFLAGS)

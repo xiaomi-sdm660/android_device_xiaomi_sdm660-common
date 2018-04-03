@@ -35,7 +35,7 @@
 #include <ContextBase.h>
 #include <msg_q.h>
 #include <loc_target.h>
-#include <platform_lib_includes.h>
+#include <loc_pla.h>
 #include <loc_log.h>
 
 namespace loc_core {
