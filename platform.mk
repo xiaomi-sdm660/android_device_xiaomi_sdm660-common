@@ -283,6 +283,10 @@ PRODUCT_PACKAGES += \
     android.hardware.power@1.0-service \
     android.hardware.power@1.0-impl
 
+# QMI
+PRODUCT_PACKAGES += \
+    libjson
+
 # WLAN driver configuration file
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini \
