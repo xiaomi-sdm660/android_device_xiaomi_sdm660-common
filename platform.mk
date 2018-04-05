@@ -238,6 +238,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml
 
+# For android_filesystem_config.h
+PRODUCT_PACKAGES += \
+    fs_config_files
+
 # WLAN driver configuration file
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini \
@@ -296,10 +300,6 @@ PRODUCT_COPY_FILES += $(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY
 PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 PRODUCT_VENDOR_MOVE_ENABLED := true
-
-#for android_filesystem_config.h
-PRODUCT_PACKAGES += \
-    fs_config_files
 
 #for wlan
 PRODUCT_PACKAGES += \
