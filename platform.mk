@@ -202,7 +202,6 @@ PRODUCT_PACKAGES += \
     com.quicinc.cne \
     services-ext
 
-
 # Display
 PRODUCT_PACKAGES += \
     copybit.sdm660 \
@@ -227,6 +226,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     vendor.display.color@1.0-service \
     vendor.display.color@1.0-impl
+
+# FBE support
+PRODUCT_COPY_FILES += \
+    $(PLATFORM_PATH)/rootdir/bin/init.qti.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.qseecomd.sh
 
 # WLAN driver configuration file
 PRODUCT_COPY_FILES += \
@@ -279,9 +282,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.vr.high_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vr.high_performance.xml
     
-# FBE support
-PRODUCT_COPY_FILES += \
-    $(PLATFORM_PATH)/rootdir/bin/init.qti.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.qseecomd.sh
 
 # MSM IRQ Balancer configuration file for SDM660
 PRODUCT_COPY_FILES += $(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
