@@ -82,16 +82,6 @@ $(shell  mkdir -p $(TARGET_OUT_VENDOR)/firmware; \
 	$(TARGET_OUT_VENDOR)/firmware/msadp)
 
 #----------------------------------------------------------------------
-# Radio image
-#----------------------------------------------------------------------
-ifeq ($(ADD_RADIO_FILES), true)
-radio_dir := $(LOCAL_PATH)/radio
-RADIO_FILES := $(shell cd $(radio_dir) ; ls)
-$(foreach f, $(RADIO_FILES), \
-	$(call add-radio-file,radio/$(f)))
-endif
-
-#----------------------------------------------------------------------
 # extra images
 #----------------------------------------------------------------------
 #ifeq (, $(wildcard vendor/qcom/build/tasks/generate_extra_images.mk))
