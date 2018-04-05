@@ -91,9 +91,6 @@ PRODUCT_CHARACTERISTICS := nosdcard
 #    MULTI_LANG_ZAWGYI := REVERIE
 #endif
 
-# Enable features in video HAL that can compile only on this platform
-TARGET_USES_MEDIA_EXTENSIONS := true
-
 # WLAN chipset
 WLAN_CHIPSET := qca_cld3
 
