@@ -68,6 +68,9 @@ BOARD_CHARGER_ENABLE_SUSPEND := true
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
 
+# Crypto
+TARGET_HW_DISK_ENCRYPTION := true
+
 USE_OPENGL_RENDERER := true
 BOARD_USE_LEGACY_UI := true
 
@@ -133,11 +136,6 @@ TARGET_PLATFORM_DEVICE_BASE := /devices/soc.0/
 
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_KERNEL_APPEND_DTB := true
-
-#Enable HW based full disk encryption
-TARGET_HW_DISK_ENCRYPTION := true
-
-TARGET_CRYPTFS_HW_PATH := device/qcom/common/cryptfs_hw
 
 # Enable dex pre-opt to speed up initial boot
 ifeq ($(HOST_OS),linux)
