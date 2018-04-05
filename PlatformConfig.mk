@@ -118,6 +118,9 @@ TARGET_COPY_OUT_VENDOR := vendor
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 endif
 
+# Power
+TARGET_POWERHAL_VARIANT := qcom
+
 # Recovery
 TARGET_RECOVERY_FSTAB := $(PLATFORM_PATH)/rootdir/etc/recovery.fstab
 
