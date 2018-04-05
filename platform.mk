@@ -239,10 +239,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += frameworks/native/data/etc/android.software.midi.xml:system/etc/permissions/android.software.midi.xml
 
 # MSM IRQ Balancer configuration file for SDM660
-PRODUCT_COPY_FILES += $(PLATFORM_PATH)/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
-
-# MSM IRQ Balancer configuration file for SDM630
-PRODUCT_COPY_FILES += $(PLATFORM_PATH)/msm_irqbalance_sdm630.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance_sdm630.conf
+PRODUCT_COPY_FILES += $(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
 
 # dm-verity configuration
 PRODUCT_SUPPORTS_VERITY := true
