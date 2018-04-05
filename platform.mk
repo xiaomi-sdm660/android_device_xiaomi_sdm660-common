@@ -328,6 +328,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.cmc=false \
     ro.vendor.sdk.sensors.gestures=false
     
+# Sensors
+PRODUCT_PACKAGES += \
+    sensors.sdm660
+
 # Wifi
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/wifi/hostapd.accept:$(TARGET_COPY_OUT_VENDOR)/etc/hostapd/hostapd.accept \
