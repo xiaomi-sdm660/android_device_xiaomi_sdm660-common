@@ -287,15 +287,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libjson
 
-# WLAN driver configuration file
-PRODUCT_COPY_FILES += \
-    $(PLATFORM_PATH)/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini \
-    $(PLATFORM_PATH)/wifi_concurrency_cfg.txt:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wifi_concurrency_cfg.txt
-
-PRODUCT_PACKAGES += \
-    wpa_supplicant_overlay.conf \
-    p2p_supplicant_overlay.conf
-
 # Vibrator
 PRODUCT_PACKAGES += \
     android.hardware.vibrator@1.0-impl \
@@ -333,6 +324,20 @@ PRODUCT_PACKAGES += \
     sensors.sdm660
 
 # Wifi
+PRODUCT_PACKAGES += \
+    ipacm \
+    ipacm-diag \
+    IPACM_cfg.xml \
+    libqsap_sdk \
+    libQWiFiSoftApCfg \
+    libwpa_client \
+    hostapd \
+    dhcpcd.conf \
+    wificond \
+    wifilogd \
+    wpa_supplicant \
+    wpa_supplicant.conf
+
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/wifi/hostapd.accept:$(TARGET_COPY_OUT_VENDOR)/etc/hostapd/hostapd.accept \
     $(PLATFORM_PATH)/wifi/hostapd.conf:$(TARGET_COPY_OUT_VENDOR)/etc/hostapd/hostapd_default.conf \
@@ -351,11 +356,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 PRODUCT_VENDOR_MOVE_ENABLED := true
-
-#for wlan
-PRODUCT_PACKAGES += \
-        wificond \
-        wifilogd
 
 #Healthd packages
 PRODUCT_PACKAGES += android.hardware.health@1.0-impl \
