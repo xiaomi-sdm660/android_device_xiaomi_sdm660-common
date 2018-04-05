@@ -64,6 +64,10 @@ USE_DEVICE_SPECIFIC_CAMERA := true
 # Charger
 BOARD_CHARGER_ENABLE_SUSPEND := true
 
+# CPUSets
+ENABLE_CPUSETS := true
+ENABLE_SCHEDBOOST := true
+
 USE_OPENGL_RENDERER := true
 BOARD_USE_LEGACY_UI := true
 
@@ -149,7 +153,3 @@ endif
 
 # Enable sensor multi HAL
 USE_SENSOR_MULTI_HAL := true
-
-#Enable CPUSets
-ENABLE_CPUSETS := true
-ENABLE_SCHEDBOOST := true
