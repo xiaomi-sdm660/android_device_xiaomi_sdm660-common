@@ -21,10 +21,19 @@
 # definition file).
 #
 
-TARGET_BOARD_PLATFORM := sdm660
-TARGET_BOARD_SUFFIX := _64
-TARGET_BOOTLOADER_BOARD_NAME :=sdm660
+# Platform Path
+PLATFORM_PATH := device/xiaomi/sdm660-common
 
+# Bootloader
+TARGET_BOOTLOADER_BOARD_NAME := sdm660
+TARGET_NO_BOOTLOADER := true
+
+# Platform
+BOARD_VENDOR := xiaomi
+TARGET_BOARD_PLATFORM := sdm660
+TARGET_BOARD_PLATFORM_GPU := qcom-adreno512
+
+# Architecture
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
@@ -37,11 +46,7 @@ TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := cortex-a53
 
-TARGET_NO_BOOTLOADER := false
-TARGET_USES_UEFI := true
-TARGET_NO_KERNEL := false
-
--include $(QCPATH)/common/sdm660_64/BoardConfigVendor.mk
+TARGET_USES_64_BIT_BINDER := true
 
 # Some framework code requires this to enable BT
 BOARD_HAVE_BLUETOOTH := true
