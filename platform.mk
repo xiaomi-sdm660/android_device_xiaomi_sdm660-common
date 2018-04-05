@@ -315,6 +315,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     init.target.rc \
     fstab.qcom
+    
+# RIL
+PRODUCT_PACKAGES += \
+    librmnetctl \
+    libxml2 \
+    libprotobuf-cpp-full
 
 #Facing, CMC and Gesture
 PRODUCT_PROPERTY_OVERRIDES += \
