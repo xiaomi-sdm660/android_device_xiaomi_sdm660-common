@@ -1,7 +1,28 @@
+# 
+# Copyright (C) 2018 The Mokee Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#
+# This file sets variables that control the way modules are built
+# thorughout the system. It should not be used to conditionally
+# disable makefiles (the proper mechanism to control what gets
+# included in a build is to use PRODUCT_PACKAGES in a product
+# definition file).
+#
+
 # Platform Path
 PLATFORM_PATH := device/xiaomi/sdm660-common
-
-TARGET_USES_AOSP := true
 
 # Overlays
 DEVICE_PACKAGE_OVERLAYS := device/xiaomi/sdm660-common/overlay
@@ -17,39 +38,17 @@ ifeq ($(ENABLE_VENDOR_IMAGE), true)
 #TARGET_USES_QTIC := false
 endif
 
-TARGET_USES_AOSP_FOR_AUDIO := false
-TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
-TARGET_DISABLE_DASH := true
-
-TARGET_KERNEL_VERSION := 4.4
-BOARD_FRP_PARTITION_NAME := frp
-BOARD_HAVE_QCOM_FM := true
-TARGET_USES_NQ_NFC := true
-
-ifeq ($(TARGET_USES_NQ_NFC),true)
-# Flag to enable and support NQ3XX chipsets
-NQ3XX_PRESENT := true
-endif
-
-# enable the SVA in UI area
-TARGET_USE_UI_SVA := true
-
-#QTIC flag
--include $(QCPATH)/common/config/qtic-config.mk
-
 # Add soft home, back and multitask keys
 PRODUCT_PROPERTY_OVERRIDES += \
     qemu.hw.mainkeys=0
 
 # Video codec configuration files
-ifeq ($(TARGET_ENABLE_QC_AV_ENHANCEMENTS), true)
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/configs/media_profiles.xml:system/etc/media_profiles.xml \
     $(PLATFORM_PATH)/configs/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles_vendor.xml \
     $(PLATFORM_PATH)/configs/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
     $(PLATFORM_PATH)/configs/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml \
     $(PLATFORM_PATH)/configs/media_codecs_vendor_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_vendor_audio.xml
-endif #TARGET_ENABLE_QC_AV_ENHANCEMENTS
 
 # video seccomp policy files
 PRODUCT_COPY_FILES += \
@@ -65,10 +64,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     video.disable.ubwc=1
 
-ifneq ($(TARGET_DISABLE_DASH), true)
-    PRODUCT_BOOT_JARS += qcmediaplayer
-endif
-
 # Power
 PRODUCT_PACKAGES += \
     android.hardware.power@1.0-service \
@@ -77,22 +72,12 @@ PRODUCT_PACKAGES += \
 # Override heap growth limit due to high display density on device
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapgrowthlimit=256m
+
+# DAVLIK-HEAP Configration    
 $(call inherit-product, frameworks/native/build/phone-xhdpi-2048-dalvik-heap.mk)
-$(call inherit-product, device/qcom/common/common64.mk)
 
 # default is nosdcard, S/W button enabled in resource
 PRODUCT_CHARACTERISTICS := nosdcard
-
-# When can normal compile this module,  need module owner enable below commands
-# font rendering engine feature switch
-#-include $(QCPATH)/common/config/rendering-engine.mk
-#ifneq (,$(strip $(wildcard $(PRODUCT_RENDERING_ENGINE_REVLIB))))
-#    MULTI_LANG_ENGINE := REVERIE
-#    MULTI_LANG_ZAWGYI := REVERIE
-#endif
-
-# WLAN chipset
-WLAN_CHIPSET := qca_cld3
 
 #
 # system prop for opengles version
@@ -101,32 +86,18 @@ WLAN_CHIPSET := qca_cld3
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.opengles.version=196610
 
-#Android EGL implementation
-PRODUCT_PACKAGES += libGLES_android
 PRODUCT_BOOT_JARS += tcmiface
 PRODUCT_BOOT_JARS += telephony-ext
 
 PRODUCT_PACKAGES += telephony-ext
 
-ifneq ($(strip $(QCPATH)),)
-PRODUCT_BOOT_JARS += WfdCommon
-#Android oem shutdown hook
-PRODUCT_BOOT_JARS += oem-services
-endif
-
 # system prop for Bluetooth SOC type
 PRODUCT_PROPERTY_OVERRIDES += \
     qcom.bluetooth.soc=cherokee
 
-ifeq ($(strip $(BOARD_HAVE_QCOM_FM)),true)
-PRODUCT_BOOT_JARS += qcom.fmradio
-endif #BOARD_HAVE_QCOM_FM
-
+# HIDL Manifest
 DEVICE_MANIFEST_FILE := $(PLATFORM_PATH)/manifest.xml
 DEVICE_MATRIX_FILE   := device/qcom/common/compatibility_matrix.xml
-
-# Audio configuration file
--include $(TOPDIR)hardware/qcom/audio/configs/sdm660/sdm660.mk
 
 PRODUCT_PACKAGES += android.hardware.media.omx@1.0-impl
 
@@ -137,11 +108,6 @@ PRODUCT_COPY_FILES += \
 # Exclude TOF sensor from InputManager
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/configs/excluded-input-devices.xml:system/etc/excluded-input-devices.xml
-
-# WLAN host driver
-ifneq ($(WLAN_CHIPSET),)
-PRODUCT_PACKAGES += $(WLAN_CHIPSET)_wlan.ko
-endif
 
 # WLAN driver configuration file
 PRODUCT_COPY_FILES += \
@@ -242,13 +208,6 @@ PRODUCT_COPY_FILES += frameworks/native/data/etc/android.software.midi.xml:syste
 # MSM IRQ Balancer configuration file for SDM660
 PRODUCT_COPY_FILES += $(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
 
-# dm-verity configuration
-PRODUCT_SUPPORTS_VERITY := true
-PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/bootdevice/by-name/system
-ifeq ($(ENABLE_VENDOR_IMAGE), true)
-PRODUCT_VENDOR_VERITY_PARTITION := /dev/block/bootdevice/by-name/vendor
-endif
-
 PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 PRODUCT_VENDOR_MOVE_ENABLED := true
@@ -256,25 +215,6 @@ PRODUCT_VENDOR_MOVE_ENABLED := true
 #for android_filesystem_config.h
 PRODUCT_PACKAGES += \
     fs_config_files
-
-# Add the overlay path
-#PRODUCT_PACKAGE_OVERLAYS := $(QCPATH)/qrdplus/Extension/res \
-#       $(QCPATH)/qrdplus/globalization/multi-language/res-overlay \
-#      $(PRODUCT_PACKAGE_OVERLAYS)
-
-# Enable logdumpd service only for non-perf bootimage
-ifeq ($(findstring perf,$(KERNEL_DEFCONFIG)),)
-    ifeq ($(TARGET_BUILD_VARIANT),user)
-        PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
-            ro.logdumpd.enabled=0
-    else
-        PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
-            ro.logdumpd.enabled=1
-    endif
-else
-    PRODUCT_DEFAULT_PROPERTY_OVERRIDES+= \
-        ro.logdumpd.enabled=0
-endif
 
 #for wlan
 PRODUCT_PACKAGES += \
