@@ -166,9 +166,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # HIDL Manifest
 DEVICE_MANIFEST_FILE := $(PLATFORM_PATH)/manifest.xml
-DEVICE_MATRIX_FILE   := device/qcom/common/compatibility_matrix.xml
-
-PRODUCT_PACKAGES += android.hardware.media.omx@1.0-impl
+DEVICE_MATRIX_FILE   := $(LOCAL_PATH)/compatibility_matrix.xml
 
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
@@ -274,6 +272,9 @@ PRODUCT_PACKAGES += \
     libOmxVdec \
     libOmxVenc \
     libstagefrighthw
+
+PRODUCT_PACKAGES += \
+	android.hardware.media.omx@1.0-impl
 
 # Power
 PRODUCT_PACKAGES += \
