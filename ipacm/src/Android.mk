@@ -9,6 +9,8 @@ BOARD_IPAv3_LIST += sdm845
 BOARD_IPAv3_LIST += sdm710
 BOARD_IPAv3_LIST += msmnile
 BOARD_IPAv3_LIST += $(MSMSTEPPE)
+BOARD_IPACM_RESTART_LIST := sdm845
+BOARD_IPACM_RESTART_LIST += sdm710
 
 ifneq ($(call is-board-platform-in-list,$(BOARD_PLATFORM_LIST)),true)
 ifneq (,$(filter $(QCOM_BOARD_PLATFORMS),$(TARGET_BOARD_PLATFORM)))
@@ -33,6 +35,10 @@ endif
 
 ifeq ($(call is-board-platform-in-list,$(BOARD_IPAv3_LIST)),true)
 LOCAL_CFLAGS += -DFEATURE_IPA_V3
+endif
+
+ifeq ($(call is-board-platform-in-list,$(BOARD_IPACM_RESTART_LIST)),true)
+LOCAL_CFLAGS += -DFEATURE_IPACM_RESTART
 endif
 
 filetoadd = bionic/libc/kernel/arch-arm/asm/posix_types.h
