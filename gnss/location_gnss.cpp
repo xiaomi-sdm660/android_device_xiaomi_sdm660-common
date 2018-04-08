@@ -62,6 +62,9 @@ static void agpsDataConnFailed(AGpsExtType agpsType);
 static void getDebugReport(GnssDebugReport& report);
 static void updateConnectionStatus(bool connected, int8_t type);
 
+static void odcpiInit(const OdcpiRequestCallback& callback);
+static void odcpiInject(const Location& location);
+
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
     initialize,
@@ -87,6 +90,8 @@ static const GnssInterface gGnssInterface = {
     agpsDataConnFailed,
     getDebugReport,
     updateConnectionStatus,
+    odcpiInit,
+    odcpiInject,
 };
 
 #ifndef DEBUG_X86
@@ -265,3 +270,18 @@ static void updateConnectionStatus(bool connected, int8_t type) {
         gGnssAdapter->getSystemStatus()->eventConnectionStatus(connected, type);
     }
 }
+
+static void odcpiInit(const OdcpiRequestCallback& callback)
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->initOdcpiCommand(callback);
+    }
+}
+
+static void odcpiInject(const Location& location)
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->injectOdcpiCommand(location);
+    }
+}
+

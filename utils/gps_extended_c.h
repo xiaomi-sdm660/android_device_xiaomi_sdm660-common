@@ -1293,6 +1293,20 @@ struct AGnssExtStatusIpV6 {
     uint8_t ipV6Addr[16];
 };
 
+/* ODCPI Request Info */
+enum OdcpiRequestType {
+    ODCPI_REQUEST_TYPE_START,
+    ODCPI_REQUEST_TYPE_STOP
+};
+struct OdcpiRequestInfo {
+    size_t size;
+    OdcpiRequestType type;
+    uint32_t tbfMillis;
+    bool isEmergencyMode;
+};
+/* Callback to send ODCPI request to framework */
+typedef std::function<void(const OdcpiRequestInfo& request)> OdcpiRequestCallback;
+
 /*
  * Callback with AGNSS(IpV4) status information.
  *

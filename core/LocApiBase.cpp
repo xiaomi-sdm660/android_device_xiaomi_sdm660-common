@@ -264,6 +264,12 @@ void LocApiBase::reportWwanZppFix(LocGpsLocation &zppLoc)
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportWwanZppFix(zppLoc));
 }
 
+void LocApiBase::reportOdcpiRequest(OdcpiRequestInfo& request)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportOdcpiRequestEvent(request));
+}
+
 void LocApiBase::reportSv(GnssSvNotification& svNotify)
 {
     const char* constellationString[] = { "Unknown", "GPS", "SBAS", "GLONASS",
@@ -438,6 +444,10 @@ DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
     injectPosition(double /*latitude*/, double /*longitude*/, float /*accuracy*/)
+DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+
+enum loc_api_adapter_err LocApiBase::
+    injectPosition(const Location& /*location*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::

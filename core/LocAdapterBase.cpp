@@ -161,4 +161,8 @@ bool LocAdapterBase::
     reportWwanZppFix(LocGpsLocation &/*zppLoc*/)
 DEFAULT_IMPL(false)
 
+bool LocAdapterBase::
+    reportOdcpiRequestEvent(OdcpiRequestInfo& /*request*/)
+DEFAULT_IMPL(false)
+
 } // namespace loc_core
