@@ -41,6 +41,7 @@ namespace V1_1 {
 namespace implementation {
 
 void convertGnssLocation(Location& in, V1_0::GnssLocation& out);
+void convertGnssLocation(const V1_0::GnssLocation& in, Location& out);
 void convertGnssConstellationType(GnssSvType& in, V1_0::GnssConstellationType& out);
 void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out);
 void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);

@@ -42,32 +42,81 @@ using ::android::hardware::gnss::V1_0::GnssLocationFlags;
 void convertGnssLocation(Location& in, GnssLocation& out)
 {
     memset(&out, 0, sizeof(GnssLocation));
-    if (in.flags & LOCATION_HAS_LAT_LONG_BIT)
+    if (in.flags & LOCATION_HAS_LAT_LONG_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_LAT_LONG;
-    if (in.flags & LOCATION_HAS_ALTITUDE_BIT)
+        out.latitudeDegrees = in.latitude;
+        out.longitudeDegrees = in.longitude;
+    }
+    if (in.flags & LOCATION_HAS_ALTITUDE_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_ALTITUDE;
-    if (in.flags & LOCATION_HAS_SPEED_BIT)
+        out.altitudeMeters = in.altitude;
+    }
+    if (in.flags & LOCATION_HAS_SPEED_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_SPEED;
-    if (in.flags & LOCATION_HAS_BEARING_BIT)
+        out.speedMetersPerSec = in.speed;
+    }
+    if (in.flags & LOCATION_HAS_BEARING_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_BEARING;
-    if (in.flags & LOCATION_HAS_ACCURACY_BIT)
+        out.bearingDegrees = in.bearing;
+    }
+    if (in.flags & LOCATION_HAS_ACCURACY_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_HORIZONTAL_ACCURACY;
-    if (in.flags & LOCATION_HAS_VERTICAL_ACCURACY_BIT)
+        out.horizontalAccuracyMeters = in.accuracy;
+    }
+    if (in.flags & LOCATION_HAS_VERTICAL_ACCURACY_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_VERTICAL_ACCURACY;
-    if (in.flags & LOCATION_HAS_SPEED_ACCURACY_BIT)
+        out.verticalAccuracyMeters = in.verticalAccuracy;
+    }
+    if (in.flags & LOCATION_HAS_SPEED_ACCURACY_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_SPEED_ACCURACY;
-    if (in.flags & LOCATION_HAS_BEARING_ACCURACY_BIT)
+        out.speedAccuracyMetersPerSecond = in.speedAccuracy;
+    }
+    if (in.flags & LOCATION_HAS_BEARING_ACCURACY_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_BEARING_ACCURACY;
-    out.latitudeDegrees = in.latitude;
-    out.longitudeDegrees = in.longitude;
-    out.altitudeMeters = in.altitude;
-    out.speedMetersPerSec = in.speed;
-    out.bearingDegrees = in.bearing;
-    out.horizontalAccuracyMeters = in.accuracy;
-    out.verticalAccuracyMeters = in.verticalAccuracy;
-    out.speedAccuracyMetersPerSecond = in.speedAccuracy;
-    out.bearingAccuracyDegrees = in.bearingAccuracy;
+        out.bearingAccuracyDegrees = in.bearingAccuracy;
+    }
+
     out.timestamp = static_cast<V1_0::GnssUtcTime>(in.timestamp);
+}
+
+void convertGnssLocation(const GnssLocation& in, Location& out)
+{
+    memset(&out, 0, sizeof(out));
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_LAT_LONG) {
+        out.flags |= LOCATION_HAS_LAT_LONG_BIT;
+        out.latitude = in.latitudeDegrees;
+        out.longitude = in.longitudeDegrees;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_ALTITUDE) {
+        out.flags |= LOCATION_HAS_ALTITUDE_BIT;
+        out.altitude = in.altitudeMeters;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_SPEED) {
+        out.flags |= LOCATION_HAS_SPEED_BIT;
+        out.speed = in.speedMetersPerSec;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_BEARING) {
+        out.flags |= LOCATION_HAS_BEARING_BIT;
+        out.bearing = in.bearingDegrees;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_HORIZONTAL_ACCURACY) {
+        out.flags |= LOCATION_HAS_ACCURACY_BIT;
+        out.accuracy = in.horizontalAccuracyMeters;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_VERTICAL_ACCURACY) {
+        out.flags |= LOCATION_HAS_VERTICAL_ACCURACY_BIT;
+        out.verticalAccuracy = in.verticalAccuracyMeters;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_SPEED_ACCURACY) {
+        out.flags |= LOCATION_HAS_SPEED_ACCURACY_BIT;
+        out.speedAccuracy = in.speedAccuracyMetersPerSecond;
+    }
+    if (in.gnssLocationFlags & GnssLocationFlags::HAS_BEARING_ACCURACY) {
+        out.flags |= LOCATION_HAS_BEARING_ACCURACY_BIT;
+        out.bearingAccuracy = in.bearingAccuracyDegrees;
+    }
+
+    out.timestamp = static_cast<uint64_t>(in.timestamp);
 }
 
 void convertGnssConstellationType(GnssSvType& in, GnssConstellationType& out)

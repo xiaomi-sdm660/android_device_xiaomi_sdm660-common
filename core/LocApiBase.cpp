@@ -288,6 +288,11 @@ void LocApiBase::reportZppBestAvailableFix(LocGpsLocation &zppLoc,
             location_extended, tech_mask));
 }
 
+void LocApiBase::requestOdcpi(OdcpiRequestInfo& request)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestOdcpiEvent(request));
+}
 
 void LocApiBase::reportSv(GnssSvNotification& svNotify)
 {
@@ -465,6 +470,10 @@ DEFAULT_IMPL()
 
 void LocApiBase::
     injectPosition(double /*latitude*/, double /*longitude*/, float /*accuracy*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    injectPosition(const Location& /*location*/, bool /*onDemandCpi*/)
 DEFAULT_IMPL()
 
 void LocApiBase::

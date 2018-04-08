@@ -159,6 +159,7 @@ public:
             LocPosTechMask tech_mask);
     void reportGnssSvIdConfig(const GnssSvIdConfig& config);
     void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
+    void requestOdcpi(OdcpiRequestInfo& request);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -174,6 +175,8 @@ public:
 
     virtual void
         injectPosition(double latitude, double longitude, float accuracy);
+    virtual void
+        injectPosition(const Location& location, bool onDemandCpi);
     virtual void
         setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
 

@@ -25,6 +25,8 @@
 #include <dlfcn.h>
 #include <cutils/properties.h>
 #include "Gnss.h"
+#include <LocationUtil.h>
+
 typedef void* (getLocationInterface)();
 
 #define IMAGES_INFO_FILE "/sys/devices/soc0/images"
@@ -372,6 +374,14 @@ Return<sp<V1_0::IAGnssRil>> Gnss::getExtensionAGnssRil() {
 Return<bool> Gnss::setCallback_1_1(const sp<V1_1::IGnssCallback>& callback) {
     ENTRY_LOG_CALLFLOW();
     callback->gnssNameCb(getVersionString());
+    mGnssCbIface_1_1 = callback;
+    GnssInterface* gnssInterface = getGnssInterface();
+    if (nullptr != gnssInterface) {
+        OdcpiRequestCallback cb = [this](const OdcpiRequestInfo& odcpiRequest) {
+            odcpiRequestCb(odcpiRequest);
+        };
+        gnssInterface->odcpiInit(cb);
+    }
     return setCallback(callback);
 }
 
@@ -407,9 +417,34 @@ Return<sp<V1_1::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_1_1() {
     return mGnssConfig;
 }
 
-Return<bool> Gnss::injectBestLocation(const GnssLocation&) {
+Return<bool> Gnss::injectBestLocation(const GnssLocation& gnssLocation) {
     ENTRY_LOG_CALLFLOW();
+    GnssInterface* gnssInterface = getGnssInterface();
+    if (nullptr != gnssInterface) {
+        Location location = {};
+        convertGnssLocation(gnssLocation, location);
+        gnssInterface->odcpiInject(location);
+    }
     return true;
+}
+
+void Gnss::odcpiRequestCb(const OdcpiRequestInfo& request) {
+    ENTRY_LOG_CALLFLOW();
+    if (mGnssCbIface_1_1 != nullptr) {
+        // For emergency mode, request DBH (Device based hybrid) location
+        // Mark Independent from GNSS flag to false.
+        if (ODCPI_REQUEST_TYPE_START == request.type) {
+            if (request.isEmergencyMode) {
+                mGnssCbIface_1_1->gnssRequestLocationCb(false);
+            } else {
+                mGnssCbIface_1_1->gnssRequestLocationCb(true);
+            }
+        } else {
+            LOC_LOGv("Unsupported ODCPI request type: %d", request.type);
+        }
+    } else {
+        LOC_LOGe("ODCPI request not supported.");
+    }
 }
 
 IGnss* HIDL_FETCH_IGnss(const char* hal) {

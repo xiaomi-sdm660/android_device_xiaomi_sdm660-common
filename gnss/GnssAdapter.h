@@ -45,6 +45,7 @@
 #define MAX_SATELLITES_IN_USE 12
 #define LOC_NI_NO_RESPONSE_TIME 20
 #define LOC_GPS_NI_RESPONSE_IGNORE 4
+#define ODCPI_INJECTED_POSITION_COUNT_PER_REQUEST 30
 
 class GnssAdapter;
 
@@ -110,11 +111,16 @@ class GnssAdapter : public LocAdapterBase {
     /* ==== NI ============================================================================= */
     NiData mNiData;
 
-    /* ==== AGPS ========================================================*/
+    /* ==== AGPS =========================================================================== */
     // This must be initialized via initAgps()
     AgpsManager mAgpsManager;
     AgpsCbInfo mAgpsCbInfo;
     void initAgps(const AgpsCbInfo& cbInfo);
+
+    /* ==== ODCPI ========================================================================== */
+    OdcpiRequestCallback mOdcpiRequestCb;
+    bool mOdcpiRequestActive;
+    uint32_t mOdcpiInjectedPositionCount;
 
     /* === SystemStatus ===================================================================== */
     SystemStatus* mSystemStatus;
@@ -128,6 +134,10 @@ class GnssAdapter : public LocAdapterBase {
                                 const LocPosTechMask techMask);
     static void convertLocationInfo(GnssLocationInfoNotification& out,
                                     const GpsLocationExtended& locationExtended);
+
+    /* ======== UTILITIES ================================================================== */
+    inline void initOdcpi(const OdcpiRequestCallback& callback);
+    inline void injectOdcpi(const Location& location);
 
 public:
 
@@ -250,6 +260,11 @@ public:
     void dataConnClosedCommand(AGpsExtType agpsType);
     void dataConnFailedCommand(AGpsExtType agpsType);
 
+    /* ========= ODCPI ===================================================================== */
+    /* ======== COMMANDS ====(Called from Client Thread)==================================== */
+    void initOdcpiCommand(const OdcpiRequestCallback& callback);
+    void injectOdcpiCommand(const Location& location);
+
     /* ======== RESPONSES ================================================================== */
     void reportResponse(LocationError err, uint32_t sessionId);
     void reportResponse(size_t count, LocationError* errs, uint32_t* ids);
@@ -290,6 +305,7 @@ public:
     virtual bool reportDataCallClosed();
     virtual bool reportZppBestAvailableFix(LocGpsLocation &zppLoc,
             GpsLocationExtended &location_extended, LocPosTechMask tech_mask);
+    virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
 
     /* ======== UTILITIES ================================================================= */
     bool needReport(const UlpLocation& ulpLocation,
@@ -304,6 +320,7 @@ public:
     void reportGnssMeasurementData(const GnssMeasurementsNotification& measurements);
     void reportGnssSvIdConfig(const GnssSvIdConfig& config);
     void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
+    void requestOdcpi(const OdcpiRequestInfo& request);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);

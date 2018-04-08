@@ -80,6 +80,9 @@ GnssAdapter::GnssAdapter() :
     mNiData(),
     mAgpsManager(),
     mAgpsCbInfo(),
+    mOdcpiRequestCb(nullptr),
+    mOdcpiRequestActive(false),
+    mOdcpiInjectedPositionCount(0),
     mSystemStatus(SystemStatus::getInstance(mMsgTask)),
     mServerUrl(":"),
     mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask)
@@ -1865,6 +1868,11 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_LOCATION_SERVER_REQUEST;
     }
 
+    // Add ODCPI handling
+    if (nullptr != mOdcpiRequestCb) {
+        mask |= LOC_API_ADAPTER_BIT_REQUEST_WIFI;
+    }
+
     updateEvtMask(mask, LOC_REGISTRATION_MASK_SET);
 }
 
@@ -3387,6 +3395,100 @@ GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
     mUlpProxy->reportSvPolynomial(svPolynomial);
 
     mEngHubProxy->gnssReportSvPolynomial(svPolynomial);
+}
+
+bool
+GnssAdapter::requestOdcpiEvent(OdcpiRequestInfo& request)
+{
+    LOC_LOGd("ODCPI request: type %d, tbf %d, isEmergency %d", request.type,
+            request.tbfMillis, request.isEmergencyMode);
+
+    struct MsgRequestOdcpi : public LocMsg {
+        GnssAdapter& mAdapter;
+        OdcpiRequestInfo mOdcpiRequest;
+        inline MsgRequestOdcpi(GnssAdapter& adapter, OdcpiRequestInfo& request) :
+                LocMsg(),
+                mAdapter(adapter),
+                mOdcpiRequest(request) {}
+        inline virtual void proc() const {
+            mAdapter.requestOdcpi(mOdcpiRequest);
+        }
+    };
+
+    sendMsg(new MsgRequestOdcpi(*this, request));
+    return true;
+}
+
+void GnssAdapter::requestOdcpi(const OdcpiRequestInfo& request)
+{
+    if (nullptr != mOdcpiRequestCb) {
+        mOdcpiInjectedPositionCount = 0;
+        if (ODCPI_REQUEST_TYPE_START == request.type) {
+            mOdcpiRequestCb(request);
+            mOdcpiRequestActive = true;
+        } else {
+            mOdcpiRequestActive = false;
+        }
+    } else {
+        LOC_LOGe("ODCPI request not supported");
+    }
+}
+
+void GnssAdapter::initOdcpiCommand(const OdcpiRequestCallback& callback)
+{
+    struct MsgInitOdcpi : public LocMsg {
+        GnssAdapter& mAdapter;
+        OdcpiRequestCallback mOdcpiCb;
+        inline MsgInitOdcpi(GnssAdapter& adapter,
+                const OdcpiRequestCallback& callback) :
+                LocMsg(),
+                mAdapter(adapter),
+                mOdcpiCb(callback) {}
+        inline virtual void proc() const {
+            mAdapter.initOdcpi(mOdcpiCb);
+        }
+    };
+
+    sendMsg(new MsgInitOdcpi(*this, callback));
+}
+
+void GnssAdapter::initOdcpi(const OdcpiRequestCallback& callback)
+{
+    mOdcpiRequestCb = callback;
+
+    /* Register for WIFI request */
+    updateEvtMask(LOC_API_ADAPTER_BIT_REQUEST_WIFI,
+            LOC_REGISTRATION_MASK_ENABLED);
+}
+
+void GnssAdapter::injectOdcpiCommand(const Location& location)
+{
+    struct MsgInjectOdcpi : public LocMsg {
+        GnssAdapter& mAdapter;
+        Location mLocation;
+        inline MsgInjectOdcpi(GnssAdapter& adapter, const Location& location) :
+                LocMsg(),
+                mAdapter(adapter),
+                mLocation(location) {}
+        inline virtual void proc() const {
+            mAdapter.injectOdcpi(mLocation);
+        }
+    };
+
+    sendMsg(new MsgInjectOdcpi(*this, location));
+}
+
+void GnssAdapter::injectOdcpi(const Location& location)
+{
+    mLocApi->injectPosition(location, true);
+    if (mOdcpiRequestActive) {
+        mOdcpiInjectedPositionCount++;
+        if (mOdcpiInjectedPositionCount >=
+                ODCPI_INJECTED_POSITION_COUNT_PER_REQUEST) {
+            mOdcpiRequestActive = false;
+            mOdcpiInjectedPositionCount = 0;
+        }
+    }
 }
 
 void GnssAdapter::initDefaultAgps() {

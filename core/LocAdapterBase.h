@@ -160,6 +160,7 @@ public:
             GpsLocationExtended &location_extended, LocPosTechMask tech_mask);
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
+    virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
 };
 
 } // namespace loc_core
