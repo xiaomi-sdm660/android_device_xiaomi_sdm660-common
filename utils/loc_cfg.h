@@ -133,6 +133,8 @@ extern const char LOC_PATH_QUIPC_CONF[];
 int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_ptr,
                           loc_process_info_s_type** process_info_table_ptr);
 
+uint32_t loc_modem_emulator_enabled();
+
 #ifdef __cplusplus
 }
 #endif
