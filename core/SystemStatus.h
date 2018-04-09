@@ -77,8 +77,11 @@ public:
         mUtcTime.tv_nsec = tv.tv_nsec;
         mUtcReported = mUtcTime;
     };
-    virtual ~SystemStatusItemBase() { };
-    virtual void dump(void) { };
+    virtual ~SystemStatusItemBase() {};
+    inline virtual SystemStatusItemBase& collate(SystemStatusItemBase&) {
+        return *this;
+    }
+    virtual void dump(void) {};
 };
 
 class SystemStatusLocation : public SystemStatusItemBase
@@ -93,7 +96,7 @@ public:
                          const GpsLocationExtended& locationEx) :
         mValid(true),
         mLocation(location),
-        mLocationEx(locationEx) { }
+        mLocationEx(locationEx) {}
     bool equals(const SystemStatusLocation& peer);
     void dump(void);
 };
@@ -457,6 +460,7 @@ public:
 class SystemStatusNetworkInfo : public SystemStatusItemBase,
         public NetworkInfoDataItemBase
 {
+    NetworkInfoDataItemBase* mSrcObjPtr;
 public:
     inline SystemStatusNetworkInfo(
             int32_t type=0,
@@ -466,18 +470,21 @@ public:
             bool connected=false,
             bool roaming=false) :
             NetworkInfoDataItemBase(
+                    (NetworkType)type,
                     type,
                     typeName,
                     subTypeName,
                     available,
                     connected,
-                    roaming) {}
+                    roaming),
+            mSrcObjPtr(nullptr) {}
     inline SystemStatusNetworkInfo(const NetworkInfoDataItemBase& itemBase) :
-            NetworkInfoDataItemBase(itemBase) {
+            NetworkInfoDataItemBase(itemBase),
+            mSrcObjPtr((NetworkInfoDataItemBase*)&itemBase) {
         mType = itemBase.getType();
     }
     inline bool equals(const SystemStatusNetworkInfo& peer) {
-        if ((mType == peer.mType) &&
+        if ((mAllTypes == peer.mAllTypes) &&
             (mTypeName == peer.mTypeName) &&
             (mSubTypeName == peer.mSubTypeName) &&
             (mAvailable == peer.mAvailable) &&
@@ -487,8 +494,24 @@ public:
         }
         return false;
     }
+    inline virtual SystemStatusItemBase& collate(SystemStatusItemBase& curInfo) {
+        uint64_t allTypes = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mAllTypes;
+        if (mConnected) {
+            mAllTypes |= allTypes;
+        } else if (0 != mAllTypes) {
+            mAllTypes = (allTypes & (~mAllTypes));
+        } // else (mConnected == false && mAllTypes == 0)
+          // we keep mAllTypes as 0, which means no more connections.
+
+        if (nullptr != mSrcObjPtr) {
+            // this is critical, changing mAllTypes of the original obj
+            mSrcObjPtr->mAllTypes = mAllTypes;
+        }
+        return *this;
+    }
     inline void dump(void) override {
-        LOC_LOGD("NetworkInfo: type=%u connected=%u", mType, mConnected);
+        LOC_LOGD("NetworkInfo: mAllTypes=%" PRIx64 " connected=%u mType=%x",
+                 mAllTypes, mConnected, mType);
     }
 };
 
@@ -783,13 +806,9 @@ private:
     // Data members
     static pthread_mutex_t                    mMutexSystemStatus;
     SystemStatusReports mCache;
-    bool mConnected;
-
-    template <typename TYPE_SYSTEMSTATUS_ITEM, typename TYPE_REPORT, typename TYPE_ITEMBASE>
-    bool setItemBaseinReport(TYPE_REPORT& report, const TYPE_ITEMBASE& s);
 
     template <typename TYPE_REPORT, typename TYPE_ITEM>
-    bool setIteminReport(TYPE_REPORT& report, const TYPE_ITEM& s);
+    bool setIteminReport(TYPE_REPORT& report, TYPE_ITEM&& s);
 
     // set default dataitem derived item in report cache
     template <typename TYPE_REPORT, typename TYPE_ITEM>
