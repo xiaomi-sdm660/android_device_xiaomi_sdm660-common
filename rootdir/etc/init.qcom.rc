@@ -521,10 +521,10 @@ service vendor.tftp_server /vendor/bin/tftp_server
    class core
    user root
 
-on property:wc_transport.start_hci=true
+on property:vendor.wc_transport.start_hci=true
     start vendor.start_hci_filter
 
-on property:wc_transport.start_hci=false
+on property:vendor.wc_transport.start_hci=false
     stop vendor.start_hci_filter
 
 service vendor.start_hci_filter /system/vendor/bin/wcnss_filter
