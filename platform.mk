@@ -156,9 +156,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.opengles.version=196610
 
 PRODUCT_BOOT_JARS += tcmiface
-PRODUCT_BOOT_JARS += telephony-ext
-
-PRODUCT_PACKAGES += telephony-ext
 
 # system prop for Bluetooth SOC type
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -327,6 +324,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Sensors
 PRODUCT_PACKAGES += \
     sensors.sdm660
+
+# Telephony
+PRODUCT_PACKAGES += \
+    telephony-ext
+
+PRODUCT_BOOT_JARS += \
+    telephony-ext
 
 # USB
 PRODUCT_PACKAGES += \
