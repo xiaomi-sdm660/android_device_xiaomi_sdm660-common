@@ -331,7 +331,14 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     init.target.rc \
     fstab.qcom
-    
+
+# RCS
+PRODUCT_PACKAGES += \
+    rcs_service_aidl \
+    rcs_service_aidl.xml \
+    rcs_service_api \
+    rcs_service_api.xml
+
 # RIL
 PRODUCT_PACKAGES += \
     librmnetctl \
