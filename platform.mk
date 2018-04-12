@@ -206,28 +206,26 @@ PRODUCT_PACKAGES += \
 
 # Display
 PRODUCT_PACKAGES += \
+    android.hardware.graphics.allocator@2.0-impl \
+    android.hardware.graphics.allocator@2.0-service \
+    android.hardware.graphics.composer@2.1-impl \
+    android.hardware.graphics.composer@2.1-service \
+    android.hardware.graphics.mapper@2.0-impl \
+    android.hardware.memtrack@1.0-impl \
+    android.hardware.memtrack@1.0-service \
     copybit.sdm660 \
     gralloc.sdm660 \
     hwcomposer.sdm660 \
-    memtrack.sdm660 \
+    libdisplayconfig \
     liboverlay \
-    libtinyxml
+    libqdMetaData.system \
+    libtinyxml \
+    memtrack.sdm660
 
 PRODUCT_PACKAGES += \
-    android.hardware.graphics.allocator@2.0-impl \
-    android.hardware.graphics.allocator@2.0-service \
-    android.hardware.graphics.mapper@2.0-impl \
-    android.hardware.graphics.composer@2.1-impl \
-    android.hardware.graphics.composer@2.1-service \
-    android.hardware.memtrack@1.0-impl \
-    android.hardware.memtrack@1.0-service \
     android.hardware.light@2.0-impl \
     android.hardware.light@2.0-service \
     android.hardware.configstore@1.0-service
-
-PRODUCT_PACKAGES += \
-    vendor.display.color@1.0-service \
-    vendor.display.color@1.0-impl
 
 # FBE support
 PRODUCT_COPY_FILES += \
