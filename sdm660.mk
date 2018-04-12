@@ -354,6 +354,14 @@ PRODUCT_PACKAGES += \
     libxml2 \
     libprotobuf-cpp-full
 
+# RCS
+PRODUCT_PACKAGES += \
+    rcs_service_aidl \
+    rcs_service_aidl.xml \
+    rcs_service_api \
+    rcs_service_api.xml
+
+# Telephony-ext
 PRODUCT_PACKAGES += \
     ims-ext-common \
     telephony-ext
