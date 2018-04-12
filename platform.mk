@@ -227,6 +227,11 @@ PRODUCT_PACKAGES += \
     android.hardware.light@2.0-service \
     android.hardware.configstore@1.0-service
 
+# DRM
+PRODUCT_PACKAGES += \
+    android.hardware.drm@1.0-impl \
+    android.hardware.drm@1.0-service
+
 # FBE support
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/rootdir/bin/init.qti.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.qseecomd.sh
