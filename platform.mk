@@ -248,6 +248,11 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     fs_config_files
 
+# Gatekeeper HAL
+PRODUCT_PACKAGES += \
+    android.hardware.gatekeeper@1.0-impl \
+    android.hardware.gatekeeper@1.0-service
+
 # GPS
 PRODUCT_PACKAGES += \
     gps.sdm660 \
@@ -388,19 +393,7 @@ PRODUCT_PACKAGES += android.hardware.health@1.0-impl \
 # SOTER
 TARGET_SUPPORT_SOTER := true
 
-#Enable QTI KEYMASTER and GATEKEEPER HIDLs
-ifeq ($(ENABLE_VENDOR_IMAGE), true)
-KMGK_USE_QTI_SERVICE := true
-endif
-
-#Enable AOSP KEYMASTER and GATEKEEPER HIDLs
-ifneq ($(KMGK_USE_QTI_SERVICE), true)
-PRODUCT_PACKAGES += android.hardware.gatekeeper@1.0-impl \
-                    android.hardware.gatekeeper@1.0-service \
-                    android.hardware.keymaster@3.0-impl \
-                    android.hardware.keymaster@3.0-service
-endif
-
+# rild
 PRODUCT_PROPERTY_OVERRIDES += rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so
 
 #Thermal
