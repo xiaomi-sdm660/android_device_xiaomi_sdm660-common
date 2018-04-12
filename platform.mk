@@ -255,8 +255,10 @@ PRODUCT_PACKAGES += \
 
 # GPS
 PRODUCT_PACKAGES += \
-    gps.sdm660 \
+    android.hardware.gnss@1.0-impl-qti \
+    android.hardware.gnss@1.0-service-qti \
     libcurl \
+    libgnss \
     libgnsspps
 
 # IPv6
