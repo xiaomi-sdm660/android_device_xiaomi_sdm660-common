@@ -168,9 +168,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 PRODUCT_BOOT_JARS += tcmiface
 
-# system prop for Bluetooth SOC type
-PRODUCT_PROPERTY_OVERRIDES += \
-    qcom.bluetooth.soc=cherokee
 
 # HIDL Manifest
 DEVICE_MANIFEST_FILE := $(PLATFORM_PATH)/manifest.xml
@@ -199,9 +196,7 @@ PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
     android.hardware.camera.provider@2.4-service \
     camera.device@3.2-impl \
-    camera.device@1.0-impl
-
-PRODUCT_PACKAGES += \
+    libxml2 \
     Snap
 
 # Connectivity Engine support (CNE)
@@ -294,9 +289,6 @@ PRODUCT_PACKAGES += \
     libOmxVdec \
     libOmxVenc \
     libstagefrighthw
-
-PRODUCT_PACKAGES += \
-	android.hardware.media.omx@1.0-impl
 
 # Power
 PRODUCT_PACKAGES += \
