@@ -199,11 +199,10 @@ PRODUCT_PACKAGES += \
     libxml2 \
     Snap
 
-# Connectivity Engine support (CNE)
+# CNE
 PRODUCT_PACKAGES += \
     cneapiclient \
-    com.quicinc.cne \
-    services-ext
+    com.quicinc.cne
 
 # Display
 PRODUCT_PACKAGES += \
