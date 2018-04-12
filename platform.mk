@@ -65,16 +65,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.sip.voip.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.sip.voip.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
 
-# Default vendor configuration.
-ifeq ($(ENABLE_VENDOR_IMAGE),)
-ENABLE_VENDOR_IMAGE := true
-endif
-
-# Disable QTIC until it's brought up in split system/vendor
-# configuration to avoid compilation breakage.
-ifeq ($(ENABLE_VENDOR_IMAGE), true)
-#TARGET_USES_QTIC := false
-endif
 
 # Add soft home, back and multitask keys
 PRODUCT_PROPERTY_OVERRIDES += \
