@@ -260,6 +260,11 @@ PRODUCT_PACKAGES += \
     libgnss \
     libgnsspps
 
+# Health
+PRODUCT_PACKAGES += \
+    android.hardware.health@1.0-impl \
+    android.hardware.health@1.0-service
+
 # IPv6
 PRODUCT_PACKAGES += \
     ebtables \
