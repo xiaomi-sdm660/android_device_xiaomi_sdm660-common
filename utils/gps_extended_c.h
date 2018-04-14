@@ -1491,8 +1491,15 @@ typedef void (*LocAgpsOpenResultCb)(bool isSuccess, AGpsExtType agpsType, const 
 typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void* userDataPtr);
 
 /* Shared resources of LocIpc */
-#define LOC_IPC_HAL "/dev/socket/location/socket_hal"
-#define LOC_IPC_XTRA "/dev/socket/location/xtra/socket_xtra"
+#define LOC_IPC_HAL                    "/dev/socket/location/socket_hal"
+#define LOC_IPC_XTRA                   "/dev/socket/location/xtra/socket_xtra"
+
+#define SOCKET_DIR_LOCATION            "/dev/socket/location/"
+#define SOCKET_DIR_EHUB                "/dev/socket/location/ehub"
+#define SOCKET_TO_LOCATION_HAL_DAEMON  "/dev/socket/location/hal_daemon"
+
+#define SOCKET_DIR_TO_CLIENT           "/dev/socket/loc_client/"
+#define SOCKET_TO_LOCATION_CLIENT_BASE "/dev/socket/loc_client/toclient"
 
 #ifdef __cplusplus
 }
