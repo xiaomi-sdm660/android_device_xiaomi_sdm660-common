@@ -34,6 +34,8 @@
 extern "C" {
 #endif
 
+#include <hardware/power.h>
+
 enum stats_type {
     //Platform Stats
     RPM_MODE_XO = 0,
@@ -92,6 +94,7 @@ struct stat_pair {
 
 int extract_platform_stats(uint64_t *list);
 int extract_wlan_stats(uint64_t *list);
+void set_feature(feature_t feature, int state);
 
 #ifdef __cplusplus
 }
