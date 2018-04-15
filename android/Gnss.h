@@ -111,6 +111,9 @@ struct Gnss : public IGnss {
     Return<bool> updateConfiguration(GnssConfig& gnssConfig);
     GnssInterface* getGnssInterface();
 
+    // Callback for ODCPI request
+    void odcpiRequestCb(const OdcpiRequestInfo& request);
+
  private:
     struct GnssDeathRecipient : hidl_death_recipient {
         GnssDeathRecipient(sp<Gnss> gnss) : mGnss(gnss) {
@@ -134,6 +137,7 @@ struct Gnss : public IGnss {
 
     GnssAPIClient* mApi = nullptr;
     sp<V1_0::IGnssCallback> mGnssCbIface = nullptr;
+    sp<V1_1::IGnssCallback> mGnssCbIface_1_1 = nullptr;
     sp<V1_0::IGnssNiCallback> mGnssNiCbIface = nullptr;
     GnssConfig mPendingConfig;
     GnssInterface* mGnssInterface = nullptr;
