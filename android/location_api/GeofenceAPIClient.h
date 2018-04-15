@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,7 +37,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_0 {
+namespace V1_1 {
 namespace implementation {
 
 using ::android::sp;
@@ -45,7 +45,7 @@ using ::android::sp;
 class GeofenceAPIClient : public LocationAPIClientBase
 {
 public:
-    GeofenceAPIClient(const sp<IGnssGeofenceCallback>& callback);
+    GeofenceAPIClient(const sp<V1_0::IGnssGeofenceCallback>& callback);
     virtual ~GeofenceAPIClient() = default;
 
     void geofenceAdd(uint32_t geofence_id, double latitude, double longitude,
@@ -65,11 +65,11 @@ public:
     void onResumeGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
 
 private:
-    sp<IGnssGeofenceCallback> mGnssGeofencingCbIface;
+    sp<V1_0::IGnssGeofenceCallback> mGnssGeofencingCbIface;
 };
 
 }  // namespace implementation
-}  // namespace V1_0
+}  // namespace V1_1
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
