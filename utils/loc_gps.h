@@ -100,6 +100,15 @@ typedef uint16_t LocGpsLocationFlags;
 #define LOC_GPS_LOCATION_HAS_ACCURACY   0x0010
 /** LocGpsLocation has valid vertical uncertainity */
 #define LOC_GPS_LOCATION_HAS_VERT_UNCERTAINITY   0x0040
+/** LocGpsLocation has valid spoof mask */
+#define LOC_GPS_LOCATION_HAS_SPOOF_MASK   0x0080
+
+/** Spoof mask in LocGpsLocation */
+typedef uint32_t LocGpsSpoofMask;
+#define LOC_GPS_LOCATION_NONE_SPOOFED            0x0000
+#define LOC_GPS_LOCATION_POSITION_SPOOFED        0x0001
+#define LOC_GPS_LOCATION_TIME_SPOOFED            0x0002
+#define LOC_GPS_LOCATION_NAVIGATION_DATA_SPOOFED 0x0004
 
 /** Flags for the loc_gps_set_capabilities callback. */
 
@@ -533,6 +542,8 @@ typedef struct {
     size_t          size;
     /** Contains LocGpsLocationFlags bits. */
     uint16_t        flags;
+    /** The spoof mask */
+    LocGpsSpoofMask spoof_mask;
     /** Represents latitude in degrees. */
     double          latitude;
     /** Represents longitude in degrees. */

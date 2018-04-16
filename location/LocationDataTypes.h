@@ -70,6 +70,7 @@ typedef enum {
     LOCATION_HAS_VERTICAL_ACCURACY_BIT = (1<<5), // location has valid vertical accuracy
     LOCATION_HAS_SPEED_ACCURACY_BIT    = (1<<6), // location has valid speed accuracy
     LOCATION_HAS_BEARING_ACCURACY_BIT  = (1<<7), // location has valid bearing accuracy
+    LOCATION_HAS_SPOOF_MASK            = (1<<8), // location has valid spoof mask
 } LocationFlagsBits;
 
 typedef uint16_t LocationTechnologyMask;
@@ -79,6 +80,13 @@ typedef enum {
     LOCATION_TECHNOLOGY_WIFI_BIT     = (1<<2), // location was calculated using WiFi
     LOCATION_TECHNOLOGY_SENSORS_BIT  = (1<<3), // location was calculated using Sensors
 } LocationTechnologyBits;
+
+typedef uint32_t LocationSpoofMask;
+typedef enum {
+    LOCATION_POSTION_SPOOFED             = (1<<0), // location position spoofed
+    LOCATION_TIME_SPOOFED                = (1<<1), // location time spoofed
+    LOCATION_NAVIGATION_DATA_SPOOFED     = (1<<2), // location navigation data spoofed
+} LocationSpoofBits;
 
 typedef enum {
     LOCATION_RELIABILITY_NOT_SET = 0,
@@ -531,6 +539,7 @@ typedef struct {
     float speedAccuracy;     // in meters/second
     float bearingAccuracy;   // in degrees (0 to 359.999)
     LocationTechnologyMask techMask;
+    LocationSpoofMask      spoofMask;
 } Location;
 
 struct LocationOptions {

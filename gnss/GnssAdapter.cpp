@@ -248,6 +248,11 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
     if (LOC_POS_TECH_MASK_SENSORS & techMask) {
         out.techMask |= LOCATION_TECHNOLOGY_SENSORS_BIT;
     }
+
+    if (LOC_GPS_LOCATION_HAS_SPOOF_MASK & ulpLocation.gpsLocation.flags) {
+        out.flags |= LOCATION_HAS_SPOOF_MASK;
+        out.spoofMask = ulpLocation.gpsLocation.spoof_mask;
+    }
 }
 
 void
