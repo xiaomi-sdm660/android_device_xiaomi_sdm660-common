@@ -196,6 +196,9 @@ USE_SENSOR_MULTI_HAL := true
 # Seccomp Policy
 BOARD_SECCOMP_POLICY := $(PLATFORM_PATH)/seccomp
 
+# SELinux
+include device/qcom/sepolicy/sepolicy.mk
+
 # Treble
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 PRODUCT_FULL_TREBLE_OVERRIDE := true
