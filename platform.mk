@@ -148,13 +148,6 @@ PRODUCT_PACKAGES += \
     android.hardware.bluetooth@1.0-service \
     libbt-vendor
 
-#
-# system prop for opengles version
-#
-# 196610 is decimal for 0x30002 to report major/minor versions as 3/2
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.opengles.version=196610
-
 PRODUCT_BOOT_JARS += tcmiface
 
 
@@ -431,10 +424,6 @@ TARGET_SUPPORT_SOTER := true
 
 # rild
 PRODUCT_PROPERTY_OVERRIDES += rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so
-
-#Thermal
-PRODUCT_PACKAGES += android.hardware.thermal@1.0-impl \
-                    android.hardware.thermal@1.0-service
 
 #Property for setting the max timeout of autosuspend
 PRODUCT_PROPERTY_OVERRIDES += sys.autosuspend.timeout=500000
