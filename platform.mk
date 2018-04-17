@@ -148,9 +148,6 @@ PRODUCT_PACKAGES += \
     android.hardware.bluetooth@1.0-service \
     libbt-vendor
 
-PRODUCT_BOOT_JARS += tcmiface
-
-
 # HIDL Manifest
 DEVICE_MANIFEST_FILE := $(PLATFORM_PATH)/manifest.xml
 DEVICE_MATRIX_FILE   := $(PLATFORM_PATH)/compatibility_matrix.xml
