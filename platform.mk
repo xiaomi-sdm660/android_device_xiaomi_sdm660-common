@@ -148,10 +148,6 @@ PRODUCT_PACKAGES += \
     android.hardware.bluetooth@1.0-service \
     libbt-vendor
 
-# HIDL Manifest
-DEVICE_MANIFEST_FILE := $(PLATFORM_PATH)/manifest.xml
-DEVICE_MATRIX_FILE   := $(PLATFORM_PATH)/compatibility_matrix.xml
-
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/sensors/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
