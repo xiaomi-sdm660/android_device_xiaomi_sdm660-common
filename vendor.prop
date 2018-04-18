@@ -2,14 +2,15 @@ persist.sys.job_delay=true
 persist.sys.mcd_config_file=/system/etc/mcd_default.conf
 persist.sys.perf.debug=true
 persist.sys.whetstone.level=2
-qemu.hw.mainkeys=0
-video.disable.ubwc=1
+drm.service.enabled=true
 dalvik.vm.heapgrowthlimit=256m
 dalvik.vm.heapstartsize=8m
 dalvik.vm.heapsize=512m
 dalvik.vm.heaptargetutilization=0.75
 dalvik.vm.heapminfree=512k
 dalvik.vm.heapmaxfree=8m
+qemu.hw.mainkeys=0
+video.disable.ubwc=1
 ro.hardware.nfc_nci=nqx.default
 persist.radio.multisim.config=dsds
 persist.vendor.qcomsysd.enabled=1
@@ -26,9 +27,10 @@ persist.vendor.radio.custom_ecc=1
 persist.vendor.radio.rat_on=combine
 persist.radio.schd.cache=3500
 sys.vendor.shutdown.waittime=500
-ro.build.shutdown_timeout=2
+ro.build.shutdown_timeout=0
 ro.frp.pst=/dev/block/bootdevice/by-name/frp
 ro.opengles.version=196610
+ro.qualcomm.cabl=0
 qcom.bluetooth.soc=cherokee
 af.fast_track_multiplier=1
 vendor.audio_hal.period_size=192
@@ -62,7 +64,159 @@ vendor.fm.a2dp.conc.disabled=true
 vendor.audio.noisy.broadcast.delay=600
 persist.vendor.audio.hifi.int_codec=true
 vendor.audio.offload.pstimeout.secs=3
+audio.adm.buffering.ms=6
 ro.vendor.sensors.facing=false
 ro.vendor.sensors.cmc=false
 ro.vendor.sdk.sensors.gestures=false
+persist.rild.nitz_plmn=
+persist.rild.nitz_long_ons_0=
+persist.rild.nitz_long_ons_1=
+persist.rild.nitz_long_ons_2=
+persist.rild.nitz_long_ons_3=
+persist.rild.nitz_short_ons_0=
+persist.rild.nitz_short_ons_1=
+persist.rild.nitz_short_ons_2=
+persist.rild.nitz_short_ons_3=
+ril.subscription.types=NV,RUIM
+DEVICE_PROVISIONED=1
 rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so
+
+#
+# Set network mode to (T/L/G/W/1X/EVDO, T/G/W/L) for 7+5 mode device on DSDS mode
+#
+ro.telephony.default_network=22,20
+
+debug.sf.enable_hwc_vds=1
+debug.sf.hw=1
+debug.sf.latch_unsignaled=1
+debug.gralloc.enable_fb_ubwc=1
+dev.pm.dyn_samplingrate=1
+
+#
+# system props for the cne module
+#
+persist.cne.feature=1
+
+#
+# system props for the dpm module
+#
+persist.dpm.feature=1
+
+#system props for the MM modules
+media.stagefright.enable-player=true
+media.stagefright.enable-http=true
+media.stagefright.enable-aac=true
+media.stagefright.enable-qcp=true
+media.stagefright.enable-scan=true
+mmp.enable.3g2=true
+media.aac_51_output_enabled=true
+mm.enable.smoothstreaming=true
+mm.enable.qcom_parser=13631471
+persist.mm.enable.prefetch=true
+vidc.enc.dcvs.extra-buff-count=2
+
+#
+# system props for the data modules
+#
+ro.use_data_netmgrd=true
+persist.data.netmgrd.qos.enable=true
+persist.data.mode=concurrent
+
+# system property for maximum number of HFP client connections
+bt.max.hfpclient.connections=1
+
+#
+# System props for telephony
+# System prop to turn on CdmaLTEPhone always
+telephony.lteOnCdmaDevice=1
+
+#Simulate sdcard on /data/media
+persist.fuse_sdcard=true
+
+#system prop for RmNet Data
+persist.rmnet.data.enable=true
+persist.data.wda.enable=true
+persist.data.df.dl_mode=5
+persist.data.df.ul_mode=5
+persist.data.df.agg.dl_pkt=10
+persist.data.df.agg.dl_size=4096
+persist.data.df.mux_count=8
+persist.data.df.iwlan_mux=9
+persist.data.df.dev_name=rmnet_usb0
+
+# WFD
+persist.debug.wfd.enable=1
+persist.sys.wfd.virtual=0
+
+#property for vendor specific library
+ro.vendor.at_library=libqti-at.so
+
+#min/max cpu in core control
+ro.vendor.qti.core_ctl_min_cpu=2
+ro.vendor.qti.core_ctl_max_cpu=4
+
+#hwui properties
+ro.hwui.texture_cache_size=72
+ro.hwui.layer_cache_size=48
+ro.hwui.r_buffer_cache_size=8
+ro.hwui.path_cache_size=32
+ro.hwui.gradient_cache_size=1
+ro.hwui.drop_shadow_cache_size=6
+ro.hwui.texture_cache_flushrate=0.4
+ro.hwui.text_small_cache_width=1024
+ro.hwui.text_small_cache_height=1024
+ro.hwui.text_large_cache_width=2048
+ro.hwui.text_large_cache_height=2048
+
+#property to enable VDS WFD solution
+persist.hwc.enable_vds=1
+
+#Increase cached app limit
+ro.vendor.qti.sys.fw.bg_apps_limit=60
+
+#Settings to enable sensors
+#Device Orientation sensor
+ro.vendor.sensors.dev_ori=false
+#Persistent Motion Detector
+ro.vendor.sensors.pmd=true
+#Stationary Detector
+ro.vendor.sensors.sta_detect=true
+#Motion Detector
+ro.vendor.sensors.mot_detect=true
+
+#Expose aux camera for below packages
+camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
+vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
+
+#
+# PROPERTIES FOR IMS
+#
+persist.dbg.ims_volte_enable=1
+persist.radio.videopause.mode=1
+persist.data.iwlan.enable=true
+persist.dbg.volte_avail_ovr=1
+persist.dbg.vt_avail_ovr=1
+persist.radio.VT_HYBRID_ENABLE=1
+
+#For RIJL netwrok video call
+persist.radio.NO_STAPA=1
+
+# Enable manual network selection function and distinguish 2G/3G/4G
+persist.radio.rat_on=combine
+
+# the level of data wiping under PRESET mode
+persist.regional.wipedata.level=all
+
+# enable mbn file update for SIMTrigger
+persist.radio.sw_mbn_update=0
+persist.radio.hw_mbn_update=0
+
+# enable SIMTrigger silence mode feature
+persist.radio.trigger.silence=true
+
+# flag to distinguish the open market to Operator
+persist.device.type=omt
+
+# flag for activating mbn or not,default is true.
+persist.activate_mbn.enabled=false
+ro.regionalization.support=true

@@ -65,11 +65,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.sip.voip.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.sip.voip.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
 
-
-# Add soft home, back and multitask keys
-PRODUCT_PROPERTY_OVERRIDES += \
-    qemu.hw.mainkeys=0
-
 # Video codec configuration files
 PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/configs/media_profiles.xml:system/etc/media_profiles.xml \
@@ -88,16 +83,6 @@ PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/configs/whitelistedapps.xml:$(TARGET_COPY_OUT_VENDOR)/etc/whitelistedapps.xml \
     $(PLATFORM_PATH)/configs/gamedwhitelist.xml:$(TARGET_COPY_OUT_VENDOR)/etc/gamedwhitelist.xml \
     $(PLATFORM_PATH)/configs/appboosts.xml:$(TARGET_COPY_OUT_VENDOR)/etc/appboosts.xml
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    video.disable.ubwc=1
-
-# Override heap growth limit due to high display density on device
-PRODUCT_PROPERTY_OVERRIDES += \
-    dalvik.vm.heapgrowthlimit=256m
-
-# DAVLIK-HEAP Configration    
-$(call inherit-product, frameworks/native/build/phone-xhdpi-2048-dalvik-heap.mk)
 
 # default is nosdcard, S/W button enabled in resource
 PRODUCT_CHARACTERISTICS := nosdcard
