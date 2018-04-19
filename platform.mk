@@ -258,10 +258,9 @@ PRODUCT_COPY_FILES += $(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY
     
 # Keylayouts
 PRODUCT_COPY_FILES += \
-    $(PLATFORM_PATH)/keylayout/sdm630-snd-card_Button_Jack.kl:system/usr/synaptics_dsx/sdm630-snd-card_Button_Jack.kl \
+    $(PLATFORM_PATH)/keylayout/sdm630-snd-card_Button_Jack.kl:system/usr/keylayout/sdm630-snd-card_Button_Jack.kl \
     $(PLATFORM_PATH)/keylayout/uinput-fpc.kl:system/usr/keylayout/uinput-fpc.kl \
     $(PLATFORM_PATH)/keylayout/uinput-goodix.kl:system/usr/keylayout/uinput-goodix.kl
-
 
 # Keymaster HAL
 PRODUCT_PACKAGES += \
