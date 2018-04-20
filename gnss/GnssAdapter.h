@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +32,8 @@
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
 #include <UlpProxyBase.h>
+#include <IOsObserver.h>
+#include <EngineHubProxyBase.h>
 #include <LocationAPI.h>
 #include <Agps.h>
 #include <SystemStatus.h>
@@ -84,6 +86,9 @@ class GnssAdapter : public LocAdapterBase {
     /* ==== ULP ============================================================================ */
     UlpProxyBase* mUlpProxy;
 
+    /* ==== Engine Hub ===================================================================== */
+    EngineHubProxyBase* mEngHubProxy;
+
     /* ==== CLIENT ========================================================================= */
     typedef std::map<LocationAPI*, LocationCallbacks> ClientDataMap;
     ClientDataMap mClientData;
@@ -115,7 +120,7 @@ class GnssAdapter : public LocAdapterBase {
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const LocationOptions& options);
-    static void convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
+    static void convertLocation(Location& out, const UlpLocation& ulpLocation,
                                 const GpsLocationExtended& locationExtended,
                                 const LocPosTechMask techMask);
     static void convertLocationInfo(GnssLocationInfoNotification& out,
@@ -198,6 +203,7 @@ public:
     void setControlCallbacksCommand(LocationControlCallbacks& controlCallbacks);
     void readConfigCommand();
     void setConfigCommand();
+    void initEngHubProxyCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
     uint32_t gnssDeleteAidingDataCommand(GnssAidingData& data);
     void gnssUpdateXtraThrottleCommand(const bool enabled);
@@ -221,6 +227,7 @@ public:
     bool resolveInAddress(const char* hostAddress, struct in_addr* inAddress);
     virtual bool isInSession() { return !mTrackingSessions.empty(); }
     void initDefaultAgps();
+    bool initEngHubProxy();
 
     /* ==== REPORTS ======================================================================== */
     /* ======== EVENTS ====(Called from QMI/ULP Thread)===================================== */
@@ -228,8 +235,11 @@ public:
                                      const GpsLocationExtended& locationExtended,
                                      enum loc_sess_status status,
                                      LocPosTechMask techMask,
-                                     bool fromUlp=false);
-    virtual void reportSvEvent(const GnssSvNotification& svNotify, bool fromUlp=false);
+                                     bool fromUlp=false,
+                                     bool fromEngineHub=false);
+    virtual void reportSvEvent(const GnssSvNotification& svNotify,
+                               bool fromUlp=false,
+                               bool fromEngineHub=false);
     virtual void reportNmeaEvent(const char* nmea, size_t length, bool fromUlp=false);
     virtual bool requestNiNotifyEvent(const GnssNiNotification& notify, const void* data);
     virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
@@ -286,7 +296,6 @@ public:
 
     void injectLocationCommand(double latitude, double longitude, float accuracy);
     void injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty);
-
 };
 
 #endif //GNSS_ADAPTER_H

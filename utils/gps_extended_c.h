@@ -105,6 +105,7 @@ typedef uint32_t LocPosTechMask;
 #define LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION ((LocPosTechMask)0x00000020)
 #define LOC_POS_TECH_MASK_AFLT ((LocPosTechMask)0x00000040)
 #define LOC_POS_TECH_MASK_HYBRID ((LocPosTechMask)0x00000080)
+#define LOC_POS_TECH_MASK_PPE ((LocPosTechMask)0x00000100)
 
 enum loc_registration_mask_status {
     LOC_REGISTRATION_MASK_ENABLED,
@@ -127,13 +128,7 @@ typedef struct {
     /* Provider indicator for HYBRID or GPS */
     uint16_t        position_source;
     LocPosTechMask  tech_mask;
-    /*allows HAL to pass additional information related to the location */
-    int             rawDataSize;         /* in # of bytes */
-    void            * rawData;
-    bool            is_indoor;
-    float           floor_number;
-    char            map_url[GPS_LOCATION_MAP_URL_SIZE];
-    unsigned char   map_index[GPS_LOCATION_MAP_INDEX_SIZE];
+    bool            unpropagatedPosition;
 } UlpLocation;
 
 typedef struct {
@@ -312,6 +307,30 @@ typedef uint32_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_GPS_TIME   0x20000
 /** GpsLocationExtended has Extended Dilution of Precision */
 #define GPS_LOCATION_EXTENDED_HAS_EXT_DOP   0x40000
+/** GpsLocationExtended has North standard deviation */
+#define GPS_LOCATION_EXTENDED_HAS_NORTH_STD_DEV   0x80000
+/** GpsLocationExtended has East standard deviation*/
+#define GPS_LOCATION_EXTENDED_HAS_EAST_STD_DEV   0x100000
+/** GpsLocationExtended has North Velocity */
+#define GPS_LOCATION_EXTENDED_HAS_NORTH_VEL   0x200000
+/** GpsLocationExtended has East Velocity */
+#define GPS_LOCATION_EXTENDED_HAS_EAST_VEL   0x400000
+/** GpsLocationExtended has up Velocity */
+#define GPS_LOCATION_EXTENDED_HAS_UP_VEL   0x800000
+/** GpsLocationExtended has North Velocity Uncertainty */
+#define GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC   0x1000000
+/** GpsLocationExtended has East Velocity Uncertainty */
+#define GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC   0x2000000
+/** GpsLocationExtended has up Velocity Uncertainty */
+#define GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC   0x4000000
+/** GpsLocationExtended has up Clock Bias */
+#define GPS_LOCATION_EXTENDED_HAS_CLOCK_BIAS   0x8000000
+/** GpsLocationExtended has up Clock Bias std deviation*/
+#define GPS_LOCATION_EXTENDED_HAS_CLOCK_BIAS_STD_DEV   0x10000000
+/** GpsLocationExtended has up Clock drift*/
+#define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT   0x20000000
+/** GpsLocationExtended has up Clock drift std deviation**/
+#define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT_STD_DEV   0x40000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -322,6 +341,12 @@ typedef uint32_t LocNavSolutionMask;
 #define LOC_NAV_MASK_SBAS_CORRECTION_LONG ((LocNavSolutionMask)0x0004)
 /**<  Bitmask to specify whether SBAS integrity information is used  */
 #define LOC_NAV_MASK_SBAS_INTEGRITY ((LocNavSolutionMask)0x0008)
+/**<  Bitmask to specify whether Position Report is DGNSS corrected  */
+#define LOC_NAV_MASK_DGNSS_CORRECTION ((LocNavSolutionMask)0x0010)
+/**<  Bitmask to specify whether Position Report is RTK corrected   */
+#define LOC_NAV_MASK_RTK_CORRECTION ((LocNavSolutionMask)0x0020)
+/**<  Bitmask to specify whether Position Report is PPP corrected   */
+#define LOC_NAV_MASK_PPP_CORRECTION ((LocNavSolutionMask)0x0040)
 
 typedef uint32_t LocPosDataMask;
 /* Bitmask to specify whether Navigation data has Forward Acceleration  */
@@ -432,12 +457,123 @@ typedef struct {
   uint32_t gpsTimeOfWeekMs;
 }GPSTimeStruct;
 
+typedef uint8_t CarrierPhaseAmbiguityType;
+#define CARRIER_PHASE_AMBIGUITY_RESOLUTION_NONE ((CarrierPhaseAmbiguityType)0)
+#define CARRIER_PHASE_AMBIGUITY_RESOLUTION_FLOAT ((CarrierPhaseAmbiguityType)1)
+#define CARRIER_PHASE_AMBIGUITY_RESOLUTION_FIXED ((CarrierPhaseAmbiguityType)2)
+
+/** GNSS Signal Type and RF Band */
+typedef uint32_t GnssSignalTypeMask;
+/** GPS L1CA Signal */
+#define GNSS_SIGNAL_GPS_L1CA     ((GnssSignalTypeMask)0x00000001ul)
+/** GPS L1C Signal */
+#define GNSS_SIGNAL_GPS_L1C      ((GnssSignalTypeMask)0x00000002ul)
+/** GPS L2 RF Band */
+#define GNSS_SIGNAL_GPS_L2       ((GnssSignalTypeMask)0x00000004ul)
+/** GPS L5 RF Band */
+#define GNSS_SIGNAL_GPS_L5       ((GnssSignalTypeMask)0x00000008ul)
+/** GLONASS G1 (L1OF) RF Band */
+#define GNSS_SIGNAL_GLONASS_G1   ((GnssSignalTypeMask)0x00000010ul)
+/** GLONASS G2 (L2OF) RF Band */
+#define GNSS_SIGNAL_GLONASS_G2   ((GnssSignalTypeMask)0x00000020ul)
+/** GALILEO E1 RF Band */
+#define GNSS_SIGNAL_GALILEO_E1   ((GnssSignalTypeMask)0x00000040ul)
+/** GALILEO E5A RF Band */
+#define GNSS_SIGNAL_GALILEO_E5A  ((GnssSignalTypeMask)0x00000080ul)
+/** GALILEO E5B RF Band */
+#define GNSS_SIGNAL_GALILIEO_E5B ((GnssSignalTypeMask)0x00000100ul)
+/** BEIDOU B1 RF Band */
+#define GNSS_SIGNAL_BEIDOU_B1    ((GnssSignalTypeMask)0x00000200ul)
+/** BEIDOU B2 RF Band */
+#define GNSS_SIGNAL_BEIDOU_B2    ((GnssSignalTypeMask)0x00000400ul)
+/** QZSS L1CA RF Band */
+#define GNSS_SIGNAL_QZSS_L1CA      ((GnssSignalTypeMask)0x00000800ul)
+/** QZSS L1S RF Band */
+#define GNSS_SIGNAL_QZSS_L1S      ((GnssSignalTypeMask)0x00001000ul)
+/** QZSS L2 RF Band */
+#define GNSS_SIGNAL_QZSS_L2      ((GnssSignalTypeMask)0x00002000ul)
+/** QZSS L5 RF Band */
+#define GNSS_SIGNAL_QZSS_L5      ((GnssSignalTypeMask)0x00004000ul)
+/** SBAS L1 RF Band */
+#define GNSS_SIGNAL_SBAS_L1      ((GnssSignalTypeMask)0x00008000ul)
+
+typedef uint16_t GnssMeasUsageStatusBitMask;
+/** Used in fix */
+#define GNSS_MEAS_USED_IN_PVT ((GnssMeasUsageStatusBitMask)0x00000001ul)
+/** Measurement is Bad */
+#define GNSS_MEAS_USAGE_STATUS_BAD_MEAS ((GnssMeasUsageStatusBitMask)0x00000002ul)
+/** Measurement has too low C/N */
+#define GNSS_MEAS_USAGE_STATUS_CNO_TOO_LOW ((GnssMeasUsageStatusBitMask)0x00000004ul)
+/** Measurement has too low elevation */
+#define GNSS_MEAS_USAGE_STATUS_ELEVATION_TOO_LOW ((GnssMeasUsageStatusBitMask)0x00000008ul)
+/** No ephemeris available for this measurement */
+#define GNSS_MEAS_USAGE_STATUS_NO_EPHEMERIS ((GnssMeasUsageStatusBitMask)0x00000010ul)
+/** No corrections available for the measurement */
+#define GNSS_MEAS_USAGE_STATUS_NO_CORRECTIONS ((GnssMeasUsageStatusBitMask)0x00000020ul)
+/** Corrections has timed out for the measurement */
+#define GNSS_MEAS_USAGE_STATUS_CORRECTION_TIMEOUT ((GnssMeasUsageStatusBitMask)0x00000040ul)
+/** Measurement is unhealthy */
+#define GNSS_MEAS_USAGE_STATUS_UNHEALTHY ((GnssMeasUsageStatusBitMask)0x00000080ul)
+/** Configuration is disabled for this measurement */
+#define GNSS_MEAS_USAGE_STATUS_CONFIG_DISABLED ((GnssMeasUsageStatusBitMask)0x00000100ul)
+/** Measurement not used for other reasons */
+#define GNSS_MEAS_USAGE_STATUS_OTHER ((GnssMeasUsageStatusBitMask)0x00000200ul)
+
+/** Flags to indicate valid fields in epMeasUsageInfo */
+typedef uint16_t GnssMeasUsageInfoValidityMask;
+#define GNSS_PSEUDO_RANGE_RESIDUAL_VALID        ((GnssMeasUsageInfoValidityMask)0x00000001ul)
+#define GNSS_DOPPLER_RESIDUAL_VALID             ((GnssMeasUsageInfoValidityMask)0x00000002ul)
+#define GNSS_CARRIER_PHASE_RESIDUAL_VALID       ((GnssMeasUsageInfoValidityMask)0x00000004ul)
+#define GNSS_CARRIER_PHASE_AMBIGUITY_TYPE_VALID ((GnssMeasUsageInfoValidityMask)0x00000008ul)
+
+typedef struct {
+    /** Specifies GNSS signal type
+        Mandatory Field*/
+    GnssSignalTypeMask gnssSignalType;
+    /** Specifies GNSS Constellation Type
+        Mandatory Field*/
+    Gnss_LocSvSystemEnumType gnssConstellation;
+    /**  GNSS SV ID.
+         For GPS:      1 to 32
+         For GLONASS:  65 to 96. When slot-number to SV ID mapping is unknown, set as 255.
+         For SBAS:     120 to 151
+         For QZSS-L1CA:193 to 197
+         For BDS:      201 to 237
+         For GAL:      301 to 336 */
+    uint16_t gnssSvId;
+    /** GLONASS frequency number + 7.
+        Valid only for a GLONASS system and
+        is to be ignored for all other systems.
+        Range: 1 to 14 */
+    uint8_t gloFrequency;
+    /** Carrier phase ambiguity type. */
+    CarrierPhaseAmbiguityType carrierPhaseAmbiguityType;
+    /** Validity mask */
+    GnssMeasUsageStatusBitMask measUsageStatusMask;
+    /** Specifies measurement usage status
+        Mandatory Field*/
+    GnssMeasUsageInfoValidityMask validityMask;
+    /** Computed pseudorange residual.
+        Unit: Meters */
+    float pseudorangeResidual;
+    /** Computed doppler residual.
+        Unit: Meters/sec*/
+    float dopplerResidual;
+    /** Computed carrier phase residual.
+        Unit: Cycles*/
+    float carrierPhaseResidual;
+    /** Carrier phase ambiguity value.
+        Unit: Cycles*/
+    float carrierPhasAmbiguity;
+} GpsMeasUsageInfo;
+
+
 /** Represents gps location extended. */
 typedef struct {
     /** set to sizeof(GpsLocationExtended) */
     size_t          size;
     /** Contains GpsLocationExtendedFlags bits. */
-    uint32_t        flags;
+    uint64_t        flags;
     /** Contains the Altitude wrt mean sea level */
     float           altitudeMeanSeaLevel;
     /** Contains Position Dilusion of Precision. */
@@ -478,8 +614,52 @@ typedef struct {
     LocPositionDynamics bodyFrameData;
     /** GPS Time */
     GPSTimeStruct gpsTime;
+    GnssSystemTime gnssSystemTime;
     /** Dilution of precision associated with this position*/
     LocExtDOP extDOP;
+    /** North standard deviation.
+        Unit: Meters */
+    float northStdDeviation;
+    /** East standard deviation.
+        Unit: Meters */
+    float eastStdDeviation;
+    /** North Velocity.
+        Unit: Meters/sec */
+    float northVelocity;
+    /** East Velocity.
+        Unit: Meters/sec */
+    float eastVelocity;
+    /** Up Velocity.
+        Unit: Meters/sec */
+    float upVelocity;
+    /** North Velocity standard deviation.
+        Unit: Meters/sec */
+    float northVelocityStdDeviation;
+    /** East Velocity standard deviation.
+        Unit: Meters/sec */
+    float eastVelocityStdDeviation;
+    /** Up Velocity standard deviation
+        Unit: Meters/sec */
+    float upVelocityStdDeviation;
+    /** Estimated clock bias. Unit: Nano seconds */
+    float clockbiasMeter;
+    /** Estimated clock bias std deviation. Unit: Nano seconds */
+    float clockBiasStdDeviationMeter;
+    /** Estimated clock drift. Unit: Meters/sec */
+    float clockDrift;
+    /** Estimated clock drift std deviation. Unit: Meters/sec */
+    float clockDriftStdDeviation;
+    /** Number of valid reference stations. Range:[0-4] */
+    uint8_t numValidRefStations;
+    /** Reference station(s) number */
+    uint16_t referenceStation[4];
+    /** Number of measurements received for use in fix.
+        Shall be used as maximum index in-to svUsageInfo[].
+        Set to 0, if svUsageInfo reporting is not supported.
+        Range: 0-EP_GNSS_MAX_MEAS */
+    uint8_t numOfMeasReceived;
+    /** Measurement Usage Information */
+    GpsMeasUsageInfo measUsageInfo[GNSS_SV_MAX];
 } GpsLocationExtended;
 
 enum loc_sess_status {
@@ -590,6 +770,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_REQUEST_POSITION_INJECTION,        // Position injection request
     LOC_API_ADAPTER_BATCH_STATUS,                      // batch status
     LOC_API_ADAPTER_FDCL_SERVICE_REQ,                  // FDCL service request
+    LOC_API_ADAPTER_REPORT_UNPROPAGATED_POSITION,      // Unpropagated Position report
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -626,7 +807,7 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_POSITION_INJECTION_REQUEST       (1<<LOC_API_ADAPTER_REQUEST_POSITION_INJECTION)
 #define LOC_API_ADAPTER_BIT_BATCH_STATUS                     (1<<LOC_API_ADAPTER_BATCH_STATUS)
 #define LOC_API_ADAPTER_BIT_FDCL_SERVICE_REQ                 (1ULL<<LOC_API_ADAPTER_FDCL_SERVICE_REQ)
-
+#define LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT (1ULL<<LOC_API_ADAPTER_REPORT_UNPROPAGATED_POSITION)
 
 typedef uint64_t LOC_API_ADAPTER_EVENT_MASK_T;
 
@@ -727,25 +908,6 @@ enum ulp_gnss_sv_poly_valid_flags{
 #define ULP_GNSS_SV_POLY_BIT_ELEVATIONUNC           (1<<ULP_GNSS_SV_POLY_ELEVATIONUNC)
 #define ULP_GNSS_SV_POLY_BIT_VELO_COEFF             (1<<ULP_GNSS_SV_POLY_VELO_COEFF)
 #define ULP_GNSS_SV_POLY_BIT_ENHANCED_IOD           (1<<ULP_GNSS_SV_POLY_ENHANCED_IOD)
-
-
-typedef enum
-{
-    GNSS_LOC_SV_SYSTEM_GPS                    = 1,
-    /**< GPS satellite. */
-    GNSS_LOC_SV_SYSTEM_GALILEO                = 2,
-    /**< GALILEO satellite. */
-    GNSS_LOC_SV_SYSTEM_SBAS                   = 3,
-    /**< SBAS satellite. */
-    GNSS_LOC_SV_SYSTEM_COMPASS                = 4,
-    /**< COMPASS satellite. */
-    GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
-    /**< GLONASS satellite. */
-    GNSS_LOC_SV_SYSTEM_BDS                    = 6,
-    /**< BDS satellite. */
-    GNSS_LOC_SV_SYSTEM_QZSS                   = 7
-    /**< QZSS satellite. */
-} Gnss_LocSvSystemEnumType;
 
 typedef enum
 {
@@ -981,7 +1143,6 @@ typedef enum
     /**< SV is being tracked */
 }Gnss_LocSvSearchStatusEnumT;
 
-
 typedef struct
 {
     size_t                          size;
@@ -1106,6 +1267,19 @@ typedef struct
     /**< Satellite Elevation
         - Units: radians \n
     */
+    uint64_t                        validMeasStatusMask;
+    /**< Bitmask indicating SV measurement status Validity.
+        Valid bitmasks: \n
+        If any MSB bit in 0xFFC0000000000000 DONT_USE is set, the measurement
+        must not be used by the client.
+        @MASK()
+    */
+    bool                         carrierPhaseUncValid;
+    /**< Validity flag for SV direction */
+
+    float                           carrierPhaseUnc;
+
+
 } Gnss_SVMeasurementStructType;
 
 /**< Maximum number of satellites in measurement block for given system. */
@@ -1167,6 +1341,9 @@ typedef struct
     bool                                     gnssMeasValid;
     Gnss_ClockMeasurementStructType             gnssMeas;
     Gnss_ApTimeStampStructType               timeStamp;
+    /*  Extended Time Information - Cumulative Number of Clock Resets */
+    uint8_t numClockResets_valid;  /**< Must be set to true if numClockResets is being passed */
+    uint32_t numClockResets;
 
 } GnssSvMeasurementSet;
 
@@ -1314,8 +1491,15 @@ typedef void (*LocAgpsOpenResultCb)(bool isSuccess, AGpsExtType agpsType, const 
 typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void* userDataPtr);
 
 /* Shared resources of LocIpc */
-#define LOC_IPC_HAL "/data/vendor/location/socket_hal"
-#define LOC_IPC_XTRA "/data/vendor/location/xtra/socket_xtra"
+#define LOC_IPC_HAL                    "/dev/socket/location/socket_hal"
+#define LOC_IPC_XTRA                   "/dev/socket/location/xtra/socket_xtra"
+
+#define SOCKET_DIR_LOCATION            "/dev/socket/location/"
+#define SOCKET_DIR_EHUB                "/dev/socket/location/ehub"
+#define SOCKET_TO_LOCATION_HAL_DAEMON  "/dev/socket/location/hal_daemon"
+
+#define SOCKET_DIR_TO_CLIENT           "/dev/socket/loc_client/"
+#define SOCKET_TO_LOCATION_CLIENT_BASE "/dev/socket/loc_client/toclient"
 
 #ifdef __cplusplus
 }

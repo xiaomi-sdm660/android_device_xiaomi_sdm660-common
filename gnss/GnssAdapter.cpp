@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -47,6 +47,7 @@
 #include <vector>
 
 #define RAD2DEG    (180.0 / M_PI)
+#define PROCESS_NAME_ENGINE_SERVICE "engine-service"
 
 using namespace loc_core;
 
@@ -65,6 +66,7 @@ GnssAdapter::GnssAdapter() :
                                                    LocDualContext::mLocationHalName,
                                                    false)),
     mUlpProxy(new UlpProxyBase()),
+    mEngHubProxy(new EngineHubProxyBase()),
     mUlpPositionMode(),
     mGnssSvIdUsedInPosition(),
     mGnssSvIdUsedInPosAvail(false),
@@ -146,6 +148,7 @@ GnssAdapter::GnssAdapter() :
     readConfigCommand();
     setConfigCommand();
     initDefaultAgpsCommand();
+    initEngHubProxyCommand();
 }
 
 void
@@ -187,32 +190,32 @@ GnssAdapter::convertOptions(LocPosMode& out, const LocationOptions& options)
 }
 
 void
-GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation,
+GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
                              const GpsLocationExtended& locationExtended,
                              const LocPosTechMask techMask)
 {
     memset(&out, 0, sizeof(Location));
     out.size = sizeof(Location);
-    if (LOC_GPS_LOCATION_HAS_LAT_LONG & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_LAT_LONG & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_LAT_LONG_BIT;
-        out.latitude = locGpsLocation.latitude;
-        out.longitude = locGpsLocation.longitude;
+        out.latitude = ulpLocation.gpsLocation.latitude;
+        out.longitude = ulpLocation.gpsLocation.longitude;
     }
-    if (LOC_GPS_LOCATION_HAS_ALTITUDE & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_ALTITUDE & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_ALTITUDE_BIT;
-        out.altitude = locGpsLocation.altitude;
+        out.altitude = ulpLocation.gpsLocation.altitude;
     }
-    if (LOC_GPS_LOCATION_HAS_SPEED & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_SPEED & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_SPEED_BIT;
-        out.speed = locGpsLocation.speed;
+        out.speed = ulpLocation.gpsLocation.speed;
     }
-    if (LOC_GPS_LOCATION_HAS_BEARING & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_BEARING & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_BEARING_BIT;
-        out.bearing = locGpsLocation.bearing;
+        out.bearing = ulpLocation.gpsLocation.bearing;
     }
-    if (LOC_GPS_LOCATION_HAS_ACCURACY & locGpsLocation.flags) {
+    if (LOC_GPS_LOCATION_HAS_ACCURACY & ulpLocation.gpsLocation.flags) {
         out.flags |= LOCATION_HAS_ACCURACY_BIT;
-        out.accuracy = locGpsLocation.accuracy;
+        out.accuracy = ulpLocation.gpsLocation.accuracy;
     }
     if (GPS_LOCATION_EXTENDED_HAS_VERT_UNC & locationExtended.flags) {
         out.flags |= LOCATION_HAS_VERTICAL_ACCURACY_BIT;
@@ -226,7 +229,7 @@ GnssAdapter::convertLocation(Location& out, const LocGpsLocation& locGpsLocation
         out.flags |= LOCATION_HAS_BEARING_ACCURACY_BIT;
         out.bearingAccuracy = locationExtended.bearing_unc;
     }
-    out.timestamp = locGpsLocation.timestamp;
+    out.timestamp = ulpLocation.gpsLocation.timestamp;
     if (LOC_POS_TECH_MASK_SATELLITE & techMask) {
         out.techMask |= LOCATION_TECHNOLOGY_GNSS_BIT;
     }
@@ -255,6 +258,11 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.pdop = locationExtended.pdop;
         out.hdop = locationExtended.hdop;
         out.vdop = locationExtended.vdop;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EXT_DOP & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_EXT_DOP_BIT;
+        out.gdop = locationExtended.extDOP.GDOP;
+        out.tdop = locationExtended.extDOP.TDOP;
     }
     if (GPS_LOCATION_EXTENDED_HAS_MAG_DEV & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_MAGNETIC_DEVIATION_BIT;
@@ -311,6 +319,82 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     if (GPS_LOCATION_EXTENDED_HAS_HOR_ELIP_UNC_AZIMUTH & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT;
         out.horUncEllipseOrientAzimuth = locationExtended.horUncEllipseOrientAzimuth;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT;
+        out.svUsedInPosition.gpsSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.gps_sv_used_ids_mask;
+        out.svUsedInPosition.gloSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.glo_sv_used_ids_mask;
+        out.svUsedInPosition.galSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.gal_sv_used_ids_mask;
+        out.svUsedInPosition.bdsSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask;
+        out.svUsedInPosition.qzssSvUsedIdsMask =
+                locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NAV_SOLUTION_MASK & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT;
+        out.navSolutionMask = locationExtended.navSolutionMask;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK;
+        out.posTechMask = locationExtended.tech_mask;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA;
+        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+                LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+                LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+                LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_RATE_BIT;
+        }
+        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_PITCH_BIT) {
+            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_BIT;
+        }
+        out.bodyFrameData.longAccel = locationExtended.bodyFrameData.longAccel;
+        out.bodyFrameData.latAccel = locationExtended.bodyFrameData.latAccel;
+        out.bodyFrameData.vertAccel = locationExtended.bodyFrameData.vertAccel;
+        out.bodyFrameData.yawRate = locationExtended.bodyFrameData.yawRate;
+        out.bodyFrameData.pitch = locationExtended.bodyFrameData.pitch;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_GPS_TIME & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_GPS_TIME;
+        out.gnssSystemTime.gnssSystemTimeSrc = locationExtended.gnssSystemTime.gnssSystemTimeSrc;
+        out.gnssSystemTime.u = locationExtended.gnssSystemTime.u;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL;
+        out.northVelocity = locationExtended.northVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_VEL & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL;
+        out.eastVelocity = locationExtended.eastVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_UP_VEL & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL;
+        out.upVelocity = locationExtended.upVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC;
+        out.northVelocityStdDeviation = locationExtended.northVelocityStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC;
+        out.eastVelocityStdDeviation = locationExtended.eastVelocityStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC & locationExtended.flags) {
+        out.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC;
+        out.upVelocityStdDeviation = locationExtended.upVelocityStdDeviation;
     }
 }
 
@@ -936,6 +1020,7 @@ GnssAdapter::gnssDeleteAidingDataCommand(GnssAidingData& data)
             if ((nullptr != s) && (mData.deleteAll)) {
                 s->setDefaultGnssEngineStates();
             }
+            mAdapter.mEngHubProxy->gnssDeleteAidingData(mData);
         }
     };
 
@@ -1147,7 +1232,7 @@ GnssAdapter::updateClientsEventMask()
 {
     LOC_API_ADAPTER_EVENT_MASK_T mask = 0;
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-        if (it->second.trackingCb != nullptr) {
+        if (it->second.trackingCb != nullptr || it->second.gnssLocationInfoCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
         }
         if (it->second.gnssNiCb != nullptr) {
@@ -1166,11 +1251,15 @@ GnssAdapter::updateClientsEventMask()
 
     /*
     ** For Automotive use cases we need to enable MEASUREMENT and POLY
-    ** when QDR is enabled
+    ** when QDR is enabled (e.g.: either enabled via conf file or
+    ** engine hub is loaded successfully).
+    ** Note: this need to be called from msg queue thread.
     */
-    if(1 == ContextBase::mGps_conf.EXTERNAL_DR_ENABLED) {
+    if((1 == ContextBase::mGps_conf.EXTERNAL_DR_ENABLED) ||
+       (true == initEngHubProxy())) {
         mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
+        mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
 
         LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%" PRIu64 "", __func__, mask);
     }
@@ -1219,6 +1308,11 @@ GnssAdapter::restartSessions()
 
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, smallestIntervalOptions);
+
+    // inform engine hub of the fix mode and start session
+    mEngHubProxy->gnssSetFixMode(locPosMode);
+    mEngHubProxy->gnssStartFix();
+
     mLocApi->startFix(locPosMode);
 }
 
@@ -1328,7 +1422,7 @@ bool
 GnssAdapter::hasTrackingCallback(LocationAPI* client)
 {
     auto it = mClientData.find(client);
-    return (it != mClientData.end() && it->second.trackingCb);
+    return (it != mClientData.end() && (it->second.trackingCb || it->second.gnssLocationInfoCb));
 }
 
 bool
@@ -1508,6 +1602,10 @@ GnssAdapter::startTracking(const LocationOptions& options)
         // do nothing
     }
     if (!mUlpProxy->sendStartFix()) {
+        // inform engine hub that GNSS session is about to start
+        mEngHubProxy->gnssSetFixMode(locPosMode);
+        mEngHubProxy->gnssStartFix();
+
         loc_api_adapter_err apiErr = mLocApi->startFix(locPosMode);
         if (LOC_API_ADAPTER_ERR_SUCCESS == apiErr) {
             err = LOCATION_ERROR_SUCCESS;
@@ -1539,6 +1637,7 @@ GnssAdapter::setPositionModeCommand(LocPosMode& locPosMode)
         inline virtual void proc() const {
              // saves the mode in adapter to be used when startTrackingCommand is called from ULP
             if (mAdapter.setUlpPositionMode(mLocPosMode)) {
+                mAdapter.mEngHubProxy->gnssSetFixMode(mLocPosMode);
                 mApi.setPositionMode(mLocPosMode);
             }
         }
@@ -1563,8 +1662,15 @@ GnssAdapter::startTrackingCommand()
         inline virtual void proc() const {
             // we get this call from ULP, so just call LocApi without multiplexing because
             // ulp would be doing the multiplexing for us if it is present
-            if (!mAdapter.isInSession()) {
-                LocPosMode& ulpPositionMode = mAdapter.getUlpPositionMode();
+            LocPosMode& ulpPositionMode = mAdapter.getUlpPositionMode();
+
+           // TBD: once CR 2165853 is fixed, move below codes
+           // to inside condition of if (!mAdapter.isInSession())
+           //
+           // inform engine hub of the fix mode and start session
+            mAdapter.mEngHubProxy->gnssSetFixMode(ulpPositionMode);
+            mAdapter.mEngHubProxy->gnssStartFix();
+           if (!mAdapter.isInSession()) {
                 mApi.startFix(ulpPositionMode);
             }
         }
@@ -1737,6 +1843,9 @@ GnssAdapter::stopTracking()
 {
     LocationError err = LOCATION_ERROR_SUCCESS;
     if (!mUlpProxy->sendStopFix()) {
+        // inform engine hub that GNSS session has stopped
+        mEngHubProxy->gnssStopFix();
+
         loc_api_adapter_err apiErr = mLocApi->stopFix();
         if (LOC_API_ADAPTER_ERR_SUCCESS == apiErr) {
             err = LOCATION_ERROR_SUCCESS;
@@ -1762,6 +1871,9 @@ GnssAdapter::stopTrackingCommand()
             mAdapter(adapter),
             mApi(api) {}
         inline virtual void proc() const {
+            // inform engine hub that GNSS session has stopped
+            mAdapter.mEngHubProxy->gnssStopFix();
+
             // clear the position mode
             LocPosMode mLocPosMode = {};
             mLocPosMode.mode = LOC_POSITION_MODE_INVALID;
@@ -2010,17 +2122,42 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  const GpsLocationExtended& locationExtended,
                                  enum loc_sess_status status,
                                  LocPosTechMask techMask,
-                                 bool fromUlp)
+                                 bool fromUlp,
+                                 bool fromEngineHub)
 {
     LOC_LOGD("%s]: fromUlp %u status %u", __func__, fromUlp, status);
 
-    // if this event is not called from ULP, then try to call into ULP and return if successfull
-    if (!fromUlp) {
+    // if this event is called from QMI LOC API, then try to call into ULP and return if successfull
+    // if the position is called from ULP or engine hub, then send it out directly
+    if (!fromUlp && !fromEngineHub) {
+        // report QMI position (both propagated and unpropagated) to engine hub,
+        // and engine hub will be distributing it to the registered plugins
+        mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
+
+        if (true == ulpLocation.unpropagatedPosition) {
+            return;
+        }
+
+        // only send propagated position report to ulp
         if (mUlpProxy->reportPosition(ulpLocation, locationExtended,
                                  status, techMask)) {
             return;
         }
+
+        // engine hub is loaded, do not report qmi position to client as
+        // final position report should come from engine hub
+        if (true == initEngHubProxy()){
+            return;
+        }
+    } else if ((true == fromUlp) && (true == initEngHubProxy())) {
+        LOC_LOGV("%s]: drop ULP GNSS fix as engine hub is loaded", __func__);
+        return;
     }
+
+    // for all other cases:
+    // case 1: fix is from ULP and engine hub is not loaded, queue the msg
+    // case 2: fix is from engine hub, queue the msg
+    // when message is queued, the position can be dispatched to requesting client
 
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
@@ -2092,15 +2229,15 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
             mGnssSvIdUsedInPosition = locationExtended.gnss_sv_used_ids;
         }
         for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-            if (nullptr != it->second.trackingCb) {
-                Location location = {};
-                convertLocation(location, ulpLocation.gpsLocation, locationExtended, techMask);
-                it->second.trackingCb(location);
-            }
             if (nullptr != it->second.gnssLocationInfoCb) {
                 GnssLocationInfoNotification locationInfo = {};
                 convertLocationInfo(locationInfo, locationExtended);
+                convertLocation(locationInfo.location, ulpLocation, locationExtended, techMask);
                 it->second.gnssLocationInfoCb(locationInfo);
+            } else if (nullptr != it->second.trackingCb) {
+                Location location = {};
+                convertLocation(location, ulpLocation, locationExtended, techMask);
+                it->second.trackingCb(location);
             }
         }
     }
@@ -2118,28 +2255,32 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
             reportNmea(sentence.c_str(), sentence.length());
         }
     }
-
-    // Free the allocated memory for rawData
-    UlpLocation* gp = (UlpLocation*)&(ulpLocation);
-    if (gp != NULL && gp->rawData != NULL)
-    {
-        delete (char*)gp->rawData;
-        gp->rawData = NULL;
-        gp->rawDataSize = 0;
-    }
 }
 
 void
 GnssAdapter::reportSvEvent(const GnssSvNotification& svNotify,
-                           bool fromUlp)
+                           bool fromUlp,
+                           bool fromEngineHub)
 {
     LOC_LOGD("%s]: fromUlp %u", __func__, fromUlp);
 
     // if this event is not called from ULP, then try to call into ULP and return if successfull
-    if (!fromUlp) {
+    if (!fromUlp && !fromEngineHub) {
+        // report QMI SV report to eng hub
+        mEngHubProxy->gnssReportSv(svNotify);
+
         if (mUlpProxy->reportSv(svNotify)) {
             return;
         }
+
+        // engine hub is loaded, do not report sv to client
+        // as sv report should come from engine hub
+        if (true == initEngHubProxy()){
+            return;
+        }
+    } else if ((true == fromUlp) && (true == initEngHubProxy())) {
+        LOC_LOGV("%s]: drop ULP GNSS SV event as engine hub is loaded", __func__);
+        return;
     }
 
     struct MsgReportSv : public LocMsg {
@@ -2231,6 +2372,7 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
 {
     // if this event is not called from ULP, then try to call into ULP and return if successfull
     if (!fromUlp && !loc_nmea_is_debug(nmea, length)) {
+        mEngHubProxy->gnssReportNmea(nmea);
         if (mUlpProxy->reportNmea(nmea, length)) {
             return;
         }
@@ -2501,6 +2643,7 @@ GnssAdapter::reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet)
 
     // We send SvMeasurementSet to AmtProxy/ULPProxy to be forwarded as necessary.
     mUlpProxy->reportSvMeasurement(svMeasurementSet);
+    mEngHubProxy->gnssReportSvMeasurement(svMeasurementSet);
 }
 
 void
@@ -2510,6 +2653,8 @@ GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
 
     // We send SvMeasurementSet to AmtProxy/ULPProxy to be forwarded as necessary.
     mUlpProxy->reportSvPolynomial(svPolynomial);
+
+    mEngHubProxy->gnssReportSvPolynomial(svPolynomial);
 }
 
 void GnssAdapter::initDefaultAgps() {
@@ -3137,4 +3282,118 @@ static void agpsCloseResultCb (bool isSuccess, AGpsExtType agpsType, void* userD
     } else {
         adapter->dataConnFailedCommand(agpsType);
     }
+}
+
+/* ==== Eng Hub Proxy ================================================================= */
+/* ======== UTILITIES ================================================================= */
+void
+GnssAdapter::initEngHubProxyCommand() {
+    LOC_LOGD("%s]: ", __func__);
+
+    struct MsgInitEngHubProxy : public LocMsg {
+        GnssAdapter* mAdapter;
+        inline MsgInitEngHubProxy(GnssAdapter* adapter) :
+            LocMsg(),
+            mAdapter(adapter) {}
+        inline virtual void proc() const {
+            mAdapter->initEngHubProxy();
+        }
+    };
+
+    sendMsg(new MsgInitEngHubProxy(this));
+}
+
+bool
+GnssAdapter::initEngHubProxy() {
+    static bool firstTime = true;
+    static bool engHubLoadSuccessful = false;
+
+    const char *error = nullptr;
+    unsigned int processListLength = 0;
+    loc_process_info_s_type* processInfoList = nullptr;
+
+    do {
+        // load eng hub only once
+        if (firstTime == false) {
+            break;
+        }
+
+        int rc = loc_read_process_conf(LOC_PATH_IZAT_CONF, &processListLength,
+                                       &processInfoList);
+        if (rc != 0) {
+            LOC_LOGE("%s]: failed to parse conf file", __func__);
+            break;
+        }
+
+        bool pluginDaemonEnabled = false;
+        // go over the conf table to see whether any plugin daemon is enabled
+        for (unsigned int i = 0; i < processListLength; i++) {
+            if ((strncmp(processInfoList[i].name[0], PROCESS_NAME_ENGINE_SERVICE,
+                         strlen(PROCESS_NAME_ENGINE_SERVICE)) == 0) &&
+                (processInfoList[i].proc_status == ENABLED)) {
+                pluginDaemonEnabled = true;
+                break;
+            }
+        }
+
+        // no plugin daemon is enabled for this platform, no need to load eng hub .so
+        if (pluginDaemonEnabled == false) {
+            break;
+        }
+
+        // load the engine hub .so, if the .so is not present
+        // all EngHubProxyBase calls will turn into no-op.
+        void *handle = nullptr;
+        if ((handle = dlopen("libloc_eng_hub.so", RTLD_NOW)) == nullptr) {
+            if ((error = dlerror()) != nullptr) {
+                LOC_LOGE("%s]: libloc_eng_hub.so not found %s !", __func__, error);
+            }
+            break;
+        }
+
+        // prepare the callback functions
+        // callback function for engine hub to report back position event
+        GnssAdapterReportPositionEventCb reportPositionEventCb =
+            [this](const UlpLocation& ulpLocation,
+                   const GpsLocationExtended& locationExtended,
+                   enum loc_sess_status status,
+                   LocPosTechMask techMask,
+                   bool fromUlp,
+                   bool fromEngineHub) {
+                    // report from engine hub on behalf of PPE will be treated as fromUlp
+                    reportPositionEvent(ulpLocation, locationExtended, status,
+                                        techMask, fromUlp, fromEngineHub);
+            };
+
+        // callback function for engine hub to report back sv event
+        GnssAdapterReportSvEventCb reportSvEventCb =
+            [this](const GnssSvNotification& svNotify, bool fromUlp, bool fromEngineHub) {
+                   reportSvEvent(svNotify, fromUlp, fromEngineHub);
+            };
+
+        getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
+        if(getter != nullptr) {
+            EngineHubProxyBase* hubProxy = (*getter) (mMsgTask, mSystemStatus->getOsObserver(),
+                                                      reportPositionEventCb,
+                                                      reportSvEventCb);
+            if (hubProxy != nullptr) {
+                mEngHubProxy = hubProxy;
+                engHubLoadSuccessful = true;
+            }
+        }
+        else {
+            LOC_LOGD("%s]: entered, did not find function", __func__);
+        }
+    } while (0);
+
+    if (processInfoList != nullptr) {
+        free (processInfoList);
+        processInfoList = nullptr;
+    }
+
+    LOC_LOGD("%s]: first time initialization %d, returned %d",
+             __func__, firstTime, engHubLoadSuccessful);
+
+    firstTime = false;
+    return engHubLoadSuccessful;
 }
