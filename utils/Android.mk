@@ -40,6 +40,7 @@ LOCAL_LDFLAGS += -Wl,--export-dynamic
 
 ## Includes
 LOCAL_HEADER_LIBRARIES := \
+    libutils_headers \
     libloc_pla_headers \
     liblocation_api_headers
 
