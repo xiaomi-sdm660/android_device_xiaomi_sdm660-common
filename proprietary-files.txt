@@ -1917,6 +1917,8 @@ vendor/lib64/libqvop-service.so
 
 # WideWine
 vendor/lib/libwvhidl.so
+vendor/lib/mediadrm/libwvdrmengine.so|56f4f50b82787d4709b82cbffe3e41a1e0e9569a
+vendor/lib64/mediadrm/libwvdrmengine.so|37c60196e0ebddf730f42e66a33a38120393fa1d
 
 # Wifi
 vendor/bin/cnss_diag
