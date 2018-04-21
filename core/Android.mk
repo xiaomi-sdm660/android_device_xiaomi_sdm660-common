@@ -43,6 +43,7 @@ LOCAL_C_INCLUDES:= \
     $(LOCAL_PATH)/observer \
 
 LOCAL_HEADER_LIBRARIES := \
+    libutils_headers \
     libgps.utils_headers \
     libloc_pla_headers \
     liblocation_api_headers
