@@ -1,4 +1,4 @@
-on boot
+on init
     chown system system /sys/devices/virtual/timed_output/vibrator/enable
     chown system system /sys/devices/virtual/timed_output/vibrator/play_mode
     chown system system /sys/devices/virtual/timed_output/vibrator/vtg_default
