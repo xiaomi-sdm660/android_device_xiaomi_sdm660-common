@@ -65,8 +65,6 @@ on fs
     chown system system /persist/wlan_bt/wlan.mac
 
     write /sys/kernel/boot_adsp/boot 1
-    chown system system /dev/goodix_fp
-    #chmod 0644 /dev/goodix_fp
 
     chmod 0664 /sys/class/thermal/thermal_message/sconfig
     chown system system /sys/class/thermal/thermal_message/sconfig

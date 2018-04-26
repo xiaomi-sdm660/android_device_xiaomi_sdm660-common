@@ -137,12 +137,6 @@
 /dev/system_health_monitor 0644  radio      system
 /dev/mdss_rotator         0664   system     system
 
-# fpc fingerprint
-/sys/devices/soc/soc:fpc1020*   hw_reset 0660 system system
-/sys/devices/soc/soc:fpc1020*   irq 0660 system system
-/sys/devices/soc/soc:fpc1020*   wakeup_enable 0660 system system
-/sys/devices/soc/soc:fpc1020*    fingerdown_wait 0220 system system
-
 # wlan
 /dev/wcnss_wlan           0660   system     system
 /dev/wcnss_ctrl           0660   system     system
