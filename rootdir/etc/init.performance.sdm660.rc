@@ -1,13 +1,4 @@
 on init
-    # Configure stune
-    write /dev/stune/foreground/schedtune.sched_boost_no_override 1
-    write /dev/stune/top-app/schedtune.sched_boost_no_override 1
-    write /dev/stune/schedtune.colocate 0
-    write /dev/stune/background/schedtune.colocate 0
-    write /dev/stune/system-background/schedtune.colocate 0
-    write /dev/stune/foreground/schedtune.colocate 0
-    write /dev/stune/top-app/schedtune.colocate 1
-
     # Set Memory parameters
     write /sys/module/process_reclaim/parameters/min_score_adj 6
     write /sys/module/process_reclaim/parameters/enable_process_reclaim 1
@@ -64,20 +55,11 @@ on property:sys.boot_completed=1
     write /sys/module/lpm_levels/system/perf/perf-l2-ret/idle_enabled N
     write /sys/module/lpm_levels/parameters/sleep_disabled N
 
-    # Configure core ctl
-    write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 2
-    write /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres  60
-    write /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres 30
-    write /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms 100
-    write /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster 1
-    write /sys/devices/system/cpu/cpu4/core_ctl/task_thres 4
-
     # Setup post-boot cpusets
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/foreground/cpus 0-3,6-7
     write /dev/cpuset/background/cpus 0-1
     write /dev/cpuset/system-background/cpus 0-3
-    write /dev/cpuset/camera-daemon/cpus 0-7
     write /dev/cpuset/restricted/cpus 0-3
 
     # Disable thermal bcl hotplug to switch governor
@@ -122,57 +104,17 @@ on property:sys.boot_completed=1
     write /sys/class/devfreq/soc:qcom,memlat-cpu4/polling_interval 10
     write /sys/class/devfreq/soc:qcom,memlat-cpu4/mem_latency/ratio_ceil 400
 
-    # Setting b.L scheduler parameters
-    write /proc/sys/kernel/sched_upmigrate 96
-    write /proc/sys/kernel/sched_downmigrate 90
-    write /proc/sys/kernel/sched_group_upmigrate 140
-    write /proc/sys/kernel/sched_group_downmigrate 120
-    write /proc/sys/kernel/sched_select_prev_cpu_us 0
-    write /proc/sys/kernel/sched_freq_inc_notify 400000
-    write /proc/sys/kernel/sched_freq_dec_notify 400000
-    write /proc/sys/kernel/sched_spill_nr_run 5
-    write /proc/sys/kernel/sched_restrict_cluster_spill 1
-    write /proc/sys/kernel/sched_short_burst_ns 100000
-    write /proc/sys/kernel/sched_prefer_sync_wakee_to_waker 1
-    write /proc/sys/kernel/sched_small_wakee_task_load 20
-
     # configure governor settings for little cluster
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 90
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 20000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 1401600
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 0
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1747200:95"
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 39000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 0
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "schedutil"
+    write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us 20000
+    write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us 500
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 633600
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/ignore_hispeed_on_notif 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down 1
 
     # configure governor settings for big cluster
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load 1
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif 1
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 90
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 20000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1401600
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy 0
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:90 2150400:95"
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 39000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis 59000
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 1113600
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/ignore_hispeed_on_notif 1
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down 1
-
-    #Enable input boost configuration
-    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600"
-    write /sys/module/cpu_boost/parameters/input_boost_ms 60
-    write /sys/module/cpu_boost/parameters/powerkey_input_boost_freq "0:0 1:0 2:0 3:0 4:1747200 5:0 6:0 7:0"
-    write /sys/module/cpu_boost/parameters/powerkey_input_boost_ms 400
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "schedutil"
+    write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us 20000
+    write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us 500
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 1113600
 
     # Re-enable thermal and BCL hotplug
     write /sys/module/msm_thermal/core_control/enabled 1
