@@ -2667,7 +2667,7 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
     // for all other cases:
     // case 1: fix is from engine hub, queue the msg
     // case 2: fix is not from engine hub, e.g. from QMI, and it is not an
-    //         unpropagated position and engine hub is not loaded, queue the msg
+    // unpropagated position and engine hub is not loaded, queue the msg
     // when message is queued, the position can be dispatched to requesting client
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
@@ -2867,7 +2867,7 @@ void
 GnssAdapter::reportNmeaEvent(const char* nmea, size_t length)
 {
     if (!loc_nmea_is_debug(nmea, length)) {
-        mEngHubProxy->gnssReportNmea(nmea);
+        return;
     }
 
     struct MsgReportNmea : public LocMsg {

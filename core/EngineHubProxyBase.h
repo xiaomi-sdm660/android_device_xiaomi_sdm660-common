@@ -80,11 +80,6 @@ public:
         (void) svPolynomial;
         return false;
     }
-
-    inline virtual bool gnssReportNmea(const char* nmea) {
-        (void) nmea;
-        return false;
-    }
 };
 
 typedef std::function<void(const UlpLocation& ulpLocation,
