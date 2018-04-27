@@ -543,7 +543,7 @@ service vendor.ipacm /system/vendor/bin/ipacm
     group radio inet
     disabled
 
-service vendor.qti /system/vendor/bin/qti
+service vendor.dataqti /system/vendor/bin/qti
     class main
     user radio
     group radio oem_2901 diag usb net_admin
