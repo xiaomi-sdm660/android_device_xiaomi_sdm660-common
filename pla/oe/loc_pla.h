@@ -31,7 +31,18 @@
 
 #ifdef __cplusplus
 #include <utils/SystemClock.h>
-#define uptimeMillis android::uptimeMillis
+#include <sys/time.h>
+#include <time.h>
+
+inline int64_t uptimeMillis()
+{
+    struct timespec ts;
+    int64_t time_ms = 0;
+    clock_gettime(CLOCK_BOOTTIME, &ts);
+    time_ms += (ts.tv_sec * 1000000000LL);
+    time_ms += ts.tv_nsec + 500000LL;
+    return time_ms / 1000000LL;
+}
 
 extern "C" {
 #endif
@@ -50,6 +61,9 @@ extern "C" {
 #define strlcat strncat
 #define strlcpy strncpy
 #endif
+
+#define UID_GPS (1021)
+#define GID_GPS (1021)
 
 #define LOC_PATH_GPS_CONF_STR      "/etc/gps.conf"
 #define LOC_PATH_IZAT_CONF_STR     "/etc/izat.conf"
