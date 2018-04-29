@@ -1817,9 +1817,7 @@ vendor/bin/ssr_setup
 # Thermal
 vendor/etc/thermal-engine.conf
 vendor/bin/thermal-engine
-vendor/lib/hw/thermal.sdm660.so
 -vendor/lib/libthermalclient.so
-vendor/lib64/hw/thermal.sdm660.so
 -vendor/lib64/libthermalclient.so
 vendor/lib64/libthermalioctl.so
 
