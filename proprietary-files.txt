@@ -1500,6 +1500,7 @@ vendor/bin/imsdatadaemon
 vendor/bin/imsrcsd
 -app/ims/ims.apk
 -app/imssettings/imssettings.apk
+-app/uceShimService/uceShimService.apk
 etc/permissions/qti-vzw-ims-internal.xml
 vendor/framework/qti-vzw-ims-internal.jar
 vendor/lib64/lib-dplmedia.so
