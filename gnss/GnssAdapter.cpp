@@ -2050,7 +2050,8 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
             SystemStatus* s = mAdapter.getSystemStatus();
-            if ((nullptr != s) && (LOC_SESS_SUCCESS == mStatus)){
+            if ((nullptr != s) &&
+                    ((LOC_SESS_SUCCESS == mStatus) || (LOC_SESS_INTERMEDIATE == mStatus))){
                 s->eventPosition(mUlpLocation, mLocationExtended);
             }
             mAdapter.reportPosition(mUlpLocation, mLocationExtended, mStatus, mTechMask);
