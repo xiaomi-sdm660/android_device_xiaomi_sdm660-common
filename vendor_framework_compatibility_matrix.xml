@@ -71,6 +71,22 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl" optional="true">
+         <name>vendor.qti.hardware.factory</name>
+         <version>1.0</version>
+         <interface>
+             <name>IFactory</name>
+             <instance>default</instance>
+         </interface>
+     </hal>
+    <hal format="hidl" optional="true">
+         <name>vendor.qti.hardware.wifi.keystore</name>
+         <version>1.0</version>
+         <interface>
+             <name>IKeystoreExt</name>
+             <instance>default</instance>
+         </interface>
+     </hal>     
+    <hal format="hidl" optional="true">
         <name>com.qualcomm.qti.dpm.api</name>
         <version>1.0</version>
         <interface>
