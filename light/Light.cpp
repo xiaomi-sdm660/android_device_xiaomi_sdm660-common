@@ -39,7 +39,14 @@ namespace implementation {
  */
 static void set(std::string path, std::string value) {
     std::ofstream file(path);
-    file << value;
+    /* Only write brightness value if stream is open, alive & well */
+    if (file.is_open()) {
+        file << value;
+    } else {
+        /* Fire a warning a bail out */
+        ALOGE("failed to write %s to %s", value.c_str(), path.c_str());
+        return;
+    }
 }
 
 static void set(std::string path, int value) {
