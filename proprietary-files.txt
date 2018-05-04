@@ -107,6 +107,7 @@ vendor/lib64/libbtnv.so
 # Camera
 bin/mm-qcamera-daemon
 lib/libtrueportrait.so
+lib64/libtrueportrait.so
 vendor/etc/camera/age_gender_bg
 vendor/etc/camera/camera_config.xml
 vendor/etc/camera/crown_156_128.bin
@@ -814,6 +815,7 @@ framework/cneapiclient.jar
 framework/com.quicinc.cne.jar
 -priv-app/CNEService/CNEService.apk
 lib/libvendorconn.so
+lib64/libvendorconn.so
 vendor/lib/com.quicinc.cne.api@1.0.so
 vendor/lib/com.quicinc.cne.constants@1.0.so
 vendor/lib/com.quicinc.cne.constants@2.0.so
@@ -1017,7 +1019,6 @@ vendor/firmware/fpctzappfingerprint.b07
 vendor/firmware/fpctzappfingerprint.mdt
 
 # Fingerprint sensor
-lib/libqti_performance.so
 -vendor/app/FingerprintExtensionService/FingerprintExtensionService.apk
 -vendor/app/QFingerprintService/QFingerprintService.apk
 vendor/bin/qfp-daemon
@@ -1246,6 +1247,7 @@ vendor/lib64/vendor.qti.voiceprint@1.0.so
 
 # Media
 lib/libmmosal.so
+lib64/libmmosal.so
 vendor/lib/libAlacSwDec.so
 vendor/lib/libApeSwDec.so
 vendor/lib/libdsd2pcm.so
@@ -1304,6 +1306,8 @@ vendor/lib64/libvpptestutils.so
 vendor/lib64/vendor.qti.hardware.vpp@1.1_vendor.so
 
 # Perf
+lib/libqti_performance.so
+lib64/libqti_performance.so
 vendor/bin/energy-awareness
 vendor/bin/msm_irqbalance
 vendor/bin/hw/vendor.qti.hardware.perf@1.0-service
@@ -1504,6 +1508,7 @@ vendor/bin/imsrcsd
 etc/permissions/qti-vzw-ims-internal.xml
 vendor/framework/qti-vzw-ims-internal.jar
 vendor/lib64/lib-dplmedia.so
+vendor/lib/lib-dplmedia.so
 vendor/lib64/lib-imsrcs-v2.so
 vendor/lib/lib-imsrcs-v2.so
 lib64/lib-imscamera.so
