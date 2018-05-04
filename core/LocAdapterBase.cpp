@@ -79,7 +79,7 @@ void LocAdapterBase::
                         const GpsLocationExtended& locationExtended,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask,
-                        bool /*fromUlp*/) {
+                        bool /*fromUlp*/, bool /*fromEngineHub*/) {
     if (mLocAdapterProxyBase != NULL) {
         mLocAdapterProxyBase->reportPositionEvent((UlpLocation&)location,
                                                    (GpsLocationExtended&)locationExtended,
@@ -91,7 +91,8 @@ void LocAdapterBase::
 }
 
 void LocAdapterBase::
-    reportSvEvent(const GnssSvNotification& /*svNotify*/, bool /*fromUlp*/)
+    reportSvEvent(const GnssSvNotification& /*svNotify*/,
+                  bool /*fromUlp*/, bool /*fromEngineHub*/)
 DEFAULT_IMPL()
 
 void LocAdapterBase::

@@ -1289,6 +1289,7 @@ GnssAdapter::updateClientsEventMask()
        (true == initEngHubProxy())) {
         mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
+        mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
 
         LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%x", __func__, mask);
     }
@@ -2205,21 +2206,42 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  const GpsLocationExtended& locationExtended,
                                  enum loc_sess_status status,
                                  LocPosTechMask techMask,
-                                 bool fromUlp)
+                                 bool fromUlp,
+                                 bool fromEngineHub)
 {
     LOC_LOGD("%s]: fromUlp %u status %u", __func__, fromUlp, status);
 
     // if this event is called from QMI LOC API, then try to call into ULP and return if successfull
     // if the position is called from ULP or engine hub, then send it out directly
-    if (!fromUlp) {
-        // report QMI position to engine hub, and engine hub will be
-        // distributing it to the registered plugins
+    if (!fromUlp && !fromEngineHub) {
+        // report QMI position (both propagated and unpropagated) to engine hub,
+        // and engine hub will be distributing it to the registered plugins
         mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
+
+        if (true == ulpLocation.unpropagatedPosition) {
+            return;
+        }
+
+        // only send propagated position report to ulp
         if (mUlpProxy->reportPosition(ulpLocation, locationExtended,
                                  status, techMask)) {
             return;
         }
+
+        // engine hub is loaded, do not report qmi position to client as
+        // final position report should come from engine hub
+        if (true == initEngHubProxy()){
+            return;
+        }
+    } else if ((true == fromUlp) && (true == initEngHubProxy())) {
+        LOC_LOGV("%s]: drop ULP GNSS fix as engine hub is loaded", __func__);
+        return;
     }
+
+    // for all other cases:
+    // case 1: fix is from ULP and engine hub is not loaded, queue the msg
+    // case 2: fix is from engine hub, queue the msg
+    // when message is queued, the position can be dispatched to requesting client
 
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
@@ -2321,18 +2343,28 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
 
 void
 GnssAdapter::reportSvEvent(const GnssSvNotification& svNotify,
-                           bool fromUlp)
+                           bool fromUlp,
+                           bool fromEngineHub)
 {
     LOC_LOGD("%s]: fromUlp %u", __func__, fromUlp);
 
     // if this event is not called from ULP, then try to call into ULP and return if successfull
-    if (!fromUlp) {
+    if (!fromUlp && !fromEngineHub) {
         // report QMI SV report to eng hub
         mEngHubProxy->gnssReportSv(svNotify);
 
         if (mUlpProxy->reportSv(svNotify)) {
             return;
         }
+
+        // engine hub is loaded, do not report sv to client
+        // as sv report should come from engine hub
+        if (true == initEngHubProxy()){
+            return;
+        }
+    } else if ((true == fromUlp) && (true == initEngHubProxy())) {
+        LOC_LOGV("%s]: drop ULP GNSS SV event as engine hub is loaded", __func__);
+        return;
     }
 
     struct MsgReportSv : public LocMsg {
@@ -3445,15 +3477,17 @@ GnssAdapter::initEngHubProxy() {
                    const GpsLocationExtended& locationExtended,
                    enum loc_sess_status status,
                    LocPosTechMask techMask,
-                   bool fromUlp) {
+                   bool fromUlp,
+                   bool fromEngineHub) {
                     // report from engine hub on behalf of PPE will be treated as fromUlp
-                    reportPositionEvent(ulpLocation, locationExtended, status, techMask, fromUlp);
+                    reportPositionEvent(ulpLocation, locationExtended, status,
+                                        techMask, fromUlp, fromEngineHub);
             };
 
         // callback function for engine hub to report back sv event
         GnssAdapterReportSvEventCb reportSvEventCb =
-            [this](const GnssSvNotification& svNotify, bool fromUlp) {
-                   reportSvEvent(svNotify, fromUlp);
+            [this](const GnssSvNotification& svNotify, bool fromUlp, bool fromEngineHub) {
+                   reportSvEvent(svNotify, fromUlp, fromEngineHub);
             };
 
         getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
