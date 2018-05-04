@@ -233,6 +233,11 @@ Return<bool> GnssConfiguration::setBlacklist(
         return false;
     }
 
+    // blValid is true if blacklist is empty, i.e. clearing the BL;
+    // if blacklist is not empty, blValid is initialied to false, and later
+    // updated in the for loop to become true only if there is at least
+    // one {constellation, svid} in the list that is valid.
+    bool blValid = (0 == blacklist.size());
     GnssConfig config;
     memset(&config, 0, sizeof(GnssConfig));
     config.size = sizeof(GnssConfig);
@@ -241,25 +246,33 @@ Return<bool> GnssConfiguration::setBlacklist(
 
     GnssSvIdSource source = {};
     for (int idx = 0; idx < (int)blacklist.size(); idx++) {
-        setBlacklistedSource(source, blacklist[idx]);
+        // Set blValid true if any one source is valid
+        blValid = setBlacklistedSource(source, blacklist[idx]) || blValid;
         config.blacklistedSvIds.push_back(source);
     }
 
-    return mGnss->updateConfiguration(config);
+    // Update configuration only if blValid is true
+    // i.e. only if atleast one source is valid for blacklisting
+    return (blValid && mGnss->updateConfiguration(config));
 }
 
-void GnssConfiguration::setBlacklistedSource(
+bool GnssConfiguration::setBlacklistedSource(
         GnssSvIdSource& copyToSource,
         const GnssConfiguration::BlacklistedSource& copyFromSource) {
 
+    bool retVal = true;
     copyToSource.size = sizeof(GnssSvIdSource);
 
     switch(copyFromSource.constellation) {
     case GnssConstellationType::GPS:
         copyToSource.constellation = GNSS_SV_TYPE_GPS;
+        LOC_LOGe("GPS SVs can't be blacklisted.");
+        retVal = false;
         break;
     case GnssConstellationType::SBAS:
         copyToSource.constellation = GNSS_SV_TYPE_SBAS;
+        LOC_LOGe("SBAS SVs can't be blacklisted.");
+        retVal = false;
         break;
     case GnssConstellationType::GLONASS:
         copyToSource.constellation = GNSS_SV_TYPE_GLONASS;
@@ -275,10 +288,13 @@ void GnssConfiguration::setBlacklistedSource(
         break;
     default:
         copyToSource.constellation = GNSS_SV_TYPE_UNKNOWN;
+        LOC_LOGe("Invalid constellation %d", copyFromSource.constellation);
+        retVal = false;
         break;
     }
 
     copyToSource.svId = copyFromSource.svid;
+    return retVal;
 }
 
 }  // namespace implementation

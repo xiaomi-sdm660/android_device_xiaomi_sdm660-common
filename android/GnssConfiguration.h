@@ -64,7 +64,7 @@ struct GnssConfiguration : public IGnssConfiguration {
 
  private:
     Gnss* mGnss = nullptr;
-    void setBlacklistedSource(
+    bool setBlacklistedSource(
             GnssSvIdSource& copyToSource,
             const GnssConfiguration::BlacklistedSource& copyFromSource);
 };

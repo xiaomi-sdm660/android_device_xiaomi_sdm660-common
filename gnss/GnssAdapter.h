@@ -327,7 +327,7 @@ public:
     static void convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
                                      const GnssSvType& in_constellation,
                                      const SystemStatusReports& in);
-    static void convertToGnssSvIdConfig(
+    static bool convertToGnssSvIdConfig(
             const std::vector<GnssSvIdSource>& blacklistedSvIds, GnssSvIdConfig& config);
     static void convertFromGnssSvIdConfig(
             const GnssSvIdConfig& svConfig, GnssConfig& config);
