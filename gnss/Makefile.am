@@ -7,7 +7,7 @@ AM_CFLAGS = \
      -I../utils \
      -I$(WORKSPACE)/hardware/qcom/gps/core/data-items \
      -I../location \
-     -std=c++11
+     -std=c++1y
 
 libgnss_la_SOURCES = \
     location_gnss.cpp \

@@ -29,7 +29,6 @@
 #ifndef IZAT_PROXY_BASE_H
 #define IZAT_PROXY_BASE_H
 #include <gps_extended.h>
-#include <MsgTask.h>
 
 namespace loc_core {
 
@@ -40,11 +39,9 @@ class ContextBase;
 class LBSProxyBase {
     friend class ContextBase;
     inline virtual LocApiBase*
-        getLocApi(const MsgTask* msgTask,
-                  LOC_API_ADAPTER_EVENT_MASK_T exMask,
+        getLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask,
                   ContextBase* context) const {
 
-        (void)msgTask;
         (void)exMask;
         (void)context;
         return NULL;
