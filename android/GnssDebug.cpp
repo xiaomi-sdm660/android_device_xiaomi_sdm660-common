@@ -120,8 +120,7 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
             reports.mTime.frequencyUncertaintyNsPerSec;
     }
 
-    if (data.time.timeEstimate <= 0 ||
-        data.time.timeEstimate > GNSS_DEBUG_UNKNOWN_UTC_TIME) {
+    if (data.time.timeEstimate < GNSS_DEBUG_UNKNOWN_UTC_TIME) {
         data.time.timeEstimate = GNSS_DEBUG_UNKNOWN_UTC_TIME;
     }
     if (data.time.timeUncertaintyNs <= 0 ||
