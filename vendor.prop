@@ -188,6 +188,36 @@ ro.vendor.sensors.mot_detect=true
 camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 
+#disable UBWC for camera
+persist.camera.preview.ubwc=0
+persist.camera.stats.test=0
+persist.camera.depth.focus.cb=0
+persist.camera.isp.clock.optmz=0
+persist.camera.hist.high=20
+persist.camera.hist.drc=1.2
+persist.camera.linkpreview=0
+persist.camera.isp.turbo=1
+
+#exif info for camera
+persist.sys.exif.make=Xiaomi
+persist.sys.exif.model=Redmi Note 5
+
+#properties for camera front flash lux
+persist.flash.low.lux=390
+persist.flash.light.lux=340
+
+persist.imx376_ofilm.low.lux=310
+persist.imx376_ofilm.light.lux=280
+
+persist.imx376_sunny.low.lux=310
+persist.imx376_sunny.light.lux=280
+
+persist.ov13855_sunny.low.lux=385
+persist.ov13855_sunny.light.lux=370
+
+persist.s5k3l8_ofilm.low.lux=379
+persist.s5k3l8_ofilm.light.lux=367
+
 #
 # PROPERTIES FOR IMS
 #
