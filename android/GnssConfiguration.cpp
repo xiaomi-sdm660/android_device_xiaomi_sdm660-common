@@ -261,7 +261,9 @@ bool GnssConfiguration::setBlacklistedSource(
         const GnssConfiguration::BlacklistedSource& copyFromSource) {
 
     bool retVal = true;
+    uint16_t svIdOffset = 0;
     copyToSource.size = sizeof(GnssSvIdSource);
+    copyToSource.svId = copyFromSource.svid;
 
     switch(copyFromSource.constellation) {
     case GnssConstellationType::GPS:
@@ -276,15 +278,19 @@ bool GnssConfiguration::setBlacklistedSource(
         break;
     case GnssConstellationType::GLONASS:
         copyToSource.constellation = GNSS_SV_TYPE_GLONASS;
+        svIdOffset = GNSS_SV_CONFIG_GLO_INITIAL_SV_ID - 1;
         break;
     case GnssConstellationType::QZSS:
         copyToSource.constellation = GNSS_SV_TYPE_QZSS;
+        svIdOffset = 0;
         break;
     case GnssConstellationType::BEIDOU:
         copyToSource.constellation = GNSS_SV_TYPE_BEIDOU;
+        svIdOffset = GNSS_SV_CONFIG_BDS_INITIAL_SV_ID - 1;
         break;
     case GnssConstellationType::GALILEO:
         copyToSource.constellation = GNSS_SV_TYPE_GALILEO;
+        svIdOffset = GNSS_SV_CONFIG_GAL_INITIAL_SV_ID - 1;
         break;
     default:
         copyToSource.constellation = GNSS_SV_TYPE_UNKNOWN;
@@ -293,7 +299,10 @@ bool GnssConfiguration::setBlacklistedSource(
         break;
     }
 
-    copyToSource.svId = copyFromSource.svid;
+    if (copyToSource.svId > 0 && svIdOffset > 0) {
+        copyToSource.svId += svIdOffset;
+    }
+
     return retVal;
 }
 
