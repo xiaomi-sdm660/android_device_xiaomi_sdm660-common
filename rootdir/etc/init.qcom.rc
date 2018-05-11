@@ -36,8 +36,6 @@ on early-init
     chmod 0620 /dev/kmsg
 
 on init
-    # Set permissions for persist partition
-    mkdir /persist 0771 root system
 
     # Support legacy paths
     symlink /sdcard /mnt/sdcard
@@ -106,12 +104,12 @@ on boot
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
 
-    mkdir /persist/drm 0770 system system
-    mkdir /persist/bluetooth 0770 bluetooth bluetooth
-    mkdir /persist/misc 0770 system system
-    mkdir /persist/alarm 0770 system system
-    mkdir /persist/time 0770 system system
-    mkdir /persist/secnvm 0770 system system
+    mkdir /vendor/mnt/persist/drm 0770 system system
+    mkdir /vendor/mnt/persist/bluetooth 0770 bluetooth bluetooth
+    mkdir /vendor/mnt/persist/misc 0770 system system
+    mkdir /vendor/mnt/persist/alarm 0770 system system
+    mkdir /vendor/mnt/persist/time 0770 system system
+    mkdir /vendor/mnt/persist/secnvm 0770 system system
 
     #Create NETMGR daemon socket area
     mkdir /dev/socket/netmgr 0750 radio radio
@@ -204,10 +202,10 @@ on boot
     chown system system /sys/class/sensors/ap3426-proximity/poll_delay
 
     # Create directory used for display
-    mkdir /persist/display 0770 system graphics
+    mkdir /vendor/mnt/persist/display 0770 system graphics
 
     # Create vpp directory
-    mkdir /persist/vpp 0770 media media
+    mkdir /vendor/mnt/persist/vpp 0770 media media
 
     # load WIGIG platform driver
     insmod /vendor/lib/modules/msm_11ad_proxy.ko
@@ -313,10 +311,10 @@ on post-fs-data
     mkdir /data/vendor/radio 0770 system radio
 
     # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
-    # We chown/chmod /persist again so because mount is run as root + defaults
-    chown root system /persist
-    chmod 0771 /persist
-    chown system system /persist/WCNSS_qcom_wlan_nv.bin
+    # We chown/chmod /vendor/mnt/persist again so because mount is run as root + defaults
+    chown root system /vendor/mnt/persist
+    chmod 0771 /vendor/mnt/persist
+    chown system system /vendor/mnt/persist/WCNSS_qcom_wlan_nv.bin
     chmod 0664 /sys/devices/platform/msm_sdcc.1/polling
     chmod 0664 /sys/devices/platform/msm_sdcc.2/polling
     chmod 0664 /sys/devices/platform/msm_sdcc.3/polling
@@ -346,12 +344,12 @@ on post-fs-data
     chown system system /data/fota
 
     # SSC/SLPI sensors
-    mkdir /persist/sensors 0775 sensors sensors
-    write /persist/sensors/sensors_settings 1
-    chown system root /persist/sensors/sensors_settings
-    chmod 0664 /persist/sensors/sensors_settings
-    chown system system /persist/PRSensorData.txt
-    chmod 0600 /persist/PRSensorData.txt
+    mkdir /vendor/mnt/persist/sensors 0775 sensors sensors
+    write /vendor/mnt/persist/sensors/sensors_settings 1
+    chown system root /vendor/mnt/persist/sensors/sensors_settings
+    chmod 0664 /vendor/mnt/persist/sensors/sensors_settings
+    chown system system /vendor/mnt/persist/PRSensorData.txt
+    chmod 0600 /vendor/mnt/persist/PRSensorData.txt
 
     #Create directory for hostapd
     mkdir /data/hostapd 0770 system wifi

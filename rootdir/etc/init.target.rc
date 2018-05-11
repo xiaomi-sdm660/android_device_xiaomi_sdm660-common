@@ -49,20 +49,27 @@ on fs
     mount_all /vendor/etc/fstab.qcom
     swapon_all /vendor/etc/fstab.qcom
 
+    # Set permissions for persist partition
+    chown root system /mnt/vendor/persist
+    chmod 0771 /mnt/vendor/persist
+    mkdir /mnt/vendor/persist/bms 0700 root system
+    mkdir /mnt/vendor/persist/data 0700 system system
+    restorecon_recursive /mnt/vendor/persist
+
     # Keeping following partitions outside fstab file. As user may not have
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    mkdir /persist/data 0700 system system
-    mkdir /persist/bms 0700 root system
-    restorecon_recursive /persist
-    mkdir /persist/wlan_bt 0777 root system
+    mkdir /vendor/mnt/persist/data 0700 system system
+    mkdir /vendor/mnt/persist/bms 0700 root system
+    restorecon_recursive /vendor/mnt/persist
+    mkdir /vendor/mnt/persist/wlan_bt 0777 root system
     #add by Quanyu.Lee for MI-feature
     #only needed on Factory version,DO NOT push to MIUI!
-    chmod 0644 /persist/wlan_bt/bt.mac
-    chmod 0644 /persist/wlan_bt/wlan.mac
-    chown system system /persist/wlan_bt/bt.mac
-    chown system system /persist/wlan_bt/wlan.mac
+    chmod 0644 /vendor/mnt/persist/wlan_bt/bt.mac
+    chmod 0644 /vendor/mnt/persist/wlan_bt/wlan.mac
+    chown system system /vendor/mnt/persist/wlan_bt/bt.mac
+    chown system system /vendor/mnt/persist/wlan_bt/wlan.mac
 
     write /sys/kernel/boot_adsp/boot 1
 
@@ -81,7 +88,7 @@ on post-fs-data
     mkdir /data/tombstones/lpass 0771 system system
     mkdir /data/tombstones/wcnss 0771 system system
     mkdir /data/tombstones/dsps 0771 system system
-    mkdir /persist/qti_fp 0700 system system
+    mkdir /vendor/mnt/persist/qti_fp 0700 system system
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/misc/tloc 0700 system drmrpc
     mkdir /data/thermal 0771 system system
@@ -96,22 +103,22 @@ on boot
     write /dev/cpuset/system-background/cpus 0-7
     write /dev/cpuset/restricted/cpus 0-7
     ####Regionalization config and prop files####
-    chmod 0644 /persist/speccfg/spec
-    chmod 0644 /persist/speccfg/devicetype
-    chmod 0644 /persist/speccfg/mbnversion
-    chmod 0644 /persist/speccfg/.not_triggered
-    chmod 0644 /persist/speccfg/vendor_ro.prop
-    chmod 0644 /persist/speccfg/vendor_persist.prop
-    chmod 0644 /persist/speccfg/submask
-    chmod 0644 /persist/speccfg/partition
-    chown system system /persist/speccfg/spec
-    chown system system /persist/speccfg/devicetype
-    chown system system /persist/speccfg/mbnversion
-    chown system system /persist/speccfg/.not_triggered
-    chown system system /persist/speccfg/vendor_ro.prop
-    chown system system /persist/speccfg/vendor_persist.prop
-    chown system system /persist/speccfg/submask
-    chown system system /persist/speccfg/partition
+    chmod 0644 /vendor/mnt/persist/speccfg/spec
+    chmod 0644 /vendor/mnt/persist/speccfg/devicetype
+    chmod 0644 /vendor/mnt/persist/speccfg/mbnversion
+    chmod 0644 /vendor/mnt/persist/speccfg/.not_triggered
+    chmod 0644 /vendor/mnt/persist/speccfg/vendor_ro.prop
+    chmod 0644 /vendor/mnt/persist/speccfg/vendor_persist.prop
+    chmod 0644 /vendor/mnt/persist/speccfg/submask
+    chmod 0644 /vendor/mnt/persist/speccfg/partition
+    chown system system /vendor/mnt/persist/speccfg/spec
+    chown system system /vendor/mnt/persist/speccfg/devicetype
+    chown system system /vendor/mnt/persist/speccfg/mbnversion
+    chown system system /vendor/mnt/persist/speccfg/.not_triggered
+    chown system system /vendor/mnt/persist/speccfg/vendor_ro.prop
+    chown system system /vendor/mnt/persist/speccfg/vendor_persist.prop
+    chown system system /vendor/mnt/persist/speccfg/submask
+    chown system system /vendor/mnt/persist/speccfg/partition
 
     chmod 0660 /proc/nvt_wake_gesture
     chown system system /proc/nvt_wake_gesture
