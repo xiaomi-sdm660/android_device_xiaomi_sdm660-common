@@ -1322,7 +1322,15 @@ vendor/lib64/vendor.qti.hardware.vpp@1.1_vendor.so
 
 # Perf
 lib/libqti_performance.so
+lib/vendor.qti.hardware.perf@1.0.so
+lib/libqti-perfd-client_system.so
 lib64/libqti_performance.so
+lib64/vendor.qti.hardware.perf@1.0.so
+lib64/libqti-perfd-client_system.so
+lib/vendor.qti.hardware.iop@1.0.so
+lib/vendor.qti.hardware.iop@2.0.so
+lib64/vendor.qti.hardware.iop@1.0.so
+lib64/vendor.qti.hardware.iop@2.0.so
 vendor/bin/energy-awareness
 vendor/bin/msm_irqbalance
 vendor/bin/hw/vendor.qti.hardware.perf@1.0-service
