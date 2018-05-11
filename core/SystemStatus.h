@@ -514,8 +514,9 @@ public:
             RilServiceInfoDataItemBase() {}
     inline SystemStatusServiceInfo(const RilServiceInfoDataItemBase& itemBase) :
             RilServiceInfoDataItemBase(itemBase) {}
-    inline bool equals(const SystemStatusServiceInfo& /*peer*/) {
-        return true;
+    inline bool equals(const SystemStatusServiceInfo& peer) {
+        return static_cast<const RilServiceInfoDataItemBase&>(peer) ==
+                static_cast<const RilServiceInfoDataItemBase&>(*this);
     }
 };
 
@@ -527,8 +528,9 @@ public:
             RilCellInfoDataItemBase() {}
     inline SystemStatusRilCellInfo(const RilCellInfoDataItemBase& itemBase) :
             RilCellInfoDataItemBase(itemBase) {}
-    inline bool equals(const SystemStatusRilCellInfo& /*peer*/) {
-        return true;
+    inline bool equals(const SystemStatusRilCellInfo& peer) {
+        return static_cast<const RilCellInfoDataItemBase&>(peer) ==
+                static_cast<const RilCellInfoDataItemBase&>(*this);
     }
 };
 
