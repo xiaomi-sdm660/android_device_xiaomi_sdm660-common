@@ -126,6 +126,7 @@ public:
     uint32_t mBdsBpAmpQ;  // x1C
     uint32_t mGalBpAmpI;  // x1D
     uint32_t mGalBpAmpQ;  // x1E
+    uint64_t mTimeUncNs;  // x1F
 };
 
 // parser
@@ -157,7 +158,6 @@ private:
         eAgcGlo = 20,
         eAgcBds = 21,
         eAgcGal = 22,
-        eMax0 = eAgcGal,
         eLeapSeconds = 23,
         eLeapSecUnc = 24,
         eGloBpAmpI = 25,
@@ -166,6 +166,8 @@ private:
         eBdsBpAmpQ = 28,
         eGalBpAmpI = 29,
         eGalBpAmpQ = 30,
+        eMax0 = eGalBpAmpQ,
+        eTimeUncNs = 31,
         eMax
     };
     SystemStatusPQWM1 mM1;
@@ -201,6 +203,7 @@ public:
     inline uint32_t   getBdsBpAmpQ()  { return mM1.mBdsBpAmpQ; }
     inline uint32_t   getGalBpAmpI()  { return mM1.mGalBpAmpI; }
     inline uint32_t   getGalBpAmpQ()  { return mM1.mGalBpAmpQ; }
+    inline uint64_t   getTimeUncNs()  { return mM1.mTimeUncNs; }
 
     SystemStatusPQWM1parser(const char *str_in, uint32_t len_in)
         : SystemStatusNmeaBase(str_in, len_in)
@@ -244,6 +247,9 @@ public:
             mM1.mBdsBpAmpQ = atoi(mField[eBdsBpAmpQ].c_str());
             mM1.mGalBpAmpI = atoi(mField[eGalBpAmpI].c_str());
             mM1.mGalBpAmpQ = atoi(mField[eGalBpAmpQ].c_str());
+        }
+        if (mField.size() > eTimeUncNs) {
+            mM1.mTimeUncNs = strtoull(mField[eTimeUncNs].c_str(), nullptr, 10);
         }
     }
 
@@ -715,7 +721,8 @@ SystemStatusTimeAndClock::SystemStatusTimeAndClock(const SystemStatusPQWM1& nmea
     mClockFreqBias(nmea.mClockFreqBias),
     mClockFreqBiasUnc(nmea.mClockFreqBiasUnc),
     mLeapSeconds(nmea.mLeapSeconds),
-    mLeapSecUnc(nmea.mLeapSecUnc)
+    mLeapSecUnc(nmea.mLeapSecUnc),
+    mTimeUncNs(nmea.mTimeUncNs)
 {
 }
 
@@ -729,7 +736,8 @@ bool SystemStatusTimeAndClock::equals(const SystemStatusTimeAndClock& peer)
         (mClockFreqBias != peer.mClockFreqBias) ||
         (mClockFreqBiasUnc != peer.mClockFreqBiasUnc) ||
         (mLeapSeconds != peer.mLeapSeconds) ||
-        (mLeapSecUnc != peer.mLeapSecUnc)) {
+        (mLeapSecUnc != peer.mLeapSecUnc) ||
+        (mTimeUncNs != peer.mTimeUncNs)) {
         return false;
     }
     return true;
@@ -737,7 +745,7 @@ bool SystemStatusTimeAndClock::equals(const SystemStatusTimeAndClock& peer)
 
 void SystemStatusTimeAndClock::dump()
 {
-    LOC_LOGV("TimeAndClock: u=%ld:%ld g=%d:%d v=%d ts=%d tu=%d b=%d bu=%d ls=%d lu=%d",
+    LOC_LOGV("TimeAndClock: u=%ld:%ld g=%d:%d v=%d ts=%d tu=%d b=%d bu=%d ls=%d lu=%d un=%" PRIu64,
              mUtcTime.tv_sec, mUtcTime.tv_nsec,
              mGpsWeek,
              mGpsTowMs,
@@ -747,7 +755,8 @@ void SystemStatusTimeAndClock::dump()
              mClockFreqBias,
              mClockFreqBiasUnc,
              mLeapSeconds,
-             mLeapSecUnc);
+             mLeapSecUnc,
+             mTimeUncNs);
     return;
 }
 
