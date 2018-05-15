@@ -42,8 +42,9 @@ namespace loc_core {
 // But if getLocApi(targetEnumType target) is overriden,
 // the right locApi should get created.
 LocAdapterBase::LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
-                               ContextBase* context, LocAdapterProxyBase *adapterProxyBase) :
-    mEvtMask(mask), mContext(context),
+                               ContextBase* context, bool isMaster,
+                               LocAdapterProxyBase *adapterProxyBase) :
+    mIsMaster(isMaster), mEvtMask(mask), mContext(context),
     mLocApi(context->getLocApi()), mLocAdapterProxyBase(adapterProxyBase),
     mMsgTask(context->getMsgTask())
 {

@@ -163,6 +163,18 @@ LOC_API_ADAPTER_EVENT_MASK_T LocApiBase::getEvtMask()
     return mask & ~mExcludedMask;
 }
 
+bool LocApiBase::isMaster()
+{
+    bool isMaster = false;
+
+    for (int i = 0;
+            !isMaster && i < MAX_ADAPTERS && NULL != mLocAdapters[i];
+            i++) {
+        isMaster |= mLocAdapters[i]->isAdapterMaster();
+    }
+    return isMaster;
+}
+
 bool LocApiBase::isInSession()
 {
     bool inSession = false;
@@ -577,10 +589,6 @@ void LocApiBase::
                     size_t /*length*/,
                     uint32_t /*slotBitMask*/)
 DEFAULT_IMPL()
-
-int LocApiBase::
-    getGpsLock()
-DEFAULT_IMPL(-1)
 
 LocationError LocApiBase::
     setXtraVersionCheckSync(uint32_t /*check*/)
