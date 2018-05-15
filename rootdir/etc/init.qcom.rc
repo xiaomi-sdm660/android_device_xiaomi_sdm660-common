@@ -168,6 +168,7 @@ on boot
     mkdir /mnt/vendor/persist/alarm 0770 system system
     mkdir /persist/time 0770 system system
     mkdir /mnt/vendor/persist/secnvm 0770 system system
+    mkdir /persist/alarm 0770 system system
 
     #Create NETMGR daemon socket area
     mkdir /dev/socket/netmgr 0750 radio radio

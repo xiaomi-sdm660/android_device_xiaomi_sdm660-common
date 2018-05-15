@@ -60,6 +60,7 @@ on fs
     mkdir /mnt/vendor/persist/bms 0700 root system
     mkdir /mnt/vendor/persist/display 0770 system graphics
     mkdir /mnt/vendor/persist/hvdcp_opti 0770 root system
+    mkdir /mnt/vendor/persist/secnvm 0770 system system
     mkdir /mnt/vendor/persist/time 0770 system system
     restorecon_recursive /mnt/vendor/persist
     write /sys/kernel/boot_adsp/boot 1
