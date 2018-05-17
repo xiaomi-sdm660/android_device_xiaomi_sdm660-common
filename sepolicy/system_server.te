@@ -1,0 +1,2 @@
+#============= system_server ==============
+allow system_server vendor_file:file { execute getattr open read };
