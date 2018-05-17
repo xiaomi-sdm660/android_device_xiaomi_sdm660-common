@@ -130,7 +130,7 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestATL(int /*connHandle*/, LocAGpsType /*agps_type*/)
+    requestATL(int /*connHandle*/, LocAGpsType /*agps_type*/, LocApnTypeMask /*mask*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
@@ -138,7 +138,7 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestSuplES(int /*connHandle*/)
+    requestSuplES(int /*connHandle*/, LocApnTypeMask /*mask*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::

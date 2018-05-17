@@ -252,9 +252,9 @@ public:
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
 
-    virtual bool requestATL(int connHandle, LocAGpsType agps_type);
+    virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask);
     virtual bool releaseATL(int connHandle);
-    virtual bool requestSuplES(int connHandle);
+    virtual bool requestSuplES(int connHandle, LocApnTypeMask mask);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
     virtual bool reportZppBestAvailableFix(LocGpsLocation &zppLoc,

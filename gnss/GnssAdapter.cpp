@@ -26,6 +26,7 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_GnssAdapter"
 
 #include <inttypes.h>
@@ -93,10 +94,10 @@ GnssAdapter::GnssAdapter() :
     /* Set ATL open/close callbacks */
     AgpsAtlOpenStatusCb atlOpenStatusCb =
             [this](int handle, int isSuccess, char* apn, uint32_t apnLen,
-                    AGpsBearerType bearerType, AGpsExtType agpsType) {
+                    AGpsBearerType bearerType, AGpsExtType agpsType, LocApnTypeMask mask) {
 
                 mLocApi->atlOpenStatus(
-                        handle, isSuccess, apn, apnLen, bearerType, agpsType);
+                        handle, isSuccess, apn, apnLen, bearerType, agpsType, mask);
             };
     AgpsAtlCloseStatusCb atlCloseStatusCb =
             [this](int handle, int isSuccess) {
@@ -2870,12 +2871,12 @@ void GnssAdapter::initAgpsCommand(const AgpsCbInfo& cbInfo){
  * Triggers the AGPS state machine to setup AGPS call for below WWAN types:
  * eQMI_LOC_WWAN_TYPE_INTERNET_V02
  * eQMI_LOC_WWAN_TYPE_AGNSS_V02 */
-bool GnssAdapter::requestATL(int connHandle, LocAGpsType agpsType){
+bool GnssAdapter::requestATL(int connHandle, LocAGpsType agpsType, LocApnTypeMask mask){
 
     LOC_LOGI("GnssAdapter::requestATL");
 
     sendMsg( new AgpsMsgRequestATL(
-             &mAgpsManager, connHandle, (AGpsExtType)agpsType));
+             &mAgpsManager, connHandle, (AGpsExtType)agpsType, mask));
 
     return true;
 }
@@ -2885,12 +2886,12 @@ bool GnssAdapter::requestATL(int connHandle, LocAGpsType agpsType){
  * eQMI_LOC_SERVER_REQUEST_OPEN_V02
  * Triggers the AGPS state machine to setup AGPS call for below WWAN types:
  * eQMI_LOC_WWAN_TYPE_AGNSS_EMERGENCY_V02 */
-bool GnssAdapter::requestSuplES(int connHandle){
+bool GnssAdapter::requestSuplES(int connHandle, LocApnTypeMask mask){
 
     LOC_LOGI("GnssAdapter::requestSuplES");
 
     sendMsg( new AgpsMsgRequestATL(
-             &mAgpsManager, connHandle, LOC_AGPS_TYPE_SUPL_ES));
+             &mAgpsManager, connHandle, LOC_AGPS_TYPE_SUPL_ES, mask));
 
     return true;
 }

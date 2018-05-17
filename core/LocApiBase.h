@@ -147,9 +147,9 @@ public:
     void requestXtraData();
     void requestTime();
     void requestLocation();
-    void requestATL(int connHandle, LocAGpsType agps_type);
+    void requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask);
     void releaseATL(int connHandle);
-    void requestSuplES(int connHandle);
+    void requestSuplES(int connHandle, LocApnTypeMask mask);
     void reportDataCallOpened();
     void reportDataCallClosed();
     void requestNiNotify(GnssNiNotification &notify, const void* data);
@@ -181,7 +181,7 @@ public:
 
     virtual void
         atlOpenStatus(int handle, int is_succ, char* apn, uint32_t apnLen,
-                AGpsBearerType bear, LocAGpsType agpsType);
+                AGpsBearerType bear, LocAGpsType agpsType, LocApnTypeMask mask);
     virtual void
         atlCloseStatus(int handle, int is_succ);
     virtual void

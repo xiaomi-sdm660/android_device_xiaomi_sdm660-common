@@ -374,10 +374,10 @@ void LocApiBase::requestLocation()
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestLocation());
 }
 
-void LocApiBase::requestATL(int connHandle, LocAGpsType agps_type)
+void LocApiBase::requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask)
 {
     // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestATL(connHandle, agps_type));
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestATL(connHandle, agps_type, mask));
 }
 
 void LocApiBase::releaseATL(int connHandle)
@@ -386,10 +386,10 @@ void LocApiBase::releaseATL(int connHandle)
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->releaseATL(connHandle));
 }
 
-void LocApiBase::requestSuplES(int connHandle)
+void LocApiBase::requestSuplES(int connHandle, LocApnTypeMask mask)
 {
     // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestSuplES(connHandle));
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestSuplES(connHandle, mask));
 }
 
 void LocApiBase::reportDataCallOpened()
@@ -455,7 +455,7 @@ DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 void LocApiBase::
    atlOpenStatus(int /*handle*/, int /*is_succ*/, char* /*apn*/, uint32_t /*apnLen*/,
-                 AGpsBearerType /*bear*/, LocAGpsType /*agpsType*/)
+                 AGpsBearerType /*bear*/, LocAGpsType /*agpsType*/, LocApnTypeMask /*mask*/)
 DEFAULT_IMPL()
 
 void LocApiBase::

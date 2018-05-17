@@ -41,9 +41,10 @@
  * Passed in by Adapter to AgpsManager */
 typedef std::function<void(
         int handle, int isSuccess, char* apn, uint32_t apnLen,
-        AGpsBearerType bearerType, AGpsExtType agpsType)>  AgpsAtlOpenStatusCb;
+        AGpsBearerType bearerType, AGpsExtType agpsType,
+        LocApnTypeMask mask)>  AgpsAtlOpenStatusCb;
 
-typedef std::function<void(int handle, int isSuccess)>     AgpsAtlCloseStatusCb;
+typedef std::function<void(int handle, int isSuccess)> AgpsAtlCloseStatusCb;
 
 /* DS Client control APIs
  * Passed in by Adapter to AgpsManager */
@@ -109,12 +110,15 @@ public:
      * inactive state. */
     bool mWaitForCloseComplete;
     bool mIsInactive;
+    LocApnTypeMask mApnTypeMask;
 
     inline AgpsSubscriber(
-            int connHandle, bool waitForCloseComplete, bool isInactive) :
+            int connHandle, bool waitForCloseComplete, bool isInactive,
+            LocApnTypeMask apnTypeMask) :
             mConnHandle(connHandle),
             mWaitForCloseComplete(waitForCloseComplete),
-            mIsInactive(isInactive) {}
+            mIsInactive(isInactive),
+            mApnTypeMask(apnTypeMask) {}
     inline virtual ~AgpsSubscriber() {}
 
     inline virtual bool equals(const AgpsSubscriber *s) const
@@ -122,7 +126,7 @@ public:
 
     inline virtual AgpsSubscriber* clone()
     { return new AgpsSubscriber(
-            mConnHandle, mWaitForCloseComplete, mIsInactive); }
+            mConnHandle, mWaitForCloseComplete, mIsInactive, mApnTypeMask); }
 };
 
 /* AGPS STATE MACHINE */
@@ -306,7 +310,7 @@ public:
     void createAgpsStateMachines();
 
     /* Process incoming ATL requests */
-    void requestATL(int connHandle, AGpsExtType agpsType);
+    void requestATL(int connHandle, AGpsExtType agpsType, LocApnTypeMask mask);
     void releaseATL(int connHandle);
 
     /* Process incoming DS Client data call events */
@@ -354,11 +358,12 @@ struct AgpsMsgRequestATL: public LocMsg {
     AgpsManager* mAgpsManager;
     int mConnHandle;
     AGpsExtType mAgpsType;
+    LocApnTypeMask mApnTypeMask;
 
     inline AgpsMsgRequestATL(AgpsManager* agpsManager, int connHandle,
-            AGpsExtType agpsType) :
-            LocMsg(), mAgpsManager(agpsManager), mConnHandle(connHandle), mAgpsType(
-                    agpsType) {
+            AGpsExtType agpsType, LocApnTypeMask mask) :
+            LocMsg(), mAgpsManager(agpsManager), mConnHandle(connHandle),
+            mAgpsType(agpsType), mApnTypeMask(mask) {
 
         LOC_LOGV("AgpsMsgRequestATL");
     }
@@ -366,7 +371,7 @@ struct AgpsMsgRequestATL: public LocMsg {
     inline virtual void proc() const {
 
         LOC_LOGV("AgpsMsgRequestATL::proc()");
-        mAgpsManager->requestATL(mConnHandle, mAgpsType);
+        mAgpsManager->requestATL(mConnHandle, mAgpsType, mApnTypeMask);
     }
 };
 

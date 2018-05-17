@@ -158,6 +158,18 @@ typedef int16_t AGpsBearerType;
 #define AGPS_APN_BEARER_IPV6        2
 #define AGPS_APN_BEARER_IPV4V6      3
 
+typedef uint64_t LocApnTypeMask;
+#define LOC_APN_TYPE_MASK_DEFAULT   ((LocApnTypeMask)0x0000000000000001ull) /**<  Denotes APN type for Default/Internet traffic  */
+#define LOC_APN_TYPE_MASK_IMS       ((LocApnTypeMask)0x0000000000000002ull) /**<  Denotes  APN type for IP Multimedia Subsystem  */
+#define LOC_APN_TYPE_MASK_MMS       ((LocApnTypeMask)0x0000000000000004ull) /**<  Denotes APN type for Multimedia Messaging Service  */
+#define LOC_APN_TYPE_MASK_DUN       ((LocApnTypeMask)0x0000000000000008ull) /**<  Denotes APN type for Dial Up Network  */
+#define LOC_APN_TYPE_MASK_SUPL      ((LocApnTypeMask)0x0000000000000010ull) /**<  Denotes APN type for Secure User Plane Location  */
+#define LOC_APN_TYPE_MASK_HIPRI     ((LocApnTypeMask)0x0000000000000020ull) /**<  Denotes APN type for High Priority Mobile Data  */
+#define LOC_APN_TYPE_MASK_FOTA      ((LocApnTypeMask)0x0000000000000040ull) /**<  Denotes APN type for over the air administration  */
+#define LOC_APN_TYPE_MASK_CBS       ((LocApnTypeMask)0x0000000000000080ull) /**<  Denotes APN type for Carrier Branded Services  */
+#define LOC_APN_TYPE_MASK_IA        ((LocApnTypeMask)0x0000000000000100ull) /**<  Denotes APN type for Initial Attach  */
+#define LOC_APN_TYPE_MASK_EMERGENCY ((LocApnTypeMask)0x0000000000000200ull) /**<  Denotes APN type for emergency  */
+
 typedef enum {
     AGPS_CB_PRIORITY_LOW  = 1,
     AGPS_CB_PRIORITY_MED  = 2,
