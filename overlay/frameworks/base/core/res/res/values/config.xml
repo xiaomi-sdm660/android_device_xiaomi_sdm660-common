@@ -31,16 +31,17 @@
 <resources>
    <!-- Operating volatage for bluetooth controller. 0 by default-->
    <integer translatable="false" name="config_bluetooth_operating_voltage_mv">3300</integer>
-   
+
    <!-- The duration (in milliseconds) for the outgoing sms authorization request to timeout.-->
    <integer name="config_sms_authorization_timeout_ms">15000</integer>
+
    <!-- Enable SMS authorization support -->
    <bool name="config_sms_authorization_enabled">true</bool>
 
     <!-- Set to true to add links to Cell Broadcast app from Settings and MMS app. -->
     <bool name="config_cellBroadcastAppLinks">true</bool>
-    
-     <!-- Is the battery LED intrusive? Used to decide if there should be a disable option -->
+
+    <!-- Is the battery LED intrusive? Used to decide if there should be a disable option -->
     <bool name="config_intrusiveBatteryLed">true</bool>
 
     <!-- Default value for led color when battery is low on charge -->
@@ -55,7 +56,7 @@
     <!-- Is the notification LED intrusive? Used to decide if there should be a disable option -->
     <bool name="config_intrusiveNotificationLed">true</bool>
     
-     <!-- The device supports freeform window management. Windows have title bars and can be moved
+    <!-- The device supports freeform window management. Windows have title bars and can be moved
          and resized. If you set this to true, you also need to add
          PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT feature to your device specification.
          The duplication is necessary, because this information is used before the features are
@@ -148,7 +149,7 @@
 
     <!-- Wifi driver supports batched scan -->
     <bool translatable="false" name="config_wifi_batched_scan_supported">true</bool>
-    
+
     <!-- Configure wifi tcp buffersizes in the form:
          rmem_min,rmem_def,rmem_max,wmem_min,wmem_def,wmem_max -->
     <string name="config_wifi_tcp_buffers" translatable="false">524288,2097152,8388608,262144,524288,4194304</string>
@@ -206,7 +207,7 @@
     <!-- If true, the doze component is not started until after the screen has been
          turned off and the screen off animation has been performed. -->
     <bool name="config_dozeAfterScreenOffByDefault">true</bool>
-    
+
     <!-- Control whether the always on display mode is available. This should only be enabled on
          devices where the display has be tuned to be power efficient in DOZE and/or DOZE_SUSPEND
          states. -->
@@ -243,13 +244,14 @@
     -->
     <bool name="config_powerDecoupleInteractiveModeFromDisplay">true</bool>
     
-     <!-- Indicate whether closing the lid causes the device to go to sleep and opening
+    <!-- Indicate whether closing the lid causes the device to go to sleep and opening
           it causes the device to wake up.
           The default is false. -->
-     <bool name="config_lidControlsSleep">true</bool>
+    <bool name="config_lidControlsSleep">true</bool>
 
     <!--  Maximum number of supported users -->
     <integer name="config_multiuserMaximumUsers">4</integer>
+
     <!--  Whether Multiuser UI should be shown -->
     <bool name="config_enableMultiUserUI">true</bool>
 
@@ -266,7 +268,7 @@
     state changes. Voice radio tech change will always trigger an update of
     phone object irrespective of this config -->
     <bool name="config_switch_phone_on_voice_reg_state_change">false</bool>
-    
+
     <!--  Define Google play service package for FRP-->
     <string name="config_persistentDataPackageName" translatable="false">com.google.android.gms</string>
 
@@ -285,10 +287,10 @@
         <item>"/system/framework/arm64/boot-core-libart.oat"</item>
         <item>"/system/framework/boot-core-libart.vdex"</item>
     </string-array>
-    
+
     <!-- True if camera app should be pinned via Pinner Service -->
     <bool name="config_pinnerCameraApp">true</bool>
-	
+
     <!-- Should the pinner service pin the Home application? -->
     <bool name="config_pinnerHomeApp">true</bool>
 
@@ -316,17 +318,17 @@
     <!-- Whether a software navigation bar should be shown. NOTE: in the future this may be
                   autodetected from the Configuration. -->
     <bool name="config_showNavigationBar">true</bool>
-    
-     <!-- Enables or disables fading edges when marquee is enabled in TextView.
+
+    <!-- Enables or disables fading edges when marquee is enabled in TextView.
          Off by default, since the framebuffer readback used to implement the
          fading edges is prohibitively expensive on most GPUs. -->
     <bool name="config_ui_enableFadingMarquee">false</bool>
-    
-     <!-- If true, the screen can be rotated via the accelerometer in all 4
+
+    <!-- If true, the screen can be rotated via the accelerometer in all 4
          rotations as the default behavior. -->
     <bool name="config_allowAllRotations">true</bool>
-    
-     <!-- Control the behavior when the user long presses the home button.
+
+    <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
             1 - Menu key
             2 - Recent apps view in SystemUI
@@ -337,7 +339,7 @@
          policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
     -->
     <integer name="config_longPressOnHomeBehavior">3</integer>
-    
+
     <!-- Enable overlay for all location components. -->
     <string name="config_networkLocationProviderPackageName" translatable="false">com.qualcomm.location</string>
     <string name="config_fusedLocationProviderPackageName" translatable="false">com.qualcomm.location</string>
@@ -347,27 +349,29 @@
 
     <!-- Whether device ignores the RSSNR signal implementation -->
     <bool name="config_ignoreRssnrSignalLevel">true</bool>
-	
 
     <!-- Enable ACS (auto channel selection) for Wifi hotspot (SAP) -->
     <bool translatable="false" name="config_wifi_softap_acs_supported">true</bool>
 
     <!-- Enable 802.11ac for Wifi hotspot (SAP) -->
     <bool translatable="false" name="config_wifi_softap_ieee80211ac_supported">true</bool>
-    
+
     <!-- Flag indicating whether we should enable smart battery. -->
-     <bool name="config_smart_battery_available">true</bool>
-     
-     <!-- Set this to true to enable the platform's auto-power-save modes like doze and
+    <bool name="config_smart_battery_available">true</bool>
+
+    <!-- Make things go fast -->
+    <bool name="config_ui_enableFadingMarquee">false</bool>
+
+    <!-- Set this to true to enable the platform's auto-power-save modes like doze and
           app standby.  These are not enabled by default because they require a standard
           cloud-to-device messaging service for apps to interact correctly with the modes
           (such as to be able to deliver an instant message to the device even when it is
           dozing).  This should be enabled if you have such services and expect apps to
           correctly use them when installed on your device.  Otherwise, keep this disabled
           so that applications can still use their own mechanisms. -->
-     <bool name="config_enableAutoPowerModes">true</bool>
-     
-     <!-- Flag indicating whether round icons should be parsed from the application manifest. -->
+    <bool name="config_enableAutoPowerModes">true</bool>
+
+    <!-- Flag indicating whether round icons should be parsed from the application manifest. -->
     <bool name="config_useRoundIcon">true</bool>
     
      <!-- Whether the device has outdated qti-telephony-common.jar -->
