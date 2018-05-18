@@ -33,22 +33,20 @@
 #include <MsgTask.h>
 #include <LocIpc.h>
 #include <LocTimer.h>
-#include <set>
 
 using namespace std;
 using loc_core::IOsObserver;
 using loc_core::IDataItemObserver;
 using loc_core::IDataItemCore;
 using loc_util::LocIpc;
-using CONNECTIONS = set<int32_t>;
 
 class XtraSystemStatusObserver : public IDataItemObserver, public LocIpc{
 public :
     // constructor & destructor
     inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
             mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask),
-            mGpsLock(-1), mXtraThrottle(true), mReqStatusReceived(false), mDelayLocTimer(*this),
-            mIsConnectivityStatusKnown (false) {
+            mGpsLock(-1), mConnections(0), mXtraThrottle(true), mReqStatusReceived(false),
+            mDelayLocTimer(*this), mIsConnectivityStatusKnown (false) {
         subscribe(true);
         startListeningNonBlocking(LOC_IPC_HAL);
         mDelayLocTimer.start(100 /*.1 sec*/,  false);
@@ -63,7 +61,7 @@ public :
     virtual void notify(const list<IDataItemCore*>& dlist);
 
     bool updateLockStatus(uint32_t lock);
-    bool updateConnectionStatus(bool connected, int32_t type);
+    bool updateConnections(uint64_t allConnections);
     bool updateTac(const string& tac);
     bool updateMccMnc(const string& mccmnc);
     bool updateXtraThrottle(const bool enabled);
@@ -77,7 +75,7 @@ private:
     IOsObserver*    mSystemStatusObsrvr;
     const MsgTask* mMsgTask;
     int32_t mGpsLock;
-    CONNECTIONS mConnections;
+    uint64_t mConnections;
     string mTac;
     string mMccmnc;
     bool mXtraThrottle;
