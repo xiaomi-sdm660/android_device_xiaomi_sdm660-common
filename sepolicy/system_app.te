@@ -1,0 +1,2 @@
+allow system_app camera_prop:property_service set;
+get_prop(system_app, camera_prop);
