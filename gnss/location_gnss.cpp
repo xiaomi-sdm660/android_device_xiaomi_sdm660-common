@@ -51,6 +51,11 @@ static void setControlCallbacks(LocationControlCallbacks& controlCallbacks);
 static uint32_t enable(LocationTechnologyType techType);
 static void disable(uint32_t id);
 static uint32_t* gnssUpdateConfig(GnssConfig config);
+static uint32_t* gnssGetConfig(GnssConfigFlagsMask mask);
+
+static void gnssUpdateSvTypeConfig(GnssSvTypeConfig& config);
+static void gnssGetSvTypeConfig(GnssSvTypeConfigCallback& callback);
+static void gnssResetSvTypeConfig();
 
 static void injectLocation(double latitude, double longitude, float accuracy);
 static void injectTime(int64_t time, int64_t timeReference, int32_t uncertainty);
@@ -77,6 +82,10 @@ static const GnssInterface gGnssInterface = {
     enable,
     disable,
     gnssUpdateConfig,
+    gnssGetConfig,
+    gnssUpdateSvTypeConfig,
+    gnssGetSvTypeConfig,
+    gnssResetSvTypeConfig,
     gnssDeleteAidingData,
     gnssUpdateXtraThrottle,
     injectLocation,
@@ -167,7 +176,7 @@ static void gnssNiResponse(LocationAPI* client, uint32_t id, GnssNiResponse resp
 static void setControlCallbacks(LocationControlCallbacks& controlCallbacks)
 {
     if (NULL != gGnssAdapter) {
-        return gGnssAdapter->setControlCallbacksCommand(controlCallbacks);
+        gGnssAdapter->setControlCallbacksCommand(controlCallbacks);
     }
 }
 
@@ -183,7 +192,7 @@ static uint32_t enable(LocationTechnologyType techType)
 static void disable(uint32_t id)
 {
     if (NULL != gGnssAdapter) {
-        return gGnssAdapter->disableCommand(id);
+        gGnssAdapter->disableCommand(id);
     }
 }
 
@@ -193,6 +202,36 @@ static uint32_t* gnssUpdateConfig(GnssConfig config)
         return gGnssAdapter->gnssUpdateConfigCommand(config);
     } else {
         return NULL;
+    }
+}
+
+static uint32_t* gnssGetConfig(GnssConfigFlagsMask mask)
+{
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->gnssGetConfigCommand(mask);
+    } else {
+        return NULL;
+    }
+}
+
+static void gnssUpdateSvTypeConfig(GnssSvTypeConfig& config)
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->gnssUpdateSvTypeConfigCommand(config);
+    }
+}
+
+static void gnssGetSvTypeConfig(GnssSvTypeConfigCallback& callback)
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->gnssGetSvTypeConfigCommand(callback);
+    }
+}
+
+static void gnssResetSvTypeConfig()
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->gnssResetSvTypeConfigCommand();
     }
 }
 

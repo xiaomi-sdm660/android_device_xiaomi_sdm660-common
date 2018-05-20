@@ -234,6 +234,10 @@ Return<bool> Gnss::updateConfiguration(GnssConfig& gnssConfig) {
             mPendingConfig.flags |= GNSS_CONFIG_FLAGS_SUPL_MODE_BIT;
             mPendingConfig.suplModeMask = gnssConfig.suplModeMask;
         }
+        if (gnssConfig.flags & GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT) {
+            mPendingConfig.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
+            mPendingConfig.blacklistedSvIds = gnssConfig.blacklistedSvIds;
+        }
     }
     return true;
 }

@@ -57,7 +57,8 @@ enum REQUEST_TYPE {
 enum CTRL_REQUEST_TYPE {
     CTRL_REQUEST_DELETEAIDINGDATA = 0,
     CTRL_REQUEST_CONTROL,
-    CTRL_REQUEST_CONFIG,
+    CTRL_REQUEST_CONFIG_UPDATE,
+    CTRL_REQUEST_CONFIG_GET,
     CTRL_REQUEST_MAX,
 };
 
@@ -74,12 +75,13 @@ public:
 
 class RequestQueue {
 public:
-    RequestQueue(): mSession(0) {
+    RequestQueue(): mSession(0), mSessionArrayPtr(nullptr) {
     }
     virtual ~RequestQueue() {
-        reset(0);
+        reset((uint32_t)0);
     }
     void inline setSession(uint32_t session) { mSession = session; }
+    void inline setSessionArrayPtr(uint32_t* ptr) { mSessionArrayPtr = ptr; }
     void reset(uint32_t session) {
         LocationAPIRequest* request = nullptr;
         while (!mQueue.empty()) {
@@ -88,6 +90,10 @@ public:
             delete request;
         }
         mSession = session;
+    }
+    void reset(uint32_t* sessionArrayPtr) {
+        reset((uint32_t)0);
+        mSessionArrayPtr = sessionArrayPtr;
     }
     void push(LocationAPIRequest* request) {
         mQueue.push(request);
@@ -101,8 +107,10 @@ public:
         return request;
     }
     uint32_t getSession() { return mSession; }
+    uint32_t* getSessionArrayPtr() { return mSessionArrayPtr; }
 private:
     uint32_t mSession;
+    uint32_t* mSessionArrayPtr;
     std::queue<LocationAPIRequest*> mQueue;
 };
 
@@ -114,12 +122,15 @@ public:
     LocationAPIControlClient& operator=(const LocationAPIControlClient&) = delete;
 
     LocationAPIRequest* getRequestBySession(uint32_t session);
+    LocationAPIRequest* getRequestBySessionArrayPtr(uint32_t* sessionArrayPtr);
 
     // LocationControlAPI
     uint32_t locAPIGnssDeleteAidingData(GnssAidingData& data);
     uint32_t locAPIEnable(LocationTechnologyType techType);
     void locAPIDisable();
     uint32_t locAPIGnssUpdateConfig(GnssConfig config);
+    uint32_t locAPIGnssGetConfig(GnssConfigFlagsMask config);
+    inline LocationControlAPI* getControlAPI() { return mLocationControlAPI; }
 
     // callbacks
     void onCtrlResponseCb(LocationError error, uint32_t id);
@@ -129,6 +140,8 @@ public:
     inline virtual void onEnableCb(LocationError /*error*/) {}
     inline virtual void onDisableCb(LocationError /*error*/) {}
     inline virtual void onGnssUpdateConfigCb(
+            size_t /*count*/, LocationError* /*errors*/, uint32_t* /*ids*/) {}
+    inline virtual void onGnssGetConfigCb(
             size_t /*count*/, LocationError* /*errors*/, uint32_t* /*ids*/) {}
 
     class GnssDeleteAidingDataRequest : public LocationAPIRequest {
@@ -163,6 +176,15 @@ public:
         GnssUpdateConfigRequest(LocationAPIControlClient& API) : mAPI(API) {}
         inline void onCollectiveResponse(size_t count, LocationError* errors, uint32_t* ids) {
             mAPI.onGnssUpdateConfigCb(count, errors, ids);
+        }
+        LocationAPIControlClient& mAPI;
+    };
+
+    class GnssGetConfigRequest : public LocationAPIRequest {
+    public:
+        GnssGetConfigRequest(LocationAPIControlClient& API) : mAPI(API) {}
+        inline void onCollectiveResponse(size_t count, LocationError* errors, uint32_t* ids) {
+            mAPI.onGnssGetConfigCb(count, errors, ids);
         }
         LocationAPIControlClient& mAPI;
     };

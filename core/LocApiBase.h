@@ -157,6 +157,8 @@ public:
     void reportWwanZppFix(LocGpsLocation &zppLoc);
     void reportZppBestAvailableFix(LocGpsLocation &zppLoc, GpsLocationExtended &location_extended,
             LocPosTechMask tech_mask);
+    void reportGnssSvIdConfig(const GnssSvIdConfig& config);
+    void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -260,6 +262,13 @@ public:
 
     virtual LocationError setXtraVersionCheckSync(uint32_t check);
 
+    /* Requests for SV/Constellation Control */
+    virtual LocationError setBlacklistSvSync(const GnssSvIdConfig& config);
+    virtual void setBlacklistSv(const GnssSvIdConfig& config);
+    virtual void getBlacklistSv();
+    virtual void setConstellationControl(const GnssSvTypeConfig& config);
+    virtual void getConstellationControl();
+    virtual void resetConstellationControl();
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

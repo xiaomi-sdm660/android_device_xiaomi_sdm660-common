@@ -157,6 +157,8 @@ public:
     virtual bool reportWwanZppFix(LocGpsLocation &zppLoc);
     virtual bool reportZppBestAvailableFix(LocGpsLocation &zppLoc,
             GpsLocationExtended &location_extended, LocPosTechMask tech_mask);
+    virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
+    virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
 };
 
 } // namespace loc_core

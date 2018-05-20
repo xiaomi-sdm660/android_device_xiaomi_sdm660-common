@@ -167,5 +167,10 @@ bool LocAdapterBase::
             GpsLocationExtended& /*location_extended*/, LocPosTechMask /*tech_mask*/)
 DEFAULT_IMPL(false)
 
+void LocAdapterBase::reportGnssSvIdConfigEvent(const GnssSvIdConfig& /*config*/)
+DEFAULT_IMPL()
+
+void LocAdapterBase::reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& /*config*/)
+DEFAULT_IMPL()
 
 } // namespace loc_core

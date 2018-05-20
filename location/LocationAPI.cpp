@@ -628,6 +628,21 @@ LocationControlAPI::gnssUpdateConfig(GnssConfig config)
     return ids;
 }
 
+uint32_t* LocationControlAPI::gnssGetConfig(GnssConfigFlagsMask mask) {
+
+    uint32_t* ids = NULL;
+    pthread_mutex_lock(&gDataMutex);
+
+    if (NULL != gData.gnssInterface) {
+        ids = gData.gnssInterface->gnssGetConfig(mask);
+    } else {
+        LOC_LOGe("No gnss interface available for Control API client %p", this);
+    }
+
+    pthread_mutex_unlock(&gDataMutex);
+    return ids;
+}
+
 uint32_t
 LocationControlAPI::gnssDeleteAidingData(GnssAidingData& data)
 {

@@ -23,12 +23,15 @@
 #include <log_util.h>
 #include "Gnss.h"
 #include "GnssConfiguration.h"
+#include <android/hardware/gnss/1.0/types.h>
 
 namespace android {
 namespace hardware {
 namespace gnss {
 namespace V1_1 {
 namespace implementation {
+
+using ::android::hardware::gnss::V1_0::GnssConstellationType;
 
 GnssConfiguration::GnssConfiguration(Gnss* gnss) : mGnss(gnss) {
 }
@@ -222,10 +225,60 @@ Return<bool> GnssConfiguration::setEmergencySuplPdn(bool enabled) {
 
 // Methods from ::android::hardware::gnss::V1_1::IGnssConfiguration follow.
 Return<bool> GnssConfiguration::setBlacklist(
-            const hidl_vec<GnssConfiguration::BlacklistedSource>& /*blacklist*/) {
+            const hidl_vec<GnssConfiguration::BlacklistedSource>& blacklist) {
 
     ENTRY_LOG_CALLFLOW();
-    return true;
+    if (nullptr == mGnss) {
+        LOC_LOGe("mGnss is null");
+        return false;
+    }
+
+    GnssConfig config;
+    memset(&config, 0, sizeof(GnssConfig));
+    config.size = sizeof(GnssConfig);
+    config.flags = GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
+    config.blacklistedSvIds.clear();
+
+    GnssSvIdSource source = {};
+    for (int idx = 0; idx < (int)blacklist.size(); idx++) {
+        setBlacklistedSource(source, blacklist[idx]);
+        config.blacklistedSvIds.push_back(source);
+    }
+
+    return mGnss->updateConfiguration(config);
+}
+
+void GnssConfiguration::setBlacklistedSource(
+        GnssSvIdSource& copyToSource,
+        const GnssConfiguration::BlacklistedSource& copyFromSource) {
+
+    copyToSource.size = sizeof(GnssSvIdSource);
+
+    switch(copyFromSource.constellation) {
+    case GnssConstellationType::GPS:
+        copyToSource.constellation = GNSS_SV_TYPE_GPS;
+        break;
+    case GnssConstellationType::SBAS:
+        copyToSource.constellation = GNSS_SV_TYPE_SBAS;
+        break;
+    case GnssConstellationType::GLONASS:
+        copyToSource.constellation = GNSS_SV_TYPE_GLONASS;
+        break;
+    case GnssConstellationType::QZSS:
+        copyToSource.constellation = GNSS_SV_TYPE_QZSS;
+        break;
+    case GnssConstellationType::BEIDOU:
+        copyToSource.constellation = GNSS_SV_TYPE_BEIDOU;
+        break;
+    case GnssConstellationType::GALILEO:
+        copyToSource.constellation = GNSS_SV_TYPE_GALILEO;
+        break;
+    default:
+        copyToSource.constellation = GNSS_SV_TYPE_UNKNOWN;
+        break;
+    }
+
+    copyToSource.svId = copyFromSource.svid;
 }
 
 }  // namespace implementation

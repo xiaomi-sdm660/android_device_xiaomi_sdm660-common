@@ -119,8 +119,8 @@ typedef enum {
     LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02, /**< Support debug NMEA feature */
     LOC_SUPPORTED_FEATURE_GNSS_ONLY_POSITION_REPORT, /**< Support GNSS Only position reports */
     LOC_SUPPORTED_FEATURE_FDCL, /**< Support FDCL */
-    LOC_SUPPORTED_FEATURE_CONSTELLATION_ENABLEMENT, /**< Support constellation enablement */
-    LOC_SUPPORTED_FEATURE_AGPM, /**< Support AGPM feature */
+    LOC_SUPPORTED_FEATURE_CONSTELLATION_ENABLEMENT_V02, /**< Support constellation enablement */
+    LOC_SUPPORTED_FEATURE_AGPM_V02, /**< Support AGPM feature */
     LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY /**< Support XTRA integrity */
 } loc_supported_feature_enum;
 
@@ -1460,6 +1460,32 @@ typedef struct
     bool                   e911Mode; /* If in E911 emergency */
     Gnss_Srn_MacAddr_Type  macAddrType; /* SRN AP MAC Address type */
 } GnssSrnDataReq;
+
+/* Mask indicating enabled or disabled constellations */
+typedef uint64_t GnssSvTypesMask;
+typedef enum {
+    GNSS_SV_TYPES_MASK_GLO_BIT  = (1<<0),
+    GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
+    GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
+    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
+} GnssSvTypesMaskBits;
+
+/* This SV Type config is injected directly to GNSS Adapter
+ * bypassing Location API */
+typedef struct {
+    size_t size; // set to sizeof(GnssSvTypeConfig)
+    // Enabled Constellations
+    GnssSvTypesMask enabledSvTypesMask;
+    // Disabled Constellations
+    GnssSvTypesMask blacklistedSvTypesMask;
+} GnssSvTypeConfig;
+
+/* Provides the current GNSS SV Type configuration to the client.
+ * This is fetched via direct call to GNSS Adapter bypassing
+ * Location API */
+typedef std::function<void(
+    const GnssSvTypeConfig& config
+)> GnssSvTypeConfigCallback;
 
 /*
  * Represents the status of AGNSS augmented to support IPv4.

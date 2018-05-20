@@ -178,6 +178,7 @@ typedef struct {
     size_t size; // set to sizeof(LocationControlCallbacks)
     responseCallback responseCb;                     // mandatory
     collectiveResponseCallback collectiveResponseCb; // mandatory
+    gnssConfigCallback gnssConfigCb;                 // optional
 } LocationControlCallbacks;
 
 class LocationControlAPI : public ILocationControlAPI
@@ -230,6 +231,21 @@ public:
                 LOCATION_ERROR_INVALID_PARAMETER if any other parameters are invalid
                 LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason */
     virtual uint32_t* gnssUpdateConfig(GnssConfig config) override;
+
+    /* gnssGetConfig fetches the current constellation and SV configuration
+       on the GNSS engine.
+       Returns a session id array with an id for each of the bits set in
+       the mask parameter, order from low bits to high bits.
+       Response is sent via the registered gnssConfigCallback.
+       This effect is global for all clients of LocationAPI
+       collectiveResponseCallback returns:
+           LOCATION_ERROR_SUCCESS if session was successful
+           LOCATION_ERROR_INVALID_PARAMETER if any parameter is invalid
+           LOCATION_ERROR_CALLBACK_MISSING If no gnssConfigCallback
+                                           was passed in createInstance
+           LOCATION_ERROR_NOT_SUPPORTED If read of requested configuration
+                                        is not supported */
+    uint32_t* gnssGetConfig(GnssConfigFlagsMask mask);
 
     /* delete specific gnss aiding data for testing, which returns a session id
        that will be returned in responseCallback to match command with response.

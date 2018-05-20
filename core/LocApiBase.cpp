@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -423,6 +423,28 @@ void LocApiBase::reportGnssMeasurementData(GnssMeasurementsNotification& measure
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssMeasurementDataEvent(measurements, msInWeek));
 }
 
+void LocApiBase::reportGnssSvIdConfig(const GnssSvIdConfig& config)
+{
+    // Print the config
+    LOC_LOGv("gloBlacklistSvMask: %" PRIu64 ", bdsBlacklistSvMask: %" PRIu64 ",\n"
+             "qzssBlacklistSvMask: %" PRIu64 ", galBlacklistSvMask: %" PRIu64,
+             config.gloBlacklistSvMask, config.bdsBlacklistSvMask,
+             config.qzssBlacklistSvMask, config.galBlacklistSvMask);
+
+    // Loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssSvIdConfigEvent(config));
+}
+
+void LocApiBase::reportGnssSvTypeConfig(const GnssSvTypeConfig& config)
+{
+    // Print the config
+    LOC_LOGv("blacklistedMask: %" PRIu64 ", enabledMask: %" PRIu64,
+             config.blacklistedSvTypesMask, config.enabledSvTypesMask);
+
+    // Loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssSvTypeConfigEvent(config));
+}
+
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T /*mask*/)
 DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
@@ -590,5 +612,23 @@ DEFAULT_IMPL(-1)
 LocationError LocApiBase::
     setXtraVersionCheckSync(uint32_t /*check*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+LocationError LocApiBase::setBlacklistSvSync(const GnssSvIdConfig& /*config*/)
+DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+void LocApiBase::setBlacklistSv(const GnssSvIdConfig& /*config*/)
+DEFAULT_IMPL()
+
+void LocApiBase::getBlacklistSv()
+DEFAULT_IMPL()
+
+void LocApiBase::setConstellationControl(const GnssSvTypeConfig& /*config*/)
+DEFAULT_IMPL()
+
+void LocApiBase::getConstellationControl()
+DEFAULT_IMPL()
+
+void LocApiBase::resetConstellationControl()
+DEFAULT_IMPL()
 
 } // namespace loc_core
