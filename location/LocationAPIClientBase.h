@@ -209,16 +209,16 @@ public:
     LocationAPIRequest* getRequestBySession(uint32_t session);
 
     // LocationAPI
-    uint32_t locAPIStartTracking(LocationOptions& options);
+    uint32_t locAPIStartTracking(TrackingOptions& trackingOptions);
     void locAPIStopTracking();
-    void locAPIUpdateTrackingOptions(LocationOptions& options);
+    void locAPIUpdateTrackingOptions(TrackingOptions& trackingOptions);
 
     int32_t locAPIGetBatchSize();
-    uint32_t locAPIStartSession(uint32_t id, uint32_t sessionMode,
-            LocationOptions& options);
+    uint32_t locAPIStartSession(
+            uint32_t id, uint32_t sessionMode, TrackingOptions&& trackingOptions);
     uint32_t locAPIStopSession(uint32_t id);
-    uint32_t locAPIUpdateSessionOptions(uint32_t id, uint32_t sessionMode,
-            LocationOptions& options);
+    uint32_t locAPIUpdateSessionOptions(
+            uint32_t id, uint32_t sessionMode, TrackingOptions&& trackingOptions);
     uint32_t locAPIGetBatchedLocations(uint32_t id, size_t count);
 
     uint32_t locAPIAddGeofences(size_t count, uint32_t* ids,

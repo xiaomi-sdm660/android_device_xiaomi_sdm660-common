@@ -35,6 +35,7 @@
 #include <android/hardware/gnss/1.1/IGnssMeasurementCallback.h>
 #include <LocationAPIClientBase.h>
 #include <hidl/Status.h>
+#include <gps_extended_c.h>
 
 namespace android {
 namespace hardware {
@@ -56,9 +57,13 @@ public:
     Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> measurementSetCallback(
             const sp<V1_0::IGnssMeasurementCallback>& callback);
     Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> measurementSetCallback_1_1(
-            const sp<IGnssMeasurementCallback>& callback);
+            const sp<IGnssMeasurementCallback>& callback,
+            GnssPowerMode powerMode = GNSS_POWER_MODE_INVALID,
+            uint32_t timeBetweenMeasurement = GPS_DEFAULT_FIX_INTERVAL_MS);
     void measurementClose();
-    Return<IGnssMeasurement::GnssMeasurementStatus> startTracking();
+    Return<IGnssMeasurement::GnssMeasurementStatus> startTracking(
+            GnssPowerMode powerMode = GNSS_POWER_MODE_INVALID,
+            uint32_t timeBetweenMeasurement = GPS_DEFAULT_FIX_INTERVAL_MS);
 
     // callbacks we are interested in
     void onGnssMeasurementsCb(GnssMeasurementsNotification gnssMeasurementsNotification) final;

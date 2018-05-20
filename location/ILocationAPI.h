@@ -53,7 +53,7 @@ public:
                 LOCATION_ERROR_ALREADY_STARTED if a startTracking session is already in progress
                 LOCATION_ERROR_CALLBACK_MISSING if no trackingCallback was passed
                 LOCATION_ERROR_INVALID_PARAMETER if LocationOptions parameter is invalid */
-    virtual uint32_t startTracking(LocationOptions&) = 0;
+    virtual uint32_t startTracking(TrackingOptions&) = 0;
 
     /** @brief Stops a tracking session associated with id parameter.
         responseCallback returns:
@@ -66,7 +66,7 @@ public:
                 LOCATION_ERROR_SUCCESS if successful
                 LOCATION_ERROR_INVALID_PARAMETER if LocationOptions parameters are invalid
                 LOCATION_ERROR_ID_UNKNOWN if id is not associated with a tracking session */
-    virtual void updateTrackingOptions(uint32_t id, LocationOptions&) = 0;
+    virtual void updateTrackingOptions(uint32_t id, TrackingOptions&) = 0;
 
     /* ================================== BATCHING ================================== */
 
@@ -86,7 +86,7 @@ public:
                 LOCATION_ERROR_CALLBACK_MISSING if no batchingCallback
                 LOCATION_ERROR_INVALID_PARAMETER if a parameter is invalid
                 LOCATION_ERROR_NOT_SUPPORTED if batching is not supported */
-    virtual uint32_t startBatching(LocationOptions&, BatchingOptions&) = 0;
+    virtual uint32_t startBatching(BatchingOptions&) = 0;
 
     /** @brief Stops a batching session associated with id parameter.
         responseCallback returns:
@@ -99,7 +99,7 @@ public:
                 LOCATION_ERROR_SUCCESS if successful
                 LOCATION_ERROR_INVALID_PARAMETER if LocationOptions parameters are invalid
                 LOCATION_ERROR_ID_UNKNOWN if id is not associated with a batching session */
-    virtual void updateBatchingOptions(uint32_t id, LocationOptions&, BatchingOptions&) = 0;
+    virtual void updateBatchingOptions(uint32_t id, BatchingOptions&) = 0;
 
     /** @brief Gets a number of locations that are currently stored/batched
        on the low power processor, delivered by the batchingCallback passed in createInstance.

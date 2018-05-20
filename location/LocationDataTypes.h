@@ -533,18 +533,60 @@ typedef struct {
     LocationTechnologyMask techMask;
 } Location;
 
-typedef struct {
+struct LocationOptions {
     size_t size;          // set to sizeof(LocationOptions)
     uint32_t minInterval; // in milliseconds
     uint32_t minDistance; // in meters. if minDistance > 0, gnssSvCallback/gnssNmeaCallback/
                           // gnssMeasurementsCallback may not be called
     GnssSuplMode mode;    // Standalone/MS-Based/MS-Assisted
-} LocationOptions;
 
-typedef struct {
-    size_t size;
+    inline LocationOptions() :
+            size(0), minInterval(0), minDistance(0), mode(GNSS_SUPL_MODE_STANDALONE) {}
+};
+
+typedef enum {
+    GNSS_POWER_MODE_INVALID = 0,
+    GNSS_POWER_MODE_M1,  /* Improved Accuracy Mode */
+    GNSS_POWER_MODE_M2,  /* Normal Mode */
+    GNSS_POWER_MODE_M3,  /* Background Mode */
+    GNSS_POWER_MODE_M4,  /* Background Mode */
+    GNSS_POWER_MODE_M5   /* Background Mode */
+} GnssPowerMode;
+
+struct TrackingOptions : LocationOptions {
+    GnssPowerMode powerMode; /* Power Mode to be used for time based tracking
+                                sessions */
+    uint32_t tbm;  /* Time interval between measurements specified in millis.
+                      Applicable to background power modes */
+
+    inline TrackingOptions() :
+            LocationOptions(), powerMode(GNSS_POWER_MODE_INVALID), tbm(0) {}
+    inline TrackingOptions(size_t s, GnssPowerMode m, uint32_t t) :
+            LocationOptions(), powerMode(m), tbm(t) { LocationOptions::size = s; }
+    inline TrackingOptions(const LocationOptions& options) :
+            LocationOptions(options), powerMode(GNSS_POWER_MODE_INVALID), tbm(0) {}
+    inline void setLocationOptions(const LocationOptions& options) {
+        minInterval = options.minInterval;
+        minDistance = options.minDistance;
+        mode = options.mode;
+    }
+};
+
+struct BatchingOptions : LocationOptions {
     BatchingMode batchingMode;
-} BatchingOptions;
+
+    inline BatchingOptions() :
+            LocationOptions(), batchingMode(BATCHING_MODE_ROUTINE) {}
+    inline BatchingOptions(size_t s, BatchingMode m) :
+            LocationOptions(), batchingMode(m) { LocationOptions::size = s; }
+    inline BatchingOptions(const LocationOptions& options) :
+            LocationOptions(options), batchingMode(BATCHING_MODE_ROUTINE) {}
+    inline void setLocationOptions(const LocationOptions& options) {
+        minInterval = options.minInterval;
+        minDistance = options.minDistance;
+        mode = options.mode;
+    }
+};
 
 typedef struct {
     size_t size;

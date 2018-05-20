@@ -94,7 +94,7 @@ class GnssAdapter : public LocAdapterBase {
     ClientDataMap mClientData;
 
     /* ==== TRACKING ======================================================================= */
-    LocationSessionMap mTrackingSessions;
+    TrackingOptionsMap mTrackingSessions;
     LocPosMode mUlpPositionMode;
     GnssSvUsedInPosition mGnssSvIdUsedInPosition;
     bool mGnssSvIdUsedInPosAvail;
@@ -122,7 +122,7 @@ class GnssAdapter : public LocAdapterBase {
     XtraSystemStatusObserver mXtraObserver;
 
     /*==== CONVERSION ===================================================================*/
-    static void convertOptions(LocPosMode& out, const LocationOptions& options);
+    static void convertOptions(LocPosMode& out, const TrackingOptions& trackingOptions);
     static void convertLocation(Location& out, const UlpLocation& ulpLocation,
                                 const GpsLocationExtended& locationExtended,
                                 const LocPosTechMask techMask);
@@ -164,8 +164,10 @@ public:
 
     /* ==== TRACKING ======================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
-    uint32_t startTrackingCommand(LocationAPI* client, LocationOptions& options);
-    void updateTrackingOptionsCommand(LocationAPI* client, uint32_t id, LocationOptions& options);
+    uint32_t startTrackingCommand(
+            LocationAPI* client, TrackingOptions& trackingOptions);
+    void updateTrackingOptionsCommand(
+            LocationAPI* client, uint32_t id, TrackingOptions& trackingOptions);
     void stopTrackingCommand(LocationAPI* client, uint32_t id);
     /* ======================(Called from ULP Thread)======================================= */
     virtual void setPositionModeCommand(LocPosMode& locPosMode);
@@ -179,20 +181,20 @@ public:
     bool hasMeasurementsCallback(LocationAPI* client);
     bool isTrackingSession(LocationAPI* client, uint32_t sessionId);
     void saveTrackingSession(LocationAPI* client, uint32_t sessionId,
-                             const LocationOptions& options);
+                             const TrackingOptions& trackingOptions);
     void eraseTrackingSession(LocationAPI* client, uint32_t sessionId);
     bool setUlpPositionMode(const LocPosMode& mode);
     LocPosMode& getUlpPositionMode() { return mUlpPositionMode; }
     bool startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
-                                         const LocationOptions& options);
+                                         const TrackingOptions& trackingOptions);
     bool startTracking(LocationAPI* client, uint32_t sessionId,
-                                const LocationOptions& options);
+                                const TrackingOptions& trackingOptions);
     bool stopTrackingMultiplex(LocationAPI* client, uint32_t id);
     bool stopTracking(LocationAPI* client, uint32_t id);
     bool updateTrackingMultiplex(LocationAPI* client, uint32_t id,
-                                          const LocationOptions& options);
+                                          const TrackingOptions& trackingOptions);
     bool updateTracking(LocationAPI* client, uint32_t sessionId,
-        const LocationOptions& updatedOptions, const LocationOptions& oldOptions);
+        const TrackingOptions& updatedOptions, const TrackingOptions& oldOptions);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */

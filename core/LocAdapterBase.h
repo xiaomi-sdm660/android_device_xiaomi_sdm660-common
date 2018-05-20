@@ -51,6 +51,7 @@ inline bool operator !=(LocationSessionKey const& left, LocationSessionKey const
     return left.id != right.id || left.client != right.client;
 }
 typedef std::map<LocationSessionKey, LocationOptions> LocationSessionMap;
+typedef std::map<LocationSessionKey, TrackingOptions> TrackingOptionsMap;
 
 namespace loc_core {
 

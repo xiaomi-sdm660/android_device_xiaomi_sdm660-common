@@ -63,7 +63,9 @@ public:
             V1_0::IGnss::GnssPositionRecurrence recurrence,
             uint32_t minIntervalMs,
             uint32_t preferredAccuracyMeters,
-            uint32_t preferredTimeMs);
+            uint32_t preferredTimeMs,
+            GnssPowerMode powerMode = GNSS_POWER_MODE_INVALID,
+            uint32_t timeBetweenMeasurement = 0);
 
     // for GpsNiInterface
     void gnssNiRespond(int32_t notifId, V1_0::IGnssNiCallback::GnssUserResponseType userResponse);
@@ -96,8 +98,7 @@ private:
     LocationAPIControlClient* mControlClient;
     LocationCapabilitiesMask mLocationCapabilitiesMask;
     bool mLocationCapabilitiesCached;
-
-    LocationOptions mLocationOptions;
+    TrackingOptions mTrackingOptions;
 };
 
 }  // namespace implementation

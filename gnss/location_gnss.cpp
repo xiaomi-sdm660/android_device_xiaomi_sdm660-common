@@ -39,8 +39,8 @@ static void addClient(LocationAPI* client, const LocationCallbacks& callbacks);
 static void removeClient(LocationAPI* client);
 static void requestCapabilities(LocationAPI* client);
 
-static uint32_t startTracking(LocationAPI* client, LocationOptions& options);
-static void updateTrackingOptions(LocationAPI* client, uint32_t id, LocationOptions& options);
+static uint32_t startTracking(LocationAPI* client, TrackingOptions&);
+static void updateTrackingOptions(LocationAPI* client, uint32_t id, TrackingOptions&);
 static void stopTracking(LocationAPI* client, uint32_t id);
 
 static void gnssNiResponse(LocationAPI* client, uint32_t id, GnssNiResponse response);
@@ -143,19 +143,22 @@ static void requestCapabilities(LocationAPI* client)
     }
 }
 
-static uint32_t startTracking(LocationAPI* client, LocationOptions& options)
+static uint32_t startTracking(
+        LocationAPI* client, TrackingOptions& trackingOptions)
 {
     if (NULL != gGnssAdapter) {
-        return gGnssAdapter->startTrackingCommand(client, options);
+        return gGnssAdapter->startTrackingCommand(client, trackingOptions);
     } else {
         return 0;
     }
 }
 
-static void updateTrackingOptions(LocationAPI* client, uint32_t id, LocationOptions& options)
+static void updateTrackingOptions(
+        LocationAPI* client, uint32_t id, TrackingOptions& trackingOptions)
 {
     if (NULL != gGnssAdapter) {
-        gGnssAdapter->updateTrackingOptionsCommand(client, id, options);
+        gGnssAdapter->updateTrackingOptionsCommand(
+                client, id, trackingOptions);
     }
 }
 

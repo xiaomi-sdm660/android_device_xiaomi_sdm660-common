@@ -25,6 +25,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_LocationAPI"
 
 #include <location_interface.h>
@@ -289,21 +290,21 @@ LocationAPI::updateCallbacks(LocationCallbacks& locationCallbacks)
 }
 
 uint32_t
-LocationAPI::startTracking(LocationOptions& locationOptions)
+LocationAPI::startTracking(TrackingOptions& trackingOptions)
 {
     uint32_t id = 0;
     pthread_mutex_lock(&gDataMutex);
 
     auto it = gData.clientData.find(this);
     if (it != gData.clientData.end()) {
-        if (gData.flpInterface != NULL && locationOptions.minDistance > 0) {
-            id = gData.flpInterface->startTracking(this, locationOptions);
-        } else if (gData.gnssInterface != NULL && needsGnssTrackingInfo(it->second)) {
-            id = gData.gnssInterface->startTracking(this, locationOptions);
-        } else if (gData.flpInterface != NULL) {
-            id = gData.flpInterface->startTracking(this, locationOptions);
-        } else if (gData.gnssInterface != NULL) {
-            id = gData.gnssInterface->startTracking(this, locationOptions);
+        if (NULL != gData.flpInterface && trackingOptions.minDistance > 0) {
+            id = gData.flpInterface->startTracking(this, trackingOptions);
+        } else if (NULL != gData.gnssInterface && needsGnssTrackingInfo(it->second)) {
+            id = gData.gnssInterface->startTracking(this, trackingOptions);
+        } else if (NULL != gData.flpInterface) {
+            id = gData.flpInterface->startTracking(this, trackingOptions);
+        } else if (NULL != gData.gnssInterface) {
+            id = gData.gnssInterface->startTracking(this, trackingOptions);
         } else {
             LOC_LOGE("%s:%d]: No gnss/flp interface available for Location API client %p ",
                      __func__, __LINE__, this);
@@ -345,7 +346,8 @@ LocationAPI::stopTracking(uint32_t id)
 }
 
 void
-LocationAPI::updateTrackingOptions(uint32_t id, LocationOptions& locationOptions)
+LocationAPI::updateTrackingOptions(
+        uint32_t id, TrackingOptions& trackingOptions)
 {
     pthread_mutex_lock(&gDataMutex);
 
@@ -354,10 +356,10 @@ LocationAPI::updateTrackingOptions(uint32_t id, LocationOptions& locationOptions
         // we don't know if tracking was started on flp or gnss, so we call update on both, where
         // updateTracking call to the incorrect interface will fail without response back to client
         if (gData.gnssInterface != NULL) {
-            gData.gnssInterface->updateTrackingOptions(this, id, locationOptions);
+            gData.gnssInterface->updateTrackingOptions(this, id, trackingOptions);
         }
         if (gData.flpInterface != NULL) {
-            gData.flpInterface->updateTrackingOptions(this, id, locationOptions);
+            gData.flpInterface->updateTrackingOptions(this, id, trackingOptions);
         }
         if (gData.flpInterface == NULL && gData.gnssInterface == NULL) {
             LOC_LOGE("%s:%d]: No gnss/flp interface available for Location API client %p ",
@@ -372,13 +374,13 @@ LocationAPI::updateTrackingOptions(uint32_t id, LocationOptions& locationOptions
 }
 
 uint32_t
-LocationAPI::startBatching(LocationOptions& locationOptions, BatchingOptions &batchingOptions)
+LocationAPI::startBatching(BatchingOptions &batchingOptions)
 {
     uint32_t id = 0;
     pthread_mutex_lock(&gDataMutex);
 
-    if (gData.flpInterface != NULL) {
-        id = gData.flpInterface->startBatching(this, locationOptions, batchingOptions);
+    if (NULL != gData.flpInterface) {
+        id = gData.flpInterface->startBatching(this, batchingOptions);
     } else {
         LOC_LOGE("%s:%d]: No flp interface available for Location API client %p ",
                  __func__, __LINE__, this);
@@ -393,7 +395,7 @@ LocationAPI::stopBatching(uint32_t id)
 {
     pthread_mutex_lock(&gDataMutex);
 
-    if (gData.flpInterface != NULL) {
+    if (NULL != gData.flpInterface) {
         gData.flpInterface->stopBatching(this, id);
     } else {
         LOC_LOGE("%s:%d]: No flp interface available for Location API client %p ",
@@ -404,16 +406,12 @@ LocationAPI::stopBatching(uint32_t id)
 }
 
 void
-LocationAPI::updateBatchingOptions(uint32_t id,
-        LocationOptions& locationOptions, BatchingOptions& batchOptions)
+LocationAPI::updateBatchingOptions(uint32_t id, BatchingOptions& batchOptions)
 {
     pthread_mutex_lock(&gDataMutex);
 
-    if (gData.flpInterface != NULL) {
-        gData.flpInterface->updateBatchingOptions(this,
-                                                  id,
-                                                  locationOptions,
-                                                  batchOptions);
+    if (NULL != gData.flpInterface) {
+        gData.flpInterface->updateBatchingOptions(this, id, batchOptions);
     } else {
         LOC_LOGE("%s:%d]: No flp interface available for Location API client %p ",
                  __func__, __LINE__, this);

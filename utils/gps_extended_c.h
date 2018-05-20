@@ -95,6 +95,9 @@ typedef uint32_t LocSvInfoSource;
 #define LOC_AGPS_CERTIFICATE_MAX_LENGTH 2000
 #define LOC_AGPS_CERTIFICATE_MAX_SLOTS 10
 
+/* TBM Threshold for tracking in background power mode : in millis */
+#define TRACKING_TBM_THRESHOLD_MILLIS 480000
+
 typedef uint32_t LocPosTechMask;
 #define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
 #define LOC_POS_TECH_MASK_SATELLITE ((LocPosTechMask)0x00000001)

@@ -80,19 +80,23 @@ MeasurementAPIClient::measurementSetCallback(const sp<V1_0::IGnssMeasurementCall
 }
 
 Return<IGnssMeasurement::GnssMeasurementStatus>
-MeasurementAPIClient::measurementSetCallback_1_1(const sp<IGnssMeasurementCallback>& callback)
+MeasurementAPIClient::measurementSetCallback_1_1(
+        const sp<IGnssMeasurementCallback>& callback,
+        GnssPowerMode powerMode, uint32_t timeBetweenMeasurement)
 {
-    LOC_LOGD("%s]: (%p)", __FUNCTION__, &callback);
+    LOC_LOGD("%s]: (%p) (powermode: %d) (tbm: %d)",
+            __FUNCTION__, &callback, (int)powerMode, timeBetweenMeasurement);
 
     mMutex.lock();
     mGnssMeasurementCbIface_1_1 = callback;
     mMutex.unlock();
 
-    return startTracking();
+    return startTracking(powerMode, timeBetweenMeasurement);
 }
 
 Return<IGnssMeasurement::GnssMeasurementStatus>
-MeasurementAPIClient::startTracking()
+MeasurementAPIClient::startTracking(
+        GnssPowerMode powerMode, uint32_t timeBetweenMeasurement)
 {
     LocationCallbacks locationCallbacks;
     memset(&locationCallbacks, 0, sizeof(LocationCallbacks));
@@ -116,15 +120,20 @@ MeasurementAPIClient::startTracking()
     }
 
     locAPISetCallbacks(locationCallbacks);
-    LocationOptions options;
-    memset(&options, 0, sizeof(LocationOptions));
-    options.size = sizeof(LocationOptions);
+
+    TrackingOptions options = {};
+    memset(&options, 0, sizeof(TrackingOptions));
+    options.size = sizeof(TrackingOptions);
     options.minInterval = 1000;
     options.mode = GNSS_SUPL_MODE_STANDALONE;
+    if (GNSS_POWER_MODE_INVALID != powerMode) {
+        options.powerMode = powerMode;
+        options.tbm = timeBetweenMeasurement;
+    }
+
     mTracking = true;
     LOC_LOGD("%s]: start tracking session", __FUNCTION__);
     locAPIStartTracking(options);
-
     return IGnssMeasurement::GnssMeasurementStatus::SUCCESS;
 }
 

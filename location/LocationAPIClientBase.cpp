@@ -330,7 +330,7 @@ LocationAPIClientBase::~LocationAPIClientBase()
     pthread_mutex_destroy(&mMutex);
 }
 
-uint32_t LocationAPIClientBase::locAPIStartTracking(LocationOptions& options)
+uint32_t LocationAPIClientBase::locAPIStartTracking(TrackingOptions& options)
 {
     uint32_t retVal = LOCATION_ERROR_GENERAL_FAILURE;
     pthread_mutex_lock(&mMutex);
@@ -372,7 +372,7 @@ void LocationAPIClientBase::locAPIStopTracking()
     pthread_mutex_unlock(&mMutex);
 }
 
-void LocationAPIClientBase::locAPIUpdateTrackingOptions(LocationOptions& options)
+void LocationAPIClientBase::locAPIUpdateTrackingOptions(TrackingOptions& options)
 {
     pthread_mutex_lock(&mMutex);
     if (mLocationAPI) {
@@ -404,9 +404,8 @@ int32_t LocationAPIClientBase::locAPIGetBatchSize()
     return mBatchSize;
 }
 
-
-uint32_t LocationAPIClientBase::locAPIStartSession(uint32_t id, uint32_t sessionMode,
-        LocationOptions& locationOptions)
+uint32_t LocationAPIClientBase::locAPIStartSession(
+        uint32_t id, uint32_t sessionMode, TrackingOptions&& options)
 {
     uint32_t retVal = LOCATION_ERROR_GENERAL_FAILURE;
     pthread_mutex_lock(&mMutex);
@@ -420,7 +419,7 @@ uint32_t LocationAPIClientBase::locAPIStartSession(uint32_t id, uint32_t session
             uint32_t batchingSession = 0;
 
             if (sessionMode == SESSION_MODE_ON_FIX) {
-                trackingSession = mLocationAPI->startTracking(locationOptions);
+                trackingSession = mLocationAPI->startTracking(options);
                 LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, trackingSession);
                 mRequestQueues[REQUEST_SESSION].push(new StartTrackingRequest(*this));
             } else {
@@ -439,7 +438,12 @@ uint32_t LocationAPIClientBase::locAPIStartSession(uint32_t id, uint32_t session
                     break;
                 }
 
-                batchingSession = mLocationAPI->startBatching(locationOptions, batchOptions);
+                // Populate location option values
+                batchOptions.minDistance = options.minDistance;
+                batchOptions.minInterval = options.minInterval;
+                batchOptions.mode = options.mode;
+
+                batchingSession = mLocationAPI->startBatching(batchOptions);
                 LOC_LOGI("%s:%d] start new session: %d", __FUNCTION__, __LINE__, batchingSession);
                 mRequestQueues[REQUEST_SESSION].setSession(batchingSession);
                 mRequestQueues[REQUEST_SESSION].push(new StartBatchingRequest(*this));
@@ -496,8 +500,8 @@ uint32_t LocationAPIClientBase::locAPIStopSession(uint32_t id)
     return retVal;
 }
 
-uint32_t LocationAPIClientBase::locAPIUpdateSessionOptions(uint32_t id, uint32_t sessionMode,
-        LocationOptions& options)
+uint32_t LocationAPIClientBase::locAPIUpdateSessionOptions(
+        uint32_t id, uint32_t sessionMode, TrackingOptions&& options)
 {
     uint32_t retVal = LOCATION_ERROR_GENERAL_FAILURE;
     pthread_mutex_lock(&mMutex);
@@ -554,13 +558,18 @@ uint32_t LocationAPIClientBase::locAPIUpdateSessionOptions(uint32_t id, uint32_t
                     mLocationAPI->stopTracking(trackingSession);
                     trackingSession = 0;
 
+                    // Populate location option values
+                    batchOptions.minDistance = options.minDistance;
+                    batchOptions.minInterval = options.minInterval;
+                    batchOptions.mode = options.mode;
+
                     // start batching
-                    batchingSession = mLocationAPI->startBatching(options, batchOptions);
+                    batchingSession = mLocationAPI->startBatching(batchOptions);
                     LOC_LOGI("%s:%d] start new session: %d",
                             __FUNCTION__, __LINE__, batchingSession);
                     mRequestQueues[REQUEST_SESSION].setSession(batchingSession);
                 } else {
-                    mLocationAPI->updateBatchingOptions(batchingSession, options, batchOptions);
+                    mLocationAPI->updateBatchingOptions(batchingSession, batchOptions);
                 }
 
             }

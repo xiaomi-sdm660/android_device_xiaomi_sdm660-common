@@ -63,8 +63,8 @@ public:
                 LOCATION_ERROR_SUCCESS if session was successfully started
                 LOCATION_ERROR_ALREADY_STARTED if a startTracking session is already in progress
                 LOCATION_ERROR_CALLBACK_MISSING if no trackingCallback was passed in createInstance
-                LOCATION_ERROR_INVALID_PARAMETER if LocationOptions parameter is invalid */
-    virtual uint32_t startTracking(LocationOptions&) override;
+                LOCATION_ERROR_INVALID_PARAMETER if TrackingOptions parameter is invalid */
+    virtual uint32_t startTracking(TrackingOptions&) override;
 
     /* stopTracking stops a tracking session associated with id parameter.
         responseCallback returns:
@@ -72,12 +72,12 @@ public:
                 LOCATION_ERROR_ID_UNKNOWN if id is not associated with a tracking session */
     virtual void stopTracking(uint32_t id) override;
 
-    /* updateTrackingOptions changes the LocationOptions of a tracking session associated with id
+    /* updateTrackingOptions changes the TrackingOptions of a tracking session associated with id
         responseCallback returns:
                 LOCATION_ERROR_SUCCESS if successful
-                LOCATION_ERROR_INVALID_PARAMETER if LocationOptions parameters are invalid
+                LOCATION_ERROR_INVALID_PARAMETER if TrackingOptions parameters are invalid
                 LOCATION_ERROR_ID_UNKNOWN if id is not associated with a tracking session */
-    virtual void updateTrackingOptions(uint32_t id, LocationOptions&) override;
+    virtual void updateTrackingOptions(uint32_t id, TrackingOptions&) override;
 
     /* ================================== BATCHING ================================== */
 
@@ -96,7 +96,7 @@ public:
                 LOCATION_ERROR_CALLBACK_MISSING if no batchingCallback was passed in createInstance
                 LOCATION_ERROR_INVALID_PARAMETER if a parameter is invalid
                 LOCATION_ERROR_NOT_SUPPORTED if batching is not supported */
-    virtual uint32_t startBatching(LocationOptions&, BatchingOptions&) override;
+    virtual uint32_t startBatching(BatchingOptions&) override;
 
     /* stopBatching stops a batching session associated with id parameter.
         responseCallback returns:
@@ -104,12 +104,12 @@ public:
                 LOCATION_ERROR_ID_UNKNOWN if id is not associated with batching session */
     virtual void stopBatching(uint32_t id) override;
 
-    /* updateBatchingOptions changes the LocationOptions of a batching session associated with id
+    /* updateBatchingOptions changes the BatchingOptions of a batching session associated with id
         responseCallback returns:
                 LOCATION_ERROR_SUCCESS if successful
-                LOCATION_ERROR_INVALID_PARAMETER if LocationOptions parameters are invalid
+                LOCATION_ERROR_INVALID_PARAMETER if BatchingOptions parameters are invalid
                 LOCATION_ERROR_ID_UNKNOWN if id is not associated with a batching session */
-    virtual void updateBatchingOptions(uint32_t id, LocationOptions&, BatchingOptions&) override;
+    virtual void updateBatchingOptions(uint32_t id, BatchingOptions&) override;
 
     /* getBatchedLocations gets a number of locations that are currently stored/batched
        on the low power processor, delivered by the batchingCallback passed in createInstance.

@@ -380,10 +380,17 @@ Return<bool> Gnss::setPositionMode_1_1(V1_0::IGnss::GnssPositionMode mode,
         uint32_t minIntervalMs,
         uint32_t preferredAccuracyMeters,
         uint32_t preferredTimeMs,
-        bool /*lowPowerMode*/) {
+        bool lowPowerMode) {
     ENTRY_LOG_CALLFLOW();
-    return setPositionMode(mode, recurrence, minIntervalMs,
-            preferredAccuracyMeters, preferredTimeMs);
+    bool retVal = false;
+    GnssAPIClient* api = getApi();
+    if (api) {
+        GnssPowerMode powerMode = lowPowerMode?
+                GNSS_POWER_MODE_M4 : GNSS_POWER_MODE_M2;
+        retVal = api->gnssSetPositionMode(mode, recurrence, minIntervalMs,
+                preferredAccuracyMeters, preferredTimeMs, powerMode, minIntervalMs);
+    }
+    return retVal;
 }
 
 Return<sp<V1_1::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_1_1() {
