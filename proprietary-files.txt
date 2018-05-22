@@ -112,6 +112,7 @@ vendor/etc/camera/age_gender_bg
 vendor/etc/camera/camera_config.xml
 vendor/etc/camera/crown_156_128.bin
 vendor/etc/camera/csidtg_camera.xml
+vendor/etc/camera/csidtg_chromatix.xml
 vendor/etc/camera/dualcamera.png
 vendor/etc/camera/dualcamera_in.png
 vendor/etc/camera/face_goodly_208_180
@@ -183,12 +184,14 @@ vendor/lib/libmmcamera_hdr_gb_lib.so
 vendor/lib/libmmcamera_hvx_add_constant.so
 vendor/lib/libmmcamera_hvx_grid_sum.so
 vendor/lib/libmmcamera_imglib.so
+vendor/lib/libmmcamera_imglib_faceproc_adspstub.so
 vendor/lib/libmmcamera_llvd.so
 vendor/lib/libmmcamera_optizoom_lib.so
 vendor/lib/libmmcamera_paaf_lib.so
 vendor/lib/libmmcamera_pdaf.so
 vendor/lib/libmmcamera_pdafcamif.so
 vendor/lib/libmmcamera_ppbase_module.so
+vendor/lib/libmmcamera_ppeiscore.so
 vendor/lib/libmmcamera_quadracfa.so
 vendor/lib/libmmcamera_stillmore_lib.so
 vendor/lib/libmmcamera_sw2d_lib.so
@@ -287,6 +290,11 @@ vendor/lib/libactuator_whyred_s5k2l7_ofilm_cn_i_ak7374.so
 vendor/lib/libactuator_whyred_s5k2l7_qtech_cn_ii_ak7374.so
 
 # Camera chromatix
+vendor/lib/libchromatix_csidtg_common.so
+vendor/lib/libchromatix_csidtg_cpp_preview.so
+vendor/lib/libchromatix_csidtg_postproc.so
+vendor/lib/libchromatix_csidtg_preview.so
+vendor/lib/libchromatix_csidtg_zsl_preview.so
 vendor/lib/libchromatix_whyred_ov13855_sunny_cn_i_common.so
 vendor/lib/libchromatix_whyred_ov13855_sunny_cn_i_cpp_ds_chromatix.so
 vendor/lib/libchromatix_whyred_ov13855_sunny_cn_i_cpp_hfr_120.so
