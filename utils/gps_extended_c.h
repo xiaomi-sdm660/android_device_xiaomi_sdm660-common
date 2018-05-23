@@ -118,7 +118,10 @@ typedef enum {
     LOC_SUPPORTED_FEATURE_WIFI_AP_DATA_INJECT_2_V02, /**<  Support Wifi AP data inject version 2 feature  */
     LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02, /**< Support debug NMEA feature */
     LOC_SUPPORTED_FEATURE_GNSS_ONLY_POSITION_REPORT, /**< Support GNSS Only position reports */
-    LOC_SUPPORTED_FEATURE_FDCL /**< Support FDCL */
+    LOC_SUPPORTED_FEATURE_FDCL, /**< Support FDCL */
+    LOC_SUPPORTED_FEATURE_CONSTELLATION_ENABLEMENT, /**< Support constellation enablement */
+    LOC_SUPPORTED_FEATURE_AGPM, /**< Support AGPM feature */
+    LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY /**< Support XTRA integrity */
 } loc_supported_feature_enum;
 
 typedef struct {
