@@ -71,6 +71,7 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"EXTERNAL_DR_ENABLED",            &mGps_conf.EXTERNAL_DR_ENABLED,                  NULL, 'n'},
   {"SUPL_HOST",                      &mGps_conf.SUPL_HOST,                      NULL, 's'},
   {"SUPL_PORT",                      &mGps_conf.SUPL_PORT,                      NULL, 'n'},
+  {"MODEM_TYPE",                     &mGps_conf.MODEM_TYPE,                     NULL, 'n' },
 };
 
 const loc_param_s_type ContextBase::mSap_conf_table[] =
@@ -122,6 +123,8 @@ void ContextBase::readConfig()
         mGps_conf.LPPE_CP_TECHNOLOGY = 0;
         /* By default no LPPe UP technology is enabled*/
         mGps_conf.LPPE_UP_TECHNOLOGY = 0;
+        /* By default we use unknown modem type*/
+        mGps_conf.MODEM_TYPE = 2;
 
         /*Defaults for sap.conf*/
         mSap_conf.GYRO_BIAS_RANDOM_WALK = 0;
