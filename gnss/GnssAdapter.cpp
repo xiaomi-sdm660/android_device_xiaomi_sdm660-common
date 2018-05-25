@@ -291,6 +291,38 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.flags |= GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT;
         out.horUncEllipseOrientAzimuth = locationExtended.horUncEllipseOrientAzimuth;
     }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_STD_DEV & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT;
+        out.northVelocityStdDeviation = locationExtended.northStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_STD_DEV & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_EAST_STD_DEV_BIT;
+        out.eastVelocityStdDeviation = locationExtended.eastStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_NORTH_VEL_BIT;
+        out.northVelocity = locationExtended.northVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL_UNC & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT;
+        out.northVelocityStdDeviation = locationExtended.northVelocityStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_VEL & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_EAST_VEL_BIT;
+        out.eastVelocity = locationExtended.eastVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT;
+        out.eastVelocityStdDeviation = locationExtended.eastVelocityStdDeviation;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_UP_VEL & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_UP_VEL_BIT;
+        out.upVelocity = locationExtended.upVelocity;
+    }
+    if (GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_UP_VEL_UNC_BIT;
+        out.upVelocityStdDeviation = locationExtended.upVelocityStdDeviation;
+    }
     if (GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT;
         out.svUsedInPosition.gpsSvUsedIdsMask =
@@ -303,6 +335,16 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
                 locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask;
         out.svUsedInPosition.qzssSvUsedIdsMask =
                 locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask;
+        out.numOfMeasReceived = locationExtended.numOfMeasReceived;
+
+        for (int idx =0; idx < locationExtended.numOfMeasReceived; idx++) {
+            out.measUsageInfo[idx].gnssSignalType =
+                    locationExtended.measUsageInfo[idx].gnssSignalType;
+            out.measUsageInfo[idx].gnssSvId =
+                    locationExtended.measUsageInfo[idx].gnssSvId;
+            out.measUsageInfo[idx].gnssConstellation =
+                    locationExtended.measUsageInfo[idx].gnssConstellation;
+        }
     }
     if (GPS_LOCATION_EXTENDED_HAS_NAV_SOLUTION_MASK & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT;
@@ -366,6 +408,19 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     if (GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC & locationExtended.flags) {
         out.flags |= GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC;
         out.upVelocityStdDeviation = locationExtended.upVelocityStdDeviation;
+    }
+
+    // Validity of this structure is established from the timeSrc of the GnssSystemTime structure.
+    out.gnssSystemTime = locationExtended.gnssSystemTime;
+
+    if (GPS_LOCATION_EXTENDED_HAS_LEAP_SECONDS & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_LEAP_SECONDS_BIT;
+        out.leapSeconds = locationExtended.leapSeconds;
+    }
+
+    if (GPS_LOCATION_EXTENDED_HAS_TIME_UNC & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_TIME_UNC_BIT;
+        out.timeUncMs = locationExtended.timeUncMs;
     }
 }
 

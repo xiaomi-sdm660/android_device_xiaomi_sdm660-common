@@ -294,7 +294,7 @@ typedef enum loc_position_mode_type {
 #define GPS_DEFAULT_FIX_INTERVAL_MS      1000
 
 /** Flags to indicate which values are valid in a GpsLocationExtended. */
-typedef uint32_t GpsLocationExtendedFlags;
+typedef uint64_t GpsLocationExtendedFlags;
 /** GpsLocationExtended has valid pdop, hdop, vdop. */
 #define GPS_LOCATION_EXTENDED_HAS_DOP 0x0001
 /** GpsLocationExtended has valid altitude mean sea level. */
@@ -349,14 +349,19 @@ typedef uint32_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_EAST_VEL_UNC   0x2000000
 /** GpsLocationExtended has up Velocity Uncertainty */
 #define GPS_LOCATION_EXTENDED_HAS_UP_VEL_UNC   0x4000000
-/** GpsLocationExtended has up Clock Bias */
+/** GpsLocationExtended has Clock Bias */
 #define GPS_LOCATION_EXTENDED_HAS_CLOCK_BIAS   0x8000000
-/** GpsLocationExtended has up Clock Bias std deviation*/
+/** GpsLocationExtended has Clock Bias std deviation*/
 #define GPS_LOCATION_EXTENDED_HAS_CLOCK_BIAS_STD_DEV   0x10000000
-/** GpsLocationExtended has up Clock drift*/
+/** GpsLocationExtended has Clock drift*/
 #define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT   0x20000000
-/** GpsLocationExtended has up Clock drift std deviation**/
+/** GpsLocationExtended has Clock drift std deviation**/
 #define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT_STD_DEV   0x40000000
+/** GpsLocationExtended has leap seconds **/
+#define GPS_LOCATION_EXTENDED_HAS_LEAP_SECONDS   0x80000000
+/** GpsLocationExtended has time uncertainty **/
+#define GPS_LOCATION_EXTENDED_HAS_TIME_UNC   0x100000000
+
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -686,6 +691,10 @@ typedef struct {
     uint8_t numOfMeasReceived;
     /** Measurement Usage Information */
     GpsMeasUsageInfo measUsageInfo[GNSS_SV_MAX];
+    /** Leap Seconds */
+    uint8_t leapSeconds;
+    /** Time uncertainty in milliseconds   */
+    float timeUncMs;
 } GpsLocationExtended;
 
 enum loc_sess_status {

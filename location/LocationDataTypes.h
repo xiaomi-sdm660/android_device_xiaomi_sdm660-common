@@ -145,8 +145,17 @@ typedef enum {
     GNSS_LOCATION_INFO_POS_TECH_MASK_BIT                = (1<<10),// valid LocPosTechMask
     GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<11),// valid LocSvInfoSource
     GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT            = (1<<12),// valid position dynamics data
-    GNSS_LOCATION_INFO_GPS_TIME_BIT                     = (1<<13),// valid GPS Time
-    GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<14) // valid gdop, tdop
+    GNSS_LOCATION_INFO_EXT_DOP_BIT                      = (1<<13),// valid gdop, tdop
+    GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT                = (1<<14),// valid North standard deviation
+    GNSS_LOCATION_INFO_EAST_STD_DEV_BIT                 = (1<<15),// valid East standard deviation
+    GNSS_LOCATION_INFO_NORTH_VEL_BIT                    = (1<<16),// valid North Velocity
+    GNSS_LOCATION_INFO_EAST_VEL_BIT                     = (1<<17),// valid East Velocity
+    GNSS_LOCATION_INFO_UP_VEL_BIT                       = (1<<18),// valid Up Velocity
+    GNSS_LOCATION_INFO_NORTH_VEL_UNC_BIT                = (1<<19),// valid North Velocity Uncertainty
+    GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT                 = (1<<20),// valid East Velocity Uncertainty
+    GNSS_LOCATION_INFO_UP_VEL_UNC_BIT                   = (1<<21),// valid Up Velocity Uncertainty
+    GNSS_LOCATION_INFO_LEAP_SECONDS_BIT                 = (1<<22),// valid leap seconds
+    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23) // valid time uncertainty
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -467,6 +476,43 @@ typedef enum {
     GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT  = (1<<4),
 } GnssAidingDataSvTypeBits;
 
+/** GNSS Signal Type and RF Band */
+typedef uint32_t GnssSignalTypeMask;
+typedef enum {
+    /** GPS L1CA Signal */
+    GNSS_SIGNAL_GPS_L1CA            = (1<<0),
+    /** GPS L1C Signal */
+    GNSS_SIGNAL_GPS_L1C             = (1<<1),
+    /** GPS L2 RF Band */
+    GNSS_SIGNAL_GPS_L2              = (1<<2),
+    /** GPS L5 RF Band */
+    GNSS_SIGNAL_GPS_L5              = (1<<3),
+    /** GLONASS G1 (L1OF) RF Band */
+    GNSS_SIGNAL_GLONASS_G1          = (1<<4),
+    /** GLONASS G2 (L2OF) RF Band */
+    GNSS_SIGNAL_GLONASS_G2          = (1<<5),
+    /** GALILEO E1 RF Band */
+    GNSS_SIGNAL_GALILEO_E1          = (1<<6),
+    /** GALILEO E5A RF Band */
+    GNSS_SIGNAL_GALILEO_E5A         = (1<<7),
+    /** GALILEO E5B RF Band */
+    GNSS_SIGNAL_GALILIEO_E5B        = (1<<8),
+    /** BEIDOU B1 RF Band */
+    GNSS_SIGNAL_BEIDOU_B1           = (1<<9),
+    /** BEIDOU B2 RF Band */
+    GNSS_SIGNAL_BEIDOU_B2           = (1<<10),
+    /** QZSS L1CA RF Band */
+    GNSS_SIGNAL_QZSS_L1CA           = (1<<11),
+    /** QZSS L1S RF Band */
+    GNSS_SIGNAL_QZSS_L1S            = (1<<12),
+    /** QZSS L2 RF Band */
+    GNSS_SIGNAL_QZSS_L2             = (1<<13),
+    /** QZSS L5 RF Band */
+    GNSS_SIGNAL_QZSS_L5             = (1<<14),
+    /** SBAS L1 RF Band */
+    GNSS_SIGNAL_SBAS_L1             = (1<<15)
+} GnssSignalTypeBits;
+
 typedef enum
 {
     GNSS_LOC_SV_SYSTEM_GPS                    = 1,
@@ -645,6 +691,21 @@ typedef struct {
     uint64_t qzssSvUsedIdsMask;
 } GnssLocationSvUsedInPosition;
 
+typedef struct {
+    /** GnssSignalType mask */
+    GnssSignalTypeMask gnssSignalType;
+   /** Specifies GNSS Constellation Type */
+    Gnss_LocSvSystemEnumType gnssConstellation;
+    /**  GNSS SV ID.
+     For GPS:      1 to 32
+     For GLONASS:  65 to 96. When slot-number to SV ID mapping is unknown, set as 255.
+     For SBAS:     120 to 151
+     For QZSS-L1CA:193 to 197
+     For BDS:      201 to 237
+     For GAL:      301 to 336 */
+    uint16_t gnssSvId;
+} GnssMeasUsageInfo;
+
 /** @struct
     Body Frame parameters
 */
@@ -760,9 +821,11 @@ typedef struct {
     float horUncEllipseSemiMajor;       // horizontal elliptical accuracy semi-major axis
     float horUncEllipseSemiMinor;       // horizontal elliptical accuracy semi-minor axis
     float horUncEllipseOrientAzimuth;   // horizontal elliptical accuracy azimuth
+    float northStdDeviation;            // North standard deviation Unit: Meters
+    float eastStdDeviation;             // East standard deviation. Unit: Meters
     float northVelocity;                // North Velocity.Unit: Meters/sec
-    float eastVelocity;                 // East Velocity
-    float upVelocity;
+    float eastVelocity;                 // East Velocity Unit Meters/sec
+    float upVelocity;                   // Up Velocity. Unit Meters/sec
     float northVelocityStdDeviation;
     float eastVelocityStdDeviation;
     float upVelocityStdDeviation;
@@ -772,6 +835,10 @@ typedef struct {
     GnssLocationPositionDynamics bodyFrameData;   // Body Frame Dynamics: 4wayAcceleration and
                                                   // pitch set with validity
     GnssSystemTime gnssSystemTime;            // GNSS System Time
+    uint8_t numOfMeasReceived; // Number of measurements received for use in fix.
+    GnssMeasUsageInfo measUsageInfo[GNSS_SV_MAX]; // GNSS Measurement Usage info
+    uint8_t leapSeconds;                          // leap second
+    float timeUncMs;                              // Time uncertainty in milliseconds
     Location location;
 } GnssLocationInfoNotification;
 
