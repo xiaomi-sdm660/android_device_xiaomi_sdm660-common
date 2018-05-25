@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -233,6 +233,12 @@ RET IPACM_OffloadManager::addDownstream(const char * downstream_name, const Pref
 	if (cache_need)
 	{
 		IPACMDBG_H("addDownstream name(%s) currently not support in ipa \n", downstream_name);
+
+#ifdef FEATURE_IPACM_RESTART
+		/* add ipacm restart support */
+		push_iface_up(downstream_name, false);
+#endif
+
 		/* copy to the cache */
 		for(int i = 0; i < MAX_EVENT_CACHE ;i++)
 		{
@@ -366,7 +372,6 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 			for (index = 0; index < MAX_EVENT_CACHE; index++) {
 				if (event_cache[index].valid == true &&
 					event_cache[index ].event == IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT) {
-					event_cache[index].valid = false;
 					memset(event_cache, 0, MAX_EVENT_CACHE*sizeof(framework_event_cache));
 					return SUCCESS;
 				}
@@ -404,6 +409,10 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 		if (cache_need)
 		{
 			IPACMDBG_H("setUpstream name(%s) currently not support in ipa \n", upstream_name);
+#ifdef FEATURE_IPACM_RESTART
+			/* add ipacm restart support */
+			push_iface_up(upstream_name, true);
+#endif
 			/* copy to the cache */
 			for(int i = 0; i < MAX_EVENT_CACHE ;i++)
 			{
@@ -416,7 +425,7 @@ RET IPACM_OffloadManager::setUpstream(const char *upstream_name, const Prefix& g
 					memcpy(&event_cache[latest_cache_index].prefix_cache, &gw_addr_v4, sizeof(event_cache[latest_cache_index].prefix_cache));
 					memcpy(&event_cache[latest_cache_index].prefix_cache_v6, &gw_addr_v6, sizeof(event_cache[latest_cache_index].prefix_cache_v6));
 					if (gw_addr_v4.fam == V4) {
-						IPACMDBG_H("cache event(%d) ipv4 fateway: (%x) dev(%s) on entry (%d)\n",
+						IPACMDBG_H("cache event(%d) ipv4 gateway: (%x) dev(%s) on entry (%d)\n",
 							event_cache[latest_cache_index].event,
 							event_cache[latest_cache_index].prefix_cache.v4Addr,
 							event_cache[latest_cache_index].dev_name,
@@ -738,7 +747,6 @@ int IPACM_OffloadManager::resetTetherStats(const char * upstream_name /* upstrea
 		return FAIL_INPUT_CHECK;
 	}
 	stats.reset_stats = true;
-
 	if (ioctl(fd, WAN_IOC_RESET_TETHER_STATS, &stats) < 0) {
 		IPACMERR("IOCTL WAN_IOC_RESET_TETHER_STATS call failed: %s", strerror(errno));
 		close(fd);
@@ -789,3 +797,88 @@ bool IPACM_OffloadManager::search_framwork_cache(char * interface_name)
 	IPACMDBG_H(" not found netdev (%s) has cached event\n", interface_name);
 	return rel;
 }
+
+#ifdef FEATURE_IPACM_RESTART
+int IPACM_OffloadManager::push_iface_up(const char * if_name, bool upstream)
+{
+	ipacm_cmd_q_data evt_data;
+	ipacm_event_data_fid *data_fid;
+	ipacm_event_data_mac *data = NULL;
+	int index;
+
+	IPACMDBG_H("name %s, upstream %d\n",
+							 if_name, upstream);
+
+	if(ipa_get_if_index(if_name, &index))
+	{
+		IPACMERR("netdev(%s) not registered ignored\n", if_name);
+		return SUCCESS;
+	}
+
+	if(strncmp(if_name, "rmnet_data", 10) == 0 && upstream)
+	{
+		data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+		if(data_fid == NULL)
+		{
+			IPACMERR("unable to allocate memory for event data_fid\n");
+			return FAIL_HARDWARE;
+		}
+		data_fid->if_index = index;
+		evt_data.event = IPA_LINK_UP_EVENT;
+		evt_data.evt_data = data_fid;
+		IPACMDBG_H("Posting IPA_LINK_UP_EVENT with if index: %d\n",
+							 data_fid->if_index);
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+	}
+
+	if(strncmp(if_name, "rndis", 5) == 0 && !upstream)
+	{
+		data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+		if(data_fid == NULL)
+		{
+			IPACMERR("unable to allocate memory for event data_fid\n");
+			return FAIL_HARDWARE;
+		}
+		data_fid->if_index = index;
+		evt_data.event = IPA_USB_LINK_UP_EVENT;
+		evt_data.evt_data = data_fid;
+		IPACMDBG_H("Posting usb IPA_LINK_UP_EVENT with if index: %d\n",
+				data_fid->if_index);
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+	}
+
+	if((strncmp(if_name, "softap", 6) == 0 || strncmp(if_name, "wlan", 4) == 0 ) && !upstream)
+	{
+		data_fid = (ipacm_event_data_fid *)malloc(sizeof(ipacm_event_data_fid));
+		if(data_fid == NULL)
+		{
+			IPACMERR("unable to allocate memory for event data_fid\n");
+			return FAIL_HARDWARE;
+		}
+		data_fid->if_index = index;
+		evt_data.event = IPA_WLAN_AP_LINK_UP_EVENT;
+		evt_data.evt_data = data_fid;
+		IPACMDBG_H("Posting IPA_WLAN_AP_LINK_UP_EVENT with if index: %d\n",
+			data_fid->if_index);
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+	}
+
+	if(strncmp(if_name, "wlan", 4) == 0 && upstream)
+	{
+		data = (ipacm_event_data_mac *)malloc(sizeof(ipacm_event_data_mac));
+		if(data == NULL)
+		{
+			IPACMERR("unable to allocate memory for event_wlan data\n");
+			return FAIL_HARDWARE;
+		}
+		data->if_index = index;
+		evt_data.event = IPA_WLAN_STA_LINK_UP_EVENT;
+		evt_data.evt_data = data;
+		IPACMDBG_H("Posting IPA_WLAN_STA_LINK_UP_EVENT with if index: %d\n",
+			data_fid->if_index);
+		IPACM_EvtDispatcher::PostEvt(&evt_data);
+	}
+
+	return IPACM_SUCCESS;
+}
+#endif
