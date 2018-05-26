@@ -670,6 +670,9 @@ service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
 
 on property:sys.boot_completed=1
     start vendor.qcom-post-boot
+# Enable PowerHAL hint processing
+    setprop vendor.powerhal.init 1
+
 
 service vendor.atfwd /vendor/bin/ATFWD-daemon
     class late_start
