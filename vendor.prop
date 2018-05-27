@@ -250,3 +250,66 @@ persist.device.type=omt
 # flag for activating mbn or not,default is true.
 persist.activate_mbn.enabled=false
 ro.regionalization.support=true
+
+persist.demo.hdmirotationlock=false
+
+#property to enable narrow search range for video encoding
+vidc.enc.target_support_bframe=1
+vendor.vidc.enc.disable_bframes=1
+vendor.vidc.dec.enable.downscalar=1
+
+# enable PQ feature by default
+vendor.vidc.enc.disable.pq=false
+
+#system props for time-services
+persist.timed.enable=true
+
+#force disable Bluetooth AAC by default
+persist.bt.a2dp.aac_disable=true
+
+# ad
+ro.qcom.ad=1
+ro.qcom.ad.calib.data=/system/etc/calib.cfg
+ro.qcom.ad.sensortype=2
+
+#system prop for wipower support
+ro.bluetooth.emb_wp_mode=true
+ro.bluetooth.wipower=true
+
+#
+# system property determining camera HAL to be used for a Video call
+#
+# 1 is camera1
+# 2 or anything else is camera2
+persist.radio.VT_CAM_INTERFACE=2
+
+#Enable stm-events
+persist.debug.coresight.config=stm-events
+
+#Bringup properties
+persist.radio.atfwd.start=true
+
+#set maximum supported adapter voltage
+persist.chg.max_volt_mv=9000
+
+#add for dirac algo tsx 9/12
+persist.dirac.acs.controller=qem
+persist.dirac.acs.storeSettings=1
+persist.dirac.acs.ignore_error=1
+
+#Property to enable display default color mode
+vendor.display.enable_default_color_mode=1
+
+#Disable Skip Validate
+sdm.debug.disable_skip_validate=1
+debug.sf.recomputecrop=0
+
+#system property determining camera to be used for a Video call
+persist.vendor.qti.telephony.vt_cam_interface=1
+
+#enable snapshot
+persist.vendor.radio.snapshot_enabled=1
+persist.vendor.radio.snapshot_timer=5
+
+#enable all system restart_level to relative
+persist.sys.ssr.restart_level=ALL_ENABLE
