@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.mokee.device"
+    android:sharedUserId="android.uid.system" >
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-sdk
+        android:minSdkVersion="27"
+        android:targetSdkVersion="27" />
+    <application
+        android:label="@string/advanced_settings"
+        android:theme="@style/AppTheme"
+        android:supportsRtl="true" >
+        <activity
+            android:name="org.mokee.device.DeviceSettingsActivity"
+            android:label="@string/advanced_settings" >
+            <intent-filter>
+		<action android:name="com.android.settings.action.IA_SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.system" />
+            <meta-data
+                android:name="com.android.settings.icon"
+                android:resource="@drawable/ic_advance_setting" />
+            <meta-data
+                android:name="com.android.settings.summary"
+                android:resource="@string/advanced_settings_summary" />
+        </activity>
+        <activity-alias
+            android:name="org.mokee.device.DeviceSettings"
+            android:label="@string/advanced_settings"
+            android:targetActivity="DeviceSettingsActivity" >
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+</manifest>
