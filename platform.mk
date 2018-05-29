@@ -88,9 +88,6 @@ PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/configs/gamedwhitelist.xml:$(TARGET_COPY_OUT_VENDOR)/etc/gamedwhitelist.xml \
     $(PLATFORM_PATH)/configs/appboosts.xml:$(TARGET_COPY_OUT_VENDOR)/etc/appboosts.xml
 
-# default is nosdcard, S/W button enabled in resource
-PRODUCT_CHARACTERISTICS := nosdcard
-
 # Audio
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
