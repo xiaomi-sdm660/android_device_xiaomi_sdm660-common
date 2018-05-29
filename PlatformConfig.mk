@@ -153,6 +153,9 @@ VSYNC_EVENT_PHASE_OFFSET_NS := 2000000
 # DT2W
 TARGET_TAP_TO_WAKE_NODE := "/sys/class/input/input2/wake_gesture"
 
+# EXFAT
+TARGET_EXFAT_DRIVER := exfat
+
 # Filesystem
 TARGET_FS_CONFIG_GEN := $(DEVICE_PATH)/config.fs
 
