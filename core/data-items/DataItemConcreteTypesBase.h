@@ -236,8 +236,7 @@ public:
     NetworkInfoDataItemBase(
     NetworkType initialType, int32_t type, string typeName, string subTypeName,
     bool available, bool connected, bool roaming ):
-            mAllTypes((initialType >= TYPE_UNKNOWN || initialType < TYPE_MOBILE) ?
-                      0 : (1<<initialType)),
+            mAllTypes(typeToAllTypes(initialType)),
             mType(type),
             mTypeName(typeName),
             mSubTypeName(subTypeName),
@@ -263,7 +262,9 @@ public:
     bool mRoaming;
 protected:
     DataItemId mId;
-
+    inline uint64_t typeToAllTypes(NetworkType type) {
+        return (type >= TYPE_UNKNOWN || type < TYPE_MOBILE) ?  0 : (1<<type);
+    }
 };
 
 class ServiceStatusDataItemBase : public IDataItemCore {
