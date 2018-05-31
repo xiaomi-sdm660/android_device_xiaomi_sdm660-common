@@ -175,7 +175,7 @@ service vendor.per_proxy /system/vendor/bin/pm-proxy
 on property:init.svc.vendor.per_mgr=running
     start vendor.per_proxy
 
-on property:sys.shutdown.requested=*
+on property:sys.powerctl=*
     stop vendor.per_proxy
     
 on property:sys.powerctl=*

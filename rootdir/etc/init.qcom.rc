@@ -667,7 +667,7 @@ service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     capabilities NET_ADMIN
 	writepid /dev/cpuset/system-background/tasks
 
-on property:sys.shutdown.requested=*
+on property:sys.powerctl=*
     stop vendor.cnss-daemon
     
 on property:sys.powerctl=*
