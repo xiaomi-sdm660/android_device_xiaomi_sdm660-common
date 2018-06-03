@@ -28,19 +28,9 @@
  */
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 #include <sys/stat.h>
-#include <error.h>
 #include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <array>
-#include <loc_pla.h>
 #include <log_util.h>
-#include <string>
-#include <vector>
-#include "gps_extended_c.h"
 #include "LocIpc.h"
 
 namespace loc_util {
@@ -52,8 +42,10 @@ namespace loc_util {
 
 #define LOC_MSG_BUF_LEN 8192
 #define LOC_MSG_HEAD "$MSGLEN$"
+#define LOC_MSG_ABORT "LocIpcMsg::ABORT"
 
 class LocIpcRunnable : public LocRunnable {
+friend LocIpc;
 public:
     LocIpcRunnable(LocIpc& locIpc, const std::string& ipcName)
             : mLocIpc(locIpc), mIpcName(ipcName) {}
@@ -70,10 +62,10 @@ private:
 };
 
 bool LocIpc::startListeningNonBlocking(const std::string& name) {
-    mRunnable.reset(new LocIpcRunnable(*this, name));
+    mRunnable = new LocIpcRunnable(*this, name);
     std::string threadName("LocIpc-");
     threadName.append(name);
-    return mThread.start(threadName.c_str(), mRunnable.get());
+    return mThread.start(threadName.c_str(), mRunnable);
 }
 
 bool LocIpc::startListeningBlocking(const std::string& name) {
@@ -107,6 +99,7 @@ bool LocIpc::startListeningBlocking(const std::string& name) {
 
     ssize_t nBytes = 0;
     std::string msg = "";
+    std::string abort = LOC_MSG_ABORT;
     while (1) {
         msg.resize(LOC_MSG_BUF_LEN);
         nBytes = ::recvfrom(mIpcFd, (void*)(msg.data()), msg.size(), 0, NULL, NULL);
@@ -114,6 +107,11 @@ bool LocIpc::startListeningBlocking(const std::string& name) {
             break;
         } else if (nBytes == 0) {
             continue;
+        }
+
+        if (strncmp(msg.data(), abort.c_str(), abort.length()) == 0) {
+            LOC_LOGi("recvd abort msg.data %s", msg.data());
+            break;
         }
 
         if (strncmp(msg.data(), LOC_MSG_HEAD, sizeof(LOC_MSG_HEAD) - 1)) {
@@ -142,7 +140,6 @@ bool LocIpc::startListeningBlocking(const std::string& name) {
     if (mStopRequested) {
         mStopRequested = false;
         return true;
-
     } else {
         LOC_LOGe("cannot read socket. reason:%s", strerror(errno));
         (void)::close(mIpcFd);
@@ -152,13 +149,27 @@ bool LocIpc::startListeningBlocking(const std::string& name) {
 }
 
 void LocIpc::stopListening() {
+
+    const char *socketName = nullptr;
     mStopRequested = true;
+
+    if (mRunnable) {
+        std::string abort = LOC_MSG_ABORT;
+        socketName = (reinterpret_cast<LocIpcRunnable *>(mRunnable))->mIpcName.c_str();
+        send(socketName, abort);
+        mRunnable = nullptr;
+    }
 
     if (mIpcFd >= 0) {
         if (::close(mIpcFd)) {
             LOC_LOGe("cannot close socket:%s", strerror(errno));
         }
         mIpcFd = -1;
+    }
+
+    //delete from the file system at the end
+    if (socketName) {
+        unlink(socketName);
     }
 }
 
