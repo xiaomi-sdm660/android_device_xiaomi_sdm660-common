@@ -235,10 +235,8 @@ public:
     virtual GnssConfigLppeControlPlaneMask convertLppeCp(const uint32_t lppeControlPlaneMask);
     virtual GnssConfigLppeUserPlaneMask convertLppeUp(const uint32_t lppeUserPlaneMask);
 
-    virtual enum loc_api_adapter_err
-        getWwanZppFix();
-    virtual void
-        getBestAvailableZppFix();
+    virtual void getWwanZppFix();
+    virtual void getBestAvailableZppFix();
     virtual int initDataServiceClient(bool isDueToSsr);
     virtual int openAndStartDataCall();
     virtual void stopDataCall();

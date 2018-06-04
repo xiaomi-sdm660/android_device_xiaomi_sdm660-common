@@ -576,9 +576,9 @@ DEFAULT_IMPL(0)
 GnssConfigLppeUserPlaneMask LocApiBase::convertLppeUp(const uint32_t /*lppeUserPlaneMask*/)
 DEFAULT_IMPL(0)
 
-enum loc_api_adapter_err LocApiBase::
+void LocApiBase::
    getWwanZppFix()
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
+DEFAULT_IMPL()
 
 void LocApiBase::
    getBestAvailableZppFix()
