@@ -319,7 +319,10 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
     }
     if (gnssCbIface != nullptr) {
         IGnssCallback::GnssSystemInfo gnssInfo;
-        if (capabilitiesMask & LOCATION_CAPABILITIES_DEBUG_NMEA_BIT) {
+        if (capabilitiesMask & LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT ||
+            capabilitiesMask & LOCATION_CAPABILITIES_AGPM_BIT) {
+            gnssInfo.yearOfHw = 2018;
+        } else if (capabilitiesMask & LOCATION_CAPABILITIES_DEBUG_NMEA_BIT) {
             gnssInfo.yearOfHw = 2017;
         } else if (capabilitiesMask & LOCATION_CAPABILITIES_GNSS_MEASUREMENTS_BIT) {
             gnssInfo.yearOfHw = 2016;

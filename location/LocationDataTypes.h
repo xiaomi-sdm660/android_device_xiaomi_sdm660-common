@@ -191,7 +191,11 @@ typedef enum {
     // supports debug nmea sentences in the debugNmeaCallback
     LOCATION_CAPABILITIES_DEBUG_NMEA_BIT                    = (1<<8),
     // support outdoor trip batching
-    LOCATION_CAPABILITIES_OUTDOOR_TRIP_BATCHING_BIT         = (1<<9)
+    LOCATION_CAPABILITIES_OUTDOOR_TRIP_BATCHING_BIT         = (1<<9),
+    // support constellation enablement
+    LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT      = (1<<10),
+    // support agpm
+    LOCATION_CAPABILITIES_AGPM_BIT                          = (1<<11),
 } LocationCapabilitiesBits;
 
 typedef enum {
