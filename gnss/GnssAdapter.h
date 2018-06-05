@@ -122,6 +122,7 @@ class GnssAdapter : public LocAdapterBase {
     /* === SystemStatus ===================================================================== */
     SystemStatus* mSystemStatus;
     std::string mServerUrl;
+    std::string mMoServerUrl;
     XtraSystemStatusObserver mXtraObserver;
 
     /*==== CONVERSION ===================================================================*/
@@ -160,7 +161,7 @@ public:
     LocationCallbacks getClientCallbacks(LocationAPI* client);
     LocationCapabilitiesMask getCapabilities();
     void broadcastCapabilities(LocationCapabilitiesMask);
-    void setSuplHostServer(const char* server, int port);
+    void setSuplHostServer(const char* server, int port, LocServerType type);
 
     /* ==== TRACKING ======================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -310,7 +311,7 @@ public:
     /*==== SYSTEM STATUS ================================================================*/
     inline SystemStatus* getSystemStatus(void) { return mSystemStatus; }
     std::string& getServerUrl(void) { return mServerUrl; }
-    void setServerUrl(const char* server) { mServerUrl.assign(server); }
+    std::string& getMoServerUrl(void) { return mMoServerUrl; }
 
     /*==== CONVERSION ===================================================================*/
     static uint32_t convertGpsLock(const GnssConfigGpsLock gpsLock);

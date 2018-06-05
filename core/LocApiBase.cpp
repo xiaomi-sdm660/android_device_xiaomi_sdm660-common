@@ -495,7 +495,7 @@ void LocApiBase::
 DEFAULT_IMPL()
 
 LocationError LocApiBase::
-    setServerSync(const char* /*url*/, int /*len*/)
+    setServerSync(const char* /*url*/, int /*len*/, LocServerType /*type*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
 LocationError LocApiBase::

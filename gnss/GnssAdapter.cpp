@@ -550,7 +550,7 @@ GnssAdapter::readConfigCommand()
 }
 
 void
-GnssAdapter::setSuplHostServer(const char* server, int port)
+GnssAdapter::setSuplHostServer(const char* server, int port, LocServerType type)
 {
     if (ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
         char serverUrl[MAX_URL_LEN] = {};
@@ -564,10 +564,14 @@ GnssAdapter::setSuplHostServer(const char* server, int port)
         } else if (port > 0) {
             length = snprintf(serverUrl, sizeof(serverUrl), "%s:%u", server, port);
         }
-
-        if (length >= 0 && strncasecmp(getServerUrl().c_str(),
-                                       serverUrl, sizeof(serverUrl)) != 0) {
-            setServerUrl(serverUrl);
+        if (LOC_AGPS_SUPL_SERVER != type && LOC_AGPS_MO_SUPL_SERVER != type) {
+            LOC_LOGe("Invalid type=%d", type);
+        } else {
+            string& url = (LOC_AGPS_SUPL_SERVER == type) ? getServerUrl() : getMoServerUrl();
+            if (length > 0 && strncasecmp(url.c_str(), serverUrl, sizeof(serverUrl)) != 0) {
+                url.assign(serverUrl);
+                LOC_LOGv("serverUrl=%s length=%d type=%d", serverUrl, length, type);
+            }
         }
     }
 }
@@ -597,8 +601,13 @@ GnssAdapter::setConfigCommand()
             mAdapter.mNmeaMask= mask;
 
             std::string oldServerUrl = mAdapter.getServerUrl();
+            std::string oldMoServerUrl = mAdapter.getMoServerUrl();
             mAdapter.setSuplHostServer(ContextBase::mGps_conf.SUPL_HOST,
-                           ContextBase::mGps_conf.SUPL_PORT);
+                                       ContextBase::mGps_conf.SUPL_PORT,
+                                       LOC_AGPS_SUPL_SERVER);
+            mAdapter.setSuplHostServer(ContextBase::mGps_conf.MO_SUPL_HOST,
+                                       ContextBase::mGps_conf.MO_SUPL_PORT,
+                                       LOC_AGPS_MO_SUPL_SERVER);
 
            // inject the configurations into modem
            GnssAdapter& adapter = mAdapter;
@@ -606,10 +615,12 @@ GnssAdapter::setConfigCommand()
            loc_sap_cfg_s_type sapConf = ContextBase::mSap_conf;
 
             mApi.sendMsg(new LocApiMsg(
-                    [&adapter, gpsConf, sapConf, oldServerUrl] () {
+                    [&adapter, gpsConf, sapConf, oldServerUrl, oldMoServerUrl] () {
 
                 std::string serverUrl = adapter.getServerUrl();
+                std::string moServerUrl = adapter.getMoServerUrl();
                 int serverUrlLen = serverUrl.length();
+                int moServerUrlLen = moServerUrl.length();
 
                 if (gpsConf.AGPS_CONFIG_INJECT) {
                     adapter.mLocApi->setSUPLVersionSync(
@@ -622,10 +633,21 @@ GnssAdapter::setConfigCommand()
 
                 if ((serverUrlLen !=0) && (oldServerUrl.compare(serverUrl) != 0)) {
                     LocationError locErr =
-                            adapter.mLocApi->setServerSync(serverUrl.c_str(), serverUrlLen);
+                            adapter.mLocApi->setServerSync(serverUrl.c_str(), serverUrlLen,
+                                                           LOC_AGPS_SUPL_SERVER);
                     if (locErr != LOCATION_ERROR_SUCCESS) {
-                        LOC_LOGE("%s]:Error while setting SUPL_HOST server:%s",
-                                 __func__, serverUrl.c_str());
+                        LOC_LOGe("Error while setting SUPL_HOST server:%s",
+                                 serverUrl.c_str());
+                    }
+                }
+                if ((moServerUrlLen != 0) && (oldMoServerUrl.compare(moServerUrl) != 0)) {
+                    LocationError locErr =
+                            adapter.mLocApi->setServerSync(moServerUrl.c_str(),
+                                                           moServerUrlLen,
+                                                           LOC_AGPS_MO_SUPL_SERVER);
+                    if (locErr != LOCATION_ERROR_SUCCESS) {
+                        LOC_LOGe("Error while setting MO SUPL_HOST server:%s",
+                                 moServerUrl.c_str());
                     }
                 }
 
@@ -777,8 +799,9 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                 index++;
                 if (GNSS_ASSISTANCE_TYPE_SUPL == mConfig.assistanceServer.type) {
                     mAdapter.setSuplHostServer(mConfig.assistanceServer.hostName,
-                            mConfig.assistanceServer.port);
-                } else if (GNSS_ASSISTANCE_TYPE_C2K != mConfig.assistanceServer.type) {
+                                                     mConfig.assistanceServer.port,
+                                                     LOC_AGPS_SUPL_SERVER);
+                } else {
                     LOC_LOGE("%s]: Not a valid gnss assistance type %u",
                             __func__, mConfig.assistanceServer.type);
                     errs.at(index) = LOCATION_ERROR_INVALID_PARAMETER;
@@ -892,7 +915,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                                 GNSS_ASSISTANCE_TYPE_SUPL) {
                             if ((serverUrlLen != 0) && (oldServerUrl.compare(serverUrl) !=0)) {
                                 err = adapter.mLocApi->setServerSync(
-                                        serverUrl.c_str(), serverUrlLen);
+                                        serverUrl.c_str(), serverUrlLen, LOC_AGPS_SUPL_SERVER);
                                 errsList[index] = err;
                             }
                         } else if (gnssConfigNeedEngineUpdate.assistanceServer.type ==
