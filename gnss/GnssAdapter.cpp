@@ -2209,7 +2209,8 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  bool fromUlp,
                                  bool fromEngineHub)
 {
-    LOC_LOGD("%s]: fromUlp %u status %u", __func__, fromUlp, status);
+    LOC_LOGD("%s]: fromUlp %u, from engine hub %u, status %u, tech mask 0x%x",
+             __func__, fromUlp, fromEngineHub, status, techMask);
 
     // if this event is called from QMI LOC API, then try to call into ULP and return if successfull
     // if the position is called from ULP or engine hub, then send it out directly
@@ -2456,7 +2457,6 @@ GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
 {
     // if this event is not called from ULP, then try to call into ULP and return if successfull
     if (!fromUlp && !loc_nmea_is_debug(nmea, length)) {
-        mEngHubProxy->gnssReportNmea(nmea);
         if (mUlpProxy->reportNmea(nmea, length)) {
             return;
         }
