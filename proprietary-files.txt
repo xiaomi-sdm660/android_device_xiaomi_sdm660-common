@@ -160,12 +160,14 @@ vendor/lib/libarcsoft_beauty_shot.so
 vendor/lib/libarcsoft_beautyshot.so
 vendor/lib/libarcsoft_dualcam_refocus.so
 vendor/lib/libarcsoft_high_dynamic_range.so
+vendor/lib/libcamera_scene.so
 vendor/lib/libcdsprpc.so
 vendor/lib/libchromaflash.so
 vendor/lib/libdepthmapwrapper.so
 vendor/lib/libdualcameraddm.so
 vendor/lib/libFaceGrade.so
 vendor/lib/libflash_pmic.so
+vendor/lib/libgnustl_shared.so
 vendor/lib/libhal_dbg.so
 vendor/lib/libhdr_tm.so
 vendor/lib/libjpegdhw.so
@@ -245,6 +247,9 @@ vendor/lib/libscveObjectTracker_stub.so
 vendor/lib/libscvePanorama.so
 vendor/lib/libscvePanorama_lite.so
 vendor/lib/libseemore.so
+vendor/lib/libSNPE.so
+vendor/lib/libsymphony-cpu.so
+vendor/lib/libsymphonypower.so
 vendor/lib/libts_detected_face_hal.so
 vendor/lib/libts_face_beautify_hal.so
 vendor/lib/libubifocus.so
@@ -348,6 +353,7 @@ vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_4k_preview_3a.so
 vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_4k_video_3a.so
 vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_bokeh_preview.so
 vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_bokeh_preview_3a.so
+vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_bokeh_snapshot.so
 vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_common.so
 vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_cpp_hfr_120.so
 vendor/lib/libchromatix_whyred_s5k2l7_ofilm_cn_i_cpp_hfr_60.so
@@ -383,6 +389,7 @@ vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_4k_preview_3a.so
 vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_4k_video_3a.so
 vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_bokeh_preview.so
 vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_bokeh_preview_3a.so
+vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_bokeh_snapshot.so
 vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_common.so
 vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_cpp_hfr_120.so
 vendor/lib/libchromatix_whyred_s5k2l7_qtech_cn_ii_cpp_hfr_60.so
@@ -525,7 +532,9 @@ vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_liveshot.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_preview.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_snapshot.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_snapshot_5M.so
+vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_snapshot_5M_hht.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_snapshot_downscale.so
+vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_snapshot_hht.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_snapshot_upscale.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_video.so
 vendor/lib/libchromatix_whyred_imx376_ofilm_global_i_cpp_video_default.so
@@ -557,7 +566,9 @@ vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_liveshot.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_preview.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_snapshot.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_snapshot_5M.so
+vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_snapshot_5M_hht.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_snapshot_downscale.so
+vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_snapshot_hht.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_snapshot_upscale.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_video.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_cpp_video_default.so
@@ -584,6 +595,7 @@ vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_video_default.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_video_face.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_video_weixin.so
 vendor/lib/libchromatix_whyred_imx376_sunny_global_ii_weixin_video_3a.so
+vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_bokeh_preview.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_bokeh_preview_3a.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_bokeh_snapshot.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_common.so
@@ -593,6 +605,7 @@ vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_hfr_90.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_liveshot.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_preview.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_snapshot.so
+vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_snapshot_hht.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_video.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_cpp_video_weixin.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_default_preview_3a.so
@@ -613,6 +626,7 @@ vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_video_weixin.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_weixin_video_3a.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_zsl_preview_3a.so
 vendor/lib/libchromatix_whyred_imx486_ofilm_global_i_zsl_video_3a.so
+vendor/lib/libchromatix_whyred_imx486_qtech_global_ii_bokeh_preview.so
 vendor/lib/libchromatix_whyred_imx486_qtech_global_ii_bokeh_preview_3a.so
 vendor/lib/libchromatix_whyred_imx486_qtech_global_ii_bokeh_snapshot.so
 vendor/lib/libchromatix_whyred_imx486_qtech_global_ii_common.so
