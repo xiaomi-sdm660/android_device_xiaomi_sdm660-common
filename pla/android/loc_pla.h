@@ -41,7 +41,7 @@ extern "C" {
 #include <cutils/properties.h>
 #include <cutils/threads.h>
 #include <cutils/sched_policy.h>
-#include <private/android_filesystem_config.h>
+#include <cutils/android_filesystem_config.h>
 
 #define UID_GPS (AID_GPS)
 #define GID_GPS (AID_GPS)
