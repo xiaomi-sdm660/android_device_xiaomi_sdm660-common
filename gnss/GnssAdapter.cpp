@@ -1896,6 +1896,11 @@ GnssAdapter::updateClientsEventMask()
         if (it->second.gnssMeasurementsCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
         }
+        if (it->second.gnssDataCb != nullptr) {
+            mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
+            mask |= LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT;
+            updateNmeaMask(mNmeaMask | LOC_NMEA_MASK_DEBUG_V02);
+        }
     }
 
     /*
@@ -2810,7 +2815,9 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  const GpsLocationExtended& locationExtended,
                                  enum loc_sess_status status,
                                  LocPosTechMask techMask,
-                                 bool fromEngineHub)
+                                 bool fromEngineHub,
+                                 GnssDataNotification* pDataNotify,
+                                 int msInWeek)
 {
     // if this event is called from QMI LOC API, then send report to engine hub
     // if sending is successful, we return as we will wait for final report from engine hub
@@ -2842,17 +2849,30 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
         const GpsLocationExtended mLocationExtended;
         loc_sess_status mStatus;
         LocPosTechMask mTechMask;
+        GnssDataNotification mDataNotify;
+        int mMsInWeek;
+        bool mbIsDataValid;
         inline MsgReportPosition(GnssAdapter& adapter,
                                  const UlpLocation& ulpLocation,
                                  const GpsLocationExtended& locationExtended,
                                  loc_sess_status status,
-                                 LocPosTechMask techMask) :
+                                 LocPosTechMask techMask,
+                                 GnssDataNotification* pDataNotify,
+                                 int msInWeek) :
             LocMsg(),
             mAdapter(adapter),
             mUlpLocation(ulpLocation),
             mLocationExtended(locationExtended),
             mStatus(status),
-            mTechMask(techMask) {}
+            mTechMask(techMask),
+            mMsInWeek(msInWeek) {
+                if (pDataNotify != nullptr) {
+                    mDataNotify = *pDataNotify;
+                    mbIsDataValid = true;
+                } else {
+                    mbIsDataValid = false;
+                }
+        }
         inline virtual void proc() const {
             // extract bug report info - this returns true if consumed by systemstatus
             SystemStatus* s = mAdapter.getSystemStatus();
@@ -2861,10 +2881,19 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                 s->eventPosition(mUlpLocation, mLocationExtended);
             }
             mAdapter.reportPosition(mUlpLocation, mLocationExtended, mStatus, mTechMask);
+            if (true == mbIsDataValid) {
+                if (-1 != mMsInWeek) {
+                    mAdapter.getDataInformation((GnssDataNotification&)mDataNotify,
+                                                mMsInWeek);
+                }
+                mAdapter.reportData((GnssDataNotification&)mDataNotify);
+            }
         }
     };
 
-    sendMsg(new MsgReportPosition(*this, ulpLocation, locationExtended, status, techMask));
+    sendMsg(new MsgReportPosition(*this, ulpLocation, locationExtended,
+                                  status, techMask,
+                                  pDataNotify, msInWeek));
 }
 
 bool
@@ -3096,6 +3125,54 @@ GnssAdapter::reportNmea(const char* nmea, size_t length)
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
         if (nullptr != it->second.gnssNmeaCb) {
             it->second.gnssNmeaCb(nmeaNotification);
+        }
+    }
+}
+
+void
+GnssAdapter::reportDataEvent(const GnssDataNotification& dataNotify,
+                             int msInWeek)
+{
+    struct MsgReportData : public LocMsg {
+        GnssAdapter& mAdapter;
+        GnssDataNotification mDataNotify;
+        int mMsInWeek;
+        inline MsgReportData(GnssAdapter& adapter,
+            const GnssDataNotification& dataNotify,
+            int msInWeek) :
+            LocMsg(),
+            mAdapter(adapter),
+            mDataNotify(dataNotify),
+            mMsInWeek(msInWeek) {
+        }
+        inline virtual void proc() const {
+            if (-1 != mMsInWeek) {
+                mAdapter.getDataInformation((GnssDataNotification&)mDataNotify,
+                                            mMsInWeek);
+            }
+            mAdapter.reportData((GnssDataNotification&)mDataNotify);
+        }
+    };
+
+    sendMsg(new MsgReportData(*this, dataNotify, msInWeek));
+}
+
+void
+GnssAdapter::reportData(GnssDataNotification& dataNotify)
+{
+    for (int sig = 0; sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
+        if (GNSS_LOC_DATA_JAMMER_IND_BIT ==
+            (dataNotify.gnssDataMask[sig] & GNSS_LOC_DATA_JAMMER_IND_BIT)) {
+            LOC_LOGv("jammerInd[%d]=%f", sig, dataNotify.jammerInd[sig]);
+        }
+        if (GNSS_LOC_DATA_AGC_BIT ==
+            (dataNotify.gnssDataMask[sig] & GNSS_LOC_DATA_AGC_BIT)) {
+            LOC_LOGv("agc[%d]=%f", sig, dataNotify.agc[sig]);
+        }
+    }
+    for (auto it = mClientData.begin(); it != mClientData.end(); ++it) {
+        if (nullptr != it->second.gnssDataCb) {
+            it->second.gnssDataCb(dataNotify);
         }
     }
 }
@@ -3990,6 +4067,94 @@ GnssAdapter::getAgcInformation(GnssMeasurementsNotification& measurements, int m
                 default:
                     break;
                 }
+            }
+        }
+    }
+}
+
+/* get Data information from system status and fill it */
+void
+GnssAdapter::getDataInformation(GnssDataNotification& data, int msInWeek)
+{
+    SystemStatus* systemstatus = getSystemStatus();
+
+    LOC_LOGV("%s]: msInWeek=%d", __func__, msInWeek);
+    if (nullptr != systemstatus) {
+        SystemStatusReports reports = {};
+        systemstatus->getReport(reports, true);
+
+        if ((!reports.mRfAndParams.empty()) && (!reports.mTimeAndClock.empty()) &&
+            (abs(msInWeek - (int)reports.mTimeAndClock.back().mGpsTowMs) < 2000)) {
+
+            for (int sig = GNSS_LOC_SIGNAL_TYPE_GPS_L1CA;
+                 sig < GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES; sig++) {
+                data.gnssDataMask[sig] = 0;
+                data.jammerInd[sig] = 0.0;
+                data.agc[sig] = 0.0;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mAgcGps) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_GPS_L1CA] |=
+                        GNSS_LOC_DATA_AGC_BIT;
+                data.agc[GNSS_LOC_SIGNAL_TYPE_GPS_L1CA] =
+                        reports.mRfAndParams.back().mAgcGps;
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_QZSS_L1CA] |=
+                        GNSS_LOC_DATA_AGC_BIT;
+                data.agc[GNSS_LOC_SIGNAL_TYPE_QZSS_L1CA] =
+                        reports.mRfAndParams.back().mAgcGps;
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_SBAS_L1_CA] |=
+                        GNSS_LOC_DATA_AGC_BIT;
+                data.agc[GNSS_LOC_SIGNAL_TYPE_SBAS_L1_CA] =
+                    reports.mRfAndParams.back().mAgcGps;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mJammerGps) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_GPS_L1CA] |=
+                        GNSS_LOC_DATA_JAMMER_IND_BIT;
+                data.jammerInd[GNSS_LOC_SIGNAL_TYPE_GPS_L1CA] =
+                        (double)reports.mRfAndParams.back().mJammerGps;
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_QZSS_L1CA] |=
+                        GNSS_LOC_DATA_JAMMER_IND_BIT;
+                data.jammerInd[GNSS_LOC_SIGNAL_TYPE_QZSS_L1CA] =
+                        (double)reports.mRfAndParams.back().mJammerGps;
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_SBAS_L1_CA] |=
+                        GNSS_LOC_DATA_JAMMER_IND_BIT;
+                data.jammerInd[GNSS_LOC_SIGNAL_TYPE_SBAS_L1_CA] =
+                    (double)reports.mRfAndParams.back().mJammerGps;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mAgcGlo) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_GLONASS_G1] |=
+                        GNSS_LOC_DATA_AGC_BIT;
+                data.agc[GNSS_LOC_SIGNAL_TYPE_GLONASS_G1] =
+                        reports.mRfAndParams.back().mAgcGlo;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mJammerGlo) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_GLONASS_G1] |=
+                        GNSS_LOC_DATA_JAMMER_IND_BIT;
+                data.jammerInd[GNSS_LOC_SIGNAL_TYPE_GLONASS_G1] =
+                        (double)reports.mRfAndParams.back().mJammerGlo;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mAgcBds) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1_I] |=
+                        GNSS_LOC_DATA_AGC_BIT;
+                data.agc[GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1_I] =
+                        reports.mRfAndParams.back().mAgcBds;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mJammerBds) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1_I] |=
+                        GNSS_LOC_DATA_JAMMER_IND_BIT;
+                data.jammerInd[GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1_I] =
+                        (double)reports.mRfAndParams.back().mJammerBds;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mAgcGal) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_GALILEO_E1_C] |=
+                        GNSS_LOC_DATA_AGC_BIT;
+                data.agc[GNSS_LOC_SIGNAL_TYPE_GALILEO_E1_C] =
+                        reports.mRfAndParams.back().mAgcGal;
+            }
+            if (GNSS_INVALID_JAMMER_IND != reports.mRfAndParams.back().mJammerGal) {
+                data.gnssDataMask[GNSS_LOC_SIGNAL_TYPE_GALILEO_E1_C] |=
+                        GNSS_LOC_DATA_JAMMER_IND_BIT;
+                data.jammerInd[GNSS_LOC_SIGNAL_TYPE_GALILEO_E1_C] =
+                        (double)reports.mRfAndParams.back().mJammerGal;
             }
         }
     }

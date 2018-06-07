@@ -542,6 +542,36 @@ typedef enum
     /**< QZSS satellite. */
 } Gnss_LocSvSystemEnumType;
 
+typedef enum {
+    GNSS_LOC_SIGNAL_TYPE_GPS_L1CA = 0,          /**<  GPS L1CA Signal  */
+    GNSS_LOC_SIGNAL_TYPE_GPS_L1C = 1,           /**<  GPS L1C Signal  */
+    GNSS_LOC_SIGNAL_TYPE_GPS_L2C_L = 2,         /**<  GPS L2C_L RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_GPS_L5_Q = 3,          /**<  GPS L5_Q RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_GLONASS_G1 = 4,        /**<  GLONASS G1 (L1OF) RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_GLONASS_G2 = 5,        /**<  GLONASS G2 (L2OF) RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_GALILEO_E1_C = 6,      /**<  GALILEO E1_C RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_GALILEO_E5A_Q = 7,     /**<  GALILEO E5A_Q RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_GALILEO_E5B_Q = 8,     /**<  GALILEO E5B_Q RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1_I = 9,       /**<  BEIDOU B1_I RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_BEIDOU_B1C = 10,       /**<  BEIDOU B1C RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_BEIDOU_B2_I = 11,      /**<  BEIDOU B2_I RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_BEIDOU_B2A_I = 12,     /**<  BEIDOU B2A_I RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_QZSS_L1CA = 13,        /**<  QZSS L1CA RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_QZSS_L1S = 14,         /**<  QZSS L1S RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_QZSS_L2C_L = 15,       /**<  QZSS L2C_L RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_QZSS_L5_Q = 16,        /**<  QZSS L5_Q RF Band  */
+    GNSS_LOC_SIGNAL_TYPE_SBAS_L1_CA = 17,       /**<  SBAS L1_CA RF Band  */
+    GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES = 18    /**<  Maximum number of signal types */
+} Gnss_LocSignalEnumType;
+
+typedef uint64_t GnssDataMask;
+typedef enum {
+    // Jammer Indicator is available
+    GNSS_LOC_DATA_JAMMER_IND_BIT = (1ULL << 0),
+    // AGC is available
+    GNSS_LOC_DATA_AGC_BIT = (1ULL << 1)
+} GnssDataBits;
+
 typedef uint32_t GnssSystemTimeStructTypeFlags;
 typedef enum {
     GNSS_SYSTEM_TIME_WEEK_VALID             = (1 << 0),
@@ -959,6 +989,13 @@ typedef struct {
 } GnssNmeaNotification;
 
 typedef struct {
+    size_t size;                 // set to sizeof(GnssDataNotification)
+    GnssDataMask  gnssDataMask[GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES];  // bitwise OR of GnssDataBits
+    double        jammerInd[GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES];     // Jammer Indication
+    double        agc[GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES];           // Automatic gain control
+} GnssDataNotification;
+
+typedef struct {
     size_t size;         // set to sizeof(GnssMeasurementsNotification)
     size_t count;        // number of items in GnssMeasurements array
     GnssMeasurementsData measurements[GNSS_MEASUREMENTS_MAX];
@@ -1152,6 +1189,13 @@ typedef std::function<void(
     GnssNmeaNotification gnssNmeaNotification
 )> gnssNmeaCallback;
 
+/* Gives GNSS data, optional can be NULL
+    gnssDataCallback is called only during a tracking session
+    broadcasted to all clients, no matter if a session has started by client */
+typedef std::function<void(
+    GnssDataNotification gnssDataNotification
+)> gnssDataCallback;
+
 /* Gives GNSS Measurements information, optional can be NULL
     gnssMeasurementsCallback is called only during a tracking session
     broadcasted to all clients, no matter if a session has started by client */
@@ -1177,6 +1221,7 @@ typedef struct {
     gnssNiCallback gnssNiCb;                         // optional
     gnssSvCallback gnssSvCb;                         // optional
     gnssNmeaCallback gnssNmeaCb;                     // optional
+    gnssDataCallback gnssDataCb;                     // optional
     gnssMeasurementsCallback gnssMeasurementsCb;     // optional
     batchingStatusCallback batchingStatusCb;         // optional
 } LocationCallbacks;
