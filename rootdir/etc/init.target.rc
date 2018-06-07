@@ -116,13 +116,12 @@ on boot
     chown system system /persist/speccfg/vendor_persist.prop
     chown system system /persist/speccfg/submask
     chown system system /persist/speccfg/partition
-#Load WLAN driver
-   insmod -f /vendor/lib/modules/qca_cld3/qca_cld3_wlan.ko
-   chown wifi wifi /sys/module/wlan/parameters/fwpath
-   setprop wlan.driver.status "ok"
 
     chmod 0660 /proc/nvt_wake_gesture
     chown system system /proc/nvt_wake_gesture
+
+    # Wifi firmware reload path
+    chown wifi wifi /sys/module/wlan/parameters/fwpath
 
 #Peripheral manager
 service per_mgr /system/vendor/bin/pm-service
