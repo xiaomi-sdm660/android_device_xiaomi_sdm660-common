@@ -9,7 +9,6 @@ dalvik.vm.heapsize=512m
 dalvik.vm.heaptargetutilization=0.75
 dalvik.vm.heapminfree=512k
 dalvik.vm.heapmaxfree=8m
-qemu.hw.mainkeys=0
 video.disable.ubwc=1
 ro.hardware.nfc_nci=nqx.default
 persist.radio.multisim.config=dsds

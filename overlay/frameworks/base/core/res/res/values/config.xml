@@ -318,4 +318,8 @@
 
     <!-- Whether device supports double tap to wake -->
     <bool name="config_supportDoubleTapWake">true</bool>
+
+    <!-- Whether a software navigation bar should be shown. NOTE: in the future this may be
+                  autodetected from the Configuration. -->
+    <bool name="config_showNavigationBar">true</bool>
 </resources>
