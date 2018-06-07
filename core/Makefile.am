@@ -17,7 +17,6 @@ libloc_core_la_h_sources = \
            ContextBase.h \
            LocDualContext.h \
            LBSProxyBase.h \
-           UlpProxyBase.h \
            loc_core_log.h \
            LocAdapterProxyBase.h \
            EngineHubProxyBase.h \

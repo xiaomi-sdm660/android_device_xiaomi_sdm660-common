@@ -50,14 +50,7 @@ protected:
     inline LBSProxyBase() {}
 public:
     inline virtual ~LBSProxyBase() {}
-    inline virtual void requestUlp(LocAdapterBase* adapter,
-                                   unsigned long capabilities) const {
-
-        (void)adapter;
-        (void)capabilities;
-    }
     inline virtual bool hasAgpsExtendedCapabilities() const { return false; }
-    inline virtual bool hasCPIExtendedCapabilities() const { return false; }
     inline virtual void modemPowerVote(bool power) const {
 
         (void)power;

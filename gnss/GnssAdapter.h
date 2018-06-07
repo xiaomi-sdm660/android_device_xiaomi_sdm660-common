@@ -31,7 +31,6 @@
 
 #include <LocAdapterBase.h>
 #include <LocDualContext.h>
-#include <UlpProxyBase.h>
 #include <IOsObserver.h>
 #include <EngineHubProxyBase.h>
 #include <LocationAPI.h>
@@ -84,8 +83,6 @@ namespace loc_core {
 }
 
 class GnssAdapter : public LocAdapterBase {
-    /* ==== ULP ============================================================================ */
-    UlpProxyBase* mUlpProxy;
 
     /* ==== Engine Hub ===================================================================== */
     EngineHubProxyBase* mEngHubProxy;
@@ -96,7 +93,7 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== TRACKING ======================================================================= */
     TrackingOptionsMap mTrackingSessions;
-    LocPosMode mUlpPositionMode;
+    LocPosMode mLocPositionMode;
     GnssSvUsedInPosition mGnssSvIdUsedInPosition;
     bool mGnssSvIdUsedInPosAvail;
 
@@ -142,20 +139,13 @@ class GnssAdapter : public LocAdapterBase {
 public:
 
     GnssAdapter();
-    virtual inline ~GnssAdapter() { delete mUlpProxy; }
+    virtual inline ~GnssAdapter() { }
 
     /* ==== SSR ============================================================================ */
     /* ======== EVENTS ====(Called from QMI Thread)========================================= */
     virtual void handleEngineUpEvent();
     /* ======== UTILITIES ================================================================== */
     void restartSessions();
-
-    /* ==== ULP ============================================================================ */
-    /* ======== COMMANDS ====(Called from ULP Thread)==================================== */
-    virtual void setUlpProxyCommand(UlpProxyBase* ulp);
-    /* ======== UTILITIES ================================================================== */
-    void setUlpProxy(UlpProxyBase* ulp);
-    inline UlpProxyBase* getUlpProxy() { return mUlpProxy; }
 
     /* ==== CLIENT ========================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -179,11 +169,7 @@ public:
     void updateTrackingOptionsCommand(
             LocationAPI* client, uint32_t id, TrackingOptions& trackingOptions);
     void stopTrackingCommand(LocationAPI* client, uint32_t id);
-    /* ======================(Called from ULP Thread)======================================= */
     virtual void setPositionModeCommand(LocPosMode& locPosMode);
-    virtual void startTrackingCommand();
-    virtual void stopTrackingCommand();
-    virtual void getZppCommand();
     /* ======== RESPONSES ================================================================== */
     void reportResponse(LocationAPI* client, LocationError err, uint32_t sessionId);
     /* ======== UTILITIES ================================================================== */
@@ -193,17 +179,19 @@ public:
     void saveTrackingSession(LocationAPI* client, uint32_t sessionId,
                              const TrackingOptions& trackingOptions);
     void eraseTrackingSession(LocationAPI* client, uint32_t sessionId);
-    bool setUlpPositionMode(const LocPosMode& mode);
-    LocPosMode& getUlpPositionMode() { return mUlpPositionMode; }
+
+    bool setLocPositionMode(const LocPosMode& mode);
+    LocPosMode& getLocPositionMode() { return mLocPositionMode; }
+
     bool startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
-                                         const TrackingOptions& trackingOptions);
-    bool startTracking(LocationAPI* client, uint32_t sessionId,
                                 const TrackingOptions& trackingOptions);
+    void startTracking(LocationAPI* client, uint32_t sessionId,
+                       const TrackingOptions& trackingOptions);
     bool stopTrackingMultiplex(LocationAPI* client, uint32_t id);
-    bool stopTracking(LocationAPI* client, uint32_t id);
+    void stopTracking(LocationAPI* client, uint32_t id);
     bool updateTrackingMultiplex(LocationAPI* client, uint32_t id,
-                                          const TrackingOptions& trackingOptions);
-    bool updateTracking(LocationAPI* client, uint32_t sessionId,
+                                 const TrackingOptions& trackingOptions);
+    void updateTracking(LocationAPI* client, uint32_t sessionId,
         const TrackingOptions& updatedOptions, const TrackingOptions& oldOptions);
 
     /* ==== NI ============================================================================= */
@@ -222,7 +210,6 @@ public:
     void setControlCallbacksCommand(LocationControlCallbacks& controlCallbacks);
     void readConfigCommand();
     void setConfigCommand();
-    void requestUlpCommand();
     void initEngHubProxyCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
     uint32_t* gnssGetConfigCommand(GnssConfigFlagsMask mask);
@@ -279,17 +266,15 @@ public:
     bool initEngHubProxy();
 
     /* ==== REPORTS ======================================================================== */
-    /* ======== EVENTS ====(Called from QMI/ULP Thread)===================================== */
+    /* ======== EVENTS ====(Called from QMI/EngineHub Thread)===================================== */
     virtual void reportPositionEvent(const UlpLocation& ulpLocation,
                                      const GpsLocationExtended& locationExtended,
                                      enum loc_sess_status status,
                                      LocPosTechMask techMask,
-                                     bool fromUlp=false,
                                      bool fromEngineHub=false);
     virtual void reportSvEvent(const GnssSvNotification& svNotify,
-                               bool fromUlp=false,
                                bool fromEngineHub=false);
-    virtual void reportNmeaEvent(const char* nmea, size_t length, bool fromUlp=false);
+    virtual void reportNmeaEvent(const char* nmea, size_t length);
     virtual bool requestNiNotifyEvent(const GnssNiNotification& notify, const void* data);
     virtual void reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
                                                 int msInWeek);
@@ -303,8 +288,6 @@ public:
     virtual bool requestSuplES(int connHandle, LocApnTypeMask mask);
     virtual bool reportDataCallOpened();
     virtual bool reportDataCallClosed();
-    virtual bool reportZppBestAvailableFix(LocGpsLocation &zppLoc,
-            GpsLocationExtended &location_extended, LocPosTechMask tech_mask);
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
 
     /* ======== UTILITIES ================================================================= */

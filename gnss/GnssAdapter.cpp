@@ -66,9 +66,8 @@ GnssAdapter::GnssAdapter() :
                                                    NULL,
                                                    LocDualContext::mLocationHalName,
                                                    false)),
-    mUlpProxy(new UlpProxyBase()),
     mEngHubProxy(new EngineHubProxyBase()),
-    mUlpPositionMode(),
+    mLocPositionMode(),
     mGnssSvIdUsedInPosition(),
     mGnssSvIdUsedInPosAvail(false),
     mControlCallbacks(),
@@ -88,7 +87,7 @@ GnssAdapter::GnssAdapter() :
     mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
-    mUlpPositionMode.mode = LOC_POSITION_MODE_INVALID;
+    mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
 
     pthread_condattr_t condAttr;
     pthread_condattr_init(&condAttr);
@@ -153,7 +152,6 @@ GnssAdapter::GnssAdapter() :
             dsClientCloseDataCallFn, dsClientReleaseFn, sendMsgFn);
 
     readConfigCommand();
-    requestUlpCommand();
     initDefaultAgpsCommand();
     initEngHubProxyCommand();
 }
@@ -578,35 +576,11 @@ GnssAdapter::readConfigCommand()
         inline virtual void proc() const {
             // reads config into mContext->mGps_conf
             mContext.readConfig();
-            mContext.requestUlp((LocAdapterBase*)mAdapter, mContext.getCarrierCapabilities());
         }
     };
 
     if (mContext != NULL) {
         sendMsg(new MsgReadConfig(this, *mContext));
-    }
-}
-
-void
-GnssAdapter::requestUlpCommand()
-{
-    LOC_LOGD("%s]: ", __func__);
-
-    struct MsgRequestUlp : public LocMsg {
-        GnssAdapter* mAdapter;
-        ContextBase& mContext;
-        inline MsgRequestUlp(GnssAdapter* adapter,
-                             ContextBase& context) :
-            LocMsg(),
-            mAdapter(adapter),
-            mContext(context) {}
-        inline virtual void proc() const {
-            mContext.requestUlp((LocAdapterBase*)mAdapter, mContext.getCarrierCapabilities());
-        }
-    };
-
-    if (mContext != NULL) {
-        sendMsg(new MsgRequestUlp(this, *mContext));
     }
 }
 
@@ -910,8 +884,6 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                 uint32_t newSuplMode = mAdapter.convertSuplMode(gnssConfigRequested.suplModeMask);
                 if (newSuplMode != ContextBase::mGps_conf.SUPL_MODE) {
                     ContextBase::mGps_conf.SUPL_MODE = newSuplMode;
-                    mAdapter.getUlpProxy()->setCapabilities(
-                        ContextBase::getCarrierCapabilities());
                     mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
                 }
             }
@@ -1674,9 +1646,7 @@ GnssAdapter::injectLocationCommand(double latitude, double longitude, float accu
             mLongitude(longitude),
             mAccuracy(accuracy) {}
         inline virtual void proc() const {
-            if (!mContext.hasCPIExtendedCapabilities()) {
-                mApi.injectPosition(mLatitude, mLongitude, mAccuracy);
-            }
+            mApi.injectPosition(mLatitude, mLongitude, mAccuracy);
         }
     };
 
@@ -1712,58 +1682,6 @@ GnssAdapter::injectTimeCommand(int64_t time, int64_t timeReference, int32_t unce
     };
 
     sendMsg(new MsgInjectTime(*mLocApi, *mContext, time, timeReference, uncertainty));
-}
-
-void
-GnssAdapter::setUlpProxyCommand(UlpProxyBase* ulp)
-{
-    LOC_LOGD("%s]: ", __func__);
-
-    struct MsgSetUlpProxy : public LocMsg {
-        GnssAdapter& mAdapter;
-        UlpProxyBase* mUlp;
-        inline MsgSetUlpProxy(GnssAdapter& adapter,
-                              UlpProxyBase* ulp) :
-            LocMsg(),
-            mAdapter(adapter),
-            mUlp(ulp) {}
-        inline virtual void proc() const {
-            mAdapter.setUlpProxy(mUlp);
-            if (mUlp) {
-                mUlp->setCapabilities(ContextBase::getCarrierCapabilities());
-            }
-        }
-    };
-
-    sendMsg(new MsgSetUlpProxy(*this, ulp));
-}
-
-void
-GnssAdapter::setUlpProxy(UlpProxyBase* ulp)
-{
-    if (ulp == mUlpProxy) {
-        //This takes care of the case when double initalization happens
-        //and we get the same object back for UlpProxyBase . Do nothing
-        return;
-    }
-
-    LOC_LOGV("%s]: %p", __func__, ulp);
-    if (NULL == ulp) {
-        LOC_LOGE("%s]: ulp pointer is NULL", __func__);
-        ulp = new UlpProxyBase();
-    }
-
-    if (LOC_POSITION_MODE_INVALID != mUlpProxy->mPosMode.mode) {
-        // need to send this mode and start msg to ULP
-        ulp->sendFixMode(mUlpProxy->mPosMode);
-    }
-
-    if (mUlpProxy->mFixSet) {
-        ulp->sendStartFix();
-    }
-
-    delete mUlpProxy;
-    mUlpProxy = ulp;
 }
 
 void
@@ -1930,9 +1848,7 @@ GnssAdapter::restartSessions()
     LocPosMode locPosMode = {};
     highestPowerTrackingOptions.setLocationOptions(smallestIntervalOptions);
     convertOptions(locPosMode, highestPowerTrackingOptions);
-    mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
-                       [] (LocationError err) {}
-    ));
+    mLocApi->startFix(locPosMode, nullptr);
 }
 
 void
@@ -2076,9 +1992,9 @@ GnssAdapter::eraseTrackingSession(LocationAPI* client, uint32_t sessionId)
     }
 }
 
-bool GnssAdapter::setUlpPositionMode(const LocPosMode& mode) {
-    if (!mUlpPositionMode.equals(mode)) {
-        mUlpPositionMode = mode;
+bool GnssAdapter::setLocPositionMode(const LocPosMode& mode) {
+    if (!mLocPositionMode.equals(mode)) {
+        mLocPositionMode = mode;
         return true;
     } else {
         return false;
@@ -2205,7 +2121,9 @@ GnssAdapter::startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
     bool reportToClientWithNoWait = true;
 
     if (mTrackingSessions.empty()) {
-        reportToClientWithNoWait = startTracking(client, sessionId, options);
+        startTracking(client, sessionId, options);
+        // need to wait for QMI callback
+        reportToClientWithNoWait = false;
     } else {
         // find the smallest interval and powerMode
         TrackingOptions multiplexedOptions = {}; // size is 0 until set for the first time
@@ -2236,78 +2154,60 @@ GnssAdapter::startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
         }
         if (updateOptions) {
             // restart time based tracking with the newly updated options
-            reportToClientWithNoWait = startTracking(client, sessionId, multiplexedOptions);
+            startTracking(client, sessionId, multiplexedOptions);
+            // need to wait for QMI callback
+            reportToClientWithNoWait = false;
         }
+        // else part: no QMI call is made, need to report back to client right away
     }
 
     return reportToClientWithNoWait;
 }
 
-bool
+void
 GnssAdapter::startTracking(LocationAPI* client, uint32_t sessionId,
         const TrackingOptions& trackingOptions)
 {
-    bool reportToClientWithNoWait = true;
-
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, trackingOptions);
-    if (!mUlpProxy->sendFixMode(locPosMode)) {
-        // do nothing
-    }
-    if (!mUlpProxy->sendStartFix()) {
-        // inform engine hub that GNSS session is about to start
-        mEngHubProxy->gnssSetFixMode(locPosMode);
-        mEngHubProxy->gnssStartFix();
 
-        mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
-                          [this, client, sessionId] (LocationError err) {
-                if (LOCATION_ERROR_SUCCESS != err) {
-                    eraseTrackingSession(client, sessionId);
-                }
+    // inform engine hub that GNSS session is about to start
+    mEngHubProxy->gnssSetFixMode(locPosMode);
+    mEngHubProxy->gnssStartFix();
 
-                reportResponse(client, err, sessionId);
+    mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
+                      [this, client, sessionId] (LocationError err) {
+            if (LOCATION_ERROR_SUCCESS != err) {
+                eraseTrackingSession(client, sessionId);
             }
-        ));
 
-        reportToClientWithNoWait = false;
-    }
-
-    return reportToClientWithNoWait;
+            reportResponse(client, err, sessionId);
+        }
+    ));
 }
 
-bool
+void
 GnssAdapter::updateTracking(LocationAPI* client, uint32_t sessionId,
         const TrackingOptions& updatedOptions, const TrackingOptions& oldOptions)
 {
-    bool reportToClientWithNoWait = true;
-
     LocPosMode locPosMode = {};
     convertOptions(locPosMode, updatedOptions);
-    if (!mUlpProxy->sendFixMode(locPosMode)) {
-        // do nothing
-    }
-    if (!mUlpProxy->sendStartFix()) {
-        // inform engine hub that GNSS session is about to start
-        mEngHubProxy->gnssSetFixMode(locPosMode);
-        mEngHubProxy->gnssStartFix();
 
-        mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
-                          [this, client, sessionId, oldOptions] (LocationError err) {
-                if (LOCATION_ERROR_SUCCESS != err) {
-                    // restore the old LocationOptions
-                    saveTrackingSession(client, sessionId, oldOptions);
-                }
+    // inform engine hub that GNSS session is about to start
+    mEngHubProxy->gnssSetFixMode(locPosMode);
+    mEngHubProxy->gnssStartFix();
 
-                reportResponse(client, err, sessionId);
+    mLocApi->startFix(locPosMode, new LocApiResponse(*getContext(),
+                      [this, client, sessionId, oldOptions] (LocationError err) {
+            if (LOCATION_ERROR_SUCCESS != err) {
+                // restore the old LocationOptions
+                saveTrackingSession(client, sessionId, oldOptions);
             }
-        ));
 
-        reportToClientWithNoWait = false;
-    }
-
-    return reportToClientWithNoWait;
+            reportResponse(client, err, sessionId);
+        }
+    ));
 }
-
 
 void
 GnssAdapter::setPositionModeCommand(LocPosMode& locPosMode)
@@ -2328,7 +2228,7 @@ GnssAdapter::setPositionModeCommand(LocPosMode& locPosMode)
             mLocPosMode(locPosMode) {}
         inline virtual void proc() const {
              // saves the mode in adapter to be used when startTrackingCommand is called from ULP
-            if (mAdapter.setUlpPositionMode(mLocPosMode)) {
+            if (mAdapter.setLocPositionMode(mLocPosMode)) {
                 mAdapter.mEngHubProxy->gnssSetFixMode(mLocPosMode);
                 mApi.setPositionMode(mLocPosMode);
             }
@@ -2336,42 +2236,6 @@ GnssAdapter::setPositionModeCommand(LocPosMode& locPosMode)
     };
 
     sendMsg(new MsgSetPositionMode(*this, *mLocApi, locPosMode));
-}
-
-void
-GnssAdapter::startTrackingCommand()
-{
-    LOC_LOGD("%s]: ", __func__);
-
-    struct MsgStartTracking : public LocMsg {
-        GnssAdapter& mAdapter;
-        LocApiBase& mApi;
-        inline MsgStartTracking(GnssAdapter& adapter,
-                                LocApiBase& api) :
-            LocMsg(),
-            mAdapter(adapter),
-            mApi(api) {}
-        inline virtual void proc() const {
-            // we get this call from ULP, so just call LocApi without multiplexing because
-            // ulp would be doing the multiplexing for us if it is present
-            LocPosMode& ulpPositionMode = mAdapter.getUlpPositionMode();
-
-           // TBD: once CR 2165853 is fixed, move below codes
-           // to inside condition of if (!mAdapter.isInSession())
-           //
-           // inform engine hub of the fix mode and start session
-            mAdapter.mEngHubProxy->gnssSetFixMode(ulpPositionMode);
-            mAdapter.mEngHubProxy->gnssStartFix();
-            if (!mAdapter.isInSession()) {
-                LocPosMode& ulpPositionMode = mAdapter.getUlpPositionMode();
-                mApi.startFix(ulpPositionMode, new LocApiResponse(*mAdapter.getContext(),
-                              [] (LocationError err) {}
-                ));
-            }
-        }
-    };
-
-    sendMsg(new MsgStartTracking(*this, *mLocApi));
 }
 
 void
@@ -2467,6 +2331,7 @@ GnssAdapter::updateTrackingMultiplex(LocationAPI* client, uint32_t id,
                 it2->second.powerMode < multiplexedPowerMode)) {
                 multiplexedPowerMode = it2->second.powerMode;
             }
+            // else part: no QMI call is made, need to report back to client right away
         }
         bool updateOptions = false;
         // if session we are updating has smaller interval then next smallest
@@ -2486,8 +2351,9 @@ GnssAdapter::updateTrackingMultiplex(LocationAPI* client, uint32_t id,
         }
         if (updateOptions) {
             // restart time based tracking with the newly updated options
-            reportToClientWithNoWait = updateTracking(
-                    client, id, multiplexedOptions, oldOptions);
+            updateTracking(client, id, multiplexedOptions, oldOptions);
+            // need to wait for QMI callback
+            reportToClientWithNoWait = false;
         }
     }
 
@@ -2539,7 +2405,9 @@ GnssAdapter::stopTrackingMultiplex(LocationAPI* client, uint32_t id)
     bool reportToClientWithNoWait = true;
 
     if (1 == mTrackingSessions.size()) {
-        reportToClientWithNoWait = stopTracking(client, id);
+        stopTracking(client, id);
+        // need to wait for QMI callback
+        reportToClientWithNoWait = false;
     } else {
         LocationSessionKey key(client, id);
 
@@ -2569,86 +2437,27 @@ GnssAdapter::stopTrackingMultiplex(LocationAPI* client, uint32_t id)
                 it->second.powerMode < multiplexedPowerMode) {
                 multiplexedOptions.powerMode = multiplexedPowerMode;
                 // restart time based tracking with the newly updated options
-                reportToClientWithNoWait = startTracking(client, id, multiplexedOptions);
+                startTracking(client, id, multiplexedOptions);
+                // need to wait for QMI callback
+                reportToClientWithNoWait = false;
             }
+            // else part: no QMI call is made, need to report back to client right away
         }
     }
 
     return reportToClientWithNoWait;
 }
 
-bool
+void
 GnssAdapter::stopTracking(LocationAPI* client, uint32_t id)
 {
-    bool reportToClientWithNoWait = true;
+    // inform engine hub that GNSS session has stopped
+    mEngHubProxy->gnssStopFix();
 
-    if (!mUlpProxy->sendStopFix()) {
-        // inform engine hub that GNSS session has stopped
-        mEngHubProxy->gnssStopFix();
-
-        mLocApi->stopFix(new LocApiResponse(*getContext(),
-                         [this, client, id] (LocationError err) {
-            reportResponse(client, err, id);
-        }));
-
-        reportToClientWithNoWait = false;
-    }
-
-    return reportToClientWithNoWait;
-}
-
-void
-GnssAdapter::stopTrackingCommand()
-{
-    LOC_LOGD("%s]: ", __func__);
-
-    struct MsgStopTracking : public LocMsg {
-        GnssAdapter& mAdapter;
-        LocApiBase& mApi;
-        inline MsgStopTracking(GnssAdapter& adapter,
-                               LocApiBase& api) :
-            LocMsg(),
-            mAdapter(adapter),
-            mApi(api) {}
-        inline virtual void proc() const {
-            // inform engine hub that GNSS session has stopped
-            mAdapter.mEngHubProxy->gnssStopFix();
-
-            // clear the position mode
-            LocPosMode mLocPosMode = {};
-            mLocPosMode.mode = LOC_POSITION_MODE_INVALID;
-            mAdapter.setUlpPositionMode(mLocPosMode);
-            // don't need to multiplex because ULP will do that for us if it is present
-            mApi.stopFix(new LocApiResponse(*mAdapter.getContext(),
-                       [] (LocationError /* err*/) {}
-            ));
-        }
-    };
-
-    sendMsg(new MsgStopTracking(*this, *mLocApi));
-}
-
-void
-GnssAdapter::getZppCommand()
-{
-    LOC_LOGD("%s]: ", __func__);
-
-    struct MsgGetZpp : public LocMsg {
-        GnssAdapter& mAdapter;
-        LocApiBase& mApi;
-        inline MsgGetZpp(GnssAdapter& adapter,
-                         LocApiBase& api) :
-            LocMsg(),
-            mAdapter(adapter),
-            mApi(api) {}
-        inline virtual void proc() const {
-            mApi.getBestAvailableZppFix();
-        }
-    };
-
-    // TODO: we could avoid this extra context switch, as getBestAvailableZppFix
-    // will return asynchronously anyways.
-    sendMsg(new MsgGetZpp(*this, *mLocApi));
+    mLocApi->stopFix(new LocApiResponse(*getContext(),
+                     [this, client, id] (LocationError err) {
+        reportResponse(client, err, id);
+    }));
 }
 
 bool
@@ -2747,7 +2556,6 @@ GnssAdapter::gnssNiResponseCommand(GnssNiResponse response, void* rawRequest)
         inline virtual ~MsgGnssNiResponse() {
         }
         inline virtual void proc() const {
-            const void *rawPayload = mPayload;
             mApi.informNiResponse(mResponse, mPayload);
         }
     };
@@ -2861,14 +2669,12 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  const GpsLocationExtended& locationExtended,
                                  enum loc_sess_status status,
                                  LocPosTechMask techMask,
-                                 bool fromUlp,
                                  bool fromEngineHub)
 {
-    LOC_LOGD("%s]: fromUlp %u status %u", __func__, fromUlp, status);
-
-    // if this event is called from QMI LOC API, then try to call into ULP and return if successfull
-    // if the position is called from ULP or engine hub, then send it out directly
-    if (!fromUlp && !fromEngineHub) {
+    // if this event is called from QMI LOC API, then send report to engine hub
+    // if sending is successful, we return as we will wait for final report from engine hub
+    // if the position is called from engine hub, then send it out directly
+    if (!fromEngineHub) {
         // report QMI position (both propagated and unpropagated) to engine hub,
         // and engine hub will be distributing it to the registered plugins
         mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
@@ -2877,27 +2683,18 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
             return;
         }
 
-        // only send propagated position report to ulp
-        if (mUlpProxy->reportPosition(ulpLocation, locationExtended,
-                                 status, techMask)) {
-            return;
-        }
-
         // engine hub is loaded, do not report qmi position to client as
         // final position report should come from engine hub
         if (true == initEngHubProxy()){
             return;
         }
-    } else if ((true == fromUlp) && (true == initEngHubProxy())) {
-        LOC_LOGV("%s]: drop ULP GNSS fix as engine hub is loaded", __func__);
-        return;
     }
 
     // for all other cases:
-    // case 1: fix is from ULP and engine hub is not loaded, queue the msg
-    // case 2: fix is from engine hub, queue the msg
+    // case 1: fix is from engine hub, queue the msg
+    // case 2: fix is not from engine hub, e.g. from QMI, and it is not an
+    //         unpropagated position and engine hub is not loaded, queue the msg
     // when message is queued, the position can be dispatched to requesting client
-
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
         const UlpLocation mUlpLocation;
@@ -2999,28 +2796,13 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
 
 void
 GnssAdapter::reportSvEvent(const GnssSvNotification& svNotify,
-                           bool fromUlp,
                            bool fromEngineHub)
 {
-    LOC_LOGD("%s]: fromUlp %u", __func__, fromUlp);
-
-    // if this event is not called from ULP, then try to call into ULP and return if successfull
-    if (!fromUlp && !fromEngineHub) {
-        // report QMI SV report to eng hub
+    if (!fromEngineHub) {
         mEngHubProxy->gnssReportSv(svNotify);
-
-        if (mUlpProxy->reportSv(svNotify)) {
-            return;
-        }
-
-        // engine hub is loaded, do not report sv to client
-        // as sv report should come from engine hub
         if (true == initEngHubProxy()){
             return;
         }
-    } else if ((true == fromUlp) && (true == initEngHubProxy())) {
-        LOC_LOGV("%s]: drop ULP GNSS SV event as engine hub is loaded", __func__);
-        return;
     }
 
     struct MsgReportSv : public LocMsg {
@@ -3108,14 +2890,10 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
 }
 
 void
-GnssAdapter::reportNmeaEvent(const char* nmea, size_t length, bool fromUlp)
+GnssAdapter::reportNmeaEvent(const char* nmea, size_t length)
 {
-    // if this event is not called from ULP, then try to call into ULP and return if successfull
-    if (!fromUlp && !loc_nmea_is_debug(nmea, length)) {
+    if (!loc_nmea_is_debug(nmea, length)) {
         mEngHubProxy->gnssReportNmea(nmea);
-        if (mUlpProxy->reportNmea(nmea, length)) {
-            return;
-        }
     }
 
     struct MsgReportNmea : public LocMsg {
@@ -3380,9 +3158,6 @@ void
 GnssAdapter::reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet)
 {
     LOC_LOGD("%s]: ", __func__);
-
-    // We send SvMeasurementSet to AmtProxy/ULPProxy to be forwarded as necessary.
-    mUlpProxy->reportSvMeasurement(svMeasurementSet);
     mEngHubProxy->gnssReportSvMeasurement(svMeasurementSet);
 }
 
@@ -3390,10 +3165,6 @@ void
 GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
 {
     LOC_LOGD("%s]: ", __func__);
-
-    // We send SvMeasurementSet to AmtProxy/ULPProxy to be forwarded as necessary.
-    mUlpProxy->reportSvPolynomial(svPolynomial);
-
     mEngHubProxy->gnssReportSvPolynomial(svPolynomial);
 }
 
@@ -3702,41 +3473,6 @@ bool GnssAdapter::reportDataCallClosed(){
 
     sendMsg( new AgpsMsgSuplEsClosed(&mAgpsManager));
 
-    return true;
-}
-
-bool GnssAdapter::reportZppBestAvailableFix(LocGpsLocation &zppLoc,
-            GpsLocationExtended &location_extended, LocPosTechMask tech_mask) {
-
-    struct MsgReportZpp : public LocMsg {
-    GnssAdapter& mAdapter;
-    UlpLocation mUlpLocation;
-    GpsLocationExtended mGpsLocationExtended;
-    LocPosTechMask mPosTechMask;
-
-    inline MsgReportZpp(GnssAdapter& adapter,
-                     LocGpsLocation &zppLoc, GpsLocationExtended &location_extended,
-                     LocPosTechMask tech_mask) :
-        LocMsg(),
-        mAdapter(adapter),
-        mGpsLocationExtended(location_extended),
-        mPosTechMask(tech_mask) {
-            mUlpLocation = {};
-            memcpy(&mUlpLocation.gpsLocation, &zppLoc, sizeof(LocGpsLocation));
-
-            //Mark the location source as from ZPP
-            mUlpLocation.gpsLocation.flags |= LOCATION_HAS_SOURCE_INFO;
-            mUlpLocation.position_source = ULP_LOCATION_IS_FROM_ZPP;
-        }
-    inline virtual void proc() const {
-        mAdapter.getUlpProxy()->reportPosition(mUlpLocation,
-                                               mGpsLocationExtended,
-                                               LOC_SESS_SUCCESS,
-                                               mPosTechMask);
-        }
-    };
-
-    sendMsg(new MsgReportZpp(*this, zppLoc, location_extended, tech_mask));
     return true;
 }
 
@@ -4230,17 +3966,16 @@ GnssAdapter::initEngHubProxy() {
                    const GpsLocationExtended& locationExtended,
                    enum loc_sess_status status,
                    LocPosTechMask techMask,
-                   bool fromUlp,
                    bool fromEngineHub) {
                     // report from engine hub on behalf of PPE will be treated as fromUlp
                     reportPositionEvent(ulpLocation, locationExtended, status,
-                                        techMask, fromUlp, fromEngineHub);
+                                        techMask, fromEngineHub);
             };
 
         // callback function for engine hub to report back sv event
         GnssAdapterReportSvEventCb reportSvEventCb =
-            [this](const GnssSvNotification& svNotify, bool fromUlp, bool fromEngineHub) {
-                   reportSvEvent(svNotify, fromUlp, fromEngineHub);
+            [this](const GnssSvNotification& svNotify, bool fromEngineHub) {
+                   reportSvEvent(svNotify, fromEngineHub);
             };
 
         getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
@@ -4256,15 +3991,16 @@ GnssAdapter::initEngHubProxy() {
         else {
             LOC_LOGD("%s]: entered, did not find function", __func__);
         }
+
+        LOC_LOGD("%s]: first time initialization %d, returned %d",
+                 __func__, firstTime, engHubLoadSuccessful);
+
     } while (0);
 
     if (processInfoList != nullptr) {
         free (processInfoList);
         processInfoList = nullptr;
     }
-
-    LOC_LOGD("%s]: first time initialization %d, returned %d",
-             __func__, firstTime, engHubLoadSuccessful);
 
     firstTime = false;
     return engHubLoadSuccessful;

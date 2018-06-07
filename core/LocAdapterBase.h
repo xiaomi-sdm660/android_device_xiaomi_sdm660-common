@@ -30,7 +30,6 @@
 #define LOC_API_ADAPTER_BASE_H
 
 #include <gps_extended.h>
-#include <UlpProxyBase.h>
 #include <ContextBase.h>
 #include <LocationAPI.h>
 #include <map>
@@ -112,31 +111,20 @@ public:
     }
 
     uint32_t generateSessionId();
-
-    // This will be overridden by the individual adapters
-    // if necessary.
-    inline virtual void setUlpProxyCommand(UlpProxyBase* ulp) {
-
-        (void)ulp;
-    }
     virtual void handleEngineUpEvent();
     virtual void handleEngineDownEvent();
     inline virtual void setPositionModeCommand(LocPosMode& posMode) {
 
         (void)posMode;
     }
-    virtual void startTrackingCommand() {}
-    virtual void stopTrackingCommand() {}
-    virtual void getZppCommand() {}
     virtual void reportPositionEvent(const UlpLocation& location,
                                      const GpsLocationExtended& locationExtended,
                                      enum loc_sess_status status,
                                      LocPosTechMask loc_technology_mask,
-                                     bool fromUlp=false,
                                      bool fromEngineHub=false);
     virtual void reportSvEvent(const GnssSvNotification& svNotify,
-                               bool fromUlp=false, bool fromEngineHub=false);
-    virtual void reportNmeaEvent(const char* nmea, size_t length, bool fromUlp=false);
+                               bool fromEngineHub=false);
+    virtual void reportNmeaEvent(const char* nmea, size_t length);
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
     virtual void reportStatus(LocGpsStatusValue status);

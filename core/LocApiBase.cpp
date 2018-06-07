@@ -134,7 +134,6 @@ struct LocCloseMsg : public LocMsg {
         mLocApi->close();
     }
     inline void locallog() const {
-        LOC_LOGV("%s]: LocCloseMsg");
     }
     inline virtual void log() const {
         locallog();
