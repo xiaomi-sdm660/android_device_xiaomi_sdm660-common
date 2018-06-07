@@ -71,10 +71,10 @@ public:
     static const uint32_t maxItem = 5;
 
     SystemStatusItemBase() {
-        timeval tv;
-        gettimeofday(&tv, NULL);
+        struct timespec tv;
+        clock_gettime(CLOCK_MONOTONIC, &tv);
         mUtcTime.tv_sec  = tv.tv_sec;
-        mUtcTime.tv_nsec = tv.tv_usec *1000ULL;
+        mUtcTime.tv_nsec = tv.tv_nsec;
         mUtcReported = mUtcTime;
     };
     virtual ~SystemStatusItemBase() {};

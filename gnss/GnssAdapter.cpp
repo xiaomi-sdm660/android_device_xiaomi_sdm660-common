@@ -86,7 +86,7 @@ GnssAdapter::GnssAdapter() :
 
     pthread_condattr_t condAttr;
     pthread_condattr_init(&condAttr);
-    pthread_condattr_setclock(&condAttr, CLOCK_BOOTTIME);
+    pthread_condattr_setclock(&condAttr, CLOCK_MONOTONIC);
     pthread_cond_init(&mNiData.session.tCond, &condAttr);
     pthread_cond_init(&mNiData.sessionEs.tCond, &condAttr);
     pthread_condattr_destroy(&condAttr);
@@ -2343,7 +2343,7 @@ static void* niThreadProc(void *args)
 
     pthread_mutex_lock(&pSession->tLock);
     /* Calculate absolute expire time */
-    clock_gettime(CLOCK_BOOTTIME, &present_time);
+    clock_gettime(CLOCK_MONOTONIC, &present_time);
     expire_time.tv_sec  = present_time.tv_sec + pSession->respTimeLeft;
     expire_time.tv_nsec = present_time.tv_nsec;
     LOC_LOGD("%s]: time out set for abs time %ld with delay %d sec",
