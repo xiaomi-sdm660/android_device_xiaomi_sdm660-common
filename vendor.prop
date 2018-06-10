@@ -312,3 +312,6 @@ persist.vendor.radio.snapshot_timer=5
 
 #enable all system restart_level to relative
 persist.sys.ssr.restart_level=ALL_ENABLE
+
+# Security patch level
+ro.vendor.build.security_patch=2018-05-01
