@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -160,17 +160,27 @@ typedef int16_t AGpsBearerType;
 #define AGPS_APN_BEARER_IPV6        2
 #define AGPS_APN_BEARER_IPV4V6      3
 
-typedef uint64_t LocApnTypeMask;
-#define LOC_APN_TYPE_MASK_DEFAULT   ((LocApnTypeMask)0x0000000000000001ull) /**<  Denotes APN type for Default/Internet traffic  */
-#define LOC_APN_TYPE_MASK_IMS       ((LocApnTypeMask)0x0000000000000002ull) /**<  Denotes  APN type for IP Multimedia Subsystem  */
-#define LOC_APN_TYPE_MASK_MMS       ((LocApnTypeMask)0x0000000000000004ull) /**<  Denotes APN type for Multimedia Messaging Service  */
-#define LOC_APN_TYPE_MASK_DUN       ((LocApnTypeMask)0x0000000000000008ull) /**<  Denotes APN type for Dial Up Network  */
-#define LOC_APN_TYPE_MASK_SUPL      ((LocApnTypeMask)0x0000000000000010ull) /**<  Denotes APN type for Secure User Plane Location  */
-#define LOC_APN_TYPE_MASK_HIPRI     ((LocApnTypeMask)0x0000000000000020ull) /**<  Denotes APN type for High Priority Mobile Data  */
-#define LOC_APN_TYPE_MASK_FOTA      ((LocApnTypeMask)0x0000000000000040ull) /**<  Denotes APN type for over the air administration  */
-#define LOC_APN_TYPE_MASK_CBS       ((LocApnTypeMask)0x0000000000000080ull) /**<  Denotes APN type for Carrier Branded Services  */
-#define LOC_APN_TYPE_MASK_IA        ((LocApnTypeMask)0x0000000000000100ull) /**<  Denotes APN type for Initial Attach  */
-#define LOC_APN_TYPE_MASK_EMERGENCY ((LocApnTypeMask)0x0000000000000200ull) /**<  Denotes APN type for emergency  */
+typedef uint32_t LocApnTypeMask;
+/**<  Denotes APN type for Default/Internet traffic  */
+#define LOC_APN_TYPE_MASK_DEFAULT   ((LocApnTypeMask)0x00000001)
+/**<  Denotes  APN type for IP Multimedia Subsystem  */
+#define LOC_APN_TYPE_MASK_IMS       ((LocApnTypeMask)0x00000002)
+/**<  Denotes APN type for Multimedia Messaging Service  */
+#define LOC_APN_TYPE_MASK_MMS       ((LocApnTypeMask)0x00000004)
+/**<  Denotes APN type for Dial Up Network  */
+#define LOC_APN_TYPE_MASK_DUN       ((LocApnTypeMask)0x00000008)
+/**<  Denotes APN type for Secure User Plane Location  */
+#define LOC_APN_TYPE_MASK_SUPL      ((LocApnTypeMask)0x00000010)
+/**<  Denotes APN type for High Priority Mobile Data  */
+#define LOC_APN_TYPE_MASK_HIPRI     ((LocApnTypeMask)0x00000020)
+/**<  Denotes APN type for over the air administration  */
+#define LOC_APN_TYPE_MASK_FOTA      ((LocApnTypeMask)0x00000040)
+/**<  Denotes APN type for Carrier Branded Services  */
+#define LOC_APN_TYPE_MASK_CBS       ((LocApnTypeMask)0x00000080)
+/**<  Denotes APN type for Initial Attach  */
+#define LOC_APN_TYPE_MASK_IA        ((LocApnTypeMask)0x00000100)
+/**<  Denotes APN type for emergency  */
+#define LOC_APN_TYPE_MASK_EMERGENCY ((LocApnTypeMask)0x00000200)
 
 typedef enum {
     AGPS_CB_PRIORITY_LOW  = 1,
@@ -1490,24 +1500,26 @@ typedef std::function<void(
  * Represents the status of AGNSS augmented to support IPv4.
  */
 struct AGnssExtStatusIpV4 {
-    AGpsExtType type;
-    LocAGpsStatusValue status;
+    AGpsExtType         type;
+    LocApnTypeMask      apnTypeMask;
+    LocAGpsStatusValue  status;
     /*
      * 32-bit IPv4 address.
      */
-    uint32_t ipV4Addr;
+    uint32_t            ipV4Addr;
 };
 
 /*
  * Represents the status of AGNSS augmented to support IPv6.
  */
 struct AGnssExtStatusIpV6 {
-    AGpsExtType type;
-    LocAGpsStatusValue status;
+    AGpsExtType         type;
+    LocApnTypeMask      apnTypeMask;
+    LocAGpsStatusValue  status;
     /*
      * 128-bit IPv6 address.
      */
-    uint8_t ipV6Addr[16];
+    uint8_t             ipV6Addr[16];
 };
 
 /* ODCPI Request Info */

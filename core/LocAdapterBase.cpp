@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2017The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -130,23 +130,12 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
-    requestATL(int /*connHandle*/, LocAGpsType /*agps_type*/, LocApnTypeMask /*mask*/)
+    requestATL(int /*connHandle*/, LocAGpsType /*agps_type*/,
+               LocApnTypeMask /*apn_type_mask*/)
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::
     releaseATL(int /*connHandle*/)
-DEFAULT_IMPL(false)
-
-bool LocAdapterBase::
-    requestSuplES(int /*connHandle*/, LocApnTypeMask /*mask*/)
-DEFAULT_IMPL(false)
-
-bool LocAdapterBase::
-    reportDataCallOpened()
-DEFAULT_IMPL(false)
-
-bool LocAdapterBase::
-    reportDataCallClosed()
 DEFAULT_IMPL(false)
 
 bool LocAdapterBase::

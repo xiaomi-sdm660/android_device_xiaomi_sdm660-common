@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2016-2018 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -133,11 +133,9 @@ public:
     virtual bool requestXtraData();
     virtual bool requestTime();
     virtual bool requestLocation();
-    virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask);
+    virtual bool requestATL(int connHandle, LocAGpsType agps_type,
+                            LocApnTypeMask apn_type_mask);
     virtual bool releaseATL(int connHandle);
-    virtual bool requestSuplES(int connHandle, LocApnTypeMask mask);
-    virtual bool reportDataCallOpened();
-    virtual bool reportDataCallClosed();
     virtual bool requestNiNotifyEvent(const GnssNiNotification &notify, const void* data);
     inline virtual bool isInSession() { return false; }
     ContextBase* getContext() const { return mContext; }

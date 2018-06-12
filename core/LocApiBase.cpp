@@ -378,34 +378,18 @@ void LocApiBase::requestLocation()
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestLocation());
 }
 
-void LocApiBase::requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask mask)
+void LocApiBase::requestATL(int connHandle, LocAGpsType agps_type,
+                            LocApnTypeMask apn_type_mask)
 {
     // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestATL(connHandle, agps_type, mask));
+    TO_1ST_HANDLING_LOCADAPTERS(
+            mLocAdapters[i]->requestATL(connHandle, agps_type, apn_type_mask));
 }
 
 void LocApiBase::releaseATL(int connHandle)
 {
     // loop through adapters, and deliver to the first handling adapter.
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->releaseATL(connHandle));
-}
-
-void LocApiBase::requestSuplES(int connHandle, LocApnTypeMask mask)
-{
-    // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->requestSuplES(connHandle, mask));
-}
-
-void LocApiBase::reportDataCallOpened()
-{
-    // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportDataCallOpened());
-}
-
-void LocApiBase::reportDataCallClosed()
-{
-    // loop through adapters, and deliver to the first handling adapter.
-    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportDataCallClosed());
 }
 
 void LocApiBase::requestNiNotify(GnssNiNotification &notify, const void* data)
@@ -485,7 +469,8 @@ DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 void LocApiBase::
    atlOpenStatus(int /*handle*/, int /*is_succ*/, char* /*apn*/, uint32_t /*apnLen*/,
-                 AGpsBearerType /*bear*/, LocAGpsType /*agpsType*/, LocApnTypeMask /*mask*/)
+                 AGpsBearerType /*bear*/, LocAGpsType /*agpsType*/,
+                 LocApnTypeMask /*mask*/)
 DEFAULT_IMPL()
 
 void LocApiBase::
@@ -581,26 +566,6 @@ DEFAULT_IMPL()
 
 void LocApiBase::
    getBestAvailableZppFix()
-DEFAULT_IMPL()
-
-int LocApiBase::
-    initDataServiceClient(bool /*isDueToSsr*/)
-DEFAULT_IMPL(-1)
-
-int LocApiBase::
-    openAndStartDataCall()
-DEFAULT_IMPL(-1)
-
-void LocApiBase::
-    stopDataCall()
-DEFAULT_IMPL()
-
-void LocApiBase::
-    closeDataCall()
-DEFAULT_IMPL()
-
-void LocApiBase::
-    releaseDataServiceClient()
 DEFAULT_IMPL()
 
 LocationError LocApiBase::
