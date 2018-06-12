@@ -253,6 +253,8 @@ vendor/lib/libsymphonypower.so
 vendor/lib/libts_detected_face_hal.so
 vendor/lib/libts_face_beautify_hal.so
 vendor/lib/libubifocus.so
+vendor/lib/libVDClearShot.so
+vendor/lib/libVDSuperPhotoAPI.so
 vendor/lib/libvideobokeh.so
 vendor/lib/libvideoutils.so
 vendor/lib/libvidhance.so
