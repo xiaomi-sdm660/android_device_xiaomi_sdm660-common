@@ -1574,7 +1574,7 @@ typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void*
 
 #define SOCKET_DIR_LOCATION            "/dev/socket/location/"
 #define SOCKET_DIR_EHUB                "/dev/socket/location/ehub/"
-#define SOCKET_TO_LOCATION_HAL_DAEMON  "/dev/socket/location/hal_daemon"
+#define SOCKET_TO_LOCATION_HAL_DAEMON  "/dev/socket/loc_client/hal_daemon"
 
 #define SOCKET_DIR_TO_CLIENT           "/dev/socket/loc_client/"
 #define SOCKET_TO_LOCATION_CLIENT_BASE "/dev/socket/loc_client/toclient"

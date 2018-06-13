@@ -64,6 +64,8 @@ extern "C" {
 
 #define UID_GPS (1021)
 #define GID_GPS (1021)
+#define UID_LOCCLIENT (4021)
+#define GID_LOCCLIENT (4021)
 
 #define LOC_PATH_GPS_CONF_STR      "/etc/gps.conf"
 #define LOC_PATH_IZAT_CONF_STR     "/etc/izat.conf"
