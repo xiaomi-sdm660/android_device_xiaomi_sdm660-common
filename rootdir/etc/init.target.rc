@@ -186,7 +186,7 @@ on boot
 
     # Wifi firmware reload path
     chown wifi wifi /sys/module/wlan/parameters/fwpath
-    
+
     # default country code
     setprop ro.boot.wificountrycode 00
 
@@ -288,7 +288,7 @@ on property:vendor.ims.DATA_DAEMON_STATUS=1
 # add for HMI_L8866_A01-502: end
 
 service vendor.ppd /system/vendor/bin/mm-pp-dpps
-    class late_start
+    class hal
     user system
     group system graphics
     socket pps stream 0660 system system
