@@ -437,7 +437,7 @@ on property:vendor.ims.DATA_DAEMON_STATUS=1
 
 
 service ppd /system/vendor/bin/mm-pp-dpps
-    class late_start
+    class hal
     user system
     group system graphics
     socket pps stream 0660 system system
