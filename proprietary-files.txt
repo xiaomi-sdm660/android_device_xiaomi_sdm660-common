@@ -357,7 +357,6 @@ lib/libqti-perfd-client_system.so|74f4d9657cf492cf1de2e9b93983f4e7b5431c45
 lib64/libqti_performance.so|9c88af412e0276c578f06e1069b6c3aeae7e3f8d
 lib64/vendor.qti.hardware.perf@1.0.so|935d13179f58bdc09d31e6be87bdd9fac8afcdbe
 lib64/libqti-perfd-client_system.so|de5b61f07d7981bb208167b357f46a9ad083c9e7
-vendor/bin/energy-awareness|c1ad0ec1e4171b59f166e580ef8ce7395ccb41a5
 vendor/bin/msm_irqbalance|117d7c8a8f6f12b3615ec8ab676231df93d277f1
 vendor/bin/hw/vendor.qti.hardware.perf@1.0-service|ecd8296c848b6470a75a6ae7b235d079cacee3a5
 vendor/etc/init/vendor.qti.hardware.perf@1.0-service.rc|b50182aadab2e31409df61c523d0fb914a394e43
