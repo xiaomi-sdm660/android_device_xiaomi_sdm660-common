@@ -166,6 +166,10 @@ bool GnssAPIClient::gnssSetPositionMode(IGnss::GnssPositionMode mode,
     memset(&mTrackingOptions, 0, sizeof(TrackingOptions));
     mTrackingOptions.size = sizeof(TrackingOptions);
     mTrackingOptions.minInterval = minIntervalMs;
+    if (IGnss::GnssPositionRecurrence::RECURRENCE_SINGLE == recurrence) {
+        mTrackingOptions.minInterval =
+                std::numeric_limits<decltype(mTrackingOptions.minInterval)>::max();
+    }
     mTrackingOptions.minDistance = preferredAccuracyMeters;
     if (mode == IGnss::GnssPositionMode::STANDALONE)
         mTrackingOptions.mode = GNSS_SUPL_MODE_STANDALONE;
