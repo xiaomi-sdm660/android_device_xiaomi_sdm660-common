@@ -434,10 +434,9 @@ void Gnss::odcpiRequestCb(const OdcpiRequestInfo& request) {
         // For emergency mode, request DBH (Device based hybrid) location
         // Mark Independent from GNSS flag to false.
         if (ODCPI_REQUEST_TYPE_START == request.type) {
-            if (request.isEmergencyMode) {
-                mGnssCbIface_1_1->gnssRequestLocationCb(false);
-            } else {
-                mGnssCbIface_1_1->gnssRequestLocationCb(true);
+            auto r = mGnssCbIface_1_1->gnssRequestLocationCb(!request.isEmergencyMode);
+            if (!r.isOk()) {
+                LOC_LOGe("Error invoking gnssRequestLocationCb %s", r.description().c_str());
             }
         } else {
             LOC_LOGv("Unsupported ODCPI request type: %d", request.type);
