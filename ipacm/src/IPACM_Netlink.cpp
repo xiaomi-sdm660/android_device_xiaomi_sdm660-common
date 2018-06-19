@@ -710,7 +710,13 @@ static int ipa_nl_decode_nlmsg
 						IPACMERR("Error while getting interface name\n");
 						return IPACM_FAILURE;
 					}
-					IPACMDBG("Got a usb link_up event (Interface %s, %d) \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+					IPACMDBG_H("Got a usb link_up event (Interface %s, %d) \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
+					/* We don't expect change in iff_flags for rmnet_data interfaces. */
+					if (!strncmp(dev_name,"rmnet_data",strlen("rmnet_data")))
+					{
+						IPACMERR("Don't expect iff_flags change for rmnet_data interface. IGNORE\n");
+						return IPACM_FAILURE;
+					}
 
                     /*--------------------------------------------------------------------------
                        Post LAN iface (ECM) link up event

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -267,6 +267,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 						IPACMDBG_H("IPv4 address:0x%x, IPv4 address mask:0x%x\n",
 										 info->ipv4_addr, info->addr_mask);
 						IPACM_EvtDispatcher::PostEvt(&evt_data);
+#ifdef FEATURE_IPACM_RESTART
+						/* Query wlan-clients */
+						ipa_query_wlan_client();
+#endif
 					}
 
 					if(handle_addr_evt(data) == IPACM_FAILURE)
@@ -557,7 +561,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 				memcpy(&prefix[data->prefix.iptype], &data->prefix,
 					sizeof(prefix[data->prefix.iptype]));
 
-				if(is_upstream_set[data->prefix.iptype] == true)
+				if (is_upstream_set[data->prefix.iptype] == true)
 				{
 					IPACMDBG_H("Upstream was set before, adding modem UL rules.\n");
 					if(ip_type == IPA_IP_MAX || ip_type == data->prefix.iptype)
@@ -2245,6 +2249,28 @@ void IPACM_Wlan::handle_SCC_MCC_switch(ipa_ip_type iptype)
 	}
 	return;
 }
+
+#ifdef FEATURE_IPACM_RESTART
+int IPACM_Wlan::ipa_query_wlan_client()
+{
+	int fd = -1;
+
+	if ((fd = open(IPA_DEVICE_NAME, O_RDWR)) < 0) {
+		IPACMERR("Failed opening %s.\n", IPA_DEVICE_NAME);
+		return IPACM_FAILURE;
+	}
+
+	if (ioctl(fd, IPA_IOC_QUERY_WLAN_CLIENT) < 0) {
+		IPACMERR("IOCTL IPA_IOC_QUERY_WLAN_CLIENT call failed: %s \n", strerror(errno));
+		close(fd);
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("send IPA_IOC_QUERY_WLAN_CLIENT \n");
+	close(fd);
+	return IPACM_SUCCESS;
+}
+#endif
 
 void IPACM_Wlan::eth_bridge_handle_wlan_mode_switch()
 {
