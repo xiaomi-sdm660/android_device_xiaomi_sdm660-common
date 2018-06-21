@@ -353,28 +353,6 @@ typedef uint32_t LocNavSolutionMask;
 /**<  Bitmask to specify whether Position Report is PPP corrected   */
 #define LOC_NAV_MASK_PPP_CORRECTION ((LocNavSolutionMask)0x0040)
 
-typedef uint32_t LocPosDataMask;
-/* Bitmask to specify whether Navigation data has Forward Acceleration  */
-#define LOC_NAV_DATA_HAS_LONG_ACCEL ((LocPosDataMask)0x0001)
-/* Bitmask to specify whether Navigation data has Sideward Acceleration */
-#define LOC_NAV_DATA_HAS_LAT_ACCEL ((LocPosDataMask)0x0002)
-/* Bitmask to specify whether Navigation data has Vertical Acceleration */
-#define LOC_NAV_DATA_HAS_VERT_ACCEL ((LocPosDataMask)0x0004)
-/* Bitmask to specify whether Navigation data has Heading Rate */
-#define LOC_NAV_DATA_HAS_YAW_RATE ((LocPosDataMask)0x0008)
-/* Bitmask to specify whether Navigation data has Body pitch */
-#define LOC_NAV_DATA_HAS_PITCH ((LocPosDataMask)0x0010)
-/* Bitmask to specify whether Navigation data has Forward Acceleration Unc  */
-#define LOC_NAV_DATA_HAS_LONG_ACCEL_UNC ((LocPosDataMask)0x0020)
-/* Bitmask to specify whether Navigation data has Sideward Acceleration Unc*/
-#define LOC_NAV_DATA_HAS_LAT_ACCEL_UNC ((LocPosDataMask)0x0040)
-/* Bitmask to specify whether Navigation data has Vertical Acceleration Unc*/
-#define LOC_NAV_DATA_HAS_VERT_ACCEL_UNC ((LocPosDataMask)0x0080)
-/* Bitmask to specify whether Navigation data has Heading Rate Unc*/
-#define LOC_NAV_DATA_HAS_YAW_RATE_UNC ((LocPosDataMask)0x0100)
-/* Bitmask to specify whether Navigation data has Body pitch Unc*/
-#define LOC_NAV_DATA_HAS_PITCH_UNC ((LocPosDataMask)0x0200)
-
 /** GPS PRN Range */
 #define GPS_SV_PRN_MIN      1
 #define GPS_SV_PRN_MAX      32
@@ -420,32 +398,6 @@ typedef struct {
     uint64_t bds_sv_used_ids_mask;
     uint64_t qzss_sv_used_ids_mask;
 } GnssSvUsedInPosition;
-
-/* Body Frame parameters */
-typedef struct {
-    /** Contains Body frame LocPosDataMask bits. */
-   uint32_t        bodyFrameDatamask;
-   /* Forward Acceleration in body frame (m/s2)*/
-   float           longAccel;
-   /** Uncertainty of Forward Acceleration in body frame */
-   float           longAccelUnc;
-   /* Sideward Acceleration in body frame (m/s2)*/
-   float           latAccel;
-   /** Uncertainty of Side-ward Acceleration in body frame */
-   float           latAccelUnc;
-   /* Vertical Acceleration in body frame (m/s2)*/
-   float           vertAccel;
-   /** Uncertainty of Vertical Acceleration in body frame */
-   float           vertAccelUnc;
-   /* Heading Rate (Radians/second) */
-   float           yawRate;
-   /** Uncertainty of Heading Rate */
-   float           yawRateUnc;
-   /* Body pitch (Radians) */
-   float           pitch;
-   /** Uncertainty of Body pitch */
-   float           pitchRadUnc;
-}LocPositionDynamics;
 
 typedef struct {
 
@@ -636,7 +588,7 @@ typedef struct {
     /** SV Info source used in computing this fix */
     LocSvInfoSource sv_source;
     /** Body Frame Dynamics: 4wayAcceleration and pitch set with validity */
-    LocPositionDynamics bodyFrameData;
+    GnssLocationPositionDynamics bodyFrameData;
     /** GPS Time */
     GPSTimeStruct gpsTime;
     GnssSystemTime gnssSystemTime;

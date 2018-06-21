@@ -380,34 +380,12 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.navSolutionMask = locationExtended.navSolutionMask;
     }
     if (GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK & locationExtended.flags) {
-        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK;
+        out.flags |= GNSS_LOCATION_INFO_POS_TECH_MASK_BIT;
         out.posTechMask = locationExtended.tech_mask;
     }
     if (GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA & locationExtended.flags) {
-        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA;
-        if (locationExtended.bodyFrameData.bodyFrameDatamask &
-                LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT) {
-            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT;
-        }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask &
-                LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT) {
-            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT;
-        }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask &
-                LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT) {
-            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT;
-        }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
-            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_RATE_BIT;
-        }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_PITCH_BIT) {
-            out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_BIT;
-        }
-        out.bodyFrameData.longAccel = locationExtended.bodyFrameData.longAccel;
-        out.bodyFrameData.latAccel = locationExtended.bodyFrameData.latAccel;
-        out.bodyFrameData.vertAccel = locationExtended.bodyFrameData.vertAccel;
-        out.bodyFrameData.yawRate = locationExtended.bodyFrameData.yawRate;
-        out.bodyFrameData.pitch = locationExtended.bodyFrameData.pitch;
+        out.flags |= GNSS_LOCATION_INFO_POS_DYNAMICS_DATA_BIT;
+        out.bodyFrameData = locationExtended.bodyFrameData;
     }
 
     // Validity of this structure is established from the timeSrc of the GnssSystemTime structure.
