@@ -576,7 +576,7 @@ RET IPACM_OffloadManager::stopAllOffload()
 RET IPACM_OffloadManager::setQuota(const char * upstream_name /* upstream */, uint64_t mb/* limit */)
 {
 	wan_ioctl_set_data_quota quota;
-	int fd = -1,rc = 0;
+	int fd = -1, rc = 0, err_type = 0;
 
 	if ((fd = open(DEVICE_NAME, O_RDWR)) < 0)
 	{
@@ -600,9 +600,10 @@ RET IPACM_OffloadManager::setQuota(const char * upstream_name /* upstream */, ui
 
 	if(rc != 0)
 	{
+		err_type = errno;
 		close(fd);
-        	IPACMERR("IOCTL WAN_IOCTL_SET_DATA_QUOTA call failed: %s rc: %d\n", strerror(errno),rc);
-		if (errno == ENODEV) {
+		IPACMERR("IOCTL WAN_IOCTL_SET_DATA_QUOTA call failed: %s err_type: %d\n", strerror(err_type), err_type);
+		if (err_type == ENODEV) {
 			IPACMDBG_H("Invalid argument.\n");
 			return FAIL_UNSUPPORTED;
 		}
