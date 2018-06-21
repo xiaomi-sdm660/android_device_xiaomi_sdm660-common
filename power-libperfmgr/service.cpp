@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "android.hardware.power@1.2-service.sdm660-libperfmgr"
+#define LOG_TAG "android.hardware.power@1.3-service.sdm660-libperfmgr"
 
 #include <android/log.h>
 #include <hidl/HidlTransportSupport.h>
@@ -28,8 +28,8 @@ using android::OK;
 using android::hardware::configureRpcThreadpool;
 using android::hardware::joinRpcThreadpool;
 
-using android::hardware::power::V1_2::IPower;
-using android::hardware::power::V1_2::implementation::Power;
+using android::hardware::power::V1_3::IPower;
+using android::hardware::power::V1_3::implementation::Power;
 
 int main(int /* argc */, char** /* argv */) {
     ALOGI("Power HAL is starting");
