@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -309,6 +309,18 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					} else {
 						IPACMDBG_H("Wan_V6 haven't up yet \n");
 					}
+#else
+					/* check if Upstream was set before */
+					if (IPACM_Wan::isWanUP(ipa_if_num))
+					{
+						IPACMDBG_H("Upstream was set previously for ipv4, change is_upstream_set flag\n");
+						is_upstream_set[IPA_IP_v4] = true;
+					}
+					if (IPACM_Wan::isWanUP_V6(ipa_if_num))
+					{
+						IPACMDBG_H("Upstream was set previously for ipv6, change is_upstream_set flag\n");
+						is_upstream_set[IPA_IP_v6] = true;
+					}
 #endif
 					/* checking if SW-RT_enable */
 					if (IPACM_Iface::ipacmcfg->ipa_sw_rt_enable == true)
@@ -524,7 +536,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		if(ipa_interface_index == ipa_if_num)
 		{
 			IPACMDBG_H("Received IPA_DOWNSTREAM_ADD event.\n");
-			if(is_downstream_set[data->prefix.iptype] == false)
+			if(data->prefix.iptype < IPA_IP_MAX && is_downstream_set[data->prefix.iptype] == false)
 			{
 				IPACMDBG_H("Add downstream for IP iptype %d.\n", data->prefix.iptype);
 				is_downstream_set[data->prefix.iptype] = true;
@@ -856,7 +868,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		if (rx_prop != NULL || tx_prop != NULL)
 		{
 			IPACMDBG_H(" Has rx/tx properties registered for iface %s, add for NATTING \n", dev_name);
-			IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name);
+			IPACM_Iface::ipacmcfg->AddNatIfaces(dev_name, IPA_IP_MAX);
 		}
 
 		if (m_is_guest_ap == true && (IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].wlan_mode == FULL))
