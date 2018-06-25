@@ -2470,7 +2470,7 @@ void
 GnssAdapter::reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& measurements,
                                             int msInWeek)
 {
-    LOC_LOGD("%s]: ", __func__);
+    LOC_LOGD("%s]: msInWeek=%d", __func__, msInWeek);
 
     struct MsgReportGnssMeasurementData : public LocMsg {
         GnssAdapter& mAdapter;
@@ -3176,7 +3176,6 @@ GnssAdapter::getAgcInformation(GnssMeasurementsNotification& measurements, int m
         systemstatus->getReport(reports, true);
 
         if ((!reports.mRfAndParams.empty()) && (!reports.mTimeAndClock.empty()) &&
-            reports.mTimeAndClock.back().mTimeValid &&
             (abs(msInWeek - (int)reports.mTimeAndClock.back().mGpsTowMs) < 2000)) {
 
             for (size_t i = 0; i < measurements.count; i++) {
