@@ -49,6 +49,8 @@
 /dev/rmnet_ctrl           0660   usb        usb
 /dev/dpl_ctrl             0660   usb        usb
 /dev/spidev7.1            0660  system 	    system
+/dev/ipa_odl_ctl          0660   radio      radio
+/dev/ipa_adpl             0660   system     oem_2905
 
 #permissions for CSVT
 /dev/smd11                0660   radio      radio
