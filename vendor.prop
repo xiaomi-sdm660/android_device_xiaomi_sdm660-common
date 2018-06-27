@@ -303,6 +303,9 @@ vendor.display.enable_default_color_mode=1
 sdm.debug.disable_skip_validate=1
 debug.sf.recomputecrop=0
 
+#iwaln vowifi corresponding
+persist.data.iwlan.enable=true
+
 #system property determining camera to be used for a Video call
 persist.vendor.qti.telephony.vt_cam_interface=1
 
