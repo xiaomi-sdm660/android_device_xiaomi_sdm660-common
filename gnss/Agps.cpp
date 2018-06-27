@@ -599,7 +599,6 @@ void AgpsManager::releaseATL(int connHandle){
     if (sm == NULL) {
         LOC_LOGE("Subscriber with connHandle %d not found in any SM",
                     connHandle);
-        mAtlCloseStatusCb(connHandle, 0);
         return;
     }
 
