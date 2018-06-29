@@ -72,6 +72,8 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"SUPL_HOST",                      &mGps_conf.SUPL_HOST,                      NULL, 's'},
   {"SUPL_PORT",                      &mGps_conf.SUPL_PORT,                      NULL, 'n'},
   {"MODEM_TYPE",                     &mGps_conf.MODEM_TYPE,                     NULL, 'n' },
+  {"MO_SUPL_HOST",                   &mGps_conf.MO_SUPL_HOST,                   NULL, 's' },
+  {"MO_SUPL_PORT",                   &mGps_conf.MO_SUPL_PORT,                   NULL, 'n' },
 };
 
 const loc_param_s_type ContextBase::mSap_conf_table[] =

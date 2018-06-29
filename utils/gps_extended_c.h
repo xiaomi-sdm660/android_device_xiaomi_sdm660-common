@@ -258,7 +258,8 @@ typedef enum loc_server_type {
     LOC_AGPS_CDMA_PDE_SERVER,
     LOC_AGPS_CUSTOM_PDE_SERVER,
     LOC_AGPS_MPC_SERVER,
-    LOC_AGPS_SUPL_SERVER
+    LOC_AGPS_SUPL_SERVER,
+    LOC_AGPS_MO_SUPL_SERVER
 } LocServerType;
 
 typedef enum loc_position_mode_type {

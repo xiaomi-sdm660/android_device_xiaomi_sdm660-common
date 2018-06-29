@@ -191,10 +191,9 @@ public:
     virtual void
         setPositionMode(const LocPosMode& posMode);
     virtual LocationError
-        setServerSync(const char* url, int len);
+        setServerSync(const char* url, int len, LocServerType type);
     virtual LocationError
-        setServerSync(unsigned int ip, int port,
-                  LocServerType type);
+        setServerSync(unsigned int ip, int port, LocServerType type);
     virtual void
         informNiResponse(GnssNiResponse userResponse, const void* passThroughData);
     virtual LocationError setSUPLVersionSync(GnssConfigSuplVersion version);
