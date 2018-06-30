@@ -3,6 +3,8 @@
 # Product-specific compile-time definitions.
 #
 
+DEVICE_PATH := device/xiaomi/wayne
+
 TARGET_BOARD_PLATFORM := sdm660
 TARGET_BOARD_SUFFIX := _64
 TARGET_BOOTLOADER_BOARD_NAME :=sdm660
@@ -42,9 +44,9 @@ BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 #TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_msm
 
 ifeq ($(ENABLE_VENDOR_IMAGE), true)
-    TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_non-AB_split_variant.fstab
+    TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery_non-AB_split_variant.fstab
 else
-    TARGET_RECOVERY_FSTAB := device/qcom/sdm660_64/recovery_non-AB_non-split_variant.fstab
+    TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/sdm660_64/recovery_non-AB_non-split_variant.fstab
 endif
 
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 3221225472
@@ -80,8 +82,8 @@ endif
 BOARD_KERNEL_CMDLINE += androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 sched_enable_hmp=1 sched_enable_power_aware=1 service_locator.enable=1 swiotlb=1 androidboot.configfs=true androidboot.usbcontroller=a800000.dwc3
 endif
 
-BOARD_EGL_CFG := device/qcom/sdm660_64/egl.cfg
-BOARD_SECCOMP_POLICY := device/qcom/sdm660_32/seccomp
+BOARD_EGL_CFG := $(DEVICE_PATH)/egl.cfg
+BOARD_SECCOMP_POLICY := $(DEVICE_PATH)/seccomp
 
 BOARD_KERNEL_BASE        := 0x00000000
 BOARD_KERNEL_PAGESIZE    := 4096
