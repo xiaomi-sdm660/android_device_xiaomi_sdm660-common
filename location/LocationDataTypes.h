@@ -33,6 +33,7 @@
 #include <stdint.h>
 #include <functional>
 #include <list>
+#include <string.h>
 
 #define GNSS_NI_REQUESTOR_MAX  (256)
 #define GNSS_NI_MESSAGE_ID_MAX (2048)
@@ -630,6 +631,14 @@ struct TrackingOptions : LocationOptions {
         minInterval = options.minInterval;
         minDistance = options.minDistance;
         mode = options.mode;
+    }
+    inline LocationOptions getLocationOptions() {
+        LocationOptions locOption;
+        locOption.size = sizeof(locOption);
+        locOption.minDistance = minDistance;
+        locOption.minInterval = minInterval;
+        locOption.mode = mode;
+        return locOption;
     }
 };
 
