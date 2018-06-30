@@ -130,9 +130,6 @@ PRODUCT_PACKAGES += android.hardware.media.omx@1.0-impl
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/sensors/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
-# Exclude TOF sensor from InputManager
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/excluded-input-devices.xml:system/etc/excluded-input-devices.xml
 
 # WLAN host driver
 ifneq ($(WLAN_CHIPSET),)

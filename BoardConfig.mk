@@ -82,7 +82,6 @@ endif
 BOARD_KERNEL_CMDLINE += androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 sched_enable_hmp=1 sched_enable_power_aware=1 service_locator.enable=1 swiotlb=1 androidboot.configfs=true androidboot.usbcontroller=a800000.dwc3
 endif
 
-BOARD_EGL_CFG := $(DEVICE_PATH)/egl.cfg
 BOARD_SECCOMP_POLICY := $(DEVICE_PATH)/seccomp
 
 BOARD_KERNEL_BASE        := 0x00000000
