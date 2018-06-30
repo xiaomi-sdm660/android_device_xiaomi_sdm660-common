@@ -7,9 +7,6 @@ ifeq ($(ENABLE_VENDOR_IMAGE),)
 ENABLE_VENDOR_IMAGE := true
 endif
 
-# Default A/B configuration.
-ENABLE_AB ?= true
-
 # Disable QTIC until it's brought up in split system/vendor
 # configuration to avoid compilation breakage.
 ifeq ($(ENABLE_VENDOR_IMAGE), true)
@@ -264,20 +261,6 @@ endif
 PRODUCT_PACKAGES += \
         wificond \
         wifilogd
-
-ifeq ($(ENABLE_AB), true)
-#A/B related packages
-PRODUCT_PACKAGES += update_engine \
-                    update_engine_client \
-                    update_verifier \
-                    bootctrl.sdm660 \
-                    brillo_update_payload \
-                    android.hardware.boot@1.0-impl \
-                    android.hardware.boot@1.0-service
-
-#Boot control HAL test app
-PRODUCT_PACKAGES_DEBUG += bootctl
-endif
 
 #Healthd packages
 PRODUCT_PACKAGES += android.hardware.health@1.0-impl \
