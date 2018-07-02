@@ -678,11 +678,11 @@ int IPACM_OffloadManager::post_route_evt(enum ipa_ip_type iptype, int index, ipa
 	IPACMDBG_H("IPV6 gateway: %08x:%08x:%08x:%08x \n",
 					evt_data_route->ipv6_addr_gw[0], evt_data_route->ipv6_addr_gw[1], evt_data_route->ipv6_addr_gw[2], evt_data_route->ipv6_addr_gw[3]);
 #endif
-	if (event == WAN_UPSTREAM_ROUTE_ADD) {
+	if (event == IPA_WAN_UPSTREAM_ROUTE_ADD_EVENT) {
 		IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_ADD: fid(%d) tether_fid(%d) ip-type(%d)\n", evt_data_route->if_index,
 			evt_data_route->if_index_tether, evt_data_route->iptype);
 	}
-	else if (event == WAN_UPSTREAM_ROUTE_DEL) {
+	else if (event == IPA_WAN_UPSTREAM_ROUTE_DEL_EVENT) {
 		IPACMDBG_H("Received WAN_UPSTREAM_ROUTE_DEL: fid(%d) tether_fid(%d) ip-type(%d)\n",
 				evt_data_route->if_index,
 				evt_data_route->if_index_tether, evt_data_route->iptype);
