@@ -70,6 +70,9 @@ static void updateConnectionStatus(bool connected, int8_t type);
 static void odcpiInit(const OdcpiRequestCallback& callback);
 static void odcpiInject(const Location& location);
 
+static void blockCPI(double latitude, double longitude, float accuracy,
+                     int blockDurationMsec, double latLonDiffThreshold);
+
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
     initialize,
@@ -101,6 +104,7 @@ static const GnssInterface gGnssInterface = {
     updateConnectionStatus,
     odcpiInit,
     odcpiInject,
+    blockCPI,
 };
 
 #ifndef DEBUG_X86
@@ -327,3 +331,10 @@ static void odcpiInject(const Location& location)
     }
 }
 
+static void blockCPI(double latitude, double longitude, float accuracy,
+                     int blockDurationMsec, double latLonDiffThreshold) {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->blockCPICommand(latitude, longitude, accuracy,
+                                      blockDurationMsec, latLonDiffThreshold);
+    }
+}

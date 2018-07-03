@@ -63,6 +63,8 @@ struct GnssInterface {
     void (*updateConnectionStatus)(bool connected, int8_t type);
     void (*odcpiInit)(const OdcpiRequestCallback& callback);
     void (*odcpiInject)(const Location& location);
+    void (*blockCPI)(double latitude, double longitude, float accuracy,
+                     int blockDurationMsec, double latLonDiffThreshold);
 };
 
 struct FlpInterface {
