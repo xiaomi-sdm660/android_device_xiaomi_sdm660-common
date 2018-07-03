@@ -84,7 +84,8 @@ GnssAdapter::GnssAdapter() :
     mOdcpiInjectedPositionCount(0),
     mSystemStatus(SystemStatus::getInstance(mMsgTask)),
     mServerUrl(":"),
-    mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask)
+    mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask),
+    mBlockCPIInfo{}
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -1599,26 +1600,39 @@ GnssAdapter::injectLocationCommand(double latitude, double longitude, float accu
     struct MsgInjectLocation : public LocMsg {
         LocApiBase& mApi;
         ContextBase& mContext;
+        BlockCPIInfo& mBlockCPI;
         double mLatitude;
         double mLongitude;
         float mAccuracy;
         inline MsgInjectLocation(LocApiBase& api,
                                  ContextBase& context,
+                                 BlockCPIInfo& blockCPIInfo,
                                  double latitude,
                                  double longitude,
                                  float accuracy) :
             LocMsg(),
             mApi(api),
             mContext(context),
+            mBlockCPI(blockCPIInfo),
             mLatitude(latitude),
             mLongitude(longitude),
             mAccuracy(accuracy) {}
         inline virtual void proc() const {
-            mApi.injectPosition(mLatitude, mLongitude, mAccuracy);
+            if ((uptimeMillis() <= mBlockCPI.blockedTillTsMs) &&
+                (fabs(mLatitude-mBlockCPI.latitude) <= mBlockCPI.latLonDiffThreshold) &&
+                (fabs(mLongitude-mBlockCPI.longitude) <= mBlockCPI.latLonDiffThreshold)) {
+
+                LOC_LOGD("%s]: positon injeciton blocked: lat: %f, lon: %f, accuracy: %f",
+                         __func__, mLatitude, mLongitude, mAccuracy);
+
+            } else {
+                mApi.injectPosition(mLatitude, mLongitude, mAccuracy);
+            }
         }
     };
 
-    sendMsg(new MsgInjectLocation(*mLocApi, *mContext, latitude, longitude, accuracy));
+    sendMsg(new MsgInjectLocation(*mLocApi, *mContext, mBlockCPIInfo,
+                                  latitude, longitude, accuracy));
 }
 
 void
@@ -1650,6 +1664,43 @@ GnssAdapter::injectTimeCommand(int64_t time, int64_t timeReference, int32_t unce
     };
 
     sendMsg(new MsgInjectTime(*mLocApi, *mContext, time, timeReference, uncertainty));
+}
+
+// This command is to called to block the position to be injected to the modem.
+// This can happen for network position that comes from modem.
+void
+GnssAdapter::blockCPICommand(double latitude, double longitude,
+                             float accuracy, int blockDurationMsec,
+                             double latLonDiffThreshold)
+{
+    struct MsgBlockCPI : public LocMsg {
+        BlockCPIInfo& mDstCPIInfo;
+        BlockCPIInfo mSrcCPIInfo;
+
+        inline MsgBlockCPI(BlockCPIInfo& dstCPIInfo,
+                           BlockCPIInfo& srcCPIInfo) :
+            mDstCPIInfo(dstCPIInfo),
+            mSrcCPIInfo(srcCPIInfo) {}
+        inline virtual void proc() const {
+            // in the same hal thread, save the cpi to be blocked
+            // the global variable
+            mDstCPIInfo = mSrcCPIInfo;
+        }
+    };
+
+    // construct the new block CPI info and queue on the same thread
+    // for processing
+    BlockCPIInfo blockCPIInfo;
+    blockCPIInfo.latitude = latitude;
+    blockCPIInfo.longitude = longitude;
+    blockCPIInfo.accuracy = accuracy;
+    blockCPIInfo.blockedTillTsMs = uptimeMillis() + blockDurationMsec;
+    blockCPIInfo.latLonDiffThreshold = latLonDiffThreshold;
+
+    LOC_LOGD("%s]: block CPI lat: %f, lon: %f ", __func__, latitude, longitude);
+    // send a message to record down the coarse position
+    // to be blocked from injection in the master copy (mBlockCPIInfo)
+    sendMsg(new MsgBlockCPI(mBlockCPIInfo, blockCPIInfo));
 }
 
 void
@@ -3225,13 +3276,25 @@ void GnssAdapter::injectOdcpiCommand(const Location& location)
 
 void GnssAdapter::injectOdcpi(const Location& location)
 {
-    mLocApi->injectPosition(location, true);
-    if (mOdcpiRequestActive) {
-        mOdcpiInjectedPositionCount++;
-        if (mOdcpiInjectedPositionCount >=
-                ODCPI_INJECTED_POSITION_COUNT_PER_REQUEST) {
-            mOdcpiRequestActive = false;
-            mOdcpiInjectedPositionCount = 0;
+    if (LOCATION_HAS_LAT_LONG_BIT & location.flags) {
+        if ((uptimeMillis() <= mBlockCPIInfo.blockedTillTsMs) &&
+            (fabs(location.latitude-mBlockCPIInfo.latitude) <=
+                    mBlockCPIInfo.latLonDiffThreshold) &&
+            (fabs(location.longitude-mBlockCPIInfo.longitude) <=
+                    mBlockCPIInfo.latLonDiffThreshold)) {
+
+            LOC_LOGD("%s]: positon injeciton blocked: lat: %f, lon: %f, accuracy: %f",
+                     __func__, location.latitude, location.longitude, location.accuracy);
+        } else {
+            mLocApi->injectPosition(location, true);
+            if (mOdcpiRequestActive) {
+                mOdcpiInjectedPositionCount++;
+                if (mOdcpiInjectedPositionCount >=
+                    ODCPI_INJECTED_POSITION_COUNT_PER_REQUEST) {
+                    mOdcpiRequestActive = false;
+                    mOdcpiInjectedPositionCount = 0;
+                }
+            }
         }
     }
 }

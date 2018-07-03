@@ -76,6 +76,19 @@ typedef struct {
     uint32_t svIdOffset;
 } NmeaSvMeta;
 
+typedef struct {
+    double latitude;
+    double longitude;
+    float  accuracy;
+    // the CPI will be blocked until the boot time
+    // specified in blockedTillTsMs
+    int64_t blockedTillTsMs;
+    // CPIs whose both latitude and longitude differ
+    // no more than latLonThreshold will be blocked
+    // in units of degree
+    double latLonDiffThreshold;
+} BlockCPIInfo;
+
 using namespace loc_core;
 
 namespace loc_core {
@@ -123,6 +136,9 @@ class GnssAdapter : public LocAdapterBase {
     SystemStatus* mSystemStatus;
     std::string mServerUrl;
     XtraSystemStatusObserver mXtraObserver;
+
+    /* === Misc ===================================================================== */
+    BlockCPIInfo mBlockCPIInfo;
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const TrackingOptions& trackingOptions);
@@ -336,6 +352,8 @@ public:
 
     void injectLocationCommand(double latitude, double longitude, float accuracy);
     void injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty);
+    void blockCPICommand(double latitude, double longitude, float accuracy,
+                         int blockDurationMsec, double latLonDiffThreshold);
 };
 
 #endif //GNSS_ADAPTER_H
