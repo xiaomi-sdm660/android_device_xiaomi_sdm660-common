@@ -29,6 +29,7 @@
 
 #define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_GnssAPIClient"
+#define SINGLE_SHOT_MIN_TRACKING_INTERVAL_MSEC (590 * 60 * 60 * 1000) // 590 hours
 
 #include <log_util.h>
 #include <loc_cfg.h>
@@ -166,9 +167,12 @@ bool GnssAPIClient::gnssSetPositionMode(IGnss::GnssPositionMode mode,
     memset(&mTrackingOptions, 0, sizeof(TrackingOptions));
     mTrackingOptions.size = sizeof(TrackingOptions);
     mTrackingOptions.minInterval = minIntervalMs;
-    if (IGnss::GnssPositionRecurrence::RECURRENCE_SINGLE == recurrence) {
-        mTrackingOptions.minInterval =
-                std::numeric_limits<decltype(mTrackingOptions.minInterval)>::max();
+    if (IGnss::GnssPositionMode::MS_ASSISTED == mode ||
+            IGnss::GnssPositionRecurrence::RECURRENCE_SINGLE == recurrence) {
+        // We set a very large interval to simulate SINGLE mode. Once we report a fix,
+        // the caller should take the responsibility to stop the session.
+        // For MSA, we always treat it as SINGLE mode.
+        mTrackingOptions.minInterval = SINGLE_SHOT_MIN_TRACKING_INTERVAL_MSEC;
     }
     mTrackingOptions.minDistance = preferredAccuracyMeters;
     if (mode == IGnss::GnssPositionMode::STANDALONE)
