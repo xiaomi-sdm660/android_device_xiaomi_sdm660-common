@@ -52,8 +52,4 @@
          ignored and manual operator selection will always be available. See
          CPHS4_2.WW6, CPHS B.4.7.1 for more information -->
     <bool name="csp_enabled">true</bool>
-
-    <!-- Show Preferred Network Type options in No SIM case -->
-    <bool name="config_no_sim_display_network_modes">true</bool>
-
 </resources>
