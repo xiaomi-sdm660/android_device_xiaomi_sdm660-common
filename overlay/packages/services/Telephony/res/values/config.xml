@@ -27,7 +27,4 @@
 
     <!-- Show enabled lte option for lte device -->
     <bool name="config_enabled_lte" translatable="false">true</bool>
-
-    <!-- Show Preferred Network Type options in No SIM case -->
-    <bool name="config_no_sim_display_network_modes">true</bool>
 </resources>
