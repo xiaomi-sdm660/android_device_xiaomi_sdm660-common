@@ -45,7 +45,7 @@ public :
     // constructor & destructor
     inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
             mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask),
-            mGpsLock(-1), mConnections(0), mXtraThrottle(true), mReqStatusReceived(false),
+            mGpsLock(-1), mConnections(~0), mXtraThrottle(true), mReqStatusReceived(false),
             mDelayLocTimer(*this), mIsConnectivityStatusKnown (false) {
         subscribe(true);
         startListeningNonBlocking(LOC_IPC_HAL);

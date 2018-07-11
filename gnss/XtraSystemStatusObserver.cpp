@@ -132,7 +132,8 @@ inline bool XtraSystemStatusObserver::onStatusRequested(int32_t xtraStatusUpdate
     stringstream ss;
 
     ss << "respondStatus" << endl;
-    (mGpsLock == -1 ? ss : ss << mGpsLock) << endl << mConnections << endl
+    (mGpsLock == -1 ? ss : ss << mGpsLock) << endl;
+    (mConnections == (uint64_t)~0 ? ss : ss << mConnections) << endl
             << mTac << endl << mMccmnc << endl << mIsConnectivityStatusKnown;
 
     return ( send(LOC_IPC_XTRA, ss.str()) );
