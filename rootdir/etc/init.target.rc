@@ -199,7 +199,6 @@ service vendor.ims_rtp_daemon /system/vendor/bin/ims_rtp_daemon
    class main
    user system
    group radio diag inet log
-   disabled
 
 service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    class main
@@ -208,7 +207,7 @@ service vendor.imsrcsservice /system/vendor/bin/imsrcsd
 
 # add for HMI_L8866_A01-502: begin
 on property:vendor.ims.DATA_DAEMON_STATUS=1
-    start vendor.ims_rtp_daemon
+    restart vendor.ims_rtp_daemon
     setprop persist.rcs.supported 0
 # add for HMI_L8866_A01-502: end
 
