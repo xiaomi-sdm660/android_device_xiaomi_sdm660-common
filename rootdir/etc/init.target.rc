@@ -40,6 +40,8 @@ on init
     write /dev/stune/system-background/schedtune.colocate 0
     write /dev/stune/foreground/schedtune.colocate 0
     write /dev/stune/top-app/schedtune.colocate 1
+    chown media media /dev/dbmdx-1
+    chmod 0770 /dev/dbmdx-1
 
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
@@ -51,12 +53,23 @@ on fs
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    wait /dev/block/bootdevice/by-name/persist
-    mount ext4 /dev/block/bootdevice/by-name/persist /persist nosuid nodev noatime barrier=1
     mkdir /persist/data 0700 system system
     mkdir /persist/bms 0700 root system
     restorecon_recursive /persist
+    mkdir /persist/wlan_bt 0777 root system
+    #add by Quanyu.Lee for MI-feature
+    #only needed on Factory version,DO NOT push to MIUI!
+    chmod 0644 /persist/wlan_bt/bt.mac
+    chmod 0644 /persist/wlan_bt/wlan.mac
+    chown system system /persist/wlan_bt/bt.mac
+    chown system system /persist/wlan_bt/wlan.mac
+
     write /sys/kernel/boot_adsp/boot 1
+    chown system system /dev/goodix_fp
+    #chmod 0644 /dev/goodix_fp
+
+    chmod 0664 /sys/class/thermal/thermal_message/sconfig
+    chown system system /sys/class/thermal/thermal_message/sconfig
 
 on post-fs
     start qseecomd
@@ -75,6 +88,9 @@ on post-fs-data
     mkdir /persist/qti_fp 0700 system system
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/misc/tloc 0700 system drmrpc
+    mkdir /data/thermal 0771 system system
+    mkdir /data/thermal/config 0771 system system
+    start pa-cal-load
 
 on boot
     start rmt_storage
@@ -101,9 +117,9 @@ on boot
     chown system system /persist/speccfg/vendor_persist.prop
     chown system system /persist/speccfg/submask
     chown system system /persist/speccfg/partition
-
 #Load WLAN driver
-   insmod /vendor/lib/modules/qca_cld3/qca_cld3_wlan.ko
+   insmod -f /vendor/lib/modules/qca_cld3/qca_cld3_wlan.ko
+   chown wifi wifi /sys/module/wlan/parameters/fwpath
    setprop wlan.driver.status "ok"
 
 #Peripheral manager
@@ -192,11 +208,6 @@ service time_daemon /system/vendor/bin/time_daemon
    class late_start
    user root
    group root
-
-service adsprpcd_root /system/bin/adsprpcd
-   class main
-   user media
-   group media
 
 service adsprpcd /system/vendor/bin/adsprpcd audiopd
    class main
@@ -371,10 +382,12 @@ service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    group radio diag inet log
    disabled
 
+# add for HMI_L8866_A01-502: begin
 on property:vendor.ims.DATA_DAEMON_STATUS=1
     start ims_rtp_daemon
     start vendor.imsrcsservice
-
+    setprop persist.rcs.supported 0
+# add for HMI_L8866_A01-502: end
 
 service ppd /system/vendor/bin/mm-pp-dpps
     class late_start
@@ -453,3 +466,207 @@ service smcinvoked /system/bin/smcinvoked
    user system
    group system
 
+# smart pa cal     wangshiyou 11/09
+service smart-pa-tfa-cal /system/vendor/bin/smart-pa-tfa-cal
+    user root
+    group root
+    disabled
+    oneshot
+
+# smart pa cal     tsx 08/26
+service pa-cal-load /system/vendor/bin/smart-pa-cal -load
+    user root
+    group root
+    disabled
+    oneshot
+
+# smart pa cal     tsx 08/26
+service smart-pa-cal /system/vendor/bin/smart-pa-cal -t 25 -c /system/vendor/etc/speaker.ftcfg -v -u
+    user root
+    group root
+    disabled
+    oneshot
+
+on property:sys.pa-cal=0
+    stop smart-pa-cal
+
+on property:sys.pa-cal=1
+    start smart-pa-cal
+
+on property:sys.pa-tfa-cal=0
+    stop smart-pa-tfa-cal
+
+on property:sys.pa-tfa-cal=1
+    start smart-pa-tfa-cal
+
+# audio loopback test begin    tsx 08/26
+service loopback_spk1 /system/vendor/bin/loopback.sh 1 1
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_spk0 /system/vendor/bin/loopback.sh 1 0
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_rec1 /system/vendor/bin/loopback.sh 2 1
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_rec0 /system/vendor/bin/loopback.sh 2 0
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_hand1 /system/vendor/bin/loopback.sh 3 1
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_hand0 /system/vendor/bin/loopback.sh 3 0
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_sec1 /system/vendor/bin/loopback.sh 4 1
+    user root
+    group root
+    disabled
+    oneshot
+	
+service loopback_sec0 /system/vendor/bin/loopback.sh 4 0
+    user root
+    group root
+    disabled
+    oneshot
+
+service spk_playback1 /system/vendor/bin/loopback.sh 5 1
+    user root
+    group root
+    disabled
+    oneshot
+	
+service spk_playback0 /system/vendor/bin/loopback.sh 5 0
+    user root
+    group root
+    disabled
+    oneshot
+
+on property:sys.loopback-spk=1
+    start loopback_spk1
+	
+on property:sys.loopback-spk=0
+    start loopback_spk0
+	
+on property:sys.loopback-rec=1
+    start loopback_rec1
+	
+on property:sys.loopback-rec=0
+    start loopback_rec0
+	
+on property:sys.loopback-mic1=1
+    start loopback_hand1
+	
+on property:sys.loopback-mic1=0
+    start loopback_hand0
+	
+on property:sys.loopback-mic2=1
+    start loopback_sec1
+	
+on property:sys.loopback-mic2=0
+    start loopback_sec0
+
+on property:sys.spk-playback=1
+    start spk_playback1
+	
+on property:sys.spk-playback=0
+    start spk_playback0
+
+service tinyhostless_spk /system/vendor/bin/tinyhostless -D 0 -P 35 -C 11 -p 8 -n 2 -c 1 -r 48000
+    user root
+    group root
+    disabled
+    oneshot
+
+service tinyhostless /system/vendor/bin/tinyhostless -D 0 -P 5 -C 11 -p 8 -n 2 -c 1 -r 48000
+    user root
+    group root
+    disabled
+    oneshot
+
+on property:sys.tinyhostless=0
+    stop tinyhostless 
+
+on property:sys.tinyhostless=1
+    start tinyhostless
+
+on property:sys.tinyhostless-spk=0
+    stop tinyhostless_spk
+
+on property:sys.tinyhostless-spk=1
+    start tinyhostless_spk
+	
+#audio loopback test end
+on property:persist.sys.display_srgb=1
+	write /sys/class/graphics/fb0/msm_fb_srgb 1
+
+on property:persist.sys.display_srgb=2
+	write /sys/class/graphics/fb0/msm_fb_srgb 2
+
+on property:sys.dynamic_debug=1
+   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-digital-cdc.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c +p" 
+
+on property:sys.dynamic_debug=0
+   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file msm-digital-cdc.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c -p"
+
+on property:persist.sys.display_ce=4
+    write /sys/class/graphics/fb0/msm_fb_ce 1
+
+on property:persist.sys.display_ce=0
+    write /sys/class/graphics/fb0/msm_fb_ce 2
+
+on property:persist.sys.display_cabc=1
+    write /sys/class/graphics/fb0/msm_fb_cabc 1
+
+on property:persist.sys.display_cabc=2
+    write /sys/class/graphics/fb0/msm_fb_cabc 2
+
+on property:persist.sys.display_gamma=1
+    write /sys/class/graphics/fb0/msm_fb_gamma 1
+
+on property:persist.sys.display_gamma=2
+    write /sys/class/graphics/fb0/msm_fb_gamma 2
+
+on property:sys.antgpio=0
+    write /sys/class/ant_class/ant_state 0
+
+on property:sys.antgpio=1
+    write /sys/class/ant_class/ant_state 1
