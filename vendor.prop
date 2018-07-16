@@ -275,3 +275,6 @@ persist.vendor.qti.telephony.vt_cam_interface=1
 sys.autobrightness_optimize=true
 #enable all system restart_level to relative
 persist.sys.ssr.restart_level=ALL_ENABLE
+
+# Vendor Security Patch Level
+ro.vendor.build.security_patch=2018-07-01
