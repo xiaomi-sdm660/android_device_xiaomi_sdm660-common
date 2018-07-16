@@ -273,6 +273,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     init.class_main.sh \
     init.goodix.sh \
+    move_wifi_data.sh \
     init.msm.usb.configfs.rc \
     init.qcom.post_boot.sh \
     init.qcom.rc \

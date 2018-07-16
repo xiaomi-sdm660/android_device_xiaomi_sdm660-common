@@ -662,6 +662,14 @@ service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
     oneshot
     writepid /dev/cpuset/system-background/tasks
 
+# Data Migration
+service vendor.move_wifi_data /system/bin/move_wifi_data.sh
+    class main
+    user  wifi
+    group wifi
+    disabled
+    oneshot
+
 service cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     class late_start
     user system
