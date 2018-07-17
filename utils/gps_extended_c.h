@@ -1403,6 +1403,8 @@ typedef struct
     /*  Extended Time Information - Cumulative Number of Clock Resets */
     uint8_t numClockResets_valid;  /**< Must be set to true if numClockResets is being passed */
     uint32_t numClockResets;
+    bool                                     gnssSignalTypeMaskValid;
+    GnssSignalTypeMask                       gnssSignalTypeMask;
 
 } GnssSvMeasurementSet;
 
