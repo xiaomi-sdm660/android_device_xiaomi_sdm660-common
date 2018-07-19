@@ -81,7 +81,8 @@ GnssAdapter::GnssAdapter() :
     mAgpsCbInfo(),
     mOdcpiRequestCb(nullptr),
     mOdcpiRequestActive(false),
-    mOdcpiInjectedPositionCount(0),
+    mOdcpiTimer(this),
+    mOdcpiRequest(),
     mSystemStatus(SystemStatus::getInstance(mMsgTask)),
     mServerUrl(":"),
     mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask),
@@ -1943,6 +1944,9 @@ GnssAdapter::restartSessions()
 {
     LOC_LOGD("%s]: ", __func__);
 
+    // odcpi session is no longer active after restart
+    mOdcpiRequestActive = false;
+
     if (mTrackingSessions.empty()) {
         return;
     }
@@ -3297,9 +3301,6 @@ GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
 bool
 GnssAdapter::requestOdcpiEvent(OdcpiRequestInfo& request)
 {
-    LOC_LOGd("ODCPI request: type %d, tbf %d, isEmergency %d", request.type,
-            request.tbfMillis, request.isEmergencyMode);
-
     struct MsgRequestOdcpi : public LocMsg {
         GnssAdapter& mAdapter;
         OdcpiRequestInfo mOdcpiRequest;
@@ -3319,15 +3320,45 @@ GnssAdapter::requestOdcpiEvent(OdcpiRequestInfo& request)
 void GnssAdapter::requestOdcpi(const OdcpiRequestInfo& request)
 {
     if (nullptr != mOdcpiRequestCb) {
-        mOdcpiInjectedPositionCount = 0;
+        LOC_LOGd("request: type %d, tbf %d, isEmergency %d"
+                 " requestActive: %d timerActive: %d",
+                 request.type, request.tbfMillis, request.isEmergencyMode,
+                 mOdcpiRequestActive, mOdcpiTimer.isActive());
+        // ODCPI START and ODCPI STOP from modem can come in quick succession
+        // so the mOdcpiTimer helps avoid spamming the framework as well as
+        // extending the odcpi session past 30 seconds if needed
         if (ODCPI_REQUEST_TYPE_START == request.type) {
-            mOdcpiRequestCb(request);
-            mOdcpiRequestActive = true;
+            if (false == mOdcpiRequestActive && false == mOdcpiTimer.isActive()) {
+                mOdcpiRequestCb(request);
+                mOdcpiRequestActive = true;
+                mOdcpiTimer.start();
+            // if the current active odcpi session is non-emergency, and the new
+            // odcpi request is emergency, replace the odcpi request with new request
+            // and restart the timer
+            } else if (false == mOdcpiRequest.isEmergencyMode &&
+                       true == request.isEmergencyMode) {
+                mOdcpiRequestCb(request);
+                mOdcpiRequestActive = true;
+                if (true == mOdcpiTimer.isActive()) {
+                    mOdcpiTimer.restart();
+                } else {
+                    mOdcpiTimer.start();
+                }
+            // if ODCPI request is not active but the timer is active, then
+            // just update the active state and wait for timer to expire
+            // before requesting new ODCPI to avoid spamming ODCPI requests
+            } else if (false == mOdcpiRequestActive && true == mOdcpiTimer.isActive()) {
+                mOdcpiRequestActive = true;
+            }
+            mOdcpiRequest = request;
+        // the request is being stopped, but allow timer to expire first
+        // before stopping the timer just in case more ODCPI requests come
+        // to avoid spamming more odcpi requests to the framework
         } else {
             mOdcpiRequestActive = false;
         }
     } else {
-        LOC_LOGe("ODCPI request not supported");
+        LOC_LOGw("ODCPI request not supported");
     }
 }
 
@@ -3377,26 +3408,48 @@ void GnssAdapter::injectOdcpiCommand(const Location& location)
 
 void GnssAdapter::injectOdcpi(const Location& location)
 {
-    if (LOCATION_HAS_LAT_LONG_BIT & location.flags) {
-        if ((uptimeMillis() <= mBlockCPIInfo.blockedTillTsMs) &&
-            (fabs(location.latitude-mBlockCPIInfo.latitude) <=
-                    mBlockCPIInfo.latLonDiffThreshold) &&
-            (fabs(location.longitude-mBlockCPIInfo.longitude) <=
-                    mBlockCPIInfo.latLonDiffThreshold)) {
+    LOC_LOGd("ODCPI Injection: requestActive: %d timerActive: %d"
+             "lat %.7f long %.7f",
+            mOdcpiRequestActive, mOdcpiTimer.isActive(),
+            location.latitude, location.longitude);
 
-            LOC_LOGD("%s]: positon injeciton blocked: lat: %f, lon: %f, accuracy: %f",
-                     __func__, location.latitude, location.longitude, location.accuracy);
-        } else {
-            mLocApi->injectPosition(location, true);
-            if (mOdcpiRequestActive) {
-                mOdcpiInjectedPositionCount++;
-                if (mOdcpiInjectedPositionCount >=
-                    ODCPI_INJECTED_POSITION_COUNT_PER_REQUEST) {
-                    mOdcpiRequestActive = false;
-                    mOdcpiInjectedPositionCount = 0;
-                }
-            }
+    mLocApi->injectPosition(location, true);
+}
+
+// Called in the context of LocTimer thread
+void OdcpiTimer::timeOutCallback()
+{
+    if (nullptr != mAdapter) {
+        mAdapter->odcpiTimerExpireEvent();
+    }
+}
+
+// Called in the context of LocTimer thread
+void GnssAdapter::odcpiTimerExpireEvent()
+{
+    struct MsgOdcpiTimerExpire : public LocMsg {
+        GnssAdapter& mAdapter;
+        inline MsgOdcpiTimerExpire(GnssAdapter& adapter) :
+                LocMsg(),
+                mAdapter(adapter) {}
+        inline virtual void proc() const {
+            mAdapter.odcpiTimerExpire();
         }
+    };
+    sendMsg(new MsgOdcpiTimerExpire(*this));
+}
+void GnssAdapter::odcpiTimerExpire()
+{
+    LOC_LOGd("requestActive: %d timerActive: %d",
+            mOdcpiRequestActive, mOdcpiTimer.isActive());
+
+    // if ODCPI request is still active after timer
+    // expires, request again and restart timer
+    if (mOdcpiRequestActive) {
+        mOdcpiRequestCb(mOdcpiRequest);
+        mOdcpiTimer.restart();
+    } else {
+        mOdcpiTimer.stop();
     }
 }
 
