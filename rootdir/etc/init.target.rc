@@ -120,6 +120,9 @@ on boot
    chown wifi wifi /sys/module/wlan/parameters/fwpath
    setprop wlan.driver.status "ok"
 
+    chmod 0660 /proc/nvt_wake_gesture
+    chown system system /proc/nvt_wake_gesture
+
 #Peripheral manager
 service per_mgr /system/vendor/bin/pm-service
     class core
