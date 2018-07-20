@@ -663,7 +663,7 @@ typedef struct {
     /** SV Info source used in computing this fix */
     LocSvInfoSource sv_source;
     /** Body Frame Dynamics: 4wayAcceleration and pitch set with validity */
-    LocPositionDynamics bodyFrameData;
+    GnssLocationPositionDynamics bodyFrameData;
     /** GPS Time */
     GPSTimeStruct gpsTime;
     GnssSystemTime gnssSystemTime;
