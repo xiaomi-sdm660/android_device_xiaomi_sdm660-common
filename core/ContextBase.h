@@ -124,7 +124,16 @@ public:
     ContextBase(const MsgTask* msgTask,
                 LOC_API_ADAPTER_EVENT_MASK_T exMask,
                 const char* libName);
-    inline virtual ~ContextBase() { delete mLocApi; delete mLBSProxy; }
+    inline virtual ~ContextBase() {
+        if (nullptr != mLocApi) {
+            mLocApi->destroy();
+            mLocApi = nullptr;
+        }
+        if (nullptr != mLBSProxy) {
+            delete mLBSProxy;
+            mLBSProxy = nullptr;
+        }
+    }
 
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     inline LocApiBase* getLocApi() { return mLocApi; }
