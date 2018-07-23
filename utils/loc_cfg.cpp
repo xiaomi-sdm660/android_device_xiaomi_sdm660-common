@@ -467,7 +467,6 @@ typedef struct {
     unsigned int loc_feature_mask;
     char platform_list[LOC_MAX_PARAM_STRING];
     char baseband[LOC_MAX_PARAM_STRING];
-    char lean_targets[LOC_MAX_PARAM_STRING];
     unsigned int sglte_target;
     char feature_gtp_cell_proc[LOC_MAX_PARAM_STRING];
     char feature_gtp_waa[LOC_MAX_PARAM_STRING];
@@ -512,7 +511,6 @@ static const loc_param_s_type loc_process_conf_parameter_table[] = {
     {"IZAT_FEATURE_MASK",   &conf.loc_feature_mask,    NULL, 'n'},
     {"PLATFORMS",           &conf.platform_list,       NULL, 's'},
     {"BASEBAND",            &conf.baseband,            NULL, 's'},
-    {"LEAN_TARGETS",        &conf.lean_targets,        NULL, 's'},
     {"HARDWARE_TYPE",       &conf.auto_platform,       NULL, 's'},
 };
 
@@ -554,7 +552,6 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     FILE* conf_fp = nullptr;
     char platform_name[PROPERTY_VALUE_MAX], baseband_name[PROPERTY_VALUE_MAX];
     char autoplatform_name[PROPERTY_VALUE_MAX];
-    int lean_target=0;
     unsigned int loc_service_mask=0;
     char config_mask = 0;
     unsigned char proc_list_length=0;
@@ -586,8 +583,6 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     loc_get_platform_name(platform_name, sizeof(platform_name));
     //Get baseband name from ro.baseband property
     loc_get_target_baseband(baseband_name, sizeof(baseband_name));
-    lean_target = loc_identify_lean_target();
-    LOC_LOGD("%s:%d]: lean target:%d", __func__, __LINE__, lean_target);
     //Identify if this is an automotive platform
     loc_get_auto_platform_name(autoplatform_name,sizeof(autoplatform_name));
 
@@ -925,13 +920,6 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
                     break;
                 }
             }
-        }
-
-        nstrings = loc_util_split_string(conf.lean_targets, split_strings, MAX_NUM_STRINGS, ' ');
-        if(!strcmp("DISABLED", split_strings[0]) && lean_target) {
-            LOC_LOGD("%s:%d]: Disabled for lean targets\n", __func__, __LINE__);
-            child_proc[j].proc_status = DISABLED;
-            continue;
         }
 
         if((config_mask & CONFIG_MASK_TARGET_CHECK) &&
