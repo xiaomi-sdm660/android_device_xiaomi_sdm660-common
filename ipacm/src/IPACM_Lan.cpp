@@ -4344,7 +4344,7 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 						num_dl_bytes += data->dl_dst_pipe_stats_list[pipe_len].num_ipv4_bytes;
 						num_dl_bytes += data->dl_dst_pipe_stats_list[pipe_len].num_ipv6_bytes;
 						IPACMDBG_H("Got matched dst-pipe (%d) from %d tx props\n", data->dl_dst_pipe_stats_list[pipe_len].pipe_index, cnt);
-						IPACMDBG_H("DL_packets:(%lu) DL_bytes:(%lu) \n", num_dl_packets, num_dl_bytes);
+						IPACMDBG_H("DL_packets:(%llu) DL_bytes:(%llu) \n", (long long)num_dl_packets, (long long)num_dl_bytes);
 						break;
 					}
 				}
@@ -4372,7 +4372,7 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 						num_ul_bytes += data->ul_src_pipe_stats_list[pipe_len].num_ipv4_bytes;
 						num_ul_bytes += data->ul_src_pipe_stats_list[pipe_len].num_ipv6_bytes;
 						IPACMDBG_H("Got matched dst-pipe (%d) from %d tx props\n", data->ul_src_pipe_stats_list[pipe_len].pipe_index, cnt);
-						IPACMDBG_H("UL_packets:(%lu) UL_bytes:(%lu) \n", num_ul_packets, num_ul_bytes);
+						IPACMDBG_H("UL_packets:(%llu) UL_bytes:(%llu) \n", (long long)num_ul_packets, (long long)num_ul_bytes);
 						break;
 					}
 				}
@@ -4383,11 +4383,11 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 
 	if (ul_pipe_found || dl_pipe_found)
 	{
-		IPACMDBG_H("Update IPA_TETHERING_STATS_UPDATE_EVENT, TX(P%lu/B%lu) RX(P%lu/B%lu) DEV(%s) to LTE(%s) \n",
-					num_ul_packets,
-						num_ul_bytes,
-							num_dl_packets,
-								num_dl_bytes,
+		IPACMDBG_H("Update IPA_TETHERING_STATS_UPDATE_EVENT, TX(P%llu/B%llu) RX(P%llu/B%llu) DEV(%s) to LTE(%s) \n",
+					(long long)num_ul_packets,
+						(long long)num_ul_bytes,
+							(long long)num_dl_packets,
+								(long long)num_dl_bytes,
 									dev_name,
 										IPACM_Wan::wan_up_dev_name);
 		fp = fopen(IPA_PIPE_STATS_FILE_NAME, "w");
@@ -4401,10 +4401,10 @@ int IPACM_Lan::handle_tethering_stats_event(ipa_get_data_stats_resp_msg_v01 *dat
 		fprintf(fp, PIPE_STATS,
 				dev_name,
 					IPACM_Wan::wan_up_dev_name,
-						num_ul_bytes,
-						num_ul_packets,
-							    num_dl_bytes,
-							num_dl_packets);
+						(long long)num_ul_bytes,
+						(long long)num_ul_packets,
+							    (long long)num_dl_bytes,
+							(long long)num_dl_packets);
 		fclose(fp);
 	}
 	return IPACM_SUCCESS;
@@ -4795,6 +4795,11 @@ end:
 int IPACM_Lan::eth_bridge_add_flt_rule(uint8_t *mac, uint32_t rt_tbl_hdl, ipa_ip_type iptype, uint32_t *flt_rule_hdl)
 {
 	int res = IPACM_SUCCESS;
+
+	IPACMDBG_H("Received client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+	IPACMDBG_H("Received rt_tbl_hdl :%d iptype %d\n", rt_tbl_hdl,iptype);
+	*flt_rule_hdl = 0;
+
 #ifdef FEATURE_IPA_V3
 	int len;
 	struct ipa_flt_rule_add flt_rule_entry;
@@ -4806,7 +4811,6 @@ int IPACM_Lan::eth_bridge_add_flt_rule(uint8_t *mac, uint32_t rt_tbl_hdl, ipa_ip
 		return IPACM_FAILURE;
 	}
 
-	IPACMDBG_H("Received client MAC 0x%02x%02x%02x%02x%02x%02x.\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
 	len = sizeof(struct ipa_ioc_add_flt_rule_after) + sizeof(struct ipa_flt_rule_add);
 	pFilteringTable = (struct ipa_ioc_add_flt_rule_after*)malloc(len);

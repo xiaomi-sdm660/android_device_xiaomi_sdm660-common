@@ -135,7 +135,7 @@ RET IPACM_OffloadManager::provideFd(int fd, unsigned int groups)
 	/* check socket name */
 	memset(&local, 0, sizeof(struct sockaddr_nl));
 	addr_len = sizeof(local);
-	getsockname(fd, (struct sockaddr *)&local, &addr_len);
+	getsockname(fd, (struct sockaddr *)&local, (socklen_t *)&addr_len);
 	IPACMDBG_H(" FD %d, nl_pad %d nl_pid %u\n", fd, local.nl_pad, local.nl_pid);
 
 	/* add the check if getting FDs already or not */
@@ -594,7 +594,7 @@ RET IPACM_OffloadManager::setQuota(const char * upstream_name /* upstream */, ui
 		return FAIL_INPUT_CHECK;
 	}
 
-	IPACMDBG_H("SET_DATA_QUOTA %s %lu", quota.interface_name, mb);
+	IPACMDBG_H("SET_DATA_QUOTA %s %llu", quota.interface_name, (long long)mb);
 
 	rc = ioctl(fd, WAN_IOC_SET_DATA_QUOTA, &quota);
 
@@ -644,7 +644,7 @@ RET IPACM_OffloadManager::getStats(const char * upstream_name /* upstream */,
 	offload_stats.tx = stats.tx_bytes;
 	offload_stats.rx = stats.rx_bytes;
 
-	IPACMDBG_H("send getStats tx:%lu rx:%lu \n", offload_stats.tx, offload_stats.rx);
+	IPACMDBG_H("send getStats tx:%llu rx:%llu \n", (long long)offload_stats.tx, (long long)offload_stats.rx);
 	close(fd);
 	return SUCCESS;
 }
