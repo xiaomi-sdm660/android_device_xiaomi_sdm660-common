@@ -128,7 +128,17 @@ typedef enum {
     LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT   = (1<<1), // Navigation data has Sideward Acceleration
     LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT  = (1<<2), // Navigation data has Vertical Acceleration
     LOCATION_NAV_DATA_HAS_YAW_RATE_BIT    = (1<<3), // Navigation data has Heading Rate
-    LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4)  // Navigation data has Body pitch
+    LOCATION_NAV_DATA_HAS_PITCH_BIT       = (1<<4),  // Navigation data has Body pitch
+    // Navigation data has Forward Acceleration uncertainty
+    LOCATION_NAV_DATA_HAS_LONG_ACCEL_UNC_BIT = (1<<5),
+    // Navigation data has Sideward Acceleration uncertainty
+    LOCATION_NAV_DATA_HAS_LAT_ACCEL_UNC_BIT  = (1<<6),
+    // Navigation data has Vertical Acceleration uncertainty
+    LOCATION_NAV_DATA_HAS_VERT_ACCEL_UNC_BIT = (1<<7),
+    // Navigation data has Heading Rate uncertainty
+    LOCATION_NAV_DATA_HAS_YAW_RATE_UNC_BIT   = (1<<8),
+    // Navigation data has Body pitch uncertainty
+    LOCATION_NAV_DATA_HAS_PITCH_UNC_BIT      = (1<<9)
 } GnssLocationPosDataBits;
 
 typedef uint32_t GnssLocationInfoFlagMask;
@@ -725,6 +735,11 @@ typedef struct {
     float vertAccel;                           // Vertical Acceleration in body frame (m/s2)
     float yawRate;                             // Heading Rate (Radians/second)
     float pitch;                               // Body pitch (Radians)
+    float longAccelUnc;   // Uncertainty of Forward Acceleration in body frame
+    float latAccelUnc;    // Uncertainty of Side-ward Acceleration in body frame
+    float vertAccelUnc;   // Uncertainty of Vertical Acceleration in body frame
+    float yawRateUnc;     // Uncertainty of Heading Rate
+    float pitchUnc;       // Uncertainty of Body pitch
 } GnssLocationPositionDynamics;
 
 typedef struct {

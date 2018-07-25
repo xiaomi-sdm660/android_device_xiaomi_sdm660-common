@@ -353,27 +353,27 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.navSolutionMask = locationExtended.navSolutionMask;
     }
     if (GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK & locationExtended.flags) {
-        out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_TECH_MASK;
+        out.flags |= GNSS_LOCATION_INFO_POS_TECH_MASK_BIT;
         out.posTechMask = locationExtended.tech_mask;
     }
     if (GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA & locationExtended.flags) {
         out.flags |= GPS_LOCATION_EXTENDED_HAS_POS_DYNAMICS_DATA;
-        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
                 LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LONG_ACCEL_BIT;
         }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
                 LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_LAT_ACCEL_BIT;
         }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask &
+        if (locationExtended.bodyFrameData.bodyFrameDataMask &
                 LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_VERT_ACCEL_BIT;
         }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
+        if (locationExtended.bodyFrameData.bodyFrameDataMask & LOCATION_NAV_DATA_HAS_YAW_RATE_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_YAW_RATE_BIT;
         }
-        if (locationExtended.bodyFrameData.bodyFrameDatamask & LOCATION_NAV_DATA_HAS_PITCH_BIT) {
+        if (locationExtended.bodyFrameData.bodyFrameDataMask & LOCATION_NAV_DATA_HAS_PITCH_BIT) {
             out.bodyFrameData.bodyFrameDataMask |= LOCATION_NAV_DATA_HAS_PITCH_BIT;
         }
         out.bodyFrameData.longAccel = locationExtended.bodyFrameData.longAccel;
@@ -1289,6 +1289,7 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
 
             mAdapter.reportResponse(index, errs, mIds);
             delete[] errs;
+
         }
     };
 
@@ -2686,6 +2687,7 @@ GnssAdapter::gnssNiResponseCommand(GnssNiResponse response, void* rawRequest)
         inline virtual ~MsgGnssNiResponse() {
         }
         inline virtual void proc() const {
+            const void *rawPayload = mPayload;
             mApi.informNiResponse(mResponse, mPayload);
         }
     };
