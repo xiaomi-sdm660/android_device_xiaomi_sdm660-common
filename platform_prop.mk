@@ -28,6 +28,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	audio.offload.video=true \
 	audio.deep_buffer.media=true \
 	persist.vendor.audio.hifi.int_codec=true \
+	persist.vendor.audio.hw.binder.size_kbyte=1024 \
 	persist.vendor.audio.ras.enabled=false \
 	persist.dirac.acs.controller=qem \
 	persist.dirac.acs.storeSettings=1 \
