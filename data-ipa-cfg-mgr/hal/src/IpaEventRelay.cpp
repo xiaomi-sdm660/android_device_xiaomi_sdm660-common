@@ -28,7 +28,7 @@
  */
 #define LOG_TAG "IPAHALService/IpaEventRelay"
 /* External Includes */
-#include <cutils/log.h>
+#include <log/log.h>
 
 /* HIDL Includes */
 #include <android/hardware/tetheroffload/control/1.0/ITetheringOffloadCallback.h>
