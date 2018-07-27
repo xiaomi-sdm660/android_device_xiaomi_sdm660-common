@@ -122,7 +122,8 @@ typedef enum {
     LOC_SUPPORTED_FEATURE_FDCL, /**< Support FDCL */
     LOC_SUPPORTED_FEATURE_CONSTELLATION_ENABLEMENT_V02, /**< Support constellation enablement */
     LOC_SUPPORTED_FEATURE_AGPM_V02, /**< Support AGPM feature */
-    LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY /**< Support XTRA integrity */
+    LOC_SUPPORTED_FEATURE_XTRA_INTEGRITY, /**< Support XTRA integrity */
+    LOC_SUPPORTED_FEATURE_FDCL_2 /**< Support FDCL V2 */
 } loc_supported_feature_enum;
 
 typedef struct {
@@ -827,6 +828,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_BATCH_STATUS,                      // batch status
     LOC_API_ADAPTER_FDCL_SERVICE_REQ,                  // FDCL service request
     LOC_API_ADAPTER_REPORT_UNPROPAGATED_POSITION,      // Unpropagated Position report
+    LOC_API_ADAPTER_BS_OBS_DATA_SERVICE_REQ,           // BS observation data request
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -864,6 +866,7 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_BATCH_STATUS                     (1<<LOC_API_ADAPTER_BATCH_STATUS)
 #define LOC_API_ADAPTER_BIT_FDCL_SERVICE_REQ                 (1ULL<<LOC_API_ADAPTER_FDCL_SERVICE_REQ)
 #define LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT (1ULL<<LOC_API_ADAPTER_REPORT_UNPROPAGATED_POSITION)
+#define LOC_API_ADAPTER_BIT_BS_OBS_DATA_SERVICE_REQ          (1ULL<<LOC_API_ADAPTER_BS_OBS_DATA_SERVICE_REQ)
 
 typedef uint64_t LOC_API_ADAPTER_EVENT_MASK_T;
 
