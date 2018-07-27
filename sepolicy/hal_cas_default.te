@@ -1,0 +1,2 @@
+#============= hal_cas_default ==============
+allow hal_cas_default vndbinder_device:chr_file { ioctl open read write };

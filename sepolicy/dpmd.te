@@ -1,0 +1,2 @@
+#============= dpmd ==============
+allow dpmd vendor_file:file { execute getattr open read };
