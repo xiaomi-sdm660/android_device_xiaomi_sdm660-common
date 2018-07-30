@@ -92,9 +92,7 @@ const loc_param_s_type ContextBase::mSap_conf_table[] =
   {"SENSOR_GYRO_BATCHES_PER_SEC_HIGH",    &mSap_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,    NULL, 'n'},
   {"SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH",  &mSap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,  NULL, 'n'},
   {"SENSOR_CONTROL_MODE",            &mSap_conf.SENSOR_CONTROL_MODE,            NULL, 'n'},
-  {"SENSOR_USAGE",                   &mSap_conf.SENSOR_USAGE,                   NULL, 'n'},
-  {"SENSOR_ALGORITHM_CONFIG_MASK",   &mSap_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'},
-  {"SENSOR_PROVIDER",                &mSap_conf.SENSOR_PROVIDER,                NULL, 'n'}
+  {"SENSOR_ALGORITHM_CONFIG_MASK",   &mSap_conf.SENSOR_ALGORITHM_CONFIG_MASK,   NULL, 'n'}
 };
 
 void ContextBase::readConfig()
@@ -139,7 +137,6 @@ void ContextBase::readConfig()
         mSap_conf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH = 4;
         mSap_conf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH = 25;
         mSap_conf.SENSOR_CONTROL_MODE = 0; /* AUTO */
-        mSap_conf.SENSOR_USAGE = 0; /* Enabled */
         mSap_conf.SENSOR_ALGORITHM_CONFIG_MASK = 0; /* INS Disabled = FALSE*/
         /* Values MUST be set by OEMs in configuration for sensor-assisted
           navigation to work. There are NO default values */
@@ -152,8 +149,6 @@ void ContextBase::readConfig()
         mSap_conf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
         mSap_conf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
         mSap_conf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID = 0;
-        /* default provider is SSC */
-        mSap_conf.SENSOR_PROVIDER = 1;
 
         /* None of the 10 slots for agps certificates are writable by default */
         mGps_conf.AGPS_CERT_WRITABLE_MASK = 0;

@@ -717,8 +717,6 @@ GnssAdapter::setConfigCommand()
                     }
                 }
 
-                adapter.mLocApi->setSensorControlConfigSync(sapConf.SENSOR_USAGE,
-                                        sapConf.SENSOR_PROVIDER);
                 adapter.mLocApi->setLPPeProtocolCpSync(
                     adapter.mLocApi->convertLppeCp(gpsConf.LPPE_CP_TECHNOLOGY));
                 adapter.mLocApi->setLPPeProtocolUpSync(

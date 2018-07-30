@@ -218,8 +218,6 @@ public:
         setNMEATypesSync(uint32_t typesMask);
     virtual LocationError setLPPConfigSync(GnssConfigLppProfile profile);
     virtual enum loc_api_adapter_err
-        setSensorControlConfigSync(int sensorUsage, int sensorProvider);
-    virtual enum loc_api_adapter_err
         setSensorPropertiesSync(bool gyroBiasVarianceRandomWalk_valid,
                             float gyroBiasVarianceRandomWalk,
                             bool accelBiasVarianceRandomWalk_valid,
