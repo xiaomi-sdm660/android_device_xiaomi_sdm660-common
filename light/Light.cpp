@@ -33,6 +33,24 @@ namespace implementation {
 #define BRIGHTNESS                 "brightness"
 #define RED                        LEDS "red/"
 #define BLINK                      "blink"
+#define DUTY_PCTS                  "duty_pcts"
+#define PAUSE_HI                   "pause_hi"
+#define PAUSE_LO                   "pause_lo"
+#define RAMP_STEP_MS               "ramp_step_ms"
+#define START_IDX                  "start_idx"
+
+/*
+ * 8 duty percent steps.
+ */
+#define RAMP_STEPS 15
+/*
+ * Each step will stay on for 50ms by default.
+ */
+#define RAMP_STEP_DURATION 150
+/*
+ * Each value represents a duty percent (0 - 100) for the led pwm.
+ */
+static int32_t BRIGHTNESS_RAMP[RAMP_STEPS] = {0, 12, 25, 37, 50, 72, 85, 100, 85, 72, 50, 37, 25, 12, 0};
 
 /*
  * Write value to path and close file.
@@ -53,13 +71,28 @@ static void set(std::string path, int value) {
     set(path, std::to_string(value));
 }
 
-static void handleWayneBacklight(const LightState& state) {
+/*
+ * Scale each value of the brightness ramp according to the
+ * brightness of the color.
+ */
+static std::string getScaledRamp(uint32_t brightness) {
+    std::string ramp, pad;
+
+    for (auto const& step : BRIGHTNESS_RAMP) {
+        ramp += pad + std::to_string(step * brightness / 0xFF);
+        pad = ",";
+    }
+
+    return ramp;
+}
+
+static void handleWayneBacklight(Type /*type*/, const LightState& state) {
     uint32_t brightness = state.color & 0xFF;
     set(LCD_LED BRIGHTNESS, brightness);
 }
 
-static void handleWayneNotification(const LightState& state) {
-    uint32_t redBrightness, brightness, blink;
+static void setNotification(const LightState& state) {
+    uint32_t redBrightness, brightness;
 
     /*
      * Extract brightness from RGB.
@@ -79,25 +112,61 @@ static void handleWayneNotification(const LightState& state) {
     set(RED BLINK, 0);
 
     if (state.flashMode == Flash::TIMED) {
-        uint32_t onMS  = state.flashOnMs;
-        uint32_t offMS = state.flashOffMs;
+        /*
+         * If the flashOnMs duration is not long enough to fit ramping up
+         * and down at the default step duration, step duration is modified
+         * to fit.
+        */
+        int32_t stepDuration = RAMP_STEP_DURATION;
+        int32_t pauseHi = state.flashOnMs - (stepDuration * RAMP_STEPS * 2);
+        int32_t pauseLo = state.flashOffMs;
 
-        if (onMS > 0 && offMS > 0) {
-            blink = 1;
-        } else {
-            blink = 0;
+        if (pauseHi < 0) {
+            pauseHi = 0;
         }
 
         /* Red(Actually White) */
-        set(RED BLINK, blink);
-        set(RED BRIGHTNESS, 0);
-
+        set(RED BLINK, 1);
+        set(RED START_IDX, 0 * RAMP_STEPS);
+        set(RED DUTY_PCTS, getScaledRamp(redBrightness));
+        set(RED PAUSE_LO, pauseLo);
+        set(RED PAUSE_HI, pauseHi);
+        set(RED RAMP_STEP_MS, stepDuration);
     } else {
         set(RED BRIGHTNESS, redBrightness);
     }
 }
 
-static std::map<Type, std::function<void(const LightState&)>> lights = {
+static inline bool isLit(const LightState& state) {
+    return state.color & 0x00ffffff;
+}
+
+/*
+ * Keep sorted in the order of importance.
+ */
+static const LightState offState = {};
+static std::vector<std::pair<Type, LightState>> notificationStates = {
+    { Type::ATTENTION, offState },
+    { Type::NOTIFICATIONS, offState },
+    { Type::BATTERY, offState },
+};
+
+static void handleWayneNotification(Type type, const LightState& state) {
+    for(auto it : notificationStates) {
+        if (it.first == type) {
+            it.second = state;
+        }
+
+        if  (isLit(it.second)) {
+            setNotification(it.second);
+            return;
+        }
+    }
+
+    setNotification(offState);
+}
+
+static std::map<Type, std::function<void(Type type, const LightState&)>> lights = {
     {Type::BACKLIGHT, handleWayneBacklight},
     {Type::NOTIFICATIONS, handleWayneNotification},
     {Type::BATTERY, handleWayneNotification},
@@ -118,7 +187,7 @@ Return<Status> Light::setLight(Type type, const LightState& state) {
      */
 
     std::lock_guard<std::mutex> lock(globalLock);
-    it->second(state);
+    it->second(type, state);
     return Status::SUCCESS;
 }
 
