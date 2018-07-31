@@ -103,10 +103,10 @@ class LocApiBase {
     //it as a friend
     friend struct LocOpenMsg;
     friend struct LocCloseMsg;
+    friend struct LocKillMsg;
     friend class ContextBase;
     static MsgTask* mMsgTask;
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
-
 
 protected:
     ContextBase *mContext;
@@ -118,7 +118,12 @@ protected:
     LOC_API_ADAPTER_EVENT_MASK_T mMask;
     LocApiBase(LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
                ContextBase* context = NULL);
-    inline virtual ~LocApiBase() { close(); }
+    inline virtual ~LocApiBase() {
+        if (nullptr != mMsgTask) {
+            mMsgTask->destroy();
+            mMsgTask = nullptr;
+        }
+    }
     bool isInSession();
     const LOC_API_ADAPTER_EVENT_MASK_T mExcludedMask;
     bool isMaster();
@@ -127,6 +132,18 @@ public:
     inline void sendMsg(const LocMsg* msg) const {
         mMsgTask->sendMsg(msg);
     }
+    inline void destroy() {
+        close();
+        struct LocKillMsg : public LocMsg {
+            LocApiBase* mLocApi;
+            inline LocKillMsg(LocApiBase* locApi) : LocMsg(), mLocApi(locApi) {}
+            inline virtual void proc() const {
+                delete mLocApi;
+            }
+        };
+        sendMsg(new LocKillMsg(this));
+    }
+
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
