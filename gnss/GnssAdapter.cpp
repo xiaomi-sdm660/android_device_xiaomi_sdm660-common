@@ -2857,7 +2857,12 @@ GnssAdapter::needReport(const UlpLocation& ulpLocation,
                         enum loc_sess_status status,
                         LocPosTechMask techMask) {
     bool reported = false;
-    if (LOC_SESS_SUCCESS == status) {
+
+    // if engine hub is enabled, aka, any of the engine services is enabled,
+    // then always output position reported by engine hub to requesting client
+    if (true == initEngHubProxy()) {
+        reported = true;
+    } else if (LOC_SESS_SUCCESS == status) {
         // this is a final fix
         LocPosTechMask mask =
                 LOC_POS_TECH_MASK_SATELLITE | LOC_POS_TECH_MASK_SENSORS | LOC_POS_TECH_MASK_HYBRID;
