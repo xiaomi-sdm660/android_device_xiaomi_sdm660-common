@@ -18,8 +18,6 @@ LOCAL_PATH := $(call my-dir)
 
 ifneq ($(filter wayne,$(TARGET_DEVICE)),)
 
-include $(call all-makefiles-under,$(LOCAL_PATH))
-
 $(shell mkdir -p $(TARGET_OUT_VENDOR)/firmware; \
     ln -sf /dev/block/bootdevice/by-name/msadp \
         $(TARGET_OUT_VENDOR)/firmware/msadp)
@@ -50,8 +48,6 @@ $(LOCAL_BUILT_MODULE):
 	$(hide) rm -rf $(WCNSS_BIN_SYMLINK)
 	$(hide) ln -sf $(ACTUAL_BIN_FILE) $(WCNSS_BIN_SYMLINK)
 	$(hide) touch $@
-
-include $(call all-makefiles-under,$(LOCAL_PATH))
 
 IMS_LIBS := libimscamera_jni.so libimsmedia_jni.so
 
