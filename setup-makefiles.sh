@@ -39,7 +39,7 @@ fi
 setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true
 
 # Copyright headers and guards
-write_headers "wayne"
+write_headers "jasmine wayne"
 
 write_makefiles "$MY_DIR"/proprietary-files.txt true
 

@@ -16,7 +16,7 @@
 
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(filter wayne,$(TARGET_DEVICE)),)
+ifneq ($(filter jasmine wayne,$(TARGET_DEVICE)),)
 
 $(shell mkdir -p $(TARGET_OUT_VENDOR)/firmware; \
     ln -sf /dev/block/bootdevice/by-name/msadp \
