@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -1028,4 +1028,11 @@ void IPACM_Iface::config_ip_type(ipa_ip_type iptype)
 	}
 
 	return;
+}
+
+void IPACM_Iface::delete_iface(void)
+{
+	IPACMDBG_H("netdev (%s):ipa_index (%d) instance close \n",
+			IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+	delete this;
 }

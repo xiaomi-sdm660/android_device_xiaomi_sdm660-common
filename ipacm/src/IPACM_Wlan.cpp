@@ -133,6 +133,7 @@ IPACM_Wlan::~IPACM_Wlan()
 {
 	IPACM_EvtDispatcher::deregistr(this);
 	IPACM_IfaceManager::deregistr(this);
+	IPACM_Wlan::num_wlan_ap_iface--;
 	return;
 }
 
@@ -196,7 +197,6 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		ipacm_event_data_fid *data = (ipacm_event_data_fid *)param;
 		if(data->if_index == ipa_if_num)
 		{
-			IPACM_Wlan::num_wlan_ap_iface--;
 			IPACMDBG_H("Now the number of wlan AP iface is %d\n", IPACM_Wlan::num_wlan_ap_iface);
 
 			IPACMDBG_H("Received IPA_LAN_DELETE_SELF event.\n");

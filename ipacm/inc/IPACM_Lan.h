@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -60,7 +60,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* ndc bandwidth ipatetherstats <ifaceIn> <ifaceOut> */
 /* <in->out_bytes> <in->out_pkts> <out->in_bytes> <out->in_pkts */
 
-#define PIPE_STATS "%s %s %lu %lu %lu %lu"
+#define PIPE_STATS "%s %s %llu %llu %llu %llu"
 #define IPA_PIPE_STATS_FILE_NAME "/data/misc/ipa/tether_stats"
 
 /* store each lan-iface unicast routing rule and its handler*/
