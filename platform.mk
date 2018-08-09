@@ -321,7 +321,6 @@ PRODUCT_COPY_FILES += \
     $(PLATFORM_PATH)/configs/privapp-permissions-qti.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/privapp-permissions-qti.xml \
     $(PLATFORM_PATH)/configs/qti_whitelist.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/qti_whitelist.xml
 
-
 # QMI
 PRODUCT_PACKAGES += \
     libjson
@@ -356,13 +355,17 @@ PRODUCT_PACKAGES += \
     librmnetctl \
     libxml2 \
     libprotobuf-cpp-full
+    
+PRODUCT_PACKAGES += \
+    rild \
+    CarrierConfig
 
 #Facing, CMC and Gesture
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.facing=false \
     ro.vendor.sensors.cmc=false \
     ro.vendor.sdk.sensors.gestures=false
-    
+
 # Sensors
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
