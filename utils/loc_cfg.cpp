@@ -491,9 +491,7 @@ static const loc_param_s_type gps_conf_parameter_table[] = {
 /* location feature conf, e.g.: izat.conf feature mode table*/
 static const loc_param_s_type loc_feature_conf_table[] = {
     {"GTP_CELL_PROC",         &conf.feature_gtp_cell_proc,          NULL, 's'},
-    {"GTP_CELL",              &conf.feature_gtp_cell,               NULL, 's'},
     {"GTP_WIFI",              &conf.feature_gtp_wifi,               NULL, 's'},
-    {"GTP_WAA",               &conf.feature_gtp_waa,                NULL, 's'},
     {"SAP",                   &conf.feature_sap,                    NULL, 's'},
     {"ODCPI",                 &conf.feature_odcpi,                  NULL, 's'},
     {"FREE_WIFI_SCAN_INJECT", &conf.feature_free_wifi_scan_inject,  NULL, 's'},
@@ -612,6 +610,8 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
         gtp_cell_ap_enabled = 1;
     }
 
+    //by default make it disabled as it will not work with GTP_AP_MODE 4
+    strlcpy (conf.feature_gtp_cell, "DISABLED", sizeof (conf.feature_gtp_cell));
     if(strcmp(conf.feature_gtp_cell, "PREMIUM") == 0) {
         LOC_LOGE("%s:%d]: Error: location feature GTP CELL does not support PREMIUM mode" \
                  " available modes are BASIC and DISABLED. Starting feature in BASIC mode",
@@ -648,6 +648,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     }
 
     //Set service mask for GTP_WAA
+    strlcpy (conf.feature_gtp_waa, "DISABLED", sizeof (conf.feature_gtp_waa));
     if(strcmp(conf.feature_gtp_waa, "PREMIUM") == 0) {
         LOC_LOGE("%s:%d]: Error: location feature GTP WAA does not support PREMIUM mode" \
                  " available modes are BASIC and DISABLED. Starting feature in BASIC mode",
