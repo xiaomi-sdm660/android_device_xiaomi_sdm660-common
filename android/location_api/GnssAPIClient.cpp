@@ -198,17 +198,22 @@ void GnssAPIClient::gnssNiRespond(int32_t notifId,
         IGnssNiCallback::GnssUserResponseType userResponse)
 {
     LOC_LOGD("%s]: (%d %d)", __FUNCTION__, notifId, static_cast<int>(userResponse));
-    GnssNiResponse data = GNSS_NI_RESPONSE_IGNORE;
-    if (userResponse == IGnssNiCallback::GnssUserResponseType::RESPONSE_ACCEPT)
+    GnssNiResponse data;
+    switch (userResponse) {
+    case IGnssNiCallback::GnssUserResponseType::RESPONSE_ACCEPT:
         data = GNSS_NI_RESPONSE_ACCEPT;
-    else if (userResponse == IGnssNiCallback::GnssUserResponseType::RESPONSE_DENY)
+        break;
+    case IGnssNiCallback::GnssUserResponseType::RESPONSE_DENY:
         data = GNSS_NI_RESPONSE_DENY;
-    else if (userResponse == IGnssNiCallback::GnssUserResponseType::RESPONSE_NORESP)
+        break;
+    case IGnssNiCallback::GnssUserResponseType::RESPONSE_NORESP:
         data = GNSS_NI_RESPONSE_NO_RESPONSE;
-    else {
-        LOC_LOGD("%s]: invalid GnssUserResponseType: %d", __FUNCTION__, (int)userResponse);
-        return;
+        break;
+    default:
+        data = GNSS_NI_RESPONSE_IGNORE;
+        break;
     }
+
     locAPIGnssNiResponse(notifId, data);
 }
 
