@@ -522,10 +522,6 @@ LocationError LocApiBase::
     setLPPConfigSync(GnssConfigLppProfile /*profile*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
 
-enum loc_api_adapter_err LocApiBase::
-    setSensorControlConfigSync(int /*sensorUsage*/,
-                           int /*sensorProvider*/)
-DEFAULT_IMPL(LOC_API_ADAPTER_ERR_SUCCESS)
 
 enum loc_api_adapter_err LocApiBase::
     setSensorPropertiesSync(bool /*gyroBiasVarianceRandomWalk_valid*/,

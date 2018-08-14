@@ -92,7 +92,6 @@ typedef struct
     uint32_t       SENSOR_GYRO_BATCHES_PER_SEC_HIGH;
     uint32_t       SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH;
     uint32_t       SENSOR_CONTROL_MODE;
-    uint32_t       SENSOR_USAGE;
     uint32_t       SENSOR_ALGORITHM_CONFIG_MASK;
     uint8_t        ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
     double         ACCEL_RANDOM_WALK_SPECTRAL_DENSITY;
@@ -102,7 +101,6 @@ typedef struct
     double         RATE_RANDOM_WALK_SPECTRAL_DENSITY;
     uint8_t        VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID;
     double         VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY;
-    uint32_t       SENSOR_PROVIDER;
 } loc_sap_cfg_s_type;
 
 namespace loc_core {
