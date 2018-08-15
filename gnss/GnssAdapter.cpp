@@ -3065,7 +3065,8 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
 void
 GnssAdapter::reportNmeaEvent(const char* nmea, size_t length)
 {
-    if (!loc_nmea_is_debug(nmea, length)) {
+    if (NMEA_PROVIDER_AP == ContextBase::mGps_conf.NMEA_PROVIDER &&
+        !loc_nmea_is_debug(nmea, length)) {
         return;
     }
 
