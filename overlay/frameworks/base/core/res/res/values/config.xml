@@ -97,6 +97,11 @@
     <!-- Period of time in which to consider light samples in milliseconds. -->
     <integer name="config_autoBrightnessAmbientLightHorizon">16000</integer>
 
+    <!-- Amount of time it takes for the light sensor to warm up in milliseconds.
+          For this time after the screen turns on, the Power Manager
+          will not debounce light sensor readings -->
+    <integer name="config_lightSensorWarmupTime">200</integer>
+
     <!-- If this is true, the screen will come on when you unplug usb/power/whatever. -->
     <bool name="config_unplugTurnsOnScreen">true</bool>
 
