@@ -63,6 +63,8 @@ using ::std::vector;
 
 /* ------------------------------ PUBLIC ------------------------------------ */
 HAL* HAL::makeIPAHAL(int version, IOffloadManager* mgr) {
+    android::hardware::ProcessState::initWithMmapSize((size_t)(2 * KERNEL_PAGE));
+
     if (DBG)
         ALOGI("makeIPAHAL(%d, %s)", version,
                 (mgr != nullptr) ? "provided" : "null");
