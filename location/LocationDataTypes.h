@@ -37,7 +37,7 @@
 
 #define GNSS_NI_REQUESTOR_MAX  (256)
 #define GNSS_NI_MESSAGE_ID_MAX (2048)
-#define GNSS_SV_MAX            (64)
+#define GNSS_SV_MAX            (176)
 #define GNSS_MEASUREMENTS_MAX  (64)
 #define GNSS_UTC_TIME_OFFSET   (3657)
 
@@ -888,6 +888,7 @@ typedef struct {
     float azimuth;     // azimuth of SV (in degrees)
     GnssSvOptionsMask gnssSvOptionsMask; // Bitwise OR of GnssSvOptionsBits
     float carrierFrequencyHz; // carrier frequency of the signal tracked
+    GnssSignalTypeMask gnssSignalTypeMask; // Specifies GNSS signal type
 } GnssSv;
 
 struct GnssConfigSetAssistanceServer {
@@ -948,6 +949,7 @@ typedef struct {
 typedef struct {
     size_t size;                 // set to sizeof(GnssSvNotification)
     size_t count;                // number of SVs in the GnssSv array
+    bool gnssSignalTypeMaskValid;
     GnssSv gnssSvs[GNSS_SV_MAX]; // information on a number of SVs
 } GnssSvNotification;
 
