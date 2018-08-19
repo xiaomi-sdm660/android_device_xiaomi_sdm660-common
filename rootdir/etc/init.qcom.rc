@@ -517,20 +517,19 @@ on property:persist.debug.trace=1
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
 on property:sys.ftmd=1
-    start ftmd
+    start vendor.ftmd
 
 on property:ro.bluetooth.ftm_enabled=true
-    start ftmd
+    start vendor.ftmd
 
-service qcom-c_main-sh /vendor/bin/init.class_main.sh
+service vendor.qcom-c_main-sh /vendor/bin/init.class_main.sh
     class main
     user root
     oneshot
 
 on property:vold.decrypt=trigger_restart_framework
-    start qcom-c_main-sh
-    start config_bt_addr
-    start wcnss-service
+    start vendor.qcom-c_main-sh
+    start vendor.cnss_diag
 
 on property:persist.env.fastdorm.enabled=true
     setprop persist.radio.data_no_toggle 1
@@ -540,18 +539,12 @@ service vendor.cnd /system/vendor/bin/cnd
     user system
     group system wifi inet radio wakelock net_admin
 
-service dpmQmiMgr /system/vendor/bin/dpmQmiMgr
+service vendor.dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main
     user system
     group radio system
 
-service vendor.qrtr-ns /vendor/bin/qrtr-ns -f -i 1
-    class core
-    user system
-    group system net_admin
-    capabilities NET_BIND_SERVICE NET_ADMIN
-
-service irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
+service vendor.irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class core
     user root
     oneshot
@@ -579,7 +572,7 @@ service vendor.start_hci_filter /system/vendor/bin/wcnss_filter
     seclabel u:r:bluetooth:s0
     disabled
 
-service ftmd /system/bin/logwrapper /system/vendor/bin/ftmdaemon
+service vendor.ftmd /system/bin/logwrapper /system/vendor/bin/ftmdaemon
     class late_start
     user root
     group bluetooth net_bt_admin misc net_bt_stack diag net_bt
@@ -616,12 +609,6 @@ service vendor.dataqti /system/vendor/bin/qti
     group radio oem_2901 diag usb net_admin
     disabled
 
-service vendor.dataadpl /system/vendor/bin/adpl
-    class main
-    user radio
-    group radio oem_2901 diag usb net_admin
-    disabled
-
 service vendor.sensors /vendor/bin/sscrpcd
     class core
     user system
@@ -634,7 +621,7 @@ service vendor.sensors.qti /vendor/bin/sensors.qti
     group system
     disabled
 
-service vendor.sensors2 /vendor/bin/sensors.qcom
+service vendor.sensors.qcom /vendor/bin/sensors.qcom
     class core
     user root
     group root
@@ -682,7 +669,7 @@ service vendor.wigig_supplicant /vendor/bin/hw/wpa_supplicant \
     oneshot
 
 # FST Manager with hostapd (softap) - all settings inside ini file
-service fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini -a 1
+service vendor.fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini -a 1
     user wifi
     group wifi
     capabilities NET_ADMIN NET_RAW
@@ -691,7 +678,7 @@ service fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini -a 1
     oneshot
 
 # FST Manager with supplicant - connect to supplicant socket
-service fstman_wlan0 /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini \
+service vendor.fstman_wlan0 /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini \
     -a 0 @android:vendor_wpa_wlan0
     user wifi
     group wifi
@@ -701,31 +688,32 @@ service fstman_wlan0 /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini 
     oneshot
 
 on property:netd.fstman.start=true
-    start fstman
+    start vendor.fstman
 
 on property:netd.fstman.start=false
-    stop fstman
+    stop vendor.fstman
 
 on property:persist.vendor.wigig.enable=1
     insmod /vendor/lib/modules/wil6210.ko alt_ifname=1
 
 service vendor.cnss_diag /system/vendor/bin/cnss_diag -q
-    class late_start
+    class main
     user system
     group system wifi inet net_admin sdcard_rw media_rw diag
     disabled
     oneshot
 
-service cnss-daemon /system/vendor/bin/cnss-daemon -n -l
+service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     class late_start
     user system
     group system inet net_admin wifi
     capabilities NET_ADMIN
 
-on property:sys.shutdown.requested=*
-    stop cnss-daemon
+on property:sys.powerctl=*
+    stop vendor.cnss-daemon
 
-service loc_launcher /system/vendor/bin/loc_launcher
+service vendor.loc_launcher /system/vendor/bin/loc_launcher
+    #loc_launcher will start as root and set its uid to gps
     class late_start
     user gps
     group gps
@@ -734,7 +722,7 @@ on property:crypto.driver.load=1
      insmod /system/lib/modules/qce.ko
      insmod /system/lib/modules/qcedev.ko
 
-service qcom-sh /vendor/bin/init.qcom.sh
+service vendor.qcom-sh /vendor/bin/init.qcom.sh
     class late_start
     user root
     group root system radio
@@ -745,7 +733,7 @@ service vendor-sensor-sh /vendor/bin/init.qcom.sensors.sh
     user root
     oneshot
 
-service qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
+service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
     class late_start
     user root
     group root system wakelock graphics
@@ -753,13 +741,12 @@ service qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
     oneshot
 
 on property:sys.boot_completed=1
-    start qcom-post-boot
-    start qti-testscripts
+    start vendor.qcom-post-boot
 
 on property:ro.vendor.ril.mbn_copy_completed=1
     write /data/vendor/radio/copy_complete 1
 
-service qvop-daemon /vendor/bin/qvop-daemon
+service vendor.qvop-daemon /vendor/bin/qvop-daemon
     class late_start
     user system
     group system drmrpc
@@ -789,11 +776,6 @@ service vendor.wigig_hostapd /vendor/bin/hw/hostapd -dd  -j wigighostapd /data/v
 on property:ro.data.large_tcp_window_size=true
     # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
     write /proc/sys/net/ipv4/tcp_adv_win_scale  2
-
-service battery_monitor /system/bin/battery_monitor
-    user system
-    group system
-    disabled
 
 service vendor.ril-daemon2 /vendor/bin/hw/rild -c 2
     class main
@@ -828,13 +810,7 @@ on property:sys.qbcharger.enable=true
     start qbcharger
 
 on property:sys.qbcharger.enable=false
-    stop qbcharger
-
-
-on property:persist.vendor.mdlog.enable=true
-    start diag_mdlog_start
-on property:persist.vendor.mdlog.enable=false
-    start diag_mdlog_stop
+    stop vendor.qbcharger
 
 service vendor.msm_irqbalance /vendor/bin/msm_irqbalance -f /system/vendor/etc/msm_irqbalance.conf
     class core
@@ -857,7 +833,7 @@ service vendor.msm_irqbl_sdm630 /vendor/bin/msm_irqbalance -f /system/vendor/etc
 on charger
     setprop persist.sys.usb.config mass_storage
     load_system_props
-    start qcom-post-boot
+    start vendor.qcom-post-boot
 
 on property:init.svc.surfaceflinger=restarting
     stop  vendor.hwcomposer-2-1
@@ -897,21 +873,8 @@ on property:sys.thermal.isincall=1
 on property:sys.thermal.isincall=0
     write /sys/class/power_supply/battery/device/thermalcall 0
 
-service vendor.move_time_data /system/bin/move_time_data.sh
-    class main
-    user system
-    group system
-    disabled
-    oneshot
 
-service vendor.hbtp /vendor/bin/hbtp_daemon
-     class main
-     user system
-     group system
-     capabilities SYS_NICE
-     disabled
-
-service chre /vendor/bin/chre
+service vendor.chre /vendor/bin/chre
     class late_start
     user system
     group system
@@ -924,11 +887,6 @@ service config_bt_addr /vendor/bin/btnvtool -O
     group bluetooth radio
     oneshot
 
-service bugreport /system/bin/dumpstate -d -p -B -z -o /data/user_de/0/com.android.shell/files/bugreports/bugreport
-    class main
-    disabled
-    oneshot
-    keycodes 114 115 116
 #Set GPU Opengles version
 on property:vendor.opengles.version=*
     setprop ro.opengles.version ${vendor.opengles.version}

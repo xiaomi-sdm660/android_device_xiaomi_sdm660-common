@@ -67,7 +67,6 @@ on fs
 
 on post-fs
     start vendor.qseecomd
-    write /dev/ipa 1
     exec - system system -- /vendor/bin/init.qti.qseecomd.sh
 
 on init
@@ -86,7 +85,7 @@ on post-fs-data
     start pa-cal-load
 
 on boot
-    start rmt_storage
+    start vendor.rmt_storage
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/foreground/cpus 0-7
     write /dev/cpuset/background/cpus 0-7
@@ -146,26 +145,15 @@ service vendor.per_proxy /system/vendor/bin/pm-proxy
 on property:init.svc.vendor.per_mgr=running
     start vendor.per_proxy
 
-on property:sys.shutdown.requested=*
+on property:sys.powerctl=*
     stop vendor.per_proxy
-on property:sys.thermallct.isincall=1
-    write /sys/class/power_supply/battery/device/thermalcall 1
 
-on property:sys.thermallct.isincall=0
-    write /sys/class/power_supply/battery/device/thermalcall 0
-
-on property:sys.thermallct.isinvideo=1
-    write /sys/class/thermal/thermal_message/sconfig 12
-
-on property:sys.thermallct.isinvideo=0
-    write /sys/class/thermal/thermal_message/sconfig 0
-
-service vendor.qseecomd /vendor/bin/qseecomdecomd
+service vendor.qseecomd /vendor/bin/qseecomd
    class core
    user root
    group root
 
-service thermal-engine /system/vendor/bin/thermal-engine
+service vendor.thermal-engine /system/vendor/bin/thermal-engine
    class main
    user root
    socket thermal-send-client stream 0666 system system
@@ -174,25 +162,22 @@ service thermal-engine /system/vendor/bin/thermal-engine
    socket thermal-send-rule stream 0660 system system
    group root
 
-service time_daemon /system/vendor/bin/time_daemon
+service vendor.time_daemon /system/vendor/bin/time_daemon
    class late_start
    user root
    group root
 
-service adsprpcd /vendor/bin/adsprpcd audiopd
+service vendor.adsprpcd /system/vendor/bin/adsprpcd audiopd
    class main
    user media
    group media
 
-
-## imsdatadaemon starts with root and UID will be downgraded to SYSTEM.
 service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
     class main
     user system
     socket ims_qmid stream 0660 system radio
     group radio log diag
 
-# imsdatadaemon starts with root and UID will be downgraded to SYSTEM.
 service vendor.imsdatadaemon /system/vendor/bin/imsdatadaemon
     class main
     user system
@@ -200,7 +185,7 @@ service vendor.imsdatadaemon /system/vendor/bin/imsdatadaemon
     group system wifi radio inet log diag
     disabled
 
-service energy-awareness /system/vendor/bin/energy-awareness
+service vendor.energy-awareness /system/vendor/bin/energy-awareness
     class main
     user system
     group system
@@ -215,7 +200,7 @@ on property:vendor.ims.QMI_DAEMON_STATUS=1
 #on property:vold.decrypt=trigger_restart_framework
 #   start cnss_diag
 
-service cnss_diag /system/vendor/bin/cnss_diag -q -f -t HELIUM
+service vendor.cnss_diag /system/vendor/bin/cnss_diag -q -f -t HELIUM
    class main
    user system
    group system wifi inet sdcard_rw media_rw diag
@@ -232,10 +217,12 @@ service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    group radio diag inet log wakelock
 
 on property:vendor.ims.DATA_DAEMON_STATUS=1
-    restart vendor.ims_rtp_daemon
+    start vendor.ims_rtp_daemon
+    start vendor.imsrcsservice
+    setprop persist.rcs.supported 0
+# add for HMI_L8866_A01-502: end
 
-
-service ppd /system/vendor/bin/mm-pp-dpps
+service vendor.ppd /system/vendor/bin/mm-pp-dpps
     class hal
     user system
     group system graphics
@@ -243,30 +230,39 @@ service ppd /system/vendor/bin/mm-pp-dpps
     disabled
 
 on property:init.svc.surfaceflinger=stopped
-    stop ppd
+    stop vendor.ppd
 
 on property:init.svc.surfaceflinger=running
-    start ppd
+    start vendor.ppd
 
 on property:init.svc.surfaceflinger=restarting
-    stop ppd
+    stop vendor.ppd
 
 on property:init.svc.zygote=stopped
-    stop ppd
+    stop vendor.ppd
 
 on property:init.svc.zygote=running
-    start ppd
+    start vendor.ppd
 
 on property:init.svc.zygote=restarting
-    stop ppd
+    stop vendor.ppd
 
 on charger
     load_system_props
-    start qcom-post-boot
-    mkdir /data/vendor/charge_logger 0771 system system
+    start vendor.qcom-post-boot
     start vendor.hvdcp_opti
     setprop sys.usb.configfs 1
     start vendor.power_off_alarm
+
+service vendor.qfp-daemon /vendor/bin/qfp-daemon
+    class late_start
+    user system
+    group system drmrpc diag input
+
+service vendor.hvdcp_opti /system/vendor/bin/hvdcp_opti
+     class main
+     user root
+     group system wakelock
 
 on property:persist.sys.display_srgb=1
     write /sys/class/graphics/fb0/msm_fb_srgb 1
