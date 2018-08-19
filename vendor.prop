@@ -138,4 +138,4 @@ ro.vendor.sensors.sta_detect=true
 persist.sys.ssr.restart_level=ALL_ENABLE
 
 # Vendor Security Patch Level
-ro.vendor.build.security_patch=2018-07-01
+ro.vendor.build.security_patch=2018-08-01
