@@ -328,9 +328,12 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
             for (auto client : clientSet) {
                 unordered_set<DataItemId> dataItemIdsForThisClient(
                         mParent->mClientToDataItems.getValSet(client));
-                for (auto id : dataItemIdsForThisClient) {
-                    if (dataItemIdsToBeSent.find(id) == dataItemIdsToBeSent.end()) {
-                        dataItemIdsForThisClient.erase(id);
+                for (auto itr = dataItemIdsForThisClient.begin();
+                        itr != dataItemIdsForThisClient.end(); ) {
+                    if (dataItemIdsToBeSent.find(*itr) == dataItemIdsToBeSent.end()) {
+                        itr = dataItemIdsForThisClient.erase(itr);
+                    } else {
+                        itr++;
                     }
                 }
 
