@@ -80,7 +80,10 @@ void LocAdapterBase::
                         const GpsLocationExtended& locationExtended,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask,
-                        bool /*fromEngineHub*/) {
+                        bool /*fromEngineHub*/,
+                        GnssDataNotification* pDataNotify,
+                        int msInWeek)
+{
     if (mLocAdapterProxyBase != NULL) {
         mLocAdapterProxyBase->reportPositionEvent((UlpLocation&)location,
                                                    (GpsLocationExtended&)locationExtended,
@@ -111,6 +114,11 @@ DEFAULT_IMPL()
 
 void LocAdapterBase::
     reportNmeaEvent(const char* /*nmea*/, size_t /*length*/)
+DEFAULT_IMPL()
+
+void LocAdapterBase::
+    reportDataEvent(const GnssDataNotification& /*dataNotify*/,
+                    int /*msInWeek*/)
 DEFAULT_IMPL()
 
 bool LocAdapterBase::

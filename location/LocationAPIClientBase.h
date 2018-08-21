@@ -239,6 +239,7 @@ public:
 
     inline virtual void onCapabilitiesCb(LocationCapabilitiesMask /*capabilitiesMask*/) {}
     inline virtual void onGnssNmeaCb(GnssNmeaNotification /*gnssNmeaNotification*/) {}
+    inline virtual void onGnssDataCb(GnssDataNotification /*gnssDataNotification*/) {}
     inline virtual void onGnssMeasurementsCb(
             GnssMeasurementsNotification /*gnssMeasurementsNotification*/) {}
 

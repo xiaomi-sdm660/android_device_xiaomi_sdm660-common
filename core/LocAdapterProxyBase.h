@@ -65,7 +65,6 @@ public:
                                             GpsLocationExtended &locationExtended,
                                             enum loc_sess_status status,
                                             LocPosTechMask loc_technology_mask) {
-
         (void)location;
         (void)locationExtended;
         (void)status;
