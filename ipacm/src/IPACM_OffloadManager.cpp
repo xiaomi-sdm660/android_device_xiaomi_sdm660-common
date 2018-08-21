@@ -234,11 +234,6 @@ RET IPACM_OffloadManager::addDownstream(const char * downstream_name, const Pref
 	{
 		IPACMDBG_H("addDownstream name(%s) currently not support in ipa \n", downstream_name);
 
-#ifdef FEATURE_IPACM_RESTART
-		/* add ipacm restart support */
-		push_iface_up(downstream_name, false);
-#endif
-
 		/* copy to the cache */
 		for(int i = 0; i < MAX_EVENT_CACHE ;i++)
 		{
