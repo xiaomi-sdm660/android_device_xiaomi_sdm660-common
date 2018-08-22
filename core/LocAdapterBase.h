@@ -147,6 +147,7 @@ public:
     virtual void reportNmeaEvent(const char* nmea, size_t length);
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
+    virtual void reportSvEphemerisEvent(GnssSvEphemerisReport &svEphemeris);
     virtual void reportStatus(LocGpsStatusValue status);
     virtual bool reportXtraServer(const char* url1, const char* url2,
                                   const char* url3, const int maxlength);
@@ -168,6 +169,7 @@ public:
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
     virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
+    virtual bool reportDeleteAidingDataEvent(GnssAidingData &aidingData);
 };
 
 } // namespace loc_core

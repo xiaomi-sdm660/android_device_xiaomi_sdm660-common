@@ -165,6 +165,7 @@ public:
     void reportSv(GnssSvNotification& svNotify);
     void reportSvMeasurement(GnssSvMeasurementSet &svMeasurementSet);
     void reportSvPolynomial(GnssSvPolynomial &svPolynomial);
+    void reportSvEphemeris(GnssSvEphemerisReport &svEphemeris);
     void reportStatus(LocGpsStatusValue status);
     void reportNmea(const char* nmea, int length);
     void reportData(GnssDataNotification& dataNotify, int msInWeek);
@@ -184,6 +185,7 @@ public:
     void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
     void requestOdcpi(OdcpiRequestInfo& request);
     void reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
+    void reportDeleteAidingDataEvent(GnssAidingData& aidingData);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -276,6 +278,7 @@ public:
     void updateNmeaMask(uint32_t mask);
 
     virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
+    virtual void requestForAidingData(GnssAidingDataSvMask svDataMask);
 
     virtual LocationError setXtraVersionCheckSync(uint32_t check);
 

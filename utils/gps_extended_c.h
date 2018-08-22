@@ -96,6 +96,9 @@ typedef uint32_t LocSvInfoSource;
 /* TBM Threshold for tracking in background power mode : in millis */
 #define TRACKING_TBM_THRESHOLD_MILLIS 480000
 
+/**  Maximum number of satellites in an ephemeris report.  */
+#define GNSS_EPHEMERIS_LIST_MAX_SIZE_V02 32
+
 typedef uint32_t LocPosTechMask;
 #define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
 #define LOC_POS_TECH_MASK_SATELLITE ((LocPosTechMask)0x00000001)
@@ -584,6 +587,16 @@ typedef uint16_t GnssMeasUsageInfoValidityMask;
 #define GNSS_CARRIER_PHASE_RESIDUAL_VALID       ((GnssMeasUsageInfoValidityMask)0x00000004ul)
 #define GNSS_CARRIER_PHASE_AMBIGUITY_TYPE_VALID ((GnssMeasUsageInfoValidityMask)0x00000008ul)
 
+typedef uint16_t GnssSvPolyStatusMask;
+#define GNSS_SV_POLY_SRC_ALM_CORR_V02 ((GnssSvPolyStatusMask)0x01)
+#define GNSS_SV_POLY_GLO_STR4_V02 ((GnssSvPolyStatusMask)0x02)
+#define GNSS_SV_POLY_DELETE_V02 ((GnssSvPolyStatusMask)0x04)
+typedef uint16_t GnssSvPolyStatusMaskValidity;
+#define GNSS_SV_POLY_SRC_ALM_CORR_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x01)
+#define GNSS_SV_POLY_GLO_STR4_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x02)
+#define GNSS_SV_POLY_DELETE_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x04)
+
+
 typedef struct {
     /** Specifies GNSS signal type
         Mandatory Field*/
@@ -838,6 +851,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_FDCL_SERVICE_REQ,                  // FDCL service request
     LOC_API_ADAPTER_REPORT_UNPROPAGATED_POSITION,      // Unpropagated Position report
     LOC_API_ADAPTER_BS_OBS_DATA_SERVICE_REQ,           // BS observation data request
+    LOC_API_ADAPTER_GNSS_SV_EPHEMERIS_REPORT,          // GNSS SV Ephemeris Report
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -876,6 +890,7 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_FDCL_SERVICE_REQ                 (1ULL<<LOC_API_ADAPTER_FDCL_SERVICE_REQ)
 #define LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT (1ULL<<LOC_API_ADAPTER_REPORT_UNPROPAGATED_POSITION)
 #define LOC_API_ADAPTER_BIT_BS_OBS_DATA_SERVICE_REQ          (1ULL<<LOC_API_ADAPTER_BS_OBS_DATA_SERVICE_REQ)
+#define LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT         (1ULL<<LOC_API_ADAPTER_GNSS_SV_EPHEMERIS_REPORT)
 
 typedef uint64_t LOC_API_ADAPTER_EVENT_MASK_T;
 
@@ -1452,10 +1467,8 @@ typedef struct
     int8_t      freqNum;
     /* Freq index, only valid if u_SysInd is GLO */
 
-    uint8_t     svPolyFlags;
-    /* Indicate the validity of the elements
-    as per Gnss_SvPolyStatusMaskType
-    */
+    GnssSvPolyStatusMaskValidity svPolyStatusMaskValidity;
+    GnssSvPolyStatusMask         svPolyStatusMask;
 
     uint32_t    is_valid;
 
@@ -1488,6 +1501,432 @@ typedef struct
     /* Coefficients of velocity poly */
     uint32_t    enhancedIOD;    /*  Enhanced Reference Time */
 } GnssSvPolynomial;
+
+typedef enum {
+    GNSS_EPH_ACTION_UPDATE_SRC_UNKNOWN_V02 = 0, /**<Update ephemeris. Source of ephemeris is unknown  */
+    GNSS_EPH_ACTION_UPDATE_SRC_OTA_V02         = 1, /**<Update ephemeris. Source of ephemeris is OTA  */
+    GNSS_EPH_ACTION_UPDATE_SRC_NETWORK_V02     = 2, /**<Update ephemeris. Source of ephemeris is Network  */
+    GNSS_EPH_ACTION_UPDATE_MAX_V02         = 999, /**<Max value for update ephemeris action. DO NOT USE  */
+    GNSS_EPH_ACTION_DELETE_SRC_UNKNOWN_V02 = 1000, /**<Delete previous ephemeris from unknown source  */
+    GNSS_EPH_ACTION_DELETE_SRC_NETWORK_V02 = 1001, /**<Delete previous ephemeris from network  */
+    GNSS_EPH_ACTION_DELETE_SRC_OTA_V02     = 1002, /**<Delete previous ephemeris from OTA  */
+    GNSS_EPH_ACTION_DELETE_MAX_V02     = 1999, /**<Max value for delete ephemeris action. DO NOT USE  */
+} GnssEphAction;
+
+typedef enum {
+    GAL_EPH_SIGNAL_SRC_UNKNOWN_V02 = 0, /**<  GALILEO signal is unknown  */
+    GAL_EPH_SIGNAL_SRC_E1B_V02     = 1, /**<  GALILEO signal is E1B  */
+    GAL_EPH_SIGNAL_SRC_E5A_V02     = 2, /**<  GALILEO signal is E5A  */
+    GAL_EPH_SIGNAL_SRC_E5B_V02     = 3, /**<  GALILEO signal is E5B  */
+} GalEphSignalSource;
+
+typedef struct {
+    uint16_t gnssSvId;
+    /**<   GNSS SV ID.
+      - Type: uint16
+      \begin{itemize1}
+      \item    Range:    \begin{itemize1}
+        \item    For GPS:     1 to 32
+        \item    For QZSS:    193 to 197
+        \item    For BDS:     201 to 237
+        \item    For GAL:     301 to 336
+      \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+
+    GnssEphAction updateAction;
+    /**<   Specifies the action and source of ephemeris. \n
+    - Type: int32 enum */
+
+    uint16_t IODE;
+    /**<   Issue of data ephemeris used (unit-less). \n
+        GPS: IODE 8 bits.\n
+        BDS: AODE 5 bits. \n
+        GAL: SIS IOD 10 bits. \n
+        - Type: uint16
+        - Units: Unit-less */
+
+    double aSqrt;
+    /**<   Square root of semi-major axis. \n
+      - Type: double
+      - Units: Square Root of Meters */
+
+    double deltaN;
+    /**<   Mean motion difference from computed value. \n
+      - Type: double
+      - Units: Radians/Second */
+
+    double m0;
+    /**<   Mean anomaly at reference time. \n
+      - Type: double
+      - Units: Radians */
+
+    double eccentricity;
+    /**<   Eccentricity . \n
+      - Type: double
+      - Units: Unit-less */
+
+    double omega0;
+    /**<   Longitude of ascending node of orbital plane at the weekly epoch. \n
+      - Type: double
+      - Units: Radians */
+
+    double i0;
+    /**<   Inclination angle at reference time. \n
+      - Type: double
+      - Units: Radians */
+
+    double omega;
+    /**<   Argument of Perigee. \n
+      - Type: double
+      - Units: Radians */
+
+    double omegaDot;
+    /**<   Rate of change of right ascension. \n
+      - Type: double
+      - Units: Radians/Second */
+
+    double iDot;
+    /**<   Rate of change of inclination angle. \n
+      - Type: double
+      - Units: Radians/Second */
+
+    double cUc;
+    /**<   Amplitude of the cosine harmonic correction term to the argument of latitude. \n
+      - Type: double
+      - Units: Radians */
+
+    double cUs;
+    /**<   Amplitude of the sine harmonic correction term to the argument of latitude. \n
+      - Type: double
+      - Units: Radians */
+
+    double cRc;
+    /**<   Amplitude of the cosine harmonic correction term to the orbit radius. \n
+      - Type: double
+      - Units: Meters */
+
+    double cRs;
+    /**<   Amplitude of the sine harmonic correction term to the orbit radius. \n
+      - Type: double
+      - Units: Meters */
+
+    double cIc;
+    /**<   Amplitude of the cosine harmonic correction term to the angle of inclination. \n
+      - Type: double
+      - Units: Radians */
+
+    double cIs;
+    /**<   Amplitude of the sine harmonic correction term to the angle of inclination. \n
+      - Type: double
+      - Units: Radians */
+
+    uint32_t toe;
+    /**<   Reference time of ephemeris. \n
+      - Type: uint32
+      - Units: Seconds */
+
+    uint32_t toc;
+    /**<   Clock data reference time of week.  \n
+      - Type: uint32
+      - Units: Seconds */
+
+    double af0;
+    /**<   Clock bias correction coefficient. \n
+      - Type: double
+      - Units: Seconds */
+
+    double af1;
+    /**<   Clock drift coefficient. \n
+      - Type: double
+      - Units: Seconds/Second */
+
+    double af2;
+    /**<   Clock drift rate correction coefficient. \n
+      - Type: double
+      - Units: Seconds/Seconds^2 */
+
+} GnssEphCommon;
+
+/* GPS Navigation Model Info */
+typedef struct {
+    GnssEphCommon commonEphemerisData;
+    /**<   Common ephemeris data.   */
+
+    uint8_t signalHealth;
+    /**<   Signal health. \n
+         Bit 0 : L5 Signal Health. \n
+         Bit 1 : L2 Signal Health. \n
+         Bit 2 : L1 Signal Health. \n
+         - Type: uint8
+         - Values: 3 bit mask of signal health, where set bit indicates unhealthy signal */
+
+    uint8_t URAI;
+    /**<   User Range Accuracy Index. \n
+         - Type: uint8
+         - Units: Unit-less */
+
+    uint8_t codeL2;
+    /**<   Indicates which codes are commanded ON for the L2 channel (2-bits). \n
+         - Type: uint8
+         Valid Values: \n
+         - 00 : Reserved
+         - 01 : P code ON
+         - 10 : C/A code ON */
+
+    uint8_t dataFlagL2P;
+    /**<   L2 P-code indication flag. \n
+         - Type: uint8
+         - Value 1 indicates that the Nav data stream was commanded OFF on the P-code of the L2 channel. */
+
+    double tgd;
+    /**<   Time of group delay. \n
+         - Type: double
+         - Units: Seconds */
+
+    uint8_t fitInterval;
+    /**<   Indicates the curve-fit interval used by the CS. \n
+         - Type: uint8
+         Valid Values:
+         - 0 : Four hours
+         - 1 : Greater than four hours */
+
+    uint16_t IODC;
+    /**<   Issue of Data, Clock. \n
+         - Type: uint16
+         - Units: Unit-less */
+} GpsEphemeris;
+
+/* GLONASS Navigation Model Info */
+typedef struct {
+
+    uint16_t gnssSvId;
+    /**<   GNSS SV ID.
+       - Type: uint16
+       - Range: 65 to 96 if known. When the slot number to SV ID mapping is unknown, set to 255 */
+
+    GnssEphAction updateAction;
+    /**<   Specifies the action and source of ephemeris. \n
+    - Type: int32 enum */
+
+    uint8_t bnHealth;
+    /**<   SV health flags. \n
+       - Type: uint8
+       Valid Values: \n
+    - 0 : Healthy
+    - 1 : Unhealthy */
+
+    uint8_t lnHealth;
+    /**<   Ln SV health flags. GLONASS-M. \n
+       - Type: uint8
+       Valid Values: \n
+    - 0 : Healthy
+    - 1 : Unhealthy */
+
+    uint8_t tb;
+    /**<   Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+    uint8_t ft;
+    /**<   SV accuracy index. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+    uint8_t gloM;
+    /**<   GLONASS-M flag. \n
+       - Type: uint8
+       Valid Values: \n
+    - 0 : GLONASS
+    - 1 : GLONASS-M */
+
+    uint8_t enAge;
+    /**<   Characterizes "Age" of current information. \n
+       - Type: uint8
+       - Units: Days */
+
+    uint8_t gloFrequency;
+    /**<   GLONASS frequency number + 8. \n
+       - Type: uint8
+       - Range: 1 to 14
+    */
+
+    uint8_t p1;
+    /**<   Time interval between two adjacent values of tb parameter. \n
+       - Type: uint8
+       - Units: Minutes */
+
+    uint8_t p2;
+    /**<   Flag of oddness ("1") or evenness ("0") of the value of tb \n
+       for intervals 30 or 60 minutes. \n
+       - Type: uint8 */
+
+    float deltaTau;
+    /**<   Time difference between navigation RF signal transmitted in L2 sub-band \n
+       and aviation RF signal transmitted in L1 sub-band. \n
+       - Type: floating point
+       - Units: Seconds */
+
+    double position[3];
+    /**<   Satellite XYZ position. \n
+       - Type: array of doubles
+       - Units: Meters */
+
+    double velocity[3];
+    /**<   Satellite XYZ velocity. \n
+       - Type: array of doubles
+       - Units: Meters/Second */
+
+    double acceleration[3];
+    /**<   Satellite XYZ sola-luni acceleration. \n
+       - Type: array of doubles
+       - Units: Meters/Second^2 */
+
+    float tauN;
+    /**<   Satellite clock correction relative to GLONASS time. \n
+       - Type: floating point
+       - Units: Seconds */
+
+    float gamma;
+    /**<   Relative deviation of predicted carrier frequency value \n
+       from nominal value at the instant tb. \n
+       - Type: floating point
+       - Units: Unit-less */
+
+    double toe;
+    /**<   Complete ephemeris time, including N4, NT and Tb. \n
+       [(N4-1)*1461 + (NT-1)]*86400 + tb*900 \n
+       - Type: double
+       - Units: Seconds */
+
+    uint16_t nt;
+    /**<   Current date, calendar number of day within four-year interval. \n
+       Starting from the 1-st of January in a leap year. \n
+       - Type: uint16
+       - Units: Days */
+} GlonassEphemeris;
+
+/* BDS Navigation Model Info */
+typedef struct {
+
+    GnssEphCommon commonEphemerisData;
+    /**<   Common ephemeris data.   */
+
+    uint8_t svHealth;
+    /**<   Satellite health information applied to both B1 and B2 (SatH1). \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : Healthy
+       - 1 : Unhealthy */
+
+    uint8_t AODC;
+    /**<   Age of data clock. \n
+       - Type: uint8
+       - Units: Hours */
+
+    double tgd1;
+    /**<   Equipment group delay differential on B1 signal. \n
+       - Type: double
+       - Units: Nano-Seconds */
+
+    double tgd2;
+    /**<   Equipment group delay differential on B2 signal. \n
+       - Type: double
+       - Units: Nano-Seconds */
+
+    uint8_t URAI;
+    /**<   User range accuracy index (4-bits). \n
+       - Type: uint8
+       - Units: Unit-less */
+} BdsEphemeris;
+
+/* GALIELO Navigation Model Info */
+typedef struct {
+
+    GnssEphCommon commonEphemerisData;
+    /**<   Common ephemeris data.   */
+
+    GalEphSignalSource dataSourceSignal;
+    /**<   Galileo Signal Source. \n
+    Valid Values: \n
+      - GAL_EPH_SIGNAL_SRC_UNKNOWN (0) --  GALILEO signal is unknown
+      - GAL_EPH_SIGNAL_SRC_E1B (1) --  GALILEO signal is E1B
+      - GAL_EPH_SIGNAL_SRC_E5A (2) --  GALILEO signal is E5A
+      - GAL_EPH_SIGNAL_SRC_E5B (3) --  GALILEO signal is E5B  */
+
+    uint8_t sisIndex;
+    /**<   Signal-in-space index for dual frequency E1-E5b/E5a depending on dataSignalSource. \n
+       - Type: uint8
+       - Units: Unit-less */
+
+    double bgdE1E5a;
+    /**<   E1-E5a Broadcast group delay from F/Nav (E5A). \n
+       - Type: double
+       - Units: Seconds */
+
+    double bgdE1E5b;
+    /**<   E1-E5b Broadcast group delay from I/Nav (E1B or E5B). \n
+       For E1B or E5B signal, both bgdE1E5a and bgdE1E5b are valid. \n
+       For E5A signal, only bgdE1E5a is valid. \n
+       Signal source identified using dataSignalSource. \n
+       - Type: double
+       - Units: Seconds */
+
+    uint8_t svHealth;
+    /**<   SV health status of signal identified by dataSourceSignal. \n
+       - Type: uint8
+       Valid Values: \n
+       - 0 : Healthy
+       - 1 : Unhealthy */
+} GalileoEphemeris;
+
+/** GPS Navigation model for each SV */
+typedef struct {
+    uint16_t numOfEphemeris;
+    GpsEphemeris gpsEphemerisData[GNSS_EPHEMERIS_LIST_MAX_SIZE_V02];
+} GpsEphemerisResponse;
+
+/** GLONASS Navigation model for each SV */
+typedef struct {
+    uint16_t numOfEphemeris;
+    GlonassEphemeris gloEphemerisData[GNSS_EPHEMERIS_LIST_MAX_SIZE_V02];
+} GlonassEphemerisResponse;
+
+/** BDS Navigation model for each SV */
+typedef struct {
+    uint16_t numOfEphemeris;
+    BdsEphemeris bdsEphemerisData[GNSS_EPHEMERIS_LIST_MAX_SIZE_V02];
+} BdsEphemerisResponse;
+
+/** GALILEO Navigation model for each SV */
+typedef struct {
+    uint16_t numOfEphemeris;
+    GalileoEphemeris galEphemerisData[GNSS_EPHEMERIS_LIST_MAX_SIZE_V02];
+} GalileoEphemerisResponse;
+
+/** QZSS Navigation model for each SV */
+typedef struct {
+    uint16_t numOfEphemeris;
+    GpsEphemeris qzssEphemerisData[GNSS_EPHEMERIS_LIST_MAX_SIZE_V02];
+} QzssEphemerisResponse;
+
+
+typedef struct {
+    /** Indicates GNSS Constellation Type
+        Mandatory field */
+    Gnss_LocSvSystemEnumType gnssConstellation;
+
+    union {
+       /** GPS Ephemeris */
+       GpsEphemerisResponse gpsEphemeris;
+       /** GLONASS Ephemeris */
+       GlonassEphemerisResponse glonassEphemeris;
+       /** BDS Ephemeris */
+       BdsEphemerisResponse bdsEphemeris;
+       /** GALILEO Ephemeris */
+       GalileoEphemerisResponse galileoEphemeris;
+       /** QZSS Ephemeris */
+       QzssEphemerisResponse qzssEphemeris;
+    } ephInfo;
+} GnssSvEphemerisReport;
 
 /* Various Short Range Node Technology type*/
 typedef enum {

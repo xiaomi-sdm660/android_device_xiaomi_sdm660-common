@@ -369,6 +369,12 @@ void LocApiBase::reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFi
             energyConsumedSinceFirstBoot));
 }
 
+void LocApiBase::reportDeleteAidingDataEvent(GnssAidingData& aidingData) {
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportDeleteAidingDataEvent(aidingData));
+}
+
+
 void LocApiBase::reportSv(GnssSvNotification& svNotify)
 {
     const char* constellationString[] = { "Unknown", "GPS", "SBAS", "GLONASS",
@@ -418,6 +424,14 @@ void LocApiBase::reportSvPolynomial(GnssSvPolynomial &svPolynomial)
     // loop through adapters, and deliver to all adapters.
     TO_ALL_LOCADAPTERS(
         mLocAdapters[i]->reportSvPolynomialEvent(svPolynomial)
+    );
+}
+
+void LocApiBase::reportSvEphemeris(GnssSvEphemerisReport & svEphemeris)
+{
+    // loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(
+        mLocAdapters[i]->reportSvEphemerisEvent(svEphemeris)
     );
 }
 
@@ -658,6 +672,10 @@ DEFAULT_IMPL()
 LocationError LocApiBase::
     setGpsLockSync(GnssConfigGpsLock /*lock*/)
 DEFAULT_IMPL(LOCATION_ERROR_SUCCESS)
+
+void LocApiBase::
+    requestForAidingData(GnssAidingDataSvMask /*svDataMask*/)
+DEFAULT_IMPL()
 
 void LocApiBase::
     installAGpsCert(const LocDerEncodedCertificate* /*pData*/,
