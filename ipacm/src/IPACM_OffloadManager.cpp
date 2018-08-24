@@ -887,7 +887,8 @@ bool IPACM_OffloadManager::push_framework_event(const char * if_name, _ipacm_off
 
 	for(int i = 0; i < MAX_EVENT_CACHE ;i++)
 	{
-		if(event_cache[latest_cache_index].valid == false)
+		if((latest_cache_index >= 0) && (latest_cache_index < MAX_EVENT_CACHE) &&
+			(event_cache[latest_cache_index].valid == false))
 		{
 			//do the copy
 			event_cache[latest_cache_index].valid = true;
