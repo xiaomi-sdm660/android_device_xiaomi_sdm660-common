@@ -37,7 +37,7 @@
 #include <grp.h>
 
 #define LOC_MAX_PARAM_NAME                 80
-#define LOC_MAX_PARAM_STRING               170
+#define LOC_MAX_PARAM_STRING               172
 #define LOC_MAX_PARAM_LINE    (LOC_MAX_PARAM_NAME + LOC_MAX_PARAM_STRING)
 
 #define LOC_FEATURE_MODE_DISABLED "DISABLED"
@@ -72,12 +72,12 @@
  *============================================================================*/
 typedef struct
 {
-  const char                    *param_name;
-  void                          *param_ptr;
-  uint8_t                       *param_set;   /* indicate value set by config file */
-  char                           param_type;  /* 'n' for number,
-                                                 's' for string,
-                                                 'f' for double */
+  const char *param_name;
+  void       *param_ptr;   /* for string type, buf size need to be LOC_MAX_PARAM_STRING */
+  uint8_t    *param_set;   /* indicate value set by config file */
+  char        param_type;  /* 'n' for number,
+                              's' for string, NOTE: buf size need to be LOC_MAX_PARAM_STRING
+                              'f' for double */
 } loc_param_s_type;
 
 typedef enum {

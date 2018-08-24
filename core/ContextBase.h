@@ -36,9 +36,6 @@
 #include <LBSProxyBase.h>
 #include <loc_cfg.h>
 
-#define MAX_XTRA_SERVER_URL_LENGTH (256)
-#define MAX_SUPL_SERVER_URL_LENGTH (256)
-
 /* GPS.conf support */
 /* NOTE: the implementaiton of the parser casts number
    fields to 32 bit. To ensure all 'n' fields working,
@@ -53,9 +50,9 @@ typedef struct loc_gps_cfg_s
     uint32_t       CAPABILITIES;
     uint32_t       LPP_PROFILE;
     uint32_t       XTRA_VERSION_CHECK;
-    char           XTRA_SERVER_1[MAX_XTRA_SERVER_URL_LENGTH];
-    char           XTRA_SERVER_2[MAX_XTRA_SERVER_URL_LENGTH];
-    char           XTRA_SERVER_3[MAX_XTRA_SERVER_URL_LENGTH];
+    char           XTRA_SERVER_1[LOC_MAX_PARAM_STRING];
+    char           XTRA_SERVER_2[LOC_MAX_PARAM_STRING];
+    char           XTRA_SERVER_3[LOC_MAX_PARAM_STRING];
     uint32_t       USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL;
     uint32_t       NMEA_PROVIDER;
     uint32_t       GPS_LOCK;
@@ -65,10 +62,10 @@ typedef struct loc_gps_cfg_s
     uint32_t       LPPE_CP_TECHNOLOGY;
     uint32_t       LPPE_UP_TECHNOLOGY;
     uint32_t       EXTERNAL_DR_ENABLED;
-    char           SUPL_HOST[MAX_SUPL_SERVER_URL_LENGTH];
+    char           SUPL_HOST[LOC_MAX_PARAM_STRING];
     uint32_t       SUPL_PORT;
     uint32_t       MODEM_TYPE;
-    char           MO_SUPL_HOST[MAX_SUPL_SERVER_URL_LENGTH];
+    char           MO_SUPL_HOST[LOC_MAX_PARAM_STRING];
     uint32_t       MO_SUPL_PORT;
 } loc_gps_cfg_s_type;
 
