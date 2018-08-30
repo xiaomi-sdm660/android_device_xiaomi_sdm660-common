@@ -33,7 +33,9 @@ vendor/lib/rfsa/adsp/libvpp_svc_skel.so
 
 # ANT+
 lib/com.qualcomm.qti.ant@1.0.so
+-lib/libantradio.so
 lib64/com.qualcomm.qti.ant@1.0.so
+-lib64/libantradio.so
 vendor/lib/com.qualcomm.qti.ant@1.0_vendor.so
 vendor/lib/hw/com.qualcomm.qti.ant@1.0-impl.so
 vendor/lib64/com.qualcomm.qti.ant@1.0_vendor.so
