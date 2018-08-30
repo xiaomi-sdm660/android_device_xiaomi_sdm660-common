@@ -64,6 +64,7 @@ vendor.audio.noisy.broadcast.delay=600
 persist.vendor.audio.hifi.int_codec=true
 vendor.audio.offload.pstimeout.secs=3
 audio.adm.buffering.ms=6
+vendor.audio.adm.buffering.ms=3
 ro.vendor.sensors.facing=false
 ro.vendor.sensors.cmc=false
 ro.vendor.sdk.sensors.gestures=false
