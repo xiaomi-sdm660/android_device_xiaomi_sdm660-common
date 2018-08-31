@@ -835,11 +835,9 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
         for(i=0; i<ngroups; i++) {
             struct group* grp = getgrnam(split_strings[i]);
             if (grp) {
-                child_proc[j].group_list[i] = grp->gr_gid;
+                child_proc[j].group_list[child_proc[j].num_groups] = grp->gr_gid;
                 child_proc[j].num_groups++;
-                LOC_LOGD("%s:%d]:Group %s = %d matches child_group: %d\n",
-                         __func__, __LINE__, split_strings[i],
-                         grp->gr_gid,child_proc[j].group_list[i]);
+                LOC_LOGd("Group %s = %d", split_strings[i], grp->gr_gid);
             }
         }
 
