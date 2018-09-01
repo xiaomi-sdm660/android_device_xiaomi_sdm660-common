@@ -629,10 +629,7 @@ GnssAdapter::setSuplHostServer(const char* server, int port, LocServerType type)
                 url.assign(serverUrl);
 
                 if (LOC_AGPS_SUPL_SERVER == type) {
-                    int nCharsToCopy = strlen(server) < MAX_SUPL_SERVER_URL_LENGTH ?
-                            strlen(server) : (MAX_SUPL_SERVER_URL_LENGTH - 1);
-                    strlcpy(ContextBase::mGps_conf.SUPL_HOST, server, nCharsToCopy);
-                    ContextBase::mGps_conf.SUPL_HOST[nCharsToCopy] = '\0';
+                    strlcpy(ContextBase::mGps_conf.SUPL_HOST, server, LOC_MAX_PARAM_STRING);
                     ContextBase::mGps_conf.SUPL_PORT = port;
                 }
 

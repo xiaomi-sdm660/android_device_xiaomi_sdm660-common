@@ -141,7 +141,7 @@ int loc_set_config_entry(const loc_param_s_type* config_entry, loc_param_v_type*
             else {
                 strlcpy((char*) config_entry->param_ptr,
                         config_value->param_str_value,
-                        LOC_MAX_PARAM_STRING + 1);
+                        LOC_MAX_PARAM_STRING);
             }
             /* Log INI values */
             LOC_LOGD("%s: PARAM %s = %s", __FUNCTION__,
