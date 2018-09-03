@@ -279,7 +279,7 @@ public:
     void gnssSvIdConfigUpdate(const std::vector<GnssSvIdSource>& blacklistedSvIds);
     void gnssSvIdConfigUpdate();
     void gnssSvTypeConfigUpdate(const GnssSvTypeConfig& config);
-    void gnssSvTypeConfigUpdate();
+    void gnssSvTypeConfigUpdate(bool sendReset = false);
     inline void gnssSetSvTypeConfig(const GnssSvTypeConfig& config)
     { mGnssSvTypeConfig = config; }
     inline void gnssSetSvTypeConfigCallback(GnssSvTypeConfigCallback callback)

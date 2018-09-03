@@ -1501,17 +1501,29 @@ GnssAdapter::gnssUpdateSvTypeConfigCommand(GnssSvTypeConfig config)
 void
 GnssAdapter::gnssSvTypeConfigUpdate(const GnssSvTypeConfig& config)
 {
+    // Gather bits removed from enabled mask
+    GnssSvTypesMask enabledRemoved = mGnssSvTypeConfig.enabledSvTypesMask &
+            (mGnssSvTypeConfig.enabledSvTypesMask ^ config.enabledSvTypesMask);
+    // Send reset if any constellation is removed from the enabled list
+    bool sendReset = (enabledRemoved != 0);
+    // Save new config and update
     gnssSetSvTypeConfig(config);
-    gnssSvTypeConfigUpdate();
+    gnssSvTypeConfigUpdate(sendReset);
 }
 
 void
-GnssAdapter::gnssSvTypeConfigUpdate()
+GnssAdapter::gnssSvTypeConfigUpdate(bool sendReset)
 {
-    LOC_LOGd("constellations blacklisted 0x%" PRIx64 ", enabled 0x%" PRIx64,
-             mGnssSvTypeConfig.blacklistedSvTypesMask, mGnssSvTypeConfig.enabledSvTypesMask);
+    LOC_LOGd("constellations blacklisted 0x%" PRIx64 ", enabled 0x%" PRIx64 ", sendReset %d",
+             mGnssSvTypeConfig.blacklistedSvTypesMask, mGnssSvTypeConfig.enabledSvTypesMask,
+             sendReset);
 
     if (mGnssSvTypeConfig.size == sizeof(mGnssSvTypeConfig)) {
+
+        if (sendReset) {
+            mLocApi->resetConstellationControl();
+        }
+
         GnssSvIdConfig blacklistConfig = {};
         // Revert to previously blacklisted SVs for each enabled constellation
         blacklistConfig = mGnssSvIdConfig;
