@@ -305,5 +305,35 @@ firmware_directories /vendor/firmware_mnt/image/
 # Add device block for FRP with soc.0
 /dev/block/platform/soc.0/7824900.sdhci/by-name/config    0600   system     system
 
+# sys-fs display
+/sys/class/graphics/fb*     hpd                      0664    system  graphics
+/sys/class/graphics/fb*     res_info                 0664    system  graphics
+/sys/class/graphics/fb*     vendor_name              0664    system  graphics
+/sys/class/graphics/fb*     product_description      0664    system  graphics
+/sys/class/graphics/fb*     video_mode               0664    system  graphics
+/sys/class/graphics/fb*     format_3d                0664    system  graphics
+/sys/class/graphics/fb*     s3d_mode                 0664    system  graphics
+/sys/class/graphics/fb*     dynamic_fps              0664    system  graphics
+/sys/class/graphics/fb*     msm_fb_dfps_mode         0664    system  graphics
+/sys/class/graphics/fb*     hdr_stream               0664    system  graphics
+/sys/class/graphics/fb*     cec/enable               0664    system  graphics
+/sys/class/graphics/fb*     cec/logical_addr         0664    system  graphics
+/sys/class/graphics/fb*     cec/rd_msg               0664    system  graphics
+/sys/class/graphics/fb*     pa                       0664    system  graphics
+/sys/class/graphics/fb*     cec/wr_msg               0600    system  graphics
+/sys/class/graphics/fb*     hdcp/tp                  0664    system  graphics
+/sys/class/graphics/fb*     hdcp2p2/min_level_change 0660    system  graphics
+/sys/class/graphics/fb*     hdmi_audio_cb            0600    audioserver audio
+
+/sys/class/graphics/fb*     lineptr_value            0664    system  graphics
+/sys/class/graphics/fb*     msm_fb_persist_mode      0664    system  graphics
+
+/sys/class/graphics/fb0     idle_time                0664    system  graphics
+/sys/class/graphics/fb0     dynamic_fps              0664    system  graphics
+/sys/class/graphics/fb0     dyn_pu                   0664    system  graphics
+/sys/class/graphics/fb0     modes                    0664    system  graphics
+/sys/class/graphics/fb0     mode                     0664    system  graphics
+/sys/class/graphics/fb0     msm_cmd_autorefresh_en   0664    system  graphics
+
 # Kmsg device
 /dev/kmsg                                               0620   root       system
