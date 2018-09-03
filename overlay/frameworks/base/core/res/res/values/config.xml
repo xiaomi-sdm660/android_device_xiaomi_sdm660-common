@@ -342,4 +342,7 @@
 
     <!-- Enable 802.11ac for Wifi hotspot (SAP) -->
     <bool translatable="false" name="config_wifi_softap_ieee80211ac_supported">true</bool>
+    
+    <!-- Flag indicating whether we should enable smart battery. -->
+     <bool name="config_smart_battery_available">true</bool>
 </resources>
