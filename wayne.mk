@@ -136,10 +136,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.xiaomi_wayne
 
-# Bluetooth
-PRODUCT_PACKAGES += \
-    libbt-vendor
-
 PRODUCT_PACKAGES += \
     Snap
 
