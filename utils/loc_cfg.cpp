@@ -468,10 +468,7 @@ typedef struct {
     char platform_list[LOC_MAX_PARAM_STRING];
     char baseband[LOC_MAX_PARAM_STRING];
     unsigned int sglte_target;
-    char feature_gtp_cell_proc[LOC_MAX_PARAM_STRING];
-    char feature_gtp_waa[LOC_MAX_PARAM_STRING];
-    char feature_gtp_cell[LOC_MAX_PARAM_STRING];
-    char feature_gtp_wifi[LOC_MAX_PARAM_STRING];
+    char feature_gtp_mode[LOC_MAX_PARAM_STRING];
     char feature_sap[LOC_MAX_PARAM_STRING];
     char feature_odcpi[LOC_MAX_PARAM_STRING];
     char feature_free_wifi_scan_inject[LOC_MAX_PARAM_STRING];
@@ -490,8 +487,7 @@ static const loc_param_s_type gps_conf_parameter_table[] = {
 
 /* location feature conf, e.g.: izat.conf feature mode table*/
 static const loc_param_s_type loc_feature_conf_table[] = {
-    {"GTP_CELL_PROC",         &conf.feature_gtp_cell_proc,          NULL, 's'},
-    {"GTP_WIFI",              &conf.feature_gtp_wifi,               NULL, 's'},
+    {"GTP_MODE",              &conf.feature_gtp_mode,               NULL, 's'},
     {"SAP",                   &conf.feature_sap,                    NULL, 's'},
     {"ODCPI",                 &conf.feature_odcpi,                  NULL, 's'},
     {"FREE_WIFI_SCAN_INJECT", &conf.feature_free_wifi_scan_inject,  NULL, 's'},
@@ -586,87 +582,26 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
 
     UTIL_READ_CONF(conf_file_name, loc_feature_conf_table);
 
-    //Set service mask for GTP_WIFI
-    if(strcmp(conf.feature_gtp_wifi, "DISABLED") == 0) {
-        LOC_LOGD("%s:%d]: GTP WIFI DISABLED", __func__, __LINE__);
+    //Set service mask for GTP_MODE
+    if(strcmp(conf.feature_gtp_mode, "DISABLED") == 0) {
+        LOC_LOGD("%s:%d]: GTP MODE DISABLED", __func__, __LINE__);
     }
-    else if(strcmp(conf.feature_gtp_wifi, "BASIC") == 0) {
-        LOC_LOGD("%s:%d]: Setting GTP WIFI to mode: BASIC", __func__, __LINE__);
+    else if(strcmp(conf.feature_gtp_mode, "LEGACY_WWAN") == 0) {
+        LOC_LOGD("%s:%d]: Setting GTP MODE to mode: LEGACY_WWAN", __func__, __LINE__);
+        loc_service_mask |= LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC;
+    }
+    else if(strcmp(conf.feature_gtp_mode, "SDK") == 0) {
+        LOC_LOGD("%s:%d]: Setting GTP MODE to mode: SDK", __func__, __LINE__);
         loc_service_mask |= LOC_FEATURE_MASK_GTP_WIFI_BASIC;
     }
     //conf file has a garbage value
     else {
-        LOC_LOGE("%s:%d]: Unrecognized value for GTP WIFI Mode."\
-                 " Setting GTP WIFI to default mode: BASIC", __func__, __LINE__);
-        loc_service_mask |= LOC_FEATURE_MASK_GTP_WIFI_BASIC;
-    }
-
-    //Set service mask for GTP_CELL
-    //Using a temp variable here to indicate wheter GTP cell is
-    //enabled on the AP or modem. This variable will be used in
-    //further checks below. An alternative was to compare the
-    //string again in each place which would've been more expensive
-    if(strcmp(conf.feature_gtp_cell_proc, "AP") == 0) {
-        gtp_cell_ap_enabled = 1;
-    }
-
-    //by default make it disabled as it will not work with GTP_AP_MODE 4
-    strlcpy (conf.feature_gtp_cell, "DISABLED", sizeof (conf.feature_gtp_cell));
-    if(strcmp(conf.feature_gtp_cell, "PREMIUM") == 0) {
-        LOC_LOGE("%s:%d]: Error: location feature GTP CELL does not support PREMIUM mode" \
-                 " available modes are BASIC and DISABLED. Starting feature in BASIC mode",
-                 __func__, __LINE__);
-        if(gtp_cell_ap_enabled) {
-            loc_service_mask |= LOC_FEATURE_MASK_GTP_AP_CELL_BASIC;
-        }
-        else {
-            loc_service_mask |= LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC;
-        }
-    }
-    else if(strcmp(conf.feature_gtp_cell, "BASIC") == 0) {
-            LOC_LOGD("%s:%d]: Setting GTP CELL to mode: BASIC", __func__, __LINE__);
-        if(gtp_cell_ap_enabled) {
-            loc_service_mask |= LOC_FEATURE_MASK_GTP_AP_CELL_BASIC;
-        }
-        else {
-            loc_service_mask |= LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC;
-        }
-    }
-    else if(strcmp(conf.feature_gtp_cell, "DISABLED") == 0) {
-            LOC_LOGD("%s:%d]: GTP CELL DISABLED", __func__, __LINE__);
-    }
-    //conf file has a garbage value
-    else {
-        LOC_LOGE("%s:%d]: Unrecognized value for GTP CELL Mode."        \
-                 " Setting GTP CELL to default mode: BASIC", __func__, __LINE__);
-        if(gtp_cell_ap_enabled) {
-            loc_service_mask |= LOC_FEATURE_MASK_GTP_AP_CELL_BASIC;
-        }
-        else {
-            loc_service_mask |= LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC;
-        }
+        LOC_LOGE("%s:%d]: Unrecognized value for GTP MODE Mode."\
+                 " Setting GTP WIFI to default mode: DISABLED", __func__, __LINE__);
     }
 
     //Set service mask for GTP_WAA
-    strlcpy (conf.feature_gtp_waa, "DISABLED", sizeof (conf.feature_gtp_waa));
-    if(strcmp(conf.feature_gtp_waa, "PREMIUM") == 0) {
-        LOC_LOGE("%s:%d]: Error: location feature GTP WAA does not support PREMIUM mode" \
-                 " available modes are BASIC and DISABLED. Starting feature in BASIC mode",
-                 __func__, __LINE__);
-        loc_service_mask |= LOC_FEATURE_MASK_GTP_WAA_BASIC;
-    }
-    else if(strcmp(conf.feature_gtp_waa, "BASIC") == 0) {
-        LOC_LOGD("%s:%d]: Setting GTP WAA to mode: BASIC", __func__, __LINE__);
-        loc_service_mask |= LOC_FEATURE_MASK_GTP_WAA_BASIC;
-    }
-    else if(strcmp(conf.feature_gtp_waa, "DISABLED") == 0) {
-        LOC_LOGD("%s:%d]: GTP WAA DISABLED", __func__, __LINE__);
-    }
-    //conf file has a garbage value
-    else {
-        LOC_LOGE("%s:%d]: Unrecognized value for GTP WAA Mode."\
-                 " Setting GTP WAA to default mode: DISABLED", __func__, __LINE__);
-    }
+    LOC_LOGD("%s:%d]: GTP WAA DISABLED", __func__, __LINE__);
 
     //Set service mask for SAP
     if(strcmp(conf.feature_sap, "PREMIUM") == 0) {
