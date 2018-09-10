@@ -403,9 +403,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.usb@1.0-service.basic
 
-# VNDK-SP:
+# VNDK
 PRODUCT_PACKAGES += \
-    vndk-sp
+    vndk_package
 
 # Wifi
 PRODUCT_PACKAGES += \
