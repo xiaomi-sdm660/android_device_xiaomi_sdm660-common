@@ -167,6 +167,7 @@ public:
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
+    virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
 };
 
 } // namespace loc_core

@@ -74,6 +74,10 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"MODEM_TYPE",                     &mGps_conf.MODEM_TYPE,                     NULL, 'n' },
   {"MO_SUPL_HOST",                   &mGps_conf.MO_SUPL_HOST,                   NULL, 's' },
   {"MO_SUPL_PORT",                   &mGps_conf.MO_SUPL_PORT,                   NULL, 'n' },
+  {"CONSTRAINED_TIME_UNCERTAINTY_ENABLED",       &mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED,      NULL, 'n'},
+  {"CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD",     &mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD,    NULL, 'f'},
+  {"CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET", &mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET, NULL, 'n'},
+  {"POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED",  &mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED, NULL, 'n'},
 };
 
 const loc_param_s_type ContextBase::mSap_conf_table[] =
@@ -155,6 +159,15 @@ void ContextBase::readConfig()
 
         /* inject supl config to modem with config values from config.xml or gps.conf, default 1 */
         mGps_conf.AGPS_CONFIG_INJECT = 1;
+
+        /* default configuration value of constrained time uncertainty mode:
+           feature disabled, time uncertainty threshold defined by modem,
+           and unlimited power budget */
+        mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED = 0;
+        mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD = 0.0;
+        mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET = 0;
+        /* default configuration value of position assisted clock estimator mode */
+        mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED = 0;
 
         UTIL_READ_CONF(LOC_PATH_GPS_CONF, mGps_conf_table);
         UTIL_READ_CONF(LOC_PATH_SAP_CONF, mSap_conf_table);

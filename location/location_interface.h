@@ -32,6 +32,20 @@
 #include <LocationAPI.h>
 #include <gps_extended_c.h>
 
+/* Used for callback to deliver GNSS energy consumed */
+/** @fn
+    @brief Used by query API that retrieves energy consumed by
+           modem GNSS engine.
+
+    @param gnssEnergyConsumedFromFirstBoot:
+            Energy consumed by the GNSS engine since the first bootup
+            in units of 0.1 milli watt seconds.
+            A value of 0xffffffffffffffff indicates an invalid reading.
+*/
+typedef std::function<void(
+    uint64_t gnssEnergyConsumedFromFirstBoot
+)> GnssEnergyConsumedCallback;
+
 struct GnssInterface {
     size_t size;
     void (*initialize)(void);
@@ -65,6 +79,7 @@ struct GnssInterface {
     void (*odcpiInject)(const Location& location);
     void (*blockCPI)(double latitude, double longitude, float accuracy,
                      int blockDurationMsec, double latLonDiffThreshold);
+    void (*getGnssEnergyConsumed)(GnssEnergyConsumedCallback energyConsumedCb);
 };
 
 struct FlpInterface {

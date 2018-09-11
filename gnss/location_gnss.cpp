@@ -66,6 +66,7 @@ static void agpsDataConnClosed(AGpsExtType agpsType);
 static void agpsDataConnFailed(AGpsExtType agpsType);
 static void getDebugReport(GnssDebugReport& report);
 static void updateConnectionStatus(bool connected, int8_t type);
+static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb);
 
 static void odcpiInit(const OdcpiRequestCallback& callback);
 static void odcpiInject(const Location& location);
@@ -105,6 +106,7 @@ static const GnssInterface gGnssInterface = {
     odcpiInit,
     odcpiInject,
     blockCPI,
+    getGnssEnergyConsumed
 };
 
 #ifndef DEBUG_X86
@@ -336,5 +338,11 @@ static void blockCPI(double latitude, double longitude, float accuracy,
     if (NULL != gGnssAdapter) {
         gGnssAdapter->blockCPICommand(latitude, longitude, accuracy,
                                       blockDurationMsec, latLonDiffThreshold);
+    }
+}
+
+static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb) {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->getGnssEnergyConsumedCommand(energyConsumedCb);
     }
 }
