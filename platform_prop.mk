@@ -219,7 +219,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Shutdown and Restart
 PRODUCT_PROPERTY_OVERRIDES += \
-	ro.build.shutdown_timeout=0 \
 	sys.vendor.shutdown.waittime=500
 
 # Stm-events
