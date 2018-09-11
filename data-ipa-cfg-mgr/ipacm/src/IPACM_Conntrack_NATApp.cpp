@@ -31,8 +31,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef FEATURE_IPACM_HAL
 #include "IPACM_OffloadManager.h"
 #endif
+#include "IPACM_Iface.h"
 
 #define INVALID_IP_ADDR 0x0
+
+#define HDR_METADATA_MUX_ID_BMASK 0x00FF0000
+#define HDR_METADATA_MUX_ID_SHFT 0x10
 
 /* NatApp class Implementation */
 NatApp *NatApp::pInstance = NULL;
@@ -134,9 +138,14 @@ NatApp* NatApp::GetInstance()
 	return pInstance;
 }
 
+uint32_t NatApp::GenerateMetdata(uint8_t mux_id)
+{
+	return (mux_id << HDR_METADATA_MUX_ID_SHFT) & HDR_METADATA_MUX_ID_BMASK;
+}
+
 /* NAT APP related object function definitions */
 
-int NatApp::AddTable(uint32_t pub_ip)
+int NatApp::AddTable(uint32_t pub_ip, uint8_t mux_id)
 {
 	int ret;
 	int cnt = 0;
@@ -157,6 +166,19 @@ int NatApp::AddTable(uint32_t pub_ip)
 	{
 		IPACMERR("unable to create nat table Error:%d\n", ret);
 		return ret;
+	}
+	if(IPACM_Iface::ipacmcfg->GetIPAVer() >= IPA_HW_v4_0) {
+		/* modify PDN 0 so it will hold the mux ID in the src metadata field */
+		ipa_nat_pdn_entry entry;
+
+		entry.dst_metadata = 0;
+		entry.src_metadata = GenerateMetdata(mux_id);
+		entry.public_ip = pub_ip;
+		ret = ipa_nat_modify_pdn(nat_table_hdl, 0, &entry);
+		if(ret)
+		{
+			IPACMERR("unable to modify PDN 0 entry Error:%d INIT_HDR_METADATA register values will be used!\n", ret);
+		}
 	}
 
 	/* Add back the cached NAT-entry */

@@ -116,14 +116,14 @@ bool IPACM_Filtering::AddFilteringRule(struct ipa_ioc_add_flt_rule const *ruleTa
 
 bool IPACM_Filtering::AddFilteringRuleAfter(struct ipa_ioc_add_flt_rule_after const *ruleTable)
 {
+#ifdef FEATURE_IPA_V3
+	int retval = 0;
+
 	IPACMDBG("Printing filter add attributes\n");
 	IPACMDBG("ip type: %d\n", ruleTable->ip);
 	IPACMDBG("Number of rules: %d\n", ruleTable->num_rules);
 	IPACMDBG("End point: %d\n", ruleTable->ep);
 	IPACMDBG("commit value: %d\n", ruleTable->commit);
-
-#ifdef FEATURE_IPA_V3
-	int retval = 0;
 
 	retval = ioctl(fd, IPA_IOC_ADD_FLT_RULE_AFTER, ruleTable);
 
@@ -144,7 +144,7 @@ bool IPACM_Filtering::AddFilteringRuleAfter(struct ipa_ioc_add_flt_rule_after co
 	IPACMDBG("Added Filtering rule %pK\n", ruleTable);
 #else
 	if (ruleTable)
-		IPACMERR("Not support adding Filtering rule %pK\n", ruleTable);
+	IPACMERR("Not support adding Filtering rule %pK\n", ruleTable);
 #endif
 	return true;
 }
