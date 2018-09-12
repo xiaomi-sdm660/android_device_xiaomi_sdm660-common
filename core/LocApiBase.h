@@ -145,6 +145,10 @@ public:
         sendMsg(new LocKillMsg(this));
     }
 
+    static bool needReport(const UlpLocation& ulpLocation,
+                           enum loc_sess_status status,
+                           LocPosTechMask techMask);
+
     void addAdapter(LocAdapterBase* adapter);
     void removeAdapter(LocAdapterBase* adapter);
 
