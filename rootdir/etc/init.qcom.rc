@@ -295,6 +295,9 @@ on post-fs-data
     mkdir /data/vendor/camera 0770 camera camera
     mkdir /data/misc/camera 0770 camera camera
 
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+
     #Create directory for tftp
     mkdir /data/vendor/tombstones 0771 system system
 
@@ -327,7 +330,7 @@ on post-fs-data
     #Create QTI dir for logs
     mkdir /data/vendor/dataqti 0770 radio radio
     chmod 0770 /data/vendor/dataqti
-    
+
     # Create the directories used by CnE subsystem
     mkdir /data/vendor/connectivity 0771 radio radio
     chown radio radio /data/vendor/connectivity
