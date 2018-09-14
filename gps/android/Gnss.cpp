@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Not a Contribution
  */
 /*
@@ -20,16 +20,60 @@
 
 #define LOG_TAG "LocSvc_GnssInterface"
 
+#include <fstream>
 #include <log_util.h>
 #include <dlfcn.h>
+#include <cutils/properties.h>
 #include "Gnss.h"
+#include <LocationUtil.h>
+
 typedef void* (getLocationInterface)();
+
+#define IMAGES_INFO_FILE "/sys/devices/soc0/images"
+#define DELIMITER ";"
 
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_0 {
+namespace V1_1 {
 namespace implementation {
+
+static std::string getVersionString() {
+    static std::string version;
+    if (!version.empty())
+        return version;
+
+    char value[PROPERTY_VALUE_MAX] = {0};
+    property_get("ro.hardware", value, "unknown");
+    version.append(value).append(DELIMITER);
+
+    std::ifstream in(IMAGES_INFO_FILE);
+    std::string s;
+    while(getline(in, s)) {
+        std::size_t found = s.find("CRM:");
+        if (std::string::npos == found) {
+            continue;
+        }
+
+        // skip over space characters after "CRM:"
+        const char* substr = s.c_str();
+        found += 4;
+        while (0 != substr[found] && isspace(substr[found])) {
+            found++;
+        }
+        if (s.find("11:") != found) {
+            continue;
+        }
+        s.erase(0, found + 3);
+
+        found = s.find_first_of("\r\n");
+        if (std::string::npos != found) {
+            s.erase(s.begin() + found, s.end());
+        }
+        version.append(s).append(DELIMITER);
+    }
+    return version;
+}
 
 void Gnss::GnssDeathRecipient::serviceDied(uint64_t cookie, const wp<IBase>& who) {
     LOC_LOGE("%s] service died. cookie: %llu, who: %p",
@@ -107,7 +151,7 @@ GnssInterface* Gnss::getGnssInterface() {
     return mGnssInterface;
 }
 
-Return<bool> Gnss::setCallback(const sp<IGnssCallback>& callback)  {
+Return<bool> Gnss::setCallback(const sp<V1_0::IGnssCallback>& callback)  {
     ENTRY_LOG_CALLFLOW();
     if (mGnssCbIface != nullptr) {
         mGnssCbIface->unlinkToDeath(mGnssDeathRecipient);
@@ -251,7 +295,7 @@ Return<bool> Gnss::injectTime(int64_t timeMs, int64_t timeReferenceMs,
     }
 }
 
-Return<void> Gnss::deleteAidingData(IGnss::GnssAidingData aidingDataFlags)  {
+Return<void> Gnss::deleteAidingData(V1_0::IGnss::GnssAidingData aidingDataFlags)  {
     ENTRY_LOG_CALLFLOW();
     GnssAPIClient* api = getApi();
     if (api) {
@@ -260,8 +304,8 @@ Return<void> Gnss::deleteAidingData(IGnss::GnssAidingData aidingDataFlags)  {
     return Void();
 }
 
-Return<bool> Gnss::setPositionMode(IGnss::GnssPositionMode mode,
-                                   IGnss::GnssPositionRecurrence recurrence,
+Return<bool> Gnss::setPositionMode(V1_0::IGnss::GnssPositionMode mode,
+                                   V1_0::IGnss::GnssPositionRecurrence recurrence,
                                    uint32_t minIntervalMs,
                                    uint32_t preferredAccuracyMeters,
                                    uint32_t preferredTimeMs)  {
@@ -275,50 +319,120 @@ Return<bool> Gnss::setPositionMode(IGnss::GnssPositionMode mode,
     return retVal;
 }
 
-Return<sp<IAGnss>> Gnss::getExtensionAGnss()  {
+Return<sp<V1_0::IAGnss>> Gnss::getExtensionAGnss()  {
     ENTRY_LOG_CALLFLOW();
     mAGnssIface = new AGnss(this);
     return mAGnssIface;
 }
 
-Return<sp<IGnssNi>> Gnss::getExtensionGnssNi()  {
+Return<sp<V1_0::IGnssNi>> Gnss::getExtensionGnssNi()  {
     ENTRY_LOG_CALLFLOW();
     mGnssNi = new GnssNi(this);
     return mGnssNi;
 }
 
-Return<sp<IGnssMeasurement>> Gnss::getExtensionGnssMeasurement() {
+Return<sp<V1_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement() {
     ENTRY_LOG_CALLFLOW();
-    mGnssMeasurement = new GnssMeasurement();
+    if (mGnssMeasurement == nullptr)
+        mGnssMeasurement = new GnssMeasurement();
     return mGnssMeasurement;
 }
 
-Return<sp<IGnssConfiguration>> Gnss::getExtensionGnssConfiguration()  {
+Return<sp<V1_0::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration()  {
     ENTRY_LOG_CALLFLOW();
     mGnssConfig = new GnssConfiguration(this);
     return mGnssConfig;
 }
 
-Return<sp<IGnssGeofencing>> Gnss::getExtensionGnssGeofencing()  {
+Return<sp<V1_0::IGnssGeofencing>> Gnss::getExtensionGnssGeofencing()  {
     ENTRY_LOG_CALLFLOW();
     mGnssGeofencingIface = new GnssGeofencing();
     return mGnssGeofencingIface;
 }
 
-Return<sp<IGnssBatching>> Gnss::getExtensionGnssBatching()  {
+Return<sp<V1_0::IGnssBatching>> Gnss::getExtensionGnssBatching()  {
     mGnssBatching = new GnssBatching();
     return mGnssBatching;
 }
 
-Return<sp<IGnssDebug>> Gnss::getExtensionGnssDebug() {
+Return<sp<V1_0::IGnssDebug>> Gnss::getExtensionGnssDebug() {
     ENTRY_LOG_CALLFLOW();
     mGnssDebug = new GnssDebug(this);
     return mGnssDebug;
 }
 
-Return<sp<IAGnssRil>> Gnss::getExtensionAGnssRil() {
+Return<sp<V1_0::IAGnssRil>> Gnss::getExtensionAGnssRil() {
     mGnssRil = new AGnssRil(this);
     return mGnssRil;
+}
+
+// Methods from ::android::hardware::gnss::V1_1::IGnss follow.
+Return<bool> Gnss::setCallback_1_1(const sp<V1_1::IGnssCallback>& callback) {
+    ENTRY_LOG_CALLFLOW();
+    callback->gnssNameCb(getVersionString());
+    mGnssCbIface_1_1 = callback;
+    GnssInterface* gnssInterface = getGnssInterface();
+    if (nullptr != gnssInterface) {
+        OdcpiRequestCallback cb = [this](const OdcpiRequestInfo& odcpiRequest) {
+            odcpiRequestCb(odcpiRequest);
+        };
+        gnssInterface->odcpiInit(cb);
+    }
+    return setCallback(callback);
+}
+
+Return<bool> Gnss::setPositionMode_1_1(V1_0::IGnss::GnssPositionMode mode,
+        V1_0::IGnss::GnssPositionRecurrence recurrence,
+        uint32_t minIntervalMs,
+        uint32_t preferredAccuracyMeters,
+        uint32_t preferredTimeMs,
+        bool /*lowPowerMode*/) {
+    ENTRY_LOG_CALLFLOW();
+    return setPositionMode(mode, recurrence, minIntervalMs,
+            preferredAccuracyMeters, preferredTimeMs);
+}
+
+Return<sp<V1_1::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_1_1() {
+    ENTRY_LOG_CALLFLOW();
+    if (mGnssMeasurement == nullptr)
+        mGnssMeasurement = new GnssMeasurement();
+    return mGnssMeasurement;
+}
+
+Return<sp<V1_1::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_1_1() {
+    ENTRY_LOG_CALLFLOW();
+    if (mGnssConfig == nullptr)
+        mGnssConfig = new GnssConfiguration(this);
+    return mGnssConfig;
+}
+
+Return<bool> Gnss::injectBestLocation(const GnssLocation& gnssLocation) {
+    ENTRY_LOG_CALLFLOW();
+    GnssInterface* gnssInterface = getGnssInterface();
+    if (nullptr != gnssInterface) {
+        Location location = {};
+        convertGnssLocation(gnssLocation, location);
+        gnssInterface->odcpiInject(location);
+    }
+    return true;
+}
+
+void Gnss::odcpiRequestCb(const OdcpiRequestInfo& request) {
+    ENTRY_LOG_CALLFLOW();
+    if (mGnssCbIface_1_1 != nullptr) {
+        // For emergency mode, request DBH (Device based hybrid) location
+        // Mark Independent from GNSS flag to false.
+        if (ODCPI_REQUEST_TYPE_START == request.type) {
+            auto r = mGnssCbIface_1_1->gnssRequestLocationCb(!request.isEmergencyMode);
+            if (!r.isOk()) {
+                LOC_LOGe("Error invoking gnssRequestLocationCb %s", r.description().c_str());
+            }
+        } else {
+            LOC_LOGv("Unsupported ODCPI request type: %d", request.type);
+        }
+    } else {
+        LOC_LOGe("ODCPI request not supported.");
+    }
 }
 
 IGnss* HIDL_FETCH_IGnss(const char* hal) {
@@ -332,7 +446,7 @@ IGnss* HIDL_FETCH_IGnss(const char* hal) {
 }
 
 }  // namespace implementation
-}  // namespace V1_0
+}  // namespace V1_1
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

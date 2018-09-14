@@ -11,7 +11,7 @@ AM_INIT_AUTOMAKE([foreign])
 # Disables auto rebuilding of configure, Makefile.ins
 AM_MAINTAINER_MODE
 # Verifies the --srcdir is correct by checking for the path
-AC_CONFIG_SRCDIR([utils/loc_cfg.cpp])
+AC_CONFIG_SRCDIR([Makefile.am])
 # defines some macros variable to be included by source
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -29,25 +29,13 @@ AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG
 
 # Checks for libraries.
-PKG_CHECK_MODULES([QMI], [qmi])
-AC_SUBST([QMI_CFLAGS])
-AC_SUBST([QMI_LIBS])
-
-PKG_CHECK_MODULES([QMIF], [qmi-framework])
-AC_SUBST([QMIF_CFLAGS])
-AC_SUBST([QMIF_LIBS])
-
-PKG_CHECK_MODULES([DATA], [data])
-AC_SUBST([DATA_CFLAGS])
-AC_SUBST([DATA_LIBS])
-
-PKG_CHECK_MODULES([LOCPLA], [loc-pla])
-AC_SUBST([LOCPLA_CFLAGS])
-AC_SUBST([LOCPLA_LIBS])
-
 PKG_CHECK_MODULES([GPSUTILS], [gps-utils])
 AC_SUBST([GPSUTILS_CFLAGS])
 AC_SUBST([GPSUTILS_LIBS])
+
+PKG_CHECK_MODULES([LOCCORE], [loc-core])
+AC_SUBST([LOCCORE_CFLAGS])
+AC_SUBST([LOCCORE_LIBS])
 
 AC_ARG_WITH([core_includes],
       AC_HELP_STRING([--with-core-includes=@<:@dir@:>@],
@@ -57,6 +45,16 @@ AC_ARG_WITH([core_includes],
 
 if test "x$with_core_includes" != "xno"; then
    CPPFLAGS="${CPPFLAGS} -I${core_incdir}"
+fi
+
+AC_ARG_WITH([locpla_includes],
+      AC_HELP_STRING([--with-locpla-includes=@<:@dir@:>@],
+         [specify the path to locpla-includes in loc-pla_git.bb]),
+      [locpla_incdir=$withval],
+      with_locpla_includes=no)
+
+if test "x$with_locpla_includes" != "xno"; then
+   AC_SUBST(LOCPLA_CFLAGS, "-I${locpla_incdir}")
 fi
 
 AC_SUBST([CPPFLAGS])
@@ -82,8 +80,6 @@ AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 
 AC_CONFIG_FILES([ \
         Makefile \
-        core/Makefile \
-        location/Makefile \
         gnss/Makefile \
         loc-hal.pc \
         ])

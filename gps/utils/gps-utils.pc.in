@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: gps-utils
 Description: QTI GPS Location utils
 Version: @VERSION
-Libs: -L${libdir} -lgps_utils_so
+Libs: -L${libdir} -lgps_utils
 Cflags: -I${includedir}/gps-utils

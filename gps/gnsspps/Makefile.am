@@ -1,6 +1,7 @@
 AM_CFLAGS = \
      $(LOCPLA_CFLAGS) \
      $(GPSUTILS_CFLAGS) \
+     -I$(WORKSPACE)/system/core/include \
      -I./
 
 ACLOCAL_AMFLAGS = -I m4

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -42,8 +42,12 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_0 {
+namespace V1_1 {
 namespace implementation {
+
+using ::android::hardware::gnss::V1_0::IGnssBatching;
+using ::android::hardware::gnss::V1_0::IGnssBatchingCallback;
+using ::android::hardware::gnss::V1_0::GnssLocation;
 
 static void convertBatchOption(const IGnssBatching::Options& in, LocationOptions& out,
         LocationCapabilitiesMask mask);
@@ -153,7 +157,8 @@ void BatchingAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMa
     mLocationCapabilitiesMask = capabilitiesMask;
 }
 
-void BatchingAPIClient::onBatchingCb(size_t count, Location* location, BatchingOptions batchOptions)
+void BatchingAPIClient::onBatchingCb(size_t count, Location* location,
+        BatchingOptions /*batchOptions*/)
 {
     LOC_LOGD("%s]: (count: %zu)", __FUNCTION__, count);
     if (mGnssBatchingCbIface != nullptr && count > 0) {
@@ -185,7 +190,7 @@ static void convertBatchOption(const IGnssBatching::Options& in, LocationOptions
 }
 
 }  // namespace implementation
-}  // namespace V1_0
+}  // namespace V1_1
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
