@@ -713,8 +713,12 @@ public:
             BtDeviceScanDetailsDataItemBase() {}
     inline SystemStatusBtDeviceScanDetail(const BtDeviceScanDetailsDataItemBase& itemBase) :
             BtDeviceScanDetailsDataItemBase(itemBase) {}
-    inline bool equals(const SystemStatusBtDeviceScanDetail& /*peer*/) {
-        return true;
+    inline bool equals(const SystemStatusBtDeviceScanDetail& peer) {
+        return ((mApSrnRssi == peer.mApSrnRssi) &&
+                (0 == memcmp(mApSrnMacAddress, peer.mApSrnMacAddress, sizeof(mApSrnMacAddress))) &&
+                (mApSrnTimestamp == peer.mApSrnTimestamp) &&
+                (mRequestTimestamp == peer.mRequestTimestamp) &&
+                (mReceiveTimestamp == peer.mReceiveTimestamp));
     }
 };
 
@@ -726,8 +730,12 @@ public:
             BtLeDeviceScanDetailsDataItemBase() {}
     inline SystemStatusBtleDeviceScanDetail(const BtLeDeviceScanDetailsDataItemBase& itemBase) :
             BtLeDeviceScanDetailsDataItemBase(itemBase) {}
-    inline bool equals(const SystemStatusBtleDeviceScanDetail& /*peer*/) {
-        return true;
+    inline bool equals(const SystemStatusBtleDeviceScanDetail& peer) {
+        return ((mApSrnRssi == peer.mApSrnRssi) &&
+                (0 == memcmp(mApSrnMacAddress, peer.mApSrnMacAddress, sizeof(mApSrnMacAddress))) &&
+                (mApSrnTimestamp == peer.mApSrnTimestamp) &&
+                (mRequestTimestamp == peer.mRequestTimestamp) &&
+                (mReceiveTimestamp == peer.mReceiveTimestamp));
     }
 };
 

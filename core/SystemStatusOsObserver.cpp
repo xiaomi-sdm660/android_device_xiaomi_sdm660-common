@@ -405,7 +405,8 @@ void SystemStatusOsObserver::turnOn(DataItemId dit, int timeOut)
             DataItemId mDataItemId;
             int mTimeOut;
         };
-        mContext.mMsgTask->sendMsg(new (nothrow) HandleTurnOnMsg(this, dit, timeOut));
+        mContext.mMsgTask->sendMsg(
+                new (nothrow) HandleTurnOnMsg(mContext.mFrameworkActionReqObj, dit, timeOut));
     }
     else {
         // Found in map, update reference count
