@@ -559,6 +559,15 @@ void AgpsManager::requestATL(int connHandle, AGpsExtType agpsType,
     LOC_LOGD("AgpsManager::requestATL(): connHandle %d, agpsType 0x%X apnTypeMask: 0x%X",
                connHandle, agpsType, apnTypeMask);
 
+    if (0 == loc_core::ContextBase::mGps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL &&
+        LOC_AGPS_TYPE_SUPL_ES == agpsType) {
+        agpsType = LOC_AGPS_TYPE_SUPL;
+        apnTypeMask &= ~LOC_APN_TYPE_MASK_EMERGENCY;
+        LOC_LOGD("Changed agpsType to non-emergency when USE_EMERGENCY... is 0"
+                 "and removed LOC_APN_TYPE_MASK_EMERGENCY from apnTypeMask"
+                 "agpsType 0x%X apnTypeMask : 0x%X",
+                 agpsType, apnTypeMask);
+    }
     AgpsStateMachine* sm = getAgpsStateMachine(agpsType);
 
     if (sm == NULL) {
