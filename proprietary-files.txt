@@ -15,6 +15,8 @@ vendor/lib64/libmdsprpc.so
 
 # ADSP modules - from wayne
 vendor/lib/libsdsprpc.so
+vendor/lib/rfsa/adsp/capi_v2_aptX_Classic.so
+vendor/lib/rfsa/adsp/capi_v2_aptX_HD.so
 vendor/lib/rfsa/adsp/dirac_resource.dar
 vendor/lib/rfsa/adsp/libadsp_fd_skel.so
 vendor/lib/rfsa/adsp/libadsp_hvx_add_constant.so
