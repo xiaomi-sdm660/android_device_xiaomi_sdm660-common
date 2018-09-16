@@ -2280,6 +2280,7 @@ GnssAdapter::startTrackingMultiplex(LocationAPI* client, uint32_t sessionId,
         // find the smallest interval and powerMode
         TrackingOptions multiplexedOptions = {}; // size is 0 until set for the first time
         GnssPowerMode multiplexedPowerMode = GNSS_POWER_MODE_INVALID;
+        memset(&multiplexedOptions, 0, sizeof(multiplexedOptions));
         for (auto it = mTrackingSessions.begin(); it != mTrackingSessions.end(); ++it) {
             // if not set or there is a new smallest interval, then set the new interval
             if (0 == multiplexedOptions.size ||
@@ -2470,6 +2471,7 @@ GnssAdapter::updateTrackingMultiplex(LocationAPI* client, uint32_t id,
         // find the smallest interval and powerMode, other than the session we are updating
         TrackingOptions multiplexedOptions = {}; // size is 0 until set for the first time
         GnssPowerMode multiplexedPowerMode = GNSS_POWER_MODE_INVALID;
+        memset(&multiplexedOptions, 0, sizeof(multiplexedOptions));
         for (auto it2 = mTrackingSessions.begin(); it2 != mTrackingSessions.end(); ++it2) {
             // if session is not the one we are updating and either interval
             // is not set or there is a new smallest interval, then set the new interval
@@ -2569,6 +2571,7 @@ GnssAdapter::stopTrackingMultiplex(LocationAPI* client, uint32_t id)
             // find the smallest interval and powerMode, other than the session we are stopping
             TrackingOptions multiplexedOptions = {}; // size is 0 until set for the first time
             GnssPowerMode multiplexedPowerMode = GNSS_POWER_MODE_INVALID;
+            memset(&multiplexedOptions, 0, sizeof(multiplexedOptions));
             for (auto it2 = mTrackingSessions.begin(); it2 != mTrackingSessions.end(); ++it2) {
                 // if session is not the one we are stopping and either interval
                 // is not set or there is a new smallest interval, then set the new interval
@@ -2873,6 +2876,7 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
             mStatus(status),
             mTechMask(techMask),
             mMsInWeek(msInWeek) {
+                memset(&mDataNotify, 0, sizeof(mDataNotify));
                 if (pDataNotify != nullptr) {
                     mDataNotify = *pDataNotify;
                     mbIsDataValid = true;
