@@ -1,11 +1,3 @@
-service fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
-    class late_start
-    user system
-    group system input
-
-on init
-    chown system system /dev/goodix_fp
-
 on boot
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/irq
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/irq_enable
@@ -21,6 +13,18 @@ on boot
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/device_prepare
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/vendor
     chmod 0600 /data/misc/fpc/calibration_image.pndat
+    
+     # Fingerprint
+    chown system system /dev/goodix_fp
+    chmod 0644 /dev/goodix_fp
+    chown system system /sys/devices/soc/soc:fpc1020/fingerdown_wait
+    chmod 0220 /sys/devices/soc/soc:fpc1020/fingerdown_wait
+    chown system system /sys/devices/soc/soc:fpc1020/irq
+    chmod 0660 /sys/devices/soc/soc:fpc1020/irq
+    chown system system /sys/devices/soc/soc:fpc1020/hw_reset
+    chmod 0660 /sys/devices/soc/soc:fpc1020/hw_reset
+    chown system system /sys/devices/soc/soc:fpc1020/wakeup_enable
+    chmod 0660 /sys/devices/soc/soc:fpc1020/wakeup_enable
 
 on post-fs-data
     mkdir /data/tombstones 0771 system system
@@ -34,3 +38,13 @@ on post-fs-data
     mkdir /data/misc/fpc 0770 system system
     mkdir /data/misc/goodix 0770 system system
     mkdir /persist/fpc 0770 system system
+    
+service fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
+    class late_start
+    user system
+    group system input
+    
+service goodix_script /vendor/bin/init.goodix.sh
+    class late_start
+    user system
+    oneshot

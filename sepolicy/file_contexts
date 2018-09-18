@@ -3,3 +3,19 @@
 
 # Light HAL
 /(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660 u:object_r:hal_light_default_exec:s0
+
+# Shell Script
+/(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
+
+# Biometric
+/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_wayne u:object_r:hal_fingerprint_wayne_exec:s0
+
+# Fpc Fingerprint
+/sys/devices/soc/soc:fpc1020(/.*)?		u:object_r:fingerprint_sysfs:s0
+
+# For Goodix fingerprint
+/dev/goodix_fp*                                 u:object_r:fingerprint_device:s0
+
+# Goodix Fingerprint data
+/data/gf_data/frr_database.db                   u:object_r:fingerprint_data_file:s0
+/persist/data/gf*                               u:object_r:fingerprint_data_file:s0
