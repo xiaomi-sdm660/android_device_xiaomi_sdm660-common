@@ -536,20 +536,24 @@ typedef uint32_t GnssSignalTypeMask;
 #define GNSS_SIGNAL_GALILEO_E5A  ((GnssSignalTypeMask)0x00000080ul)
 /** GALILEO E5B RF Band */
 #define GNSS_SIGNAL_GALILIEO_E5B ((GnssSignalTypeMask)0x00000100ul)
-/** BEIDOU B1 RF Band */
-#define GNSS_SIGNAL_BEIDOU_B1    ((GnssSignalTypeMask)0x00000200ul)
-/** BEIDOU B2 RF Band */
-#define GNSS_SIGNAL_BEIDOU_B2    ((GnssSignalTypeMask)0x00000400ul)
+/** BEIDOU B1_I RF Band */
+#define GNSS_SIGNAL_BEIDOU_B1I    ((GnssSignalTypeMask)0x00000200ul)
+/** BEIDOU B1C RF Band */
+#define GNSS_SIGNAL_BEIDOU_B1C    ((GnssSignalTypeMask)0x00000400ul)
+/** BEIDOU B2_I RF Band */
+#define GNSS_SIGNAL_BEIDOU_B2I    ((GnssSignalTypeMask)0x00000800ul)
+/** BEIDOU B2A_I RF Band */
+#define GNSS_SIGNAL_BEIDOU_B2AI   ((GnssSignalTypeMask)0x00001000ul)
 /** QZSS L1CA RF Band */
-#define GNSS_SIGNAL_QZSS_L1CA      ((GnssSignalTypeMask)0x00000800ul)
+#define GNSS_SIGNAL_QZSS_L1CA     ((GnssSignalTypeMask)0x00002000ul)
 /** QZSS L1S RF Band */
-#define GNSS_SIGNAL_QZSS_L1S      ((GnssSignalTypeMask)0x00001000ul)
+#define GNSS_SIGNAL_QZSS_L1S      ((GnssSignalTypeMask)0x00004000ul)
 /** QZSS L2 RF Band */
-#define GNSS_SIGNAL_QZSS_L2      ((GnssSignalTypeMask)0x00002000ul)
+#define GNSS_SIGNAL_QZSS_L2      ((GnssSignalTypeMask)0x00008000ul)
 /** QZSS L5 RF Band */
-#define GNSS_SIGNAL_QZSS_L5      ((GnssSignalTypeMask)0x00004000ul)
+#define GNSS_SIGNAL_QZSS_L5      ((GnssSignalTypeMask)0x00010000ul)
 /** SBAS L1 RF Band */
-#define GNSS_SIGNAL_SBAS_L1      ((GnssSignalTypeMask)0x00008000ul)
+#define GNSS_SIGNAL_SBAS_L1      ((GnssSignalTypeMask)0x00020000ul)
 
 typedef uint16_t GnssMeasUsageStatusBitMask;
 /** Used in fix */
