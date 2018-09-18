@@ -1,5 +1,5 @@
 LOCAL_PATH := $(call my-dir)
-ifeq ($(TARGET_DEVICE),$(filter $(TARGET_DEVICE),whyred))
+ifeq ($(TARGET_DEVICE),$(filter $(BOARD_VENDOR),xiaomi))
 include $(CLEAR_VARS)
 
 LOCAL_MODULE_TAGS := optional

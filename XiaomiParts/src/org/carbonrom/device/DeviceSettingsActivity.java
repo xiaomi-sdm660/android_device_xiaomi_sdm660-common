@@ -15,7 +15,7 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package org.mokee.device;
+package org.carbonrom.settings.device;
 
 import android.app.Activity;
 import android.app.AlertDialog;

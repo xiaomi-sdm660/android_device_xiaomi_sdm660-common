@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.mokee.settings.doze;
+package org.carbonrom.settings.doze;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.mokee.device"
+    package="org.carbonrom.settings.device"
     android:sharedUserId="android.uid.system" >
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme"
         android:supportsRtl="true" >
         <activity
-            android:name="org.mokee.device.DeviceSettingsActivity"
+            android:name="org.carbonrom.settings.device.DeviceSettingsActivity"
             android:label="@string/advanced_settings" >
             <intent-filter>
 		<action android:name="com.android.settings.action.IA_SETTINGS" />
@@ -30,7 +30,7 @@
                 android:resource="@string/advanced_settings_summary" />
         </activity>
         <activity-alias
-            android:name="org.mokee.device.DeviceSettings"
+            android:name="org.carbonrom.settings.device.DeviceSettings"
             android:label="@string/advanced_settings"
             android:targetActivity="DeviceSettingsActivity" >
             <intent-filter>

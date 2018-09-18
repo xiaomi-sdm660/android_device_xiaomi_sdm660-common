@@ -3,6 +3,6 @@
 }
 
 -keep class ** extends android.support.v14.preference.PreferenceFragment
--keep class org.mokee.settings.doze.* {
+-keep class org.carbonrom.settings.doze.* {
   *;
 }
