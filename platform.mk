@@ -334,7 +334,6 @@ PRODUCT_PACKAGES += \
 
 # Ramdisk
 PRODUCT_PACKAGES += \
-    init.target.rc \
     fstab.qcom
 
 # RCS
