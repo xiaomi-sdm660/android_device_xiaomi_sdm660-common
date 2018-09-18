@@ -72,7 +72,6 @@ on fs
 on post-fs
     start qseecomd
     exec - system system -- /vendor/bin/init.qti.qseecomd.sh
-    write /dev/ipa 1
 
 on init
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
@@ -82,17 +81,14 @@ on post-fs-data
     mkdir /data/tombstones/lpass 0771 system system
     mkdir /data/tombstones/wcnss 0771 system system
     mkdir /data/tombstones/dsps 0771 system system
-    mkdir /data/vendor/hbtp 0750 system system
     mkdir /persist/qti_fp 0700 system system
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/misc/tloc 0700 system drmrpc
     mkdir /data/thermal 0771 system system
     mkdir /data/thermal/config 0771 system system
-    start pa-cal-load
 
 on boot
     start rmt_storage
-    start rfs_access
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/foreground/cpus 0-7
     write /dev/cpuset/foreground/boost/cpus 0-7
@@ -142,52 +138,11 @@ on property:init.svc.per_mgr=running
 on property:sys.shutdown.requested=*
     stop per_proxy
 
-#start camera server as daemon
-#service qcamerasvr /system/bin/mm-qcamera-daemon
-#    class late_start
-#    user camera
-#    group camera system inet input graphics
-
-## import cne init file
-#on post-fs
-#    export LD_PRELOAD /vendor/lib/libNimsWrap.so
-#
-## Allow usb charging to be disabled peristently
-#on property:persist.usb.chgdisabled=1
-#    write /sys/class/power_supply/battery/charging_enabled 0
-#
-#on property:persist.usb.chgdisabled=0
-#    write /sys/class/power_supply/battery/charging_enabled 1
-#
-#service qrngd /system/bin/qrngd -f
-#   class main
-#   user root
-#   group root
-#
-#service qrngp /system/bin/qrngp
-#    class main
-#    user root
-#    group root
-#    oneshot
-#    disabled
-#
-#on property:sys.boot_completed=1
-#    start qrngp
-#
 service qseecomd /vendor/bin/qseecomd
    class core
    user root
    group root
 
-#service mpdecision /system/vendor/bin/mpdecision --avg_comp
-#   user root
-#   disabled
-#
-#service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
-#   user system
-#   group system
-#   disabled
-#
 service thermal-engine /system/vendor/bin/thermal-engine
    class main
    user root
@@ -197,14 +152,6 @@ service thermal-engine /system/vendor/bin/thermal-engine
    socket thermal-send-rule stream 0660 system system
    group root
 
-#service security-check1 /sbin/security_boot_check system
-#    class core
-#    oneshot
-#
-#service security-check2 /sbin/security_boot_check recovery
-#    class core
-#    oneshot
-#
 service time_daemon /system/vendor/bin/time_daemon
    class late_start
    user root
@@ -215,78 +162,6 @@ service adsprpcd /system/vendor/bin/adsprpcd audiopd
    user media
    group media
 
-service hbtp /system/vendor/bin/hbtp_daemon
-    class main
-    user system
-    group system
-    disabled
-
-service audiod /system/vendor/bin/audiod
-   class late_start
-   user system
-   group system
-#
-#service usf_tester /system/vendor/bin/usf_tester
-#    user system
-#    group system inet
-#    disabled
-#
-#service usf_epos /system/vendor/bin/usf_epos
-#    user system
-#    group system inet
-#    disabled
-#
-#service usf_gesture /system/vendor/bin/usf_gesture
-#    user system
-#    group system inet
-#    disabled
-#
-
-#service usf_sync_gesture /system/vendor/bin/usf_sync_gesture
-#    user system
-#    group system inet
-#    disabled
-#
-
-#service usf_p2p /system/vendor/bin/usf_p2p
-#    user system
-#    group system inet
-#    disabled
-#
-#service usf_hovering /system/vendor/bin/usf_hovering
-#    user system
-#    group system inet
-#    disabled
-#
-#service usf_proximity /system/vendor/bin/usf_proximity
-#    user system
-#    group system inet
-#    disabled
-#
-#service usf-post-boot /system/vendor/bin/sh /system/etc/usf_post_boot.sh
-#    class late_start
-#    user root
-#    disabled
-#    oneshot
-#
-#on property:init.svc.bootanim=stopped
-#    start usf-post-boot
-#
-#
-#on boot
-#    insmod /system/lib/modules/adsprpc.ko
-#    insmod /system/lib/modules/mhi.ko
-## access permission for secure touch
-#    chmod 0660 /sys/devices/f9966000.i2c/i2c-1/1-004a/secure_touch_enable
-#    chmod 0440 /sys/devices/f9966000.i2c/i2c-1/1-004a/secure_touch
-#    chmod 0660 /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch_enable
-#    chmod 0440 /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch
-#    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-004a/secure_touch_enable
-#    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-004a/secure_touch
-#    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch_enable
-#    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch
-#
-#
 service imsqmidaemon /system/vendor/bin/imsqmidaemon
     class main
     user system
@@ -299,47 +174,6 @@ service imsdatadaemon /system/vendor/bin/imsdatadaemon
     socket ims_datad stream 0660 system radio
     group system wifi radio inet log diag
     disabled
-#
-#service mdm_helper /system/bin/mdm_helper
-#    class core
-#    onrestart setprop ro.service.mdm_helper_restarted "true"
-#    disabled
-#
-#service mdm_helper_proxy /system/bin/mdm_helper_proxy
-#    class core
-#    disabled
-#
-#service mdm_launcher /system/bin/sh /init.mdm.sh
-#    class main
-#    oneshot
-#
-#service qcamerasvr /system/bin/mm-qcamera-daemon
-#    class late_start
-#    user camera
-#    group camera system inet input graphics
-#
-# Stop mdm_helper_proxy in case of shutdown
-#on property:sys.shutdown.requested=*
-#    stop mdm_helper_proxy
-#
-# Stop mdm_helper_proxy on APQ target
-#on property:ro.radio.noril=yes
-#    stop mdm_helper_proxy
-#
-#on property:persist.airplane.mode.pwr.svg=enabled
-#    setprop ro.mdm_helper_proxy_req false
-#
-#on property:init.svc.ril-daemon=running
-#    setprop ro.mdm_helper_proxy_req true
-#
-## Start mdm_helper_proxy
-#on property:ro.mdm_helper_proxy_req=true
-#    start mdm_helper_proxy
-#
-## QCA1530 SoC core detect
-#service gnss-detect /system/vendor/bin/gnss.qca1530.sh detect
-#   class core
-#   oneshot
 
 service energy-awareness /system/vendor/bin/energy-awareness
     class main
@@ -347,26 +181,8 @@ service energy-awareness /system/vendor/bin/energy-awareness
     group system
     oneshot
 
-service mdtpd /system/vendor/bin/mdtpd
-    class late_start
-    user root
-    group system radio drmrpc
-
 service pd_mapper /system/vendor/bin/pd-mapper
      class core
-
-#
-## QCA1530 SoC late_start group trigger
-#service gnss-init /system/vendor/bin/gnss.qca1530.sh init
-#   class late_start
-#   oneshot
-#
-## QCA1530 SoC Service Daemon
-#service gnss-svcd /system/vendor/bin/gnss.qca1530.sh start
-#   class late_start
-#   user root
-#   group gps system qcom_diag diag log inet net_raw
-#   disabled
 
 on property:vendor.ims.QMI_DAEMON_STATUS=1
     start imsdatadaemon
@@ -420,207 +236,22 @@ on charger
     start qcom-post-boot
     start hvdcp_opti
     setprop sys.usb.configfs 1
-    start power_off_alarm
-
-#
-#service nqs /system/bin/nqs
-#    class late_start
-#    socket nqs_qsb_comm stream 660 system system
-#    user system
-#    group drmrpc
-#
-#service adsprpcd /system/vendor/bin/adsprpcd
-#   class main
-#   user media
-#   group media
-#
-##Start picture quality tuning service
-#service vqttoolservice /system/bin/vqttoolservice
-#    class late_start
-#    socket vqtss stream 0660 system system
-#    user system
-#    group system
-
-service seempd /system/bin/seempd
-    class late_start
-    user system
-    group system sdcard_rw
-    socket seempdw dgram 0666 system system
 
 service qfp-daemon /vendor/bin/qfp-daemon
     class late_start
     user system
     group system drmrpc diag input
 
-service tlocd /system/bin/tloc_daemon
-    class late_start
-    user system
-    group drmrpc
-
 service hvdcp_opti /system/vendor/bin/hvdcp_opti
      class main
      user root
      group system wakelock
-
-service smcinvoked /system/bin/smcinvoked
-   class main
-   user system
-   group system
-
-# smart pa cal     wangshiyou 11/09
-service smart-pa-tfa-cal /system/vendor/bin/smart-pa-tfa-cal
-    user root
-    group root
-    disabled
-    oneshot
-
-# smart pa cal     tsx 08/26
-service pa-cal-load /system/vendor/bin/smart-pa-cal -load
-    user root
-    group root
-    disabled
-    oneshot
-
-# smart pa cal     tsx 08/26
-service smart-pa-cal /system/vendor/bin/smart-pa-cal -t 25 -c /system/vendor/etc/speaker.ftcfg -v -u
-    user root
-    group root
-    disabled
-    oneshot
-
-on property:sys.pa-cal=0
-    stop smart-pa-cal
-
-on property:sys.pa-cal=1
-    start smart-pa-cal
-
-on property:sys.pa-tfa-cal=0
-    stop smart-pa-tfa-cal
-
-on property:sys.pa-tfa-cal=1
-    start smart-pa-tfa-cal
-
-# audio loopback test begin    tsx 08/26
-service loopback_spk1 /system/vendor/bin/loopback.sh 1 1
-    user root
-    group root
-    disabled
-    oneshot
 	
-service loopback_spk0 /system/vendor/bin/loopback.sh 1 0
-    user root
-    group root
-    disabled
-    oneshot
-	
-service loopback_rec1 /system/vendor/bin/loopback.sh 2 1
-    user root
-    group root
-    disabled
-    oneshot
-	
-service loopback_rec0 /system/vendor/bin/loopback.sh 2 0
-    user root
-    group root
-    disabled
-    oneshot
-	
-service loopback_hand1 /system/vendor/bin/loopback.sh 3 1
-    user root
-    group root
-    disabled
-    oneshot
-	
-service loopback_hand0 /system/vendor/bin/loopback.sh 3 0
-    user root
-    group root
-    disabled
-    oneshot
-	
-service loopback_sec1 /system/vendor/bin/loopback.sh 4 1
-    user root
-    group root
-    disabled
-    oneshot
-	
-service loopback_sec0 /system/vendor/bin/loopback.sh 4 0
-    user root
-    group root
-    disabled
-    oneshot
-
-service spk_playback1 /system/vendor/bin/loopback.sh 5 1
-    user root
-    group root
-    disabled
-    oneshot
-	
-service spk_playback0 /system/vendor/bin/loopback.sh 5 0
-    user root
-    group root
-    disabled
-    oneshot
-
-on property:sys.loopback-spk=1
-    start loopback_spk1
-	
-on property:sys.loopback-spk=0
-    start loopback_spk0
-	
-on property:sys.loopback-rec=1
-    start loopback_rec1
-	
-on property:sys.loopback-rec=0
-    start loopback_rec0
-	
-on property:sys.loopback-mic1=1
-    start loopback_hand1
-	
-on property:sys.loopback-mic1=0
-    start loopback_hand0
-	
-on property:sys.loopback-mic2=1
-    start loopback_sec1
-	
-on property:sys.loopback-mic2=0
-    start loopback_sec0
-
-on property:sys.spk-playback=1
-    start spk_playback1
-	
-on property:sys.spk-playback=0
-    start spk_playback0
-
-service tinyhostless_spk /system/vendor/bin/tinyhostless -D 0 -P 35 -C 11 -p 8 -n 2 -c 1 -r 48000
-    user root
-    group root
-    disabled
-    oneshot
-
-service tinyhostless /system/vendor/bin/tinyhostless -D 0 -P 5 -C 11 -p 8 -n 2 -c 1 -r 48000
-    user root
-    group root
-    disabled
-    oneshot
-
-on property:sys.tinyhostless=0
-    stop tinyhostless 
-
-on property:sys.tinyhostless=1
-    start tinyhostless
-
-on property:sys.tinyhostless-spk=0
-    stop tinyhostless_spk
-
-on property:sys.tinyhostless-spk=1
-    start tinyhostless_spk
-	
-#audio loopback test end
 on property:persist.sys.display_srgb=1
 	write /sys/class/graphics/fb0/msm_fb_srgb 1
 
 on property:persist.sys.display_srgb=2
-	write /sys/class/graphics/fb0/msm_fb_srgb 2
+    write /sys/class/graphics/fb0/msm_fb_srgb 2
 
 on property:sys.dynamic_debug=1
    write /sys/kernel/debug/dynamic_debug/control "file q6afe.c +p" 
