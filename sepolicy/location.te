@@ -1,0 +1,2 @@
+#============= location ==============
+allow location sysfs:file read; 

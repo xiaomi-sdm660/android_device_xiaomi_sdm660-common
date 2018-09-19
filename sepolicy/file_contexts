@@ -1,3 +1,6 @@
+# IR
+/dev/spidev7\.1  u:object_r:ir_dev_file:s0
+
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
 
@@ -19,15 +22,37 @@
 /dev/goodix_fp*                                 u:object_r:fingerprint_device:s0
 
 # Goodix Fingerprint data
-/data/gf_data/frr_database.db                   u:object_r:fingerprint_data_file:s0
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
 
 # USB HAL
-/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.0-service\.xiaomi_8996       u:object_r:hal_usb_default_exec:s0
-
-# IR
-/dev/spidev7.1                                  u:object_r:spidev_device:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.0-service\.xiaomi_sdm660       u:object_r:hal_usb_default_exec:s0
 
 # Persist
 /persist/PRSensorData\.txt                      u:object_r:sensors_persist_file:s0
 
+# Touchscreen
+/sys/devices/soc/c175000\.i2c/i2c-1/1-[0-9a-f]+/input/input[0-9]+/wake_gesture u:object_r:sysfs_tap_to_wake:s0
+
+# Fingerprint
+/data/vendor/fpc(/.*)?                                        u:object_r:fingerprint_data_file:s0
+/data/vendor/goodix(/.*)?                                     u:object_r:fingerprint_data_file:s0
+/data/misc/gf_data(/.*)?                                      u:object_r:fingerprint_data_file:s0
+/data/gf_data(/.*)?                                           u:object_r:fingerprint_data_file:s0
+/data/misc/goodix(/.*)?                                       u:object_r:fingerprint_data_file:s0
+/persist/fpc(/.*)?                                            u:object_r:fingerprint_persist_file:s0
+/sys/devices/soc/soc:fpc1020.*/irq                            u:object_r:sysfs_fpc_dev:s0
+/sys/devices/soc/soc:fpc1020.*/hw_reset                       u:object_r:sysfs_fpc_dev:s0
+/sys/devices/soc/soc:fpc1020.*/wakeup_enable                  u:object_r:sysfs_fpc_dev:s0
+
+# Shell Script
+/(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
+
+# Video4linux sysfs nodes
+/sys/devices/soc/ca00000\.qcom,msm-cam/video4linux/video0(/.*)? u:object_r:sysfs_graphics:s0
+/sys/devices/soc/caa0000\.qcom,jpeg/video4linux/video1(/.*)?   u:object_r:sysfs_graphics:s0
+/sys/devices/soc/c900000\.qcom,mdss_rotator/video4linux/video2(/.*)?     u:object_r:sysfs_graphics:s0
+
+# Keylayout
+/vendor/usr/keylayout/uinput-fpc\.kl                      u:object_r:vendor_keylayout_file:s0
+/vendor/usr/keylayout/uinput-goodix\.kl                   u:object_r:vendor_keylayout_file:s0
+/vendor/usr/keylayout/sdm660-snd-card_Button_Jack\.kl     u:object_r:vendor_keylayout_file:s0

@@ -1,0 +1,1 @@
+vendor.goodix.hardware.fingerprint::IGoodixBiometricsFingerprint         u:object_r:hal_fingerprint_hwservice:s0

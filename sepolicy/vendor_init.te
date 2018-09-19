@@ -1,0 +1,9 @@
+#============= vendor_init ==============
+allow vendor_init adsprpcd_file:dir create;
+allow vendor_init bt_firmware_file:dir create;
+allow vendor_init camera_data_file:dir { create setattr };
+allow vendor_init firmware_file:dir create;
+allow vendor_init media_rw_data_file:dir setattr;
+allow vendor_init rootfs:dir { add_name create setattr };
+allow vendor_init system_data_file:dir { add_name create setattr write };
+allow vendor_init wifi_data_file:dir setattr;

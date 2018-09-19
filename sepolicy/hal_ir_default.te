@@ -1,1 +1,1 @@
-allow hal_ir_default spidev_device:chr_file rw_file_perms;
+allow hal_ir_default ir_dev_file:chr_file { open read write };

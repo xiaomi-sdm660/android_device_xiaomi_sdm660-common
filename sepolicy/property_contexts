@@ -4,4 +4,5 @@ sys.fp.goodix	u:object_r:hal_fingerprint_prop:s0
 sys.fp.vendor   u:object_r:hal_fingerprint_prop:s0
 persist.sys.fp.info u:object_r:hal_fingerprint_prop:s0
 persist.sys.fp.vendor u:object_r:hal_fingerprint_prop:s0
-
+ro.boot.fp.                                                   u:object_r:fingerprint_prop:s0
+sys.fp.                                                       u:object_r:fingerprint_prop:s0

@@ -1,3 +1,9 @@
 #============= qti_init_shell ==============
 allow qti_init_shell sysfs_cpu_boost:file write;
 allow qti_init_shell sysfs_lowmemorykiller:dir write;
+allow qti_init_shell debug_prop:property_service set;
+allow qti_init_shell default_prop:property_service set;
+allow qti_init_shell radio_prop:property_service set;
+allow qti_init_shell self:capability dac_override;
+allow qti_init_shell system_prop:property_service set;
+allow qti_init_shell system_radio_prop:property_service set;

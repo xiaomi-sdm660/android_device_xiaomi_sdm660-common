@@ -1,0 +1,2 @@
+com.goodix.FingerprintService u:object_r:goodix_fingerprint_service:s0
+android.hardware.fingerprint.IGoodixFingerprintDaemon u:object_r:goodixfingerprintd_service:s0

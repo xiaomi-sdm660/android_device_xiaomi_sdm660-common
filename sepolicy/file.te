@@ -1,2 +1,16 @@
-type fingerprint_data_file, file_type, data_file_type;
+type ir_dev_file, file_type;
+
+allow ueventd ir_dev_file:chr_file { create setattr };
+
+# Touchscreen wake_gesture
+type sysfs_tap_to_wake, sysfs_type, fs_type;
+
+# Fingerprint
+type fingerprintd_device, file_type, dev_type;
+type fingerprint_data_file, data_file_type, file_type;
+type fingerprint_persist_file, file_type;
+type sysfs_fpc_dev, sysfs_type, fs_type;
 type fingerprint_sysfs, fs_type, sysfs_type;
+
+# Keylayout
+type vendor_keylayout_file, file_type, vendor_file_type;

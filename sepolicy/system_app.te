@@ -1,2 +1,4 @@
 allow system_app camera_prop:property_service set;
+allow system_app wificond:binder call;
 get_prop(system_app, camera_prop);
+add_service(system_app, goodix_fingerprint_service)
