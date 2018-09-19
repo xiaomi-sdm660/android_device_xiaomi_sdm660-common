@@ -164,7 +164,6 @@ on boot
     chown system system /sys/class/power_supply/battery/device/thermalcall
 
     mkdir /persist/drm 0770 system system
-    mkdir /persist/bluetooth 0770 bluetooth bluetooth
     mkdir /persist/misc 0770 system system
     mkdir /mnt/vendor/persist/alarm 0770 system system
     mkdir /persist/time 0770 system system
