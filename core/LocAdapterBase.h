@@ -151,6 +151,8 @@ public:
     virtual void reportStatus(LocGpsStatusValue status);
     virtual bool reportXtraServer(const char* url1, const char* url2,
                                   const char* url3, const int maxlength);
+    virtual void reportLocationSystemInfoEvent(const LocationSystemInfo& locationSystemInfo);
+
     virtual bool requestXtraData();
     virtual bool requestTime();
     virtual bool requestLocation();

@@ -461,6 +461,12 @@ void LocApiBase::reportXtraServer(const char* url1, const char* url2,
 
 }
 
+void LocApiBase::reportLocationSystemInfo(const LocationSystemInfo& locationSystemInfo)
+{
+    // loop through adapters, and deliver to all adapters.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportLocationSystemInfoEvent(locationSystemInfo));
+}
+
 void LocApiBase::requestXtraData()
 {
     // loop through adapters, and deliver to the first handling adapter.

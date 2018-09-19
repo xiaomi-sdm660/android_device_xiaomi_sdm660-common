@@ -172,6 +172,7 @@ class GnssAdapter : public LocAdapterBase {
     std::string mServerUrl;
     std::string mMoServerUrl;
     XtraSystemStatusObserver mXtraObserver;
+    LocationSystemInfo mLocSystemInfo;
 
     /* === Misc ===================================================================== */
     BlockCPIInfo mBlockCPIInfo;
@@ -210,6 +211,8 @@ public:
     /* ======== UTILITIES ================================================================== */
     void saveClient(LocationAPI* client, const LocationCallbacks& callbacks);
     void eraseClient(LocationAPI* client);
+    void notifyClientOfCachedLocationSystemInfo(LocationAPI* client,
+                                                const LocationCallbacks& callbacks);
     void updateClientsEventMask();
     void stopClientSessions(LocationAPI* client);
     LocationCallbacks getClientCallbacks(LocationAPI* client);
@@ -344,6 +347,7 @@ public:
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
     virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
+    virtual void reportLocationSystemInfoEvent(const LocationSystemInfo& locationSystemInfo);
 
     virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask apn_type_mask);
     virtual bool releaseATL(int connHandle);
@@ -367,6 +371,7 @@ public:
     void requestOdcpi(const OdcpiRequestInfo& request);
     void invokeGnssEnergyConsumedCallback(uint64_t energyConsumedSinceFirstBoot);
     void saveGnssEnergyConsumedCallback(GnssEnergyConsumedCallback energyConsumedCb);
+    void reportLocationSystemInfo(const LocationSystemInfo & locationSystemInfo);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);

@@ -1113,6 +1113,58 @@ typedef struct {
     std::vector<GnssDebugSatelliteInfo> mSatelliteInfo;
 } GnssDebugReport;
 
+typedef uint32_t LeapSecondSysInfoMask;
+typedef enum {
+    // current leap second info is available. This info will only
+    // be available if the leap second change info is not available.
+    //
+    // If leap second change info is avaiable, to figure out
+    // the current leap second info, compare current gps time with
+    // the gps timestamp of leap second change to know whether to choose
+    // leapSecondBefore or leapSecondAfter as current leap second.
+    LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT = (1ULL << 0),
+    // the last known leap change event is available.
+    // The info can be available on two scenario:
+    // 1: this leap second change event has been scheduled and yet to happen
+    // 2: this leap second change event has already happened and next
+    //    leap second change event has not yet been scheduled.
+    LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT = (1ULL << 1),
+} LeapSecondSysInfoDataBits;
+
+struct LeapSecondChangeInfo {
+    // GPS timestamp that corrresponds to the last known
+    // leap second change event.
+    //
+    // The info can be available on two scenario:
+    // 1: this leap second change event has been scheduled and yet to happen
+    // 2: this leap second change event has already happened and next
+    //    leap second change event has not yet been scheduled.
+    GnssSystemTimeStructType gpsTimestampLsChange;
+    // Number of leap seconds prior to the leap second change event
+    // that corresponds to the timestamp at gpsTimestampLsChange.
+    uint8_t leapSecondsBeforeChange;
+    // Number of leap seconds after the leap second change event
+    // that corresponds to the timestamp at gpsTimestampLsChange.
+    uint8_t leapSecondsAfterChange;
+};
+
+struct LeapSecondSystemInfo {
+    LeapSecondSysInfoMask leapSecondInfoMask;
+    uint8_t               leapSecondCurrent;
+    LeapSecondChangeInfo  leapSecondChangeInfo;
+};
+
+typedef uint32_t LocationSystemInfoMask;
+typedef enum {
+    // contains current leap second or leap second change info
+    LOCATION_SYS_INFO_LEAP_SECOND = (1ULL << 0),
+} LocationSystemInfoDataBits;
+
+struct LocationSystemInfo {
+    LocationSystemInfoMask systemInfoMask;
+    LeapSecondSystemInfo   leapSecondSysInfo;
+};
+
 /* Provides the capabilities of the system
    capabilities callback is called once soon after createInstance is called */
 typedef std::function<void(
@@ -1215,6 +1267,13 @@ typedef std::function<void(
     GnssConfig& config
 )> gnssConfigCallback;
 
+/* LocationSystemInfoCb is for receiving rare occuring location
+   system information update. optional, can be NULL.
+*/
+typedef std::function<void(
+    LocationSystemInfo locationSystemInfo
+)> locationSystemInfoCallback;
+
 typedef struct {
     size_t size; // set to sizeof(LocationCallbacks)
     capabilitiesCallback capabilitiesCb;             // mandatory
@@ -1231,6 +1290,7 @@ typedef struct {
     gnssDataCallback gnssDataCb;                     // optional
     gnssMeasurementsCallback gnssMeasurementsCb;     // optional
     batchingStatusCallback batchingStatusCb;         // optional
+    locationSystemInfoCallback locationSystemInfoCb; // optional
 } LocationCallbacks;
 
 #endif /* LOCATIONDATATYPES_H */
