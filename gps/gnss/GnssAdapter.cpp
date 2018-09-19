@@ -2091,6 +2091,7 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                             LocPosTechMask techMask)
 {
     bool reported = needReport(ulpLocation, status, techMask);
+    mGnssSvIdUsedInPosAvail = false;
     if (reported) {
         if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA) {
             mGnssSvIdUsedInPosAvail = true;
