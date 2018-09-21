@@ -269,8 +269,8 @@ PRODUCT_COPY_FILES += \
     
 # Keylayouts
 PRODUCT_COPY_FILES += \
-    $(PLATFORM_PATH)/keylayout/sdm660-snd-card_Button_Jack.kl:system/usr/keylayout/sdm660-snd-card_Button_Jack.kl \
-    $(PLATFORM_PATH)/keylayout/uinput-goodix.kl:system/usr/keylayout/uinput-goodix.kl
+    $(PLATFORM_PATH)/keylayout/sdm660-snd-card_Button_Jack.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/sdm660-snd-card_Button_Jack.kl \
+    $(PLATFORM_PATH)/keylayout/uinput-goodix.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/uinput-goodix.kl
 
 # Google Media Codec    
 PRODUCT_COPY_FILES += \
