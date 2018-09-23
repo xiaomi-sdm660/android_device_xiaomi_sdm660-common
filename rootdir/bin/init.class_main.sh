@@ -58,7 +58,7 @@ case "$baseband" in
         modem=`cat /vendor/firmware_mnt/verinfo/ver_info.txt |
                 sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
                 sed 's/.*MPSS.\(.*\)/\1/g' | cut -d \. -f 1`
-        # Check if this is AT 3.0 or below. If so, start ril-daemon 
+        # Check if this is AT 3.0 or below. If so, start ril-daemon
         if [ "$modem" = "AT" ]; then
             version=`cat /vendor/firmware_mnt/verinfo/ver_info.txt |
                     sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
@@ -146,14 +146,12 @@ case "$baseband" in
     case "$datamode" in
         "tethered")
             start vendor.dataqti
-            start vendor.dataadpl
             start vendor.port-bridge
             ;;
         "concurrent")
             start vendor.dataqti
             start vendor.dataadpl
             start vendor.netmgrd
-            start vendor.port-bridge
             ;;
         *)
             start vendor.netmgrd
