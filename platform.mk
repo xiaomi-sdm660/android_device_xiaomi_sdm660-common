@@ -261,12 +261,6 @@ PRODUCT_PACKAGES += \
     android.hardware.keymaster@3.0-impl \
     android.hardware.keymaster@3.0-service
 
-# Lights
-PRODUCT_PACKAGES += \
-    lights.sdm660 \
-    android.hardware.light@2.0-impl \
-    android.hardware.light@2.0-service \
-
 # Net
 PRODUCT_PACKAGES += \
     android.system.net.netd@1.0 \
