@@ -124,6 +124,10 @@ namespace loc_core {
     class SystemStatus;
 }
 
+typedef std::function<void(
+    uint64_t gnssEnergyConsumedFromFirstBoot
+)> GnssEnergyConsumedCallback;
+
 class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
@@ -171,6 +175,9 @@ class GnssAdapter : public LocAdapterBase {
 
     /* === Misc ===================================================================== */
     BlockCPIInfo mBlockCPIInfo;
+
+    /* === Misc callback from QMI LOC API ============================================== */
+    GnssEnergyConsumedCallback mGnssEnergyConsumedCb;
 
     /*==== CONVERSION ===================================================================*/
     static void convertOptions(LocPosMode& out, const TrackingOptions& trackingOptions);
@@ -295,6 +302,7 @@ public:
             const char* apnName, int apnLen, AGpsBearerType bearerType);
     void dataConnClosedCommand(AGpsExtType agpsType);
     void dataConnFailedCommand(AGpsExtType agpsType);
+    void getGnssEnergyConsumedCommand(GnssEnergyConsumedCallback energyConsumedCb);
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -334,6 +342,7 @@ public:
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
+    virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
 
     virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask apn_type_mask);
     virtual bool releaseATL(int connHandle);
@@ -354,6 +363,8 @@ public:
     void reportGnssSvIdConfig(const GnssSvIdConfig& config);
     void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
     void requestOdcpi(const OdcpiRequestInfo& request);
+    void invokeGnssEnergyConsumedCallback(uint64_t energyConsumedSinceFirstBoot);
+    void saveGnssEnergyConsumedCallback(GnssEnergyConsumedCallback energyConsumedCb);
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);

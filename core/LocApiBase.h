@@ -183,6 +183,7 @@ public:
     void reportGnssSvIdConfig(const GnssSvIdConfig& config);
     void reportGnssSvTypeConfig(const GnssSvTypeConfig& config);
     void requestOdcpi(OdcpiRequestInfo& request);
+    void reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
@@ -198,6 +199,10 @@ public:
 
     virtual void
         injectPosition(double latitude, double longitude, float accuracy);
+
+    virtual void
+        injectPosition(const GnssLocationInfoNotification &locationInfo, bool onDemandCpi=false);
+
     virtual void
         injectPosition(const Location& location, bool onDemandCpi);
     virtual void
@@ -281,6 +286,12 @@ public:
     virtual void setConstellationControl(const GnssSvTypeConfig& config);
     virtual void getConstellationControl();
     virtual void resetConstellationControl();
+
+    virtual LocationError setConstrainedTuncMode(bool enabled,
+                                                 float tuncConstraint,
+                                                 uint32_t energyBudget);
+    virtual LocationError setPositionAssistedClockEstimatorMode(bool enabled);
+    virtual LocationError getGnssEnergyConsumed();
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

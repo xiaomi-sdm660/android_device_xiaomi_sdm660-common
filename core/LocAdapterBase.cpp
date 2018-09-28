@@ -175,4 +175,8 @@ bool LocAdapterBase::
     requestOdcpiEvent(OdcpiRequestInfo& /*request*/)
 DEFAULT_IMPL(false)
 
+bool LocAdapterBase::
+    reportGnssEngEnergyConsumedEvent(uint64_t /*energyConsumedSinceFirstBoot*/)
+DEFAULT_IMPL(false)
+
 } // namespace loc_core
