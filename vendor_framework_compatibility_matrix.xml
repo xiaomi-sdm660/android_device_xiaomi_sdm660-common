@@ -167,6 +167,16 @@
             <instance>wifidisplaydshal</instance>
         </interface>
     </hal>
+    <!--  Wipower  -->
+    <hal format="hidl" optional="true">
+        <name>vendor.qti.hardware.wipower</name>
+        <version>1.0</version>
+        <interface>
+            <name>IWipower</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+
     <hal format="hidl" optional="true">
         <name>com.quicinc.cne.server</name>
         <version>1.0</version>
