@@ -102,6 +102,10 @@ typedef uint16_t LocGpsLocationFlags;
 #define LOC_GPS_LOCATION_HAS_VERT_UNCERTAINITY   0x0040
 /** LocGpsLocation has valid spoof mask */
 #define LOC_GPS_LOCATION_HAS_SPOOF_MASK   0x0080
+/** LocGpsLocation has valid speed accuracy */
+#define LOC_GPS_LOCATION_HAS_SPEED_ACCURACY   0x0100
+/** LocGpsLocation has valid bearing accuracy */
+#define LOC_GPS_LOCATION_HAS_BEARING_ACCURACY 0x0200
 
 /** Spoof mask in LocGpsLocation */
 typedef uint32_t LocGpsSpoofMask;
