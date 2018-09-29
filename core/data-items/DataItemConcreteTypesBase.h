@@ -231,6 +231,7 @@ public:
         TYPE_DUN,
         TYPE_HIPRI,
         TYPE_WIMAX,
+        TYPE_PROXY,
         TYPE_UNKNOWN,
     };
     NetworkInfoDataItemBase(

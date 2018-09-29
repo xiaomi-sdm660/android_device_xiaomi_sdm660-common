@@ -50,6 +50,10 @@ AGnssRil::~AGnssRil() {
 
 Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool /*roaming*/) {
     ENTRY_LOG_CALLFLOW();
+    // Extra NetworkTypes not available in IAgnssRil enums
+    const int NetworkType_BLUETOOTH = 7;
+    const int NetworkType_ETHERNET = 9;
+    const int NetworkType_PROXY = 16;
 
     // for XTRA
     if (nullptr != mGnss && ( nullptr != mGnss->getGnssInterface() )) {
@@ -78,7 +82,24 @@ Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool
                 typeout = loc_core::NetworkInfoDataItemBase::TYPE_WIMAX;
                 break;
             default:
-                typeout = loc_core::NetworkInfoDataItemBase::TYPE_UNKNOWN;
+                {
+                    int networkType = (int) type;
+                    // Handling network types not available in IAgnssRil
+                    switch(networkType)
+                    {
+                        case NetworkType_BLUETOOTH:
+                            typeout = loc_core::NetworkInfoDataItemBase::TYPE_BLUETOOTH;
+                            break;
+                        case NetworkType_ETHERNET:
+                            typeout = loc_core::NetworkInfoDataItemBase::TYPE_ETHERNET;
+                            break;
+                        case NetworkType_PROXY:
+                            typeout = loc_core::NetworkInfoDataItemBase::TYPE_PROXY;
+                            break;
+                        default:
+                            typeout = loc_core::NetworkInfoDataItemBase::TYPE_UNKNOWN;
+                    }
+                }
                 break;
         }
         mGnss->getGnssInterface()->updateConnectionStatus(connected, typeout);
