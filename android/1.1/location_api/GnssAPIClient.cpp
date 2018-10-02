@@ -469,13 +469,20 @@ void GnssAPIClient::onGnssNmeaCb(GnssNmeaNotification gnssNmeaNotification)
     mMutex.unlock();
 
     if (gnssCbIface != nullptr) {
-        android::hardware::hidl_string nmeaString;
-        nmeaString.setToExternal(gnssNmeaNotification.nmea, gnssNmeaNotification.length);
-        auto r = gnssCbIface->gnssNmeaCb(
-            static_cast<V1_0::GnssUtcTime>(gnssNmeaNotification.timestamp), nmeaString);
-        if (!r.isOk()) {
-            LOC_LOGE("%s] Error from gnssNmeaCb nmea=%s length=%zu description=%s", __func__,
-                gnssNmeaNotification.nmea, gnssNmeaNotification.length, r.description().c_str());
+        const std::string s(gnssNmeaNotification.nmea);
+        std::stringstream ss(s);
+        std::string each;
+        while(std::getline(ss, each, '\n')) {
+            each += '\n';
+            android::hardware::hidl_string nmeaString;
+            nmeaString.setToExternal(each.c_str(), each.length());
+            auto r = gnssCbIface->gnssNmeaCb(
+                    static_cast<V1_0::GnssUtcTime>(gnssNmeaNotification.timestamp), nmeaString);
+            if (!r.isOk()) {
+                LOC_LOGE("%s] Error from gnssNmeaCb nmea=%s length=%zu description=%s", __func__,
+                            gnssNmeaNotification.nmea, gnssNmeaNotification.length,
+                            r.description().c_str());
+            }
         }
     }
 }

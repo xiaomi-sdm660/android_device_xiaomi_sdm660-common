@@ -40,6 +40,7 @@
 #include <netdb.h>
 #include <GnssAdapter.h>
 #include <string>
+#include <sstream>
 #include <loc_log.h>
 #include <loc_nmea.h>
 #include <Agps.h>
@@ -2976,9 +2977,12 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         uint8_t generate_nmea = (reported && status != LOC_SESS_FAILURE && !blank_fix);
         std::vector<std::string> nmeaArraystr;
         loc_nmea_generate_pos(ulpLocation, locationExtended, generate_nmea, nmeaArraystr);
+        stringstream ss;
         for (auto sentence : nmeaArraystr) {
-            reportNmea(sentence.c_str(), sentence.length());
+            ss << sentence;
         }
+        string s = ss.str();
+        reportNmea(s.c_str(), s.length());
     }
 }
 
@@ -3069,9 +3073,12 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
     if (NMEA_PROVIDER_AP == ContextBase::mGps_conf.NMEA_PROVIDER && !mTrackingSessions.empty()) {
         std::vector<std::string> nmeaArraystr;
         loc_nmea_generate_sv(svNotify, nmeaArraystr);
+        stringstream ss;
         for (auto sentence : nmeaArraystr) {
-            reportNmea(sentence.c_str(), sentence.length());
+            ss << sentence;
         }
+        string s = ss.str();
+        reportNmea(s.c_str(), s.length());
     }
 
     mGnssSvIdUsedInPosAvail = false;
