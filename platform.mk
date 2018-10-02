@@ -361,7 +361,7 @@ PRODUCT_BOOT_JARS += \
 
 # TextClassifier
 PRODUCT_PACKAGES += \
-    textclassifier.smartselection.bundle1
+    textclassifier.bundle1
 
 # Thermal
 PRODUCT_PACKAGES += \
