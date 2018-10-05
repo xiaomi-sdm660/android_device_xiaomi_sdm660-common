@@ -1919,7 +1919,7 @@ GnssAdapter::updateClientsEventMask()
     }
 
     /*
-    ** For Automotive use cases we need to enable MEASUREMENT and POLY
+    ** For Automotive use cases we need to enable MEASUREMENT, POLY and EPHEMERIS
     ** when QDR is enabled (e.g.: either enabled via conf file or
     ** engine hub is loaded successfully).
     ** Note: this need to be called from msg queue thread.
@@ -1929,8 +1929,10 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
         mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
+        mask |= LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT;
 
-        LOC_LOGD("%s]: Auto usecase, Enable MEAS/POLY - mask 0x%" PRIx64 "", __func__, mask);
+        LOC_LOGd("Auto usecase, Enable MEAS/POLY/EPHEMERIS - mask 0x%" PRIx64 "",
+                mask);
     }
 
     if (mAgpsCbInfo.statusV4Cb != NULL) {
@@ -3403,6 +3405,14 @@ GnssAdapter::reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial)
     mEngHubProxy->gnssReportSvPolynomial(svPolynomial);
 }
 
+void
+GnssAdapter::reportSvEphemerisEvent(GnssSvEphemerisReport & svEphemeris)
+{
+    LOC_LOGD("%s]:", __func__);
+    mEngHubProxy->gnssReportSvEphemeris(svEphemeris);
+}
+
+
 bool
 GnssAdapter::requestOdcpiEvent(OdcpiRequestInfo& request)
 {
@@ -3466,6 +3476,28 @@ void GnssAdapter::requestOdcpi(const OdcpiRequestInfo& request)
         LOC_LOGw("ODCPI request not supported");
     }
 }
+
+bool GnssAdapter::reportDeleteAidingDataEvent(GnssAidingData& aidingData)
+{
+    LOC_LOGD("%s]:", __func__);
+
+    struct MsgHandleDeleteAidingDataEvent : public LocMsg {
+        GnssAdapter& mAdapter;
+        GnssAidingData mData;
+        inline MsgHandleDeleteAidingDataEvent(GnssAdapter& adapter,
+                                   GnssAidingData& data) :
+            LocMsg(),
+            mAdapter(adapter),
+            mData(data) {}
+        inline virtual void proc() const {
+            mAdapter.mEngHubProxy->gnssDeleteAidingData(mData);
+        }
+    };
+
+    sendMsg(new MsgHandleDeleteAidingDataEvent(*this, aidingData));
+    return true;
+}
+
 
 void GnssAdapter::initOdcpiCommand(const OdcpiRequestCallback& callback)
 {
@@ -4347,11 +4379,17 @@ GnssAdapter::initEngHubProxy() {
                    reportSvEvent(svNotify, fromEngineHub);
             };
 
+        // callback function for engine hub to request for complete aiding data
+        GnssAdapterReqAidingDataCb reqAidingDataCb =
+            [this] (const GnssAidingDataSvMask& svDataMask) {
+            mLocApi->requestForAidingData(svDataMask);
+        };
+
         getEngHubProxyFn* getter = (getEngHubProxyFn*) dlsym(handle, "getEngHubProxy");
         if(getter != nullptr) {
             EngineHubProxyBase* hubProxy = (*getter) (mMsgTask, mSystemStatus->getOsObserver(),
                                                       reportPositionEventCb,
-                                                      reportSvEventCb);
+                                                      reportSvEventCb, reqAidingDataCb);
             if (hubProxy != nullptr) {
                 mEngHubProxy = hubProxy;
                 engHubLoadSuccessful = true;

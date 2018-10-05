@@ -340,6 +340,7 @@ public:
                                                 int msInWeek);
     virtual void reportSvMeasurementEvent(GnssSvMeasurementSet &svMeasurementSet);
     virtual void reportSvPolynomialEvent(GnssSvPolynomial &svPolynomial);
+    virtual void reportSvEphemerisEvent(GnssSvEphemerisReport & svEphemeris);
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
     virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
@@ -347,6 +348,7 @@ public:
     virtual bool requestATL(int connHandle, LocAGpsType agps_type, LocApnTypeMask apn_type_mask);
     virtual bool releaseATL(int connHandle);
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
+    virtual bool reportDeleteAidingDataEvent(GnssAidingData& aidingData);
 
     /* ======== UTILITIES ================================================================= */
     bool needReport(const UlpLocation& ulpLocation,

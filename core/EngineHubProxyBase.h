@@ -80,6 +80,11 @@ public:
         (void) svPolynomial;
         return false;
     }
+
+    inline virtual bool gnssReportSvEphemeris(const GnssSvEphemerisReport& svEphemeris) {
+        (void) svEphemeris;
+        return false;
+    }
 };
 
 typedef std::function<void(const UlpLocation& ulpLocation,
@@ -93,12 +98,16 @@ typedef std::function<void(const GnssSvNotification& svNotify,
                            bool fromEngineHub)>
         GnssAdapterReportSvEventCb;
 
+typedef std::function<void(const GnssAidingDataSvMask& svDataMask)>
+        GnssAdapterReqAidingDataCb;
+
 // potential parameters: message queue: MsgTask * msgTask;
 // callback function to report back dr and ppe position and sv report
 typedef EngineHubProxyBase* (getEngHubProxyFn)(const MsgTask * msgTask,
                                                IOsObserver* osObserver,
                                                GnssAdapterReportPositionEventCb positionEventCb,
-                                               GnssAdapterReportSvEventCb svEventCb);
+                                               GnssAdapterReportSvEventCb svEventCb,
+                                               GnssAdapterReqAidingDataCb reqAidingDataCb);
 
 } // namespace loc_core
 
