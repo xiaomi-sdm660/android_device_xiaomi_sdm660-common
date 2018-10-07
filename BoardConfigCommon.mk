@@ -236,6 +236,8 @@ BOARD_ROOT_EXTRA_SYMLINKS := \
     /vendor/firmware_mnt:/firmware \
     /vendor/bt_firmware:/bt_firmware
 
+BOARD_ROOT_EXTRA_FOLDERS := persist
+
 TARGET_COPY_OUT_VENDOR := vendor
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
