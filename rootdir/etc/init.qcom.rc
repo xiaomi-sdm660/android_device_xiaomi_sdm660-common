@@ -638,7 +638,7 @@ service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     capabilities NET_ADMIN
     writepid /dev/cpuset/system-background/tasks
 
-on property:sys.powerctl=*
+on property:sys.shutdown.requested=*
     stop vendor.cnss-daemon
 
 service vendor.loc_launcher /system/vendor/bin/loc_launcher
