@@ -250,9 +250,6 @@ on boot
     chown system system /sys/class/sensors/apds9930-proximity/enable
     chown system system /sys/class/sensors/apds9930-proximity/poll_delay
 
-    # Create directory used for display
-    mkdir /persist/display 0770 system graphics
-
     # Create vpp directory
     mkdir /mnt/vendor/persist/vpp 0770 media media
 
