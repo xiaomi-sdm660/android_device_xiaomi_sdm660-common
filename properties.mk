@@ -94,6 +94,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
     camera.hal1.packagelist=com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android \
     vendor.camera.hal1.packagelist= com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android
 
+# IMS
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.dbg.volte_avail_ovr=1 \
+    persist.dbg.vt_avail_ovr=1 \
+    persist.vendor.ims.disableUserAgent=0
+
 # Media
 PRODUCT_PROPERTY_OVERRIDES += \
     media.aac_51_output_enabled=true \
