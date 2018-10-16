@@ -1303,7 +1303,8 @@ on property:sys.thermal.isinvideo=1
 
 on property:sys.thermal.isinvideo=0
     write /sys/class/power_supply/battery/device/thermalvideo 0
-service power_off_alarm /vendor/bin/power_off_alarm
+
+service vendor.power_off_alarm /vendor/bin/power_off_alarm
     class core
     group system
     disabled

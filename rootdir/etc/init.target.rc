@@ -467,7 +467,7 @@ on charger
     mkdir /data/vendor/charge_logger 0771 system system
     start vendor.hvdcp_opti
     setprop sys.usb.configfs 1
-    start power_off_alarm
+    start vendor.power_off_alarm
     start charge_logger
 
 #
