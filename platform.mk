@@ -247,7 +247,8 @@ PRODUCT_PACKAGES += \
     ethertypes
     
 # MSM IRQ Balancer configuration file for SDM660
-PRODUCT_COPY_FILES += $(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
+PRODUCT_COPY_FILES += \
+	$(PLATFORM_PATH)/configs/msm_irqbalance.conf:$(TARGET_COPY_OUT_VENDOR)/etc/msm_irqbalance.conf
     
 # Keylayouts
 PRODUCT_COPY_FILES += \
