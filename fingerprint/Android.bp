@@ -23,6 +23,8 @@ cc_binary {
         "libbase",
         "libhardware",
         "libhidlbase",
+        "libcutils", 
+        "libc",
         "libhidltransport",
         "libhwbinder",
         "liblog",
