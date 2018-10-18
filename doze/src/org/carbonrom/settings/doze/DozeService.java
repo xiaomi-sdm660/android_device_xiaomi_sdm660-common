@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.carbonrom.settings.doze;;
+package org.carbonrom.settings.doze;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
