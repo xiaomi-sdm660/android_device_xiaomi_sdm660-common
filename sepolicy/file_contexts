@@ -19,3 +19,6 @@
 # Goodix Fingerprint data
 /data/gf_data/frr_database.db                   u:object_r:fingerprint_data_file:s0
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
+
+# IR
+ /dev/spidev7.1                                  u:object_r:spidev_device:s0
