@@ -51,7 +51,6 @@ constexpr char kPowerHalConfigPath[] = "/vendor/etc/powerhint.json";
 Power::Power()
     : mHintManager(nullptr),
       mInteractionHandler(nullptr),
-      mVRModeOn(false),
       mSustainedPerfModeOn(false),
       mCameraStreamingMode(false),
       mReady(false) {
@@ -72,15 +71,6 @@ Power::Power()
             ALOGI("Initialize with SUSTAINED_PERFORMANCE on");
             mHintManager->DoHint("SUSTAINED_PERFORMANCE");
             mSustainedPerfModeOn = true;
-        } else if (state == "VR_MODE") {
-            ALOGI("Initialize with VR_MODE on");
-            mHintManager->DoHint("VR_MODE");
-            mVRModeOn = true;
-        } else if (state == "VR_SUSTAINED_PERFORMANCE") {
-            ALOGI("Initialize with SUSTAINED_PERFORMANCE and VR_MODE on");
-            mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
-            mSustainedPerfModeOn = true;
-            mVRModeOn = true;
         } else {
             ALOGI("Initialize PowerHAL");
         }
@@ -117,7 +107,7 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
              android::hardware::power::V1_0::toString(hint).c_str(), static_cast<int>(data));
     switch (hint) {
         case PowerHint_1_0::INTERACTION:
-            if (mVRModeOn || mSustainedPerfModeOn) {
+            if (mSustainedPerfModeOn) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 mInteractionHandler->Acquire(data);
@@ -125,42 +115,15 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
             break;
         case PowerHint_1_0::SUSTAINED_PERFORMANCE:
             if (data && !mSustainedPerfModeOn) {
-                if (!mVRModeOn) {  // Sustained mode only.
-                    mHintManager->DoHint("SUSTAINED_PERFORMANCE");
-                } else {  // Sustained + VR mode.
-                    mHintManager->EndHint("VR_MODE");
-                    mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
-                }
+                mHintManager->DoHint("SUSTAINED_PERFORMANCE");
                 mSustainedPerfModeOn = true;
             } else if (!data && mSustainedPerfModeOn) {
-                mHintManager->EndHint("VR_SUSTAINED_PERFORMANCE");
                 mHintManager->EndHint("SUSTAINED_PERFORMANCE");
-                if (mVRModeOn) {  // Switch back to VR Mode.
-                    mHintManager->DoHint("VR_MODE");
-                }
                 mSustainedPerfModeOn = false;
             }
             break;
-        case PowerHint_1_0::VR_MODE:
-            if (data && !mVRModeOn) {
-                if (!mSustainedPerfModeOn) {  // VR mode only.
-                    mHintManager->DoHint("VR_MODE");
-                } else {  // Sustained + VR mode.
-                    mHintManager->EndHint("SUSTAINED_PERFORMANCE");
-                    mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
-                }
-                mVRModeOn = true;
-            } else if (!data && mVRModeOn) {
-                mHintManager->EndHint("VR_SUSTAINED_PERFORMANCE");
-                mHintManager->EndHint("VR_MODE");
-                if (mSustainedPerfModeOn) {  // Switch back to sustained Mode.
-                    mHintManager->DoHint("SUSTAINED_PERFORMANCE");
-                }
-                mVRModeOn = false;
-            }
-            break;
         case PowerHint_1_0::LAUNCH:
-            if (mVRModeOn || mSustainedPerfModeOn) {
+            if (mSustainedPerfModeOn) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 if (data) {
@@ -222,7 +185,7 @@ Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
             }
             break;
         case PowerHint_1_2::AUDIO_STREAMING:
-            if (mVRModeOn || mSustainedPerfModeOn) {
+            if (mSustainedPerfModeOn) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 if (data) {
@@ -281,7 +244,7 @@ Return<void> Power::powerHintAsync_1_3(PowerHint_1_3 hint, int32_t data) {
 
     if (hint == PowerHint_1_3::EXPENSIVE_RENDERING) {
         ATRACE_INT(android::hardware::power::V1_3::toString(hint).c_str(), data);
-        if (mVRModeOn || mSustainedPerfModeOn) {
+        if (mSustainedPerfModeOn) {
             ALOGV("%s: ignoring due to other active perf hints", __func__);
         } else {
             if (data > 0) {
@@ -306,10 +269,9 @@ Return<void> Power::debug(const hidl_handle &handle, const hidl_vec<hidl_string>
 
         std::string buf(android::base::StringPrintf(
                 "HintManager Running: %s\n"
-                "VRMode: %s\n"
                 "CameraStreamingMode: %s\n"
                 "SustainedPerformanceMode: %s\n",
-                boolToString(mHintManager->IsRunning()), boolToString(mVRModeOn),
+                boolToString(mHintManager->IsRunning()),
                 boolToString(mCameraStreamingMode),
                 boolToString(mSustainedPerfModeOn)));
         // Dump nodes through libperfmgr
