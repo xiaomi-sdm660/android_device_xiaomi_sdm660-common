@@ -421,3 +421,7 @@ PRODUCT_PROPERTY_OVERRIDES += rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.
 
 #Property for setting the max timeout of autosuspend
 PRODUCT_PROPERTY_OVERRIDES += sys.autosuspend.timeout=500000
+
+# GMS
+PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
+
