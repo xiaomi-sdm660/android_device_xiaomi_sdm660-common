@@ -215,6 +215,9 @@ TARGET_RECOVERY_FSTAB := $(PLATFORM_PATH)/rootdir/etc/recovery.fstab
 # RIL
 TARGET_RIL_VARIANT := caf
 
+# Timeservice
+BOARD_USES_QC_TIME_SERVICES := true
+
 # Seccomp Policy
 BOARD_SECCOMP_POLICY := $(PLATFORM_PATH)/seccomp
 
