@@ -49,7 +49,6 @@ using ::android::hardware::Void;
 Power::Power() :
         mHintManager(HintManager::GetFromJSON("/vendor/etc/powerhint.json")),
         mInteractionHandler(mHintManager),
-        mVRModeOn(false),
         mSustainedPerfModeOn(false),
         mEncoderModeOn(false) {
     mInteractionHandler.Init();
@@ -67,14 +66,14 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
 
     switch(hint) {
         case PowerHint_1_0::INTERACTION:
-            if (mVRModeOn || mSustainedPerfModeOn) {
+            if (mSustainedPerfModeOn) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 mInteractionHandler.Acquire(data);
             }
             break;
         case PowerHint_1_0::VIDEO_ENCODE:
-            if (mVRModeOn || mSustainedPerfModeOn) {
+            if (mSustainedPerfModeOn) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 if (data) {
@@ -92,45 +91,16 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
         case PowerHint_1_0::SUSTAINED_PERFORMANCE:
             if (data && !mSustainedPerfModeOn) {
                 ALOGD("SUSTAINED_PERFORMANCE ON");
-                if (!mVRModeOn) { // Sustained mode only.
-                    mHintManager->DoHint("SUSTAINED_PERFORMANCE");
-                } else { // Sustained + VR mode.
-                    mHintManager->EndHint("VR_MODE");
-                    mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
-                }
+                mHintManager->DoHint("SUSTAINED_PERFORMANCE");
                 mSustainedPerfModeOn = true;
             } else if (!data && mSustainedPerfModeOn) {
                 ALOGD("SUSTAINED_PERFORMANCE OFF");
-                mHintManager->EndHint("VR_SUSTAINED_PERFORMANCE");
                 mHintManager->EndHint("SUSTAINED_PERFORMANCE");
-                if (mVRModeOn) { // Switch back to VR Mode.
-                    mHintManager->DoHint("VR_MODE");
-                }
                 mSustainedPerfModeOn = false;
             }
             break;
-        case PowerHint_1_0::VR_MODE:
-            if (data && !mVRModeOn) {
-                ALOGD("VR_MODE ON");
-                if (!mSustainedPerfModeOn) { // VR mode only.
-                    mHintManager->DoHint("VR_MODE");
-                } else { // Sustained + VR mode.
-                    mHintManager->EndHint("SUSTAINED_PERFORMANCE");
-                    mHintManager->DoHint("VR_SUSTAINED_PERFORMANCE");
-                }
-                mVRModeOn = true;
-            } else if (!data && mVRModeOn) {
-                ALOGD("VR_MODE OFF");
-                mHintManager->EndHint("VR_SUSTAINED_PERFORMANCE");
-                mHintManager->EndHint("VR_MODE");
-                if (mSustainedPerfModeOn) { // Switch back to sustained Mode.
-                    mHintManager->DoHint("SUSTAINED_PERFORMANCE");
-                }
-                mVRModeOn = false;
-            }
-            break;
         case PowerHint_1_0::LAUNCH:
-            if (mVRModeOn || mSustainedPerfModeOn) {
+            if (mSustainedPerfModeOn) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 if (data) {
