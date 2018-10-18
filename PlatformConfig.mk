@@ -169,7 +169,7 @@ VSYNC_EVENT_PHASE_OFFSET_NS := 2000000
 TARGET_EXFAT_DRIVER := exfat
 
 # Filesystem
-TARGET_FS_CONFIG_GEN := $(DEVICE_PATH)/config.fs
+TARGET_FS_CONFIG_GEN := $(PLATFORM_PATH)/config.fs
 
 # GPS
 TARGET_NO_RPC := true
@@ -224,7 +224,7 @@ BOARD_SECCOMP_POLICY := $(PLATFORM_PATH)/seccomp
 
 # SELinux
 include device/qcom/sepolicy/sepolicy.mk
-BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy
+BOARD_SEPOLICY_DIRS += $(PLATFORM_PATH)/sepolicy
 
 # Treble
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
