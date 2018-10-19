@@ -152,6 +152,13 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     cneapiclient \
     com.quicinc.cne
+    
+# FM packages
+PRODUCT_PACKAGES += \
+    libfmjni \
+    android.hardware.broadcastradio@1.0-impl \
+    FM2 \
+    qcom.fmradio
 
 # Display
 PRODUCT_PACKAGES += \
