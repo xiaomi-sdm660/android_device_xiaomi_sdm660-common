@@ -418,8 +418,3 @@ PRODUCT_PROPERTY_OVERRIDES += sys.autosuspend.timeout=500000
 
 # GMS
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
-
-# Miui Camera
-include vendor/xiaomi/sdm660/MiuiCamera/config.mk
-
-
