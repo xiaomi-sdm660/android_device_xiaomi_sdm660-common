@@ -14,7 +14,7 @@ on boot
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/vendor
     chmod 0600 /data/misc/fpc/calibration_image.pndat
     
-     # Fingerprint
+     # Fingerprint     
     chown system system /dev/goodix_fp
     chmod 0644 /dev/goodix_fp
     chown system system /sys/devices/soc/soc:fpc1020/fingerdown_wait
@@ -38,6 +38,9 @@ on post-fs-data
     mkdir /data/misc/fpc 0770 system system
     mkdir /data/misc/goodix 0770 system system
     mkdir /persist/fpc 0770 system system
+    
+    chown system system /data/misc/fpc/calibration_image.pndat
+    chmod 0600 /data/misc/fpc/calibration_image.pndat
     
 service fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
     class late_start
