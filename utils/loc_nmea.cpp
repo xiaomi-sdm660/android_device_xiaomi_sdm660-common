@@ -36,6 +36,8 @@
 
 #define GLONASS_SV_ID_OFFSET 64
 #define MAX_SATELLITES_IN_USE 12
+#define MSEC_IN_ONE_WEEK      604800000ULL
+#define UTC_GPS_OFFSET_MSECS  315964800000ULL
 
 // GNSS system id according to NMEA spec
 #define SYSTEM_ID_GPS          1
@@ -606,6 +608,79 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
 }
 
 /*===========================================================================
+FUNCTION    getUtcTimeWithLeapSecondTransition
+
+DESCRIPTION
+   This function returns true if the position report is generated during
+   leap second transition period. If not, then the utc timestamp returned
+   will be set to the timestamp in the position report. If it is,
+   then the utc timestamp returned will need to take into account
+   of the leap second transition so that proper calendar year/month/date
+   can be calculated from the returned utc timestamp.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   true: position report is generated in leap second transition period.
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+bool getUtcTimeWithLeapSecondTransition(const UlpLocation &location,
+                                        const GpsLocationExtended &locationExtended,
+                                        const LocationSystemInfo &systemInfo,
+                                        LocGpsUtcTime &utcPosTimestamp) {
+    bool inTransition = false;
+
+    // position report is not generated during leap second transition,
+    // we can use the UTC timestamp from position report as is
+    utcPosTimestamp = location.gpsLocation.timestamp;
+
+    // Check whether we are in leap second transition.
+    // If so, per NMEA spec, we need to display the extra second in format of 23:59:60
+    // with year/month/date not getting advanced.
+    if ((locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GPS_TIME) &&
+        ((systemInfo.systemInfoMask & LOCATION_SYS_INFO_LEAP_SECOND) &&
+         (systemInfo.leapSecondSysInfo.leapSecondInfoMask &
+          LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT))) {
+
+        const LeapSecondChangeInfo  &leapSecondChangeInfo =
+            systemInfo.leapSecondSysInfo.leapSecondChangeInfo;
+        const GnssSystemTimeStructType &gpsTimestampLsChange =
+            leapSecondChangeInfo.gpsTimestampLsChange;
+
+        uint64_t gpsTimeLsChange = gpsTimestampLsChange.systemWeek * MSEC_IN_ONE_WEEK +
+                                   gpsTimestampLsChange.systemMsec;
+        uint64_t gpsTimePosReport = locationExtended.gpsTime.gpsWeek * MSEC_IN_ONE_WEEK +
+                                    locationExtended.gpsTime.gpsTimeOfWeekMs;
+        // we are only dealing with positive leap second change, as negative
+        // leap second change has never occurred and should not occur in future
+        if (leapSecondChangeInfo.leapSecondsAfterChange >
+            leapSecondChangeInfo.leapSecondsBeforeChange) {
+            // leap second adjustment is always 1 second at a time. It can happen
+            // every quarter end and up to four times per year.
+            if ((gpsTimePosReport >= gpsTimeLsChange) &&
+                (gpsTimePosReport < (gpsTimeLsChange + 1000))) {
+                inTransition = true;
+                utcPosTimestamp = gpsTimeLsChange + UTC_GPS_OFFSET_MSECS -
+                                  leapSecondChangeInfo.leapSecondsBeforeChange * 1000;
+
+                // we substract 1000 milli-seconds from UTC timestmap in order to calculate the
+                // proper year, month and date during leap second transtion.
+                // Let us give an example, assuming leap second transition is scheduled on 2019,
+                // Dec 31st mid night. When leap second transition is happening,
+                // instead of outputting the time as 2020, Jan, 1st, 00 hour, 00 min, and 00 sec.
+                // The time need to be displayed as 2019, Dec, 31st, 23 hour, 59 min and 60 sec.
+                utcPosTimestamp -= 1000;
+            }
+        }
+    }
+    return inTransition;
+}
+
+/*===========================================================================
 FUNCTION    loc_nmea_generate_pos
 
 DESCRIPTION
@@ -631,11 +706,19 @@ SIDE EFFECTS
 ===========================================================================*/
 void loc_nmea_generate_pos(const UlpLocation &location,
                                const GpsLocationExtended &locationExtended,
+                               const LocationSystemInfo &systemInfo,
                                unsigned char generate_nmea,
                                std::vector<std::string> &nmeaArraystr)
 {
     ENTRY_LOG();
-    time_t utcTime(location.gpsLocation.timestamp/1000);
+
+    LocGpsUtcTime utcPosTimestamp = 0;
+    bool inLsTransition = false;
+
+    inLsTransition = getUtcTimeWithLeapSecondTransition
+                    (location, locationExtended, systemInfo, utcPosTimestamp);
+
+    time_t utcTime(utcPosTimestamp/1000);
     tm * pTm = gmtime(&utcTime);
     if (NULL == pTm) {
         LOC_LOGE("gmtime failed");
@@ -653,7 +736,19 @@ void loc_nmea_generate_pos(const UlpLocation &location,
     int utcMinutes = pTm->tm_min;
     int utcSeconds = pTm->tm_sec;
     int utcMSeconds = (location.gpsLocation.timestamp)%1000;
-    loc_sv_cache_info sv_cache_info = {};
+
+    if (inLsTransition) {
+        // During leap second transition, we need to display the extra
+        // leap second of hour, minute, second as (23:59:60)
+        utcHours = 23;
+        utcMinutes = 59;
+        utcSeconds = 60;
+        // As UTC timestamp is freezing during leap second transition,
+        // retrieve milli-seconds portion from GPS timestamp.
+        utcMSeconds = locationExtended.gpsTime.gpsTimeOfWeekMs % 1000;
+    }
+
+   loc_sv_cache_info sv_cache_info = {};
 
     if (GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA & locationExtended.flags) {
         sv_cache_info.gps_used_mask =
@@ -667,6 +762,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         sv_cache_info.bds_used_mask =
                 (uint32_t)locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask;
     }
+
     if (generate_nmea) {
         char talker[3] = {'G', 'P', '\0'};
         uint32_t svUsedCount = 0;

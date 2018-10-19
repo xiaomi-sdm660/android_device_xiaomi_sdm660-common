@@ -40,6 +40,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
 
 void loc_nmea_generate_pos(const UlpLocation &location,
                                const GpsLocationExtended &locationExtended,
+                               const LocationSystemInfo &systemInfo,
                                unsigned char generate_nmea,
                                std::vector<std::string> &nmeaArraystr);
 

@@ -1920,9 +1920,6 @@ GnssAdapter::updateClientsEventMask()
             mask |= LOC_API_ADAPTER_BIT_NMEA_1HZ_REPORT;
             updateNmeaMask(mNmeaMask | LOC_NMEA_MASK_DEBUG_V02);
         }
-        if (it->second.locationSystemInfoCb != nullptr) {
-            mask |= LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
-        }
     }
 
     /*
@@ -1952,6 +1949,9 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_REQUEST_WIFI;
     }
 
+    // need to register for leap second info
+    // for proper nmea generation
+    mask |= LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
     updateEvtMask(mask, LOC_REGISTRATION_MASK_SET);
 }
 
@@ -3012,7 +3012,8 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                           (LOC_RELIABILITY_NOT_SET == locationExtended.horizontal_reliability));
         uint8_t generate_nmea = (reported && status != LOC_SESS_FAILURE && !blank_fix);
         std::vector<std::string> nmeaArraystr;
-        loc_nmea_generate_pos(ulpLocation, locationExtended, generate_nmea, nmeaArraystr);
+        loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo,
+                              generate_nmea, nmeaArraystr);
         stringstream ss;
         for (auto sentence : nmeaArraystr) {
             ss << sentence;
@@ -3292,7 +3293,22 @@ GnssAdapter::reportLocationSystemInfo(const LocationSystemInfo & locationSystemI
     // may come at different time
     if (locationSystemInfo.systemInfoMask & LOCATION_SYS_INFO_LEAP_SECOND) {
         mLocSystemInfo.systemInfoMask |= LOCATION_SYS_INFO_LEAP_SECOND;
-        mLocSystemInfo.leapSecondSysInfo = locationSystemInfo.leapSecondSysInfo;
+
+        const LeapSecondSystemInfo &srcLeapSecondSysInfo = locationSystemInfo.leapSecondSysInfo;
+        LeapSecondSystemInfo &dstLeapSecondSysInfo = mLocSystemInfo.leapSecondSysInfo;
+        if (srcLeapSecondSysInfo.leapSecondInfoMask &
+                LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT) {
+            dstLeapSecondSysInfo.leapSecondInfoMask |=
+                LEAP_SECOND_SYS_INFO_CURRENT_LEAP_SECONDS_BIT;
+            dstLeapSecondSysInfo.leapSecondCurrent = srcLeapSecondSysInfo.leapSecondCurrent;
+        }
+        // once leap second change event is complete, modem may send up event invalidate the leap second
+        // change info while AP is still processing report during leap second transition
+        // so, we choose to keep this info around even though it is old
+        if (srcLeapSecondSysInfo.leapSecondInfoMask & LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT) {
+            dstLeapSecondSysInfo.leapSecondInfoMask |= LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT;
+            dstLeapSecondSysInfo.leapSecondChangeInfo = srcLeapSecondSysInfo.leapSecondChangeInfo;
+        }
     }
 
     // we received new info, inform client of the newly received info
