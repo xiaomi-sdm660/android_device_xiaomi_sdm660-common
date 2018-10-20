@@ -1,54 +1,44 @@
+service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
+    # "class hal" causes a race condition on some devices due to files created
+    # in /data. As a workaround, postpone startup until later in boot once
+    # /data is mounted.
+    class late_start
+    user system
+    group system input
+    writepid /dev/cpuset/system-background/tasks
+
+on property:init.svc.zygote=stopped
+    stop fps_hal
+
+on property:init.svc.zygote=running
+    start fps_hal
+
+on property:init.svc.zygote=restarting
+    stop fps_hal
+
+on init
+    # Goodix fingerprint
+    chown system system /dev/goodix_fp
+
 on boot
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/irq
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/irq_enable
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/wakeup_enable
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/hw_reset
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/device_prepare
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/fingerdown_wait
     chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/vendor
-    chown system system /data/misc/fpc/calibration_image.pndat
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/proximity_state
+    chown system system /sys/bus/platform/devices/soc:fingerprint_goodix/proximity_state
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/irq
-    chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/irq_enable
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/wakeup_enable
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/hw_reset
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/device_prepare
     chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/vendor
-    chmod 0600 /data/misc/fpc/calibration_image.pndat
-    
-     # Fingerprint     
-    chown system system /dev/goodix_fp
-    chmod 0644 /dev/goodix_fp
-    chown system system /sys/devices/soc/soc:fpc1020/fingerdown_wait
-    chmod 0220 /sys/devices/soc/soc:fpc1020/fingerdown_wait
-    chown system system /sys/devices/soc/soc:fpc1020/irq
-    chmod 0660 /sys/devices/soc/soc:fpc1020/irq
-    chown system system /sys/devices/soc/soc:fpc1020/hw_reset
-    chmod 0660 /sys/devices/soc/soc:fpc1020/hw_reset
-    chown system system /sys/devices/soc/soc:fpc1020/wakeup_enable
-    chmod 0660 /sys/devices/soc/soc:fpc1020/wakeup_enable
 
 on post-fs-data
-    mkdir /data/tombstones 0771 system system
-    mkdir /tombstones/modem 0771 system system
-    mkdir /tombstones/lpass 0771 system system
-    mkdir /tombstones/wcnss 0771 system system
-    mkdir /tombstones/dsps 0771 system system
-    mkdir /data/vendor/hbtp 0750 system system
-    mkdir /persist/qti_fp 0700 system system
-    mkdir /data/misc/seemp 0700 system system
-    mkdir /data/misc/fpc 0770 system system
+    mkdir /data/vendor/fpc 0770 system system
+    mkdir /data/vendor/goodix 0770 system system
     mkdir /data/misc/goodix 0770 system system
-    mkdir /persist/fpc 0770 system system
-    
-    chown system system /data/misc/fpc/calibration_image.pndat
-    chmod 0600 /data/misc/fpc/calibration_image.pndat
-    
-service fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
-    class late_start
-    user system
-    group system input
-    writepid /dev/cpuset/system-background/tasks
-    
-service goodix_script /vendor/bin/init.goodix.sh
-    class late_start
-    user system
-    oneshot
+    mkdir /data/vendor/gf_data 0770 system system
+    chown system system /data/vendor
