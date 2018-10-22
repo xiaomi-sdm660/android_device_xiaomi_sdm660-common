@@ -221,7 +221,7 @@ fingerprint_device_t* getDeviceForVendor(const char *class_name)
 
     if (!strcmp(class_name, "fpc")) {
         err = load("/system/vendor/lib64/hw/fingerprint.fpc.so", &hw_module);
-    } else if (!strcmp(class_name, "goodix")) {
+    } else if (!strcmp(class_name, "gdx")) {
         err = load("/system/vendor/lib64/hw/fingerprint.goodix.so", &hw_module);
     } else {
         ALOGE("No fingerprint module class specified.");
@@ -271,7 +271,7 @@ fingerprint_device_t* getFingerprintDevice()
     fingerprint_device_t *fp_device;
     char class_name[PROPERTY_VALUE_MAX];
 
-    property_get("ro.boot.fingerprint",
+    property_get("ro.boot.fpsensor",
         class_name, NULL);
 
     fp_device = getDeviceForVendor(class_name);
