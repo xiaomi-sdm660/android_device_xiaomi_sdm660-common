@@ -64,7 +64,6 @@ struct Power : public IPower {
     InteractionHandler mInteractionHandler;
     static bool isSupportedGovernor();
     std::atomic<bool> mSustainedPerfModeOn;
-    std::atomic<bool> mEncoderModeOn;
 };
 
 }  // namespace implementation

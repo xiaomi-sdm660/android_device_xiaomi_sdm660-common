@@ -138,12 +138,6 @@
   ],
   "Actions": [
     {
-      "PowerHint": "VIDEO_ENCODE",
-      "Node": "CPUBigClusterMaxFreq",
-      "Duration": 0,
-      "Value": "1958400"
-    },
-    {
       "PowerHint": "SUSTAINED_PERFORMANCE",
       "Node": "CPUBigClusterMaxFreq",
       "Duration": 0,

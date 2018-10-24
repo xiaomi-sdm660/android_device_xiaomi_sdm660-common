@@ -49,8 +49,7 @@ using ::android::hardware::Void;
 Power::Power() :
         mHintManager(HintManager::GetFromJSON("/vendor/etc/powerhint.json")),
         mInteractionHandler(mHintManager),
-        mSustainedPerfModeOn(false),
-        mEncoderModeOn(false) {
+        mSustainedPerfModeOn(false) {
     mInteractionHandler.Init();
 }
 
@@ -70,22 +69,6 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
                 ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
                 mInteractionHandler.Acquire(data);
-            }
-            break;
-        case PowerHint_1_0::VIDEO_ENCODE:
-            if (mSustainedPerfModeOn) {
-                ALOGV("%s: ignoring due to other active perf hints", __func__);
-            } else {
-                if (data) {
-                    // Hint until canceled
-                    mHintManager->DoHint("VIDEO_ENCODE");
-                    ALOGD("VIDEO_ENCODE ON");
-                    mEncoderModeOn = true;
-                } else {
-                    mHintManager->EndHint("VIDEO_ENCODE");
-                    ALOGD("VIDEO_ENCODE OFF");
-                    mEncoderModeOn = false;
-                }
             }
             break;
         case PowerHint_1_0::SUSTAINED_PERFORMANCE:
