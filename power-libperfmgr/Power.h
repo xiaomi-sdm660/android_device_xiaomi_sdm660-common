@@ -22,6 +22,7 @@
 #include <android/hardware/power/1.2/IPower.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
+#include <perfmgr/HintManager.h>
 
 #include "InteractionHandler.h"
 
@@ -60,9 +61,10 @@ struct Power : public IPower {
     // Methods from ::android::hidl::base::V1_0::IBase follow.
 
  private:
+    static bool isSupportedGovernor();
+
     std::shared_ptr<HintManager> mHintManager;
     InteractionHandler mInteractionHandler;
-    static bool isSupportedGovernor();
     std::atomic<bool> mSustainedPerfModeOn;
 };
 
