@@ -181,7 +181,7 @@
 
     <!-- MMS user agent string -->
     <string name="config_mms_user_agent" translatable="false">Android-Mms/2.0</string>
-    
+
     <!-- reference volume index for music stream to limit headphone volume and display warning -->
     <integer name="config_safe_media_volume_index">15</integer>
 
@@ -217,7 +217,7 @@
         <item>"wlan0"</item>
         <item>"wigig0"</item>
     </string-array>
-    
+
     <!-- dual sap mode is supported on this device. -->
     <bool name="config_wifi_dual_sap_mode_enabled">true</bool>
 
@@ -470,22 +470,22 @@
     <!-- Vibrator pattern for feedback about a long screen/key press -->
     <integer-array name="config_longPressVibePattern">
         <item>0</item>
-        <item>28</item>
+        <item>7</item>
         <item>10</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about touching a virtual key -->
     <integer-array name="config_virtualKeyVibePattern">
         <item>0</item>
-        <item>28</item>
-        <item>8</item>
+        <item>5</item>
+        <item>10</item>
     </integer-array>
 
     <!-- Vibrator pattern for a very short but reliable vibration for soft keyboard tap -->
     <integer-array name="config_keyboardTapVibePattern">
-        <item>28</item>
+        <item>10</item>
     </integer-array>
-
+    
     <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
             1 - Menu key
