@@ -26,4 +26,3 @@
 
 # IR
  /dev/spidev7.1                                  u:object_r:spidev_device:s0
-

@@ -13,4 +13,4 @@ Android | 8.1.0
 Note:
 Depends on: android_packages_resources_devicesettings from LineageOS
 
-Currently Supported Devices: wayne (MI 6X) and clover (MI PAD 4 /4 Plus)
+Currently Supported Devices: wayne (MI 6X), jasmine (MI A2) and clover (MI PAD 4 /4 Plus)

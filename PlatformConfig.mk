@@ -209,7 +209,11 @@ TARGET_COPY_OUT_VENDOR := vendor
 TARGET_USES_INTERACTION_BOOST := true
 
 # Recovery
+ifeq ($(AB_OTA_UPDATER), true)
+TARGET_RECOVERY_FSTAB := $(PLATFORM_PATH)/rootdir/etc/fstab_AB.qcom
+else
 TARGET_RECOVERY_FSTAB := $(PLATFORM_PATH)/rootdir/etc/recovery.fstab
+endif
 
 # FM
 AUDIO_FEATURE_ENABLED_FM_POWER_OPT := true
@@ -274,4 +278,3 @@ ifeq ($(HOST_OS),linux)
       endif
     endif
 endif
-
