@@ -146,6 +146,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.data.netmgrd.qos.enable=true \
     persist.data.wda.enable=true \
     persist.radio.aosp_usr_pref_sel=true \
+		persist.radio.add_power_save=1 \
     persist.radio.VT_CAM_INTERFACE=2 \
     persist.radio.data_con_rprt=1 \
     persist.radio.schd.cache=3500 \
