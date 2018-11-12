@@ -135,7 +135,9 @@ PRODUCT_COPY_FILES += \
 # ANT+
 PRODUCT_PACKAGES += \
     AntHalService \
-    com.dsi.ant.antradio_library
+    antradio_app \
+    com.dsi.ant.antradio_library \
+    libantradio
 
 PRODUCT_COPY_FILES += \
     external/ant-wireless/antradio-library/com.dsi.ant.antradio_library.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/com.dsi.ant.antradio_library.xml
@@ -158,10 +160,11 @@ PRODUCT_PACKAGES += \
     
 # FM packages
 PRODUCT_PACKAGES += \
-    libfmjni \
+    libqcomfm_jni \
     android.hardware.broadcastradio@1.0-impl \
     FM2 \
-    qcom.fmradio
+    qcom.fmradio \
+    qcom.fmradio.xml
 
 # Display
 PRODUCT_PACKAGES += \
