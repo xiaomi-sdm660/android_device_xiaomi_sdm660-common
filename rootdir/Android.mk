@@ -12,6 +12,7 @@ LOCAL_SRC_FILES		:= etc/fstab_AB.qcom
 else
 LOCAL_SRC_FILES		:= etc/fstab.qcom
 endif
+LOCAL_MODULE_PATH	:= $(TARGET_OUT_VENDOR_ETC)
 include $(BUILD_PREBUILT)
 
 # Offmode charging
