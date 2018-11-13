@@ -34,3 +34,6 @@ vendor.display.lcd_density          u:object_r:vendor_default_prop:s0
 
 # Dirac
 persist.audio.dirac.                u:object_r:dirac_prop:s0
+
+# MPCTL
+sys.post_boot.parsed                u:object_r:vendor_mpctl_prop:s0

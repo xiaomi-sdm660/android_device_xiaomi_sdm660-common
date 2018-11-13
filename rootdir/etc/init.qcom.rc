@@ -721,6 +721,8 @@ on property:sys.boot_completed=1
     start vendor.qcom-post-boot
     setprop vendor.post_boot.parsed 1
 
+on property:vendor.post_boot.parsed=*
+    setprop sys.post_boot.parsed ${vendor.post_boot.parsed}
 
 on property:ro.vendor.ril.mbn_copy_completed=1
     write /data/vendor/radio/copy_complete 1
