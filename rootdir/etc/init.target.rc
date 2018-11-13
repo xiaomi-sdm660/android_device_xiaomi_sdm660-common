@@ -222,7 +222,7 @@ service adsprpcd /vendor/bin/adsprpcd audiopd
 
 service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
     class main
-    user system
+    user radio
     socket ims_qmid stream 0660 system radio
     group radio log diag
     writepid /dev/cpuset/system-background/tasks
@@ -230,9 +230,9 @@ service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
 # imsdatadaemon starts with root and UID will be downgraded to SYSTEM.
 service vendor.imsdatadaemon /system/vendor/bin/imsdatadaemon
     class main
-    user system
+    user radio
     socket ims_datad stream 0660 system radio
-    group system wifi radio inet log diag
+    group radio wifi inet log diag
     disabled
     writepid /dev/cpuset/system-background/tasks
 
@@ -267,7 +267,7 @@ service vendor.ims_rtp_daemon /system/vendor/bin/ims_rtp_daemon
 
 service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    class main
-   user system
+   user radio
    group radio diag inet log wakelock
    writepid /dev/cpuset/system-background/tasks
 
