@@ -36,7 +36,7 @@ static void initialize();
 static void deinitialize();
 
 static void addClient(LocationAPI* client, const LocationCallbacks& callbacks);
-static void removeClient(LocationAPI* client);
+static void removeClient(LocationAPI* client, removeClientCompleteCallback rmClientCb);
 static void requestCapabilities(LocationAPI* client);
 
 static uint32_t startTracking(LocationAPI* client, TrackingOptions&);
@@ -140,10 +140,10 @@ static void addClient(LocationAPI* client, const LocationCallbacks& callbacks)
     }
 }
 
-static void removeClient(LocationAPI* client)
+static void removeClient(LocationAPI* client, removeClientCompleteCallback rmClientCb)
 {
     if (NULL != gGnssAdapter) {
-        gGnssAdapter->removeClientCommand(client);
+        gGnssAdapter->removeClientCommand(client, rmClientCb);
     }
 }
 
