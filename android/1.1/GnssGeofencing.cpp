@@ -53,7 +53,7 @@ GnssGeofencing::~GnssGeofencing() {
 // Methods from ::android::hardware::gnss::V1_0::IGnssGeofencing follow.
 Return<void> GnssGeofencing::setCallback(const sp<IGnssGeofenceCallback>& callback)  {
     if (mApi != nullptr) {
-        LOC_LOGE("%s]: mApi is NOT nullptr", __FUNCTION__);
+        LOC_LOGd("mApi is NOT nullptr");
         return Void();
     }
 
