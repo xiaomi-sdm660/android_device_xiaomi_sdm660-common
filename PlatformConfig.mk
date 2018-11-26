@@ -246,9 +246,6 @@ BOARD_USES_QC_TIME_SERVICES := true
 # Seccomp Policy
 BOARD_SECCOMP_POLICY := $(PLATFORM_PATH)/seccomp
 
-# Security patch level
-VENDOR_SECURITY_PATCH := 2018-09-01
-
 # SELinux
 include device/qcom/sepolicy/sepolicy.mk
 BOARD_SEPOLICY_DIRS += $(PLATFORM_PATH)/sepolicy
