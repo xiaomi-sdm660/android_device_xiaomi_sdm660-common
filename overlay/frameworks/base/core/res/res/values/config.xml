@@ -354,4 +354,7 @@
           correctly use them when installed on your device.  Otherwise, keep this disabled
           so that applications can still use their own mechanisms. -->
      <bool name="config_enableAutoPowerModes">true</bool>
+     
+     <!-- Flag indicating whether round icons should be parsed from the application manifest. -->
+    <bool name="config_useRoundIcon">true</bool>
 </resources>
