@@ -109,6 +109,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	vendor.gralloc.enable_fb_ubwc=1 \
 	debug.sf.enable_hwc_vds=1 \
 	debug.sf.hw=1 \
+	debug.hwui.renderer=skiagl \
 	persist.hwc.enable_vds=1 \
 	ro.opengles.version=196610 \
 	sdm.debug.disable_skip_validate=1 \
