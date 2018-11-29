@@ -46,12 +46,14 @@ typedef std::function<void(
     uint64_t gnssEnergyConsumedFromFirstBoot
 )> GnssEnergyConsumedCallback;
 
+typedef void (*removeClientCompleteCallback)(LocationAPI* client);
+
 struct GnssInterface {
     size_t size;
     void (*initialize)(void);
     void (*deinitialize)(void);
     void (*addClient)(LocationAPI* client, const LocationCallbacks& callbacks);
-    void (*removeClient)(LocationAPI* client);
+    void (*removeClient)(LocationAPI* client, removeClientCompleteCallback rmClientCb);
     void (*requestCapabilities)(LocationAPI* client);
     uint32_t (*startTracking)(LocationAPI* client, TrackingOptions&);
     void (*updateTrackingOptions)(LocationAPI* client, uint32_t id, TrackingOptions&);
@@ -87,7 +89,7 @@ struct FlpInterface {
     void (*initialize)(void);
     void (*deinitialize)(void);
     void (*addClient)(LocationAPI* client, const LocationCallbacks& callbacks);
-    void (*removeClient)(LocationAPI* client);
+    void (*removeClient)(LocationAPI* client, removeClientCompleteCallback rmClientCb);
     void (*requestCapabilities)(LocationAPI* client);
     uint32_t (*startTracking)(LocationAPI* client, TrackingOptions&);
     void (*updateTrackingOptions)(LocationAPI* client, uint32_t id, TrackingOptions&);
@@ -104,7 +106,7 @@ struct GeofenceInterface {
     void (*initialize)(void);
     void (*deinitialize)(void);
     void (*addClient)(LocationAPI* client, const LocationCallbacks& callbacks);
-    void (*removeClient)(LocationAPI* client);
+    void (*removeClient)(LocationAPI* client, removeClientCompleteCallback rmClientCb);
     void (*requestCapabilities)(LocationAPI* client);
     uint32_t* (*addGeofences)(LocationAPI* client, size_t count, GeofenceOption*, GeofenceInfo*);
     void (*removeGeofences)(LocationAPI* client, size_t count, uint32_t* ids);

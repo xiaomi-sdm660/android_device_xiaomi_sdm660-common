@@ -1859,25 +1859,32 @@ GnssAdapter::addClientCommand(LocationAPI* client, const LocationCallbacks& call
 }
 
 void
-GnssAdapter::removeClientCommand(LocationAPI* client)
+GnssAdapter::removeClientCommand(LocationAPI* client,
+                                 removeClientCompleteCallback rmClientCb)
 {
     LOC_LOGD("%s]: client %p", __func__, client);
 
     struct MsgRemoveClient : public LocMsg {
         GnssAdapter& mAdapter;
         LocationAPI* mClient;
+        removeClientCompleteCallback mRmClientCb;
         inline MsgRemoveClient(GnssAdapter& adapter,
-                               LocationAPI* client) :
+                               LocationAPI* client,
+                               removeClientCompleteCallback rmCb) :
             LocMsg(),
             mAdapter(adapter),
-            mClient(client) {}
+            mClient(client),
+            mRmClientCb(rmCb){}
         inline virtual void proc() const {
             mAdapter.stopClientSessions(mClient);
             mAdapter.eraseClient(mClient);
+            if (nullptr != mRmClientCb) {
+                mRmClientCb(mClient);
+            }
         }
     };
 
-    sendMsg(new MsgRemoveClient(*this, client));
+    sendMsg(new MsgRemoveClient(*this, client, rmClientCb));
 }
 
 void

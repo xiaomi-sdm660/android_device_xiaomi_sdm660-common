@@ -1274,6 +1274,9 @@ typedef std::function<void(
     LocationSystemInfo locationSystemInfo
 )> locationSystemInfoCallback;
 
+typedef std::function<void(
+)> locationApiDestroyCompleteCallback;
+
 typedef struct {
     size_t size; // set to sizeof(LocationCallbacks)
     capabilitiesCallback capabilitiesCb;             // mandatory

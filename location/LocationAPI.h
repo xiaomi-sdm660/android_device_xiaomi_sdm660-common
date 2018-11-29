@@ -43,10 +43,14 @@ public:
        of instances have been reached */
     static LocationAPI* createInstance(LocationCallbacks&);
 
-    /* destroy/cleans up the instance, which should be called when LocationAPI object is
-       no longer needed. LocationAPI* returned from createInstance will no longer valid
-       after destroy is called */
-    void destroy();
+    /* destroy/cleans up the instance, which should be called when LocationControlAPI object is
+       no longer needed. LocationControlAPI* returned from createInstance will no longer valid
+       after destroy is called.
+       If the caller allocates the memory for LocationControlCallbacks used in
+       LocationControlAPI::createInstance, then the caller must ensure that the memory still remains
+       valid until destroyCompleteCb is invoked.
+    */
+    void destroy(locationApiDestroyCompleteCallback destroyCompleteCb=nullptr);
 
     /* updates/changes the callbacks that will be called.
         mandatory callbacks must be present for callbacks to be successfully updated
