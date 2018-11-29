@@ -34,6 +34,9 @@ DEVICE_PACKAGE_OVERLAYS := device/xiaomi/sdm660-common/overlay
 
 PRODUCT_ENFORCE_RRO_TARGETS := \
     framework-res
+    
+# Platform properties
+include $(PLATFORM_PATH)/platform_prop.mk
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -187,9 +190,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.configstore@1.0-service \
     android.hardware.broadcastradio@1.0-impl
-    
-PRODUCT_PROPERTY_OVERRIDES += \
-    vendor.display.disable_rotator_downscale=1 \
 
 # Doze
 PRODUCT_PACKAGES += \
@@ -349,12 +349,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     rild \
     CarrierConfig
-
-#Facing, CMC and Gesture
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.vendor.sensors.facing=false \
-    ro.vendor.sensors.cmc=false \
-    ro.vendor.sdk.sensors.gestures=false
 
 # Sensors
 PRODUCT_PACKAGES += \
