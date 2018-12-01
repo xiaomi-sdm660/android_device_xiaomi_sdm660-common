@@ -34,7 +34,7 @@
         android:label="@string/device_settings_app_name"
         android:persistent="true">
 
-        <receiver android:name="org.carbonrom.settings.doze.BootCompletedReceiver">
+        <receiver android:name=".BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -47,12 +47,20 @@
 
         <activity
             android:name=".DozeSettingsActivity"
-            android:label="@string/ambient_display_title"
+            android:label="@string/ambient_display_xiaomi"
+            android:icon="@drawable/ic_settings_doze"
             android:theme="@style/Theme.Main">
             <intent-filter>
-                <action android:name="org.carbonrom.settings.device.DOZE_SETTINGS" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS" />
             </intent-filter>
+            <meta-data android:name="com.android.settings.dismiss"
+                       android:value="9,13,30" />
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.homepage" />
+             <meta-data
+                android:name="com.android.settings.summary"
+                android:resource="@string/advanced_doze_summary" />
         </activity>
 
     </application>
