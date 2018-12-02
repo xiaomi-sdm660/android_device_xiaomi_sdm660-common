@@ -154,6 +154,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.radio.VT_CAM_INTERFACE=2 \
     persist.radio.data_con_rprt=1 \
     persist.radio.schd.cache=3500 \
+		persist.radio.calls.on.ims=1 \
     persist.rmnet.data.enable=true \
     persist.vendor.data.mode=concurrent \
     persist.vendor.qti.telephony.vt_cam_interface=1 \
