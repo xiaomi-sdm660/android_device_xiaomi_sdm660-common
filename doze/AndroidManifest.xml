@@ -48,7 +48,7 @@
         <activity
             android:name=".DozeSettingsActivity"
             android:label="@string/ambient_display_xiaomi"
-            android:icon="@drawable/ic_settings_doze"
+            android:icon="@drawable/round_phonelink_setup_24"
             android:theme="@style/Theme.Main">
             <intent-filter>
                 <action android:name="com.android.settings.action.EXTRA_SETTINGS" />

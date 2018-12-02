@@ -16,7 +16,7 @@
             android:name="org.carbonrom.settings.device.DeviceSettingsActivity"
             android:exported="false"
             android:label="@string/advanced_settings"
-            android:icon="@drawable/ic_advance_setting"
+            android:icon="@drawable/round_build_24"
             android:launchMode="singleTask" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,24 +32,5 @@
                 android:name="com.android.settings.summary"
                 android:resource="@string/advanced_settings_summary" />
         </activity>
-        <activity-alias
-            android:name="org.carbonrom.settings.device.DeviceSettings"
-            android:icon="@drawable/ic_advance_setting"
-            android:exported="true"
-            android:label="@string/advanced_settings"
-            android:targetActivity="DeviceSettingsActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-                <meta-data android:name="com.android.settings.dismiss"
-                       android:value="9,13,30" />
-            <meta-data
-                android:name="com.android.settings.category"
-                android:value="com.android.settings.category.ia.homepage" />
-             <meta-data
-                android:name="com.android.settings.summary"
-                android:resource="@string/advanced_settings_summary" />
-        </activity-alias>
     </application>
 </manifest>
