@@ -354,6 +354,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl:64 \
     android.hardware.sensors@1.0-service
+    
+# IRSC
+ PRODUCT_COPY_FILES += \
+    $(PLATFORM_PATH)/configs/sec_config:$(TARGET_COPY_OUT_VENDOR)/etc/sec_config
 
 # Telephony
 PRODUCT_PACKAGES += \
