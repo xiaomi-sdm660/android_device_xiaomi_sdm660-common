@@ -38,8 +38,8 @@ case "$baseband" in
     "apq" | "sda" )
     setprop ro.radio.noril true
     stop ril-daemon
-    start ipacm-diag
-    start ipacm
+    start vendor.ipacm-diag
+    start vendor.ipacm
 esac
 
 case "$baseband" in
@@ -68,24 +68,24 @@ case "$baseband" in
     multisim=`getprop persist.radio.multisim.config`
 
     if [ "$multisim" = "dsds" ] || [ "$multisim" = "dsda" ]; then
-        start ril-daemon2
+        start vendor.ril-daemon2
     elif [ "$multisim" = "tsts" ]; then
-        start ril-daemon2
-        start ril-daemon3
+        start vendor.ril-daemon2
+        start vendor.ril-daemon3
     fi
 
     case "$datamode" in
         "tethered")
-            start qti
-            start port-bridge
+            start vendor.qti
+            start vendor.port-bridge
             ;;
         "concurrent")
-            start qti
-            start netmgrd
-            start port-bridge
+            start vendor.qti
+            start vendor.netmgrd
+            start vendor.port-bridge
             ;;
         *)
-            start netmgrd
+            start vendor.netmgrd
             ;;
     esac
 esac
