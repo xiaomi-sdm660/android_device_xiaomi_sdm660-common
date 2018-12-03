@@ -36,7 +36,7 @@ PRODUCT_ENFORCE_RRO_TARGETS := \
     framework-res
     
 # Platform properties
-include $(PLATFORM_PATH)/platform_prop.mk
+$(call inherit-product, $(PLATFORM_PATH)/platform_prop.mk)
 
 # Permissions
 PRODUCT_COPY_FILES += \
