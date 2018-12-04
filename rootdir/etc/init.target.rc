@@ -172,7 +172,7 @@ on property:sys.shutdown.requested=*
     stop vendor.per_proxy
     
 on property:sys.powerctl=*
-    stop per_proxy
+    stop vendor.per_proxy
 
 #start camera server as daemon
 #service qcamerasvr /system/bin/mm-qcamera-daemon

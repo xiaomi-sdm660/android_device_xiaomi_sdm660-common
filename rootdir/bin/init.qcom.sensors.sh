@@ -36,7 +36,7 @@ start_sensors()
         chmod -h 664 /persist/sensors/sensors_settings
         mkdir -p /persist/sensors/registry/registry
         chown -h system.root /persist/sensors/sensors_settings
-        start sensors
+        start vendor.sensors
     fi
 }
 
