@@ -488,6 +488,22 @@ typedef enum {
     GNSS_AIDING_DATA_SV_TYPE_GALILEO_BIT  = (1<<4),
 } GnssAidingDataSvTypeBits;
 
+/* Gnss constellation type mask */
+typedef uint16_t GnssConstellationTypeMask;
+typedef enum {
+    GNSS_CONSTELLATION_TYPE_GPS_BIT      = (1<<0),
+    GNSS_CONSTELLATION_TYPE_GLONASS_BIT  = (1<<1),
+    GNSS_CONSTELLATION_TYPE_QZSS_BIT     = (1<<2),
+    GNSS_CONSTELLATION_TYPE_BEIDOU_BIT   = (1<<3),
+    GNSS_CONSTELLATION_TYPE_GALILEO_BIT  = (1<<4),
+    GNSS_CONSTELLATION_TYPE_SBAS_BIT     = (1<<5)
+} GnssConstellationTypeBits;
+
+#define GNSS_CONSTELLATION_TYPE_MASK_ALL\
+        (GNSS_CONSTELLATION_TYPE_GPS_BIT     | GNSS_CONSTELLATION_TYPE_GLONASS_BIT |\
+         GNSS_CONSTELLATION_TYPE_QZSS_BIT    | GNSS_CONSTELLATION_TYPE_BEIDOU_BIT  |\
+         GNSS_CONSTELLATION_TYPE_GALILEO_BIT | GNSS_CONSTELLATION_TYPE_SBAS_BIT)
+
 /** GNSS Signal Type and RF Band */
 typedef uint32_t GnssSignalTypeMask;
 typedef enum {
@@ -531,19 +547,19 @@ typedef enum {
 
 typedef enum
 {
+    GNSS_LOC_SV_SYSTEM_UNKNOWN                = 0,
+    /** unknown sv system. */
     GNSS_LOC_SV_SYSTEM_GPS                    = 1,
     /**< GPS satellite. */
     GNSS_LOC_SV_SYSTEM_GALILEO                = 2,
     /**< GALILEO satellite. */
     GNSS_LOC_SV_SYSTEM_SBAS                   = 3,
     /**< SBAS satellite. */
-    GNSS_LOC_SV_SYSTEM_COMPASS                = 4,
-    /**< COMPASS satellite. */
-    GNSS_LOC_SV_SYSTEM_GLONASS                = 5,
+    GNSS_LOC_SV_SYSTEM_GLONASS                = 4,
     /**< GLONASS satellite. */
-    GNSS_LOC_SV_SYSTEM_BDS                    = 6,
+    GNSS_LOC_SV_SYSTEM_BDS                    = 5,
     /**< BDS satellite. */
-    GNSS_LOC_SV_SYSTEM_QZSS                   = 7
+    GNSS_LOC_SV_SYSTEM_QZSS                   = 6
     /**< QZSS satellite. */
 } Gnss_LocSvSystemEnumType;
 
@@ -590,7 +606,7 @@ typedef enum {
 typedef uint32_t GnssGloTimeStructTypeFlags;
 typedef enum {
     GNSS_CLO_DAYS_VALID                     = (1 << 0),
-    GNSS_GLOS_MSEC_VALID                    = (1 << 1),
+    GNSS_GLO_MSEC_VALID                     = (1 << 1),
     GNSS_GLO_CLK_TIME_BIAS_VALID            = (1 << 2),
     GNSS_GLO_CLK_TIME_BIAS_UNC_VALID        = (1 << 3),
     GNSS_GLO_REF_FCOUNT_VALID               = (1 << 4),

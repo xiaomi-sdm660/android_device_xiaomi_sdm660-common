@@ -1939,6 +1939,7 @@ GnssAdapter::updateClientsEventMask()
     if((1 == ContextBase::mGps_conf.EXTERNAL_DR_ENABLED) ||
        (true == initEngHubProxy())) {
         mask |= LOC_API_ADAPTER_BIT_GNSS_MEASUREMENT;
+        mask |= LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_POLYNOMIAL_REPORT;
         mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT;
