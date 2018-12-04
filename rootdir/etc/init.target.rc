@@ -829,3 +829,11 @@ on property:sys.antgpio=0
 
 on property:sys.antgpio=1
     write /sys/class/ant_class/ant_state 1
+
+on property:persist.camera.HAL3.enabled=0
+    stop vendor.camera-provider-2-4
+	start vendor.camera-provider-2-4
+    
+on property:persist.camera.HAL3.enabled=1
+    stop vendor.camera-provider-2-4
+	start vendor.camera-provider-2-4
