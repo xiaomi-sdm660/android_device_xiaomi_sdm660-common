@@ -11,7 +11,7 @@ value:2951
 value:2952
 
 [AID_VENDOR_ADPL_ODL]  
- value:2905  
+value:2905  
 
 [vendor/bin/wcnss_filter]
 mode: 0755
