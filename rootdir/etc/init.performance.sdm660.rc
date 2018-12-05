@@ -83,6 +83,7 @@ on post-fs
 
 on boot
     #Set on boot cpusets
+    write /dev/cpuset/audio-app/cpus 1-2
     write /dev/cpuset/top-app/cpus 0-3,4-7
     write /dev/cpuset/foreground/cpus 0-3,4-7
     write /dev/cpuset/background/cpus 0-7
