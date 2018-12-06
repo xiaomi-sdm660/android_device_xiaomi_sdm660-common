@@ -55,8 +55,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	vendor.audio.use.sw.alac.decoder=true \
 	vendor.audio.use.sw.ape.decoder=true \
 	vendor.fm.a2dp.conc.disabled=true \
-	vendor.voice.path.for.pcm.voip=true
-
+	vendor.voice.path.for.pcm.voip=true \
+	vendor.audio_hal.in_period_size=144 \
+  vendor.audio_hal.period_multiplier=3
 
 # Bluetooth
 PRODUCT_PROPERTY_OVERRIDES += \
