@@ -26,6 +26,9 @@ $(call inherit-product, vendor/xiaomi/wayne-common/wayne-common-vendor.mk)
 
 COMMON_PATH := device/xiaomi/wayne-common
 
+# Inherit properties
+$(call inherit-product, $(COMMON_PATH)/properties.mk)
+
 # Screen density
 PRODUCT_AAPT_CONFIG := normal
 PRODUCT_AAPT_PREF_CONFIG := xxhdpi
