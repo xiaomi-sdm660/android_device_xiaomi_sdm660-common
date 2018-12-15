@@ -1994,6 +1994,7 @@ typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void*
 
 #define SOCKET_DIR_TO_CLIENT           "/dev/socket/loc_client/"
 #define SOCKET_TO_LOCATION_CLIENT_BASE "/dev/socket/loc_client/toclient"
+#define SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE "/dev/socket/loc_client/extap.toclient"
 
 #ifdef __cplusplus
 }

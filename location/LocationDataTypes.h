@@ -640,7 +640,7 @@ typedef struct {
 } GnssAidingData;
 
 typedef struct {
-    size_t size;             // set to sizeof(Location)
+    uint32_t size;           // set to sizeof(Location)
     LocationFlagsMask flags; // bitwise OR of LocationFlagsBits to mark which params are valid
     uint64_t timestamp;      // UTC timestamp for location fix, milliseconds since January 1, 1970
     double latitude;         // in degrees
@@ -657,7 +657,7 @@ typedef struct {
 } Location;
 
 struct LocationOptions {
-    size_t size;          // set to sizeof(LocationOptions)
+    uint32_t size;          // set to sizeof(LocationOptions)
     uint32_t minInterval; // in milliseconds
     uint32_t minDistance; // in meters. if minDistance > 0, gnssSvCallback/gnssNmeaCallback/
                           // gnssMeasurementsCallback may not be called
@@ -684,7 +684,7 @@ struct TrackingOptions : LocationOptions {
 
     inline TrackingOptions() :
             LocationOptions(), powerMode(GNSS_POWER_MODE_INVALID), tbm(0) {}
-    inline TrackingOptions(size_t s, GnssPowerMode m, uint32_t t) :
+    inline TrackingOptions(uint32_t s, GnssPowerMode m, uint32_t t) :
             LocationOptions(), powerMode(m), tbm(t) { LocationOptions::size = s; }
     inline TrackingOptions(const LocationOptions& options) :
             LocationOptions(options), powerMode(GNSS_POWER_MODE_INVALID), tbm(0) {}
@@ -708,7 +708,7 @@ struct BatchingOptions : LocationOptions {
 
     inline BatchingOptions() :
             LocationOptions(), batchingMode(BATCHING_MODE_ROUTINE) {}
-    inline BatchingOptions(size_t s, BatchingMode m) :
+    inline BatchingOptions(uint32_t s, BatchingMode m) :
             LocationOptions(), batchingMode(m) { LocationOptions::size = s; }
     inline BatchingOptions(const LocationOptions& options) :
             LocationOptions(options), batchingMode(BATCHING_MODE_ROUTINE) {}
@@ -720,27 +720,27 @@ struct BatchingOptions : LocationOptions {
 };
 
 typedef struct {
-    size_t size;
+    uint32_t size;
     BatchingStatus batchingStatus;
 } BatchingStatusInfo;
 
 typedef struct {
-    size_t size;                            // set to sizeof(GeofenceOption)
+    uint32_t size;                          // set to sizeof(GeofenceOption)
     GeofenceBreachTypeMask breachTypeMask;  // bitwise OR of GeofenceBreachTypeBits
     uint32_t responsiveness;                // in milliseconds
     uint32_t dwellTime;                     // in seconds
 } GeofenceOption;
 
 typedef struct {
-    size_t size;      // set to sizeof(GeofenceInfo)
+    uint32_t size;    // set to sizeof(GeofenceInfo)
     double latitude;  // in degrees
     double longitude; // in degrees
     double radius;    // in meters
 } GeofenceInfo;
 
 typedef struct {
-    size_t size;             // set to sizeof(GeofenceBreachNotification)
-    size_t count;            // number of ids in array
+    uint32_t size;             // set to sizeof(GeofenceBreachNotification)
+    uint32_t count;            // number of ids in array
     uint32_t* ids;           // array of ids that have breached
     Location location;       // location associated with breach
     GeofenceBreachType type; // type of breach
@@ -748,7 +748,7 @@ typedef struct {
 } GeofenceBreachNotification;
 
 typedef struct {
-    size_t size;                       // set to sizeof(GeofenceBreachNotification)
+    uint32_t size;                       // set to sizeof(GeofenceBreachNotification)
     GeofenceStatusAvailable available; // GEOFENCE_STATUS_AVAILABILE_NO/_YES
     LocationTechnologyType techType;   // GNSS
 } GeofenceStatusNotification;
@@ -882,7 +882,7 @@ typedef struct {
 } GnssSystemTime;
 
 typedef struct {
-    size_t size;                        // set to sizeof(GnssLocationInfo)
+    uint32_t size;                        // set to sizeof(GnssLocationInfo)
     GnssLocationInfoFlagMask flags;     // bitwise OR of GnssLocationInfoBits for param validity
     float altitudeMeanSeaLevel;         // altitude wrt mean sea level
     float pdop;                         // position dilusion of precision
@@ -918,7 +918,7 @@ typedef struct {
 } GnssLocationInfoNotification;
 
 typedef struct {
-    size_t size;                           // set to sizeof(GnssNiNotification)
+    uint32_t size;                           // set to sizeof(GnssNiNotification)
     GnssNiType type;                       // type of NI (Voice, SUPL, Control Plane)
     GnssNiOptionsMask options;             // bitwise OR of GnssNiOptionsBits
     uint32_t timeout;                      // time (seconds) to wait for user input
@@ -931,7 +931,7 @@ typedef struct {
 } GnssNiNotification;
 
 typedef struct {
-    size_t size;       // set to sizeof(GnssSv)
+    uint32_t size;       // set to sizeof(GnssSv)
     uint16_t svId;     // Unique Identifier
     GnssSvType type;   // type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO)
     float cN0Dbhz;     // signal strength
@@ -943,7 +943,7 @@ typedef struct {
 } GnssSv;
 
 struct GnssConfigSetAssistanceServer {
-    size_t size;             // set to sizeof(GnssConfigSetAssistanceServer)
+    uint32_t size;             // set to sizeof(GnssConfigSetAssistanceServer)
     GnssAssistanceType type; // SUPL or C2K
     const char* hostName;    // null terminated string
     uint32_t port;           // port of server
@@ -960,7 +960,7 @@ struct GnssConfigSetAssistanceServer {
 };
 
 typedef struct {
-    size_t size;                               // set to sizeof(GnssMeasurementsData)
+    uint32_t size;                               // set to sizeof(GnssMeasurementsData)
     GnssMeasurementsDataFlagsMask flags;       // bitwise OR of GnssMeasurementsDataFlagsBits
     int16_t svId;
     GnssSvType svType;
@@ -984,7 +984,7 @@ typedef struct {
 } GnssMeasurementsData;
 
 typedef struct {
-    size_t size;                          // set to sizeof(GnssMeasurementsClock)
+    uint32_t size;                          // set to sizeof(GnssMeasurementsClock)
     GnssMeasurementsClockFlagsMask flags; // bitwise OR of GnssMeasurementsClockFlagsBits
     int16_t leapSecond;
     int64_t timeNs;
@@ -998,29 +998,29 @@ typedef struct {
 } GnssMeasurementsClock;
 
 typedef struct {
-    size_t size;                 // set to sizeof(GnssSvNotification)
-    size_t count;                // number of SVs in the GnssSv array
+    uint32_t size;                 // set to sizeof(GnssSvNotification)
+    uint32_t count;                // number of SVs in the GnssSv array
     bool gnssSignalTypeMaskValid;
     GnssSv gnssSvs[GNSS_SV_MAX]; // information on a number of SVs
 } GnssSvNotification;
 
 typedef struct {
-    size_t size;         // set to sizeof(GnssNmeaNotification)
+    uint32_t size;         // set to sizeof(GnssNmeaNotification)
     uint64_t timestamp;  // timestamp
     const char* nmea;    // nmea text
-    size_t length;       // length of the nmea text
+    uint32_t length;       // length of the nmea text
 } GnssNmeaNotification;
 
 typedef struct {
-    size_t size;                 // set to sizeof(GnssDataNotification)
+    uint32_t size;                 // set to sizeof(GnssDataNotification)
     GnssDataMask  gnssDataMask[GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES];  // bitwise OR of GnssDataBits
     double        jammerInd[GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES];     // Jammer Indication
     double        agc[GNSS_LOC_MAX_NUMBER_OF_SIGNAL_TYPES];           // Automatic gain control
 } GnssDataNotification;
 
 typedef struct {
-    size_t size;         // set to sizeof(GnssMeasurementsNotification)
-    size_t count;        // number of items in GnssMeasurements array
+    uint32_t size;         // set to sizeof(GnssMeasurementsNotification)
+    uint32_t count;        // number of items in GnssMeasurements array
     GnssMeasurementsData measurements[GNSS_MEASUREMENTS_MAX];
     GnssMeasurementsClock clock; // clock
 } GnssMeasurementsNotification;
@@ -1028,9 +1028,9 @@ typedef struct {
 typedef uint32_t GnssSvId;
 
 struct GnssSvIdSource{
-    size_t size;                 // set to sizeof(GnssSvIdSource)
-    GnssSvType constellation;    // constellation for the sv to blacklist
-    GnssSvId svId;           // sv id to blacklist
+    uint32_t size;              // set to sizeof(GnssSvIdSource)
+    GnssSvType constellation;   // constellation for the sv to blacklist
+    GnssSvId svId;             // sv id to blacklist
 };
 inline bool operator ==(GnssSvIdSource const& left, GnssSvIdSource const& right) {
     return left.size == right.size &&
@@ -1039,7 +1039,7 @@ inline bool operator ==(GnssSvIdSource const& left, GnssSvIdSource const& right)
 
 #define GNSS_SV_CONFIG_ALL_BITS_ENABLED_MASK ((uint64_t)0xFFFFFFFFFFFFFFFF)
 typedef struct {
-    size_t size; // set to sizeof(GnssSvIdConfig)
+    uint32_t size; // set to sizeof(GnssSvIdConfig)
 
     // GLONASS - SV 65 maps to bit 0
 #define GNSS_SV_CONFIG_GLO_INITIAL_SV_ID 65
@@ -1059,7 +1059,7 @@ typedef struct {
 } GnssSvIdConfig;
 
 struct GnssConfig{
-    size_t size;  // set to sizeof(GnssConfig)
+    uint32_t size;  // set to sizeof(GnssConfig)
     GnssConfigFlagsMask flags; // bitwise OR of GnssConfigFlagsBits to mark which params are valid
     GnssConfigGpsLock gpsLock;
     GnssConfigSuplVersion suplVersion;
@@ -1093,7 +1093,7 @@ struct GnssConfig{
 };
 
 typedef struct {
-    size_t size;                        // set to sizeof
+    uint32_t size;                        // set to sizeof
     bool                                mValid;
     Location                            mLocation;
     double                              verticalAccuracyMeters;
@@ -1103,7 +1103,7 @@ typedef struct {
 } GnssDebugLocation;
 
 typedef struct {
-    size_t size;                        // set to sizeof
+    uint32_t size;                        // set to sizeof
     bool                                mValid;
     int64_t                             timeEstimate;
     float                               timeUncertaintyNs;
@@ -1111,7 +1111,7 @@ typedef struct {
 } GnssDebugTime;
 
 typedef struct {
-    size_t size;                        // set to sizeof
+    uint32_t size;                        // set to sizeof
     uint32_t                            svid;
     GnssSvType                          constellation;
     GnssEphemerisType                   mEphemerisType;
@@ -1123,7 +1123,7 @@ typedef struct {
 } GnssDebugSatelliteInfo;
 
 typedef struct {
-    size_t size;                        // set to sizeof
+    uint32_t size;                        // set to sizeof
     GnssDebugLocation                   mLocation;
     GnssDebugTime                       mTime;
     std::vector<GnssDebugSatelliteInfo> mSatelliteInfo;
@@ -1198,7 +1198,7 @@ typedef std::function<void(
    collectiveResponseCallback is called for every geofence API call.
    ids array and LocationError array are only valid until collectiveResponseCallback returns. */
 typedef std::function<void(
-    size_t count, // number of locations in arrays
+    uint32_t count, // number of locations in arrays
     LocationError* errs, // array of LocationError associated to the request
     uint32_t* ids // array of ids to be associated to the request
 )> collectiveResponseCallback;
@@ -1214,7 +1214,7 @@ typedef std::function<void(
    batchingCallback is called when delivering locations in a batching session.
    broadcasted to all clients, no matter if a session has started by client */
 typedef std::function<void(
-    size_t count,      // number of locations in array
+    uint32_t count,      // number of locations in array
     Location* location, // array of locations
     BatchingOptions batchingOptions // Batching options
 )> batchingCallback;
@@ -1301,7 +1301,7 @@ typedef enum {
 } LocationAdapterTypeBits;
 
 typedef struct {
-    size_t size; // set to sizeof(LocationCallbacks)
+    uint32_t size; // set to sizeof(LocationCallbacks)
     capabilitiesCallback capabilitiesCb;             // mandatory
     responseCallback responseCb;                     // mandatory
     collectiveResponseCallback collectiveResponseCb; // mandatory

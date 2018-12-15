@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef __LOC_SOCKET__
-#define __LOC_SOCKET__
+#ifndef __LOC_IPC__
+#define __LOC_IPC__
 
 #include <string>
 #include <memory>
@@ -149,4 +149,4 @@ private:
 
 }
 
-#endif //__LOC_SOCKET__
+#endif //__LOC_IPC__
