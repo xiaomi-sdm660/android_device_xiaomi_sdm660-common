@@ -68,7 +68,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     debug.hwui.renderer=skiagl \
     debug.sf.enable_hwc_vds=1 \
     debug.sf.hw=1 \
-    debug.sf.latch_unsignaled=1 \
     debug.sf.early_app_phase_offset_ns=1500000 \
     debug.sf.early_gl_phase_offset_ns=3000000 \
     debug.sf.early_gl_app_phase_offset_ns=15000000 \
