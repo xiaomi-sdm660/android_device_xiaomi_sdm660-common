@@ -192,10 +192,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.data.df.mux_count=8 \
 	persist.data.df.iwlan_mux=9 \
 	persist.data.df.dev_name=rmnet_usb0 \
-	persist.data.mode=concurrent \
+	persist.vendor.data.mode=concurrent \
 	persist.data.netmgrd.qos.enable=true \
 	persist.data.wda.enable=true \
-	persist.radio.apm_sim_not_pwdn=1 \
+	persist.vendor.radio.apm_sim_not_pwdn=1 \
 	persist.radio.atfwd.start=true \
 	persist.radio.data_con_rprt=1 \
 	persist.rmnet.data.enable=true \
@@ -207,7 +207,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so \
 	ro.com.android.dataroaming=true \
 	ro.telephony.default_network=22,20 \
-	ro.use_data_netmgrd=true \
+	ro.vendor.use_data_netmgrd=true \
 	telephony.lteOnCdmaDevice=1
 
 # Sensors
