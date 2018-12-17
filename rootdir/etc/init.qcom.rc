@@ -360,10 +360,6 @@ on post-fs-data
     mkdir /data/shared 0755
     chown system system /data/shared
 
-    #Create directory for FOTA
-    mkdir /data/fota 0771
-    chown system system /data/fota
-
     # SSC/SLPI sensors
     mkdir /vendor/mnt/persist/sensors 0775 sensors sensors
     write /vendor/mnt/persist/sensors/sensors_settings 1
