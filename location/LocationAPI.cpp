@@ -36,15 +36,37 @@
 #include <map>
 
 typedef void* (getLocationInterface)();
+
+typedef uint16_t LocationAdapterTypeMask;
+typedef enum {
+    LOCATION_ADAPTER_GNSS_TYPE_BIT      = (1<<0), // adapter type is GNSS
+    LOCATION_ADAPTER_FLP_TYPE_BIT       = (1<<1), // adapter type is FLP
+    LOCATION_ADAPTER_GEOFENCE_TYPE_BIT  = (1<<2)  // adapter type is geo fence
+} LocationAdapterTypeBits;
+
+typedef struct {
+    // bit mask of the adpaters that we need to wait for the removeClientCompleteCallback
+    // before we invoke the registered locationApiDestroyCompleteCallback
+    LocationAdapterTypeMask waitAdapterMask;
+    locationApiDestroyCompleteCallback destroyCompleteCb;
+} LocationAPIDestroyCbData;
+
+// This is the map for the client that has requested destroy with
+// destroy callback provided.
+typedef std::map<LocationAPI*, LocationAPIDestroyCbData>
+    LocationClientDestroyCbMap;
+
 typedef std::map<LocationAPI*, LocationCallbacks> LocationClientMap;
 typedef struct {
     LocationClientMap clientData;
+    LocationClientDestroyCbMap destroyClientData;
     LocationControlAPI* controlAPI;
     LocationControlCallbacks controlCallbacks;
     GnssInterface* gnssInterface;
     GeofenceInterface* geofenceInterface;
     FlpInterface* flpInterface;
 } LocationAPIData;
+
 static LocationAPIData gData = {};
 static pthread_mutex_t gDataMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool gGnssLoadFailed = false;
@@ -80,7 +102,8 @@ static bool isGeofenceClient(LocationCallbacks& locationCallbacks)
             locationCallbacks.geofenceStatusCb != nullptr);
 }
 
-static void* loadLocationInterface(const char* library, const char* name) {
+static void* loadLocationInterface(const char* library, const char* name)
+{
     LOC_LOGD("%s]: loading %s::%s ...", __func__, library, name);
     if (NULL == library || NULL == name) {
         return NULL;
@@ -104,6 +127,46 @@ static void* loadLocationInterface(const char* library, const char* name) {
     } else {
         return (*getter)();
     }
+}
+
+void onRemoveClientCompleteCb (
+    LocationAPI* client, LocationAdapterTypeMask adapterType)
+{
+    bool invokeCallback = false;
+    locationApiDestroyCompleteCallback destroyCompleteCb;
+    LOC_LOGd("adatper type %x", adapterType);
+    pthread_mutex_lock(&gDataMutex);
+    auto it = gData.destroyClientData.find(client);
+    if (it != gData.destroyClientData.end()) {
+        it->second.waitAdapterMask &= ~adapterType;
+        if (it->second.waitAdapterMask == 0) {
+            invokeCallback = true;
+            destroyCompleteCb = it->second.destroyCompleteCb;
+            gData.destroyClientData.erase(it);
+        }
+    }
+    pthread_mutex_unlock(&gDataMutex);
+
+    if ((true == invokeCallback) && (nullptr != destroyCompleteCb)) {
+        LOC_LOGd("invoke client destroy cb");
+        (destroyCompleteCb) ();
+        LOC_LOGd("finish invoke client destroy cb");
+    }
+}
+
+void onGnssRemoveClientCompleteCb (LocationAPI* client)
+{
+    onRemoveClientCompleteCb (client, LOCATION_ADAPTER_GNSS_TYPE_BIT);
+}
+
+void onFlpRemoveClientCompleteCb (LocationAPI* client)
+{
+    onRemoveClientCompleteCb (client, LOCATION_ADAPTER_FLP_TYPE_BIT);
+}
+
+void onGeofenceRemoveClientCompleteCb (LocationAPI* client)
+{
+    onRemoveClientCompleteCb (client, LOCATION_ADAPTER_GEOFENCE_TYPE_BIT);
 }
 
 LocationAPI*
@@ -188,9 +251,66 @@ LocationAPI::createInstance(LocationCallbacks& locationCallbacks)
 }
 
 void
-LocationAPI::destroy()
+LocationAPI::destroy(locationApiDestroyCompleteCallback destroyCompleteCb)
 {
-    delete this;
+    bool invokeDestroyCb = false;
+
+    pthread_mutex_lock(&gDataMutex);
+    auto it = gData.clientData.find(this);
+    if (it != gData.clientData.end()) {
+        bool removeFromGnssInf =
+                (isGnssClient(it->second) && NULL != gData.gnssInterface);
+        bool removeFromFlpInf =
+                (isFlpClient(it->second) && NULL != gData.flpInterface);
+        bool removeFromGeofenceInf =
+                (isGeofenceClient(it->second) && NULL != gData.geofenceInterface);
+        bool needToWait = (removeFromGnssInf || removeFromFlpInf || removeFromGeofenceInf);
+        LOC_LOGe("removeFromGnssInf: %d, removeFromFlpInf: %d, removeFromGeofenceInf: %d, need %d",
+                 removeFromGnssInf, removeFromFlpInf, removeFromGeofenceInf, needToWait);
+
+        if ((NULL != destroyCompleteCb) && (true == needToWait)) {
+            LocationAPIDestroyCbData destroyCbData = {};
+            destroyCbData.destroyCompleteCb = destroyCompleteCb;
+            // record down from which adapter we need to wait for the destroy complete callback
+            // only when we have received all the needed callbacks from all the associated stacks,
+            // we shall notify the client.
+            destroyCbData.waitAdapterMask =
+                    (removeFromGnssInf ? LOCATION_ADAPTER_GNSS_TYPE_BIT : 0);
+            destroyCbData.waitAdapterMask |=
+                    (removeFromFlpInf ? LOCATION_ADAPTER_FLP_TYPE_BIT : 0);
+            destroyCbData.waitAdapterMask |=
+                    (removeFromGeofenceInf ? LOCATION_ADAPTER_GEOFENCE_TYPE_BIT : 0);
+            gData.destroyClientData[this] = destroyCbData;
+            LOC_LOGe("destroy data stored in the map: 0x%x", destroyCbData.waitAdapterMask);
+        }
+
+        if (removeFromGnssInf) {
+            gData.gnssInterface->removeClient(it->first,
+                                              onGnssRemoveClientCompleteCb);
+        }
+        if (removeFromFlpInf) {
+            gData.flpInterface->removeClient(it->first,
+                                             onFlpRemoveClientCompleteCb);
+        }
+        if (removeFromGeofenceInf) {
+            gData.geofenceInterface->removeClient(it->first,
+                                                  onGeofenceRemoveClientCompleteCb);
+        }
+
+        gData.clientData.erase(it);
+
+        if ((NULL != destroyCompleteCb) && (false == needToWait)) {
+            invokeDestroyCb = true;
+        }
+    } else {
+        LOC_LOGE("%s:%d]: Location API client %p not found in client data",
+                 __func__, __LINE__, this);
+    }
+
+    pthread_mutex_unlock(&gDataMutex);
+    if (invokeDestroyCb == true) {
+        (destroyCompleteCb) ();
+    }
 }
 
 LocationAPI::LocationAPI()
@@ -198,29 +318,9 @@ LocationAPI::LocationAPI()
     LOC_LOGD("LOCATION API CONSTRUCTOR");
 }
 
+// private destructor
 LocationAPI::~LocationAPI()
 {
-    LOC_LOGD("LOCATION API DESTRUCTOR");
-    pthread_mutex_lock(&gDataMutex);
-
-    auto it = gData.clientData.find(this);
-    if (it != gData.clientData.end()) {
-        if (isGnssClient(it->second) && NULL != gData.gnssInterface) {
-            gData.gnssInterface->removeClient(it->first);
-        }
-        if (isFlpClient(it->second) && NULL != gData.flpInterface) {
-            gData.flpInterface->removeClient(it->first);
-        }
-        if (isGeofenceClient(it->second) && NULL != gData.geofenceInterface) {
-            gData.geofenceInterface->removeClient(it->first);
-        }
-        gData.clientData.erase(it);
-    } else {
-        LOC_LOGE("%s:%d]: Location API client %p not found in client data",
-                 __func__, __LINE__, this);
-    }
-
-    pthread_mutex_unlock(&gDataMutex);
 }
 
 void

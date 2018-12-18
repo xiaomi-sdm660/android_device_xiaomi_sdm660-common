@@ -33,9 +33,12 @@
 #include <math.h>
 #include <log_util.h>
 #include <loc_pla.h>
+#include <loc_cfg.h>
 
 #define GLONASS_SV_ID_OFFSET 64
 #define MAX_SATELLITES_IN_USE 12
+#define MSEC_IN_ONE_WEEK      604800000ULL
+#define UTC_GPS_OFFSET_MSECS  315964800000ULL
 
 // GNSS system id according to NMEA spec
 #define SYSTEM_ID_GPS          1
@@ -110,6 +113,126 @@ typedef struct loc_sv_cache_info_s
     float pdop;
     float vdop;
 } loc_sv_cache_info;
+
+/*===========================================================================
+FUNCTION    convert_Lla_to_Ecef
+
+DESCRIPTION
+   Convert LLA to ECEF
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   NONE
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void convert_Lla_to_Ecef(const LocLla& plla, LocEcef& pecef)
+{
+    double r;
+
+    r = MAJA / sqrt(1.0 - ESQR * sin(plla.lat) * sin(plla.lat));
+    pecef.X = (r + plla.alt) * cos(plla.lat) * cos(plla.lon);
+    pecef.Y = (r + plla.alt) * cos(plla.lat) * sin(plla.lon);
+    pecef.Z = (r * OMES + plla.alt) * sin(plla.lat);
+}
+
+/*===========================================================================
+FUNCTION    convert_WGS84_to_PZ90
+
+DESCRIPTION
+   Convert datum from WGS84 to PZ90
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   NONE
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void convert_WGS84_to_PZ90(const LocEcef& pWGS84, LocEcef& pPZ90)
+{
+    double deltaX     = DatumConstFromWGS84[0];
+    double deltaY     = DatumConstFromWGS84[1];
+    double deltaZ     = DatumConstFromWGS84[2];
+    double deltaScale = DatumConstFromWGS84[3];
+    double rotX       = DatumConstFromWGS84[4];
+    double rotY       = DatumConstFromWGS84[5];
+    double rotZ       = DatumConstFromWGS84[6];
+
+    pPZ90.X = deltaX + deltaScale * (pWGS84.X + rotZ * pWGS84.Y - rotY * pWGS84.Z);
+    pPZ90.Y = deltaY + deltaScale * (pWGS84.Y - rotZ * pWGS84.X + rotX * pWGS84.Z);
+    pPZ90.Z = deltaZ + deltaScale * (pWGS84.Z + rotY * pWGS84.X - rotX * pWGS84.Y);
+}
+
+/*===========================================================================
+FUNCTION    convert_Ecef_to_Lla
+
+DESCRIPTION
+   Convert ECEF to LLA
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   NONE
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void convert_Ecef_to_Lla(const LocEcef& pecef, LocLla& plla)
+{
+    double p, r;
+    double EcefA = C_PZ90A;
+    double EcefB = C_PZ90B;
+    double Ecef1Mf;
+    double EcefE2;
+    double Mu;
+    double Smu;
+    double Cmu;
+    double Phi;
+    double Sphi;
+    double N;
+
+    p = sqrt(pecef.X * pecef.X + pecef.Y * pecef.Y);
+    r = sqrt(p * p + pecef.Z * pecef.Z);
+    if (r < 1.0) {
+        plla.lat = 1.0;
+        plla.lon = 1.0;
+        plla.alt = 1.0;
+    }
+    Ecef1Mf = 1.0 - (EcefA - EcefB) / EcefA;
+    EcefE2 = 1.0 - (EcefB * EcefB) / (EcefA * EcefA);
+    if (p > 1.0) {
+        Mu = atan2(pecef.Z * (Ecef1Mf + EcefE2 * EcefA / r), p);
+    } else {
+        if (pecef.Z > 0.0) {
+            Mu = M_PI / 2.0;
+        } else {
+            Mu = -M_PI / 2.0;
+        }
+    }
+    Smu = sin(Mu);
+    Cmu = cos(Mu);
+    Phi = atan2(pecef.Z * Ecef1Mf + EcefE2 * EcefA * Smu * Smu * Smu,
+                Ecef1Mf * (p - EcefE2 * EcefA * Cmu * Cmu * Cmu));
+    Sphi = sin(Phi);
+    N = EcefA / sqrt(1.0 - EcefE2 * Sphi * Sphi);
+    plla.alt = p * cos(Phi) + pecef.Z * Sphi - EcefA * EcefA/N;
+    plla.lat = Phi;
+    if ( p > 1.0) {
+        plla.lon = atan2(pecef.Y, pecef.X);
+    } else {
+        plla.lon = 0.0;
+    }
+}
 
 /*===========================================================================
 FUNCTION    convert_signalType_to_signalId
@@ -606,6 +729,183 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
 }
 
 /*===========================================================================
+FUNCTION    loc_nmea_generate_DTM
+
+DESCRIPTION
+   Generate NMEA DTM sentences generated based on position report
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   NONE
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+static void loc_nmea_generate_DTM(const LocLla &ref_lla,
+                                  const LocLla &local_lla,
+                                  char *sentence,
+                                  int bufSize)
+{
+    char* pMarker = sentence;
+    int lengthRemaining = bufSize;
+    int length = 0;
+    int datum_type;
+    char ref_datum[4] = {0};
+    char local_datum[4] = {0};
+    double lla_offset[3] = {0};
+    char latHem, longHem;
+    double latMins, longMins;
+
+
+
+    datum_type = loc_get_datum_type();
+    switch (datum_type) {
+        case LOC_GNSS_DATUM_WGS84:
+            ref_datum[0] = 'W';
+            ref_datum[1] = '8';
+            ref_datum[2] = '4';
+            local_datum[0] = 'P';
+            local_datum[1] = '9';
+            local_datum[2] = '0';
+            break;
+        case LOC_GNSS_DATUM_PZ90:
+            ref_datum[0] = 'P';
+            ref_datum[1] = '9';
+            ref_datum[2] = '0';
+            local_datum[0] = 'W';
+            local_datum[1] = '8';
+            local_datum[2] = '4';
+            break;
+        default:
+            break;
+    }
+    length = snprintf(pMarker , lengthRemaining , "$GPDTM,%s,," , local_datum);
+    if (length < 0 || length >= lengthRemaining) {
+        LOC_LOGE("NMEA Error in string formatting");
+        return;
+    }
+    pMarker += length;
+    lengthRemaining -= length;
+
+    lla_offset[0] = local_lla.lat - ref_lla.lat;
+    lla_offset[1] = fmod(local_lla.lon - ref_lla.lon, 360.0);
+    if (lla_offset[1] < -180.0) {
+        lla_offset[1] += 360.0;
+    } else if ( lla_offset[1] > 180.0) {
+        lla_offset[1] -= 360.0;
+    }
+    lla_offset[2] = local_lla.alt - ref_lla.alt;
+    if (lla_offset[0] > 0.0) {
+        latHem = 'N';
+    } else {
+        latHem = 'S';
+        lla_offset[0] *= -1.0;
+    }
+    latMins = fmod(lla_offset[0] * 60.0, 60.0);
+    if (lla_offset[1] < 0.0) {
+        longHem = 'W';
+        lla_offset[1] *= -1.0;
+    }else {
+        longHem = 'E';
+    }
+    longMins = fmod(lla_offset[1] * 60.0, 60.0);
+    length = snprintf(pMarker, lengthRemaining, "%02d%09.6lf,%c,%03d%09.6lf,%c,%.3lf,",
+                     (uint8_t)floor(lla_offset[0]), latMins, latHem,
+                     (uint8_t)floor(lla_offset[1]), longMins, longHem, lla_offset[2]);
+    if (length < 0 || length >= lengthRemaining) {
+        LOC_LOGE("NMEA Error in string formatting");
+        return;
+    }
+    pMarker += length;
+    lengthRemaining -= length;
+    length = snprintf(pMarker , lengthRemaining , "%s" , ref_datum);
+    if (length < 0 || length >= lengthRemaining) {
+        LOC_LOGE("NMEA Error in string formatting");
+        return;
+    }
+    pMarker += length;
+    lengthRemaining -= length;
+
+    length = loc_nmea_put_checksum(sentence, bufSize);
+}
+
+/*===========================================================================
+FUNCTION    getUtcTimeWithLeapSecondTransition
+
+DESCRIPTION
+   This function returns true if the position report is generated during
+   leap second transition period. If not, then the utc timestamp returned
+   will be set to the timestamp in the position report. If it is,
+   then the utc timestamp returned will need to take into account
+   of the leap second transition so that proper calendar year/month/date
+   can be calculated from the returned utc timestamp.
+
+DEPENDENCIES
+   NONE
+
+RETURN VALUE
+   true: position report is generated in leap second transition period.
+
+SIDE EFFECTS
+   N/A
+
+===========================================================================*/
+bool getUtcTimeWithLeapSecondTransition(const UlpLocation &location,
+                                        const GpsLocationExtended &locationExtended,
+                                        const LocationSystemInfo &systemInfo,
+                                        LocGpsUtcTime &utcPosTimestamp) {
+    bool inTransition = false;
+
+    // position report is not generated during leap second transition,
+    // we can use the UTC timestamp from position report as is
+    utcPosTimestamp = location.gpsLocation.timestamp;
+
+    // Check whether we are in leap second transition.
+    // If so, per NMEA spec, we need to display the extra second in format of 23:59:60
+    // with year/month/date not getting advanced.
+    if ((locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_GPS_TIME) &&
+        ((systemInfo.systemInfoMask & LOCATION_SYS_INFO_LEAP_SECOND) &&
+         (systemInfo.leapSecondSysInfo.leapSecondInfoMask &
+          LEAP_SECOND_SYS_INFO_LEAP_SECOND_CHANGE_BIT))) {
+
+        const LeapSecondChangeInfo  &leapSecondChangeInfo =
+            systemInfo.leapSecondSysInfo.leapSecondChangeInfo;
+        const GnssSystemTimeStructType &gpsTimestampLsChange =
+            leapSecondChangeInfo.gpsTimestampLsChange;
+
+        uint64_t gpsTimeLsChange = gpsTimestampLsChange.systemWeek * MSEC_IN_ONE_WEEK +
+                                   gpsTimestampLsChange.systemMsec;
+        uint64_t gpsTimePosReport = locationExtended.gpsTime.gpsWeek * MSEC_IN_ONE_WEEK +
+                                    locationExtended.gpsTime.gpsTimeOfWeekMs;
+        // we are only dealing with positive leap second change, as negative
+        // leap second change has never occurred and should not occur in future
+        if (leapSecondChangeInfo.leapSecondsAfterChange >
+            leapSecondChangeInfo.leapSecondsBeforeChange) {
+            // leap second adjustment is always 1 second at a time. It can happen
+            // every quarter end and up to four times per year.
+            if ((gpsTimePosReport >= gpsTimeLsChange) &&
+                (gpsTimePosReport < (gpsTimeLsChange + 1000))) {
+                inTransition = true;
+                utcPosTimestamp = gpsTimeLsChange + UTC_GPS_OFFSET_MSECS -
+                                  leapSecondChangeInfo.leapSecondsBeforeChange * 1000;
+
+                // we substract 1000 milli-seconds from UTC timestmap in order to calculate the
+                // proper year, month and date during leap second transtion.
+                // Let us give an example, assuming leap second transition is scheduled on 2019,
+                // Dec 31st mid night. When leap second transition is happening,
+                // instead of outputting the time as 2020, Jan, 1st, 00 hour, 00 min, and 00 sec.
+                // The time need to be displayed as 2019, Dec, 31st, 23 hour, 59 min and 60 sec.
+                utcPosTimestamp -= 1000;
+            }
+        }
+    }
+    return inTransition;
+}
+
+/*===========================================================================
 FUNCTION    loc_nmea_generate_pos
 
 DESCRIPTION
@@ -631,11 +931,19 @@ SIDE EFFECTS
 ===========================================================================*/
 void loc_nmea_generate_pos(const UlpLocation &location,
                                const GpsLocationExtended &locationExtended,
+                               const LocationSystemInfo &systemInfo,
                                unsigned char generate_nmea,
                                std::vector<std::string> &nmeaArraystr)
 {
     ENTRY_LOG();
-    time_t utcTime(location.gpsLocation.timestamp/1000);
+
+    LocGpsUtcTime utcPosTimestamp = 0;
+    bool inLsTransition = false;
+
+    inLsTransition = getUtcTimeWithLeapSecondTransition
+                    (location, locationExtended, systemInfo, utcPosTimestamp);
+
+    time_t utcTime(utcPosTimestamp/1000);
     tm * pTm = gmtime(&utcTime);
     if (NULL == pTm) {
         LOC_LOGE("gmtime failed");
@@ -643,6 +951,9 @@ void loc_nmea_generate_pos(const UlpLocation &location,
     }
 
     char sentence[NMEA_SENTENCE_MAX_LENGTH] = {0};
+    char sentence_DTM[NMEA_SENTENCE_MAX_LENGTH] = {0};
+    char sentence_RMC[NMEA_SENTENCE_MAX_LENGTH] = {0};
+    char sentence_GGA[NMEA_SENTENCE_MAX_LENGTH] = {0};
     char* pMarker = sentence;
     int lengthRemaining = sizeof(sentence);
     int length = 0;
@@ -653,7 +964,26 @@ void loc_nmea_generate_pos(const UlpLocation &location,
     int utcMinutes = pTm->tm_min;
     int utcSeconds = pTm->tm_sec;
     int utcMSeconds = (location.gpsLocation.timestamp)%1000;
-    loc_sv_cache_info sv_cache_info = {};
+    int datum_type = loc_get_datum_type();
+    LocEcef ecef_w84;
+    LocEcef ecef_p90;
+    LocLla  lla_w84;
+    LocLla  lla_p90;
+    LocLla  ref_lla;
+    LocLla  local_lla;
+
+    if (inLsTransition) {
+        // During leap second transition, we need to display the extra
+        // leap second of hour, minute, second as (23:59:60)
+        utcHours = 23;
+        utcMinutes = 59;
+        utcSeconds = 60;
+        // As UTC timestamp is freezing during leap second transition,
+        // retrieve milli-seconds portion from GPS timestamp.
+        utcMSeconds = locationExtended.gpsTime.gpsTimeOfWeekMs % 1000;
+    }
+
+   loc_sv_cache_info sv_cache_info = {};
 
     if (GPS_LOCATION_EXTENDED_HAS_GNSS_SV_USED_DATA & locationExtended.flags) {
         sv_cache_info.gps_used_mask =
@@ -667,6 +997,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         sv_cache_info.bds_used_mask =
                 (uint32_t)locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask;
     }
+
     if (generate_nmea) {
         char talker[3] = {'G', 'P', '\0'};
         uint32_t svUsedCount = 0;
@@ -808,12 +1139,52 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         length = loc_nmea_put_checksum(sentence, sizeof(sentence));
         nmeaArraystr.push_back(sentence);
 
+        memset(&ecef_w84, 0, sizeof(ecef_w84));
+        memset(&ecef_p90, 0, sizeof(ecef_p90));
+        memset(&lla_w84, 0, sizeof(lla_w84));
+        memset(&lla_p90, 0, sizeof(lla_p90));
+        memset(&ref_lla, 0, sizeof(ref_lla));
+        memset(&local_lla, 0, sizeof(local_lla));
+        lla_w84.lat = location.gpsLocation.latitude / 180.0 * M_PI;
+        lla_w84.lon = location.gpsLocation.longitude / 180.0 * M_PI;
+        lla_w84.alt = location.gpsLocation.altitude;
+
+        convert_Lla_to_Ecef(lla_w84, ecef_w84);
+        convert_WGS84_to_PZ90(ecef_w84, ecef_p90);
+        convert_Ecef_to_Lla(ecef_p90, lla_p90);
+
+        switch (datum_type) {
+            case LOC_GNSS_DATUM_WGS84:
+                ref_lla.lat = location.gpsLocation.latitude;
+                ref_lla.lon = location.gpsLocation.longitude;
+                ref_lla.alt = location.gpsLocation.altitude;
+                local_lla.lat = lla_p90.lat / M_PI * 180.0;
+                local_lla.lon = lla_p90.lon / M_PI * 180.0;
+                local_lla.alt = lla_p90.alt;
+                break;
+            case LOC_GNSS_DATUM_PZ90:
+                ref_lla.lat = lla_p90.lat / M_PI * 180.0;
+                ref_lla.lon = lla_p90.lon / M_PI * 180.0;
+                ref_lla.alt = lla_p90.alt;
+                local_lla.lat = location.gpsLocation.latitude;
+                local_lla.lon = location.gpsLocation.longitude;
+                local_lla.alt = location.gpsLocation.altitude;
+                break;
+            default:
+                break;
+        }
+
+        // -------------------
+        // ------$--DTM-------
+        // -------------------
+        loc_nmea_generate_DTM(ref_lla, local_lla, sentence_DTM, sizeof(sentence_DTM));
+
         // -------------------
         // ------$--RMC-------
         // -------------------
 
-        pMarker = sentence;
-        lengthRemaining = sizeof(sentence);
+        pMarker = sentence_RMC;
+        lengthRemaining = sizeof(sentence_RMC);
 
         length = snprintf(pMarker, lengthRemaining, "$%sRMC,%02d%02d%02d.%02d,A," ,
                           talker, utcHours, utcMinutes, utcSeconds,utcMSeconds/10);
@@ -828,8 +1199,8 @@ void loc_nmea_generate_pos(const UlpLocation &location,
 
         if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG)
         {
-            double latitude = location.gpsLocation.latitude;
-            double longitude = location.gpsLocation.longitude;
+            double latitude = ref_lla.lat;
+            double longitude = ref_lla.lon;
             char latHemisphere;
             char lonHemisphere;
             double latMinutes;
@@ -971,15 +1342,14 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         pMarker += length;
         lengthRemaining -= length;
 
-        length = loc_nmea_put_checksum(sentence, sizeof(sentence));
-        nmeaArraystr.push_back(sentence);
+        length = loc_nmea_put_checksum(sentence_RMC, sizeof(sentence_RMC));
 
         // -------------------
         // ------$--GGA-------
         // -------------------
 
-        pMarker = sentence;
-        lengthRemaining = sizeof(sentence);
+        pMarker = sentence_GGA;
+        lengthRemaining = sizeof(sentence_GGA);
 
         length = snprintf(pMarker, lengthRemaining, "$%sGGA,%02d%02d%02d.%02d," ,
                           talker, utcHours, utcMinutes, utcSeconds, utcMSeconds/10);
@@ -994,8 +1364,8 @@ void loc_nmea_generate_pos(const UlpLocation &location,
 
         if (location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_LAT_LONG)
         {
-            double latitude = location.gpsLocation.latitude;
-            double longitude = location.gpsLocation.longitude;
+            double latitude = ref_lla.lat;
+            double longitude = ref_lla.lon;
             char latHemisphere;
             char lonHemisphere;
             double latMinutes;
@@ -1095,15 +1465,26 @@ void loc_nmea_generate_pos(const UlpLocation &location,
             (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL))
         {
             length = snprintf(pMarker, lengthRemaining, "%.1lf,M,,",
-                              location.gpsLocation.altitude - locationExtended.altitudeMeanSeaLevel);
+                              ref_lla.alt - locationExtended.altitudeMeanSeaLevel);
         }
         else
         {
             length = snprintf(pMarker, lengthRemaining,",,,");
         }
 
-        length = loc_nmea_put_checksum(sentence, sizeof(sentence));
-        nmeaArraystr.push_back(sentence);
+        length = loc_nmea_put_checksum(sentence_GGA, sizeof(sentence_GGA));
+
+        // ------$--DTM-------
+        nmeaArraystr.push_back(sentence_DTM);
+        // ------$--RMC-------
+        nmeaArraystr.push_back(sentence_RMC);
+        if(LOC_GNSS_DATUM_PZ90 == datum_type) {
+            // ------$--DTM-------
+            nmeaArraystr.push_back(sentence_DTM);
+        }
+        // ------$--GGA-------
+        nmeaArraystr.push_back(sentence_GGA);
+
     }
     //Send blank NMEA reports for non-final fixes
     else {

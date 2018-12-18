@@ -57,14 +57,14 @@
 /* Parameter data */
 static uint32_t DEBUG_LEVEL = 0xff;
 static uint32_t TIMESTAMP = 0;
-static uint32_t LOC_MODEM_EMULATOR = 0;
+static uint32_t DATUM_TYPE = 0;
 
 /* Parameter spec table */
 static const loc_param_s_type loc_param_table[] =
 {
     {"DEBUG_LEVEL",        &DEBUG_LEVEL,        NULL,    'n'},
     {"TIMESTAMP",          &TIMESTAMP,          NULL,    'n'},
-    {"LOC_MODEM_EMULATOR", &LOC_MODEM_EMULATOR, NULL,    'n'},
+    {"DATUM_TYPE",         &DATUM_TYPE,         NULL,    'n'},
 };
 static const int loc_param_num = sizeof(loc_param_table) / sizeof(loc_param_s_type);
 
@@ -88,14 +88,26 @@ const char LOC_PATH_XTWIFI_CONF[] = LOC_PATH_XTWIFI_CONF_STR;
 const char LOC_PATH_QUIPC_CONF[] = LOC_PATH_QUIPC_CONF_STR;
 
 /*===========================================================================
-FUNCTION loc_modem_emulator_enabled
+FUNCTION loc_get_datum_type
 
 DESCRIPTION
-   Provides access to Modem Emulator config item.
+   get datum type
+
+PARAMETERS:
+   N/A
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+   DATUM TYPE
+
+SIDE EFFECTS
+   N/A
 ===========================================================================*/
-uint32_t loc_modem_emulator_enabled()
+int loc_get_datum_type()
 {
-    return LOC_MODEM_EMULATOR;
+    return DATUM_TYPE;
 }
 
 /*===========================================================================
