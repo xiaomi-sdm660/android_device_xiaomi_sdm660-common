@@ -42,20 +42,11 @@ else
 fi
 
 #
-# Check ESOC for external MDM
+# Check ESOC for external modem
 #
-# Note: currently only a single MDM is supported
+# Note: currently only a single MDM/SDX is supported
 #
-if [ -d /sys/bus/esoc/devices ]; then
-for f in /sys/bus/esoc/devices/*; do
-    if [ -d $f ]; then
-    if [ `grep -e "^MDM" -e "^SDX" $f/esoc_name` ]; then
-            esoc_link=`cat $f/esoc_link`
-            break
-        fi
-    fi
-done
-fi
+esoc_name=`cat /sys/bus/esoc/devices/esoc0/esoc_name 2> /dev/null`
 
 target=`getprop ro.board.platform`
 
@@ -76,9 +67,9 @@ fi
 # If USB persist config not set, set default configuration
 if [ "$(getprop persist.vendor.usb.config)" == "" -a \
 	"$(getprop init.svc.vendor.usb-gadget-hal-1-0)" != "running" ]; then
-      if [ "$esoc_link" != "" ]; then
+    if [ "$esoc_name" != "" ]; then
 	  setprop persist.vendor.usb.config diag,diag_mdm,qdss,qdss_mdm,serial_cdev,dpl,rmnet,adb
-      else
+    else
 	  case "$(getprop ro.baseband)" in
 	      "apq")
 	          setprop persist.vendor.usb.config diag,adb
