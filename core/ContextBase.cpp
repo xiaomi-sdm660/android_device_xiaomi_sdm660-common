@@ -108,7 +108,7 @@ void ContextBase::readConfig()
         mGps_conf.INTERMEDIATE_POS = 0;
         mGps_conf.ACCURACY_THRES = 0;
         mGps_conf.NMEA_PROVIDER = 0;
-        mGps_conf.GPS_LOCK = 0x03;
+        mGps_conf.GPS_LOCK = GNSS_CONFIG_GPS_LOCK_MO_AND_NI;
         mGps_conf.SUPL_VER = 0x10000;
         mGps_conf.SUPL_MODE = 0x1;
         mGps_conf.SUPL_ES = 0;
