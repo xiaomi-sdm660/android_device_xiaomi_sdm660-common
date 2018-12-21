@@ -37,7 +37,7 @@ datamode=`getprop persist.data.mode`
 case "$baseband" in
     "apq" | "sda" )
     setprop ro.radio.noril true
-    stop ril-daemon
+    stop vendor.ril-daemon
     start vendor.ipacm-diag
     start vendor.ipacm
 esac
