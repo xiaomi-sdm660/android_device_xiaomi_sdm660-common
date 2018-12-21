@@ -99,10 +99,6 @@ start_msm_irqbalance_8952()
                      "241" | "263" | "264" | "268" | "269" | "270" | "271")
                         start vendor.msm_irqbalance;;
                 esac
-                case "$platformid" in
-                     "266" | "274" | "277" | "278")
-                        start vendor.msm_irqbal_lb;;
-                esac
 	fi
 }
 
@@ -112,8 +108,6 @@ start_msm_irqbalance660()
 		case "$platformid" in
 		    "317" | "324" | "325" | "326" | "345" | "346")
 			start vendor.msm_irqbalance;;
-		    "318" | "327")
-			start vendor.msm_irqbl_sdm630;;
 		esac
 	fi
 }
