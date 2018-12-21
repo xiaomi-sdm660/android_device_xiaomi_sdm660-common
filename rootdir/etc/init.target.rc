@@ -61,16 +61,16 @@ on fs
     # these partition flashed on the device. Failure to mount any partition in fstab file
     # results in failure to launch late-start class.
 
-    mkdir /vendor/mnt/persist/data 0700 system system
-    mkdir /vendor/mnt/persist/bms 0700 root system
-    restorecon_recursive /vendor/mnt/persist
-    mkdir /vendor/mnt/persist/wlan_bt 0777 root system
+    mkdir /mnt/vendor/persist/data 0700 system system
+    mkdir /mnt/vendor/persist/bms 0700 root system
+    restorecon_recursive /mnt/vendor/persist
+    mkdir /mnt/vendor/persist/wlan_bt 0777 root system
     #add by Quanyu.Lee for MI-feature
     #only needed on Factory version,DO NOT push to MIUI!
-    chmod 0644 /vendor/mnt/persist/wlan_bt/bt.mac
-    chmod 0644 /vendor/mnt/persist/wlan_bt/wlan.mac
-    chown system system /vendor/mnt/persist/wlan_bt/bt.mac
-    chown system system /vendor/mnt/persist/wlan_bt/wlan.mac
+    chmod 0644 /mnt/vendor/persist/wlan_bt/bt.mac
+    chmod 0644 /mnt/vendor/persist/wlan_bt/wlan.mac
+    chown system system /mnt/vendor/persist/wlan_bt/bt.mac
+    chown system system /mnt/vendor/persist/wlan_bt/wlan.mac
 
     write /sys/kernel/boot_adsp/boot 1
 
@@ -93,7 +93,7 @@ on post-fs-data
     mkdir /data/tombstones/lpass 0771 system system
     mkdir /data/tombstones/wcnss 0771 system system
     mkdir /data/tombstones/dsps 0771 system system
-    mkdir /vendor/mnt/persist/qti_fp 0700 system system
+    mkdir /mnt/vendor/persist/qti_fp 0700 system system
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/misc/tloc 0700 system drmrpc
     mkdir /data/thermal 0771 system system
@@ -119,22 +119,22 @@ on boot
     write /dev/cpuset/restricted/cpus 0-7
     ####Regionalization config and prop files####
 
-    chmod 0644 /vendor/mnt/persist/speccfg/spec
-    chmod 0644 /vendor/mnt/persist/speccfg/devicetype
-    chmod 0644 /vendor/mnt/persist/speccfg/mbnversion
-    chmod 0644 /vendor/mnt/persist/speccfg/.not_triggered
-    chmod 0644 /vendor/mnt/persist/speccfg/vendor_ro.prop
-    chmod 0644 /vendor/mnt/persist/speccfg/vendor_persist.prop
-    chmod 0644 /vendor/mnt/persist/speccfg/submask
-    chmod 0644 /vendor/mnt/persist/speccfg/partition
-    chown system system /vendor/mnt/persist/speccfg/spec
-    chown system system /vendor/mnt/persist/speccfg/devicetype
-    chown system system /vendor/mnt/persist/speccfg/mbnversion
-    chown system system /vendor/mnt/persist/speccfg/.not_triggered
-    chown system system /vendor/mnt/persist/speccfg/vendor_ro.prop
-    chown system system /vendor/mnt/persist/speccfg/vendor_persist.prop
-    chown system system /vendor/mnt/persist/speccfg/submask
-    chown system system /vendor/mnt/persist/speccfg/partition
+    chmod 0644 /mnt/vendor/persist/speccfg/spec
+    chmod 0644 /mnt/vendor/persist/speccfg/devicetype
+    chmod 0644 /mnt/vendor/persist/speccfg/mbnversion
+    chmod 0644 /mnt/vendor/persist/speccfg/.not_triggered
+    chmod 0644 /mnt/vendor/persist/speccfg/vendor_ro.prop
+    chmod 0644 /mnt/vendor/persist/speccfg/vendor_persist.prop
+    chmod 0644 /mnt/vendor/persist/speccfg/submask
+    chmod 0644 /mnt/vendor/persist/speccfg/partition
+    chown system system /mnt/vendor/persist/speccfg/spec
+    chown system system /mnt/vendor/persist/speccfg/devicetype
+    chown system system /mnt/vendor/persist/speccfg/mbnversion
+    chown system system /mnt/vendor/persist/speccfg/.not_triggered
+    chown system system /mnt/vendor/persist/speccfg/vendor_ro.prop
+    chown system system /mnt/vendor/persist/speccfg/vendor_persist.prop
+    chown system system /mnt/vendor/persist/speccfg/submask
+    chown system system /mnt/vendor/persist/speccfg/partition
     chown system system /mnt/vendor/persist/sensors/sns.reg
     
     # wangtao open led permisions start
