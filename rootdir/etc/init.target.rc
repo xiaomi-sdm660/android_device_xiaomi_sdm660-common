@@ -135,6 +135,7 @@ on boot
     chown system system /vendor/mnt/persist/speccfg/vendor_persist.prop
     chown system system /vendor/mnt/persist/speccfg/submask
     chown system system /vendor/mnt/persist/speccfg/partition
+    chown system system /mnt/vendor/persist/sensors/sns.reg
     
     # wangtao open led permisions start
     chown system system /sys/class/leds/red/blink

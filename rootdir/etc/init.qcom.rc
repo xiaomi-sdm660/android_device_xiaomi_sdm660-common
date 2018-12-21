@@ -354,13 +354,24 @@ on post-fs-data
     mkdir /data/shared 0755
     chown system system /data/shared
 
-    # SSC/SLPI sensors
-    mkdir /vendor/mnt/persist/sensors 0775 sensors sensors
-    write /vendor/mnt/persist/sensors/sensors_settings 1
-    chown system root /vendor/mnt/persist/sensors/sensors_settings
-    chmod 0664 /vendor/mnt/persist/sensors/sensors_settings
-    chown system system /vendor/mnt/persist/PRSensorData.txt
-    chmod 0600 /vendor/mnt/persist/PRSensorData.txt
+    # for backward compatibility
+    chown system system /persist/sensors
+    chown system system /persist/sensors/registry
+    chown system system /persist/sensors/registry/registry
+    chown system system /persist/sensors/registry/registry/sensors_registry
+    chown system system /persist/sensors/sensors_settings
+    chown system system /persist/sensors/registry/config
+    chmod 0664 /persist/sensors/sensors_settings
+
+    chown system system /mnt/vendor/persist/sensors
+    chown system system /mnt/vendor/persist/sensors/sns.reg
+    chown system system /mnt/vendor/persist/sensors/registry
+    chown system system /mnt/vendor/persist/sensors/registry/registry
+    chown system system /mnt/vendor/persist/sensors/registry/registry/sensors_registry
+    chown system system /mnt/vendor/persist/sensors/sensors_settings
+    chown system system /mnt/vendor/persist/sensors/registry/sns_reg_config
+    chown system system /mnt/vendor/persist/sensors/registry/config
+    chmod 0664 /mnt/vendor/persist/sensors/sensors_settings
 
     #Create directory for hostapd
     mkdir /data/hostapd 0770 system wifi
@@ -576,7 +587,7 @@ service vendor.dataqti /system/vendor/bin/qti
     disabled
 	writepid /dev/cpuset/system-background/tasks
 
-service vendor.sensors /vendor/bin/sensors.qcom
+service vendor.sensors /vendor/bin/sensors.qti
     class core
     user root
     group root
