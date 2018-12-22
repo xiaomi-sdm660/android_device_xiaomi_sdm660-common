@@ -14,7 +14,10 @@ value:2951
 value:2952
 
 [AID_VENDOR_ADPL_ODL]  
-value:2905  
+value:2905
+
+[AID_VENDOR_QRTR]
+value:2906
 
 [vendor/bin/wcnss_filter]
 mode: 0755
@@ -143,6 +146,12 @@ group: AID_GPS
 caps: NET_BIND_SERVICE
 
 [vendor/bin/loc_launcher]
+mode: 0755
+user:  AID_GPS
+group: AID_GPS
+caps: SETUID SETGID
+
+[system/vendor/bin/loc_launcher]
 mode: 0755
 user:  AID_GPS
 group: AID_GPS
