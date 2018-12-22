@@ -166,11 +166,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.netflix.bsp_rev=Q660-13149-1
 
-# NFC DT
-PRODUCT_PROPERTY_OVERRIDES += \
-	ro.nfc.port=I2C \
-	ro.hardware.nfc_nci=nqx.default
-
 # Perf
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.sys.perf.debug=false \
@@ -199,7 +194,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.radio.atfwd.start=true \
 	persist.radio.data_con_rprt=1 \
 	persist.rmnet.data.enable=true \
-	persist.vendor.radio.apm_sim_not_pwdn=1 \
 	persist.vendor.radio.sib16_support=1 \
 	persist.vendor.radio.custom_ecc=1 \
 	persist.vendor.radio.rat_on=combine \
