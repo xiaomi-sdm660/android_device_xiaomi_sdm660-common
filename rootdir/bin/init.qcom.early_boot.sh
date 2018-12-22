@@ -129,7 +129,7 @@ case "$target" in
             365|366)
                 sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
                 if [ $sku_ver -eq 1 ]; then
-                    setprop vendor.media.sm7150.version 1
+                    setprop vendor.media.sdmmagpie.version 1
                 fi
                 ;;
             355)
