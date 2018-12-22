@@ -1,7 +1,6 @@
 # Audio
 PRODUCT_PROPERTY_OVERRIDES += \
     af.fast_track_multiplier=1 \
-    audio.adm.buffering.ms=6 \
     audio.deep_buffer.media=true \
     audio.offload.min.duration.secs=30 \
     audio.offload.video=true \
@@ -12,13 +11,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.audio.fluence.voicecall=true \
     persist.vendor.audio.fluence.voicerec=false \
     persist.vendor.audio.hifi.int_codec=true \
+    persist.vendor.audio.hw.binder.size_kbyte=1024 \
     persist.vendor.audio.ras.enabled=false \
     persist.vendor.bt.a2dp_offload_cap=sbc-aac \
+    ro.af.client_heap_size_kbyte=7168 \
     ro.audio.soundfx.dirac=true \
     ro.config.vc_call_vol_steps=7 \
     ro.config.media_vol_steps=25 \
     ro.vendor.audio.sdk.fluencetype=fluence \
     ro.vendor.audio.sdk.ssr=false \
+    vendor.audio.adm.buffering.ms=6 \
     vendor.audio.dolby.ds2.enabled=false \
     vendor.audio.dolby.ds2.hardbypass=false \
     vendor.audio.flac.sw.decoder.24bit=true \
@@ -46,25 +48,26 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Camera
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.bokeh.switch.lux=290 \
-    persist.camera.depth.focus.cb=0 \
-    persist.camera.expose.aux=1 \
-    persist.camera.isp.clock.optmz=0 \
-    persist.camera.isp.turbo=1 \
-    persist.camera.linkpreview=0 \
-    persist.camera.preview.ubwc=0 \
-    persist.camera.set.afd=4 \
-    persist.camera.stats.test=0 \
-    persist.imx376_ofilm.light.lux=280 \
-    persist.imx376_ofilm.low.lux=310 \
-    persist.imx376_sunny.light.lux=280 \
-    persist.imx376_sunny.low.lux=310 \
-    vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi \
-    video.disable.ubwc=1
+    camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi \
+    persist.vendor.bokeh.switch.lux=290 \
+    persist.vendor.camera.HAL3.enabled=0 \
+    persist.vendor.camera.depth.focus.cb=0 \
+    persist.vendor.camera.exif.make=Xiaomi \
+    persist.vendor.camera.expose.aux=1 \
+    persist.vendor.camera.imglib.usefdlite=1 \
+    persist.vendor.camera.isp.clock.optmz=0 \
+    persist.vendor.camera.isp.turbo=1 \
+    persist.vendor.camera.linkpreview=0 \
+    persist.vendor.camera.preview.ubwc=0 \
+    persist.vendor.camera.stats.test=0 \
+    persist.vendor.imx376_ofilm.light.lux=275 \
+    persist.vendor.imx376_ofilm.low.lux=290 \
+    persist.vendor.imx376_sunny.light.lux=275 \
+    persist.vendor.imx376_sunny.low.lux=290 \
+    vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
-    debug.gralloc.enable_fb_ubwc=1 \
     debug.sf.enable_hwc_vds=1 \
     debug.sf.hw=1 \
     debug.sf.latch_unsignaled=1 \
@@ -73,7 +76,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.opengles.version=196610 \
     ro.qualcomm.cabl=0 \
     ro.sf.lcd_density=440 \
-    sdm.debug.disable_skip_validate=1
+    vendor.display.disable_skip_validate=1 \
+    vendor.gralloc.enable_fb_ubwc=1 \
+    vendor.video.disable.ubwc=1
 
 # GPS
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -97,11 +102,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vidc.enc.dcvs.extra-buff-count=2 \
     vidc.enc.target_support_bframe=1
 
+# Netflix custom property
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.netflix.bsp_rev=Q660-13149-1
+
 # QCOM
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.cne.feature=1 \
-    persist.dpm.feature=1 \
     persist.timed.enable=true \
+    persist.vendor.cne.feature=1 \
+    persist.vendor.dpm.feature=1 \
     persist.vendor.qcomsysd.enabled=1 \
     ro.vendor.at_library=libqti-at.so \
     ro.vendor.extension_library=libqti-perfd-client.so
@@ -116,23 +125,24 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.data.df.iwlan_mux=9 \
     persist.data.df.mux_count=8 \
     persist.data.df.ul_mode=5 \
-    persist.data.mode=concurrent \
     persist.data.netmgrd.qos.enable=true \
     persist.data.wda.enable=true \
     persist.radio.VT_CAM_INTERFACE=2 \
-    persist.radio.apm_sim_not_pwdn=1 \
-    persist.radio.atfwd.start=true \
+    persist.radio.data_con_rprt=1 \
     persist.radio.multisim.config=dsds \
     persist.radio.schd.cache=3500 \
     persist.rmnet.data.enable=true \
+    persist.vendor.data.mode=concurrent \
     persist.vendor.qti.telephony.vt_cam_interface=1 \
+    persist.vendor.radio.apm_sim_not_pwdn=1 \
+    persist.vendor.radio.atfwd.start=true \
     persist.vendor.radio.custom_ecc=1 \
     persist.vendor.radio.rat_on=combine \
     persist.vendor.radio.sib16_support=1 \
     ril.subscription.types=NV,RUIM \
     rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so \
     ro.telephony.default_network=22,20 \
-    ro.use_data_netmgrd=true \
+    ro.vendor.use_data_netmgrd=true \
     telephony.lteOnCdmaDevice=1
 
 # Sensor
@@ -144,7 +154,3 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.mot_detect=true \
     ro.vendor.sensors.pmd=true \
     ro.vendor.sensors.sta_detect=true
-
-# Subsystem Restart
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.sys.ssr.restart_level=ALL_ENABLE

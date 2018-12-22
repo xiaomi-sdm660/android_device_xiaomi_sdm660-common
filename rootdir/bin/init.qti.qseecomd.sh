@@ -31,5 +31,5 @@
 while [ "$registered" != "true" ]
 do
     sleep 0.1
-    registered="`getprop sys.listeners.registered`"
+    registered="`getprop vendor.sys.listeners.registered`"
 done
