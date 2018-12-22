@@ -193,6 +193,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
   	persist.mm.enable.prefetch=true \
 	video.disable.ubwc=1
 
+# Memory optimizations
+PRODUCT_PROPERTY_OVERRIDES += \
+	ro.vendor.qti.sys.fw.bservice_enable=true
+
 # Netflix custom property
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.netflix.bsp_rev=Q660-13149-1
