@@ -31,3 +31,9 @@ VNDK_SP_LIBRARIES := \
     libutils \
     libutilscallstack \
     libdexfile
+
+EXTRA_VENDOR_LIBRARIES := \
+    android.hidl.base@1.0 \
+    vendor.display.config@1.0 \
+    vendor.display.config@1.1 \
+    vendor.qti.hardware.camera.device@1.0
