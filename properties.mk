@@ -141,3 +141,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.mot_detect=true \
     ro.vendor.sensors.pmd=true \
     ro.vendor.sensors.sta_detect=true
+
+# WFD
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.debug.wfd.enable=1 \
+    persist.sys.wfd.virtual=0
