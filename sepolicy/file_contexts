@@ -20,6 +20,9 @@
 # Light HAL
 /(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_wayne u:object_r:hal_light_default_exec:s0
 
+# Mlipay
+/(vendor|system/vendor)/bin/mlipayd             u:object_r:hal_mlipay_default_exec:s0
+
 # Persist
 /persist/PRSensorData\.txt                      u:object_r:sensors_persist_file:s0
 

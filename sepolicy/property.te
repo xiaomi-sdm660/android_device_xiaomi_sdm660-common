@@ -1,1 +1,3 @@
 type hal_fingerprint_prop, property_type;
+type ifaa_prop, property_type;
+

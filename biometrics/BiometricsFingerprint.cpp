@@ -214,16 +214,23 @@ IBiometricsFingerprint* BiometricsFingerprint::getInstance() {
     return sInstance;
 }
 
+void setFpVendorProp(const char *fp_vendor) {
+    property_set("persist.sys.fp.vendor", fp_vendor);
+}
+
 fingerprint_device_t* getDeviceForVendor(const char *class_name)
 {
     const hw_module_t *hw_module = nullptr;
     int err;
 
     if (!strcmp(class_name, "fpc")) {
+        setFpVendorProp("fpc");
         err = load("/system/vendor/lib64/hw/fingerprint.fpc.so", &hw_module);
     } else if (!strcmp(class_name, "gdx")) {
+        setFpVendorProp("goodix");
         err = load("/system/vendor/lib64/hw/fingerprint.goodix.so", &hw_module);
     } else {
+        setFpVendorProp("none");
         ALOGE("No fingerprint module class specified.");
         err = 1;
     }

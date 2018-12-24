@@ -2,3 +2,4 @@ sys.fp.goodix	u:object_r:hal_fingerprint_prop:s0
 sys.fp.vendor   u:object_r:hal_fingerprint_prop:s0
 persist.sys.fp.info u:object_r:hal_fingerprint_prop:s0
 persist.sys.fp.vendor u:object_r:hal_fingerprint_prop:s0
+persist.sys.ifaa u:object_r:ifaa_prop:s0
