@@ -38,6 +38,9 @@
 /sys/devices/soc/soc:fpc1020.*/hw_reset                       u:object_r:sysfs_fpc_dev:s0
 /sys/devices/soc/soc:fpc1020.*/wakeup_enable                  u:object_r:sysfs_fpc_dev:s0
 
+# Mlipay
+/(vendor|system/vendor)/bin/mlipayd                 u:object_r:hal_mlipay_default_exec:s0
+
 # Shell Script
 /(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
 
