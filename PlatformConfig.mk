@@ -24,19 +24,14 @@
 # Platform Path
 PLATFORM_PATH := device/xiaomi/sdm660-common
 
-# Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := sdm660
-TARGET_NO_BOOTLOADER := true
-
 # Platform
 BOARD_VENDOR := xiaomi
 TARGET_BOARD_PLATFORM := sdm660
 TARGET_BOARD_PLATFORM_GPU := qcom-adreno512
 
-# Audio/Media/Display
-TARGET_QCOM_AUDIO_VARIANT := caf-msm8998
-TARGET_QCOM_MEDIA_VARIANT := caf-msm8998
-TARGET_QCOM_DISPLAY_VARIANT := caf-msm8998
+# Bootloader
+TARGET_BOOTLOADER_BOARD_NAME := sdm660
+TARGET_NO_BOOTLOADER := true
 
 # Architecture
 TARGET_ARCH := arm64
@@ -52,34 +47,6 @@ TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := cortex-a73
 
 TARGET_USES_64_BIT_BINDER := true
-
-# Kernel
-BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc170000 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 sched_enable_hmp=1 sched_enable_power_aware=1 service_locator.enable=1 swiotlb=1 androidboot.configfs=true androidboot.usbcontroller=a800000.dwc3
-BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
-BOARD_KERNEL_CMDLINE += loop.max_part=7
-BOARD_KERNEL_CMDLINE += firmware_class.path=/vendor/firmware_mnt/image
-
-BOARD_KERNEL_BASE        := 0x00000000
-BOARD_KERNEL_PAGESIZE    := 4096
-
-ifeq ($(AB_OTA_UPDATER), true)
-BOARD_KERNEL_TAGS_OFFSET := 0x00000100
-BOARD_RAMDISK_OFFSET     := 0x01000000
-
-else
-BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
-BOARD_RAMDISK_OFFSET     := 0x02000000
-endif
-
-BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
-TARGET_KERNEL_ARCH := arm64
-TARGET_KERNEL_CROSS_COMPILE_PREFIX := aarch64-linux-android-
-TARGET_KERNEL_HEADER_ARCH := arm64
-
-# QCOM
-BOARD_USES_QCOM_HARDWARE := true
-TARGET_USES_QCOM_BSP := false
-TARGET_USE_SDCLANG := true
 
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "qualcomm-hidl"
@@ -144,7 +111,6 @@ BOARD_HAS_QCA_BT_SOC := "cherokee"
 BLUETOOTH_HCI_USE_MCT := true
 QCOM_BT_USE_SMD_TTY := true
 
-
 # Camera
 TARGET_USES_QTI_CAMERA_DEVICE := true
 BOARD_QTI_CAMERA_32BIT_ONLY := true
@@ -164,6 +130,16 @@ ENABLE_SCHEDBOOST := true
 
 # Crypto
 TARGET_HW_DISK_ENCRYPTION := true
+
+# Dex pre-opt
+ifeq ($(HOST_OS),linux)
+  ifneq ($(TARGET_BUILD_VARIANT),eng)
+	ifeq ($(WITH_DEXPREOPT),)
+	  WITH_DEXPREOPT := true
+	  WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
+	endif
+  endif
+endif
 
 # Display
 MAX_EGL_CACHE_KEY_SIZE := 12*1024
@@ -188,6 +164,11 @@ TARGET_EXFAT_DRIVER := sdfat
 # Filesystem
 TARGET_FS_CONFIG_GEN := $(PLATFORM_PATH)/config.fs
 
+# FM Radio
+AUDIO_FEATURE_ENABLED_FM_POWER_OPT := true
+BOARD_HAS_QCA_FM_SOC := cherokee
+BOARD_HAVE_QCOM_FM := true
+
 # GPS
 TARGET_NO_RPC := true
 USE_DEVICE_SPECIFIC_GPS := true
@@ -201,6 +182,29 @@ DEVICE_FRAMEWORK_MANIFEST_FILE := $(PLATFORM_PATH)/framework_manifest.xml
 # Init
 TARGET_PLATFORM_DEVICE_BASE := /devices/soc/
 
+# Kernel Configuration
+BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200,n8 androidboot.console=ttyMSM0 earlycon=msm_serial_dm,0xc170000 androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 sched_enable_hmp=1 sched_enable_power_aware=1 service_locator.enable=1 swiotlb=1 androidboot.configfs=true androidboot.usbcontroller=a800000.dwc3
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE += loop.max_part=7
+BOARD_KERNEL_CMDLINE += firmware_class.path=/vendor/firmware_mnt/image
+
+BOARD_KERNEL_BASE        := 0x00000000
+BOARD_KERNEL_PAGESIZE    := 4096
+
+ifeq ($(AB_OTA_UPDATER), true)
+BOARD_KERNEL_TAGS_OFFSET := 0x00000100
+BOARD_RAMDISK_OFFSET     := 0x01000000
+
+else
+BOARD_KERNEL_TAGS_OFFSET := 0x01E00000
+BOARD_RAMDISK_OFFSET     := 0x02000000
+endif
+
+BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_CROSS_COMPILE_PREFIX := aarch64-linux-android-
+TARGET_KERNEL_HEADER_ARCH := arm64
+
 # Keystore
 TARGET_PROVIDES_KEYMASTER := true
 
@@ -209,6 +213,9 @@ TARGET_PROVIDES_LIBLIGHT := true
 
 # Media
 TARGET_USES_MEDIA_EXTENSIONS := true
+
+# MKE2FS
+TARGET_USES_MKE2FS := true
 
 # Partitions
 ifeq ($(AB_OTA_UPDATER), true)
@@ -232,35 +239,40 @@ BOARD_PERSISTIMAGE_PARTITION_SIZE := 33554432
 BOARD_PERSISTIMAGE_FILE_SYSTEM_TYPE := ext4
 
 BOARD_ROOT_EXTRA_SYMLINKS := \
-    /vendor/dsp:/dsp \
-    /vendor/firmware_mnt:/firmware \
-    /vendor/bt_firmware:/bt_firmware
+	/vendor/dsp:/dsp \
+	/vendor/firmware_mnt:/firmware \
+	/vendor/bt_firmware:/bt_firmware
 
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 TARGET_COPY_OUT_VENDOR := vendor
 
+# Peripheral manager
+TARGET_PER_MGR_ENABLED := true
+
 # Power
 TARGET_USES_INTERACTION_BOOST := true
 
-# Recovery
+# QCOM
+BOARD_USES_QCOM_HARDWARE := true
+TARGET_USES_QCOM_BSP := false
+TARGET_USE_SDCLANG := true
+
+# QCOM HALS
+TARGET_QCOM_AUDIO_VARIANT := caf-msm8998
+TARGET_QCOM_MEDIA_VARIANT := caf-msm8998
+TARGET_QCOM_DISPLAY_VARIANT := caf-msm8998
+
+# Recovery FSTAB
 ifeq ($(AB_OTA_UPDATER), true)
 TARGET_RECOVERY_FSTAB := $(PLATFORM_PATH)/rootdir/etc/fstab_AB.qcom
 else
 TARGET_RECOVERY_FSTAB := $(PLATFORM_PATH)/rootdir/etc/recovery.fstab
 endif
 
-# FM
-AUDIO_FEATURE_ENABLED_FM_POWER_OPT := true
-BOARD_HAS_QCA_FM_SOC := cherokee
-BOARD_HAVE_QCOM_FM := true
-
 # RIL
 TARGET_RIL_VARIANT := caf
 ENABLE_VENDOR_RIL_SERVICE := true
-
-# Timeservice
-BOARD_USES_QC_TIME_SERVICES := true
 
 # Seccomp Policy
 BOARD_SECCOMP_POLICY := $(PLATFORM_PATH)/seccomp
@@ -270,6 +282,9 @@ include device/qcom/sepolicy/sepolicy.mk
 BOARD_SEPOLICY_DIRS += $(PLATFORM_PATH)/sepolicy
 SELINUX_IGNORE_NEVERALLOWS := true
 
+# Timeservice
+BOARD_USES_QC_TIME_SERVICES := true
+
 # Treble
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 PRODUCT_COMPATIBLE_PROPERTY_OVERRIDE := true
@@ -277,16 +292,10 @@ PRODUCT_ACTIONABLE_COMPATIBLE_PROPERTY_DISABLE=true
 PRODUCT_FULL_TREBLE_OVERRIDE := true
 PRODUCT_VENDOR_MOVE_ENABLED := true
 
-# Peripheral manager
-TARGET_PER_MGR_ENABLED := true
-
 # TWRP Support
 ifeq ($(WITH_TWRP),true)
 -include $(PLATFORM_PATH)/twrp.mk
 endif
-
-# Use mke2fs to create ext4 images
-TARGET_USES_MKE2FS := true
 
 # Wifi
 BOARD_HAS_QCOM_WLAN := true
@@ -302,14 +311,3 @@ WIFI_DRIVER_FW_PATH_P2P := "p2p"
 WIFI_HIDL_FEATURE_DUAL_INTERFACE := true
 WPA_SUPPLICANT_VERSION := VER_0_8_X
 WIFI_DRIVER_OPERSTATE_PATH := "/sys/class/net/wlan0/operstate"
-
-
-# Enable dex pre-opt to speed up initial boot
-ifeq ($(HOST_OS),linux)
-  ifneq ($(TARGET_BUILD_VARIANT),eng)
-    ifeq ($(WITH_DEXPREOPT),)
-      WITH_DEXPREOPT := true
-      WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
-    endif
-  endif
-endif

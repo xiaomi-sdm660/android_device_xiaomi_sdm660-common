@@ -138,12 +138,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # IMS
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.dbg.ims_volte_enable=1 \
-    persist.radio.videopause.mode=1 \
-    persist.data.iwlan.enable=true \
-    persist.dbg.volte_avail_ovr=1 \
-    persist.dbg.vt_avail_ovr=1 \
-    persist.radio.VT_HYBRID_ENABLE=1
+	persist.dbg.ims_volte_enable=1 \
+	persist.radio.videopause.mode=1 \
+	persist.data.iwlan.enable=true \
+	persist.dbg.volte_avail_ovr=1 \
+	persist.dbg.vt_avail_ovr=1 \
+	persist.radio.VT_HYBRID_ENABLE=1
 
 # Keyguard
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -224,6 +224,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Stm-events
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.debug.coresight.config=stm-events
+
+# Suspend Time
+PRODUCT_PROPERTY_OVERRIDES += \
+	sys.autosuspend.timeout=500000
 
 # System delay
 PRODUCT_PROPERTY_OVERRIDES += \
