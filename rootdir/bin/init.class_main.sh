@@ -39,9 +39,13 @@ vendor_rild_status=`getprop init.svc.vendor.ril-daemon`
 case "$baseband" in
     "apq" | "sda" | "qcs" )
     setprop ro.vendor.radio.noril yes
+    setprop ro.radio.noril yes
+    setprop hw.nophone yes
     if [ -n "$rild_status" ] || [ -n "$vendor_rild_status" ]; then
     stop ril-daemon
     stop vendor.ril-daemon
+    stop vendor.qcrild
+    stop vendor.qcrild2
     start vendor.ipacm
     fi
 esac
