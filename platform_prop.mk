@@ -218,7 +218,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Shutdown and Restart
 PRODUCT_PROPERTY_OVERRIDES += \
-	persist.sys.ssr.restart_level=ALL_ENABLE \
 	ro.build.shutdown_timeout=0 \
 	sys.vendor.shutdown.waittime=500
 
