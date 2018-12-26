@@ -206,10 +206,7 @@ on boot
     
     # Wifi firmware reload path
 	chown wifi wifi /sys/module/wlan/parameters/fwpath
-	
-    # load WIGIG platform driver
-    insmod /vendor/lib/modules/msm_11ad_proxy.ko
-    
+
     # zhitongze@huaqin.com add sensor hardware info 20180207 begin
     chmod 0664 /sys/devices/platform/HardwareInfo/gsensor
     chmod 0664 /sys/devices/platform/HardwareInfo/msensor
@@ -270,11 +267,6 @@ on post-fs-data
     mkdir /data/vendor/wifi/wpa 0770 wifi wifi
     mkdir /data/vendor/wifi/wpa/sockets 0770 wifi wifi
     mkdir /data/vendor/wifi/wpa_supplicant 0770 wifi wifi
-    mkdir /data/vendor/wifi/wigig_hostapd 0770 wifi wifi
-
-    #create port-bridge log dir
-    mkdir /data/vendor/port_bridge 0770 radio radio
-    chmod 0770 /data/vendor/port_bridge
 
     #create netmgr log dir
     mkdir /data/vendor/netmgr 0770 radio radio
@@ -503,22 +495,8 @@ service vendor.tftp_server /vendor/bin/tftp_server
    class core
    user root
 
-service vendor.port-bridge /system/vendor/bin/port-bridge
-    class main
-    user radio system
-    group radio system inet
-    disabled
-    oneshot
-
 service vendor.netmgrd /system/vendor/bin/netmgrd
     class main
-    disabled
-
-service vendor.ipacm-diag /system/vendor/bin/ipacm-diag
-    class main
-    user radio
-    socket ipacm_log_file dgram 660 radio radio
-    group radio diag oem_2901
     disabled
 
 service vendor.ipacm /system/vendor/bin/ipacm
@@ -567,53 +545,6 @@ service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
     disabled
     oneshot
 	writepid /dev/cpuset/system-background/tasks
-
-service vendor.wigig_supplicant /vendor/bin/hw/wpa_supplicant \
-    -iwigig0 -Dnl80211 -c/data/vendor/wifi/wigig_supplicant.conf \
-    -m/data/vendor/wifi/wigig_p2p_supplicant.conf \
-    -O/data/vendor/wifi/wigig_sockets -dd \
-    -e/data/vendor/wifi/wigig_entropy.bin -g@android:wpa_wigig0 \
-    -S wigigsvc
-    #   we will start as root and wpa_supplicant will switch to user wifi
-    #   after setting up the capabilities required for WEXT
-    #   user wifi
-    #   group wifi inet keystore
-    class main
-    socket wpa_wigig0 dgram 660 wifi wifi
-    disabled
-    oneshot
-
-# FST Manager with hostapd (softap) - all settings inside ini file
-service vendor.fstman /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini
-    user wifi
-    group wifi net_admin net_raw
-    class main
-    disabled
-    oneshot
-
-# FST Manager with supplicant - connect to supplicant socket
-service vendor.fstman_wlan0 /vendor/bin/fstman -B -ddd -c /data/vendor/wifi/fstman.ini @android:wpa_wlan0
-    user wifi
-    group wifi net_admin net_raw
-    class main
-    disabled
-    oneshot
-
-on property:netd.fstman.start=true
-    start vendor.fstman
-
-on property:netd.fstman.start=false
-    stop vendor.fstman
-
-on property:persist.vendor.wigig.enable=1
-    insmod /vendor/lib/modules/wil6210.ko alt_ifname=1
- 
-service vendor.cnss_diag /system/vendor/bin/cnss_diag -q
-	class main
-	user system
-	group system wifi inet net_admin sdcard_rw media_rw diag
-	oneshot
-	capabilities NET_ADMIN
 
 service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     class late_start
@@ -668,13 +599,6 @@ service hostapd_fst /vendor/bin/hostapd -dd -g /data/vendor/wifi/hostapd/global 
     oneshot
     disabled
 
-service vendor.wigig_hostapd /vendor/bin/hostapd -dd /data/vendor/wifi/wigig_hostapd.conf
-    class late_start
-    user wifi
-    group wifi inet keystore net_admin net_raw
-    oneshot
-    disabled
-
 on property:ro.data.large_tcp_window_size=true
     # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
     write /proc/sys/net/ipv4/tcp_adv_win_scale  2
@@ -683,15 +607,6 @@ service vendor.ril-daemon2 /vendor/bin/hw/rild -c 2
     class main
     socket rild2 stream 660 root radio
     socket rild-debug2 stream 660 radio system
-    user radio
-    disabled
-    group radio cache inet misc audio sdcard_r sdcard_rw diag oem_2901 log
-    capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
-
-service vendor.ril-daemon3 /vendor/bin/hw/rild -c 3
-    class main
-    socket rild3 stream 660 root radio
-    socket rild-debug3 stream 660 radio system
     user radio
     disabled
     group radio cache inet misc audio sdcard_r sdcard_rw diag oem_2901 log
@@ -712,25 +627,6 @@ on property:sys.qbcharger.enable=true
 on property:sys.qbcharger.enable=false
     stop qbcharger
 
-service vendor.diag_mdlog_start /system/vendor/bin/diag_mdlog
-    class late_start
-    user shell
-    group system diag oem_2901 sdcard_rw sdcard_r media_rw
-    disabled
-    oneshot
-
-service vendor.diag_mdlog_stop /system/vendor/bin/diag_mdlog -k
-    class late_start
-    user shell
-    group system diag oem_2901 sdcard_rw sdcard_r media_rw
-    disabled
-    oneshot
-
-on property:persist.sys.mdlog.enable=true
-    start vendor.diag_mdlog_start
-on property:persist.sys.mdlog.enable=false
-    start vendor.diag_mdlog_stop
-
 service vendor.msm_irqbalance /vendor/bin/msm_irqbalance -f /system/vendor/etc/msm_irqbalance.conf
     class core
     user root
@@ -746,7 +642,6 @@ on property:init.svc.surfaceflinger=restarting
     stop vendor.hwcomposer-2-1
     start vendor.hwcomposer-2-1
 
-    
 service chre /vendor/bin/chre
 	class late_start
 	user system
