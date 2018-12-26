@@ -697,12 +697,6 @@ service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
 on property:sys.boot_completed=1
     start vendor.qcom-post-boot
 
-service vendor.qvop-daemon /vendor/bin/qvop-daemon
-    class late_start
-    user system
-    group system drmrpc
-	writepid /dev/cpuset/system-background/tasks
-
 service vendor.atfwd /vendor/bin/ATFWD-daemon
     class late_start
     user system

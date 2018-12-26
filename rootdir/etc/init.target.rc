@@ -200,7 +200,7 @@ service vendor.time_daemon /system/vendor/bin/time_daemon
    group root
    writepid /dev/cpuset/system-background/tasks
    
-service vendor.adsprpcd_root /system/bin/adsprpcd
+service vendor.adsprpcd_root /vendor/bin/adsprpcd
    class main
    user media
    group media
