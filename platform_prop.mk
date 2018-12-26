@@ -238,6 +238,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.timed.enable=true \
 	persist.delta_time.enable=true
 
+# Memory optimizations
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.vendor.qti.sys.fw.bservice_enable=true
+
 # Vendor specific library
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vendor.at_library=libqti-at.so
