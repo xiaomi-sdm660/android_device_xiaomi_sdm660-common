@@ -1,2 +1,3 @@
 #============= rild ==============
 allow rild vendor_file:file ioctl;
+allow rild default_prop:file { getattr open read };

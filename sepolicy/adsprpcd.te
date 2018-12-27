@@ -1,0 +1,2 @@
+#============= adsprpcd ==============
+allow adsprpcd default_prop:file { getattr open read };

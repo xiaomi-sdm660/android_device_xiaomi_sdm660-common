@@ -4,10 +4,13 @@ binder_call(hal_camera_default, hal_graphics_allocator_default)
 
 allow hal_camera_default hal_configstore_ISurfaceFlingerConfigs:hwservice_manager find;
 allow hal_camera_default hal_graphics_allocator_hwservice:hwservice_manager find;
-allow hal_camera_default camera_data_file:dir search;
-allow hal_camera_default camera_data_file:file { getattr open write };
+allow hal_camera_default camera_data_file:dir w_dir_perms;
+allow hal_camera_default camera_data_file:file create_file_perms;
 allow hal_camera_default default_prop:property_service set;
 allow hal_camera_default sysfs:file { getattr open read };
 allow hal_camera_default sysfs_kgsl:file { getattr open read };
 allow hal_camera_default { hal_configstore_ISurfaceFlingerConfigs hal_graphics_allocator_hwservice }:hwservice_manager find;
 allow hal_camera_default { hal_configstore_default hal_graphics_allocator_default }:binder call;
+allow hal_camera_default default_prop:file { getattr open read };
+allow hal_camera_default persist_debug_prop:file { getattr open read };
+allow hal_camera_default system_prop:file { getattr open read };

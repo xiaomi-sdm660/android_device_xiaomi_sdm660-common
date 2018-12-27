@@ -4,4 +4,5 @@ dontaudit untrusted_app_25 serialno_prop:file { getattr open read };
 allow untrusted_app_25 sysfs_battery_supply:file read;
 allow untrusted_app_25 sysfs:dir { getattr open read };
 allow untrusted_app_25 sysfs:file { getattr open read };
+allow untrusted_app_25 sysfs_net:dir search;
 r_dir_file(untrusted_app_25, sysfs_usb_supply)

@@ -1,0 +1,2 @@
+allow wcnss_service default_prop:file { getattr open read };
+allow wcnss_service wifi_data_file:dir search;

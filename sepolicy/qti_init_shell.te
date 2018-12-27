@@ -1,9 +1,19 @@
 #============= qti_init_shell ==============
 allow qti_init_shell sysfs_cpu_boost:file write;
 allow qti_init_shell sysfs_lowmemorykiller:dir write;
+allow qti_init_shell ctl_start_prop:property_service set;
+allow qti_init_shell default_prop:file { getattr open read };
 allow qti_init_shell debug_prop:property_service set;
 allow qti_init_shell default_prop:property_service set;
+allow qti_init_shell exported2_system_prop:property_service set;
+allow qti_init_shell exported3_default_prop:file { getattr open read };
+allow qti_init_shell exported3_default_prop:property_service set;
+allow qti_init_shell exported_system_radio_prop:file { getattr open read };
+allow qti_init_shell exported_system_radio_prop:property_service set;
 allow qti_init_shell radio_prop:property_service set;
 allow qti_init_shell self:capability dac_override;
 allow qti_init_shell system_prop:property_service set;
 allow qti_init_shell system_radio_prop:property_service set;
+allow qti_init_shell sysfs:file write;
+allow qti_init_shell system_prop:file { getattr open read };
+allow qti_init_shell vendor_radio_data_file:dir search;

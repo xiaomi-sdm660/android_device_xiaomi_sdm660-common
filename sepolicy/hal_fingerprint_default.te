@@ -7,6 +7,7 @@ allow hal_fingerprint_default init:unix_stream_socket connectto;
 allow hal_fingerprint_default property_socket:sock_file write;
 allow hal_fingerprint_default sysfs:file write;
 allow hal_fingerprint_default system_prop:property_service set;
+allow hal_fingerprint_default default_prop:file { getattr open read };
 
 allow hal_fingerprint_default tee_device:chr_file rw_file_perms;
 allow hal_fingerprint_default uhid_device:chr_file rw_file_perms;
@@ -29,5 +30,12 @@ allow hal_fingerprint_default goodix_fingerprint_vndservice:service_manager add;
 allow hal_fingerprint_default goodixfingerprintd_service:service_manager add;
 
 allow hal_fingerprint_default self:netlink_socket create_socket_perms_no_ioctl;
+
+allow hal_fingerprint_default fingerprintd_data_file:dir { write search remove_name add_name };
+allow hal_fingerprint_default fingerprintd_data_file:file { getattr rename unlink };
+
+allow hal_fingerprint_default mnt_user_file:dir r_dir_perms;
+allow hal_fingerprint_default mnt_user_file:file r_file_perms;
+allow hal_fingerprint_default mnt_user_file:lnk_file r_file_perms;
 
 set_prop(hal_fingerprint_default, fingerprint_prop)
