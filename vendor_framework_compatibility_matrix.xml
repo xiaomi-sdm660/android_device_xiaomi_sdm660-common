@@ -81,7 +81,7 @@
              <name>IKeystoreExt</name>
              <instance>default</instance>
          </interface>
-     </hal>     
+     </hal>
     <hal format="hidl" optional="true">
         <name>com.qualcomm.qti.dpm.api</name>
         <version>1.0</version>

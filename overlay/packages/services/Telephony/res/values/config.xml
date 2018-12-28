@@ -42,7 +42,7 @@
 
     <!-- Show enabled lte option for lte device -->
     <bool name="config_enabled_lte" translatable="false">true</bool>
-    
+
      <!-- Flag indicating if hac is enabled -->
     <bool name="hac_enabled">true</bool>
 

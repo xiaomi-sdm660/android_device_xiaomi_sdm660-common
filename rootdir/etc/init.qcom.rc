@@ -203,7 +203,7 @@ on boot
 
     # Create vpp directory
     mkdir /mnt/vendor/persist/vpp 0770 media media
-    
+
     # Wifi firmware reload path
 	chown wifi wifi /sys/module/wlan/parameters/fwpath
 
@@ -211,7 +211,7 @@ on boot
     chmod 0664 /sys/devices/platform/HardwareInfo/gsensor
     chmod 0664 /sys/devices/platform/HardwareInfo/msensor
     chmod 0664 /sys/devices/platform/HardwareInfo/alsps
-    chmod 0664 /sys/devices/platform/HardwareInfo/gyro    
+    chmod 0664 /sys/devices/platform/HardwareInfo/gyro
     # zhitongze@huaqin.com add sensor hardware info 20180207 end
     chown system system /sys/devices/platform/HardwareInfo/alsps
     chown system system /sys/devices/platform/HardwareInfo/gsensor
@@ -245,7 +245,7 @@ on post-fs-data
     # create QDMA dropbox
     mkdir /data/vendor/qdmastats 0700 system system
     mkdir /data/vendor/qdma 0770 system system
-	
+
     # Create folder of camera
     mkdir /data/vendor/camera 0770 camera camera
 
@@ -412,7 +412,7 @@ on post-fs-data
     # Create SWAP related dirs
     mkdir /data/vendor/swap 0770 root system
     chmod 2770 /data/vendor/swap
-	
+
     # Create dir for TUI
     mkdir /data/vendor/tui 0600 system drmrpc
 
@@ -555,10 +555,10 @@ service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
 
 on property:sys.powerctl=*
     stop vendor.cnss-daemon
-    
+
 on property:sys.powerctl=*
 	stop vendor.cnss-daemon
-	
+
 service vendor.loc_launcher /system/vendor/bin/loc_launcher
     class late_start
     user gps
@@ -666,7 +666,7 @@ on property:sys.thermal.isincall=1
 
 on property:sys.thermal.isincall=0
     write /sys/class/power_supply/battery/device/thermalcall 0
-    
+
 service config_bt_addr /vendor/bin/btnvtool -O
     class core
     user bluetooth

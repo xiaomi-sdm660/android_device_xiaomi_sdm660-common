@@ -510,7 +510,7 @@ int IPACM_Config::AddNatIfaces(char *dev_name, ipa_ip_type ip_type)
 		if (ip_type == IPA_IP_v6) {
 			pNatIfaces[ipa_nat_iface_entries - 1].v6_up = true;
 			IPACMDBG_H("Change v6_up to (%d) \n", pNatIfaces[ipa_nat_iface_entries - 1].v6_up);
-		}				 
+		}
 	}
 	return 0;
 }

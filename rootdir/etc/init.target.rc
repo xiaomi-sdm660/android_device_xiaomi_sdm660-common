@@ -200,7 +200,7 @@ on property:init.svc.vendor.per_mgr=running
 
 on property:sys.powerctl=*
     stop vendor.per_proxy
-    
+
 on property:sys.powerctl=*
     stop vendor.per_proxy
 
@@ -223,7 +223,7 @@ service vendor.time_daemon /system/vendor/bin/time_daemon
    user root
    group root
    writepid /dev/cpuset/system-background/tasks
-   
+
 service vendor.adsprpcd_root /vendor/bin/adsprpcd
    class main
    user media
@@ -241,7 +241,7 @@ service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
     socket ims_qmid stream 0660 system radio
     group radio log diag
     writepid /dev/cpuset/system-background/tasks
-	
+
 service vendor.imsdatadaemon /system/vendor/bin/imsdatadaemon
     class main
     user system
@@ -256,7 +256,7 @@ service vendor.energy-awareness /system/vendor/bin/energy-awareness
     group system
     oneshot
     writepid /dev/cpuset/system-background/tasks
-	
+
 service vendor.pd_mapper /system/vendor/bin/pd-mapper
      class core
 
@@ -274,7 +274,7 @@ service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    user system
    group radio diag inet log
    writepid /dev/cpuset/system-background/tasks
-   
+
 # add for HMI_L8866_A01-502: begin
 on property:vendor.ims.DATA_DAEMON_STATUS=1
     restart vendor.ims_rtp_daemon
@@ -319,7 +319,7 @@ service vendor.hvdcp_opti /system/vendor/bin/hvdcp_opti
     group system wakelock
 	writepid /dev/cpuset/system-background/tasks
 
-    
+
 #add for displayfeature
 service openad /system/vendor/bin/displayf_bin s 1
     user root
@@ -344,28 +344,28 @@ on property:persist.sys.display_srgb=2
 	write /sys/class/graphics/fb0/msm_fb_srgb 2
 
 on property:sys.dynamic_debug=1
-   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c +p" 
-   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c +p"
+   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c +p"
    write /sys/kernel/debug/dynamic_debug/control "file msm-digital-cdc.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c +p" 
+   write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c +p"
 
 on property:sys.dynamic_debug=0
-   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c -p" 
-   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c -p" 
+   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c -p"
+   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c -p"
    write /sys/kernel/debug/dynamic_debug/control "file msm-digital-cdc.c -p"
    write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c -p"
 
@@ -398,7 +398,7 @@ on property:persist.camera.HAL3.enabled=0
 	stop cameraserver
 	start vendor.camera-provider-2-4
 	start cameraserver
-    
+
 on property:persist.camera.HAL3.enabled=1
 	stop vendor.camera-provider-2-4
 	stop cameraserver

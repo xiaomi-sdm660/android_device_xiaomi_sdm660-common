@@ -389,7 +389,7 @@
 		 don't support RIL_REQUEST_GET_RADIO_CAPABILITY
 		 format is UMTS|LTE|... -->
 	<string translatable="false" name="config_radio_access_family">CDMA|EVDO|GSM|TD_SCDMA|WCDMA|LTE</string>
-	
+
 	<!-- Whether the Unprocessed audio source supports the required frequency range and level -->
     <bool name="config_supportAudioSourceUnprocessed">true</bool>
 </resources>

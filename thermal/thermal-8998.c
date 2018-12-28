@@ -93,7 +93,7 @@ size_t get_num_cpus() {
  */
 static ssize_t read_temperature(int sensor_num, int type, const char *name, float mult,
         float throttling_threshold, float shutdown_threshold, float vr_throttling_threshold,
-        temperature_t *out) 
+        temperature_t *out)
 {
     ALOGD("Entering %s",__func__);
     FILE *file;
@@ -126,7 +126,7 @@ static ssize_t read_temperature(int sensor_num, int type, const char *name, floa
     return 0;
 }
 
-static ssize_t get_cpu_temperatures(temperature_t *list, size_t size) 
+static ssize_t get_cpu_temperatures(temperature_t *list, size_t size)
 {
     ALOGD("Entering %s",__func__);
     size_t cpu;

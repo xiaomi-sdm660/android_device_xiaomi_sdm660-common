@@ -3255,7 +3255,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 
 	flt_index.retain_header_valid = 1;
 	flt_index.retain_header = 0;
-	flt_index.embedded_call_mux_id_valid = 1;	
+	flt_index.embedded_call_mux_id_valid = 1;
 	qmap_id = IPACM_Iface::ipacmcfg->GetQmapId();
 	flt_index.embedded_call_mux_id = qmap_id;
 #ifndef FEATURE_IPA_V3
@@ -3378,7 +3378,7 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 		else
 		{
 			if ((flt_rule_entry.rule.eq_attrib.num_offset_meq_128 >= 0) &&
-				(flt_rule_entry.rule.eq_attrib.num_offset_meq_128 
+				(flt_rule_entry.rule.eq_attrib.num_offset_meq_128
 					< IPA_IPFLTR_NUM_MEQ_128_EQNS))
 			{
 				flt_rule_entry.rule.eq_attrib.num_offset_meq_128++;

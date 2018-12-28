@@ -3,7 +3,7 @@
 # specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
 
 # NOTE: /system and /vendor partitions are now early-mounted and the fstab entry is specified in device tree (duplicated below for recovery image purposes only):
-#       /proc/device-tree/firmware/android/fstab/system 
+#       /proc/device-tree/firmware/android/fstab/system
 #       /proc/device-tree/firmware/android/fstab/vendor
 
 #TODO: Add 'check' as fs_mgr_flags with data partition.
