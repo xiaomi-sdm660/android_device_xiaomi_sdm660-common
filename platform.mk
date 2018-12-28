@@ -250,6 +250,7 @@ PRODUCT_PACKAGES += \
 # OMX
 PRODUCT_PACKAGES += \
 	libc2dcolorconvert \
+	libaacwrapper \
 	libmm-omxcore \
 	libOmxAacEnc \
 	libOmxAmrEnc \
