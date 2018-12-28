@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="advanced_settings">Xiaomi Parts</string>
+    <string name="advanced_settings_summary">Erweiterte Einstellungen</string>
+    <string name="camera_title">Kamera</string>
+    <string name="camera_hal3_title">Aktiviere Camera2 API</string>
+    <string name="camera_eis_title">Aktiviere EIS</string>
+    <string name="display_title">Display</string>
+    <string name="device_kcal_title">Displaykalibierung</string>
+    <string name="device_doze_title">Inaktivitätsdisplay</string>
+    <string name="torch_title">Taschenlampe</string>
+    <string name="torch_brightness_title">Helligkeit</string>
+    <string name="vibration_strength_title">Stärke</string>
+</resources>

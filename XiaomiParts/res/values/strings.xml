@@ -18,4 +18,12 @@
     <string name="advanced_settings_summary">Extra Settings</string>
     <string name="camera_title">Camera</string>
     <string name="camera_hal3_title">Enable Camera2 API</string>
+    <string name="camera_eis_title">Enable EIS</string>
+    <string name="display_title">Display</string>
+    <string name="device_kcal_title">Display Color Calibration</string>
+    <string name="device_doze_title">Doze</string>
+    <string name="torch_title">Torch</string>
+    <string name="torch_brightness_title">Brightness</string>
+    <string name="vibration_title">Haptic feedback</string>
+    <string name="vibration_strength_title">Strength</string>
 </resources>

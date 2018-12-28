@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.carbonrom.settings.device"
+    package="org.lineageos.settings.device"
     android:sharedUserId="android.uid.system" >
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-sdk
         android:minSdkVersion="27"
@@ -12,8 +13,21 @@
         android:label="@string/advanced_settings"
         android:theme="@style/AppTheme"
         android:supportsRtl="true" >
+        <receiver
+            android:name=".BootReceiver"
+            android:defaultToDeviceProtectedStorage="true"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS" />
+            </intent-filter>
+        </receiver>
         <activity
-            android:name="org.carbonrom.settings.device.DeviceSettingsActivity"
+            android:name=".DeviceSettingsActivity"
             android:exported="false"
             android:label="@string/advanced_settings"
             android:icon="@drawable/round_build_24"

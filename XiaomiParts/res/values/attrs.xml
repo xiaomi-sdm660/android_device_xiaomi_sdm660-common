@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TorchSeekBarPreference">
+        <attr name="interval" format="integer" />
+        <attr name="min" format="integer" />
+        <attr name="max" format="integer" />
+        <attr name="units" format="string|reference" />
+        <attr name="defaultText" format="string|reference" />
+    </declare-styleable>
+
+    <declare-styleable name="VibrationSeekBarPreference">
+        <attr name="interval" format="integer" />
+        <attr name="min" format="integer" />
+        <attr name="max" format="integer" />
+        <attr name="units" format="string|reference" />
+        <attr name="defaultText" format="string|reference" />
+    </declare-styleable>
+</resources>

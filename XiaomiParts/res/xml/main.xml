@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2018 The Mokee Project
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,14 +14,70 @@
      limitations under the License.
 -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
     <PreferenceCategory
         android:key="camera"
         android:title="@string/camera_title">
+
         <SwitchPreference
+            android:defaultValue="false"
             android:key="hal3"
-            android:defaultValue="true"
             android:title="@string/camera_hal3_title" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="eis"
+            android:title="@string/camera_eis_title" />
+
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:key="torch"
+        android:title="@string/torch_title">
+
+        <org.lineageos.settings.device.TorchSeekBarPreference
+            android:defaultValue="100"
+            android:key="torch_brightness"
+            android:max="255"
+            android:min="1"
+            android:title="@string/torch_brightness_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="vibration"
+        android:title="@string/vibration_title">
+
+        <org.lineageos.settings.device.VibrationSeekBarPreference
+            android:defaultValue="80"
+            android:key="vibration_strength"
+            android:max="100"
+            android:min="1"
+            android:title="@string/vibration_strength_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="display"
+        android:title="@string/display_title">
+
+        <Preference
+            android:key="device_kcal"
+            android:persistent="false"
+            android:title="@string/device_kcal_title">
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetClass="org.lineageos.settings.kcal.KCalSettingsActivity"
+                android:targetPackage="org.lineageos.settings.kcal" />
+        </Preference>
+
+        <Preference
+            android:key="device_doze"
+            android:persistent="false"
+            android:title="@string/device_doze_title">
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetClass="org.lineageos.settings.doze.DozeSettingsActivity"
+                android:targetPackage="org.lineageos.settings.doze" />
+        </Preference>
+    </PreferenceCategory>
 </PreferenceScreen>
