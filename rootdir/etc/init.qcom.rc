@@ -305,6 +305,9 @@ on post-fs-data
     # Create directory for radio
     mkdir /data/vendor/radio 0770 system radio
 
+	# Create directory for modem_config
+    mkdir /data/vendor/modem_config 0570 radio root
+
     # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
     # We chown/chmod /mnt/vendor/persist again so because mount is run as root + defaults
     chown root system /mnt/vendor/persist
@@ -566,13 +569,16 @@ service vendor.loc_launcher /system/vendor/bin/loc_launcher
 	writepid /dev/cpuset/system-background/tasks
 
 on property:crypto.driver.load=1
-     insmod /system/lib/modules/qce.ko
-     insmod /system/lib/modules/qcedev.ko
+    insmod /system/lib/modules/qce.ko
+    insmod /system/lib/modules/qcedev.ko
 
 service vendor.qcom-sh /vendor/bin/init.qcom.sh
     class late_start
     user root
     oneshot
+
+on property:ro.vendor.ril.mbn_copy_completed=1
+    write /data/vendor/radio/copy_complete 1
 
 service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
     class late_start
