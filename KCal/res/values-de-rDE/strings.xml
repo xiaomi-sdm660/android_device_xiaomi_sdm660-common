@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="advanced_settings">Display Farbeinstellungen</string>
+    <string name="advanced_settings_summary">Display Kalibrierung</string>
+    <string name="cat_calibration">Bildschirm Kalibrierung</string>
+    <string name="set_on_boot">Beim Systemstart anwenden</string>
+    <string name="greyscale_display">Graustufen</string>
+    <string name="kcal_enabled">An</string>
+    <string name="kcal_disabled">Aus</string>
+    <string name="color_red">Rot</string>
+    <string name="color_green">Grün</string>
+    <string name="color_blue">Blau</string>
+    <string name="color_minimum">Minimum</string>
+    <string name="saturation">Sättigung</string>
+    <string name="contrast">Kontrast</string>
+    <string name="cat_colormanagement">Farbeinstellungen</string>
+    <string name="kcal_minimum">Minimum</string>
+    <string name="value">Farbwert</string>
+    <string name="hue">Farbton</string>
+    <string name="kcal_reset">Zurücksetzen</string>
+</resources>

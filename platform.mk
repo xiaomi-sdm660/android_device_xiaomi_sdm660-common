@@ -435,3 +435,7 @@ PRODUCT_COPY_FILES += \
 # XiaomiParts
 PRODUCT_PACKAGES += \
 	XiaomiParts
+
+# KCal
+PRODUCT_PACKAGES += \
+	KCal

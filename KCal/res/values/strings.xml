@@ -1,0 +1,20 @@
+<resources>
+    <string name="advanced_settings">Display Color Calibration</string>
+    <string name="advanced_settings_summary">Color Calibration</string>
+    <string name="cat_calibration">Display Calibration</string>
+    <string name="set_on_boot">Set On Boot</string>
+    <string name="kcal_enabled">On</string>
+    <string name="kcal_disabled">Off</string>
+    <string name="greyscale_display">Greyscale Display</string>
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_minimum">Minimum</string>
+    <string name="saturation">Saturation</string>
+    <string name="value">Value</string>
+    <string name="contrast">Contrast</string>
+    <string name="hue">Hue</string>
+    <string name="cat_colormanagement">Color Settings</string>
+    <string name="kcal_minimum">Minimum</string>
+    <string name="kcal_reset">Reset</string>
+</resources>
