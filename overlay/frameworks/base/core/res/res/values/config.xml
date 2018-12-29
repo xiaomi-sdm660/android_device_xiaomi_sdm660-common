@@ -245,6 +245,9 @@
 		 Refer to power.h for details.
 	-->
 	<bool name="config_powerDecoupleInteractiveModeFromDisplay">true</bool>
+	
+	    <!-- Whether device has support for auto brightness in doze mode -->
+	<bool name="config_allowAutoBrightnessWhileDozing">true</bool>
 
 	<!-- Indicate whether closing the lid causes the device to go to sleep and opening
 		  it causes the device to wake up.
