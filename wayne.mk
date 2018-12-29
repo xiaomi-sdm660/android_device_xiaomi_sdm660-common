@@ -207,10 +207,6 @@ PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-service \
     android.hardware.drm@1.1-service.clearkey
 
-# FBE support
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/rootdir/bin/init.qti.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.qseecomd.sh
-
 # FM
 PRODUCT_PACKAGES += \
     FM2 \
@@ -258,9 +254,6 @@ PRODUCT_COPY_FILES += \
     $(COMMON_PATH)/idc/uinput-goodix.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/uinput-goodix.idc
 
 # Init
-PRODUCT_COPY_FILES += \
-    $(COMMON_PATH)/rootdir/bin/init.qti.qseecomd.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qti.qseecomd.sh
-
 PRODUCT_PACKAGES += \
     init.class_main.sh \
     init.goodix.sh \
