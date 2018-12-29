@@ -440,3 +440,7 @@ PRODUCT_PACKAGES += \
 # KCal
 PRODUCT_PACKAGES += \
 	KCal
+
+# Wi-Fi Display
+PRODUCT_BOOT_JARS += \
+    WfdCommon
