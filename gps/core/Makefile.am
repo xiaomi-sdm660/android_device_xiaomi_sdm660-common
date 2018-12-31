@@ -1,8 +1,11 @@
+ACLOCAL_AMFLAGS = -I m4
+
 AM_CFLAGS = -I./ \
-            -I../utils \
-            -I../location \
             $(LOCPLA_CFLAGS) \
             $(GPSUTILS_CFLAGS) \
+            -I./data-items/ \
+            -I./data-items/common \
+            -I./observer \
             -I$(WORKSPACE)/gps-noship/flp \
             -D__func__=__PRETTY_FUNCTION__ \
             -fno-short-enums \
@@ -34,13 +37,10 @@ libloc_core_la_c_sources = \
            LocDualContext.cpp \
            loc_core_log.cpp \
            data-items/DataItemsFactoryProxy.cpp \
-           data-items/common/ClientIndex.cpp \
-           data-items/common/DataItemIndex.cpp \
-           data-items/common/IndexFactory.cpp \
            SystemStatusOsObserver.cpp \
            SystemStatus.cpp
 
-library_includedir = $(pkgincludedir)/core
+library_includedir = $(pkgincludedir)
 
 library_include_HEADERS = $(libloc_core_la_h_sources)
 
@@ -56,7 +56,11 @@ libloc_core_la_LDFLAGS = -Wl,-z,defs -lpthread -shared -version-info 1:0:0
 libloc_core_la_CPPFLAGS = $(AM_CFLAGS) $(AM_CPPFLAGS)
 endif
 
-libloc_core_la_LIBADD = -lstdc++ -ldl $(LOCPLA_LIBS) $(GPSUTILS_LIBS)
+libloc_core_la_LIBADD = -ldl $(GPSUTILS_LIBS)
 
 #Create and Install libraries
 lib_LTLIBRARIES = libloc_core.la
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = loc-core.pc
+EXTRA_DIST = $(pkgconfig_DATA)

@@ -7,7 +7,6 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libloc_core
 LOCAL_VENDOR_MODULE := true
-LOCAL_MODULE_OWNER := qti
 LOCAL_MODULE_TAGS := optional
 
 ifeq ($(TARGET_DEVICE),apq8026_lw)
@@ -22,8 +21,7 @@ LOCAL_SHARED_LIBRARIES := \
     libcutils \
     libgps.utils \
     libdl \
-    liblog \
-    libloc_pla
+    liblog
 
 LOCAL_SRC_FILES += \
     LocApiBase.cpp \
@@ -32,9 +30,6 @@ LOCAL_SRC_FILES += \
     LocDualContext.cpp \
     loc_core_log.cpp \
     data-items/DataItemsFactoryProxy.cpp \
-    data-items/common/ClientIndex.cpp \
-    data-items/common/DataItemIndex.cpp \
-    data-items/common/IndexFactory.cpp \
     SystemStatusOsObserver.cpp \
     SystemStatus.cpp
 
@@ -48,6 +43,7 @@ LOCAL_C_INCLUDES:= \
     $(LOCAL_PATH)/observer \
 
 LOCAL_HEADER_LIBRARIES := \
+    libutils_headers \
     libgps.utils_headers \
     libloc_pla_headers \
     liblocation_api_headers
