@@ -106,7 +106,7 @@ public:
     // This class hides generated fd and destination address object from user.
     inline LocIpcSender(const char* destSocket):
             LocIpcSender(std::make_shared<int>(::socket(AF_UNIX, SOCK_DGRAM, 0)), destSocket) {
-        if (-1 == *mSocket) {
+        if (mSocket != nullptr && -1 == *mSocket) {
             mSocket = nullptr;
         }
     }
