@@ -41,12 +41,12 @@ case "$baseband" in
     setprop ro.vendor.radio.noril yes
     setprop ro.radio.noril yes
     setprop hw.nophone yes
+    start vendor.ipacm
     if [ -n "$rild_status" ] || [ -n "$vendor_rild_status" ]; then
     stop ril-daemon
     stop vendor.ril-daemon
     stop vendor.qcrild
     stop vendor.qcrild2
-    start vendor.ipacm
     fi
 esac
 
