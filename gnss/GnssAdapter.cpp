@@ -846,13 +846,14 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
 
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
                 uint32_t newGpsLock = mAdapter.convertGpsLock(gnssConfigRequested.gpsLock);
-                ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
-                if (0 == ContextBase::mGps_conf.GPS_LOCK) {
-                    ContextBase::mGps_conf.GPS_LOCK = 3;
+                if (0 == newGpsLock) {
+                    newGpsLock = 3;
                 }
-                if (0 != mAdapter.getPowerVoteId()) {
+                if (newGpsLock == ContextBase::mGps_conf.GPS_LOCK ||
+                        0 != mAdapter.getPowerVoteId()) {
                     gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
                 }
+                ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT) {
