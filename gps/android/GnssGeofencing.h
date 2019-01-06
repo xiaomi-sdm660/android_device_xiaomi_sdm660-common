@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_HARDWARE_GNSS_V1_1_GNSSGEOFENCING_H
-#define ANDROID_HARDWARE_GNSS_V1_1_GNSSGEOFENCING_H
+#ifndef ANDROID_HARDWARE_GNSS_V1_0_GNSSGEOFENCING_H
+#define ANDROID_HARDWARE_GNSS_V1_0_GNSSGEOFENCING_H
 
 #include <android/hardware/gnss/1.0/IGnssGeofencing.h>
 #include <hidl/Status.h>
@@ -27,7 +27,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::V1_0::IGnssGeofenceCallback;
@@ -83,9 +83,9 @@ struct GnssGeofencing : public IGnssGeofencing {
 };
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
 
-#endif  // ANDROID_HARDWARE_GNSS_V1_1_GNSSGEOFENCING_H
+#endif  // ANDROID_HARDWARE_GNSS_V1_0_GNSSGEOFENCING_H

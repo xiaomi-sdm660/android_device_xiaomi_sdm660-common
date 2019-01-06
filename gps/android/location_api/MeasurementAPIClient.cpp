@@ -39,23 +39,20 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::V1_0::IGnssMeasurement;
-using ::android::hardware::gnss::V1_1::IGnssMeasurementCallback;
+using ::android::hardware::gnss::V1_0::IGnssMeasurementCallback;
 
 static void convertGnssData(GnssMeasurementsNotification& in,
         V1_0::IGnssMeasurementCallback::GnssData& out);
-static void convertGnssData_1_1(GnssMeasurementsNotification& in,
-        IGnssMeasurementCallback::GnssData& out);
 static void convertGnssMeasurement(GnssMeasurementsData& in,
         V1_0::IGnssMeasurementCallback::GnssMeasurement& out);
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out);
 
 MeasurementAPIClient::MeasurementAPIClient() :
     mGnssMeasurementCbIface(nullptr),
-    mGnssMeasurementCbIface_1_1(nullptr),
     mTracking(false)
 {
     LOC_LOGD("%s]: ()", __FUNCTION__);
@@ -80,18 +77,6 @@ MeasurementAPIClient::measurementSetCallback(const sp<V1_0::IGnssMeasurementCall
 }
 
 Return<IGnssMeasurement::GnssMeasurementStatus>
-MeasurementAPIClient::measurementSetCallback_1_1(const sp<IGnssMeasurementCallback>& callback)
-{
-    LOC_LOGD("%s]: (%p)", __FUNCTION__, &callback);
-
-    mMutex.lock();
-    mGnssMeasurementCbIface_1_1 = callback;
-    mMutex.unlock();
-
-    return startTracking();
-}
-
-Return<IGnssMeasurement::GnssMeasurementStatus>
 MeasurementAPIClient::startTracking()
 {
     LocationCallbacks locationCallbacks;
@@ -108,7 +93,7 @@ MeasurementAPIClient::startTracking()
     locationCallbacks.gnssNmeaCb = nullptr;
 
     locationCallbacks.gnssMeasurementsCb = nullptr;
-    if (mGnssMeasurementCbIface_1_1 != nullptr || mGnssMeasurementCbIface != nullptr) {
+    if (mGnssMeasurementCbIface != nullptr) {
         locationCallbacks.gnssMeasurementsCb =
             [this](GnssMeasurementsNotification gnssMeasurementsNotification) {
                 onGnssMeasurementsCb(gnssMeasurementsNotification);
@@ -144,23 +129,12 @@ void MeasurementAPIClient::onGnssMeasurementsCb(
     if (mTracking) {
         mMutex.lock();
         sp<V1_0::IGnssMeasurementCallback> gnssMeasurementCbIface = nullptr;
-        sp<IGnssMeasurementCallback> gnssMeasurementCbIface_1_1 = nullptr;
-        if (mGnssMeasurementCbIface_1_1 != nullptr) {
-            gnssMeasurementCbIface_1_1 = mGnssMeasurementCbIface_1_1;
-        } else if (mGnssMeasurementCbIface != nullptr) {
+        if (mGnssMeasurementCbIface != nullptr) {
             gnssMeasurementCbIface = mGnssMeasurementCbIface;
         }
         mMutex.unlock();
 
-        if (gnssMeasurementCbIface_1_1 != nullptr) {
-            IGnssMeasurementCallback::GnssData gnssData;
-            convertGnssData_1_1(gnssMeasurementsNotification, gnssData);
-            auto r = gnssMeasurementCbIface_1_1->gnssMeasurementCb(gnssData);
-            if (!r.isOk()) {
-                LOC_LOGE("%s] Error from gnssMeasurementCb description=%s",
-                    __func__, r.description().c_str());
-            }
-        } else if (gnssMeasurementCbIface != nullptr) {
+        if (gnssMeasurementCbIface != nullptr) {
             V1_0::IGnssMeasurementCallback::GnssData gnssData;
             convertGnssData(gnssMeasurementsNotification, gnssData);
             auto r = gnssMeasurementCbIface->GnssMeasurementCb(gnssData);
@@ -294,18 +268,8 @@ static void convertGnssData(GnssMeasurementsNotification& in,
     convertGnssClock(in.clock, out.clock);
 }
 
-static void convertGnssData_1_1(GnssMeasurementsNotification& in,
-        IGnssMeasurementCallback::GnssData& out)
-{
-    out.measurements.resize(in.count);
-    for (size_t i = 0; i < in.count; i++) {
-        convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_0);
-    }
-    convertGnssClock(in.clock, out.clock);
-}
-
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

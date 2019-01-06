@@ -27,7 +27,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 GnssConfiguration::GnssConfiguration(Gnss* gnss) : mGnss(gnss) {
@@ -220,16 +220,8 @@ Return<bool> GnssConfiguration::setEmergencySuplPdn(bool enabled) {
     return mGnss->updateConfiguration(config);
 }
 
-// Methods from ::android::hardware::gnss::V1_1::IGnssConfiguration follow.
-Return<bool> GnssConfiguration::setBlacklist(
-            const hidl_vec<GnssConfiguration::BlacklistedSource>& /*blacklist*/) {
-
-    ENTRY_LOG_CALLFLOW();
-    return true;
-}
-
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

@@ -37,7 +37,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 void convertGnssLocation(Location& in, V1_0::GnssLocation& out);
@@ -48,7 +48,7 @@ void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEph
 void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

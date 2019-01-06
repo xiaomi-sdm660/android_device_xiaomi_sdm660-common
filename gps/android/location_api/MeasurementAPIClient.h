@@ -31,15 +31,15 @@
 #define MEASUREMENT_API_CLINET_H
 
 #include <mutex>
-#include <android/hardware/gnss/1.1/IGnssMeasurement.h>
-#include <android/hardware/gnss/1.1/IGnssMeasurementCallback.h>
+#include <android/hardware/gnss/1.0/IGnssMeasurement.h>
+#include <android/hardware/gnss/1.0/IGnssMeasurementCallback.h>
 #include <LocationAPIClientBase.h>
 #include <hidl/Status.h>
 
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::sp;
@@ -55,8 +55,6 @@ public:
     // for GpsMeasurementInterface
     Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> measurementSetCallback(
             const sp<V1_0::IGnssMeasurementCallback>& callback);
-    Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> measurementSetCallback_1_1(
-            const sp<IGnssMeasurementCallback>& callback);
     void measurementClose();
     Return<IGnssMeasurement::GnssMeasurementStatus> startTracking();
 
@@ -66,13 +64,12 @@ public:
 private:
     std::mutex mMutex;
     sp<V1_0::IGnssMeasurementCallback> mGnssMeasurementCbIface;
-    sp<IGnssMeasurementCallback> mGnssMeasurementCbIface_1_1;
 
     bool mTracking;
 };
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

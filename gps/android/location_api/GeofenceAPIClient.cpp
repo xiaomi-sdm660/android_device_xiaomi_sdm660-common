@@ -39,7 +39,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::V1_0::IGnssGeofenceCallback;
@@ -269,7 +269,7 @@ void GeofenceAPIClient::onResumeGeofencesCb(size_t count, LocationError* errors,
 }
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android

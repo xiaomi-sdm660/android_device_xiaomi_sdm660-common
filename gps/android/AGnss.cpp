@@ -27,7 +27,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 static AGnss* spAGnss = nullptr;
@@ -197,7 +197,7 @@ Return<bool> AGnss::setServer(IAGnssCallback::AGnssType type,
 }
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
