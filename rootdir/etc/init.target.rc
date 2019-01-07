@@ -113,23 +113,7 @@ on boot
     write /dev/cpuset/foreground/boost/cpus 0-7
     write /dev/cpuset/background/cpus 0-7
     write /dev/cpuset/system-background/cpus 0-7
-    ####Regionalization config and prop files####
-    chmod 0644 /vendor/mnt/persist/speccfg/spec
-    chmod 0644 /vendor/mnt/persist/speccfg/devicetype
-    chmod 0644 /vendor/mnt/persist/speccfg/mbnversion
-    chmod 0644 /vendor/mnt/persist/speccfg/.not_triggered
-    chmod 0644 /vendor/mnt/persist/speccfg/vendor_ro.prop
-    chmod 0644 /vendor/mnt/persist/speccfg/vendor_persist.prop
-    chmod 0644 /vendor/mnt/persist/speccfg/submask
-    chmod 0644 /vendor/mnt/persist/speccfg/partition
-    chown system system /vendor/mnt/persist/speccfg/spec
-    chown system system /vendor/mnt/persist/speccfg/devicetype
-    chown system system /vendor/mnt/persist/speccfg/mbnversion
-    chown system system /vendor/mnt/persist/speccfg/.not_triggered
-    chown system system /vendor/mnt/persist/speccfg/vendor_ro.prop
-    chown system system /vendor/mnt/persist/speccfg/vendor_persist.prop
-    chown system system /vendor/mnt/persist/speccfg/submask
-    chown system system /vendor/mnt/persist/speccfg/partition
+
 
 #spk pa-cal lct-20180914
     chmod 0664 /dev/tiload_node
