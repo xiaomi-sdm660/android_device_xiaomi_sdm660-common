@@ -84,7 +84,8 @@ typedef enum {
     ENABLED,
     RUNNING,
     DISABLED,
-    DISABLED_FROM_CONF
+    DISABLED_FROM_CONF,
+    DISABLED_VIA_VENDOR_ENHANCED_CHECK
 } loc_process_e_status;
 
 typedef struct {

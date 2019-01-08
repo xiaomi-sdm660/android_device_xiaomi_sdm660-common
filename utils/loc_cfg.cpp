@@ -48,6 +48,10 @@
 #endif
 #include "log_util.h"
 
+extern "C" {
+#include "vndfwk-detect.h"
+}
+
 /*=============================================================================
  *
  *                          GLOBAL DATA DECLARATION
@@ -487,6 +491,7 @@ typedef struct {
     char feature_supl_wifi[LOC_MAX_PARAM_STRING];
     char feature_wifi_supplicant_info[LOC_MAX_PARAM_STRING];
     char auto_platform[LOC_MAX_PARAM_STRING];
+    unsigned int vendor_enhanced_process;
 } loc_launcher_conf;
 
 /* process configuration parameters */
@@ -509,15 +514,16 @@ static const loc_param_s_type loc_feature_conf_table[] = {
 
 /* location process conf, e.g.: izat.conf Parameter spec table */
 static const loc_param_s_type loc_process_conf_parameter_table[] = {
-    {"PROCESS_NAME",        &conf.proc_name,           NULL, 's'},
-    {"PROCESS_ARGUMENT",    &conf.proc_argument,       NULL, 's'},
-    {"PROCESS_STATE",       &conf.proc_status,         NULL, 's'},
-    {"PROCESS_GROUPS",      &conf.group_list,          NULL, 's'},
-    {"PREMIUM_FEATURE",     &conf.premium_feature,     NULL, 'n'},
-    {"IZAT_FEATURE_MASK",   &conf.loc_feature_mask,    NULL, 'n'},
-    {"PLATFORMS",           &conf.platform_list,       NULL, 's'},
-    {"BASEBAND",            &conf.baseband,            NULL, 's'},
-    {"HARDWARE_TYPE",       &conf.auto_platform,       NULL, 's'},
+    {"PROCESS_NAME",               &conf.proc_name,                NULL, 's'},
+    {"PROCESS_ARGUMENT",           &conf.proc_argument,            NULL, 's'},
+    {"PROCESS_STATE",              &conf.proc_status,              NULL, 's'},
+    {"PROCESS_GROUPS",             &conf.group_list,               NULL, 's'},
+    {"PREMIUM_FEATURE",            &conf.premium_feature,          NULL, 'n'},
+    {"IZAT_FEATURE_MASK",          &conf.loc_feature_mask,         NULL, 'n'},
+    {"PLATFORMS",                  &conf.platform_list,            NULL, 's'},
+    {"BASEBAND",                   &conf.baseband,                 NULL, 's'},
+    {"HARDWARE_TYPE",              &conf.auto_platform,            NULL, 's'},
+    {"VENDOR_ENHANCED_PROCESS",    &conf.vendor_enhanced_process,  NULL, 'n'},
 };
 
 /*===========================================================================
@@ -758,6 +764,14 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
             continue;
         }
 
+        if ((isRunningWithVendorEnhancedFramework() && conf.vendor_enhanced_process == 0) ||
+                (!isRunningWithVendorEnhancedFramework() && conf.vendor_enhanced_process != 0)) {
+            LOC_LOGD("%s:%d]: Process %s is disabled via vendor enhanced process check",
+                     __func__, __LINE__, conf.proc_name);
+            child_proc[j].proc_status = DISABLED_VIA_VENDOR_ENHANCED_CHECK;
+            continue;
+        }
+
         if(strcmp(conf.proc_status, "DISABLED") == 0) {
             LOC_LOGD("%s:%d]: Process %s is disabled in conf file",
                      __func__, __LINE__, conf.proc_name);
@@ -871,7 +885,8 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
         if((config_mask & CONFIG_MASK_TARGET_CHECK) &&
            (config_mask & CONFIG_MASK_BASEBAND_CHECK) &&
            (config_mask & CONFIG_MASK_AUTOPLATFORM_CHECK) &&
-           (child_proc[j].proc_status != DISABLED_FROM_CONF)) {
+           (child_proc[j].proc_status != DISABLED_FROM_CONF) &&
+           (child_proc[j].proc_status != DISABLED_VIA_VENDOR_ENHANCED_CHECK)) {
 
             //Set args
             //The first argument passed through argv is usually the name of the

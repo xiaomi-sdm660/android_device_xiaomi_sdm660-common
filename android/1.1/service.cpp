@@ -23,9 +23,17 @@
 #include <android/hardware/gnss/1.1/IGnss.h>
 #include <hidl/LegacySupport.h>
 
+extern "C" {
+#include "vndfwk-detect.h"
+}
+
 using android::hardware::gnss::V1_1::IGnss;
 using android::hardware::defaultPassthroughServiceImplementation;
 
 int main() {
-    return defaultPassthroughServiceImplementation<IGnss>();
+    if (!isRunningWithVendorEnhancedFramework()) {
+        return defaultPassthroughServiceImplementation<IGnss>();
+    } else {
+        return -1;
+    }
 }
