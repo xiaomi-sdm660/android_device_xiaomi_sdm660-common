@@ -363,6 +363,7 @@ on property:init.svc.zygote=restarting
 on charger
     load_system_props
     start vendor.qcom-post-boot
+    start vendor.power_off_alarm
     start vendor.hvdcp_opti
     setprop sys.usb.configfs 1
     setprop debug.charger.on 1
