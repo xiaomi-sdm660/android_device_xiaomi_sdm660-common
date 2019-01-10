@@ -80,4 +80,19 @@
                 android:targetPackage="org.lineageos.settings.doze" />
         </Preference>
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="spectrum_profile"
+        android:title="@string/spectrum_profile_title" >
+
+		<ListPreference
+			android:key="spectrum"
+			android:title="@string/spectrum_title"
+			android:summary="@string/spectrum_summary"
+			android:defaultValue="0"
+			android:entries="@array/spectrum_profiles"
+			android:entryValues="@array/spectrum_values"
+			android:dialogTitle="@string/spectrum_dialogTitle" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

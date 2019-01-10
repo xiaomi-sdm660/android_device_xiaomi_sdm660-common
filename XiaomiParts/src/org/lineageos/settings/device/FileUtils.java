@@ -74,6 +74,12 @@ class FileUtils {
     static boolean getProp(String prop, boolean defaultValue) {
         return SystemProperties.getBoolean(prop, defaultValue);
     }
+
+    static void  setStringProp(String prop, String value) {
+            SystemProperties.set(prop, value);
+    }
+
+    static String getStringProp(String prop, String defaultValue) {
+        return SystemProperties.get(prop, defaultValue);
+    }
 }
-
-

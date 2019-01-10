@@ -263,7 +263,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Wipower
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.bluetooth.emb_wp_mode=true \
-	ro.bluetooth.wipower=true
+	ro.bluetooth.wipower=true \
+	persist.spectrum.profile=0
 
 # ZRAM
 PRODUCT_PROPERTY_OVERRIDES += \

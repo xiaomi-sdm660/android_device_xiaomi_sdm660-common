@@ -22,6 +22,8 @@ import android.support.v14.preference.PreferenceFragment;
 import android.support.v14.preference.SwitchPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
+import android.support.v7.preference.ListPreference;
+import android.util.Log;
 
 public class DeviceSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener {
@@ -43,11 +45,14 @@ public class DeviceSettings extends PreferenceFragment implements
     private final String KEY_DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
     private final String KEY_DEVICE_KCAL = "device_kcal";
     private final String KEY_DEVICE_KCAL_PACKAGE_NAME = "org.lineageos.settings.kcal";
+    private final String SPECTRUM_KEY = "spectrum";
+    private final String SPECTRUM_SYSTEM_PROPERTY = "persist.spectrum.profile";
 
     private SwitchPreference mEnableHAL3;
     private SwitchPreference mEnableEIS;
     private TorchSeekBarPreference mTorchBrightness;
     private VibrationSeekBarPreference mVibrationStrength;
+    private ListPreference mSPECTRUM;
 
     // value of vtg_min and vtg_max
     final static int minVibration = 116;
@@ -71,6 +76,10 @@ public class DeviceSettings extends PreferenceFragment implements
         mVibrationStrength = (VibrationSeekBarPreference) findPreference(VIBRATION_STRENGTH_KEY);
         mVibrationStrength.setEnabled(FileUtils.fileWritable(VIBRATION_STRENGTH_PATH));
         mVibrationStrength.setOnPreferenceChangeListener(this);
+
+        mSPECTRUM = (ListPreference) findPreference(SPECTRUM_KEY);
+        mSPECTRUM.setValue(FileUtils.getStringProp(SPECTRUM_SYSTEM_PROPERTY, "0"));
+        mSPECTRUM.setOnPreferenceChangeListener(this);
 
         PreferenceCategory displayCategory = (PreferenceCategory) findPreference(KEY_CATEGORY_DISPLAY);
         if (!isAppInstalled(KEY_DEVICE_DOZE_PACKAGE_NAME)) {
@@ -111,6 +120,12 @@ public class DeviceSettings extends PreferenceFragment implements
             case VIBRATION_STRENGTH_KEY:
                 double vibrationValue = (int) value / 100.0 * (maxVibration - minVibration) + minVibration;
                 FileUtils.setValue(VIBRATION_STRENGTH_PATH, vibrationValue);
+                break;
+
+            case SPECTRUM_KEY:
+                Log.d("XiaomiParts",  "onPreferenceChange: " + value.toString());
+                mSPECTRUM.setValue((String) value);
+                FileUtils.setStringProp(SPECTRUM_SYSTEM_PROPERTY, (String) value);
                 break;
 
             default:

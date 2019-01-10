@@ -341,6 +341,7 @@ PRODUCT_PACKAGES += \
 	init.qcom.rc \
 	init.qcom.usb.rc \
 	init.target.rc \
+	init.spectrum.rc \
 	ueventd.qcom.rc
 
 # RCS

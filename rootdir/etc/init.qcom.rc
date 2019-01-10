@@ -29,6 +29,7 @@ import /vendor/etc/init/hw/init.qcom.usb.rc
 import /vendor/etc/init/hw/init.msm.usb.configfs.rc
 import /vendor/etc/init/hw/init.target.rc
 import /vendor/etc/init/hw/init.device.rc
+import /vendor/etc/init/hw/init.spectrum.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
@@ -255,7 +256,7 @@ on post-fs-data
     # Create folder of camera
     mkdir /data/vendor/camera 0770 camera camera
 
-    #Create folder for mm-qcamera-daemon		
+    #Create folder for mm-qcamera-daemon
     mkdir /data/misc/camera 0770 camera camera
 
     # Create directory for apps access via QTEEConnector

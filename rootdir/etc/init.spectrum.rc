@@ -1,0 +1,184 @@
+  # SPECTRUM KERNEL MANAGER
+  # Ramdisk file for profile based kernel management
+
+  # Profiles for Xiaomi Snapdragon 660 Devices by Max Weffers (rcstar6696)
+
+# Initialization
+on property:sys.boot_completed=1
+  # Enable Spectrum support
+  setprop spectrum.support 1
+  # Add kernel name
+  setprop persist.spectrum.kernel Xiaomi-SDM660
+
+# Balance
+on property:persist.spectrum.profile=0
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq "633000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq "1843200"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time "42000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load "80"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate "20000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1747200:95"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq "1113600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq "2208000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load "90"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate "20000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:90 2150400:95"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis "59000"
+
+  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600"
+  write /sys/module/cpu_boost/parameters/input_boost_ms "60"
+
+  write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
+
+  write /dev/cpuset/foreground/cpus 0-2,4-7
+  write /dev/cpuset/foreground/boost/cpus 4-7
+  write /dev/cpuset/top-app/cpus 0-7
+
+# Performance
+on property:persist.spectrum.profile=1
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq "902400"
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq "1843200"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load "75"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate "20000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1747200:95"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq "1113600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq "2208000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load "75"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate "20000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:90 2150400:95"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600 1:0 2:0 3:0 4:1401600 5:0 6:0 7:0"
+  write /sys/module/cpu_boost/parameters/input_boost_ms "60"
+
+  write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
+
+  write /dev/cpuset/foreground/cpus 0-2,4-7
+  write /dev/cpuset/foreground/boost/cpus 4-7
+  write /dev/cpuset/top-app/cpus 0-7
+
+
+# Battery
+on property:persist.spectrum.profile=2
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq "633000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq "1401600"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load "90"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "25000 1401600:39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate "40000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1747200:95"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq "1113600"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq "1113600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq "1747200"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load "95"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate "40000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:90 2150400:95"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
+  write /sys/module/cpu_boost/parameters/input_boost_ms "0"
+
+  write /sys/class/kgsl/kgsl-3d0/devfreq/governor powersave
+
+  write /dev/cpuset/foreground/cpus 0-2,4-5
+  write /dev/cpuset/foreground/boost/cpus 4-5
+  write /dev/cpuset/top-app/cpus 0-5
+
+# Gaming/Benchmarks
+on property:persist.spectrum.profile=3
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq "1401600"
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq "1843200"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load "70"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate "20000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1747200:90"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/boostpulse_duration "80000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor interactive
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq "1747200"
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq "2208000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time "39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load "80"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate "20000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack "80000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "80 1401600:85 2150400:90"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq "1401600"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boost "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/boostpulse_duration "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down "1"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows "0"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis "0"
+
+  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600 1:1401600 2:1401600 3:1401600 4:1401600 5:1401600 6:1401600 7:1401600"
+  write /sys/module/cpu_boost/parameters/input_boost_ms "80"
+
+  write /sys/class/kgsl/kgsl-3d0/devfreq/governor performance
+
+  write /dev/cpuset/foreground/cpus 0-2,4-7
+  write /dev/cpuset/foreground/boost/cpus 4-7
+  write /dev/cpuset/top-app/cpus 0-7

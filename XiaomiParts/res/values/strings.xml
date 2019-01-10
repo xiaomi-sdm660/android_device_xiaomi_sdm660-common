@@ -26,4 +26,10 @@
     <string name="torch_brightness_title">Brightness</string>
     <string name="vibration_title">Haptic feedback</string>
     <string name="vibration_strength_title">Strength</string>
+
+  <!-- Spectrum Profiles -->
+    <string name="spectrum_profile_title">Performance</string>
+    <string name="spectrum_title">Performance Settings</string>
+    <string name="spectrum_summary">Choose your Performance settings</string>
+    <string name="spectrum_dialogTitle">Choose your Performance settings</string>
 </resources>
