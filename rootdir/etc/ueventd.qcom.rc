@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2015, 2017, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2015, 2017-2018, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -126,8 +126,8 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/media*               0660   system     camera
 /dev/v4l-subdev*          0660   system     camera
 /dev/qseecom              0660   system     drmrpc
-/dev/smcinvoke            0660   system     system
 /dev/qce                  0660   system     drmrpc
+/dev/smcinvoke            0660   system     system
 /dev/qsee_ipc_irq_spss    0660   system     drmrpc
 /dev/seemplog             0660   system     system
 /dev/pft                  0660   system     drmrpc
@@ -135,18 +135,23 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/sp_kernel            0660   system     system
 /dev/sp_ssr               0660   system     system
 /dev/sp_keymaster         0660   system     system
+/dev/sec_nvm_*            0660   system     system
 /dev/cryptoapp            0660   system     system
+/dev/spdaemon_ssr         0660   system     system
 /dev/gemini0              0660   system     camera
 /dev/jpeg0                0660   system     camera
 /dev/jpeg1                0660   system     camera
 /dev/jpeg2                0660   system     camera
 /dev/jpeg3                0660   system     camera
 /dev/adsprpc-smd          0664   system     system
+/dev/adsprpc-smd-secure   0644   system     system
 /dev/system_health_monitor 0644  radio      system
 /dev/mdss_rotator         0664   system     system
 
 # QDSS
 /dev/byte-cntr            0660   system    oem_2902
+/dev/mhi_qdss             0660   system    oem_2902
+/sys/class/qdss_bridge/mhi_qdss  mode      0660     system   oem_2902
 
 # wlan
 /dev/wcnss_wlan           0660   system     system
@@ -204,6 +209,7 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/ttyGS0               0660   system     system
 /dev/i2c-5                0660   media       media
 /dev/avtimer              0660   system     audio
+/dev/spidev2.0            0660   system     audio
 
 # DVB devices
 /dev/dvb/adapter0/demux*  0440   media       media
@@ -245,6 +251,29 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/devices/soc/78b7000.i2c/i2c-3/3-004b/input/input*    secure_touch_enable  0660   system  drmrpc
 /sys/devices/soc/c179000.i2c/i2c-5/5-0020/input/input*    secure_touch         0440   system  drmrpc
 /sys/devices/soc/c179000.i2c/i2c-5/5-0020/input/input*    secure_touch_enable  0660   system  drmrpc
+/sys/devices/platform/soc/a98000.i2c/i2c-2/2-0020/input/input*  secure_touch          0440 system drmrpc
+/sys/devices/platform/soc/a98000.i2c/i2c-2/2-0020/input/input*  secure_touch_enable   0660 system drmrpc
+/sys/devices/platform/soc/a84000.i2c/i2c-2/2-0020/input/input*  secure_touch          0440 system drmrpc
+/sys/devices/platform/soc/a84000.i2c/i2c-2/2-0020/input/input*  secure_touch_enable   0660 system drmrpc
+
+# native sensors input
+/sys/devices/virtual/input/input*   enable_int       0660  system   input
+/sys/devices/virtual/input/input*   gyro_op_mode     0660  system   input
+/sys/devices/virtual/input/input*   acc_range        0660  system   input
+/sys/devices/virtual/input/input*   acc_value        0660  system   input
+/sys/devices/virtual/input/input*   gyro_odr         0660  system   input
+/sys/devices/virtual/input/input*   fifo_data_sel    0660  system   input
+/sys/devices/virtual/input/input*   fifo_watermark   0660  system   input
+/sys/devices/virtual/input/input*   enable           0660  system   input
+/sys/devices/virtual/input/input*   acc_odr          0660  system   input
+/sys/devices/virtual/input/input*   temperature      0660  system   input
+/sys/devices/virtual/input/input*   acc_op_mode      0660  system   input
+/sys/devices/virtual/input/input*   fifo_bytecount   0660  system   input
+/sys/devices/virtual/input/input*   gyro_range       0660  system   input
+/sys/devices/virtual/input/input*   gyro_value       0660  system   input
+
+# GNSS PPS Device premissions
+/dev/pps*                  0660   gps     gps
 
 # laser sensor access
 /sys/devices/virtual/input/input*                   enable_ps_sensor 0660  system   input
@@ -302,6 +331,7 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/block/platform/soc/1da4000.ufshc/by-name/frp       0600   system     system
 /dev/block/platform/soc/c0c4000.sdhci/by-name/frp       0600   system     system
 /dev/block/platform/soc/1d84000.ufshc/by-name/frp       0600   system     system
+/dev/block/platform/soc/7c4000.sdhci/by-name/frp        0600   system     system
 
 # Add device block for FRP with soc.0
 /dev/block/platform/soc.0/7824900.sdhci/by-name/config    0600   system     system

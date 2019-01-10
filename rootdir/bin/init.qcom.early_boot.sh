@@ -1,7 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2012-2013,2016,2018 The Linux Foundation.
-# All rights reserved.
+# Copyright (c) 2012-2013,2016,2018 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -47,7 +46,14 @@ else
     soc_hwver=`cat /sys/devices/system/soc/soc0/platform_version` 2> /dev/null
 fi
 
-if [ -f /sys/class/graphics/fb0/virtual_size ]; then
+if [ -f /sys/class/drm/card0-DSI-1/modes ]; then
+    echo "detect" > /sys/class/drm/card0-DSI-1/status
+    mode_file=/sys/class/drm/card0-DSI-1/modes
+    while read line; do
+        fb_width=${line%%x*};
+        break;
+    done < $mode_file
+elif [ -f /sys/class/graphics/fb0/virtual_size ]; then
     res=`cat /sys/class/graphics/fb0/virtual_size` 2> /dev/null
     fb_width=${res%,*}
 fi
@@ -65,21 +71,24 @@ fi
 function set_density_by_fb() {
     #put default density based on width
     if [ -z $fb_width ]; then
-        setprop ro.sf.lcd_density 320
+        setprop vendor.display.lcd_density 320
     else
-        if [ $fb_width -ge 1440 ]; then
-           setprop ro.sf.lcd_density 560
+        if [ $fb_width -ge 1600 ]; then
+           setprop vendor.display.lcd_density 640
+        elif [ $fb_width -ge 1440 ]; then
+           setprop vendor.display.lcd_density 560
         elif [ $fb_width -ge 1080 ]; then
-           setprop ro.sf.lcd_density 480
+           setprop vendor.display.lcd_density 480
         elif [ $fb_width -ge 720 ]; then
-           setprop ro.sf.lcd_density 320 #for 720X1280 resolution
+           setprop vendor.display.lcd_density 320 #for 720X1280 resolution
         elif [ $fb_width -ge 480 ]; then
-            setprop ro.sf.lcd_density 240 #for 480X854 QRD resolution
+            setprop vendor.display.lcd_density 240 #for 480X854 QRD resolution
         else
-            setprop ro.sf.lcd_density 160
+            setprop vendor.display.lcd_density 160
         fi
     fi
 }
+
 target=`getprop ro.board.platform`
 case "$target" in
     "msm7630_surf" | "msm7630_1x" | "msm7630_fusion")
@@ -90,7 +99,7 @@ case "$target" in
                 ln -s  /system/usr/keychars/surf_keypad_qwerty.kcm.bin /system/usr/keychars/surf_keypad.kcm.bin
                 ;;
             "Fluid")
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 setprop qcom.bt.dev_power_class 2
                 ;;
             *)
@@ -102,11 +111,31 @@ case "$target" in
     "msm8660")
         case "$soc_hwplatform" in
             "Fluid")
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 ;;
             "Dragon")
                 setprop ro.sound.alsa "WM8903"
                 ;;
+        esac
+        ;;
+
+    "sm6150")
+        case "$soc_hwplatform" in
+            "ADP")
+                setprop vendor.display.lcd_density 160
+                ;;
+        esac
+        case "$soc_hwid" in
+            365|366)
+                sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
+                if [ $sku_ver -eq 1 ]; then
+                    setprop vendor.media.sm7150.version 1
+                fi
+                ;;
+            355)
+                setprop vendor.media.sm6150.version 1
+                ;;
+            *)
         esac
         ;;
 
@@ -118,18 +147,18 @@ case "$target" in
                     setprop ro.sf.hwrotation 90
                 fi
 
-                setprop ro.sf.lcd_density 160
+                setprop vendor.display.lcd_density 160
                 ;;
             "MTP")
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 ;;
             *)
                 case "$soc_hwid" in
                     "109")
-                        setprop ro.sf.lcd_density 160
+                        setprop vendor.display.lcd_density 160
                         ;;
                     *)
-                        setprop ro.sf.lcd_density 240
+                        setprop vendor.display.lcd_density 240
                         ;;
                 esac
             ;;
@@ -152,16 +181,16 @@ case "$target" in
     "msm8974")
         case "$soc_hwplatform" in
             "Liquid")
-                setprop ro.sf.lcd_density 160
+                setprop vendor.display.lcd_density 160
                 # Liquid do not have hardware navigation keys, so enable
                 # Android sw navigation bar
                 setprop ro.hw.nav_keys 0
                 ;;
             "Dragon")
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 ;;
             *)
-                setprop ro.sf.lcd_density 320
+                setprop vendor.display.lcd_density 320
                 ;;
         esac
         ;;
@@ -169,7 +198,7 @@ case "$target" in
     "msm8226")
         case "$soc_hwplatform" in
             *)
-                setprop ro.sf.lcd_density 320
+                setprop vendor.display.lcd_density 320
                 ;;
         esac
         ;;
@@ -177,65 +206,70 @@ case "$target" in
     "msm8610" | "apq8084" | "mpq8092")
         case "$soc_hwplatform" in
             *)
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 ;;
         esac
         ;;
     "apq8084")
         case "$soc_hwplatform" in
             "Liquid")
-                setprop ro.sf.lcd_density 320
+                setprop vendor.display.lcd_density 320
                 # Liquid do not have hardware navigation keys, so enable
                 # Android sw navigation bar
                 setprop ro.hw.nav_keys 0
                 ;;
             "SBC")
-                setprop ro.sf.lcd_density 200
+                setprop vendor.display.lcd_density 200
                 # SBC do not have hardware navigation keys, so enable
                 # Android sw navigation bar
                 setprop qemu.hw.mainkeys 0
                 ;;
             *)
-                setprop ro.sf.lcd_density 480
+                setprop vendor.display.lcd_density 480
                 ;;
         esac
         ;;
     "msm8996")
         case "$soc_hwplatform" in
             "Dragon")
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 setprop qemu.hw.mainkeys 0
                 ;;
             "ADP")
-                setprop ro.sf.lcd_density 160
+                setprop vendor.display.lcd_density 160
                 setprop qemu.hw.mainkeys 0
                 ;;
             "SBC")
-                setprop ro.sf.lcd_density 240
+                setprop vendor.display.lcd_density 240
                 setprop qemu.hw.mainkeys 0
                 ;;
             *)
-                setprop ro.sf.lcd_density 560
+                setprop vendor.display.lcd_density 560
                 ;;
         esac
         ;;
     "msm8937" | "msm8940")
-        # Set ro.opengles.version based on chip id.
+        # Set vendor.opengles.version based on chip id.
         # MSM8937 and MSM8940  variants supports OpenGLES 3.1
         # 196608 is decimal for 0x30000 to report version 3.0
         # 196609 is decimal for 0x30001 to report version 3.1
         # 196610 is decimal for 0x30002 to report version 3.2
         case "$soc_hwid" in
             294|295|296|297|298|313|353|354|363|364)
-                setprop ro.opengles.version 196610
+                setprop vendor.opengles.version 196610
+                if [ $soc_hwid = 354 ]
+                then
+                    setprop vendor.media.msm8937.version 1
+                    log -t BOOT -p i "SDM429 early_boot prop set for: HwID '$soc_hwid'"
+                fi
                 ;;
             303|307|308|309|320)
                 # Vulkan is not supported for 8917 variants
-                setprop ro.opengles.version 196608
+                setprop vendor.opengles.version 196608
                 setprop persist.graphics.vulkan.disable true
                 ;;
             *)
-                setprop ro.opengles.version 196608
+                setprop vendor.opengles.version 196608
                 ;;
         esac
         ;;
@@ -243,46 +277,44 @@ case "$target" in
         case "$soc_hwplatform" in
             *)
                 setprop persist.graphics.vulkan.disable true
-                setprop ro.opengles.version 196608
-                ;;
-        esac
-        ;;
-    "msm8916")
-        case "$soc_hwplatform" in
-            *)
-                setprop persist.graphics.vulkan.disable true
-                setprop ro.opengles.version 196608
                 ;;
         esac
         ;;
     "msm8998" | "apq8098_latv")
         case "$soc_hwplatform" in
             *)
-                setprop ro.sf.lcd_density 560
-                if [ ! -e /dev/kgsl-3d0 ]; then
-                    setprop persist.sys.force_sw_gles 1
-                    setprop sdm.idle_time 0
-                else
-                    setprop persist.sys.force_sw_gles 0
-                fi
+                setprop vendor.display.lcd_density 560
                 ;;
         esac
-        case "$soc_hwid" in
-                "319") #apq8098_latv
-                echo "\n==Loading ALX module==\n"
-                insmod /system/lib/modules/alx.ko
-		;;
-	esac
         ;;
     "sdm845")
         case "$soc_hwplatform" in
             *)
-                setprop ro.sf.lcd_density 560
-                if [ ! -e /dev/kgsl-3d0 ]; then
-                    setprop persist.sys.force_sw_gles 1
-                    setprop sdm.idle_time 0
+                if [ $fb_width -le 1600 ]; then
+                    setprop vendor.display.lcd_density 560
                 else
-                    setprop persist.sys.force_sw_gles 0
+                    setprop vendor.display.lcd_density 640
+                fi
+                ;;
+        esac
+        ;;
+    "msmnile")
+        case "$soc_hwplatform" in
+            *)
+                if [ $fb_width -le 1600 ]; then
+                    setprop vendor.display.lcd_density 560
+                else
+                    setprop vendor.display.lcd_density 640
+                fi
+                ;;
+        esac
+        ;;
+    "sdm710" | "msmpeafowl")
+        case "$soc_hwplatform" in
+            *)
+                sku_ver=`cat /sys/devices/platform/soc/aa00000.qcom,vidc1/sku_version` 2> /dev/null
+                if [ $sku_ver -eq 1 ]; then
+                    setprop vendor.media.sdm710.version 1
                 fi
                 ;;
         esac
@@ -296,129 +328,26 @@ case "$target" in
                 fi
 
                 if [ $cap_ver -eq 1 ]; then
-                    setprop media.msm8953.version 1
+                    setprop vendor.media.msm8953.version 1
                 fi
+                ;;
+    #Set property to differentiate SDM660 & SDM455
+    #SOC ID for SDM455 is 385
+    "sdm660")
+        case "$soc_hwid" in
+           385)
+               setprop vendor.media.sdm660.version 1
+        esac
         ;;
-    "msm8952")
-      case "$soc_hwid" in
-              278)
-                  setprop media.msm8956hw 1
-                  if [ -f /sys/devices/soc0/platform_version ]; then
-                     hw_ver=`cat /sys/devices/soc.0/1d00000.qcom,vidc/version` 2> /dev/null
-                     if [ $hw_ver -eq 1 ]; then
-                         setprop media.msm8956.version 1
-                     fi
-                  fi
-                  ;;
-               266|277)
-                    setprop media.msm8956hw 1
-                    if [ -f /sys/devices/soc0/platform_version ]; then
-                        hw_ver=`cat /sys/devices/soc.0/1d00000.qcom,vidc/version` 2> /dev/null
-                        if [ $hw_ver -eq 1 ]; then
-                            setprop media.msm8956.version 1
-                        fi
-                    fi
-                    ;;
-                264)
-                    setprop persist.graphics.vulkan.disable true
-                    ;;
-      esac
-      ;;
 esac
-
-# In mpss AT version is greater than 3.1, need
-# to use the new vendor-ril which supports L+L feature
-# otherwise use the existing old one.
-if [ -f /firmware/verinfo/ver_info.txt ]; then
-  modem=`cat /firmware/verinfo/ver_info.txt |
-  sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
-  sed 's/.*AT.\(.*\)/\1/g' | cut -d \- -f 1`
-  zygote=`getprop ro.zygote`
-  case "$zygote" in
-  "zygote64_32")
-    if [ "$modem" \< "3.1" ]; then
-      setprop vendor.rild.libpath "/vendor/lib64/libril-qc-qmi-1.so"
-    else
-      setprop vendor.rild.libpath "/vendor/lib64/libril-qc-hal-qmi.so"
-    fi
-    ;;
-  "zygote32")
-    if [ "$modem" \< "3.1" ]; then
-      setprop vendor.rild.libpath "/vendor/lib/libril-qc-qmi-1.so"
-    else
-      setprop vendor.rild.libpath "/vendor/lib/libril-qc-hal-qmi.so"
-    fi
-    ;;
-   esac
-fi
-
-if [ -f /firmware/verinfo/ver_info.txt ]; then
-    # In mpss AT version is greater than 3.1, need
-    # to use the new vendor-ril which supports L+L feature
-    # otherwise use the existing old one.
-    modem=`cat /firmware/verinfo/ver_info.txt |
-            sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
-            sed 's/.*MPSS.\(.*\)/\1/g' | cut -d \. -f 1`
-    if [ "$modem" = "AT" ]; then
-        version=`cat /firmware/verinfo/ver_info.txt |
-                sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
-                sed 's/.*AT.\(.*\)/\1/g' | cut -d \- -f 1`
-        if [ ! -z $version ]; then
-            zygote=`getprop ro.zygote`
-            case "$zygote" in
-                "zygote64_32")
-                    if [ "$version" \< "3.1" ]; then
-                        setprop vendor.rild.libpath "/vendor/lib64/libril-qc-qmi-1.so"
-                    else
-                        setprop vendor.rild.libpath "/vendor/lib64/libril-qc-hal-qmi.so"
-                    fi
-                    ;;
-                "zygote32")
-                    if [ "$version" \< "3.1" ]; then
-                        echo "legacy qmi load for TA less than 3.1"
-                        setprop vendor.rild.libpath "/vendor/lib/libril-qc-qmi-1.so"
-                    else
-                        setprop vendor.rild.libpath "/vendor/lib/libril-qc-hal-qmi.so"
-                    fi
-                    ;;
-            esac
-        fi
-    # In mpss TA version is greater than 3.0, need
-    # to use the new vendor-ril which supports L+L feature
-    # otherwise use the existing old one.
-    elif [ "$modem" = "TA" ]; then
-        version=`cat /firmware/verinfo/ver_info.txt |
-                sed -n 's/^[^:]*modem[^:]*:[[:blank:]]*//p' |
-                sed 's/.*TA.\(.*\)/\1/g' | cut -d \- -f 1`
-        if [ ! -z $version ]; then
-            zygote=`getprop ro.zygote`
-            case "$zygote" in
-                "zygote64_32")
-                    if [ "$version" \< "3.0" ]; then
-                        setprop vendor.rild.libpath "/vendor/lib64/libril-qc-qmi-1.so"
-                    else
-                        setprop vendor.rild.libpath "/vendor/lib64/libril-qc-hal-qmi.so"
-                    fi
-                    ;;
-                "zygote32")
-                    if [ "$version" \< "3.0" ]; then
-                        setprop vendor.rild.libpath "/vendor/lib/libril-qc-qmi-1.so"
-                    else
-                        setprop vendor.rild.libpath "/vendor/lib/libril-qc-hal-qmi.so"
-                    fi
-                    ;;
-            esac
-        fi
-    fi;
-fi
 
 baseband=`getprop ro.baseband`
 #enable atfwd daemon all targets except sda, apq, qcs
 case "$baseband" in
     "apq" | "sda" | "qcs" )
-        setprop persist.radio.atfwd.start false;;
+        setprop persist.vendor.radio.atfwd.start false;;
     *)
-        setprop persist.radio.atfwd.start true;;
+        setprop persist.vendor.radio.atfwd.start true;;
 esac
 
 #set default lcd density
@@ -426,6 +355,40 @@ esac
 #property, it will not overwrite previous set
 #property if any target is setting forcefully.
 set_density_by_fb
+
+
+# set Lilliput LCD density for ADP
+product=`getprop ro.build.product`
+
+case "$product" in
+        "msmnile_au")
+         setprop vendor.display.lcd_density 160
+         echo 864000000 > /sys/class/devfreq/soc:qcom,cpu0-cpu-l3-lat/min_freq
+         echo 1612800000 > /sys/class/devfreq/soc:qcom,cpu0-cpu-l3-lat/max_freq
+         echo 864000000 > /sys/class/devfreq/soc:qcom,cpu4-cpu-l3-lat/min_freq
+         echo 1612800000 > /sys/class/devfreq/soc:qcom,cpu4-cpu-l3-lat/max_freq
+         ;;
+        *)
+        ;;
+esac
+case "$product" in
+        "msmnile_gvmq")
+         setprop vendor.display.lcd_density 160
+         echo 864000000 > /sys/class/devfreq/soc:qcom,cpu0-cpu-l3-lat/min_freq
+         echo 1612800000 > /sys/class/devfreq/soc:qcom,cpu0-cpu-l3-lat/max_freq
+         echo 864000000 > /sys/class/devfreq/soc:qcom,cpu4-cpu-l3-lat/min_freq
+         echo 1612800000 > /sys/class/devfreq/soc:qcom,cpu4-cpu-l3-lat/max_freq
+         ;;
+        *)
+        ;;
+esac
+case "$product" in
+        "talos_au")
+         setprop vendor.display.lcd_density 160
+         ;;
+        *)
+        ;;
+esac
 
 # Setup display nodes & permissions
 # HDMI can be fb1 or fb2
@@ -442,36 +405,33 @@ function set_perms() {
 fb_driver=/sys/class/graphics/fb0
 if [ -e "$fb_driver" ]
 then
-
     # check for mdp caps
     file=/sys/class/graphics/fb0/mdp/caps
     if [ -f "$file" ]
     then
-        setprop debug.gralloc.gfx_ubwc_disable 1
+        setprop vendor.gralloc.disable_ubwc 1
         cat $file | while read line; do
           case "$line" in
                     *"ubwc"*)
                     setprop vendor.gralloc.enable_fb_ubwc 1
-                    setprop debug.gralloc.gfx_ubwc_disable 0
+                    setprop vendor.gralloc.disable_ubwc 0
                 esac
         done
     fi
+else
+    set_perms /sys/devices/virtual/hdcp/msm_hdcp/min_level_change system.graphics 0660
+fi
 
 boot_reason=`cat /proc/sys/kernel/boot_reason`
 reboot_reason=`getprop ro.boot.alarmboot`
-power_off_alarm_file=`cat /mnt/vendor/persist/alarm/powerOffAlarmSet`
 if [ "$boot_reason" = "3" ] || [ "$reboot_reason" = "true" ]; then
-    if [ "$power_off_alarm_file" = "1" ]
-    then
-        setprop ro.alarm_boot true
-        setprop debug.sf.nobootanimation 1
-    fi
+    setprop ro.vendor.alarm_boot true
 else
-    setprop ro.alarm_boot false
+    setprop ro.vendor.alarm_boot false
 fi
 
-# copy GPU frequencies to system property
+# copy GPU frequencies to vendor property
 if [ -f /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies ]; then
     gpu_freq=`cat /sys/class/kgsl/kgsl-3d0/gpu_available_frequencies` 2> /dev/null
-    setprop ro.gpu.available_frequencies "$gpu_freq"
+    setprop vendor.gpu.available_frequencies "$gpu_freq"
 fi

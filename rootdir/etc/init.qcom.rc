@@ -71,6 +71,7 @@ on boot
     chown system system /sys/kernel/debug/msm_core/enable
     chown system system /sys/kernel/debug/msm_core/ptable
     chown system system /sys/kernel/boot_slpi/ssr
+    chown system system /sys/kernel/boot_adsp/ssr
     chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
     chmod 0660 /sys/module/bluetooth_power/parameters/power
     chmod 0660 /sys/module/hci_smd/parameters/hcismd_set
@@ -116,12 +117,10 @@ on boot
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.wifi    524288,2097152,4194304,262144,524288,1048576
 
-
     setprop ro.telephony.call_ring.multiple false
 
     #enable camera read sensors data
     setprop persist.camera.gyro.disable 0
-
 
     chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
 
@@ -199,6 +198,8 @@ on boot
     chown system system /sys/class/sensors/ap3426-proximity/poll_delay
 
     # Create directory used for display
+    # for backward compatibility
+    mkdir /persist/display 0770 system graphics
     mkdir /mnt/vendor/persist/display 0770 system graphics
 
     # Create vpp directory
@@ -245,10 +246,15 @@ on post-fs-data
     # create QDMA dropbox
     mkdir /data/vendor/qdmastats 0700 system system
     mkdir /data/vendor/qdma 0770 system system
+    mkdir /dev/socket/qdma 0777 system system
+    chmod 2777 /dev/socket/qdma
+
+    # Create /data/vendor/tzstorage directory for SFS listener
+    mkdir /data/vendor/tzstorage 0770 system system
 
     # Create folder of camera
     mkdir /data/vendor/camera 0770 camera camera
-    
+
     #Create folder for mm-qcamera-daemon		
     mkdir /data/misc/camera 0770 camera camera
 
@@ -299,16 +305,16 @@ on post-fs-data
     chown system system /data/dpm/nsrm
 
     # Create directory used by audio subsystem
-    mkdir /data/vendor/misc/audio 0770 audio audio
+    mkdir /data/vendor/audio 0770 audio audio
 
     # Create directory for audio delta files
-    mkdir /data/vendor/misc/audio/acdbdata 0770 media audio
-    mkdir /data/vendor/misc/audio/acdbdata/delta 0770 media audio
+    mkdir /data/vendor/audio/acdbdata 0770 media audio
+    mkdir /data/vendor/audio/acdbdata/delta 0770 media audio
 
     # Create directory for radio
     mkdir /data/vendor/radio 0770 system radio
 
-	# Create directory for modem_config
+    # Create directory for modem_config
     mkdir /data/vendor/modem_config 0570 radio root
 
     # Mounting of persist is moved to 'on emmc-fs' and 'on fs' sections
@@ -327,9 +333,6 @@ on post-fs-data
     chown system system /sys/devices/platform/msm_sdcc.3/polling
     chown system system /sys/devices/platform/msm_sdcc.4/polling
 
-    #Create the symlink to qcn wpa_supplicant folder for ar6000 wpa_supplicant
-    #symlink /data/misc/wifi/wpa_supplicant /data/system/wpa_supplicant
-
     #Create directories for Location services
     mkdir /data/vendor/location 0770 gps gps
     mkdir /data/vendor/location/mq 0770 gps gps
@@ -337,6 +340,11 @@ on post-fs-data
     mkdir /dev/socket/location 0770 gps gps
     mkdir /dev/socket/location/mq 0770 gps gps
     mkdir /dev/socket/location/xtra 0770 gps gps
+    mkdir /data/vendor/location-partner 0770 gps gps
+    mkdir /data/vendor/location-partner/dre 0770 gps gps
+    mkdir /data/vendor/location-partner/ppe 0770 gps gps
+    mkdir /dev/socket/location 0770 gps gps
+    mkdir /dev/socket/location/ehub 0770 gps gps
 
     #Create directory from IMS services
     mkdir /data/shared 0755
@@ -358,6 +366,7 @@ on post-fs-data
     chown system system /mnt/vendor/persist/sensors/registry/registry/sensors_registry
     chown system system /mnt/vendor/persist/sensors/sensors_settings
     chown system system /mnt/vendor/persist/sensors/registry/sns_reg_config
+    chown system system /mnt/vendor/persist/sensors/registry/sns_reg_version
     chown system system /mnt/vendor/persist/sensors/registry/config
     chmod 0664 /mnt/vendor/persist/sensors/sensors_settings
 
@@ -420,11 +429,12 @@ on post-fs-data
     chmod 2770 /data/vendor/swap
 
     # Create dir for TUI
-    mkdir /data/vendor/tui 0600 system drmrpc
+    mkdir /data/vendor/tui 0700 system system
 
     # set aggressive read ahead for dm-0 and dm-1 during boot up
     write /sys/block/dm-0/queue/read_ahead_kb 2048
     write /sys/block/dm-1/queue/read_ahead_kb 2048
+    write /sys/block/dm-2/queue/read_ahead_kb 2048
 
     # Create vpp directory
     mkdir /data/vendor/vpp 0770 media media
@@ -432,14 +442,14 @@ on post-fs-data
     # Create FTM_AP dir for factory test
     mkdir /data/FTM_AP 0775 system system
 
-on property:persist.sys.mba_boot_timeout=*
-    write /sys/module/pil_msa/parameters/pbl_mba_boot_timeout_ms ${persist.sys.mba_boot_timeout}
+on property:persist.vendor.sys.mba_boot_timeout=*
+    write /sys/module/pil_msa/parameters/pbl_mba_boot_timeout_ms ${persist.vendor.sys.mba_boot_timeout}
 
-on property:persist.sys.modem_auth_timeout=*
-    write /sys/module/pil_msa/parameters/modem_auth_timeout_ms ${persist.sys.modem_auth_timeout}
+on property:persist.vendor.sys.modem_auth_timeout=*
+    write /sys/module/pil_msa/parameters/modem_auth_timeout_ms ${persist.vendor.sys.modem_auth_timeout}
 
-on property:persist.sys.pil_proxy_timeout=*
-    write /sys/module/peripheral_loader/parameters/proxy_timeout_ms ${persist.sys.pil_proxy_timeout}
+on property:persist.vendor.sys.pil_proxy_timeout=*
+    write /sys/module/peripheral_loader/parameters/proxy_timeout_ms ${persist.vendor.sys.pil_proxy_timeout}
 
 on property:sys.boot_completed=1
     write /dev/kmsg "Boot completed "
@@ -478,7 +488,7 @@ service vendor.cnd /system/vendor/bin/cnd
     class main
     user system
     group system wifi inet radio wakelock net_admin
-	writepid /dev/cpuset/system-background/tasks
+    writepid /dev/cpuset/system-background/tasks
 
 service vendor.dpmQmiMgr /system/vendor/bin/dpmQmiMgr
     class main
@@ -489,7 +499,7 @@ service vendor.irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class core
     user root
     oneshot
-	writepid /dev/cpuset/system-background/tasks
+    writepid /dev/cpuset/system-background/tasks
 
 service vendor.rmt_storage /vendor/bin/rmt_storage
     class core
@@ -559,7 +569,7 @@ service vendor.cnss-daemon /system/vendor/bin/cnss-daemon -n -l
     capabilities NET_ADMIN
 	writepid /dev/cpuset/system-background/tasks
 
-on property:sys.powerctl=*
+on property:sys.shutdown.requested=*
     stop vendor.cnss-daemon
 
 on property:sys.powerctl=*
@@ -647,9 +657,12 @@ on charger
     load_system_props
     start vendor.qcom-post-boot
 
+#Mixed HWC versions among targets
 on property:init.svc.surfaceflinger=restarting
-    stop vendor.hwcomposer-2-1
+    stop  vendor.hwcomposer-2-1
+    stop  vendor.hwcomposer-2-2
     start vendor.hwcomposer-2-1
+    start vendor.hwcomposer-2-2
 
 service chre /vendor/bin/chre
 	class late_start
@@ -687,3 +700,19 @@ service bugreport /system/bin/dumpstate -d -p -B -z -o /data/user_de/0/com.andro
     disabled
     oneshot
     keycodes 114 115 116
+
+service vendor.audio-hal-2-0 /vendor/bin/hw/android.hardware.audio@2.0-service
+    override
+    class hal
+    user audioserver
+    # media gid needed for /dev/fm (radio) and for /data/misc/media (tee)
+    group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct oem_2901 wakelock
+    capabilities BLOCK_SUSPEND
+    ioprio rt 4
+    writepid /dev/cpuset/foreground/tasks /dev/stune/foreground/tasks
+    # audioflinger restarts itself when it loses connection with the hal
+    # and its .rc file has an "onrestart restart audio-hal" rule, thus
+    # an additional auto-restart from the init process isn't needed.
+    oneshot
+    interface android.hardware.audio@4.0::IDevicesFactory default
+    interface android.hardware.audio@2.0::IDevicesFactory default
