@@ -1,3 +1,4 @@
 #============= hal_perf_default ==============
 allow hal_perf_default default_prop:file { getattr open read };
+allow hal_perf_default self:capability { dac_override dac_read_search };
 allow hal_perf_default system_prop:file { getattr open read };
