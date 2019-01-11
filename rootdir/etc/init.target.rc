@@ -78,8 +78,6 @@ on fs
     chown system system /sys/class/thermal/thermal_message/sconfig
 
 on post-fs
-    restorecon_recursive /persist
-    exec - root root -- /vendor/bin/init.huaqin.persist.sh
     start vendor.qseecomd
     exec - system system -- /vendor/bin/init.qti.qseecomd.sh
     # Update dm-verity state and set partition.*.verified properties
