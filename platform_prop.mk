@@ -62,7 +62,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Bluetooth
 PRODUCT_PROPERTY_OVERRIDES += \
 	bt.max.hfpclient.connections=1 \
-	persist.bt.a2dp.aac_disable=true \
 	persist.vendor.bt.a2dp_offload_cap=sbc-aptx-aptxhd-aac \
 	vendor.qcom.bluetooth.soc=cherokee
 
@@ -130,7 +129,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # GPS
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.backup.ntpServer="0.pool.ntp.org" \
-	persist.vendor.overlay.izat.optin=rro
+	persist.vendor.overlay.izat.optin=rro \
+	ro.location.osnlp.package=com.google.android.gms \
+	ro.location.osnlp.region.package=
 
 # HW Keys
 PRODUCT_PROPERTY_OVERRIDES += \
