@@ -79,7 +79,7 @@ public class KCalSettingsActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                ((Activity) KCalSettingsActivity.getContext()).finish();
+		            onBackPressed();
                 return true;
 
             case R.id.action_reset:
