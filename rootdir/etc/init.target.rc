@@ -105,7 +105,6 @@ on post-fs-data
     chmod 0644 /sys/class/power_supply/battery/constant_charge_current_max
     restorecon_recursive /persist
 
-
     mkdir /data/thermal 0771 system system
     mkdir /data/thermal/config 0771 system system
 
@@ -125,8 +124,8 @@ on boot
     write /dev/cpuset/background/cpus 0-7
     write /dev/cpuset/system-background/cpus 0-7
     write /dev/cpuset/restricted/cpus 0-7
-    ####Regionalization config and prop files####
 
+    ####Regionalization config and prop files####
     chmod 0644 /mnt/vendor/persist/speccfg/spec
     chmod 0644 /mnt/vendor/persist/speccfg/devicetype
     chmod 0644 /mnt/vendor/persist/speccfg/mbnversion
@@ -143,7 +142,6 @@ on boot
     chown system system /mnt/vendor/persist/speccfg/vendor_persist.prop
     chown system system /mnt/vendor/persist/speccfg/submask
     chown system system /mnt/vendor/persist/speccfg/partition
-    chown system system /mnt/vendor/persist/sensors/sns.reg
 
     # XiaomiParts
     chown system system /sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness
@@ -205,9 +203,6 @@ service vendor.per_proxy /system/vendor/bin/pm-proxy
 
 on property:init.svc.vendor.per_mgr=running
     start vendor.per_proxy
-
-on property:sys.powerctl=*
-    stop vendor.per_proxy
 
 on property:sys.powerctl=*
     stop vendor.per_proxy
