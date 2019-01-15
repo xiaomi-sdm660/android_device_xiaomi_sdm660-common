@@ -48,18 +48,18 @@
 
 	<!-- Default value for led color when battery is fully charged -->
 	<integer name="config_notificationsBatteryFullARGB">0xFFFF0000</integer>
-	
-	<!-- Does the notification LED support multiple colors? Used to decide if the user can change the colors --> 
+
+	<!-- Does the notification LED support multiple colors? Used to decide if the user can change the colors -->
 	<bool name="config_multiColorNotificationLed">false</bool>
-	
-	<!-- Default color for notification LED. --> 
+
+	<!-- Default color for notification LED. -->
 	<color name="config_defaultNotificationColor">#ffff0000</color>
 
 	<!-- Is the notification LED intrusive? Used to decide if there should be a disable option -->
 	<bool name="config_intrusiveNotificationLed">true</bool>
-	
+
 	<!-- Do the battery/notification LEDs support pulsing? Used to decide if we show pulse settings -->
-	<bool name="config_ledCanPulse">true</bool> 
+	<bool name="config_ledCanPulse">true</bool>
 
 	<!-- The device supports freeform window management. Windows have title bars and can be moved
 		 and resized. If you set this to true, you also need to add
@@ -243,7 +243,7 @@
 		 Refer to power.h for details.
 	-->
 	<bool name="config_powerDecoupleInteractiveModeFromDisplay">true</bool>
-	
+
 	    <!-- Whether device has support for auto brightness in doze mode -->
 	<bool name="config_allowAutoBrightnessWhileDozing">true</bool>
 
@@ -331,7 +331,7 @@
 	<!-- If true, the screen can be rotated via the accelerometer in all 4
 		 rotations as the default behavior. -->
 	<bool name="config_allowAllRotations">true</bool>
-	
+
 	<!-- Enable lockscreen rotation by default -->
     <bool name="config_enableLockScreenRotation">true</bool>
 
@@ -400,7 +400,7 @@
 
 	<!-- Whether the Unprocessed audio source supports the required frequency range and level -->
     <bool name="config_supportAudioSourceUnprocessed">true</bool>
-    
+
     <!-- Default value for proximity check on screen wake
          NOTE ! - Enable for devices that have a fast response proximity sensor (ideally < 300ms)-->
     <bool name="config_proximityCheckOnWake">true</bool>
@@ -417,4 +417,7 @@
     <!-- Specify if the fingerprint hardware support gestures-->
     <bool name="config_fingerprintSupportsGestures">true</bool>
 
+		<!-- Time to give to the proximity sensor before toggling the flashlight with the Power button.
+         Set to -1 to disable the proximity sensor check at all-->
+    <integer name="config_flashlightProximityTimeout">-1</integer>
 </resources>
