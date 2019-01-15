@@ -190,7 +190,8 @@ PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/configs/gps/izat.conf:$(TARGET_COPY_OUT_VENDOR)/etc/izat.conf \
 	$(PLATFORM_PATH)/configs/gps/lowi.conf:$(TARGET_COPY_OUT_VENDOR)/etc/lowi.conf \
 	$(PLATFORM_PATH)/configs/gps/sap.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sap.conf \
-	$(PLATFORM_PATH)/configs/gps/xtwifi.conf:$(TARGET_COPY_OUT_VENDOR)/etc/xtwifi.conf
+	$(PLATFORM_PATH)/configs/gps/xtwifi.conf:$(TARGET_COPY_OUT_VENDOR)/etc/xtwifi.conf \
+	$(PLATFORM_PATH)/configs/com.qualcomm.location.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/com.qualcomm.location.xml
 
 PRODUCT_PACKAGES += \
 	android.hardware.gnss@1.0-impl-qti \
