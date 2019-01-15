@@ -2000,8 +2000,10 @@ GnssAdapter::restartSessions()
     }
 
     // get the LocationOptions that has the smallest interval, which should be the active one
-    TrackingOptions smallestIntervalOptions = {}; // size is zero until set for the first time
-    TrackingOptions highestPowerTrackingOptions = {};
+    TrackingOptions smallestIntervalOptions; // size is zero until set for the first time
+    TrackingOptions highestPowerTrackingOptions;
+    memset(&smallestIntervalOptions, 0, sizeof(smallestIntervalOptions));
+    memset(&highestPowerTrackingOptions, 0, sizeof(highestPowerTrackingOptions));
     for (auto it = mTrackingSessions.begin(); it != mTrackingSessions.end(); ++it) {
         // size of zero means we havent set it yet
         if (0 == smallestIntervalOptions.size ||
@@ -3023,8 +3025,8 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
         loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo,
                               generate_nmea, nmeaArraystr);
         stringstream ss;
-        for (auto sentence : nmeaArraystr) {
-            ss << sentence;
+        for (auto itor = nmeaArraystr.begin(); itor != nmeaArraystr.end(); ++itor) {
+            ss << *itor;
         }
         string s = ss.str();
         reportNmea(s.c_str(), s.length());
@@ -3119,8 +3121,8 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
         std::vector<std::string> nmeaArraystr;
         loc_nmea_generate_sv(svNotify, nmeaArraystr);
         stringstream ss;
-        for (auto sentence : nmeaArraystr) {
-            ss << sentence;
+        for (auto itor = nmeaArraystr.begin(); itor != nmeaArraystr.end(); ++itor) {
+            ss << *itor;
         }
         string s = ss.str();
         reportNmea(s.c_str(), s.length());
