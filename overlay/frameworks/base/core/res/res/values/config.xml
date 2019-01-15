@@ -519,8 +519,11 @@
 
     <!-- Specify custom blanking delay of the display -->
     <integer name="config_screen_off_delay">0</integer>
-    
+
     <!-- Specify if the fingerprint hardware support gestures-->
     <bool name="config_fingerprintSupportsGestures">true</bool>
 
+    <!-- Time to give to the proximity sensor before toggling the flashlight with the Power button.
+      Set to -1 to disable the proximity sensor check at all-->
+    <integer name="config_flashlightProximityTimeout">-1</integer>
 </resources>
