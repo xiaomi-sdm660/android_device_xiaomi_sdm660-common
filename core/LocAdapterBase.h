@@ -172,6 +172,9 @@ public:
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
     virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
     virtual bool reportDeleteAidingDataEvent(GnssAidingData &aidingData);
+    virtual bool reportKlobucharIonoModelEvent(GnssKlobucharIonoModel& ionoModel);
+    virtual bool reportGnssAdditionalSystemInfoEvent(
+            GnssAdditionalSystemInfo& additionalSystemInfo);
 };
 
 } // namespace loc_core

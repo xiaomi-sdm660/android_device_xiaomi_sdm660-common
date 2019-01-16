@@ -356,6 +356,9 @@ public:
     virtual bool releaseATL(int connHandle);
     virtual bool requestOdcpiEvent(OdcpiRequestInfo& request);
     virtual bool reportDeleteAidingDataEvent(GnssAidingData& aidingData);
+    virtual bool reportKlobucharIonoModelEvent(GnssKlobucharIonoModel& ionoModel);
+    virtual bool reportGnssAdditionalSystemInfoEvent(
+            GnssAdditionalSystemInfo& additionalSystemInfo);
 
     /* ======== UTILITIES ================================================================= */
     bool needReport(const UlpLocation& ulpLocation,

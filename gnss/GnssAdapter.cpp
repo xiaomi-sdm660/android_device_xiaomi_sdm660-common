@@ -1944,6 +1944,7 @@ GnssAdapter::updateClientsEventMask()
         mask |= LOC_API_ADAPTER_BIT_PARSED_UNPROPAGATED_POSITION_REPORT;
         mask |= LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT;
         mask |= LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO;
+        mask |= LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO;
 
         LOC_LOGd("Auto usecase, Enable MEAS/POLY/EPHEMERIS - mask 0x%" PRIx64 "",
                 mask);
@@ -3591,24 +3592,24 @@ void GnssAdapter::requestOdcpi(const OdcpiRequestInfo& request)
 bool GnssAdapter::reportDeleteAidingDataEvent(GnssAidingData& aidingData)
 {
     LOC_LOGD("%s]:", __func__);
-
-    struct MsgHandleDeleteAidingDataEvent : public LocMsg {
-        GnssAdapter& mAdapter;
-        GnssAidingData mData;
-        inline MsgHandleDeleteAidingDataEvent(GnssAdapter& adapter,
-                                   GnssAidingData& data) :
-            LocMsg(),
-            mAdapter(adapter),
-            mData(data) {}
-        inline virtual void proc() const {
-            mAdapter.mEngHubProxy->gnssDeleteAidingData(mData);
-        }
-    };
-
-    sendMsg(new MsgHandleDeleteAidingDataEvent(*this, aidingData));
+    mEngHubProxy->gnssDeleteAidingData(aidingData);
     return true;
 }
 
+bool GnssAdapter::reportKlobucharIonoModelEvent(GnssKlobucharIonoModel & ionoModel)
+{
+    LOC_LOGD("%s]:", __func__);
+    mEngHubProxy->gnssReportKlobucharIonoModel(ionoModel);
+    return true;
+}
+
+bool GnssAdapter::reportGnssAdditionalSystemInfoEvent(
+        GnssAdditionalSystemInfo & additionalSystemInfo)
+{
+    LOC_LOGD("%s]:", __func__);
+    mEngHubProxy->gnssReportAdditionalSystemInfo(additionalSystemInfo);
+    return true;
+}
 
 void GnssAdapter::initOdcpiCommand(const OdcpiRequestCallback& callback)
 {
