@@ -11,11 +11,6 @@
      limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-
-    <!-- Whether to show Connected MAC Randomization in Developer Options
-         as not all devices can support dynamic MAC address change.  -->
-    <bool name="config_wifi_support_connected_mac_randomization">true</bool>
-
     <!-- Enable Manual Sim Provisioning -->
     <bool name="config_enableManualSubProvisioning">true</bool>
 </resources>
