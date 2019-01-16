@@ -121,7 +121,9 @@ PRODUCT_PACKAGES += \
 	liboverlay \
 	libqdMetaData.system \
 	libtinyxml \
-	memtrack.sdm660
+	memtrack.sdm660 \
+	libgpu_tonemapper \
+	libsdm_core
 
 PRODUCT_PACKAGES += \
 	android.hardware.configstore@1.0-service \
