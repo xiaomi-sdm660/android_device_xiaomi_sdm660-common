@@ -48,10 +48,6 @@
 #endif
 #include "log_util.h"
 
-extern "C" {
-#include "vndfwk-detect.h"
-}
-
 /*=============================================================================
  *
  *                          GLOBAL DATA DECLARATION
@@ -62,6 +58,7 @@ extern "C" {
 static uint32_t DEBUG_LEVEL = 0xff;
 static uint32_t TIMESTAMP = 0;
 static uint32_t DATUM_TYPE = 0;
+static bool sVendorEnhanced = true;
 
 /* Parameter spec table */
 static const loc_param_s_type loc_param_table[] =
@@ -90,6 +87,13 @@ const char LOC_PATH_SAP_CONF[] = LOC_PATH_SAP_CONF_STR;
 const char LOC_PATH_APDR_CONF[] = LOC_PATH_APDR_CONF_STR;
 const char LOC_PATH_XTWIFI_CONF[] = LOC_PATH_XTWIFI_CONF_STR;
 const char LOC_PATH_QUIPC_CONF[] = LOC_PATH_QUIPC_CONF_STR;
+
+bool isVendorEnhanced() {
+    return sVendorEnhanced;
+}
+void setVendorEnhanced(bool vendorEnhanced) {
+    sVendorEnhanced = vendorEnhanced;
+}
 
 /*===========================================================================
 FUNCTION loc_get_datum_type
@@ -764,8 +768,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
             continue;
         }
 
-        if ((isRunningWithVendorEnhancedFramework() && conf.vendor_enhanced_process == 0) ||
-                (!isRunningWithVendorEnhancedFramework() && conf.vendor_enhanced_process != 0)) {
+        if (isVendorEnhanced() != conf.vendor_enhanced_process != 0) {
             LOC_LOGD("%s:%d]: Process %s is disabled via vendor enhanced process check",
                      __func__, __LINE__, conf.proc_name);
             child_proc[j].proc_status = DISABLED_VIA_VENDOR_ENHANCED_CHECK;

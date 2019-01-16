@@ -11,8 +11,7 @@ include $(CLEAR_VARS)
 LOCAL_SHARED_LIBRARIES := \
     libutils \
     libcutils \
-    liblog \
-    libqti_vndfwk_detect
+    liblog
 
 LOCAL_SRC_FILES += \
     loc_log.cpp \
