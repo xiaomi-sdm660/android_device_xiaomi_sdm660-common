@@ -697,13 +697,6 @@ on property:init.svc.surfaceflinger=restarting
     start vendor.hwcomposer-2-1
     start vendor.hwcomposer-2-2
 
-service chre /vendor/bin/chre
-	class late_start
-	user system
-	group system
-	socket chre seqpacket 0660 root system
-	shutdown critical
-
 on property:vendor.display.lcd_density=*
     setprop ro.sf.lcd_density ${vendor.display.lcd_density}
 
