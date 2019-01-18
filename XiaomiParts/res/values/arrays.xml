@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string-array name="spectrum_profiles">
-		<item>Balance</item>
+		<item>Standard</item>
 		<item>Performance</item>
 		<item>Battery</item>
 		<item>Gaming</item>
+		<item>Balanced</item>
 	</string-array>
 	<string-array name="spectrum_values">
 		<item>0</item>
 		<item>1</item>
 		<item>2</item>
 		<item>3</item>
+		<item>4</item>
 	</string-array>
 </resources>
