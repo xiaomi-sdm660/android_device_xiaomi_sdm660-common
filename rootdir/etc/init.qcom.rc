@@ -102,6 +102,35 @@ on boot
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
 
+    #define back flash and front flash
+     chmod 0660 /sys/android_camera/sensor
+     chmod 0660 /sys/class/leds/led:flash_0/brightness
+     chmod 0660 /sys/class/leds/led:flash_1/brightness
+     chmod 0660 /sys/class/leds/led:flash_2/brightness
+     chmod 0660 /sys/class/leds/led:torch_0/brightness
+     chmod 0660 /sys/class/leds/led:torch_1/brightness
+     chmod 0660 /sys/class/leds/led:torch_2/brightness
+     chmod 0660 /sys/class/leds/led:switch_0/brightness
+     chmod 0660 /sys/class/leds/led:switch_1/brightness
+     chmod 0660 /sys/class/leds/flashlight/brightness
+     chown system system /sys/android_camera/sensor
+     chown system system /sys/class/leds/led:flash_0/brightness
+     chown system system /sys/class/leds/led:flash_1/brightness
+     chown system system /sys/class/leds/led:flash_2/brightness
+     chown system system /sys/class/leds/led:torch_0/brightness
+     chown system system /sys/class/leds/led:torch_1/brightness
+     chown system system /sys/class/leds/led:torch_2/brightness
+     chown system system /sys/class/leds/led:switch_0/brightness
+     chown system system /sys/class/leds/led:switch_1/brightness
+     chown system system /sys/class/leds/flashlight/brightness
+     chmod 0660 /sys/class/power_supply/battery/input_suspend
+     chmod 0660 /sys/class/power_supply/battery/charging_enabled
+     chown system system /sys/class/power_supply/battery/input_suspend
+     chown system system /sys/class/power_supply/battery/charging_enabled
+
+    chmod 0770 /sys/class/power_supply/battery/device/thermalcall
+     chown system system /sys/class/power_supply/battery/device/thermalcall
+
     mkdir /mnt/vendor/persist/drm 0770 system system
     mkdir /mnt/vendor/persist/bluetooth 0770 bluetooth bluetooth
     mkdir /mnt/vendor/persist/misc 0770 system system
@@ -405,6 +434,9 @@ on post-fs-data
     chown radio radio /data/vendor/radio/db_check_done
     chmod 0660 /data/vendor/radio/db_check_done
 
+    copy /vendor/etc/ad_calib.cfg /data/vendor/display/ad_calib.cfg
+    chmod 0644 /data/vendor/display/ad_calib.c
+
     # qti-logkit data
     mkdir /data/vendor/qti-logkit/ 0771 system system
     mkdir /data/vendor/qti-logkit/shared-privileged/ 2770 system system
@@ -480,7 +512,6 @@ on property:vold.decrypt=trigger_restart_framework
     start vendor.qcom-c_main-sh
     start config_bt_addr
     start wcnss-service
-    start vendor.cnss_diag
 
 on property:persist.env.fastdorm.enabled=true
     setprop persist.radio.data_no_toggle 1
@@ -539,6 +570,9 @@ service vendor.sensors /vendor/bin/sensors.qti
 on property:ro.vendor.use_data_netmgrd=false
     # netmgr not supported on specific target
     stop vendor.netmgrd
+
+on property:sys.camera.face.unlock=*
+    setprop vendor.camera.face.unlock ${sys.camera.face.unlock}
 
 # Adjust socket buffer to enlarge TCP receive window for high bandwidth
 # but only if ro.data.large_tcp_window_size property is set.
