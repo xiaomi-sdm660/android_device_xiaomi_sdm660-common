@@ -109,6 +109,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.dirac.acs.ignore_error=1 \
 	ro.audio.soundfx.dirac=true
 
+# Dirty ratios
+PRODUCT_PROPERTY_OVERRIDES += \
+	vm.dirty_ratio=5 \
+	vm.dirty_background_ratio=1
+
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
 	vendor.gralloc.enable_fb_ubwc=1 \
