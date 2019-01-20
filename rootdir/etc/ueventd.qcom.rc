@@ -394,6 +394,9 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/class/dual_role_usb/*	power_role	0660	system	system
 /sys/class/dual_role_usb/*	mode		0660	system	system
 
+# sys-fs display
+/sys/class/graphics/fb0     dynamic_fps		0664   system	graphics
+
 #Memory Offline
 /sys/devices/system/memory/memory* state    0660 system system
 
