@@ -36,7 +36,7 @@ public class KeyHandler implements DeviceKeyHandler {
 
     private static int actionBefore = KeyEvent.ACTION_DOWN;
 
-    private static final String[] CAMERA_PACKAGES = new String[]{"com.android.camera", "com.android.camera2"};
+    private static final String[] CAMERA_PACKAGES = new String[]{"com.android.camera", "com.android.camera2" , "com.google.android.GoogleCamera"};
 
     private static PackageManager packageManager;
     ActivityManager activityManager;
