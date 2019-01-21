@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
 <resources>
     <string name="advanced_settings">Xiaomi Parts</string>
     <string name="advanced_settings_summary">Erweiterte Einstellungen</string>
@@ -13,8 +27,16 @@
     <string name="vibration_strength_title">Stärke</string>
 
     <!-- Spectrum Profiles -->
-      <string name="spectrum_profile_title">Leistung</string>
-      <string name="spectrum_title">Leistung Einstellung</string>
-      <string name="spectrum_summary">Wähle die Leistungstufe</string>
-      <string name="spectrum_dialogTitle">Wähle die Leistungstufe</string>
+    <string name="spectrum_profile_title">Leistung</string>
+    <string name="spectrum_title">Leistung Einstellung</string>
+    <string name="spectrum_summary">Wähle die Leistungstufe</string>
+    <string name="spectrum_dialogTitle">Wähle die Leistungstufe</string>
+
+    <string name="fp_title">Fingerabdrucksensor</string>
+    <string name="fpaction_enabled">Aktiviere Fingerabdruckaktionen</string>
+    <string name="fpshutter_summary">Löse die Kamera aus, falls diese aktiv ist</string>
+    <string name="fp_shutter">Fingerprint Shutter</string>
+    <string name="fpaction_dialogTitle">Aktion</string>
+    <string name="fpaction_summary">Aktion auswählen</string>
+    <string name="fpaction_title">Fingerabdruckaktionen</string>
 </resources>

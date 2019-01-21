@@ -14,9 +14,21 @@
      limitations under the License.
 -->
 <resources>
-    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.Settings">
-        <item name="preferenceTheme">@style/PreferenceTheme</item>
-    </style>
+    <string-array name="spectrum_profiles">
+        <item>Standard</item>
+        <item>Performance</item>
+        <item>Energieeffizient</item>
+        <item>Gaming</item>
+        <item>Balance</item>
+    </string-array>
 
-    <style name="PreferenceTheme" parent="@style/PreferenceThemeOverlay.SettingsBase"></style>
+    <string-array name="fpaction_enteries">
+        <item>Benachrichtigungs Panel</item>
+        <item>Schnelleinstellungen</item>
+        <item>Assistent</item>
+        <item>Home</item>
+        <item>Media next</item>
+        <item>Media play/pause</item>
+        <item>Media previous</item>
+    </string-array>
 </resources>

@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
 <resources>
 	<string-array name="spectrum_profiles">
-		<item>Standard</item>
+		<item>Stock</item>
 		<item>Performance</item>
 		<item>Battery</item>
 		<item>Gaming</item>
-		<item>Balanced</item>
+		<item>Balance</item>
 	</string-array>
 	<string-array name="spectrum_values">
 		<item>0</item>
@@ -13,5 +27,24 @@
 		<item>2</item>
 		<item>3</item>
 		<item>4</item>
+	</string-array>
+
+	<string-array name="fpaction_enteries">
+		<item>Expand Notification Panel</item>
+		<item>Expand QS</item>
+		<item>Assistant</item>
+		<item>Home</item>
+		<item>Media next</item>
+		<item>Media play/pause</item>
+		<item>Media previous</item>
+	</string-array>
+	<string-array name="fpaction_values">
+		<item>expnp</item>
+		<item>expqs</item>
+		<item>219</item>
+		<item>3</item>
+		<item>87</item>
+		<item>85</item>
+		<item>88</item>
 	</string-array>
 </resources>

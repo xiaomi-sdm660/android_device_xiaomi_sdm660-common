@@ -445,6 +445,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	KCal
 
+# KeyHandler
+PRODUCT_PACKAGES += \
+	org.lineageos.keyhandler
+
+
 # Wi-Fi Display
 PRODUCT_BOOT_JARS += \
     WfdCommon
