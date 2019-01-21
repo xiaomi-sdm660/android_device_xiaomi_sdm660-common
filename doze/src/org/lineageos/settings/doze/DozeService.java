@@ -23,7 +23,7 @@
 #
  */
 
-package org.carbonrom.settings.doze;
+package org.lineageos.settings.doze;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;

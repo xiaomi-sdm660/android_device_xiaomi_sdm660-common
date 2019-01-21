@@ -23,7 +23,7 @@
 #
  */
 
-package org.carbonrom.settings.doze;
+package org.lineageos.settings.doze;
 
 import android.app.ActionBar;
 import android.app.Activity;
