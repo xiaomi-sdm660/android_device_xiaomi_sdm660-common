@@ -48,10 +48,8 @@ on property:persist.spectrum.profile=0
   write /sys/module/cpu_boost/parameters/input_boost_ms "60"
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
-
-  write /dev/cpuset/foreground/cpus 0-2,4-7
-  write /dev/cpuset/foreground/boost/cpus 4-7
-  write /dev/cpuset/top-app/cpus 0-7
+  write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
+  write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 647000000
 
 # Performance
 on property:persist.spectrum.profile=1
@@ -75,11 +73,8 @@ on property:persist.spectrum.profile=1
   write /sys/module/cpu_boost/parameters/input_boost_ms "60"
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
-
-  write /dev/cpuset/foreground/cpus 0-2,4-7
-  write /dev/cpuset/foreground/boost/cpus 4-7
-  write /dev/cpuset/top-app/cpus 0-7
-
+  write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 266000000
+  write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 647000000
 
 # Battery
 on property:persist.spectrum.profile=2
@@ -103,38 +98,35 @@ on property:persist.spectrum.profile=2
   write /sys/module/cpu_boost/parameters/input_boost_ms "0"
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "powersave"
-
-  write /dev/cpuset/foreground/cpus 0-2,4-5
-  write /dev/cpuset/foreground/boost/cpus 4-5
-  write /dev/cpuset/top-app/cpus 0-5
+  write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
+  write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 588000000
 
 # Gaming/Benchmarks
 on property:persist.spectrum.profile=3
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 1113600
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1843200
-  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1401600:29000"
-  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 92
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 1401600:19000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 85
   write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 1401600
-  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "80 1401600:85 1536000:14 1747200:90"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "75 1401600:80 1536000:14 1747200:85"
 
   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 1113600
   write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2208000
-  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 92
-  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1401600
-  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:29000"
-  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "80 1401600:85 1536000:14 2150400:90"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 85
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1747200
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1747200:19000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "75 1401600:80 1536000:14 2150400:95"
 
   write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600 1:1401600 2:1401600 3:1401600 4:1401600 5:1401600 6:1401600 7:1401600"
   write /sys/module/cpu_boost/parameters/input_boost_ms "128"
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "performance"
+  write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 588000000
+  write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 647000000
 
-  write /dev/cpuset/foreground/cpus 0-2,4-7
-  write /dev/cpuset/foreground/boost/cpus 4-7
-  write /dev/cpuset/top-app/cpus 0-7
-
+# Balanced
 on property:persist.spectrum.profile=4
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 633000
@@ -156,7 +148,30 @@ on property:persist.spectrum.profile=4
   write /sys/module/cpu_boost/parameters/input_boost_ms "64"
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
+  write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
+  write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 647000000
 
-  write /dev/cpuset/foreground/cpus 0-2,4-7
-  write /dev/cpuset/foreground/boost/cpus 4-7
-  write /dev/cpuset/top-app/cpus 0-7
+# Extreme Battery
+on property:persist.governor.profile=5
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 633000
+  write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1536000
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "19000 902400:99000"
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 98
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 902400
+  write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "85 1113600:92 1401600:98"
+
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 1113600
+  write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1958400
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 98
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1401600
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000 1747200:99000"
+  write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:92 1536000:14 1747200:98"
+
+  write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
+  write /sys/module/cpu_boost/parameters/input_boost_ms "0"
+
+  write /sys/class/kgsl/kgsl-3d0/devfreq/governor "powersave"
+  write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
+  write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 588000000

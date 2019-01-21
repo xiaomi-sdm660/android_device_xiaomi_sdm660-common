@@ -20,6 +20,7 @@
         <item>Energieeffizient</item>
         <item>Gaming</item>
         <item>Balance</item>
+        <item>Energiesparmodus</item>
     </string-array>
 
     <string-array name="fpaction_enteries">
