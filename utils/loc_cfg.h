@@ -113,6 +113,8 @@ extern "C" {
  *                       MODULE EXPORTED FUNCTIONS
  *
  *============================================================================*/
+bool isVendorEnhanced();
+void setVendorEnhanced(bool vendorEnhanced);
 void loc_read_conf(const char* conf_file_name,
                    const loc_param_s_type* config_table,
                    uint32_t table_length);

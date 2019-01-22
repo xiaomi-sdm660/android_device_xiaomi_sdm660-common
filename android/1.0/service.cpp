@@ -23,6 +23,7 @@
 #include <android/hardware/gnss/1.0/IGnss.h>
 #include <hidl/LegacySupport.h>
 
+#include "loc_cfg.h"
 extern "C" {
 #include "vndfwk-detect.h"
 }
@@ -31,7 +32,10 @@ using android::hardware::gnss::V1_0::IGnss;
 using android::hardware::defaultPassthroughServiceImplementation;
 
 int main() {
-    if (!isRunningWithVendorEnhancedFramework()) {
+    bool vendorEnhanced = isRunningWithVendorEnhancedFramework();
+    setVendorEnhanced(vendorEnhanced);
+
+    if (!vendorEnhanced) {
         return defaultPassthroughServiceImplementation<IGnss>();
     } else {
         return -1;

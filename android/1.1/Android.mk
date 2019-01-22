@@ -72,6 +72,7 @@ LOCAL_SHARED_LIBRARIES := \
     libdl \
     libbase \
     libutils \
+    libgps.utils \
     libqti_vndfwk_detect \
 
 LOCAL_SHARED_LIBRARIES += \
