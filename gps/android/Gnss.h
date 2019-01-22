@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_HARDWARE_GNSS_V1_1_GNSS_H
-#define ANDROID_HARDWARE_GNSS_V1_1_GNSS_H
+#ifndef ANDROID_HARDWARE_GNSS_V1_0_GNSS_H
+#define ANDROID_HARDWARE_GNSS_V1_0_GNSS_H
 
 #include <AGnss.h>
 #include <AGnssRil.h>
@@ -30,7 +30,7 @@
 #include <GnssNi.h>
 #include <GnssDebug.h>
 
-#include <android/hardware/gnss/1.1/IGnss.h>
+#include <android/hardware/gnss/1.0/IGnss.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
 
@@ -40,7 +40,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::hardware::hidl_array;
@@ -95,16 +95,6 @@ struct Gnss : public IGnss {
 
     Return<sp<V1_0::IGnssDebug>> getExtensionGnssDebug() override;
 
-    // Methods from ::android::hardware::gnss::V1_1::IGnss follow.
-    Return<bool> setCallback_1_1(const sp<V1_1::IGnssCallback>& callback) override;
-    Return<bool> setPositionMode_1_1(V1_0::IGnss::GnssPositionMode mode,
-            V1_0::IGnss::GnssPositionRecurrence recurrence,
-            uint32_t minIntervalMs, uint32_t preferredAccuracyMeters,
-            uint32_t preferredTimeMs, bool lowPowerMode) override;
-    Return<sp<V1_1::IGnssMeasurement>> getExtensionGnssMeasurement_1_1() override;
-    Return<sp<V1_1::IGnssConfiguration>> getExtensionGnssConfiguration_1_1() override;
-    Return<bool> injectBestLocation(const GnssLocation& location) override;
-
     // These methods are not part of the IGnss base class.
     GnssAPIClient* getApi();
     Return<bool> setGnssNiCb(const sp<IGnssNiCallback>& niCb);
@@ -137,7 +127,6 @@ struct Gnss : public IGnss {
 
     GnssAPIClient* mApi = nullptr;
     sp<V1_0::IGnssCallback> mGnssCbIface = nullptr;
-    sp<V1_1::IGnssCallback> mGnssCbIface_1_1 = nullptr;
     sp<V1_0::IGnssNiCallback> mGnssNiCbIface = nullptr;
     GnssConfig mPendingConfig;
     GnssInterface* mGnssInterface = nullptr;
@@ -146,9 +135,9 @@ struct Gnss : public IGnss {
 extern "C" IGnss* HIDL_FETCH_IGnss(const char* name);
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
 
-#endif  // ANDROID_HARDWARE_GNSS_V1_1_GNSS_H
+#endif  // ANDROID_HARDWARE_GNSS_V1_0_GNSS_H

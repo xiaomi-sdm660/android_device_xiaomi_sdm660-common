@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef ANDROID_HARDWARE_GNSS_V1_1_AGNSS_H
-#define ANDROID_HARDWARE_GNSS_V1_1_AGNSS_H
+#ifndef ANDROID_HARDWARE_GNSS_V1_0_AGNSS_H
+#define ANDROID_HARDWARE_GNSS_V1_0_AGNSS_H
 
 #include <android/hardware/gnss/1.0/IAGnss.h>
 #include <hidl/Status.h>
@@ -28,7 +28,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::V1_0::IAGnss;
@@ -71,9 +71,9 @@ struct AGnss : public IAGnss {
 };
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
 
-#endif  // ANDROID_HARDWARE_GNSS_V1_1_AGNSS_H
+#endif  // ANDROID_HARDWARE_GNSS_V1_0_AGNSS_H

@@ -42,7 +42,7 @@
 namespace android {
 namespace hardware {
 namespace gnss {
-namespace V1_1 {
+namespace V1_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::V1_0::IGnssBatching;
@@ -190,7 +190,7 @@ static void convertBatchOption(const IGnssBatching::Options& in, LocationOptions
 }
 
 }  // namespace implementation
-}  // namespace V1_1
+}  // namespace V1_0
 }  // namespace gnss
 }  // namespace hardware
 }  // namespace android
