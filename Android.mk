@@ -34,7 +34,12 @@ include $(BUILD_SYSTEM)/base_rules.mk
 $(LOCAL_BUILT_MODULE): ACTUAL_INI_FILE := /vendor/etc/wifi/WCNSS_qcom_cfg.ini
 $(LOCAL_BUILT_MODULE): WCNSS_INI_SYMLINK := $(TARGET_OUT_VENDOR)/firmware/wlan/qca_cld/WCNSS_qcom_cfg.ini
 
-$(LOCAL_BUILT_MODULE): ACTUAL_BIN_FILE := /persist/wlan_mac.bin
+ifeq ($(WLAN_MAC_SYMLINK), true)
+$(LOCAL_BUILT_MODULE): ACTUAL_BIN_FILE := /mnt/vendor/persist/wlan_mac.bin
+else
+$(LOCAL_BUILT_MODULE): ACTUAL_BIN_FILE := /mnt/vendor/persist/wlan_mac.clover
+endif
+
 $(LOCAL_BUILT_MODULE): WCNSS_BIN_SYMLINK := $(TARGET_OUT_VENDOR)/firmware/wlan/qca_cld/wlan_mac.bin
 
 $(LOCAL_BUILT_MODULE): $(LOCAL_PATH)/Android.mk
