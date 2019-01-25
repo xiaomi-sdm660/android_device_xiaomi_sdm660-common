@@ -1,4 +1,4 @@
-/* Copyright (c) 2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -374,6 +374,8 @@ typedef enum {
 typedef enum {
     GNSS_ASSISTANCE_TYPE_SUPL = 0,
     GNSS_ASSISTANCE_TYPE_C2K,
+    GNSS_ASSISTANCE_TYPE_SUPL_EIMS,
+    GNSS_ASSISTANCE_TYPE_SUPL_IMS,
 } GnssAssistanceType;
 
 typedef enum {
