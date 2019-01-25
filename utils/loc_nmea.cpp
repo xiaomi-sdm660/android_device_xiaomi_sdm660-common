@@ -674,6 +674,9 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
                     case GNSS_SV_TYPE_BEIDOU:
                         signalType = GNSS_SIGNAL_BEIDOU_B1I;
                         break;
+                    case GNSS_SV_TYPE_SBAS:
+                        signalType = GNSS_SIGNAL_SBAS_L1;
+                        break;
                     default:
                         LOC_LOGE("NMEA Error unknow constellation type: %d",
                                 svNotify.gnssSvs[svNumber - 1].type);
