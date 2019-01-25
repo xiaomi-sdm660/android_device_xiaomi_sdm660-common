@@ -35,25 +35,18 @@
 #include <LocTimer.h>
 
 using namespace std;
+using namespace loc_util;
 using loc_core::IOsObserver;
 using loc_core::IDataItemObserver;
 using loc_core::IDataItemCore;
-using loc_util::LocIpc;
 
-class XtraSystemStatusObserver : public IDataItemObserver, public LocIpc{
+class XtraSystemStatusObserver : public IDataItemObserver {
 public :
     // constructor & destructor
-    inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
-            mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask),
-            mGpsLock(-1), mConnections(~0), mXtraThrottle(true), mReqStatusReceived(false),
-            mIsConnectivityStatusKnown (false), mDelayLocTimer(*this) {
-        subscribe(true);
-        startListeningNonBlocking(LOC_IPC_HAL);
-        mDelayLocTimer.start(100 /*.1 sec*/,  false);
-    }
+    XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask);
     inline virtual ~XtraSystemStatusObserver() {
         subscribe(false);
-        stopListening();
+        mIpc.stopNonBlockingListening();
     }
 
     // IDataItemObserver overrides
@@ -68,14 +61,13 @@ public :
     bool updateXtraThrottle(const bool enabled);
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     void subscribe(bool yes);
-
-protected:
-    void onReceive(const std::string& data) override;
+    bool onStatusRequested(int32_t xtraStatusUpdated);
 
 private:
     IOsObserver*    mSystemStatusObsrvr;
     const MsgTask* mMsgTask;
     GnssConfigGpsLock mGpsLock;
+    LocIpc mIpc;
     uint64_t mConnections;
     uint64_t mWifiNetworkHandle;
     uint64_t mMobileNetworkHandle;
@@ -84,17 +76,16 @@ private:
     bool mXtraThrottle;
     bool mReqStatusReceived;
     bool mIsConnectivityStatusKnown;
+    shared_ptr<LocIpcSender> mSender;
 
     class DelayLocTimer : public LocTimer {
-        XtraSystemStatusObserver& mXSSO;
+        LocIpcSender& mSender;
     public:
-        DelayLocTimer(XtraSystemStatusObserver& xsso) : mXSSO(xsso) {}
+        DelayLocTimer(LocIpcSender& sender) : mSender(sender) {}
         void timeOutCallback() override {
-            mXSSO.send(LOC_IPC_XTRA, "halinit");
+            LocIpc::send(mSender, (const uint8_t*)"halinit", sizeof("halinit"));
         }
     } mDelayLocTimer;
-
-    bool onStatusRequested(int32_t xtraStatusUpdated);
 };
 
 #endif

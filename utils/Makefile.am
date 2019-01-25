@@ -8,7 +8,7 @@ AM_CFLAGS = -Wundef \
         -fno-short-enums \
         -fpic \
          -I./ \
-         -std=c++11 \
+         -std=c++14 \
          $(LOCPLA_CFLAGS)
 
 libgps_utils_la_h_sources = \
