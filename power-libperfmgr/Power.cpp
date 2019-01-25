@@ -251,39 +251,6 @@ Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
                 ALOGD("AUDIO STREAMING OFF");
             }
             break;
-        case PowerHint_1_2::CAMERA_LAUNCH:
-            if (data > 0) {
-                mHintManager->DoHint("LAUNCH", std::chrono::milliseconds(data));
-                ALOGD("LAUNCH ON: %d MS", data);
-            } else if (data == 0) {
-                mHintManager->EndHint("LAUNCH");
-                ALOGD("LAUNCH OFF");
-            } else {
-                ALOGE("LAUNCH INVALID DATA: %d", data);
-            }
-            break;
-        case PowerHint_1_2::CAMERA_STREAMING:
-            if (data > 0) {
-                mHintManager->DoHint("CAMERA_STREAMING", std::chrono::milliseconds(data));
-                ALOGD("CAMERA STREAMING ON: %d MS", data);
-            } else if (data == 0) {
-                mHintManager->EndHint("CAMERA_STREAMING");
-                ALOGD("CAMERA STREAMING OFF");
-            } else {
-                ALOGE("CAMERA STREAMING INVALID DATA: %d", data);
-            }
-            break;
-        case PowerHint_1_2::CAMERA_SHOT:
-            if (data > 0) {
-                mHintManager->DoHint("CAMERA_SHOT", std::chrono::milliseconds(data));
-                ALOGD("CAMERA SHOT ON: %d MS", data);
-            } else if (data == 0) {
-                mHintManager->EndHint("CAMERA_SHOT");
-                ALOGD("CAMERA SHOT OFF");
-            } else {
-                ALOGE("CAMERA SHOT INVALID DATA: %d", data);
-            }
-            break;
         default:
             return powerHint(static_cast<PowerHint_1_0>(hint), data);
     }
