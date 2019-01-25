@@ -52,6 +52,8 @@ public:
     */
     void destroy(locationApiDestroyCompleteCallback destroyCompleteCb=nullptr);
 
+    void onRemoveClientCompleteCb (LocationAdapterTypeMask adapterType);
+
     /* updates/changes the callbacks that will be called.
         mandatory callbacks must be present for callbacks to be successfully updated
         no return value */
