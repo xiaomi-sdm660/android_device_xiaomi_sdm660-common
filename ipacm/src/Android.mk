@@ -6,6 +6,7 @@ BOARD_IPAv3_LIST += sdm845
 BOARD_IPAv3_LIST += sdm710
 BOARD_IPAv3_LIST += msmnile
 BOARD_IPAv3_LIST += $(MSMSTEPPE)
+BOARD_IPAv3_LIST += $(TRINKET)
 
 ifneq ($(call is-board-platform-in-list,$(BOARD_PLATFORM_LIST)),true)
 ifneq (,$(filter $(QCOM_BOARD_PLATFORMS),$(TARGET_BOARD_PLATFORM)))
