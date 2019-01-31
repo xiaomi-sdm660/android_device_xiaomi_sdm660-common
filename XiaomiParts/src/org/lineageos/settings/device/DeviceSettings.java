@@ -52,16 +52,16 @@ public class DeviceSettings extends PreferenceFragment implements
 
     private SwitchPreference mEnableHAL3;
     private SwitchPreference mEnableEIS;
-    static SwitchPreference mEnableFpAction;
-    static SwitchPreference mFpShutter;
-    static ListPreference mFpAction;
+    static SwitchPreference sEnableFpAction;
+    static SwitchPreference sFpShutter;
+    static ListPreference sFpAction;
     private TorchSeekBarPreference mTorchBrightness;
     private VibrationSeekBarPreference mVibrationStrength;
     private ListPreference mSPECTRUM;
 
     // value of vtg_min and vtg_max
-    final static int minVibration = 116;
-    final static int maxVibration = 3596;
+    final static int MIN_VIBRATION = 116;
+    final static int MAX_VIBRATION = 3596;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -74,15 +74,15 @@ public class DeviceSettings extends PreferenceFragment implements
         mEnableEIS.setChecked(FileUtils.getProp(EIS_SYSTEM_PROPERTY, false));
         mEnableEIS.setOnPreferenceChangeListener(this);
 
-        mEnableFpAction = (SwitchPreference) findPreference(ENABLE_FPACTION_KEY);
-        mEnableFpAction.setOnPreferenceChangeListener(this);
+        sEnableFpAction = (SwitchPreference) findPreference(ENABLE_FPACTION_KEY);
+        sEnableFpAction.setOnPreferenceChangeListener(this);
 
-        mFpShutter = (SwitchPreference) findPreference(FP_SHUTTER_KEY);
-        mFpShutter.setOnPreferenceChangeListener(this);
+        sFpShutter = (SwitchPreference) findPreference(FP_SHUTTER_KEY);
+        sFpShutter.setOnPreferenceChangeListener(this);
 
-        mFpAction = (ListPreference) findPreference(FPACTION_KEY);
-        mFpAction.setSummary(mFpAction.getEntry());
-        mFpAction.setOnPreferenceChangeListener(this);
+        sFpAction = (ListPreference) findPreference(FPACTION_KEY);
+        sFpAction.setSummary(sFpAction.getEntry());
+        sFpAction.setOnPreferenceChangeListener(this);
 
         mTorchBrightness = (TorchSeekBarPreference) findPreference(TORCH_BRIGHTNESS_KEY);
         mTorchBrightness.setEnabled(FileUtils.fileWritable(TORCH_1_BRIGHTNESS_PATH) && FileUtils.fileWritable(TORCH_2_BRIGHTNESS_PATH));
@@ -118,38 +118,29 @@ public class DeviceSettings extends PreferenceFragment implements
         final String key = preference.getKey();
         switch (key) {
             case ENABLE_HAL3_KEY:
-                mEnableHAL3.setChecked((Boolean) value);
                 FileUtils.setProp(HAL3_SYSTEM_PROPERTY, (Boolean) value);
                 break;
 
             case ENABLE_EIS_KEY:
-                mEnableEIS.setChecked((Boolean) value);
                 FileUtils.setProp(EIS_SYSTEM_PROPERTY, (Boolean) value);
                 break;
 
             case ENABLE_FPACTION_KEY:
-                mEnableFpAction.setChecked((Boolean) value);
-                mFpAction.setEnabled((Boolean) value);
-                mFpShutter.setEnabled((Boolean) value);
-                break;
-
-            case FP_SHUTTER_KEY:
-                mFpShutter.setChecked((Boolean) value);
+                sFpAction.setEnabled((Boolean) value);
                 break;
 
             case FPACTION_KEY:
-                mFpAction.setValue((String) value);
-                mFpAction.setSummary(mFpAction.getEntry());
+                sFpAction.setValue((String) value);
+                sFpAction.setSummary(sFpAction.getEntry());
                 break;
 
             case TORCH_BRIGHTNESS_KEY:
-                mTorchBrightness.setValue((int) value);
                 FileUtils.setValue(TORCH_1_BRIGHTNESS_PATH, (int) value);
                 FileUtils.setValue(TORCH_2_BRIGHTNESS_PATH, (int) value);
                 break;
 
             case VIBRATION_STRENGTH_KEY:
-                double vibrationValue = (int) value / 100.0 * (maxVibration - minVibration) + minVibration;
+                double vibrationValue = (int) value / 100.0 * (MAX_VIBRATION - MIN_VIBRATION) + MIN_VIBRATION;
                 FileUtils.setValue(VIBRATION_STRENGTH_PATH, vibrationValue);
                 break;
 

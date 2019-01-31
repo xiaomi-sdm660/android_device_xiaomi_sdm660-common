@@ -65,9 +65,6 @@
                 android:name="com.android.settings.summary"
                 android:resource="@string/advanced_settings_summary" />
         </activity>
-        <activity
-            android:name=".StartActionActivity"
-            android:excludeFromRecents="true"
-            android:theme="@android:style/Theme.NoDisplay" />
+        <service android:name=".StartAction" />
     </application>
 </manifest>

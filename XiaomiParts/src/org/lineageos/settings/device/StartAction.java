@@ -16,61 +16,69 @@
 
 package org.lineageos.settings.device;
 
+import android.app.ActivityManager;
+import android.app.IntentService;
 import android.app.StatusBarManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.input.InputManager;
-import android.os.Bundle;
 import android.os.SystemClock;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 
-public class StartActionActivity extends PreferenceActivity {
+import java.util.Arrays;
 
-    private static PreferenceManager preferenceManager;
-    private static StatusBarManager statusBarManager;
+public class StartAction extends IntentService {
 
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        preferenceManager = getPreferenceManager();
-        statusBarManager = (StatusBarManager) getSystemService(STATUS_BAR_SERVICE);
+    private static final String[] CAMERA_PACKAGES = new String[]{"com.android.camera",
+            "com.android.camera2" , "com.google.android.GoogleCamera"};
 
+    private static ActivityManager sActivityManager;
+    private static SharedPreferences sSharedPreferences;
+    private static StatusBarManager sStatusBarManager;
 
-        boolean rCamera = getIntent().getExtras().getBoolean("rCamera");
-        boolean fpActionEnabled = preferenceManager.getSharedPreferences().getBoolean(DeviceSettings.ENABLE_FPACTION_KEY, false);
-        String fpAction = preferenceManager.getSharedPreferences().getString(DeviceSettings.FPACTION_KEY, "4");
+    public StartAction() {
+        super("StartAction");
+    }
 
-        if (preferenceManager.getSharedPreferences().getBoolean(DeviceSettings.FP_SHUTTER_KEY, false)) {
-            if (rCamera) {
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        sActivityManager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sStatusBarManager = (StatusBarManager) getSystemService(STATUS_BAR_SERVICE);
+
+        ComponentName componentName = sActivityManager.getRunningTasks(1).get(0)
+                .topActivity;
+
+        boolean cameraActive = Arrays.asList(CAMERA_PACKAGES).contains(componentName.getPackageName());
+        boolean fpActionEnabled = sSharedPreferences.getBoolean(DeviceSettings.ENABLE_FPACTION_KEY,
+                false);
+        boolean fpShutterEnabled = sSharedPreferences.getBoolean(DeviceSettings.FP_SHUTTER_KEY,
+                false);
+        String fpAction = sSharedPreferences.getString(DeviceSettings.FPACTION_KEY, "4");
+
+        if (fpShutterEnabled) {
+            if (cameraActive) {
                 sendKeyCode(KeyEvent.KEYCODE_CAMERA);
-            } else {
-                if (fpActionEnabled) {
-                    fpAction(fpAction);
-                }
+            } else if (fpActionEnabled) {
+                fpAction(fpAction);
             }
         } else if (fpActionEnabled) {
             fpAction(fpAction);
         }
-        finish();
     }
 
     private void fpAction(String action) {
         switch (action) {
             case "expnp":
-                statusBarManager.expandNotificationsPanel();
+                sStatusBarManager.expandNotificationsPanel();
                 break;
             case "expqs":
-                statusBarManager.expandSettingsPanel();
-                break;
-            case "187":
-                // If you have a better idea to hide it completely from the recent apps then feel free to commit
-                try {
-                    Thread.sleep(2);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                sendKeyCode(KeyEvent.KEYCODE_APP_SWITCH);
+                sStatusBarManager.expandSettingsPanel();
                 break;
             default:
                 sendKeyCode(Integer.parseInt(action));

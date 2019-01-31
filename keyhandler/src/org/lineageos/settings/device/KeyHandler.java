@@ -16,7 +16,6 @@
 
 package org.lineageos.settings.device;
 
-import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -25,28 +24,19 @@ import android.view.KeyEvent;
 
 import com.android.internal.os.DeviceKeyHandler;
 
-import java.util.Arrays;
-
-import static android.content.ContentValues.TAG;
-
 public class KeyHandler implements DeviceKeyHandler {
 
     private static final int SCANCODE_JASMINE = 96;
     private static final int SCANCODE_CLOVER = 172;
 
-    private static int actionBefore = KeyEvent.ACTION_DOWN;
+    private static int sActionBefore = KeyEvent.ACTION_DOWN;
 
-    private static final String[] CAMERA_PACKAGES = new String[]{"com.android.camera", "com.android.camera2" , "com.google.android.GoogleCamera"};
-
-    private static PackageManager packageManager;
-    ActivityManager activityManager;
-    private Context context;
+    private static PackageManager sPackageManager;
+    private Context mContext;
 
     public KeyHandler(Context context) {
-        packageManager = context.getPackageManager();
-        activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-
-        this.context = context;
+        sPackageManager = context.getPackageManager();
+        this.mContext = context;
     }
 
     @Override
@@ -55,22 +45,18 @@ public class KeyHandler implements DeviceKeyHandler {
         int action = event.getAction();
 
         if (scanCode == SCANCODE_JASMINE || scanCode == SCANCODE_CLOVER) {
-            if (actionBefore != KeyEvent.ACTION_UP) {
+            if (sActionBefore != KeyEvent.ACTION_UP) {
                 if (action == KeyEvent.ACTION_UP) {
-                    ComponentName componentName = activityManager.getRunningTasks(1).get(0).topActivity;
-
-                    Intent startActivity = new Intent()
+                    Intent startAction = new Intent()
                             .setComponent(new ComponentName("org.lineageos.settings.device",
-                                    "org.lineageos.settings.device.StartActionActivity"))
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            .putExtra("rCamera", Arrays.asList(CAMERA_PACKAGES).contains(componentName.getPackageName()));
+                                    "org.lineageos.settings.device.StartAction"));
 
-                    if (startActivity.resolveActivity(packageManager) != null) {
-                        context.startActivity(startActivity);
+                    if (startAction.resolveActivity(sPackageManager) != null) {
+                        mContext.startService(startAction);
                     }
                 }
             }
-            actionBefore = action;
+            sActionBefore = action;
         }
         return event;
     }

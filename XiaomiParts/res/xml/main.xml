@@ -46,7 +46,7 @@
             android:title="@string/fp_shutter" />
 
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="expnp"
             android:dialogTitle="@string/fpaction_dialogTitle"
             android:entries="@array/fpaction_enteries"
             android:entryValues="@array/fpaction_values"

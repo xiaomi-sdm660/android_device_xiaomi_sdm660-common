@@ -28,8 +28,9 @@
         <item>Schnelleinstellungen</item>
         <item>Assistent</item>
         <item>Home</item>
+        <item>Anwendngsverlauf</item>
         <item>Media next</item>
-        <item>Media play/pause</item>
+        <item>Media Play/Pause</item>
         <item>Media previous</item>
     </string-array>
 </resources>
