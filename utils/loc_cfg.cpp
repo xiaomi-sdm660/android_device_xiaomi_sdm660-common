@@ -768,7 +768,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
             continue;
         }
 
-        if (isVendorEnhanced() != conf.vendor_enhanced_process != 0) {
+        if (!isVendorEnhanced() && (conf.vendor_enhanced_process != 0)) {
             LOC_LOGD("%s:%d]: Process %s is disabled via vendor enhanced process check",
                      __func__, __LINE__, conf.proc_name);
             child_proc[j].proc_status = DISABLED_VIA_VENDOR_ENHANCED_CHECK;
