@@ -31,3 +31,6 @@ sys.thermal.                        u:object_r:thermal_engine_prop:s0
 fpc_kpi                             u:object_r:vendor_default_prop:s0
 gpu.stats.debug.level               u:object_r:vendor_default_prop:s0
 vendor.display.lcd_density          u:object_r:vendor_default_prop:s0
+
+# Dirac
+persist.audio.dirac.                u:object_r:dirac_prop:s0
