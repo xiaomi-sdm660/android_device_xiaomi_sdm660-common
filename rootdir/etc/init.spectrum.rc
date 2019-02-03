@@ -152,7 +152,7 @@ on property:persist.spectrum.profile=4
   write /sys/class/kgsl/kgsl-3d0/devfreq/max_freq 647000000
 
 # Extreme Battery
-on property:persist.governor.profile=5
+on property:persist.spectrum.profile=5
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 633000
   write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1536000
