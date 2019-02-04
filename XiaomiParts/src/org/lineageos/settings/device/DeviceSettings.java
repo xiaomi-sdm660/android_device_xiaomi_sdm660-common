@@ -18,6 +18,7 @@ package org.lineageos.settings.device;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v14.preference.PreferenceFragment;
 import android.support.v14.preference.SwitchPreference;
 import android.support.v7.preference.ListPreference;
@@ -27,84 +28,114 @@ import android.support.v7.preference.PreferenceCategory;
 public class DeviceSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener {
 
-    private final String ENABLE_HAL3_KEY = "hal3";
-    private final String ENABLE_EIS_KEY = "eis";
-    final static String ENABLE_FPACTION_KEY = "fpaction_enabled";
-    final static String FP_SHUTTER_KEY = "fp_shutter";
-    final static String FPACTION_KEY = "fpaction";
-    final static String TORCH_BRIGHTNESS_KEY = "torch_brightness";
-    final static String VIBRATION_STRENGTH_KEY = "vibration_strength";
-    private final String SPECTRUM_KEY = "spectrum";
+    private static final String PREF_ENABLE_HAL3 = "hal3";
+    private static final String PREF_ENABLE_EIS = "eis";
+    final static String PREF_ENABLE_FPACTION = "fpaction_enabled";
+    final static String PREF_FP_SHUTTER = "fp_shutter";
+    final static String PREF_FPACTION = "fpaction";
+    final static String PREF_TORCH_BRIGHTNESS = "torch_brightness";
+    final static String PREF_VIBRATION_STRENGTH = "vibration_strength";
+    private static final String CATEGORY_DISPLAY = "display";
+    private static final String PREF_DEVICE_DOZE = "device_doze";
+    private static final String PREF_DEVICE_KCAL = "device_kcal";
+    private static final String PREF_SPECTRUM = "spectrum";
+    private static final String PREF_ENABLE_DIRAC = "dirac_enabled";
+    private static final String PREF_HEADSET = "dirac_headset_pref";
+    private static final String PREF_PRESET = "dirac_preset_pref";
 
-    private final String HAL3_SYSTEM_PROPERTY = "persist.camera.HAL3.enabled";
-    private final String EIS_SYSTEM_PROPERTY = "persist.camera.eis.enable";
-    private final String SPECTRUM_SYSTEM_PROPERTY = "persist.spectrum.profile";
+    private static final String HAL3_SYSTEM_PROPERTY = "persist.camera.HAL3.enabled";
+    private static final String EIS_SYSTEM_PROPERTY = "persist.camera.eis.enable";
 
-    final static String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness";
-    final static String TORCH_2_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_1/max_brightness";
-    final static String VIBRATION_STRENGTH_PATH = "/sys/devices/virtual/timed_output/vibrator/vtg_level";
+    private final static String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/" + "" +
+            "spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness";
+    private final static String TORCH_2_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/" + "" +
+            "spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_1/max_brightness";
+    private final static String VIBRATION_STRENGTH_PATH = "/sys/devices/virtual/timed_output/vibrator/vtg_level";
 
-    private final String KEY_CATEGORY_DISPLAY = "display";
-    private final String KEY_DEVICE_DOZE = "device_doze";
-    private final String KEY_DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
-    private final String KEY_DEVICE_KCAL = "device_kcal";
-    private final String KEY_DEVICE_KCAL_PACKAGE_NAME = "org.lineageos.settings.kcal";
+    private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
+    private static final String DEVICE_KCAL_PACKAGE_NAME = "org.lineageos.settings.kcal";
 
-    private SwitchPreference mEnableHAL3;
-    private SwitchPreference mEnableEIS;
-    static SwitchPreference sEnableFpAction;
-    static SwitchPreference sFpShutter;
-    static ListPreference sFpAction;
-    private TorchSeekBarPreference mTorchBrightness;
-    private VibrationSeekBarPreference mVibrationStrength;
-    private ListPreference mSPECTRUM;
+    private static final String SPECTRUM_SYSTEM_PROPERTY = "persist.spectrum.profile";
 
     // value of vtg_min and vtg_max
     final static int MIN_VIBRATION = 116;
     final static int MAX_VIBRATION = 3596;
 
+    private SwitchPreference mEnableHAL3;
+    private SwitchPreference mEnableEIS;
+    private SwitchPreference mEnableFpAction;
+    private SwitchPreference mFpShutter;
+    private ListPreference mFpAction;
+    private TorchSeekBarPreference mTorchBrightness;
+    private VibrationSeekBarPreference mVibrationStrength;
+    private ListPreference mSPECTRUM;
+    private SwitchPreference mEnableDirac;
+    private ListPreference mHeadsetType;
+    private ListPreference mPreset;
+
+    private DiracUtils mDiracUtils;
+    private Handler mHandler = new Handler();
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.main, rootKey);
-        mEnableHAL3 = (SwitchPreference) findPreference(ENABLE_HAL3_KEY);
+
+        mDiracUtils = new DiracUtils(getContext());
+
+        mEnableHAL3 = (SwitchPreference) findPreference(PREF_ENABLE_HAL3);
         mEnableHAL3.setChecked(FileUtils.getProp(HAL3_SYSTEM_PROPERTY, false));
         mEnableHAL3.setOnPreferenceChangeListener(this);
 
-        mEnableEIS = (SwitchPreference) findPreference(ENABLE_EIS_KEY);
+        mEnableEIS = (SwitchPreference) findPreference(PREF_ENABLE_EIS);
         mEnableEIS.setChecked(FileUtils.getProp(EIS_SYSTEM_PROPERTY, false));
         mEnableEIS.setOnPreferenceChangeListener(this);
 
-        sEnableFpAction = (SwitchPreference) findPreference(ENABLE_FPACTION_KEY);
-        sEnableFpAction.setOnPreferenceChangeListener(this);
+        mEnableFpAction = (SwitchPreference) findPreference(PREF_ENABLE_FPACTION);
+        mEnableFpAction.setOnPreferenceChangeListener(this);
 
-        sFpShutter = (SwitchPreference) findPreference(FP_SHUTTER_KEY);
-        sFpShutter.setOnPreferenceChangeListener(this);
+        mFpShutter = (SwitchPreference) findPreference(PREF_FP_SHUTTER);
+        mFpShutter.setOnPreferenceChangeListener(this);
 
-        sFpAction = (ListPreference) findPreference(FPACTION_KEY);
-        sFpAction.setSummary(sFpAction.getEntry());
-        sFpAction.setOnPreferenceChangeListener(this);
+        mFpAction = (ListPreference) findPreference(PREF_FPACTION);
+        mFpAction.setSummary(mFpAction.getEntry());
+        mFpAction.setOnPreferenceChangeListener(this);
 
-        mTorchBrightness = (TorchSeekBarPreference) findPreference(TORCH_BRIGHTNESS_KEY);
-        mTorchBrightness.setEnabled(FileUtils.fileWritable(TORCH_1_BRIGHTNESS_PATH) && FileUtils.fileWritable(TORCH_2_BRIGHTNESS_PATH));
+        mTorchBrightness = (TorchSeekBarPreference) findPreference(PREF_TORCH_BRIGHTNESS);
+        mTorchBrightness.setEnabled(FileUtils.fileWritable(TORCH_1_BRIGHTNESS_PATH) &&
+                FileUtils.fileWritable(TORCH_2_BRIGHTNESS_PATH));
         mTorchBrightness.setOnPreferenceChangeListener(this);
 
-        mVibrationStrength = (VibrationSeekBarPreference) findPreference(VIBRATION_STRENGTH_KEY);
+        mVibrationStrength = (VibrationSeekBarPreference) findPreference(PREF_VIBRATION_STRENGTH);
         mVibrationStrength.setEnabled(FileUtils.fileWritable(VIBRATION_STRENGTH_PATH));
         mVibrationStrength.setOnPreferenceChangeListener(this);
 
-        mSPECTRUM = (ListPreference) findPreference(SPECTRUM_KEY);
+        PreferenceCategory displayCategory = (PreferenceCategory) findPreference(CATEGORY_DISPLAY);
+        if (isAppNotInstalled(DEVICE_DOZE_PACKAGE_NAME)) {
+            displayCategory.removePreference(findPreference(PREF_DEVICE_DOZE));
+        }
+
+        if (isAppNotInstalled(DEVICE_KCAL_PACKAGE_NAME)) {
+            displayCategory.removePreference(findPreference(PREF_DEVICE_KCAL));
+        }
+
+        mSPECTRUM = (ListPreference) findPreference(PREF_SPECTRUM);
         mSPECTRUM.setValue(FileUtils.getStringProp(SPECTRUM_SYSTEM_PROPERTY, "0"));
         mSPECTRUM.setSummary(mSPECTRUM.getEntry());
         mSPECTRUM.setOnPreferenceChangeListener(this);
 
-        PreferenceCategory displayCategory = (PreferenceCategory) findPreference(KEY_CATEGORY_DISPLAY);
-        if (!isAppInstalled(KEY_DEVICE_DOZE_PACKAGE_NAME)) {
-            displayCategory.removePreference(findPreference(KEY_DEVICE_DOZE));
-        }
+        boolean enhancerEnabled = mDiracUtils.isDiracEnabled();
 
-        if (!isAppInstalled(KEY_DEVICE_KCAL_PACKAGE_NAME)) {
-            displayCategory.removePreference(findPreference(KEY_DEVICE_KCAL));
-        }
+        mEnableDirac = (SwitchPreference) findPreference(PREF_ENABLE_DIRAC);
+        mEnableDirac.setOnPreferenceChangeListener(this);
+        mEnableDirac.setChecked(enhancerEnabled);
+
+        mHeadsetType = (ListPreference) findPreference(PREF_HEADSET);
+        mHeadsetType.setOnPreferenceChangeListener(this);
+        mHeadsetType.setEnabled(enhancerEnabled);
+
+        mPreset = (ListPreference) findPreference(PREF_PRESET);
+        mPreset.setOnPreferenceChangeListener(this);
+        mPreset.setEnabled(enhancerEnabled);
     }
 
 
@@ -117,37 +148,51 @@ public class DeviceSettings extends PreferenceFragment implements
     public boolean onPreferenceChange(Preference preference, Object value) {
         final String key = preference.getKey();
         switch (key) {
-            case ENABLE_HAL3_KEY:
+            case PREF_ENABLE_HAL3:
                 FileUtils.setProp(HAL3_SYSTEM_PROPERTY, (Boolean) value);
                 break;
 
-            case ENABLE_EIS_KEY:
+            case PREF_ENABLE_EIS:
                 FileUtils.setProp(EIS_SYSTEM_PROPERTY, (Boolean) value);
                 break;
 
-            case ENABLE_FPACTION_KEY:
-                sFpAction.setEnabled((Boolean) value);
+            case PREF_ENABLE_FPACTION:
+                mFpAction.setEnabled((Boolean) value);
                 break;
 
-            case FPACTION_KEY:
-                sFpAction.setValue((String) value);
-                sFpAction.setSummary(sFpAction.getEntry());
+            case PREF_FPACTION:
+                mFpAction.setValue((String) value);
+                mFpAction.setSummary(mFpAction.getEntry());
                 break;
 
-            case TORCH_BRIGHTNESS_KEY:
+            case PREF_TORCH_BRIGHTNESS:
                 FileUtils.setValue(TORCH_1_BRIGHTNESS_PATH, (int) value);
                 FileUtils.setValue(TORCH_2_BRIGHTNESS_PATH, (int) value);
                 break;
 
-            case VIBRATION_STRENGTH_KEY:
+            case PREF_VIBRATION_STRENGTH:
                 double vibrationValue = (int) value / 100.0 * (MAX_VIBRATION - MIN_VIBRATION) + MIN_VIBRATION;
                 FileUtils.setValue(VIBRATION_STRENGTH_PATH, vibrationValue);
                 break;
 
-            case SPECTRUM_KEY:
+            case PREF_SPECTRUM:
                 mSPECTRUM.setValue((String) value);
                 mSPECTRUM.setSummary(mSPECTRUM.getEntry());
                 FileUtils.setStringProp(SPECTRUM_SYSTEM_PROPERTY, (String) value);
+                break;
+
+            case PREF_ENABLE_DIRAC:
+                mDiracUtils.setEnabled((boolean) value);
+                mHeadsetType.setEnabled((boolean) value);
+                mPreset.setEnabled((boolean) value);
+                break;
+
+            case PREF_HEADSET:
+                mDiracUtils.setHeadsetType(Integer.parseInt(value.toString()));
+                break;
+
+            case PREF_PRESET:
+                mDiracUtils.setLevel(String.valueOf(value));
                 break;
 
             default:
@@ -156,14 +201,13 @@ public class DeviceSettings extends PreferenceFragment implements
         return true;
     }
 
-    private boolean isAppInstalled(String uri) {
-        PackageManager packageManager = DeviceSettingsActivity.getContext().getPackageManager();
+    private boolean isAppNotInstalled(String uri) {
+        PackageManager packageManager = getContext().getPackageManager();
         try {
             packageManager.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            // Throw it far away
             return false;
+        } catch (PackageManager.NameNotFoundException e) {
+            return true;
         }
     }
 }

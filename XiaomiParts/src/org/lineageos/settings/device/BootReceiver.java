@@ -24,15 +24,24 @@ import android.preference.PreferenceManager;
 
 public class BootReceiver extends BroadcastReceiver {
 
-    private final String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness";
-    private final String TORCH_2_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_1/max_brightness";
+    private final String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/spmi-0/" +
+            "spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness";
+    private final String TORCH_2_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/spmi-0/" +
+            "spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_1/max_brightness";
     private final String VIBRATION_STRENGTH_PATH = "/sys/devices/virtual/timed_output/vibrator/vtg_level";
 
     public void onReceive(Context context, Intent intent) {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        FileUtils.setValue(TORCH_1_BRIGHTNESS_PATH, sharedPrefs.getInt(DeviceSettings.TORCH_BRIGHTNESS_KEY, 100));
-        FileUtils.setValue(TORCH_2_BRIGHTNESS_PATH, sharedPrefs.getInt(DeviceSettings.TORCH_BRIGHTNESS_KEY, 100));
-        FileUtils.setValue(VIBRATION_STRENGTH_PATH, sharedPrefs.getInt(DeviceSettings.VIBRATION_STRENGTH_KEY, 80) / 100.0 * (DeviceSettings.MAX_VIBRATION - DeviceSettings.MIN_VIBRATION) + DeviceSettings.MIN_VIBRATION);
+        FileUtils.setValue(TORCH_1_BRIGHTNESS_PATH, sharedPrefs.getInt(
+                DeviceSettings.PREF_TORCH_BRIGHTNESS, 100));
+        FileUtils.setValue(TORCH_2_BRIGHTNESS_PATH, sharedPrefs.getInt(
+                DeviceSettings.PREF_TORCH_BRIGHTNESS, 100));
+        FileUtils.setValue(VIBRATION_STRENGTH_PATH, sharedPrefs.getInt(
+                DeviceSettings.PREF_VIBRATION_STRENGTH, 80) / 100.0 *
+                (DeviceSettings.MAX_VIBRATION - DeviceSettings.MIN_VIBRATION) +
+                DeviceSettings.MIN_VIBRATION);
+
+        new DiracUtils(context).onBootCompleted();
     }
 }

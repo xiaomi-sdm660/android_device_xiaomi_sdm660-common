@@ -35,10 +35,8 @@ import java.util.Arrays;
 public class StartAction extends IntentService {
 
     private static final String[] CAMERA_PACKAGES = new String[]{"com.android.camera",
-            "com.android.camera2" , "com.google.android.GoogleCamera"};
+            "com.android.camera2", "com.google.android.GoogleCamera"};
 
-    private static ActivityManager sActivityManager;
-    private static SharedPreferences sSharedPreferences;
     private static StatusBarManager sStatusBarManager;
 
     public StartAction() {
@@ -47,19 +45,21 @@ public class StartAction extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        sActivityManager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-        sSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        ActivityManager activityManager =
+                (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this);
         sStatusBarManager = (StatusBarManager) getSystemService(STATUS_BAR_SERVICE);
 
-        ComponentName componentName = sActivityManager.getRunningTasks(1).get(0)
+        ComponentName componentName = activityManager.getRunningTasks(1).get(0)
                 .topActivity;
 
         boolean cameraActive = Arrays.asList(CAMERA_PACKAGES).contains(componentName.getPackageName());
-        boolean fpActionEnabled = sSharedPreferences.getBoolean(DeviceSettings.ENABLE_FPACTION_KEY,
+        boolean fpActionEnabled = sharedPreferences.getBoolean(DeviceSettings.PREF_ENABLE_FPACTION,
                 false);
-        boolean fpShutterEnabled = sSharedPreferences.getBoolean(DeviceSettings.FP_SHUTTER_KEY,
+        boolean fpShutterEnabled = sharedPreferences.getBoolean(DeviceSettings.PREF_FP_SHUTTER,
                 false);
-        String fpAction = sSharedPreferences.getString(DeviceSettings.FPACTION_KEY, "4");
+        String fpAction = sharedPreferences.getString(DeviceSettings.PREF_FPACTION, "4");
 
         if (fpShutterEnabled) {
             if (cameraActive) {

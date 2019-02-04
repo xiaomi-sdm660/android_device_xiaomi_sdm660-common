@@ -99,8 +99,8 @@
         <Preference
             android:key="device_doze"
             android:persistent="false"
-            android:title="@string/ambient_display_xiaomi"
-            android:summary="@string/advanced_doze_summary">
+            android:summary="@string/advanced_doze_summary"
+            android:title="@string/ambient_display_xiaomi">
             <intent
                 android:action="android.intent.action.MAIN"
                 android:targetClass="org.lineageos.settings.doze.DozeSettingsActivity"
@@ -120,6 +120,33 @@
             android:key="spectrum"
             android:summary="@string/spectrum_summary"
             android:title="@string/spectrum_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="audio"
+        android:title="@string/audio_title">
+
+        <SwitchPreference
+            android:key="dirac_enabled"
+            android:title="@string/dirac_title"
+            android:summary="@string/dirac_summary"/>
+
+        <ListPreference
+            android:key="dirac_headset_pref"
+            android:entries="@array/dirac_headset_pref_entries"
+            android:entryValues="@array/dirac_headset_pref_values"
+            android:defaultValue="0"
+            android:title="@string/dirac_headset_title"
+            android:summary="%s" />
+
+        <ListPreference
+            android:key="dirac_preset_pref"
+            android:entries="@array/dirac_preset_pref_entries"
+            android:entryValues="@array/dirac_preset_pref_values"
+            android:defaultValue="0,0,0,0,0,0,0"
+            android:title="@string/dirac_preset_title"
+            android:summary="%s" />
 
     </PreferenceCategory>
 </PreferenceScreen>

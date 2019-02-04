@@ -21,7 +21,6 @@
     <string name="camera_eis_title">Aktiviere EIS</string>
     <string name="display_title">Display</string>
     <string name="device_kcal_title">Displaykalibierung</string>
-    <string name="device_doze_title">Inaktivitätsdisplay</string>
     <string name="torch_title">Taschenlampe</string>
     <string name="torch_brightness_title">Helligkeit</string>
     <string name="vibration_strength_title">Stärke</string>
@@ -39,4 +38,57 @@
     <string name="fpaction_dialogTitle">Aktion</string>
     <string name="fpaction_summary">Aktion auswählen</string>
     <string name="fpaction_title">Fingerabdruckaktionen</string>
+    <string name="spectrum_stock">Standard</string>
+    <string name="spectrum_performance">Performance</string>
+    <string name="spectrum_battery">Energieeffizient</string>
+    <string name="spectrum_gaming">Gaming</string>
+    <string name="spectrum_balance">Balance</string>
+    <string name="spectrum_extreme_battery">Energiesparmodus</string>
+    <string name="vibration_title">Haptisches Feedback</string>
+    <string name="fpaction_expand_np">Benachrichtigungs Panel</string>
+    <string name="fpaction_expand_qs">Schnelleinstellungen</string>
+    <string name="fpaction_assistant">Assistent</string>
+    <string name="fpaction_home">Home</string>
+    <string name="fpaction_recent_apps">Anwendngsverlauf</string>
+
+    <!-- Dirac settings -->
+    <string name="dirac_title">Mi Klangverbesserung</string>
+    <string name="dirac_summary">Audioqualität optimieren</string>
+    <string name="dirac_headset_title">Kopfhörertyp auswählen</string>
+    <string name="dirac_preset_title">Vorgabe auswählen</string>
+    <!-- Dirac settings: Headset types -->
+    <string name="dirac_headset_default">Standard</string>
+    <string name="dirac_headset_earbuds">Mi Ohrhörer</string>
+    <string name="dirac_headset_in_ear_2013">Mi In Ear (2013)</string>
+    <string name="dirac_headset_piston_1">Mi Piston 1</string>
+    <string name="dirac_headset_general">Allgemeine Earbuds</string>
+    <string name="dirac_headset_general_inear">Allgemeine In Ear</string>
+    <string name="dirac_headset_piston_basic">Basis Edition</string>
+    <string name="dirac_headset_piston_2">Mi Piston 2</string>
+    <string name="dirac_headset_piston_standard">Standard Edition</string>
+    <string name="dirac_headset_headphone">Mi Kopfhörer</string>
+    <string name="dirac_headset_piston_youth">Jugend Edition</string>
+    <string name="dirac_headset_piston_color">Farbige Edition</string>
+    <string name="dirac_headset_in_ear">Mi In Ear</string>
+    <string name="dirac_headset_capsule">Mi Capsule</string>
+    <string name="dirac_headset_in_ear_pro">Mi In Ear Pro</string>
+    <string name="dirac_headset_comfort">Mi Komfort</string>
+    <string name="dirac_headset_reduction_noise">Mi-Geräuschunterdrückung (Typ-C)</string>
+    <string name="dirac_headset_cancelling">Mi-Geräuschunterdrückung (3.5 mm)</string>
+    <string name="dirac_headset_half_in_ear">Mi Half In Ear</string>
+    <string name="dirac_headset_in_ear2">Mi In Ear 2</string>
+    <string name="dirac_headset_earphone_basic">Mi Earphones Basic</string>
+    <string name="dirac_headset_earphone">Mi Earphones</string>
+    <!-- Dirac settings: Equalizer presets -->
+    <string name="dirac_preset_default">Standard</string>
+    <string name="dirac_preset_rock">Rock</string>
+    <string name="dirac_preset_jazz">Jazz</string>
+    <string name="dirac_preset_pop">Pop</string>
+    <string name="dirac_preset_classical">Klassisch</string>
+    <string name="dirac_preset_hiphop">Hip Hop</string>
+    <string name="dirac_preset_blues">Blues</string>
+    <string name="dirac_preset_electronic">Elektronik</string>
+    <string name="dirac_preset_country">Country</string>
+    <string name="dirac_preset_dance">Dance</string>
+    <string name="dirac_preset_metal">Metal</string>
 </resources>
