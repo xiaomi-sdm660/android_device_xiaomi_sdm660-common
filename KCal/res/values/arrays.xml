@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preset_enteries">
+        <item>@string/preset_default</item>
+    </array>
+
+    <array name="preset_values">
+        <!-- R, G, B, minimum, saturation, value, contrast, hue -->
+        <item>255 255 255 35 35 127 127 0</item>
+    </array>
+</resources>
