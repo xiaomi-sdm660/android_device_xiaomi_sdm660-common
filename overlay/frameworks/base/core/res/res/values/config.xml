@@ -430,4 +430,7 @@
 		<string-array name="config_deviceKeyHandlerClasses" translatable="false">
 			<item>org.lineageos.settings.device.KeyHandler</item>
 		</string-array>
+		
+		<!-- Show HD VoLTE Icon -->
+		<bool name="config_display_hd_volte">true</bool>
 </resources>
