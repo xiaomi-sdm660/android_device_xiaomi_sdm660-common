@@ -18,4 +18,11 @@
     <string name="value">Farbwert</string>
     <string name="hue">Farbton</string>
     <string name="kcal_reset">Zurücksetzen</string>
+    <string name="presets_dialog_title">Voreinstellung auswählen</string>
+    <string name="preset_default">Standard</string>
+    <string name="preset_deep_black_white">Tiefes Schwarz und Weiß</string>
+    <string name="preset_extreme_amoled">Extremes AMOLED</string>
+    <string name="preset_warm_amoled">Warmes AMOLED</string>
+    <string name="preset_cool_amoled">Kühles AMOLED</string>
+    <string name="preset_deep_natural">Naturfarben</string>
 </resources>
