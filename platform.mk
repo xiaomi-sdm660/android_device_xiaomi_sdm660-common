@@ -34,6 +34,12 @@ $(call inherit-product-if-exists, vendor/xiaomi/MiuiCamera/config.mk)
 # Overlays
 DEVICE_PACKAGE_OVERLAYS := device/xiaomi/sdm660-common/overlay
 
+# Build Fingerprint
+PRODUCT_BUILD_PROP_OVERRIDES += \
+		PRIVATE_BUILD_DESC="taimen-user 9 PQ1A.190105.004 5148680 release-keys"
+
+BUILD_FINGERPRINT := google/taimen/taimen:9/PQ1A.190105.004/5148680:user/release-keys
+
 # Platform properties
 $(call inherit-product, $(PLATFORM_PATH)/platform_prop.mk)
 
@@ -456,9 +462,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	org.lineageos.keyhandler
 
-
 # Wi-Fi Display
 PRODUCT_BOOT_JARS += \
-    WfdCommon
+  WfdCommon
+
 PRODUCT_PACKAGES += \
-		     libnl
+	libnl
