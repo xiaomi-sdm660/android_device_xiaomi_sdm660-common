@@ -56,7 +56,7 @@ struct GnssMeasurement : public V2_0::IGnssMeasurement {
             bool enableFullTracking) override;
 
     // Methods from ::android::hardware::gnss::V2_0::IGnssMeasurement follow.
-    Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> setCallback_2_0(
+    Return<GnssMeasurement::GnssMeasurementStatus> setCallback_2_0(
             const sp<V2_0::IGnssMeasurementCallback>& callback,
             bool enableFullTracking) override;
  private:
@@ -73,6 +73,7 @@ struct GnssMeasurement : public V2_0::IGnssMeasurement {
     sp<GnssMeasurementDeathRecipient> mGnssMeasurementDeathRecipient = nullptr;
     sp<V1_0::IGnssMeasurementCallback> mGnssMeasurementCbIface = nullptr;
     sp<V1_1::IGnssMeasurementCallback> mGnssMeasurementCbIface_1_1 = nullptr;
+    sp<V2_0::IGnssMeasurementCallback> mGnssMeasurementCbIface_2_0 = nullptr;
     MeasurementAPIClient* mApi;
 };
 

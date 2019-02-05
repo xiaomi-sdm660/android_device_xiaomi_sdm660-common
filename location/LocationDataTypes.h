@@ -48,6 +48,8 @@
 #define GNSS_BUGREPORT_BDS_MIN  (1)
 #define GNSS_BUGREPORT_GAL_MIN  (1)
 
+#define GNSS_MAX_NAME_LENGTH    (8)
+
 typedef enum {
     LOCATION_ERROR_SUCCESS = 0,
     LOCATION_ERROR_GENERAL_FAILURE,
@@ -398,11 +400,30 @@ typedef enum {
 
 typedef uint16_t GnssMeasurementsAdrStateMask;
 typedef enum {
-    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_UNKNOWN         = 0,
-    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_VALID_BIT       = (1<<0),
-    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT       = (1<<1),
-    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT  = (1<<2),
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_UNKNOWN                 = 0,
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_VALID_BIT               = (1<<0),
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT               = (1<<1),
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT          = (1<<2),
+    GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_HALF_CYCLE_RESOLVED_BIT = (1<<3),
 } GnssMeasurementsAdrStateBits;
+
+typedef enum {
+    GNSS_MEASUREMENTS_CODE_TYPE_A       = 0,
+    GNSS_MEASUREMENTS_CODE_TYPE_B       = 1,
+    GNSS_MEASUREMENTS_CODE_TYPE_C       = 2,
+    GNSS_MEASUREMENTS_CODE_TYPE_I       = 3,
+    GNSS_MEASUREMENTS_CODE_TYPE_L       = 4,
+    GNSS_MEASUREMENTS_CODE_TYPE_M       = 5,
+    GNSS_MEASUREMENTS_CODE_TYPE_P       = 6,
+    GNSS_MEASUREMENTS_CODE_TYPE_Q       = 7,
+    GNSS_MEASUREMENTS_CODE_TYPE_S       = 8,
+    GNSS_MEASUREMENTS_CODE_TYPE_W       = 9,
+    GNSS_MEASUREMENTS_CODE_TYPE_X       = 10,
+    GNSS_MEASUREMENTS_CODE_TYPE_Y       = 11,
+    GNSS_MEASUREMENTS_CODE_TYPE_Z       = 12,
+    GNSS_MEASUREMENTS_CODE_TYPE_N       = 13,
+    GNSS_MEASUREMENTS_CODE_TYPE_OTHER   = 255,
+} GnssMeasurementsCodeType;
 
 typedef uint32_t GnssMeasurementsDataFlagsMask;
 typedef enum {
@@ -443,6 +464,9 @@ typedef enum {
     GNSS_MEASUREMENTS_STATE_GAL_E1C_2ND_CODE_LOCK_BIT = (1<<11),
     GNSS_MEASUREMENTS_STATE_GAL_E1B_PAGE_SYNC_BIT     = (1<<12),
     GNSS_MEASUREMENTS_STATE_SBAS_SYNC_BIT             = (1<<13),
+    GNSS_MEASUREMENTS_STATE_TOW_KNOWN_BIT             = (1<<14),
+    GNSS_MEASUREMENTS_STATE_GLO_TOD_KNOWN_BIT         = (1<<15),
+    GNSS_MEASUREMENTS_STATE_2ND_CODE_LOCK_BIT         = (1<<16),
 } GnssMeasurementsStateBits;
 
 typedef enum {
@@ -967,6 +991,8 @@ typedef struct {
     GnssMeasurementsMultipathIndicator multipathIndicator;
     double signalToNoiseRatioDb;
     double agcLevelDb;
+    GnssMeasurementsCodeType codeType;
+    char otherCodeTypeName[GNSS_MAX_NAME_LENGTH];
 } GnssMeasurementsData;
 
 typedef struct {

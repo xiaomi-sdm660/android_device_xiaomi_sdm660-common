@@ -309,6 +309,18 @@ static void convertGnssData_1_1(GnssMeasurementsNotification& in,
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_0);
+        if (in.measurements[i].adrStateMask & GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_VALID_BIT)
+            out.measurements[i].accumulatedDeltaRangeState |=
+            IGnssMeasurementCallback::GnssAccumulatedDeltaRangeState::ADR_STATE_VALID;
+        if (in.measurements[i].adrStateMask & GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_RESET_BIT)
+            out.measurements[i].accumulatedDeltaRangeState |=
+            IGnssMeasurementCallback::GnssAccumulatedDeltaRangeState::ADR_STATE_RESET;
+        if (in.measurements[i].adrStateMask & GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_CYCLE_SLIP_BIT)
+            out.measurements[i].accumulatedDeltaRangeState |=
+            IGnssMeasurementCallback::GnssAccumulatedDeltaRangeState::ADR_STATE_CYCLE_SLIP;
+        if (in.measurements[i].adrStateMask & GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_HALF_CYCLE_RESOLVED_BIT)
+            out.measurements[i].accumulatedDeltaRangeState |=
+            IGnssMeasurementCallback::GnssAccumulatedDeltaRangeState::ADR_STATE_HALF_CYCLE_RESOLVED;
     }
     convertGnssClock(in.clock, out.clock);
 }

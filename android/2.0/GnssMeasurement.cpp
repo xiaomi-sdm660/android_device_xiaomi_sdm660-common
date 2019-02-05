@@ -52,10 +52,10 @@ GnssMeasurement::~GnssMeasurement() {
 }
 
 // Methods from ::android::hardware::gnss::V1_0::IGnssMeasurement follow.
-Return<IGnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback(
+Return<GnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback(
         const sp<V1_0::IGnssMeasurementCallback>& callback)  {
 
-    Return<IGnssMeasurement::GnssMeasurementStatus> ret =
+    Return<GnssMeasurement::GnssMeasurementStatus> ret =
         IGnssMeasurement::GnssMeasurementStatus::ERROR_GENERIC;
     if (mGnssMeasurementCbIface != nullptr) {
         LOC_LOGE("%s]: GnssMeasurementCallback is already set", __FUNCTION__);
@@ -100,7 +100,7 @@ Return<void> GnssMeasurement::close()  {
 Return<GnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback_1_1(
         const sp<V1_1::IGnssMeasurementCallback>& callback, bool enableFullTracking) {
 
-    Return<IGnssMeasurement::GnssMeasurementStatus> ret =
+    Return<GnssMeasurement::GnssMeasurementStatus> ret =
         IGnssMeasurement::GnssMeasurementStatus::ERROR_GENERIC;
     if (mGnssMeasurementCbIface_1_1 != nullptr) {
         LOC_LOGE("%s]: GnssMeasurementCallback is already set", __FUNCTION__);
@@ -128,7 +128,30 @@ Return<GnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback_1_1(
 Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback_2_0(
         const sp<V2_0::IGnssMeasurementCallback>& callback,
         bool enableFullTracking) {
-    return V1_0::IGnssMeasurement::GnssMeasurementStatus::SUCCESS;
+
+    Return<GnssMeasurement::GnssMeasurementStatus> ret =
+        IGnssMeasurement::GnssMeasurementStatus::ERROR_GENERIC;
+    if (mGnssMeasurementCbIface_2_0 != nullptr) {
+        LOC_LOGE("%s]: GnssMeasurementCallback is already set", __FUNCTION__);
+        return IGnssMeasurement::GnssMeasurementStatus::ERROR_ALREADY_INIT;
+    }
+
+    if (callback == nullptr) {
+        LOC_LOGE("%s]: callback is nullptr", __FUNCTION__);
+        return ret;
+    }
+    if (nullptr == mApi) {
+        LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
+        return ret;
+    }
+
+    mGnssMeasurementCbIface_2_0 = callback;
+    mGnssMeasurementCbIface_2_0->linkToDeath(mGnssMeasurementDeathRecipient, 0);
+
+    GnssPowerMode powerMode = enableFullTracking ?
+        GNSS_POWER_MODE_M1 : GNSS_POWER_MODE_M2;
+
+    return mApi->measurementSetCallback_2_0(callback, powerMode);
 }
 
 }  // namespace implementation

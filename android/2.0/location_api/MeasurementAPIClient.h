@@ -60,6 +60,10 @@ public:
             const sp<V1_1::IGnssMeasurementCallback>& callback,
             GnssPowerMode powerMode = GNSS_POWER_MODE_INVALID,
             uint32_t timeBetweenMeasurement = GPS_DEFAULT_FIX_INTERVAL_MS);
+    Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> measurementSetCallback_2_0(
+            const sp<V2_0::IGnssMeasurementCallback>& callback,
+            GnssPowerMode powerMode = GNSS_POWER_MODE_INVALID,
+            uint32_t timeBetweenMeasurement = GPS_DEFAULT_FIX_INTERVAL_MS);
     void measurementClose();
     Return<IGnssMeasurement::GnssMeasurementStatus> startTracking(
             GnssPowerMode powerMode = GNSS_POWER_MODE_INVALID,
@@ -72,6 +76,7 @@ private:
     std::mutex mMutex;
     sp<V1_0::IGnssMeasurementCallback> mGnssMeasurementCbIface;
     sp<V1_1::IGnssMeasurementCallback> mGnssMeasurementCbIface_1_1;
+    sp<V2_0::IGnssMeasurementCallback> mGnssMeasurementCbIface_2_0;
 
     bool mTracking;
 };
