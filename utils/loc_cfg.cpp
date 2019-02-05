@@ -465,14 +465,9 @@ void loc_read_conf(const char* conf_file_name, const loc_param_s_type* config_ta
 #define LOC_FEATURE_MASK_GTP_WIFI_PREMIUM          0X02
 #define LOC_FEATURE_MASK_GTP_CELL_BASIC            0X04
 #define LOC_FEATURE_MASK_GTP_CELL_PREMIUM          0X08
-#define LOC_FEATURE_MASK_GTP_AP_CELL_BASIC         LOC_FEATURE_MASK_GTP_CELL_BASIC
-#define LOC_FEATURE_MASK_GTP_AP_CELL_PREMIUM       LOC_FEATURE_MASK_GTP_CELL_PREMIUM
 #define LOC_FEATURE_MASK_SAP_BASIC                 0x40
 #define LOC_FEATURE_MASK_SAP_PREMIUM               0X80
-#define LOC_FEATURE_MASK_GTP_WAA_BASIC             0X100
-#define LOC_FEATURE_MASK_GTP_WAA_PREMIUM           0x200
 #define LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC      0X400
-#define LOC_FEATURE_MASK_GTP_MODEM_CELL_PREMIUM    0X800
 #define LOC_FEATURE_MASK_ODCPI                     0x1000
 #define LOC_FEATURE_MASK_FREE_WIFI_SCAN_INJECT     0x2000
 #define LOC_FEATURE_MASK_SUPL_WIFI                 0x4000
@@ -572,8 +567,6 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     char config_mask = 0;
     unsigned char proc_list_length=0;
     int gtp_cell_ap_enabled = 0;
-    char arg_gtp_waa[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
-    char arg_gtp_ap_cell[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
     char arg_gtp_modem_cell[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
     char arg_gtp_wifi[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
     char arg_sap[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
@@ -589,8 +582,6 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     UTIL_READ_CONF(LOC_PATH_GPS_CONF, gps_conf_parameter_table);
 
     //Form argument strings
-    strlcat(arg_gtp_waa, LOC_FEATURE_GTP_WAA, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
-    strlcat(arg_gtp_ap_cell, LOC_FEATURE_GTP_AP_CELL, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
     strlcat(arg_gtp_modem_cell, LOC_FEATURE_GTP_MODEM_CELL, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
     strlcat(arg_gtp_wifi, LOC_FEATURE_GTP_WIFI, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
     strlcat(arg_sap, LOC_FEATURE_SAP, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
@@ -621,9 +612,6 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
         LOC_LOGE("%s:%d]: Unrecognized value for GTP MODE Mode."\
                  " Setting GTP WIFI to default mode: DISABLED", __func__, __LINE__);
     }
-
-    //Set service mask for GTP_WAA
-    LOC_LOGD("%s:%d]: GTP WAA DISABLED", __func__, __LINE__);
 
     //Set service mask for SAP
     if(strcmp(conf.feature_sap, "PREMIUM") == 0) {
@@ -931,78 +919,18 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
                     }
                     if(conf.loc_feature_mask &
                        (LOC_FEATURE_MASK_GTP_CELL_BASIC | LOC_FEATURE_MASK_GTP_CELL_PREMIUM )) {
-                        if(loc_service_mask & LOC_FEATURE_MASK_GTP_AP_CELL_BASIC){
-                            strlcpy(child_proc[j].args[i++], arg_gtp_ap_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_basic,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_gtp_modem_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_disabled,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
-                        else if(loc_service_mask & LOC_FEATURE_MASK_GTP_AP_CELL_PREMIUM){
-                            strlcpy(child_proc[j].args[i++], arg_gtp_ap_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_premium,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_gtp_modem_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_disabled,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
-                        else if(loc_service_mask & LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC) {
+                        if(loc_service_mask & LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC) {
                             strlcpy(child_proc[j].args[i++], arg_gtp_modem_cell,
                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
                             strlcpy(child_proc[j].args[i++], arg_basic,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_gtp_ap_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_disabled,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
-                        else if(loc_service_mask & LOC_FEATURE_MASK_GTP_MODEM_CELL_PREMIUM) {
-                            strlcpy(child_proc[j].args[i++], arg_gtp_modem_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_premium,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_gtp_ap_cell,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_disabled,
                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
                         }
                         else {
-                             strlcpy(child_proc[j].args[i++], arg_gtp_ap_cell,
-                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                             strlcpy(child_proc[j].args[i++], arg_disabled,
-                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
                              strlcpy(child_proc[j].args[i++], arg_gtp_modem_cell,
                                      LOC_PROCESS_MAX_ARG_STR_LENGTH);
                              strlcpy(child_proc[j].args[i++], arg_disabled,
                                      LOC_PROCESS_MAX_ARG_STR_LENGTH);
                        }
-                    }
-                    if(conf.loc_feature_mask &
-                       (LOC_FEATURE_MASK_GTP_WAA_BASIC | LOC_FEATURE_MASK_GTP_WAA_PREMIUM)) {
-                        if(loc_service_mask & LOC_FEATURE_MASK_GTP_WAA_BASIC) {
-                            strlcpy(child_proc[j].args[i++], arg_gtp_waa,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_basic,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
-                        else if(loc_service_mask & LOC_FEATURE_MASK_GTP_WAA_PREMIUM) {
-                            strlcpy(child_proc[j].args[i++], arg_gtp_waa,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_premium,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
-                        else
-                        {
-                            strlcpy(child_proc[j].args[i++], arg_gtp_waa,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                            strlcpy(child_proc[j].args[i++], arg_disabled,
-                                    LOC_PROCESS_MAX_ARG_STR_LENGTH);
-                        }
                     }
                     if(conf.loc_feature_mask &
                        (LOC_FEATURE_MASK_SAP_BASIC | LOC_FEATURE_MASK_SAP_PREMIUM)) {
