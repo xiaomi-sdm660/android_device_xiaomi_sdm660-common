@@ -2,8 +2,8 @@
     <string name="advanced_settings">Display Color Calibration</string>
     <string name="advanced_settings_summary">Color Calibration</string>
     <string name="cat_calibration">Display Calibration</string>
-    <string name="set_on_boot">Set On Boot</string>
     <string name="kcal_enabled">On</string>
+    <string name="set_on_boot">Set On Boot</string>
     <string name="kcal_disabled">Off</string>
     <string name="greyscale_display">Greyscale Display</string>
     <string name="color_red">Red</string>
@@ -17,4 +17,8 @@
     <string name="cat_colormanagement">Color Settings</string>
     <string name="kcal_minimum">Minimum</string>
     <string name="kcal_reset">Reset</string>
+
+    <string name="presets_dialog_title">Select Preset</string>
+    <!-- Presets -->
+    <string name="preset_default">Default</string>
 </resources>
