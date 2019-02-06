@@ -21,8 +21,10 @@ import android.content.res.TypedArray;
 import android.support.v7.preference.*;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -40,6 +42,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
     private String mUnits = "";
     private String mDefaultText = "";
     private SeekBar mSeekBar;
+    private LinearLayout mStatusTextContainer;
     private TextView mTitle;
     private TextView mStatusText;
 
@@ -143,8 +146,26 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
             mStatusText.setText(String.valueOf(mCurrentValue) + mUnits);
         }
         mSeekBar.setProgress(mCurrentValue - mMin);
-        mTitle = (TextView) view.findViewById(android.R.id.title);
+        mStatusTextContainer = (LinearLayout) view.findViewById(R.id.text_container);
+        mStatusTextContainer.setClickable(true);
+        mStatusTextContainer.setOnClickListener((View v) -> {
+            EditTextDialog editText = new EditTextDialog();
+            editText.setMin(mMin);
+            editText.setMax(mMax);
+            editText.setDefaultValue(mCurrentValue);
+            editText.setDialogResult(new EditTextDialog.DialogResult() {
+                @Override
+                public void finish(int result) {
+                    if (result >= mMin && result <= mMax) {
+                        refresh(result);
+                    }
+                }
+            });
 
+            editText.show(KCalSettingsActivity.mKCalSettingsFragment.getActivity().getFragmentManager(), "KCal: EditValue");
+        });
+
+        mTitle = (TextView) view.findViewById(android.R.id.title);
         view.setDividerAllowedAbove(false);
         //view.setDividerAllowedBelow(false);
 
@@ -200,7 +221,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         persistInt(newValue);
     }
 
-    public void refresh(int newValue) {
+    void refresh(int newValue) {
         // this will trigger onProgressChanged and refresh everything
         mSeekBar.setProgress(newValue - mMin);
     }

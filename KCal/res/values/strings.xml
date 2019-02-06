@@ -17,6 +17,7 @@
     <string name="cat_colormanagement">Color Settings</string>
     <string name="kcal_minimum">Minimum</string>
     <string name="kcal_reset">Reset</string>
+    <string name="edit_value">Choose new Value</string>
 
     <string name="presets_dialog_title">Select Preset</string>
     <!-- Presets -->

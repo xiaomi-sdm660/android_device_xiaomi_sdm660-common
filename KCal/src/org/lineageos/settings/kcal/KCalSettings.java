@@ -138,7 +138,6 @@ public class KCalSettings extends PreferenceFragment implements
                 mHue.setValue((int) value);
                 break;
         }
-
         return true;
     }
 
@@ -166,21 +165,13 @@ public class KCalSettings extends PreferenceFragment implements
         int contrast = Integer.parseInt(values[6]);
         int hue = Integer.parseInt(values[7]);
 
-        mRed.setValue(red);
         mRed.refresh(red);
-        mGreen.setValue(green);
         mGreen.refresh(green);
-        mBlue.setValue(blue);
         mBlue.refresh(blue);
-        mMin.setValue(min);
         mMin.refresh(min);
-        mSaturation.setValue(sat);
         mSaturation.refresh(sat);
-        mValue.setValue(value);
         mValue.refresh(value);
-        mContrast.setValue(contrast);
         mContrast.refresh(contrast);
-        mHue.setValue(hue);
         mHue.refresh(hue);
     }
 
