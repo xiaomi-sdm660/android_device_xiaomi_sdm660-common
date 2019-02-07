@@ -3303,10 +3303,6 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 		else
 		{
 			flt_rule_entry.rule.action = IPA_PASS_TO_SRC_NAT;
-
-			/* NAT block will set the proper MUX ID in the metadata according to the relevant PDN */
-			if (IPACM_Iface::ipacmcfg->GetIPAVer() >= IPA_HW_v4_0)
-				flt_rule_entry.rule.set_metadata = true;
 		}
 	}
 	else if(iptype == IPA_IP_v6)
@@ -3327,6 +3323,16 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 					 sizeof(prop->prop[cnt].eq_attrib));
 		flt_rule_entry.rule.rt_tbl_idx = prop->prop[cnt].rt_tbl_idx;
 
+		if (iptype == IPA_IP_v4)
+		{
+			if ((ipa_if_cate != ODU_IF) || (IPACM_Wan::isWan_Bridge_Mode() == false))
+			{
+				/* NAT block will set the proper MUX ID in the metadata according to the relevant PDN */
+				if (IPACM_Iface::ipacmcfg->GetIPAVer() >= IPA_HW_v4_0)
+					flt_rule_entry.rule.set_metadata = true;
+			}
+		}
+
 		/* Handle XLAT configuration */
 		if ((iptype == IPA_IP_v4) && prop->prop[cnt].is_xlat_rule && (xlat_mux_id != 0))
 		{
@@ -3338,6 +3344,9 @@ int IPACM_Lan::handle_uplink_filter_rule(ipacm_ext_prop *prop, ipa_ip_type iptyp
 			flt_rule_entry.rule.eq_attrib.metadata_meq32.mask = 0x00FF0000;
 			IPACMDBG_H("xlat meta-data is modified for rule: %d has index %d with xlat_mux_id: %d\n",
 					cnt, index, xlat_mux_id);
+			/* disable metadata replacement for xlat rules */
+			if (IPACM_Iface::ipacmcfg->GetIPAVer() >= IPA_HW_v4_0)
+				flt_rule_entry.rule.set_metadata = false;
 		}
 
 #ifdef FEATURE_IPACM_HAL
