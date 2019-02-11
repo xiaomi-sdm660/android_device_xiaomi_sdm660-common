@@ -29,14 +29,12 @@
 
 #define BLINK           "blink"
 #define BRIGHTNESS      "brightness"
+#define MAX_BRIGHTNESS  "max_brightness"
 #define DUTY_PCTS       "duty_pcts"
 #define PAUSE_HI        "pause_hi"
 #define PAUSE_LO        "pause_lo"
 #define RAMP_STEP_MS    "ramp_step_ms"
 #define START_IDX       "start_idx"
-
-#define MAX_LED_BRIGHTNESS    255
-#define MAX_LCD_BRIGHTNESS    4095
 
 /*
  * 15 duty percent steps.
@@ -68,6 +66,25 @@ static void set(std::string path, std::string value) {
 
 static void set(std::string path, int value) {
     set(path, std::to_string(value));
+}
+
+static int get(std::string path) {
+    std::ifstream file(path);
+    int value;
+
+    if (!file.is_open()) {
+        ALOGW("failed to read from %s", path.c_str());
+        return 0;
+    }
+
+    file >> value;
+    return value;
+}
+
+static int getMaxBrightness(std::string path) {
+    int value = get(path);
+    ALOGW("Got max brightness %d", value);
+    return value;
 }
 
 static uint32_t getBrightness(const LightState& state) {
@@ -102,7 +119,7 @@ static inline uint32_t getScaledBrightness(const LightState& state, uint32_t max
 }
 
 static void handleBacklight(const LightState& state) {
-    uint32_t brightness = getScaledBrightness(state, MAX_LCD_BRIGHTNESS);
+    uint32_t brightness = getScaledBrightness(state, getMaxBrightness(LCD_LED MAX_BRIGHTNESS));
     set(LCD_LED BRIGHTNESS, brightness);
 }
 
@@ -122,7 +139,7 @@ static std::string getScaledRamp(uint32_t brightness) {
 }
 
 static void handleNotification(const LightState& state) {
-    uint32_t whiteBrightness = getScaledBrightness(state, MAX_LED_BRIGHTNESS);
+    uint32_t whiteBrightness = getScaledBrightness(state, getMaxBrightness(WHITE_LED MAX_BRIGHTNESS));
 
     /* Disable blinking */
     set(WHITE_LED BLINK, 0);
