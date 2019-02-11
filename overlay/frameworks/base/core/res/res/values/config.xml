@@ -558,6 +558,8 @@
       <item>"/apex/com.android.runtime/javalib/core-oj.jar"</item>
       <item>"/apex/com.android.runtime/javalib/core-libart.jar"</item>
       <item>"/apex/com.android.media/javalib/updatable-media.jar"</item>
+      <item>"/product/priv-app/SystemUIGoogle/SystemUIGoogle.apk"</item>
+      <item>"/product/priv-app/SystemUIGoogle/oat/arm64/SystemUIGoogle.odex"</item>
       <item>/system/lib64/libRScpp.so</item>
       <item>/system/lib64/libRS.so</item>
       <item>/system/lib64/libRS_internal.so</item>
@@ -580,7 +582,7 @@
         <item>"/system/priv-app/SystemUIGoogle/SystemUIGoogle.apk"</item>
         <item>"/system/lib64/libsurfaceflinger.so"</item>
     </string-array>
-    
+
     <!-- True if camera app should be pinned via Pinner Service -->
     <bool name="config_pinnerCameraApp">true</bool>
 
