@@ -38,6 +38,8 @@ namespace gnss {
 namespace V2_0 {
 namespace implementation {
 
+using ::android::hardware::gnss::visibility_control::V1_0::implementation::GnssVisibilityControl;
+
 static std::string getVersionString() {
     static std::string version;
     if (!version.empty())
@@ -238,6 +240,10 @@ Return<bool> Gnss::updateConfiguration(GnssConfig& gnssConfig) {
         if (gnssConfig.flags & GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT) {
             mPendingConfig.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
             mPendingConfig.blacklistedSvIds = gnssConfig.blacklistedSvIds;
+        }
+        if (gnssConfig.flags & GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT) {
+            mPendingConfig.flags |= GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT;
+            mPendingConfig.emergencyExtensionSeconds = gnssConfig.emergencyExtensionSeconds;
         }
     }
     return true;
@@ -483,8 +489,9 @@ Return<sp<::android::hardware::gnss::measurement_corrections::V1_0::IMeasurement
 }
 Return<sp<::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControl>>
         Gnss::getExtensionVisibilityControl() {
+    ENTRY_LOG_CALLFLOW();
     if (mVisibCtrl == nullptr) {
-        mVisibCtrl = new GnssVisibilityControl();
+        mVisibCtrl = new GnssVisibilityControl(this);
     }
     return mVisibCtrl;
 }

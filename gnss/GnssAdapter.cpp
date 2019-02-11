@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -88,7 +88,8 @@ GnssAdapter::GnssAdapter() :
     mServerUrl(":"),
     mXtraObserver(mSystemStatus->getOsObserver(), mMsgTask),
     mBlockCPIInfo{},
-    mLocSystemInfo{}
+    mLocSystemInfo{},
+    mNfwCb(NULL)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -658,7 +659,7 @@ GnssAdapter::setConfigCommand()
                         GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT |
                         GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
                 gnssConfigRequested.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
-                if (0 == adapter.getPowerVoteId()) {
+                if (0 == adapter.getAfwControlId() || NULL != adapter.mNfwCb) {
                     gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
                 }
 
@@ -910,6 +911,18 @@ std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldS
         }
         index++;
     }
+    if (gnssConfigRequested.flags &
+            GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT) {
+        if (gnssConfigNeedEngineUpdate.flags &
+                GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT) {
+            err = mLocApi->setEmergencyExtensionWindowSync(
+                    gnssConfigRequested.emergencyExtensionSeconds);
+            if (index < count) {
+                errsList[index] = err;
+            }
+        }
+        index++;
+    }
     return errsList;
 }
 
@@ -982,10 +995,10 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
                 GnssConfigGpsLock newGpsLock = gnssConfigRequested.gpsLock;
                 if (GNSS_CONFIG_GPS_LOCK_NONE == newGpsLock) {
-                    newGpsLock = GNSS_CONFIG_GPS_LOCK_MO_AND_NI;
+                    newGpsLock = GNSS_CONFIG_GPS_LOCK_MO;
                 }
                 if (newGpsLock == ContextBase::mGps_conf.GPS_LOCK ||
-                        0 != mAdapter.getPowerVoteId()) {
+                    0 != mAdapter.getAfwControlId()) {
                     gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
                 }
                 ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
@@ -1060,24 +1073,24 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                             ~(GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT);
                 }
                 index++;
-             }
-             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_EM_PDN_FOR_EM_SUPL_VALID_BIT) {
+            }
+            if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_EM_PDN_FOR_EM_SUPL_VALID_BIT) {
                 uint32_t newEP4ES = mAdapter.convertEP4ES(
                         gnssConfigRequested.emergencyPdnForEmergencySupl);
                 if (newEP4ES != ContextBase::mGps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL) {
                     ContextBase::mGps_conf.USE_EMERGENCY_PDN_FOR_EMERGENCY_SUPL = newEP4ES;
                 }
                 index++;
-             }
-             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_EM_SERVICES_BIT) {
+            }
+            if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_EM_SERVICES_BIT) {
                 uint32_t newSuplEs = mAdapter.convertSuplEs(
                         gnssConfigRequested.suplEmergencyServices);
                 if (newSuplEs != ContextBase::mGps_conf.SUPL_ES) {
                     ContextBase::mGps_conf.SUPL_ES = newSuplEs;
                 }
                 index++;
-             }
-             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_MODE_BIT) {
+            }
+            if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_MODE_BIT) {
                 uint32_t newSuplMode = mAdapter.convertSuplMode(gnssConfigRequested.suplModeMask);
                 if (newSuplMode != ContextBase::mGps_conf.SUPL_MODE) {
                     ContextBase::mGps_conf.SUPL_MODE = newSuplMode;
@@ -1297,6 +1310,12 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
                 }
                 if (index < mCount) {
                     errs[index++] = err;
+                }
+            }
+            if (mConfigMask & GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT) {
+                err = LOCATION_ERROR_NOT_SUPPORTED;
+                if (index < mCount) {
+                    errs[index++] = LOCATION_ERROR_NOT_SUPPORTED;
                 }
             }
 
@@ -2802,21 +2821,24 @@ GnssAdapter::enableCommand(LocationTechnologyType techType)
             mTechType(techType) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_SUCCESS;
-            uint32_t powerVoteId = mAdapter.getPowerVoteId();
+            uint32_t powerVoteId = mAdapter.getAfwControlId();
             if (mTechType != LOCATION_TECHNOLOGY_TYPE_GNSS) {
                 err = LOCATION_ERROR_INVALID_PARAMETER;
             } else if (powerVoteId > 0) {
                 err = LOCATION_ERROR_ALREADY_STARTED;
             } else {
                 mContext.modemPowerVote(true);
-                mAdapter.setPowerVoteId(mSessionId);
+                mAdapter.setAfwControlId(mSessionId);
 
-                mApi.sendMsg(new LocApiMsg([&mApi = mApi] () {
-                    mApi.setGpsLockSync(GNSS_CONFIG_GPS_LOCK_NONE);
-               }));
-
-                mAdapter.mXtraObserver.updateLockStatus(
-                        GNSS_CONFIG_GPS_LOCK_NONE);
+                GnssConfigGpsLock gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
+                if (NULL != mAdapter.mNfwCb) {
+                    ContextBase::mGps_conf.GPS_LOCK &= GNSS_CONFIG_GPS_LOCK_NI;
+                    gpsLock = ContextBase::mGps_conf.GPS_LOCK;
+                }
+                mApi.sendMsg(new LocApiMsg([&mApi = mApi, gpsLock]() {
+                    mApi.setGpsLockSync(gpsLock);
+                }));
+                mAdapter.mXtraObserver.updateLockStatus(gpsLock);
             }
             mAdapter.reportResponse(err, mSessionId);
         }
@@ -2852,15 +2874,18 @@ GnssAdapter::disableCommand(uint32_t id)
             mSessionId(sessionId) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_SUCCESS;
-            uint32_t powerVoteId = mAdapter.getPowerVoteId();
+            uint32_t powerVoteId = mAdapter.getAfwControlId();
             if (powerVoteId != mSessionId) {
                 err = LOCATION_ERROR_ID_UNKNOWN;
             } else {
                 mContext.modemPowerVote(false);
-                mAdapter.setPowerVoteId(0);
+                mAdapter.setAfwControlId(0);
 
-                GnssConfigGpsLock gpsLock =
-                    ContextBase::mGps_conf.GPS_LOCK;
+                if (NULL != mAdapter.mNfwCb) {
+                    /* We need to disable MO (AFW) */
+                    ContextBase::mGps_conf.GPS_LOCK |= GNSS_CONFIG_GPS_LOCK_MO;
+                }
+                GnssConfigGpsLock gpsLock = ContextBase::mGps_conf.GPS_LOCK;
                 mApi.sendMsg(new LocApiMsg([&mApi = mApi,gpsLock] () {
                     mApi.setGpsLockSync(gpsLock);
                 }));
@@ -3824,6 +3849,52 @@ void GnssAdapter::initAgpsCommand(const AgpsCbInfo& cbInfo){
     sendMsg(new AgpsMsgInit(cbInfo, *this));
 }
 
+void GnssAdapter::initNfwCommand(const NfwCbInfo& cbInfo) {
+    LOC_LOGi("GnssAdapter::initNfwCommand");
+
+    /* Message to initialize NFW */
+    struct MsgInitNfw : public LocMsg {
+        const NfwCbInfo mCbInfo;
+        GnssAdapter& mAdapter;
+
+        inline MsgInitNfw(const NfwCbInfo& cbInfo,
+            GnssAdapter& adapter) :
+            LocMsg(), mCbInfo(cbInfo), mAdapter(adapter) {
+            LOC_LOGv("MsgInitNfw");
+        }
+
+        inline virtual void proc() const {
+            LOC_LOGv("MsgInitNfw::proc()");
+            mAdapter.initNfw(mCbInfo);
+        }
+    };
+
+    /* Send message to initialize NFW */
+    sendMsg(new MsgInitNfw(cbInfo, *this));
+}
+
+void GnssAdapter::reportNfwNotificationEvent(GnssNfwNotification& notification) {
+    LOC_LOGi("GnssAdapter::reportNfwNotificationEvent");
+
+    struct MsgReportNfwNotification : public LocMsg {
+        const GnssNfwNotification mNotification;
+        GnssAdapter& mAdapter;
+
+        inline MsgReportNfwNotification(const GnssNfwNotification& notification,
+            GnssAdapter& adapter) :
+            LocMsg(), mNotification(notification), mAdapter(adapter) {
+            LOC_LOGv("MsgReportNfwNotification");
+        }
+
+        inline virtual void proc() const {
+            LOC_LOGv("MsgReportNfwNotification::proc()");
+            mAdapter.reportNfwNotification(mNotification);
+        }
+    };
+
+    sendMsg(new MsgReportNfwNotification(notification, *this));
+}
+
 /* GnssAdapter::requestATL
  * Method triggered in QMI thread as part of handling below message:
  * eQMI_LOC_SERVER_REQUEST_OPEN_V02
@@ -4403,6 +4474,37 @@ GnssAdapter::getGnssEnergyConsumedCommand(GnssEnergyConsumedCallback energyConsu
     };
 
     sendMsg(new MsgGetGnssEnergyConsumed(*this, *mLocApi, energyConsumedCb));
+}
+
+void
+GnssAdapter::nfwControlCommand(bool enable) {
+    struct MsgenableNfwLocationAccess : public LocMsg {
+        GnssAdapter& mAdapter;
+        LocApiBase& mApi;
+        bool mEnable;
+        inline MsgenableNfwLocationAccess(GnssAdapter& adapter, LocApiBase& api,
+            bool enable) :
+            LocMsg(),
+            mAdapter(adapter),
+            mApi(api),
+            mEnable(enable) {}
+        inline virtual void proc() const {
+            GnssConfigGpsLock gpsLock;
+
+            gpsLock = ContextBase::mGps_conf.GPS_LOCK;
+            if (mEnable) {
+                gpsLock &= ~GNSS_CONFIG_GPS_LOCK_NI;
+            } else {
+                gpsLock |= GNSS_CONFIG_GPS_LOCK_NI;
+            }
+            ContextBase::mGps_conf.GPS_LOCK = gpsLock;
+            mApi.sendMsg(new LocApiMsg([&mApi = mApi, gpsLock]() {
+                mApi.setGpsLockSync((GnssConfigGpsLock)gpsLock);
+            }));
+        }
+    };
+
+    sendMsg(new MsgenableNfwLocationAccess(*this, *mLocApi, enable));
 }
 
 /* ==== Eng Hub Proxy ================================================================= */

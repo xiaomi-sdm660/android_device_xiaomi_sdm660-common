@@ -55,7 +55,6 @@ using ::android::hardware::gnss::V1_0::GnssLocation;
 using ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections;
 using ::android::hardware::gnss::measurement_corrections::V1_0::implementation::MeasurementCorrections;
 using ::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControl;
-using ::android::hardware::gnss::visibility_control::V1_0::implementation::GnssVisibilityControl;
 
 struct Gnss : public IGnss {
     Gnss();
@@ -129,7 +128,6 @@ struct Gnss : public IGnss {
      */
     Return<sp<::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControl>>
             getExtensionVisibilityControl() override;
-
 
 
     // These methods are not part of the IGnss base class.

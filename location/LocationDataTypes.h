@@ -306,6 +306,7 @@ typedef enum {
     GNSS_CONFIG_FLAGS_SUPL_EM_SERVICES_BIT                 = (1<<8),
     GNSS_CONFIG_FLAGS_SUPL_MODE_BIT                        = (1<<9),
     GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT               = (1<<10),
+    GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT      = (1<<11),
 } GnssConfigFlagsBits;
 
 typedef enum {
@@ -1109,6 +1110,7 @@ struct GnssConfig{
     GnssConfigSuplEmergencyServices suplEmergencyServices;
     GnssConfigSuplModeMask suplModeMask; //bitwise OR of GnssConfigSuplModeBits
     std::vector<GnssSvIdSource> blacklistedSvIds;
+    uint32_t emergencyExtensionSeconds;
 
     inline bool equals(const GnssConfig& config) {
         if (flags == config.flags &&
@@ -1122,7 +1124,8 @@ struct GnssConfig{
                 emergencyPdnForEmergencySupl == config.emergencyPdnForEmergencySupl &&
                 suplEmergencyServices == config.suplEmergencyServices &&
                 suplModeMask == config.suplModeMask  &&
-                blacklistedSvIds == config.blacklistedSvIds) {
+                blacklistedSvIds == config.blacklistedSvIds &&
+                emergencyExtensionSeconds == config.emergencyExtensionSeconds) {
             return true;
         }
         return false;
