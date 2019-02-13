@@ -55,7 +55,6 @@ LocDualContext::mBgExclMask =
 const MsgTask* LocDualContext::mMsgTask = NULL;
 ContextBase* LocDualContext::mFgContext = NULL;
 ContextBase* LocDualContext::mBgContext = NULL;
-ContextBase* LocDualContext::mInjectContext = NULL;
 // the name must be shorter than 15 chars
 const char* LocDualContext::mLocationHalName = "Loc_hal_worker";
 #ifndef USE_GLIB
@@ -91,11 +90,6 @@ ContextBase* LocDualContext::getLocFgContext(LocThread::tCreate tCreator,
         mFgContext = new LocDualContext(msgTask,
                                         mFgExclMask);
     }
-    if(NULL == mInjectContext) {
-        LOC_LOGD("%s:%d]: mInjectContext is FgContext", __func__, __LINE__);
-        mInjectContext = mFgContext;
-        injectFeatureConfig(mInjectContext);
-    }
     pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
 
     if (firstMsg) {
@@ -116,11 +110,6 @@ ContextBase* LocDualContext::getLocBgContext(LocThread::tCreate tCreator,
         mBgContext = new LocDualContext(msgTask,
                                         mBgExclMask);
     }
-    if(NULL == mInjectContext) {
-        LOC_LOGD("%s:%d]: mInjectContext is BgContext", __func__, __LINE__);
-        mInjectContext = mBgContext;
-        injectFeatureConfig(mInjectContext);
-    }
     pthread_mutex_unlock(&LocDualContext::mGetLocContextMutex);
 
     if (firstMsg) {
@@ -132,13 +121,9 @@ ContextBase* LocDualContext::getLocBgContext(LocThread::tCreate tCreator,
 
 void LocDualContext :: injectFeatureConfig(ContextBase *curContext)
 {
-    LOC_LOGD("%s:%d]: Enter", __func__, __LINE__);
-    if(curContext == mInjectContext) {
-        LOC_LOGD("%s:%d]: Calling LBSProxy (%p) to inject feature config",
-                 __func__, __LINE__, ((LocDualContext *)mInjectContext)->mLBSProxy);
-        ((LocDualContext *)mInjectContext)->mLBSProxy->injectFeatureConfig(curContext);
-    }
-    LOC_LOGD("%s:%d]: Exit", __func__, __LINE__);
+    LOC_LOGD("%s:%d]: Calling LBSProxy (%p) to inject feature config",
+             __func__, __LINE__, ((LocDualContext *)curContext)->mLBSProxy);
+    ((LocDualContext *)curContext)->mLBSProxy->injectFeatureConfig(curContext);
 }
 
 LocDualContext::LocDualContext(const MsgTask* msgTask,
