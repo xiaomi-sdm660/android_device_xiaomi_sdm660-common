@@ -42,6 +42,6 @@ public class BootReceiver extends BroadcastReceiver {
                 (DeviceSettings.MAX_VIBRATION - DeviceSettings.MIN_VIBRATION) +
                 DeviceSettings.MIN_VIBRATION);
 
-        new DiracUtils(context).onBootCompleted();
+        context.startService(new Intent(context, DiracService.class));
     }
 }

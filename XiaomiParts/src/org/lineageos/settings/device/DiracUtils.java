@@ -16,27 +16,11 @@
 
 package org.lineageos.settings.device;
 
-import android.content.Context;
-import android.media.session.MediaController;
-import android.media.session.MediaSessionManager;
-import android.media.session.PlaybackState;
-import android.os.Handler;
-import android.os.SystemClock;
-import android.os.UserHandle;
-import android.view.KeyEvent;
-
-import java.util.List;
-
 final class DiracUtils {
 
     private DiracSound mDiracSound;
-    private MediaSessionManager mMediaSessionManager;
-    private Handler mHandler = new Handler();
-    private Context mContext;
 
-    DiracUtils(final Context context) {
-        mContext = context;
-        mMediaSessionManager = (MediaSessionManager) context.getSystemService(Context.MEDIA_SESSION_SERVICE);
+    DiracUtils() {
         mDiracSound = new DiracSound(0, 0);
     }
 
@@ -46,70 +30,9 @@ final class DiracUtils {
         setLevel(getLevel());
     }
 
-    private void refreshPlaybackIfNecessary() {
-        if (mMediaSessionManager == null) {
-            mMediaSessionManager = (MediaSessionManager) mContext.getSystemService(Context.MEDIA_SESSION_SERVICE);
-        }
-        final List<MediaController> sessions
-                = mMediaSessionManager.getActiveSessionsForUser(
-                null, UserHandle.USER_ALL);
-        for (MediaController aController : sessions) {
-            if (PlaybackState.STATE_PLAYING ==
-                    getMediaControllerPlaybackState(aController)) {
-                triggerPlayPause(aController);
-                break;
-            }
-        }
-    }
-
-    private void triggerPlayPause(MediaController controller) {
-        long when = SystemClock.uptimeMillis();
-        final KeyEvent evDownPause = new KeyEvent(when, when, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE, 0);
-        final KeyEvent evUpPause = KeyEvent.changeAction(evDownPause, KeyEvent.ACTION_UP);
-        final KeyEvent evDownPlay = new KeyEvent(when, when, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY, 0);
-        final KeyEvent evUpPlay = KeyEvent.changeAction(evDownPlay, KeyEvent.ACTION_UP);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                controller.dispatchMediaButtonEvent(evDownPause);
-            }
-        });
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                controller.dispatchMediaButtonEvent(evUpPause);
-            }
-        }, 20);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                controller.dispatchMediaButtonEvent(evDownPlay);
-            }
-        }, 1000);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                controller.dispatchMediaButtonEvent(evUpPlay);
-            }
-        }, 1020);
-    }
-
-    private int getMediaControllerPlaybackState(MediaController controller) {
-        if (controller != null) {
-            final PlaybackState playbackState = controller.getPlaybackState();
-            if (playbackState != null) {
-                return playbackState.getState();
-            }
-        }
-        return PlaybackState.STATE_NONE;
-    }
-
     void setEnabled(boolean enable) {
         mDiracSound.setEnabled(enable);
         mDiracSound.setMusic(enable ? 1 : 0);
-        if (enable) {
-            refreshPlaybackIfNecessary();
-        }
     }
 
     boolean isDiracEnabled() {
@@ -118,7 +41,6 @@ final class DiracUtils {
 
     void setLevel(String preset) {
         String[] level = preset.split("\\s*,\\s*");
-
         for (int band = 0; band <= level.length - 1; band++) {
             mDiracSound.setLevel(band, Float.valueOf(level[band]));
         }

@@ -40,7 +40,6 @@ public class DeviceSettingsActivity extends Activity {
         } else {
             mDeviceSettingsFragment = (DeviceSettings) fragment;
         }
-
     }
 
     @Override
@@ -54,5 +53,4 @@ public class DeviceSettingsActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 }
