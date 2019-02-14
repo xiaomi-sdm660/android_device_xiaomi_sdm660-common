@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2018 The LineageOS Project
+<!-- Copyright (C) 2019 The LineageOS Project
+
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
@@ -19,7 +20,10 @@
 
     <!-- Opens front camera using openLegacy() and forces api v1 -->
     <bool name="front_camera_open_legacy">false</bool>
-    
+
     <!-- Enable support for camera api v2 -->
     <bool name="support_camera_api_v2">true</bool>
+
+    <!-- Enable support for bokeh mode -->
+    <bool name="support_bokeh_mode">true</bool>
 </resources>
