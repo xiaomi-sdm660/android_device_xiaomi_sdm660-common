@@ -4,6 +4,8 @@ allow hal_power_default debugfs:file { read open getattr };
 # Allow writing to files in /proc/nvt_wake_gesture
 allow hal_power_default proc:dir search;
 allow hal_power_default proc:file rw_file_perms;
+allow hal_power_default sysfs_devfreq:dir search;
+allow hal_power_default sysfs_devfreq:file rw_file_perms;
 r_dir_file(hal_power_default, sysfs_graphics)
 
 # To do powerhint on nodes defined in powerhint.json
