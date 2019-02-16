@@ -132,6 +132,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.data.df.ul_mode=5 \
     persist.data.netmgrd.qos.enable=true \
     persist.data.wda.enable=true \
+    persist.radio.aosp_usr_pref_sel=true \
     persist.radio.VT_CAM_INTERFACE=2 \
     persist.radio.data_con_rprt=1 \
     persist.radio.multisim.config=dsds \
