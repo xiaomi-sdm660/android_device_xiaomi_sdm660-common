@@ -198,6 +198,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.data.wda.enable=true \
 	persist.vendor.radio.apm_sim_not_pwdn=1 \
 	persist.vendor.radio.atfwd.start=true \
+	persist.radio.aosp_usr_pref_sel=true \
 	persist.radio.data_con_rprt=1 \
 	persist.rmnet.data.enable=true \
 	persist.vendor.radio.sib16_support=1 \
