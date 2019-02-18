@@ -139,6 +139,7 @@ PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.xiaomi_wayne
 
 PRODUCT_PACKAGES += \
+    IFAAService \
     org.ifaa.android.manager
 
 PRODUCT_BOOT_JARS += \
