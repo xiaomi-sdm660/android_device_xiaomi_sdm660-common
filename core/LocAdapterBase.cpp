@@ -191,4 +191,12 @@ DEFAULT_IMPL(false)
 bool LocAdapterBase::
     reportDeleteAidingDataEvent(GnssAidingData & /*aidingData*/)
 DEFAULT_IMPL(false)
+
+bool LocAdapterBase::
+    reportKlobucharIonoModelEvent(GnssKlobucharIonoModel& /*ionoModel*/)
+DEFAULT_IMPL(false)
+
+bool LocAdapterBase::
+    reportGnssAdditionalSystemInfoEvent(GnssAdditionalSystemInfo& /*additionalSystemInfo*/)
+DEFAULT_IMPL(false)
 } // namespace loc_core

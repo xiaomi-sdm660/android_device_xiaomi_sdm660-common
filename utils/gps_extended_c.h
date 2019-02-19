@@ -407,6 +407,13 @@ typedef uint32_t LocPosDataMask;
 /* Bitmask to specify whether Navigation data has Body pitch Unc*/
 #define LOC_NAV_DATA_HAS_PITCH_UNC ((LocPosDataMask)0x0200)
 
+typedef uint32_t GnssAdditionalSystemInfoMask;
+/* Bitmask to specify whether Tauc is valid */
+#define GNSS_ADDITIONAL_SYSTEMINFO_HAS_TAUC ((GnssAdditionalSystemInfoMask)0x0001)
+/* Bitmask to specify whether leapSec is valid */
+#define GNSS_ADDITIONAL_SYSTEMINFO_HAS_LEAP_SEC ((GnssAdditionalSystemInfoMask)0x0002)
+
+
 /** GPS PRN Range */
 #define GPS_SV_PRN_MIN      1
 #define GPS_SV_PRN_MAX      32
@@ -856,6 +863,7 @@ enum loc_api_adapter_event_index {
     LOC_API_ADAPTER_GNSS_SV_EPHEMERIS_REPORT,          // GNSS SV Ephemeris Report
     LOC_API_ADAPTER_LOC_SYSTEM_INFO,                   // Location system info event
     LOC_API_ADAPTER_GNSS_NHZ_MEASUREMENT_REPORT,       // GNSS SV nHz measurement report
+    LOC_API_ADAPTER_EVENT_REPORT_INFO,                 // Event report info
     LOC_API_ADAPTER_EVENT_MAX
 };
 
@@ -897,6 +905,7 @@ enum loc_api_adapter_event_index {
 #define LOC_API_ADAPTER_BIT_GNSS_SV_EPHEMERIS_REPORT         (1ULL<<LOC_API_ADAPTER_GNSS_SV_EPHEMERIS_REPORT)
 #define LOC_API_ADAPTER_BIT_LOC_SYSTEM_INFO                  (1ULL<<LOC_API_ADAPTER_LOC_SYSTEM_INFO)
 #define LOC_API_ADAPTER_BIT_GNSS_NHZ_MEASUREMENT             (1ULL<<LOC_API_ADAPTER_GNSS_NHZ_MEASUREMENT_REPORT)
+#define LOC_API_ADAPTER_BIT_EVENT_REPORT_INFO                (1ULL<<LOC_API_ADAPTER_EVENT_REPORT_INFO)
 
 typedef uint64_t LOC_API_ADAPTER_EVENT_MASK_T;
 
@@ -1060,7 +1069,8 @@ typedef struct
     /**< System-1 to System-2 Time Bias uncertainty  \n
         - Units: msec \n
     */
-}Gnss_InterSystemBiasStructType;
+} Gnss_InterSystemBiasStructType;
+
 
 typedef struct {
 
@@ -1330,6 +1340,10 @@ typedef uint64_t GpsSvMeasHeaderFlags;
 #define GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME_EXT        0x00008000
 #define GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME_EXT        0x00010000
 #define GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME_EXT       0x00020000
+#define GNSS_SV_MEAS_HEADER_HAS_GPSL1L5_TIME_BIAS          0x00040000
+#define GNSS_SV_MEAS_HEADER_HAS_GALE1E5A_TIME_BIAS         0x00080000
+
+
 
 typedef struct
 {
@@ -1349,6 +1363,8 @@ typedef struct
     Gnss_InterSystemBiasStructType              bdsGloInterSystemBias;
     Gnss_InterSystemBiasStructType              galGloInterSystemBias;
     Gnss_InterSystemBiasStructType              galBdsInterSystemBias;
+    Gnss_InterSystemBiasStructType              gpsL1L5TimeBias;
+    Gnss_InterSystemBiasStructType              galE1E5aTimeBias;
 
     GnssSystemTimeStructType                    gpsSystemTime;
     GnssSystemTimeStructType                    galSystemTime;
@@ -1373,6 +1389,7 @@ typedef struct {
     GnssSvMeasurementHeader       svMeasSetHeader;
     uint32_t                      svMeasCount;
     Gnss_SVMeasurementStructType  svMeas[GNSS_LOC_SV_MEAS_LIST_MAX_SIZE];
+
 } GnssSvMeasurementSet;
 
 typedef enum
@@ -1857,6 +1874,10 @@ typedef struct {
         Mandatory field */
     Gnss_LocSvSystemEnumType gnssConstellation;
 
+    /** GPS System Time of the ephemeris report */
+    bool isSystemTimeValid;
+    GnssSystemTimeStructType systemTime;
+
     union {
        /** GPS Ephemeris */
        GpsEphemerisResponse gpsEphemeris;
@@ -1870,6 +1891,73 @@ typedef struct {
        QzssEphemerisResponse qzssEphemeris;
     } ephInfo;
 } GnssSvEphemerisReport;
+
+typedef struct {
+    /** GPS System Time of the iono model report */
+    bool isSystemTimeValid;
+    GnssSystemTimeStructType systemTime;
+
+    /** Indicates GNSS Constellation Type */
+    Gnss_LocSvSystemEnumType gnssConstellation;
+
+    float alpha0;
+    /**<   Klobuchar Model Parameter Alpha 0.
+         - Type: float
+         - Unit: Seconds
+    */
+
+    float alpha1;
+    /**<   Klobuchar Model Parameter Alpha 1.
+         - Type: float
+         - Unit: Seconds / Semi-Circle
+    */
+
+    float alpha2;
+    /**<   Klobuchar Model Parameter Alpha 2.
+         - Type: float
+         - Unit: Seconds / Semi-Circle^2
+    */
+
+    float alpha3;
+    /**<   Klobuchar Model Parameter Alpha 3.
+         - Type: float
+         - Unit: Seconds / Semi-Circle^3
+    */
+
+    float beta0;
+    /**<   Klobuchar Model Parameter Beta 0.
+         - Type: float
+         - Unit: Seconds
+    */
+
+    float beta1;
+    /**<   Klobuchar Model Parameter Beta 1.
+         - Type: float
+         - Unit: Seconds / Semi-Circle
+    */
+
+    float beta2;
+    /**<   Klobuchar Model Parameter Beta 2.
+         - Type: float
+         - Unit: Seconds / Semi-Circle^2
+    */
+
+    float beta3;
+    /**<   Klobuchar Model Parameter Beta 3.
+         - Type: float
+         - Unit: Seconds / Semi-Circle^3
+    */
+} GnssKlobucharIonoModel;
+
+typedef struct {
+        /** GPS System Time of the report */
+    bool isSystemTimeValid;
+    GnssSystemTimeStructType systemTime;
+
+    GnssAdditionalSystemInfoMask validityMask;
+    double tauC;
+    int8_t leapSec;
+} GnssAdditionalSystemInfo;
 
 /* Various Short Range Node Technology type*/
 typedef enum {

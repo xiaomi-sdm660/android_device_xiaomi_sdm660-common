@@ -90,6 +90,17 @@ public:
         (void) systemInfo;
         return false;
     }
+
+    inline virtual bool gnssReportKlobucharIonoModel(const GnssKlobucharIonoModel& ionoModel) {
+        (void) ionoModel;
+        return false;
+    }
+
+    inline virtual bool gnssReportAdditionalSystemInfo(
+            const GnssAdditionalSystemInfo& additionalSystemInfo) {
+        (void) additionalSystemInfo;
+        return false;
+    }
 };
 
 typedef std::function<void(const UlpLocation& ulpLocation,
