@@ -83,4 +83,9 @@ LOCAL_SHARED_LIBRARIES += \
     android.hardware.gnss@1.1 \
 
 LOCAL_CFLAGS += $(GNSS_CFLAGS)
+
+ifneq ($(LOC_HIDL_VERSION),)
+LOCAL_CFLAGS += -DLOC_HIDL_VERSION='"$(LOC_HIDL_VERSION)"'
+endif
+
 include $(BUILD_EXECUTABLE)
