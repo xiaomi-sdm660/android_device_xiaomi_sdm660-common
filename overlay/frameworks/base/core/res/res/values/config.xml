@@ -430,7 +430,11 @@
 		<string-array name="config_deviceKeyHandlerClasses" translatable="false">
 			<item>org.lineageos.settings.device.KeyHandler</item>
 		</string-array>
-		
+
 		<!-- Show HD VoLTE Icon -->
 		<bool name="config_display_hd_volte">true</bool>
+
+    <!-- Whether device needs to wait for Qualcomm MPCTL service to start
+         before setting power profiles on boot. -->
+    <bool name="config_waitForMpctlOnBoot">true</bool>
 </resources>
