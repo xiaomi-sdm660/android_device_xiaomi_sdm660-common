@@ -430,6 +430,8 @@ public:
             GnssSvId initialSvId, GnssSvType svType);
 
     void injectLocationCommand(double latitude, double longitude, float accuracy);
+    void injectLocationExtCommand(const GnssLocationInfoNotification &locationInfo);
+
     void injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty);
     void blockCPICommand(double latitude, double longitude, float accuracy,
                          int blockDurationMsec, double latLonDiffThreshold);

@@ -1820,6 +1820,33 @@ GnssAdapter::injectLocationCommand(double latitude, double longitude, float accu
 }
 
 void
+GnssAdapter::injectLocationExtCommand(const GnssLocationInfoNotification &locationInfo)
+{
+    LOC_LOGd("latitude %8.4f longitude %8.4f accuracy %8.4f, tech mask 0x%x",
+             locationInfo.location.latitude, locationInfo.location.longitude,
+             locationInfo.location.accuracy, locationInfo.location.techMask);
+
+    struct MsgInjectLocationExt : public LocMsg {
+        LocApiBase& mApi;
+        ContextBase& mContext;
+        GnssLocationInfoNotification mLocationInfo;
+        inline MsgInjectLocationExt(LocApiBase& api,
+                                    ContextBase& context,
+                                    GnssLocationInfoNotification locationInfo) :
+            LocMsg(),
+            mApi(api),
+            mContext(context),
+            mLocationInfo(locationInfo) {}
+        inline virtual void proc() const {
+            // false to indicate for none-ODCPI
+            mApi.injectPosition(mLocationInfo, false);
+        }
+    };
+
+    sendMsg(new MsgInjectLocationExt(*mLocApi, *mContext, locationInfo));
+}
+
+void
 GnssAdapter::injectTimeCommand(int64_t time, int64_t timeReference, int32_t uncertainty)
 {
     LOC_LOGD("%s]: time %lld timeReference %lld uncertainty %d",
