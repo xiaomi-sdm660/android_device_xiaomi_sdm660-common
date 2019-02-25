@@ -73,9 +73,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.camera.preview.ubwc=0 \
 	persist.vendor.qti.telephony.vt_cam_interface=1 \
-	vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi,org.cyanogenmod.snap \
-	camera.hal1.packagelist=com.whatsapp,com.android.camera,com.android.camera2
-
+	vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,org.lineage.snap \
+	vendor.camera.aux.packagelist2=com.google.android.GoogleCameraTele,com.google.android.GoogleCameraWide,com.bsgmod.camera \
+	vendor.camera.aux.packagelist3=com.android.systemui,com.huaqin.factory,com.mi.AutoTest,com.google.android.GoogleCamera \
+	camera.hal1.packagelist=com.skype.raider,com.whatsapp,com.android.camera,com.facebook.katana \
+	camera.hal1.packagelist2=,com.gbwhatsapp,com.gbinsta
+	
 # Charger
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.chg.max_volt_mv=9000
