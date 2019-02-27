@@ -69,15 +69,11 @@ protected:
     inline LocAdapterBase(const MsgTask* msgTask) :
         mIsMaster(false), mEvtMask(0), mContext(NULL), mLocApi(NULL),
         mLocAdapterProxyBase(NULL), mMsgTask(msgTask) {}
-    LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
-        ContextBase* context, bool isMaster,
-        LocAdapterProxyBase *adapterProxyBase = NULL);
 public:
     inline virtual ~LocAdapterBase() { mLocApi->removeAdapter(this); }
-    inline LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
-                          ContextBase* context,
-                          LocAdapterProxyBase *adapterProxyBase = NULL) :
-        LocAdapterBase(mask, context, false, adapterProxyBase) {}
+    LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
+                   ContextBase* context, bool isMaster = false,
+                   LocAdapterProxyBase *adapterProxyBase = NULL);
 
     inline LOC_API_ADAPTER_EVENT_MASK_T
         checkMask(LOC_API_ADAPTER_EVENT_MASK_T mask) const {
