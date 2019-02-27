@@ -1,0 +1,35 @@
+<resources>
+    <string name="advanced_settings">디스플레이 컬러 캘리브레이션</string>
+    <string name="advanced_settings_summary">컬러 캘리브레이션</string>
+    <string name="cat_calibration">디스플레이 캘리브레이션</string>
+    <string name="kcal_enabled">활성화</string>
+    <string name="set_on_boot">부팅 시 설정</string>
+    <string name="kcal_disabled">비활성화</string>
+    <string name="greyscale_display">흑백 디스플레이</string>
+    <string name="color_red">빨강</string>
+    <string name="color_green">초록</string>
+    <string name="color_blue">파랑</string>
+    <string name="color_minimum">최소값</string>
+    <string name="saturation">채도</string>
+    <string name="value">명도</string>
+    <string name="contrast">대비</string>
+    <string name="hue">색상</string>
+    <string name="cat_colormanagement">컬러 설정</string>
+    <string name="kcal_minimum">최소값</string>
+    <string name="kcal_reset">초기화</string>
+    <string name="edit_value">새 값 선택</string>
+
+    <string name="presets_dialog_title">프리셋 선택</string>
+    <!-- Presets -->
+    <string name="preset_default">기본값</string>
+    <string name="preset_version_1">버전 1</string>
+    <string name="preset_version_2">버전 2</string>
+    <string name="preset_version_3">버전 3</string>
+    <string name="preset_triluminous">트리루미너스</string>
+    <string name="preset_deep_black_white">깊은 흑백의 색감</string>
+    <string name="preset_deep_natural">진한 자연의 색감</string>
+    <string name="preset_cool_amoled">차가운 아몰레드 색감</string>
+    <string name="preset_extreme_amoled">진한 아몰레드 색감</string>
+    <string name="preset_warm_amoled">따뜻한 아몰레드 색감</string>
+    <string name="preset_hybrid_mamba">하이브리드 맘바</string>
+</resources>
