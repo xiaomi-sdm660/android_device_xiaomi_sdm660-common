@@ -16,6 +16,62 @@
      limitations under the License.
 -->
 <resources>
+    <string name="advanced_settings">샤오미 설정</string>
+    <string name="advanced_settings_summary">기타 설정</string>
+
+    <string name="camera_title">카메라</string>
+    <string name="camera_hal3_title">Camera2 API 활성화</string>
+    <string name="camera_eis_title">전자식 손떨림 방지 활성화</string>
+
+    <string name="display_title">디스플레이</string>
+
+    <!-- KCal -->
+    <string name="device_kcal_title">디스플레이 컬러 캘리브레이션</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display_xiaomi">Xiaomi Doze</string>
+    <string name="advanced_doze_summary">앰비언트 디스플레이</string>
+
+    <string name="torch_title">손전등</string>
+    <string name="torch_brightness_title">밝기</string>
+    <string name="vibration_title">햅틱 피드백</string>
+    <string name="vibration_strength_title">세기</string>
+
+    <!-- Spectrum Profiles -->
+    <string name="spectrum_profile_title">성능</string>
+    <string name="spectrum_title">성능 설정</string>
+    <string name="spectrum_summary">성능 설정 선택</string>
+    <string name="spectrum_dialogTitle">성능 설정 선택</string>
+
+    <!-- Values for Spectrum Presets -->
+    <string name="spectrum_stock">기본</string>
+    <string name="spectrum_performance">성능 향상</string>
+    <string name="spectrum_battery">배터리 향상</string>
+    <string name="spectrum_gaming">게이밍 최적화</string>
+    <string name="spectrum_balance">균형 설정</string>
+    <string name="spectrum_extreme_battery">배터리 매우 향상</string>
+
+    <!-- FP Actions -->
+    <string name="fp_title">지문 인식</string>
+    <string name="fpaction_enabled">사용자 설정 지문 인식 기능 활성화</string>
+    <string name="fpshutter_summary">카메라가 실행되어 있을 때 셔터 키를 동작합니다.</string>
+    <string name="fp_shutter">지문 셔터 키</string>
+    <string name="fpaction_dialogTitle">기능</string>
+    <string name="fpaction_summary">기능 선택</string>
+    <string name="fpaction_title">지문 인식 제스쳐 기능</string>
+
+    <!-- Values for FP Actions -->
+    <string name="fpaction_expand_np">알림 패널 확장</string>
+    <string name="fpaction_expand_qs">빠른 설정 확장</string>
+    <string name="fpaction_assistant">어시스턴트</string>
+    <string name="fpaction_home">홈</string>
+    <string name="fpaction_recent_apps">최근 앱 보기</string>
+    <string name="fpaction_media_next">미디어 다음 트랙</string>
+    <string name="fpaction_media_play_pause">미디어 재생/일시정지</string>
+    <string name="fpaction_media_previous">미디어 이전 트랙</string>
+
+    <string name="audio_title">오디오</string>
+
     <!-- Dirac settings -->
     <string name="dirac_title">Mi 사운드 강화</string>
     <string name="dirac_summary">음질 최적화</string>
