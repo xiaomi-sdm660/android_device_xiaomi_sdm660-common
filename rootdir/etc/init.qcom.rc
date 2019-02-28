@@ -138,6 +138,10 @@ on boot
     mkdir /mnt/vendor/persist/time 0770 system system
     mkdir /mnt/vendor/persist/secnvm 0770 system system
 
+    #create port-bridge log dir
+    mkdir /data/vendor/port_bridge 0770 radio radio
+    chmod 0770 /data/vendor/port_bridge
+
     #Create NETMGR daemon socket area
     mkdir /dev/socket/netmgr 0750 radio radio
 
@@ -540,6 +544,13 @@ service vendor.rmt_storage /vendor/bin/rmt_storage
 service vendor.tftp_server /vendor/bin/tftp_server
    class core
    user root
+
+service vendor.port-bridge /system/vendor/bin/port-bridge
+    class main
+    user radio
+    group radio system inet
+    disabled
+    oneshot
 
 service vendor.netmgrd /system/vendor/bin/netmgrd
     class main
