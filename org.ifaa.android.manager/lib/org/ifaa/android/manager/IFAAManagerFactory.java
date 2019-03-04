@@ -4,6 +4,6 @@ import android.content.Context;
 
 public class IFAAManagerFactory {
     public static IFAAManager getIFAAManager(Context context, int authType) {
-        return IFAAManagerImpl.getInstance();
+        return IFAAManagerImpl.getInstance(context);
     }
 }

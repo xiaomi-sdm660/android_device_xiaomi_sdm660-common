@@ -45,6 +45,7 @@ $(call inherit-product, $(PLATFORM_PATH)/platform_prop.mk)
 
 # Alipay
 PRODUCT_PACKAGES += \
+  IFAAService \
   org.ifaa.android.manager
 
 PRODUCT_BOOT_JARS += \
