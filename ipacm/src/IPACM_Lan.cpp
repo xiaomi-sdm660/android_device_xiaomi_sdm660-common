@@ -4492,6 +4492,17 @@ void IPACM_Lan::eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, u
 #ifdef FEATURE_L2TP
 	ipacm_event_data_all *evt_data_all;
 #endif
+
+
+/* not enable rndis for lan2lan HW-offload due to android limitation */
+#ifdef FEATURE_IPA_ANDROID
+	if(ipa_if_cate == LAN_IF)
+	{
+		IPACMDBG_H("This is LAN IF (%s):ipa_index (%d) skip lan2lan events for Android \n", IPACM_Iface::ipacmcfg->iface_table[ipa_if_num].iface_name, ipa_if_num);
+		return;
+	}
+#endif
+
 	if(ipv6_addr)
 	{
 		IPACMDBG_H("IPv6 addr: %08x:%08x:%08x:%08x \n", ipv6_addr[0],
