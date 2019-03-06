@@ -40,6 +40,7 @@ namespace loc_core {
 
 class ContextBase;
 struct LocApiResponse;
+template <typename> struct LocApiResponseData;
 
 int hexcode(char *hexstring, int string_size,
             const char *data, int data_size);
@@ -191,75 +192,50 @@ public:
     void reportGnssAdditionalSystemInfo(GnssAdditionalSystemInfo& additionalSystemInfo);
     void sendNfwNotification(GnssNfwNotification& notification);
 
-    // downward calls
-    // All below functions are to be defined by adapter specific modules:
-    // RPC, QMI, etc.  The default implementation is empty.
+    void geofenceBreach(size_t count, uint32_t* hwIds, Location& location,
+            GeofenceBreachType breachType, uint64_t timestamp);
+    void geofenceStatus(GeofenceStatusAvailable available);
+    void reportDBTPosition(UlpLocation &location,
+                           GpsLocationExtended &locationExtended,
+                           enum loc_sess_status status,
+                           LocPosTechMask loc_technology_mask);
+    void reportLocations(Location* locations, size_t count, BatchingMode batchingMode);
+    void reportCompletedTrips(uint32_t accumulated_distance);
+    void handleBatchStatusEvent(BatchingStatus batchStatus);
 
+    // downward calls
     virtual void* getSibling();
     virtual LocApiProxyBase* getLocApiProxy();
     virtual void startFix(const LocPosMode& fixCriteria, LocApiResponse* adapterResponse);
-    virtual void
-        stopFix(LocApiResponse* adapterResponse);
-    virtual void
-        deleteAidingData(const GnssAidingData& data, LocApiResponse* adapterResponse);
-
-    virtual void
-        injectPosition(double latitude, double longitude, float accuracy);
-
-    virtual void
-        injectPosition(const GnssLocationInfoNotification &locationInfo, bool onDemandCpi=false);
-
-    virtual void
-        injectPosition(const Location& location, bool onDemandCpi);
-    virtual void
-        setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
-
- //   // TODO:: called from izatapipds
-    virtual enum loc_api_adapter_err
-        setXtraData(char* data, int length);
-
-    virtual void
-        atlOpenStatus(int handle, int is_succ, char* apn, uint32_t apnLen,
-                      AGpsBearerType bear, LocAGpsType agpsType,
-                      LocApnTypeMask mask);
-    virtual void
-        atlCloseStatus(int handle, int is_succ);
-    virtual void
-        setPositionMode(const LocPosMode& posMode);
-    virtual LocationError
-        setServerSync(const char* url, int len, LocServerType type);
-    virtual LocationError
-        setServerSync(unsigned int ip, int port, LocServerType type);
-    virtual void
-        informNiResponse(GnssNiResponse userResponse, const void* passThroughData);
+    virtual void stopFix(LocApiResponse* adapterResponse);
+    virtual void deleteAidingData(const GnssAidingData& data, LocApiResponse* adapterResponse);
+    virtual void injectPosition(double latitude, double longitude, float accuracy);
+    virtual void injectPosition(const GnssLocationInfoNotification &locationInfo,
+            bool onDemandCpi=false);
+    virtual void injectPosition(const Location& location, bool onDemandCpi);
+    virtual void setTime(LocGpsUtcTime time, int64_t timeReference, int uncertainty);
+    virtual enum loc_api_adapter_err setXtraData(char* data, int length);
+    virtual void atlOpenStatus(int handle, int is_succ, char* apn, uint32_t apnLen,
+            AGpsBearerType bear, LocAGpsType agpsType, LocApnTypeMask mask);
+    virtual void atlCloseStatus(int handle, int is_succ);
+    virtual LocationError setServerSync(const char* url, int len, LocServerType type);
+    virtual LocationError setServerSync(unsigned int ip, int port, LocServerType type);
+    virtual void informNiResponse(GnssNiResponse userResponse, const void* passThroughData);
     virtual LocationError setSUPLVersionSync(GnssConfigSuplVersion version);
-    virtual enum loc_api_adapter_err
-        setNMEATypesSync(uint32_t typesMask);
+    virtual enum loc_api_adapter_err setNMEATypesSync(uint32_t typesMask);
     virtual LocationError setLPPConfigSync(GnssConfigLppProfile profile);
-    virtual enum loc_api_adapter_err
-        setSensorPropertiesSync(bool gyroBiasVarianceRandomWalk_valid,
-                            float gyroBiasVarianceRandomWalk,
-                            bool accelBiasVarianceRandomWalk_valid,
-                            float accelBiasVarianceRandomWalk,
-                            bool angleBiasVarianceRandomWalk_valid,
-                            float angleBiasVarianceRandomWalk,
-                            bool rateBiasVarianceRandomWalk_valid,
-                            float rateBiasVarianceRandomWalk,
-                            bool velocityBiasVarianceRandomWalk_valid,
-                            float velocityBiasVarianceRandomWalk);
-    virtual enum loc_api_adapter_err
-        setSensorPerfControlConfigSync(int controlMode,
-                               int accelSamplesPerBatch,
-                               int accelBatchesPerSec,
-                               int gyroSamplesPerBatch,
-                               int gyroBatchesPerSec,
-                               int accelSamplesPerBatchHigh,
-                               int accelBatchesPerSecHigh,
-                               int gyroSamplesPerBatchHigh,
-                               int gyroBatchesPerSecHigh,
-                               int algorithmConfig);
+    virtual enum loc_api_adapter_err setSensorPropertiesSync(
+            bool gyroBiasVarianceRandomWalk_valid, float gyroBiasVarianceRandomWalk,
+            bool accelBiasVarianceRandomWalk_valid, float accelBiasVarianceRandomWalk,
+            bool angleBiasVarianceRandomWalk_valid, float angleBiasVarianceRandomWalk,
+            bool rateBiasVarianceRandomWalk_valid, float rateBiasVarianceRandomWalk,
+            bool velocityBiasVarianceRandomWalk_valid, float velocityBiasVarianceRandomWalk);
+    virtual enum loc_api_adapter_err setSensorPerfControlConfigSync(int controlMode,
+            int accelSamplesPerBatch, int accelBatchesPerSec, int gyroSamplesPerBatch,
+            int gyroBatchesPerSec, int accelSamplesPerBatchHigh, int accelBatchesPerSecHigh,
+            int gyroSamplesPerBatchHigh, int gyroBatchesPerSecHigh, int algorithmConfig);
     virtual LocationError
-        setAGLONASSProtocolSync(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol);
+            setAGLONASSProtocolSync(GnssConfigAGlonassPositionProtocolMask aGlonassProtocol);
     virtual LocationError setLPPeProtocolCpSync(GnssConfigLppeControlPlaneMask lppeCP);
     virtual LocationError setLPPeProtocolUpSync(GnssConfigLppeUserPlaneMask lppeUP);
     virtual GnssConfigSuplVersion convertSuplVersion(const uint32_t suplVersion);
@@ -270,23 +246,11 @@ public:
 
     virtual void getWwanZppFix();
     virtual void getBestAvailableZppFix();
-    virtual void installAGpsCert(const LocDerEncodedCertificate* pData,
-                                 size_t length,
-                                 uint32_t slotBitMask);
-    inline virtual void setInSession(bool inSession) {
-
-        (void)inSession;
-    }
-
-
-    void updateEvtMask();
-    void updateNmeaMask(uint32_t mask);
-
+    virtual void installAGpsCert(const LocDerEncodedCertificate* pData, size_t length,
+            uint32_t slotBitMask);
     virtual LocationError setGpsLockSync(GnssConfigGpsLock lock);
     virtual void requestForAidingData(GnssAidingDataSvMask svDataMask);
-
     virtual LocationError setXtraVersionCheckSync(uint32_t check);
-
     /* Requests for SV/Constellation Control */
     virtual LocationError setBlacklistSvSync(const GnssSvIdConfig& config);
     virtual void setBlacklistSv(const GnssSvIdConfig& config);
@@ -294,12 +258,55 @@ public:
     virtual void setConstellationControl(const GnssSvTypeConfig& config);
     virtual void getConstellationControl();
     virtual void resetConstellationControl();
-
-    virtual LocationError setConstrainedTuncMode(bool enabled,
-                                                 float tuncConstraint,
-                                                 uint32_t energyBudget);
+    virtual LocationError setConstrainedTuncMode(bool enabled, float tuncConstraint,
+            uint32_t energyBudget);
     virtual LocationError setPositionAssistedClockEstimatorMode(bool enabled);
     virtual LocationError getGnssEnergyConsumed();
+
+    virtual void addGeofence(uint32_t clientId, const GeofenceOption& options,
+            const GeofenceInfo& info, LocApiResponseData<LocApiGeofenceData>* adapterResponseData);
+    virtual void removeGeofence(uint32_t hwId, uint32_t clientId, LocApiResponse* adapterResponse);
+    virtual void pauseGeofence(uint32_t hwId, uint32_t clientId, LocApiResponse* adapterResponse);
+    virtual void resumeGeofence(uint32_t hwId, uint32_t clientId, LocApiResponse* adapterResponse);
+    virtual void modifyGeofence(uint32_t hwId, uint32_t clientId, const GeofenceOption& options,
+             LocApiResponse* adapterResponse);
+
+    virtual void startTimeBasedTracking(const TrackingOptions& options,
+             LocApiResponse* adapterResponse);
+    virtual void stopTimeBasedTracking(LocApiResponse* adapterResponse);
+    virtual void startDistanceBasedTracking(uint32_t sessionId, const LocationOptions& options,
+             LocApiResponse* adapterResponse);
+    virtual void stopDistanceBasedTracking(uint32_t sessionId,
+             LocApiResponse* adapterResponse = nullptr);
+    virtual void startBatching(uint32_t sessionId, const LocationOptions& options,
+            uint32_t accuracy, uint32_t timeout, LocApiResponse* adapterResponse);
+    virtual void stopBatching(uint32_t sessionId, LocApiResponse* adapterResponse);
+    virtual LocationError startOutdoorTripBatchingSync(uint32_t tripDistance,
+            uint32_t tripTbf, uint32_t timeout);
+    virtual void startOutdoorTripBatching(uint32_t tripDistance,
+            uint32_t tripTbf, uint32_t timeout, LocApiResponse* adapterResponse);
+    virtual void reStartOutdoorTripBatching(uint32_t ongoingTripDistance,
+            uint32_t ongoingTripInterval, uint32_t batchingTimeout,
+            LocApiResponse* adapterResponse);
+    virtual LocationError stopOutdoorTripBatchingSync(bool deallocBatchBuffer = true);
+    virtual void stopOutdoorTripBatching(bool deallocBatchBuffer = true,
+            LocApiResponse* adapterResponse = nullptr);
+    virtual LocationError getBatchedLocationsSync(size_t count);
+    virtual void getBatchedLocations(size_t count, LocApiResponse* adapterResponse);
+    virtual LocationError getBatchedTripLocationsSync(size_t count, uint32_t accumulatedDistance);
+    virtual void getBatchedTripLocations(size_t count, uint32_t accumulatedDistance,
+            LocApiResponse* adapterResponse);
+    virtual LocationError queryAccumulatedTripDistanceSync(uint32_t &accumulated_trip_distance,
+            uint32_t &numOfBatchedPositions);
+    virtual void queryAccumulatedTripDistance(
+            LocApiResponseData<LocApiBatchData>* adapterResponseData);
+    virtual void setBatchSize(size_t size);
+    virtual void setTripBatchSize(size_t size);
+    virtual void addToCallQueue(LocApiResponse* adapterResponse);
+
+    void updateEvtMask();
+    void updateNmeaMask(uint32_t mask);
+
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,

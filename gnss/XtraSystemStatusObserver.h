@@ -46,7 +46,7 @@ public :
     inline XtraSystemStatusObserver(IOsObserver* sysStatObs, const MsgTask* msgTask):
             mSystemStatusObsrvr(sysStatObs), mMsgTask(msgTask),
             mGpsLock(-1), mConnections(~0), mXtraThrottle(true), mReqStatusReceived(false),
-            mDelayLocTimer(*this), mIsConnectivityStatusKnown (false) {
+            mIsConnectivityStatusKnown (false), mDelayLocTimer(*this) {
         subscribe(true);
         startListeningNonBlocking(LOC_IPC_HAL);
         mDelayLocTimer.start(100 /*.1 sec*/,  false);

@@ -70,6 +70,7 @@ static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb);
 static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
 static uint8_t getGpsLock();
+static void getPowerStateChanges(void* powerStateCb);
 
 static void odcpiInit(const OdcpiRequestCallback& callback);
 static void odcpiInject(const Location& location);
@@ -112,7 +113,8 @@ static const GnssInterface gGnssInterface = {
     getGnssEnergyConsumed,
     enableNfwLocationAccess,
     nfwInit,
-    getGpsLock
+    getGpsLock,
+    getPowerStateChanges
 };
 
 #ifndef DEBUG_X86
@@ -375,6 +377,13 @@ static uint8_t getGpsLock() {
            for 2^1 and AFW for 2^0) */
         LOC_LOGe("gGnssAdapter is NULL");
         return 0x3;
+    }
+}
+
+static void getPowerStateChanges(void* powerStateCb)
+{
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->getPowerStateChangesCommand(powerStateCb);
     }
 }
 
