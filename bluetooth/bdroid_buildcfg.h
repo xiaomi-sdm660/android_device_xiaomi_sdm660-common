@@ -40,6 +40,8 @@ static inline const char* BtmGetDefaultName()
         return "MI 6X";
     if (strstr(product_model, "MI PAD 4"))
         return "MI PAD 4";
+    if (strstr(product_model, "MI PAD 4 PLUS"))
+        return "MI PAD 4 PLUS";
 
     // Fallback to ro.product.model
     return "";
