@@ -37,7 +37,8 @@ LOCAL_HEADER_LIBRARIES := \
     libgps.utils_headers \
     libloc_core_headers \
     libloc_pla_headers \
-    liblocation_api_headers
+    liblocation_api_headers \
+    liblocbatterylistener_headers
 
 LOCAL_SHARED_LIBRARIES := \
     liblog \
@@ -50,7 +51,11 @@ LOCAL_SHARED_LIBRARIES := \
     android.hardware.gnss@1.1 \
     android.hardware.gnss@2.0 \
     android.hardware.gnss.measurement_corrections@1.0 \
-    android.hardware.gnss.visibility_control@1.0
+    android.hardware.gnss.visibility_control@1.0 \
+    android.hardware.health@1.0 \
+    android.hardware.health@2.0 \
+    android.hardware.power@1.2 \
+    libbase
 
 LOCAL_SHARED_LIBRARIES += \
     libloc_core \
@@ -59,6 +64,8 @@ LOCAL_SHARED_LIBRARIES += \
     liblocation_api \
 
 LOCAL_CFLAGS += $(GNSS_CFLAGS)
+LOCAL_STATIC_LIBRARIES := liblocbatterylistener
+LOCAL_STATIC_LIBRARIES += libhealthhalutils
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
