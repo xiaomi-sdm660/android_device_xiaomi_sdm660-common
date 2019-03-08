@@ -7,9 +7,8 @@ ifeq ($(GNSS_HIDL_VERSION),1.1)
 include $(LOCAL_PATH)/1.1/Android.mk
 else
 include $(LOCAL_PATH)/1.0/Android.mk
-endif
+endif #GNSS HIDL 1.1
+endif #GNSS HIDL 2.0
 else #QMAA flag set, build dummy android.hardware.gnss@1.0-impl-qti
 include $(LOCAL_PATH)/dummy/Android.mk
-endif
-
 endif #BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE
