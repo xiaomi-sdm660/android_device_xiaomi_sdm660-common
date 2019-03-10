@@ -44,8 +44,9 @@ on property:persist.spectrum.profile=0
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/align_windows "0"
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis "59000"
 
-  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600"
-  write /sys/module/cpu_boost/parameters/input_boost_ms "60"
+  write /sys/module/cpu_input_boost/parameters/input_boost_duration 64
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_lp 902400
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_hp 1113600
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
   write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
@@ -69,8 +70,9 @@ on property:persist.spectrum.profile=1
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:29000"
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "80 1401600:85 1536000:14 2150400:90"
 
-  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600 1:0 2:0 3:0 4:1401600 5:0 6:0 7:0"
-  write /sys/module/cpu_boost/parameters/input_boost_ms "60"
+  write /sys/module/cpu_input_boost/parameters/input_boost_duration 128
+write /sys/module/cpu_input_boost/parameters/input_boost_freq_lp 902400
+write /sys/module/cpu_input_boost/parameters/input_boost_freq_hp 1401600
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
   write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 266000000
@@ -94,8 +96,9 @@ on property:persist.spectrum.profile=2
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000 1958400:99000"
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:90 1536000:14 1958400:98"
 
-  write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
-  write /sys/module/cpu_boost/parameters/input_boost_ms "0"
+  write /sys/module/cpu_input_boost/parameters/input_boost_duration 64
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_lp 902400
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_hp 1113600
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "powersave"
   write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
@@ -119,8 +122,9 @@ on property:persist.spectrum.profile=3
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1747200:19000"
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "75 1401600:80 1536000:14 2150400:95"
 
-  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600 1:1401600 2:1401600 3:1401600 4:1401600 5:1401600 6:1401600 7:1401600"
-  write /sys/module/cpu_boost/parameters/input_boost_ms "128"
+  write /sys/module/cpu_input_boost/parameters/input_boost_duration 128
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_lp 1401600
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_hp 1401600
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "performance"
   write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 588000000
@@ -144,8 +148,9 @@ on property:persist.spectrum.profile=4
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000 1958400:99000"
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:90 1536000:14 2150400:98"
 
-  write /sys/module/cpu_boost/parameters/input_boost_freq "0:1401600"
-  write /sys/module/cpu_boost/parameters/input_boost_ms "64"
+  write /sys/module/cpu_input_boost/parameters/input_boost_duration 64
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_lp 902400
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_hp 1113600
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "msm-adreno-tz"
   write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
@@ -169,8 +174,9 @@ on property:persist.spectrum.profile=5
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "19000 1401600:39000 1747200:99000"
   write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "85 1401600:92 1536000:14 1747200:98"
 
-  write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
-  write /sys/module/cpu_boost/parameters/input_boost_ms "0"
+  write /sys/module/cpu_input_boost/parameters/input_boost_duration 0
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_lp 633600
+  write /sys/module/cpu_input_boost/parameters/input_boost_freq_hp 1113600
 
   write /sys/class/kgsl/kgsl-3d0/devfreq/governor "powersave"
   write /sys/class/kgsl/kgsl-3d0/devfreq/min_freq 160000000
