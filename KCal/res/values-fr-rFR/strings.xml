@@ -19,9 +19,9 @@
     <string name="kcal_reset">Réinitialiser</string>
     <string name="edit_value">Choisi une nouvelle valeur</string>
 
-    <string name="presets_dialog_title">Sélectionner un préréglage</string>
+    <string name="presets_dialog_title">Choisir une présélection</string>
     <!-- Presets -->
-    <string name="preset_default">Défaut</string>
+    <string name="preset_default">Par Défaut</string>
     <string name="preset_version_1">Version 1</string>
     <string name="preset_version_2">Version 2</string>
     <string name="preset_version_3">Version 3</string>
