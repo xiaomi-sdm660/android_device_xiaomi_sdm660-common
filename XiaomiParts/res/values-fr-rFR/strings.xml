@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="advanced_settings">Les parties de Xiaomi</string>
+    <string name="advanced_settings">Parties de Xiaomi</string>
     <string name="advanced_settings_summary">Paramètres supplémentaires</string>
 
     <string name="camera_title">Caméra</string>
@@ -60,13 +60,13 @@
 
     <!-- Values for FP Actions -->
     <string name="fpaction_expand_np">Développer le panneau de notification</string>
-    <string name="fpaction_expand_qs">Développer les Paramètres Rapides</string>
+    <string name="fpaction_expand_qs">Développer les réglages rapides</string>
     <string name="fpaction_assistant">Assistant</string>
     <string name="fpaction_home">Accueil</string>
     <string name="fpaction_recent_apps">Applications récentes</string>
     <string name="fpaction_media_next">Média suivant</string>
     <string name="fpaction_media_play_pause">Jouer/Mettre en pause le médias</string>
-    <string name="fpaction_media_previous">Médias Précédent</string>
+    <string name="fpaction_media_previous">Médias précédent</string>
 
     <string name="audio_title">Audio</string>
 
