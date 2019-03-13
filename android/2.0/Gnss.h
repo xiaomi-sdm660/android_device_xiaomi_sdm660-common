@@ -119,6 +119,9 @@ struct Gnss : public IGnss {
     Return<sp<::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections>>
             getExtensionMeasurementCorrections() override;
     Return<sp<V2_0::IGnssMeasurement>> getExtensionGnssMeasurement_2_0() override;
+
+    Return<bool> injectBestLocation_2_0(const ::android::hardware::gnss::V2_0::GnssLocation& location) override;
+
     /**
      * This method returns the IGnssVisibilityControl interface.
      *

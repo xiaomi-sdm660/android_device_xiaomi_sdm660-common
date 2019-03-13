@@ -488,6 +488,14 @@ Return<sp<::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityCo
     }
     return mVisibCtrl;
 }
+
+Return<bool> Gnss::injectBestLocation_2_0(
+    const ::android::hardware::gnss::V2_0::GnssLocation& location) {
+    ENTRY_LOG_CALLFLOW();
+    /* TBD */
+    return false;
+}
+
 IGnss* HIDL_FETCH_IGnss(const char* hal) {
     ENTRY_LOG_CALLFLOW();
     IGnss* iface = nullptr;
