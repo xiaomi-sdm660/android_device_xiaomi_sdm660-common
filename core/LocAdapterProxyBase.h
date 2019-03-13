@@ -40,8 +40,8 @@ private:
     LocAdapterBase *mLocAdapterBase;
 protected:
     inline LocAdapterProxyBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
-                   ContextBase* context):
-                   mLocAdapterBase(new LocAdapterBase(mask, context, this)) {
+                               ContextBase* context, bool isMaster = false):
+            mLocAdapterBase(new LocAdapterBase(mask, context, isMaster, this)) {
     }
     inline virtual ~LocAdapterProxyBase() {
         delete mLocAdapterBase;
