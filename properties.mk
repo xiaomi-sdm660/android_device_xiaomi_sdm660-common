@@ -64,6 +64,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.camera.exif.make=Xiaomi \
     vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 
+# Codec2 switch
+PRODUCT_PROPERTY_OVERRIDES += \
+    debug.media.codec2=2
+
 # Dalvik
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapgrowthlimit=256m \
