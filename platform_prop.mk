@@ -71,6 +71,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Camera
 PRODUCT_PROPERTY_OVERRIDES += \
+	persist.camera.eis.enable=0 \
 	persist.camera.preview.ubwc=0 \
 	persist.vendor.qti.telephony.vt_cam_interface=1 \
 	vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi,org.cyanogenmod.snap \
