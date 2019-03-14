@@ -29,7 +29,6 @@ public class DeviceSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener {
 
     private static final String PREF_ENABLE_HAL3 = "hal3";
-    private static final String PREF_ENABLE_EIS = "eis";
     final static String PREF_ENABLE_FPACTION = "fpaction_enabled";
     final static String PREF_FP_SHUTTER = "fp_shutter";
     final static String PREF_FPACTION = "fpaction";
@@ -44,7 +43,6 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_PRESET = "dirac_preset_pref";
 
     private static final String HAL3_SYSTEM_PROPERTY = "persist.camera.HAL3.enabled";
-    private static final String EIS_SYSTEM_PROPERTY = "persist.camera.eis.enable";
     private static final String SPECTRUM_SYSTEM_PROPERTY = "persist.spectrum.profile";
 
     private final static String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/" +
@@ -61,7 +59,6 @@ public class DeviceSettings extends PreferenceFragment implements
     final static int MAX_VIBRATION = 3596;
 
     private SwitchPreference mEnableHAL3;
-    private SwitchPreference mEnableEIS;
     private SwitchPreference mEnableFpAction;
     private SwitchPreference mFpShutter;
     private ListPreference mFpAction;
@@ -79,10 +76,6 @@ public class DeviceSettings extends PreferenceFragment implements
         mEnableHAL3 = (SwitchPreference) findPreference(PREF_ENABLE_HAL3);
         mEnableHAL3.setChecked(FileUtils.getProp(HAL3_SYSTEM_PROPERTY, false));
         mEnableHAL3.setOnPreferenceChangeListener(this);
-
-        mEnableEIS = (SwitchPreference) findPreference(PREF_ENABLE_EIS);
-        mEnableEIS.setChecked(FileUtils.getProp(EIS_SYSTEM_PROPERTY, false));
-        mEnableEIS.setOnPreferenceChangeListener(this);
 
         mEnableFpAction = (SwitchPreference) findPreference(PREF_ENABLE_FPACTION);
         mEnableFpAction.setOnPreferenceChangeListener(this);
@@ -150,10 +143,6 @@ public class DeviceSettings extends PreferenceFragment implements
         switch (key) {
             case PREF_ENABLE_HAL3:
                 FileUtils.setProp(HAL3_SYSTEM_PROPERTY, (Boolean) value);
-                break;
-
-            case PREF_ENABLE_EIS:
-                FileUtils.setProp(EIS_SYSTEM_PROPERTY, (Boolean) value);
                 break;
 
             case PREF_ENABLE_FPACTION:
