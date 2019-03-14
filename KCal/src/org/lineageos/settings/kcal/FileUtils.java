@@ -22,10 +22,6 @@ import java.io.IOException;
 
 class FileUtils {
 
-    boolean isSupported(String path) {
-        return fileWritable(path);
-    }
-
     private static boolean fileWritable(String filename) {
         return fileExists(filename) && new File(filename).canWrite();
     }
@@ -35,6 +31,10 @@ class FileUtils {
             return false;
         }
         return new File(filename).exists();
+    }
+
+    boolean isSupported(String path) {
+        return fileWritable(path);
     }
 
     void setValue(String path, Boolean value) {

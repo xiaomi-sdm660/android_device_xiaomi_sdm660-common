@@ -7,11 +7,23 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 
-public class PresetDialogPreference extends DialogFragment {
+public class PresetDialog extends DialogFragment {
     private CharSequence[] mEntries;
     private CharSequence[] mEntryValues;
     private String mValue;
     private int mClickedDialogEntryIndex;
+    DialogInterface.OnClickListener selectItemListener = new DialogInterface.OnClickListener() {
+
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            if (mClickedDialogEntryIndex != which) {
+                mValue = mEntryValues[which].toString();
+                KCalSettingsActivity.mKCalSettingsFragment.applyValues(mValue);
+                mClickedDialogEntryIndex = which;
+            }
+            dialog.dismiss();
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,17 +55,4 @@ public class PresetDialogPreference extends DialogFragment {
         }
         return -1;
     }
-
-    DialogInterface.OnClickListener selectItemListener = new DialogInterface.OnClickListener() {
-
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            if (mClickedDialogEntryIndex != which) {
-                mValue = mEntryValues[which].toString();
-                KCalSettingsActivity.mKCalSettingsFragment.applyValues(mValue);
-                mClickedDialogEntryIndex = which;
-            }
-            dialog.dismiss();
-        }
-    };
 }

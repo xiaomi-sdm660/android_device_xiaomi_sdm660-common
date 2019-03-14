@@ -19,7 +19,7 @@ package org.lineageos.settings.kcal;
 interface Utils {
     String PREF_ENABLED = "kcal_enabled";
     String PREF_SETONBOOT = "set_on_boot";
-    String PREF_MINIMUM = "kcal_minimum";
+    String PREF_MINIMUM = "color_minimum";
     String PREF_RED = "color_red";
     String PREF_GREEN = "color_green";
     String PREF_BLUE = "color_blue";

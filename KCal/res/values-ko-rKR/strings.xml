@@ -5,7 +5,6 @@
     <string name="kcal_enabled">활성화</string>
     <string name="set_on_boot">부팅 시 설정</string>
     <string name="kcal_disabled">비활성화</string>
-    <string name="greyscale_display">흑백 디스플레이</string>
     <string name="color_red">빨강</string>
     <string name="color_green">초록</string>
     <string name="color_blue">파랑</string>
@@ -15,7 +14,6 @@
     <string name="contrast">대비</string>
     <string name="hue">색상</string>
     <string name="cat_colormanagement">컬러 설정</string>
-    <string name="kcal_minimum">최소값</string>
     <string name="kcal_reset">초기화</string>
     <string name="edit_value">새 값 선택</string>
 

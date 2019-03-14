@@ -4,12 +4,12 @@
         android:id="@+id/action_preset"
         android:icon="@drawable/action_presets"
         android:showAsAction="always"
-        android:title="reset" />
+        android:title="@string/kcal_presets" />
 
     <item
         android:id="@+id/action_reset"
         android:icon="@drawable/action_reset"
         android:showAsAction="always"
-        android:title="reset" />
+        android:title="@string/kcal_reset" />
 
 </menu>

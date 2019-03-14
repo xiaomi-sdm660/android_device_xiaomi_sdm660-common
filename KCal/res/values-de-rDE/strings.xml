@@ -4,7 +4,6 @@
     <string name="advanced_settings_summary">Display Kalibrierung</string>
     <string name="cat_calibration">Bildschirm Kalibrierung</string>
     <string name="set_on_boot">Beim Systemstart anwenden</string>
-    <string name="greyscale_display">Graustufen</string>
     <string name="kcal_enabled">An</string>
     <string name="kcal_disabled">Aus</string>
     <string name="color_red">Rot</string>
@@ -14,7 +13,6 @@
     <string name="saturation">Sättigung</string>
     <string name="contrast">Kontrast</string>
     <string name="cat_colormanagement">Farbeinstellungen</string>
-    <string name="kcal_minimum">Minimum</string>
     <string name="value">Farbwert</string>
     <string name="hue">Farbton</string>
     <string name="kcal_reset">Zurücksetzen</string>
@@ -26,4 +24,6 @@
     <string name="preset_cool_amoled">Kühles AMOLED</string>
     <string name="preset_deep_natural">Naturfarben</string>
     <string name="edit_value">Wähle neuen Wert</string>
+    <string name="default_value">Standard Wert</string>
+    <string name="edit_hint">Wert zwischen %1d und %2d</string>
 </resources>

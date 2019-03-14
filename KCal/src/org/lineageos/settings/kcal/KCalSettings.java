@@ -16,30 +16,28 @@
 
 package org.lineageos.settings.kcal;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v14.preference.PreferenceFragment;
-import android.support.v14.preference.SwitchPreference;
 import android.support.v7.preference.Preference;
 
 public class KCalSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener, Utils {
 
-    PresetDialogPreference mPresets;
+    PresetDialog mPresets;
 
-    SwitchPreference mSetOnBoot;
-    SwitchPreference mEnabled;
+    SecureSwitchPreference mSetOnBoot;
+    SecureSwitchPreference mEnabled;
 
-    private CustomSeekBarPreference mRed;
-    private CustomSeekBarPreference mGreen;
-    private CustomSeekBarPreference mBlue;
+    private SecureCustomSeekBarPreference mRed;
+    private SecureCustomSeekBarPreference mGreen;
+    private SecureCustomSeekBarPreference mBlue;
 
-    private CustomSeekBarPreference mSaturation;
-    private CustomSeekBarPreference mValue;
-    private CustomSeekBarPreference mContrast;
-    private CustomSeekBarPreference mHue;
-    private CustomSeekBarPreference mMin;
+    private SecureCustomSeekBarPreference mSaturation;
+    private SecureCustomSeekBarPreference mValue;
+    private SecureCustomSeekBarPreference mContrast;
+    private SecureCustomSeekBarPreference mHue;
+    private SecureCustomSeekBarPreference mMin;
 
     private FileUtils mFileUtils = new FileUtils();
 
@@ -53,22 +51,21 @@ public class KCalSettings extends PreferenceFragment implements
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.main, rootKey);
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        mPresets = new PresetDialog();
 
-        mPresets = new PresetDialogPreference();
-
-        boolean enabled = sharedPreferences.getBoolean(PREF_ENABLED, false);
-        mSetOnBoot = (SwitchPreference) findPreference(PREF_SETONBOOT);
-        mEnabled = (SwitchPreference) findPreference(PREF_ENABLED);
+        boolean enabled =
+                Settings.Secure.getInt(getContext().getContentResolver(), PREF_ENABLED, 0) == 1;
+        mSetOnBoot = (SecureSwitchPreference) findPreference(PREF_SETONBOOT);
+        mEnabled = (SecureSwitchPreference) findPreference(PREF_ENABLED);
         mEnabled.setTitle(enabled ? R.string.kcal_enabled : R.string.kcal_disabled);
-        mMin = (CustomSeekBarPreference) findPreference(PREF_MINIMUM);
-        mRed = (CustomSeekBarPreference) findPreference(PREF_RED);
-        mGreen = (CustomSeekBarPreference) findPreference(PREF_GREEN);
-        mBlue = (CustomSeekBarPreference) findPreference(PREF_BLUE);
-        mSaturation = (CustomSeekBarPreference) findPreference(PREF_SATURATION);
-        mValue = (CustomSeekBarPreference) findPreference(PREF_VALUE);
-        mContrast = (CustomSeekBarPreference) findPreference(PREF_CONTRAST);
-        mHue = (CustomSeekBarPreference) findPreference(PREF_HUE);
+        mMin = (SecureCustomSeekBarPreference) findPreference(PREF_MINIMUM);
+        mRed = (SecureCustomSeekBarPreference) findPreference(PREF_RED);
+        mGreen = (SecureCustomSeekBarPreference) findPreference(PREF_GREEN);
+        mBlue = (SecureCustomSeekBarPreference) findPreference(PREF_BLUE);
+        mSaturation = (SecureCustomSeekBarPreference) findPreference(PREF_SATURATION);
+        mValue = (SecureCustomSeekBarPreference) findPreference(PREF_VALUE);
+        mContrast = (SecureCustomSeekBarPreference) findPreference(PREF_CONTRAST);
+        mHue = (SecureCustomSeekBarPreference) findPreference(PREF_HUE);
 
         prefState(enabled);
 

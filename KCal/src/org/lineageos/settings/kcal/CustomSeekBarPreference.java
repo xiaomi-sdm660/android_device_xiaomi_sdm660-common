@@ -16,24 +16,29 @@
 
 package org.lineageos.settings.kcal;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
-import android.support.v7.preference.*;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class CustomSeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
-    private final String TAG = getClass().getName();
     private static final String SETTINGS_NS = "http://schemas.android.com/apk/res/com.android.settings";
     private static final String ANDROIDNS = "http://schemas.android.com/apk/res/android";
     private static final int DEFAULT_VALUE = 50;
-
+    private final String TAG = getClass().getName();
     private int mMin = 0;
     private int mInterval = 1;
     private int mCurrentValue;
@@ -45,12 +50,12 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
     private LinearLayout mStatusTextContainer;
     private TextView mTitle;
     private TextView mStatusText;
+    private AlertDialog mDialog;
+    private EditText mEdit;
 
-    public CustomSeekBarPreference(Context context, AttributeSet attrs, int defStyleAttr,
-                                   int defStyleRes) {
+    public CustomSeekBarPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        final TypedArray a = context.obtainStyledAttributes(
-                attrs, R.styleable.CustomSeekBarPreference);
+        final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomSeekBarPreference);
 
         mMax = attrs.getAttributeIntValue(ANDROIDNS, "max", 100);
         mMin = attrs.getAttributeIntValue(SETTINGS_NS, "min", 0);
@@ -59,9 +64,10 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
             mDefaultValue = mMax;
         }
         mUnits = getAttributeStringValue(attrs, SETTINGS_NS, "units", "");
-        mDefaultText = getAttributeStringValue(attrs, SETTINGS_NS, "defaultText", Integer.toString(mDefaultValue));
+        mDefaultText = getAttributeStringValue(attrs, SETTINGS_NS, "defaultText",
+                Integer.toString(mDefaultValue));
 
-        Integer id = a.getResourceId(R.styleable.CustomSeekBarPreference_units, 0);
+        int id = a.getResourceId(R.styleable.CustomSeekBarPreference_units, 0);
         if (id > 0) {
             mUnits = context.getResources().getString(id);
         }
@@ -97,8 +103,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         this(context, null);
     }
 
-    private String getAttributeStringValue(AttributeSet attrs, String namespace, String name,
-                                           String defaultValue) {
+    private String getAttributeStringValue(AttributeSet attrs, String namespace, String name, String defaultValue) {
         String value = attrs.getAttributeValue(namespace, name);
         if (value == null)
             value = defaultValue;
@@ -133,8 +138,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
                 }
                 // remove the existing seekbar (there may not be one) and add ours
                 newContainer.removeAllViews();
-                newContainer.addView(mSeekBar, ViewGroup.LayoutParams.FILL_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
+                newContainer.addView(mSeekBar, ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             }
         } catch (Exception ex) {
             Log.e(TAG, "Error binding view: " + ex.toString());
@@ -149,20 +153,57 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         mStatusTextContainer = (LinearLayout) view.findViewById(R.id.text_container);
         mStatusTextContainer.setClickable(true);
         mStatusTextContainer.setOnClickListener((View v) -> {
-            EditTextDialog editText = new EditTextDialog();
-            editText.setMin(mMin);
-            editText.setMax(mMax);
-            editText.setDefaultValue(mCurrentValue);
-            editText.setDialogResult(new EditTextDialog.DialogResult() {
+            mDialog = new AlertDialog.Builder(getContext())
+                    .setTitle(getContext().getResources().getString(R.string.edit_value))
+                    .setView(R.layout.custom_seekbar_preference_dialog)
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mDialog = null;
+                        }
+                    })
+                    .setNeutralButton(R.string.default_value, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            refresh(mDefaultValue);
+                            mDialog = null;
+                        }
+                    })
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (mEdit != null) {
+                                refresh(Integer.parseInt(mEdit.getText().toString()));
+                            }
+                            mDialog = null;
+                        }
+                    })
+                    .show();
+            mEdit = mDialog.findViewById(R.id.edit);
+            mEdit.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void finish(int result) {
-                    if (result >= mMin && result <= mMax) {
-                        refresh(result);
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    try {
+                        if (Integer.parseInt(s.toString()) > mMax) {
+                            s.replace(0, s.length(), String.valueOf(mMax));
+                        } else if (Integer.parseInt(s.toString()) < mMin) {
+                            s.replace(0, s.length(), String.valueOf(mMin));
+                        }
+                    } catch (NumberFormatException e) {
+                        // Prevent crashes and ignore invalid input
                     }
                 }
             });
-
-            editText.show(KCalSettingsActivity.mKCalSettingsFragment.getActivity().getFragmentManager(), "KCal: EditValue");
+            mEdit.setHint(getContext().getResources().getString(R.string.edit_hint, mMin, mMax));
+            mEdit.setText(String.valueOf(mCurrentValue));
         });
 
         mTitle = (TextView) view.findViewById(android.R.id.title);
@@ -186,12 +227,12 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         mInterval = value;
     }
 
-    public void setValue(int value) {
-        mCurrentValue = value;
-    }
-
     public String getValue() {
         return Integer.toString(mCurrentValue);
+    }
+
+    public void setValue(int value) {
+        mCurrentValue = value;
     }
 
     @Override
@@ -237,8 +278,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
 
     @Override
     protected Object onGetDefaultValue(TypedArray ta, int index) {
-        int defaultValue = ta.getInt(index, DEFAULT_VALUE);
-        return defaultValue;
+        return ta.getInt(index, DEFAULT_VALUE);
     }
 
     @Override

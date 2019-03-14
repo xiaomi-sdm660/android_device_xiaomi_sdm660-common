@@ -19,8 +19,7 @@ package org.lineageos.settings.kcal;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.provider.Settings;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,21 +28,20 @@ import java.io.IOException;
 public class BootReceiver extends BroadcastReceiver implements Utils {
     public void onReceive(Context context, Intent intent) {
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        if (Settings.Secure.getInt(context.getContentResolver(), PREF_ENABLED, 0) == 1) {
+            restoreValue(KCAL_ENABLE, String.valueOf(Settings.Secure.getInt(context.getContentResolver(),
+                    PREF_ENABLED, 0)));
 
-        if (sharedPrefs.getBoolean(PREF_SETONBOOT, false)) {
-            restoreValue(KCAL_ENABLE, sharedPrefs.getBoolean(PREF_ENABLED, false) ? "1" : "0");
-
-            String rgbValue = sharedPrefs.getInt(PREF_RED, RED_DEFAULT) + " " +
-                    sharedPrefs.getInt(PREF_GREEN, GREEN_DEFAULT) + " " +
-                    sharedPrefs.getInt(PREF_BLUE, BLUE_DEFAULT);
+            String rgbValue = Settings.Secure.getInt(context.getContentResolver(), PREF_RED, RED_DEFAULT) + " " +
+                    Settings.Secure.getInt(context.getContentResolver(), PREF_GREEN, GREEN_DEFAULT) + " " +
+                    Settings.Secure.getInt(context.getContentResolver(), PREF_BLUE, BLUE_DEFAULT);
 
             restoreValue(KCAL_RGB, rgbValue);
-            restoreValue(KCAL_MIN, String.valueOf(sharedPrefs.getInt(PREF_MINIMUM, MINIMUM_DEFAULT)));
-            restoreValue(KCAL_SAT, String.valueOf(sharedPrefs.getInt(PREF_SATURATION, SATURATION_DEFAULT) + SATURATION_OFFSET));
-            restoreValue(KCAL_VAL, String.valueOf(sharedPrefs.getInt(PREF_VALUE, VALUE_DEFAULT) + VALUE_OFFSET));
-            restoreValue(KCAL_CONT, String.valueOf(sharedPrefs.getInt(PREF_CONTRAST, CONTRAST_DEFAULT) + CONTRAST_OFFSET));
-            restoreValue(KCAL_HUE, String.valueOf(sharedPrefs.getInt(PREF_HUE, HUE_DEFAULT)));
+            restoreValue(KCAL_MIN, String.valueOf(Settings.Secure.getInt(context.getContentResolver(), PREF_MINIMUM, MINIMUM_DEFAULT)));
+            restoreValue(KCAL_SAT, String.valueOf(Settings.Secure.getInt(context.getContentResolver(), PREF_SATURATION, SATURATION_DEFAULT) + SATURATION_OFFSET));
+            restoreValue(KCAL_VAL, String.valueOf(Settings.Secure.getInt(context.getContentResolver(), PREF_VALUE, VALUE_DEFAULT) + VALUE_OFFSET));
+            restoreValue(KCAL_CONT, String.valueOf(Settings.Secure.getInt(context.getContentResolver(), PREF_CONTRAST, CONTRAST_DEFAULT) + CONTRAST_OFFSET));
+            restoreValue(KCAL_HUE, String.valueOf(Settings.Secure.getInt(context.getContentResolver(), PREF_HUE, HUE_DEFAULT)));
         }
     }
 
