@@ -20,20 +20,27 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v14.preference.PreferenceFragment;
-import android.support.v14.preference.SwitchPreference;
-import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
+
+import org.lineageos.settings.device.kcal.KCalSettingsActivity;
+import org.lineageos.settings.device.preferences.SecureSettingCustomSeekBarPreference;
+import org.lineageos.settings.device.preferences.SecureSettingListPreference;
+import org.lineageos.settings.device.preferences.SecureSettingSwitchPreference;
+import org.lineageos.settings.device.preferences.VibrationSeekBarPreference;
 
 public class DeviceSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener {
 
-    private static final String PREF_ENABLE_HAL3 = "hal3";
     final static String PREF_ENABLE_FPACTION = "fpaction_enabled";
     final static String PREF_FP_SHUTTER = "fp_shutter";
     final static String PREF_FPACTION = "fpaction";
     final static String PREF_TORCH_BRIGHTNESS = "torch_brightness";
     final static String PREF_VIBRATION_STRENGTH = "vibration_strength";
+    // value of vtg_min and vtg_max
+    final static int MIN_VIBRATION = 116;
+    final static int MAX_VIBRATION = 3596;
+    private static final String PREF_ENABLE_HAL3 = "hal3";
     private static final String CATEGORY_DISPLAY = "display";
     private static final String PREF_DEVICE_DOZE = "device_doze";
     private static final String PREF_DEVICE_KCAL = "device_kcal";
@@ -41,53 +48,45 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_ENABLE_DIRAC = "dirac_enabled";
     private static final String PREF_HEADSET = "dirac_headset_pref";
     private static final String PREF_PRESET = "dirac_preset_pref";
-
     private static final String HAL3_SYSTEM_PROPERTY = "persist.camera.HAL3.enabled";
     private static final String SPECTRUM_SYSTEM_PROPERTY = "persist.spectrum.profile";
-
-    private final static String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/" +
-            "spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness";
-    private final static String TORCH_2_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom,spmi/" +
-            "spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_1/max_brightness";
+    private final static String TORCH_1_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom," +
+            "spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_0/max_brightness";
+    private final static String TORCH_2_BRIGHTNESS_PATH = "/sys/devices/soc/800f000.qcom," +
+            "spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d300/leds/led:torch_1/max_brightness";
     private final static String VIBRATION_STRENGTH_PATH = "/sys/devices/virtual/timed_output/vibrator/vtg_level";
-
     private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
-    private static final String DEVICE_KCAL_PACKAGE_NAME = "org.lineageos.settings.kcal";
-
-    // value of vtg_min and vtg_max
-    final static int MIN_VIBRATION = 116;
-    final static int MAX_VIBRATION = 3596;
-
-    private SwitchPreference mEnableHAL3;
-    private SwitchPreference mEnableFpAction;
-    private SwitchPreference mFpShutter;
-    private ListPreference mFpAction;
-    private TorchSeekBarPreference mTorchBrightness;
+    private SecureSettingSwitchPreference mEnableHAL3;
+    private SecureSettingSwitchPreference mEnableFpAction;
+    private SecureSettingSwitchPreference mFpShutter;
+    private SecureSettingListPreference mFpAction;
+    private SecureSettingCustomSeekBarPreference mTorchBrightness;
     private VibrationSeekBarPreference mVibrationStrength;
-    private ListPreference mSPECTRUM;
-    private SwitchPreference mEnableDirac;
-    private ListPreference mHeadsetType;
-    private ListPreference mPreset;
+    private Preference mKcal;
+    private SecureSettingListPreference mSPECTRUM;
+    private SecureSettingSwitchPreference mEnableDirac;
+    private SecureSettingListPreference mHeadsetType;
+    private SecureSettingListPreference mPreset;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        setPreferencesFromResource(R.xml.main, rootKey);
+        setPreferencesFromResource(R.xml.preferences_xiaomi_parts, rootKey);
 
-        mEnableHAL3 = (SwitchPreference) findPreference(PREF_ENABLE_HAL3);
+        mEnableHAL3 = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_HAL3);
         mEnableHAL3.setChecked(FileUtils.getProp(HAL3_SYSTEM_PROPERTY, false));
         mEnableHAL3.setOnPreferenceChangeListener(this);
 
-        mEnableFpAction = (SwitchPreference) findPreference(PREF_ENABLE_FPACTION);
+        mEnableFpAction = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_FPACTION);
         mEnableFpAction.setOnPreferenceChangeListener(this);
 
-        mFpShutter = (SwitchPreference) findPreference(PREF_FP_SHUTTER);
+        mFpShutter = (SecureSettingSwitchPreference) findPreference(PREF_FP_SHUTTER);
         mFpShutter.setOnPreferenceChangeListener(this);
 
-        mFpAction = (ListPreference) findPreference(PREF_FPACTION);
+        mFpAction = (SecureSettingListPreference) findPreference(PREF_FPACTION);
         mFpAction.setSummary(mFpAction.getEntry());
         mFpAction.setOnPreferenceChangeListener(this);
 
-        mTorchBrightness = (TorchSeekBarPreference) findPreference(PREF_TORCH_BRIGHTNESS);
+        mTorchBrightness = (SecureSettingCustomSeekBarPreference) findPreference(PREF_TORCH_BRIGHTNESS);
         mTorchBrightness.setEnabled(FileUtils.fileWritable(TORCH_1_BRIGHTNESS_PATH) &&
                 FileUtils.fileWritable(TORCH_2_BRIGHTNESS_PATH));
         mTorchBrightness.setOnPreferenceChangeListener(this);
@@ -101,11 +100,15 @@ public class DeviceSettings extends PreferenceFragment implements
             displayCategory.removePreference(findPreference(PREF_DEVICE_DOZE));
         }
 
-        if (isAppNotInstalled(DEVICE_KCAL_PACKAGE_NAME)) {
-            displayCategory.removePreference(findPreference(PREF_DEVICE_KCAL));
-        }
+        mKcal = findPreference(PREF_DEVICE_KCAL);
 
-        mSPECTRUM = (ListPreference) findPreference(PREF_SPECTRUM);
+        mKcal.setOnPreferenceClickListener(preference -> {
+            Intent intent = new Intent(getActivity().getApplicationContext(), KCalSettingsActivity.class);
+            startActivity(intent);
+            return true;
+        });
+
+        mSPECTRUM = (SecureSettingListPreference) findPreference(PREF_SPECTRUM);
         mSPECTRUM.setValue(FileUtils.getStringProp(SPECTRUM_SYSTEM_PROPERTY, "0"));
         mSPECTRUM.setSummary(mSPECTRUM.getEntry());
         mSPECTRUM.setOnPreferenceChangeListener(this);
@@ -118,23 +121,15 @@ public class DeviceSettings extends PreferenceFragment implements
             enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
         }
 
-        mEnableDirac = (SwitchPreference) findPreference(PREF_ENABLE_DIRAC);
+        mEnableDirac = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_DIRAC);
         mEnableDirac.setOnPreferenceChangeListener(this);
         mEnableDirac.setChecked(enhancerEnabled);
 
-        mHeadsetType = (ListPreference) findPreference(PREF_HEADSET);
+        mHeadsetType = (SecureSettingListPreference) findPreference(PREF_HEADSET);
         mHeadsetType.setOnPreferenceChangeListener(this);
-        mHeadsetType.setEnabled(enhancerEnabled);
 
-        mPreset = (ListPreference) findPreference(PREF_PRESET);
+        mPreset = (SecureSettingListPreference) findPreference(PREF_PRESET);
         mPreset.setOnPreferenceChangeListener(this);
-        mPreset.setEnabled(enhancerEnabled);
-    }
-
-
-    @Override
-    public boolean onPreferenceTreeClick(Preference preference) {
-        return super.onPreferenceTreeClick(preference);
     }
 
     @Override
@@ -143,10 +138,6 @@ public class DeviceSettings extends PreferenceFragment implements
         switch (key) {
             case PREF_ENABLE_HAL3:
                 FileUtils.setProp(HAL3_SYSTEM_PROPERTY, (Boolean) value);
-                break;
-
-            case PREF_ENABLE_FPACTION:
-                mFpAction.setEnabled((Boolean) value);
                 break;
 
             case PREF_FPACTION:
@@ -177,8 +168,6 @@ public class DeviceSettings extends PreferenceFragment implements
                     getContext().startService(new Intent(getContext(), DiracService.class));
                     DiracService.sDiracUtils.setEnabled((boolean) value);
                 }
-                mHeadsetType.setEnabled((boolean) value);
-                mPreset.setEnabled((boolean) value);
                 break;
 
             case PREF_HEADSET:

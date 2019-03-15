@@ -33,11 +33,6 @@ class DiracSound extends AudioEffect {
         super(EFFECT_TYPE_NULL, EFFECT_TYPE_DIRACSOUND, priority, audioSession);
     }
 
-    void setMusic(int enable) throws IllegalStateException,
-            IllegalArgumentException, UnsupportedOperationException {
-        checkStatus(setParameter(DIRACSOUND_PARAM_MUSIC, enable));
-    }
-
     int getMusic() throws IllegalStateException,
             IllegalArgumentException, UnsupportedOperationException {
         int[] value = new int[1];
@@ -45,9 +40,9 @@ class DiracSound extends AudioEffect {
         return value[0];
     }
 
-    void setHeadsetType(int type) throws IllegalStateException,
+    void setMusic(int enable) throws IllegalStateException,
             IllegalArgumentException, UnsupportedOperationException {
-        checkStatus(setParameter(DIRACSOUND_PARAM_HEADSET_TYPE, type));
+        checkStatus(setParameter(DIRACSOUND_PARAM_MUSIC, enable));
     }
 
     int getHeadsetType() throws IllegalStateException,
@@ -55,6 +50,11 @@ class DiracSound extends AudioEffect {
         int[] value = new int[1];
         checkStatus(getParameter(DIRACSOUND_PARAM_HEADSET_TYPE, value));
         return value[0];
+    }
+
+    void setHeadsetType(int type) throws IllegalStateException,
+            IllegalArgumentException, UnsupportedOperationException {
+        checkStatus(setParameter(DIRACSOUND_PARAM_HEADSET_TYPE, type));
     }
 
     void setLevel(int band, float level) throws IllegalStateException,

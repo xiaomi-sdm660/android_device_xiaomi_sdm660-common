@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class DiracService extends Service {
 
-    static final String TAG = "DiracService";
+    private final String TAG = this.getClass().getName();
 
     static DiracUtils sDiracUtils;
 

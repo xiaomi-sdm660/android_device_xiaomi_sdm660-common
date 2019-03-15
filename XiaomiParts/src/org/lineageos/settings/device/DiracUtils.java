@@ -18,7 +18,7 @@ package org.lineageos.settings.device;
 
 final class DiracUtils {
 
-    private DiracSound mDiracSound;
+    private final DiracSound mDiracSound;
 
     DiracUtils() {
         mDiracSound = new DiracSound(0, 0);
@@ -39,21 +39,21 @@ final class DiracUtils {
         return mDiracSound.getMusic() == 1;
     }
 
+    private String getLevel() {
+        StringBuilder selected = new StringBuilder();
+        for (int band = 0; band <= 6; band++) {
+            int temp = (int) mDiracSound.getLevel(band);
+            selected.append(String.valueOf(temp));
+            if (band != 6) selected.append(",");
+        }
+        return selected.toString();
+    }
+
     void setLevel(String preset) {
         String[] level = preset.split("\\s*,\\s*");
         for (int band = 0; band <= level.length - 1; band++) {
             mDiracSound.setLevel(band, Float.valueOf(level[band]));
         }
-    }
-
-    private String getLevel() {
-        String selected = "";
-        for (int band = 0; band <= 6; band++) {
-            int temp = (int) mDiracSound.getLevel(band);
-            selected += String.valueOf(temp);
-            if (band != 6) selected += ",";
-        }
-        return selected;
     }
 
     void setHeadsetType(int paramInt) {

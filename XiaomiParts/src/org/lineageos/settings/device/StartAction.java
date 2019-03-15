@@ -22,10 +22,9 @@ import android.app.StatusBarManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.hardware.input.InputManager;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -47,19 +46,18 @@ public class StartAction extends IntentService {
     protected void onHandleIntent(Intent intent) {
         ActivityManager activityManager =
                 (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(this);
         sStatusBarManager = (StatusBarManager) getSystemService(STATUS_BAR_SERVICE);
 
         ComponentName componentName = activityManager.getRunningTasks(1).get(0)
                 .topActivity;
 
         boolean cameraActive = Arrays.asList(CAMERA_PACKAGES).contains(componentName.getPackageName());
-        boolean fpActionEnabled = sharedPreferences.getBoolean(DeviceSettings.PREF_ENABLE_FPACTION,
-                false);
-        boolean fpShutterEnabled = sharedPreferences.getBoolean(DeviceSettings.PREF_FP_SHUTTER,
-                false);
-        String fpAction = sharedPreferences.getString(DeviceSettings.PREF_FPACTION, "4");
+        boolean fpActionEnabled = Settings.Secure.getInt(this.getContentResolver(),
+                DeviceSettings.PREF_ENABLE_FPACTION, 0) == 1;
+        boolean fpShutterEnabled = Settings.Secure.getInt(this.getContentResolver(),
+                DeviceSettings.PREF_FP_SHUTTER, 0) == 1;
+        String fpAction = Settings.Secure.getString(this.getContentResolver(),
+                DeviceSettings.PREF_FPACTION);
 
         if (fpShutterEnabled) {
             if (cameraActive) {

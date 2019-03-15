@@ -459,10 +459,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	XiaomiParts
 
-# KCal
-PRODUCT_PACKAGES += \
-	KCal
-
 # KeyHandler
 PRODUCT_PACKAGES += \
 	org.lineageos.keyhandler

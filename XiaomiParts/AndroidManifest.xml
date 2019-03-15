@@ -22,9 +22,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
-    <uses-sdk
-        android:minSdkVersion="27"
-        android:targetSdkVersion="27" />
+    <uses-sdk android:minSdkVersion="27" />
+
     <application
         android:label="@string/advanced_settings"
         android:supportsRtl="true"
@@ -37,6 +36,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <action android:name="com.android.settings.action.EXTRA_SETTINGS" />
@@ -64,6 +64,17 @@
             <meta-data
                 android:name="com.android.settings.summary"
                 android:resource="@string/advanced_settings_summary" />
+        </activity>
+
+        <activity
+            android:name=".kcal.KCalSettingsActivity"
+            android:exported="false"
+            android:label="@string/advanced_settings_kcal">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <service android:name=".StartAction" />
