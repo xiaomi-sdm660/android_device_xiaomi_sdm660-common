@@ -30,7 +30,10 @@
 #define __LOC_PLA__
 
 #ifdef __cplusplus
+#ifndef FEATURE_EXTERNAL_AP
 #include <utils/SystemClock.h>
+#endif /* FEATURE_EXTERNAL_AP */
+#include <inttypes.h>
 #include <sys/time.h>
 #include <time.h>
 
@@ -47,10 +50,14 @@ inline int64_t uptimeMillis()
 extern "C" {
 #endif
 
+#ifndef FEATURE_EXTERNAL_AP
 #include <cutils/properties.h>
 #include <cutils/threads.h>
 #include <cutils/sched_policy.h>
+#endif /* FEATURE_EXTERNAL_AP */
+#include <pthread.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
 #ifndef OFF_TARGET
@@ -75,6 +82,16 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/etc/quipc.conf"
+
+#ifdef FEATURE_EXTERNAL_AP
+#define PROPERTY_VALUE_MAX 92
+
+inline int property_get(const char* key, char* value, const char* default_value)
+{
+    strlcpy(value, default_value, PROPERTY_VALUE_MAX - 1);
+    return strlen(value);
+}
+#endif /* FEATURE_EXTERNAL_AP */
 
 #ifdef __cplusplus
 }

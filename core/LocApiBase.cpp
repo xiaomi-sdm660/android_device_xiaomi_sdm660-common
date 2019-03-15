@@ -380,6 +380,16 @@ void LocApiBase::reportDeleteAidingDataEvent(GnssAidingData& aidingData) {
     TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportDeleteAidingDataEvent(aidingData));
 }
 
+void LocApiBase::reportKlobucharIonoModel(GnssKlobucharIonoModel & ionoModel) {
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportKlobucharIonoModelEvent(ionoModel));
+}
+
+void LocApiBase::reportGnssAdditionalSystemInfo(GnssAdditionalSystemInfo& additionalSystemInfo) {
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_1ST_HANDLING_LOCADAPTERS(mLocAdapters[i]->reportGnssAdditionalSystemInfoEvent(
+            additionalSystemInfo));
+}
 
 void LocApiBase::reportSv(GnssSvNotification& svNotify)
 {
