@@ -47,6 +47,14 @@
 #endif /* LOG_TAG */
 
 // LE targets with no logcat support
+#ifdef FEATURE_EXTERNAL_AP
+#include <syslog.h>
+#define ALOGE(...) syslog(LOG_ERR,     "LOC_LOGE: " __VA_ARGS__);
+#define ALOGW(...) syslog(LOG_WARNING, "LOC_LOGW: " __VA_ARGS__);
+#define ALOGI(...) syslog(LOG_NOTICE,  "LOC_LOGI: " __VA_ARGS__);
+#define ALOGD(...) syslog(LOG_DEBUG,   "LOC_LOGD: " __VA_ARGS__);
+#define ALOGV(...) syslog(LOG_NOTICE,  "LOC_LOGV: " __VA_ARGS__);
+#else /* FEATURE_EXTERNAL_AP */
 #define TS_PRINTF(format, x...)                                  \
 {                                                                \
     struct timeval tv;                                           \
@@ -64,6 +72,7 @@
 #define ALOGI(format, x...) TS_PRINTF("I/%s (%d): " format , LOG_TAG, getpid(), ##x)
 #define ALOGD(format, x...) TS_PRINTF("D/%s (%d): " format , LOG_TAG, getpid(), ##x)
 #define ALOGV(format, x...) TS_PRINTF("V/%s (%d): " format , LOG_TAG, getpid(), ##x)
+#endif /* FEATURE_EXTERNAL_AP */
 
 #endif /* #if defined (USE_ANDROID_LOGGING) || defined (ANDROID) */
 

@@ -27,8 +27,8 @@
  *
  */
 
-#ifndef __LOC_SOCKET__
-#define __LOC_SOCKET__
+#ifndef __LOC_IPC__
+#define __LOC_IPC__
 
 #include <string>
 #include <memory>
@@ -105,7 +105,7 @@ public:
     // This class hides generated fd and destination address object from user.
     inline LocIpcSender(const char* destSocket):
             LocIpcSender(std::make_shared<int>(::socket(AF_UNIX, SOCK_DGRAM, 0)), destSocket) {
-        if (-1 == *mSocket) {
+        if (mSocket != nullptr && -1 == *mSocket) {
             mSocket = nullptr;
         }
     }
@@ -149,4 +149,4 @@ private:
 
 }
 
-#endif //__LOC_SOCKET__
+#endif //__LOC_IPC__

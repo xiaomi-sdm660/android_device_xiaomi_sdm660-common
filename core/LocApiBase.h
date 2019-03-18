@@ -187,6 +187,8 @@ public:
     void requestOdcpi(OdcpiRequestInfo& request);
     void reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
     void reportDeleteAidingDataEvent(GnssAidingData& aidingData);
+    void reportKlobucharIonoModel(GnssKlobucharIonoModel& ionoModel);
+    void reportGnssAdditionalSystemInfo(GnssAdditionalSystemInfo& additionalSystemInfo);
 
     // downward calls
     // All below functions are to be defined by adapter specific modules:
