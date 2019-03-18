@@ -122,6 +122,9 @@ on boot
     write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
     setprop sys.usb.configfs 1
 
+# default country code
+    setprop ro.boot.wificountrycode 00
+
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
     class core
