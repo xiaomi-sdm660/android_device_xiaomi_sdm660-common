@@ -186,6 +186,9 @@ on boot
 
     # Wifi firmware reload path
     chown wifi wifi /sys/module/wlan/parameters/fwpath
+    
+    # default country code
+    setprop ro.boot.wificountrycode 00
 
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
