@@ -34,6 +34,8 @@
 #include <LocationAPI.h>
 #include <map>
 
+#define MIN_TRACKING_INTERVAL (100) // 100 msec
+
 typedef struct LocationSessionKey {
     LocationAPI* client;
     uint32_t id;
