@@ -449,4 +449,6 @@
 
     <!-- Whether to enable smart clock feature -->
      <bool name="config_enableSmartClock">true</bool>
+    <!-- Full screen aspect ratio -->
+    <bool name="config_haveHigherAspectRatioScreen">true</bool> 
 </resources>
