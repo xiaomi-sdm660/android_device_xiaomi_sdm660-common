@@ -16,6 +16,8 @@ GNSS_CFLAGS := \
     -Wno-error=switch \
     -Wno-error=date-time
 
+LOCAL_SANITIZE := signed-integer-overflow, unsigned-integer-overflow
+
 # GPS-HIDL
 GNSS_HIDL_1_0_TARGET_LIST := msm8960
 GNSS_HIDL_1_0_TARGET_LIST += msm8974
