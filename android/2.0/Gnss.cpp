@@ -407,9 +407,13 @@ Return<bool> Gnss::setPositionMode_1_1(V1_0::IGnss::GnssPositionMode mode,
 
 Return<sp<V1_1::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_1_1() {
     ENTRY_LOG_CALLFLOW();
+#ifdef GNSS_HIDL_LEGACY_MEASURMENTS
+    return nullptr;
+#else
     if (mGnssMeasurement == nullptr)
         mGnssMeasurement = new GnssMeasurement();
     return mGnssMeasurement;
+#endif
 }
 
 Return<sp<V1_1::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_1_1() {
@@ -470,9 +474,13 @@ Return<sp<V2_0::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_2_0() {
 }
 Return<sp<V2_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_2_0() {
     ENTRY_LOG_CALLFLOW();
+#ifdef GNSS_HIDL_LEGACY_MEASURMENTS
+    return nullptr;
+#else
     if (mGnssMeasurement == nullptr)
         mGnssMeasurement = new GnssMeasurement();
     return mGnssMeasurement;
+#endif
 }
 Return<sp<::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections>>
         Gnss::getExtensionMeasurementCorrections() {

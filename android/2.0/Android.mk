@@ -24,6 +24,11 @@ LOCAL_SRC_FILES += \
     location_api/BatchingAPIClient.cpp \
     location_api/LocationUtil.cpp \
 
+ifeq ($(GNSS_HIDL_LEGACY_MEASURMENTS),true)
+LOCAL_CFLAGS += \
+     -DGNSS_HIDL_LEGACY_MEASURMENTS
+endif
+
 LOCAL_C_INCLUDES:= \
     $(LOCAL_PATH)/location_api \
     $(LOCAL_PATH)/../measurement_corrections/1.0 \
