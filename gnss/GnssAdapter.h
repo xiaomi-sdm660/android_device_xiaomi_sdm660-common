@@ -396,8 +396,6 @@ public:
     std::string& getMoServerUrl(void) { return mMoServerUrl; }
 
     /*==== CONVERSION ===================================================================*/
-    static uint32_t convertGpsLock(const GnssConfigGpsLock gpsLock);
-    static GnssConfigGpsLock convertGpsLock(const uint32_t gpsLock);
     static uint32_t convertSuplVersion(const GnssConfigSuplVersion suplVersion);
     static uint32_t convertLppProfile(const GnssConfigLppProfile lppProfile);
     static uint32_t convertEP4ES(const GnssConfigEmergencyPdnForEmergencySupl);

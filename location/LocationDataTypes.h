@@ -225,12 +225,13 @@ typedef enum {
 } LocationTechnologyType;
 
 // Configures how GPS is locked when GPS is disabled (through GnssDisable)
-typedef enum {
+enum {
     GNSS_CONFIG_GPS_LOCK_NONE = 0, // gps is not locked when GPS is disabled (GnssDisable)
     GNSS_CONFIG_GPS_LOCK_MO,       // gps mobile originated (MO) is locked when GPS is disabled
     GNSS_CONFIG_GPS_LOCK_NI,       // gps network initiated (NI) is locked when GPS is disabled
     GNSS_CONFIG_GPS_LOCK_MO_AND_NI,// gps MO and NI is locked when GPS is disabled
-} GnssConfigGpsLock;
+};
+typedef int32_t GnssConfigGpsLock;
 
 // SUPL version
 typedef enum {
