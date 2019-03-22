@@ -304,9 +304,9 @@ on post-fs-data
     mkdir /data/media 0770 media_rw media_rw
     chown media_rw media_rw /data/media
 
-    #Create directory for tftp
-    mkdir /data/vendor/tombstones 0771 system system
-
+    #Change ownership to system
+    chown system system /data/vendor/tombstones
+    
     mkdir /data/vendor/ramdump 0771 root system
     mkdir /data/vendor/bluetooth 0770 bluetooth bluetooth
     mkdir /data/vendor/ramdump/bluetooth 0770 bluetooth bluetooth
