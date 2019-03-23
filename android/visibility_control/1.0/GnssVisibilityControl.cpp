@@ -48,11 +48,72 @@ using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::sp;
 
-GnssVisibilityControl::GnssVisibilityControl() {}
-GnssVisibilityControl::~GnssVisibilityControl() {}
+static GnssVisibilityControl* spGnssVisibilityControl = nullptr;
+
+static void convertGnssNfwNotification(GnssNfwNotification& in,
+    IGnssVisibilityControlCallback::NfwNotification& out);
+
+GnssVisibilityControl::GnssVisibilityControl(Gnss* gnss) : mGnss(gnss) {
+    spGnssVisibilityControl = this;
+}
+GnssVisibilityControl::~GnssVisibilityControl() {
+    spGnssVisibilityControl = nullptr;
+}
+
+void GnssVisibilityControl::nfwStatusCb(GnssNfwNotification notification) {
+    if (nullptr != spGnssVisibilityControl) {
+        spGnssVisibilityControl->statusCb(notification);
+    }
+}
+
+static void convertGnssNfwNotification(GnssNfwNotification& in,
+    IGnssVisibilityControlCallback::NfwNotification& out)
+{
+    memset(&out, 0, sizeof(IGnssVisibilityControlCallback::NfwNotification));
+    out.proxyAppPackageName = in.proxyAppPackageName;
+    out.protocolStack = (IGnssVisibilityControlCallback::NfwProtocolStack)in.protocolStack;
+    out.otherProtocolStackName = in.otherProtocolStackName;
+    out.requestor = (IGnssVisibilityControlCallback::NfwRequestor)in.requestor;
+    out.requestorId = in.requestorId;
+    out.responseType = (IGnssVisibilityControlCallback::NfwResponseType)in.responseType;
+    out.inEmergencyMode = in.inEmergencyMode;
+    out.isCachedLocation = in.isCachedLocation;
+}
+
+void GnssVisibilityControl::statusCb(GnssNfwNotification notification) {
+
+    if (mGnssVisibilityControlCbIface != nullptr) {
+        IGnssVisibilityControlCallback::NfwNotification nfwNotification;
+
+        // Convert from one structure to another
+        convertGnssNfwNotification(notification, nfwNotification);
+
+        auto r = mGnssVisibilityControlCbIface->nfwNotifyCb(nfwNotification);
+        if (!r.isOk()) {
+            LOC_LOGw("Error invoking NFW status cb %s", r.description().c_str());
+        }
+    } else {
+        LOC_LOGw("setCallback has not been called yet");
+    }
+}
 
 // Methods from ::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControl follow.
 Return<bool> GnssVisibilityControl::enableNfwLocationAccess(const hidl_vec<::android::hardware::hidl_string>& proxyApps) {
+
+    if (nullptr == mGnss || nullptr == mGnss->getGnssInterface()) {
+        LOC_LOGe("Null GNSS interface");
+        return false;
+    }
+
+    /* If the vector is empty we need to disable all NFW clients
+       If there is at least one app in the vector we need to enable
+       all NFW clients */
+    if (0 == proxyApps.size()) {
+        mGnss->getGnssInterface()->enableNfwLocationAccess(false);
+    } else {
+        mGnss->getGnssInterface()->enableNfwLocationAccess(true);
+    }
+
     return true;
 }
 /**
@@ -61,6 +122,18 @@ Return<bool> GnssVisibilityControl::enableNfwLocationAccess(const hidl_vec<::and
  * @param callback Handle to IGnssVisibilityControlCallback interface.
  */
 Return<bool> GnssVisibilityControl::setCallback(const ::android::sp<::android::hardware::gnss::visibility_control::V1_0::IGnssVisibilityControlCallback>& callback) {
+
+    if (nullptr == mGnss || nullptr == mGnss->getGnssInterface()) {
+        LOC_LOGe("Null GNSS interface");
+        return false;
+    }
+    mGnssVisibilityControlCbIface = callback;
+
+    NfwCbInfo cbInfo = {};
+    cbInfo.visibilityControlCb = (void*)nfwStatusCb;
+
+    mGnss->getGnssInterface()->nfwInit(cbInfo);
+
     return true;
 }
 

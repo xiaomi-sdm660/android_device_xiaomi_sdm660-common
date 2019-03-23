@@ -175,35 +175,9 @@ Return<bool> GnssConfiguration::setGlonassPositioningProtocol(uint8_t protocol) 
 }
 
 Return<bool> GnssConfiguration::setGpsLock(uint8_t lock) {
-    if (mGnss == nullptr) {
-        LOC_LOGE("%s]: mGnss is nullptr", __FUNCTION__);
-        return false;
-    }
-
-    GnssConfig config;
-    memset(&config, 0, sizeof(GnssConfig));
-    config.size = sizeof(GnssConfig);
-    config.flags = GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT;
-    switch (lock) {
-        case 0:
-            config.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
-            break;
-        case 1:
-            config.gpsLock = GNSS_CONFIG_GPS_LOCK_MO;
-            break;
-        case 2:
-            config.gpsLock = GNSS_CONFIG_GPS_LOCK_NI;
-            break;
-        case 3:
-            config.gpsLock = GNSS_CONFIG_GPS_LOCK_MO_AND_NI;
-            break;
-        default:
-            LOC_LOGE("%s]: invalid lock: %d.", __FUNCTION__, lock);
-            return false;
-            break;
-    }
-
-    return mGnss->updateConfiguration(config);
+    /* we no longer set GPS lock here, there is
+       visibility control for this */
+    return true;
 }
 
 Return<bool> GnssConfiguration::setEmergencySuplPdn(bool enabled) {
@@ -308,8 +282,19 @@ bool GnssConfiguration::setBlacklistedSource(
 
 // Methods from ::android::hardware::gnss::V2_0::IGnssConfiguration follow.
 Return<bool> GnssConfiguration::setEsExtensionSec(uint32_t emergencyExtensionSeconds) {
-    //TODO emergencyExtensionSeconds is not supporded in GnssConfig yet
-    return false;
+    ENTRY_LOG_CALLFLOW();
+    if (mGnss == nullptr) {
+        LOC_LOGe("mGnss is nullptr");
+        return false;
+    }
+
+    GnssConfig config;
+    memset(&config, 0, sizeof(GnssConfig));
+    config.size = sizeof(GnssConfig);
+    config.flags = GNSS_CONFIG_FLAGS_EMERGENCY_EXTENSION_SECONDS_BIT;
+    config.emergencyExtensionSeconds = emergencyExtensionSeconds;
+
+    return mGnss->updateConfiguration(config);
 }
 
 }  // namespace implementation

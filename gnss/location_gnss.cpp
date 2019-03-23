@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2019 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -67,6 +67,9 @@ static void agpsDataConnFailed(AGpsExtType agpsType);
 static void getDebugReport(GnssDebugReport& report);
 static void updateConnectionStatus(bool connected, int8_t type);
 static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb);
+static void enableNfwLocationAccess(bool enable);
+static void nfwInit(const NfwCbInfo& cbInfo);
+static uint8_t getGpsLock();
 
 static void odcpiInit(const OdcpiRequestCallback& callback);
 static void odcpiInject(const Location& location);
@@ -106,7 +109,10 @@ static const GnssInterface gGnssInterface = {
     odcpiInit,
     odcpiInject,
     blockCPI,
-    getGnssEnergyConsumed
+    getGnssEnergyConsumed,
+    enableNfwLocationAccess,
+    nfwInit,
+    getGpsLock
 };
 
 #ifndef DEBUG_X86
@@ -346,3 +352,29 @@ static void getGnssEnergyConsumed(GnssEnergyConsumedCallback energyConsumedCb) {
         gGnssAdapter->getGnssEnergyConsumedCommand(energyConsumedCb);
     }
 }
+
+static void enableNfwLocationAccess(bool enable) {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->nfwControlCommand(enable);
+    }
+}
+
+static void nfwInit(const NfwCbInfo& cbInfo) {
+    if (NULL != gGnssAdapter) {
+        gGnssAdapter->initNfwCommand(cbInfo);
+    }
+}
+
+static uint8_t getGpsLock() {
+    if (NULL != gGnssAdapter) {
+        return ContextBase::mGps_conf.GPS_LOCK;
+    } else {
+        /* In case gGnssAdapter is NULL
+           just return 0x3 which means both
+           AFW and NFW are locked (the bits are NFW
+           for 2^1 and AFW for 2^0) */
+        LOC_LOGe("gGnssAdapter is NULL");
+        return 0x3;
+    }
+}
+

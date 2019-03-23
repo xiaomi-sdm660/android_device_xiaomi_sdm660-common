@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2019 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -198,6 +198,11 @@ typedef struct {
     void* statusV4Cb;
     AgpsCbPriority cbPriority;
 } AgpsCbInfo;
+
+typedef struct {
+    void* visibilityControlCb;
+    void* isInEmergencySession;
+} NfwCbInfo;
 
 /** GPS extended callback structure. */
 typedef struct {
@@ -2038,6 +2043,46 @@ struct AGnssExtStatusIpV6 {
     uint8_t             ipV6Addr[16];
 };
 
+/*
+* Represents the the Nfw Notification structure
+*/
+#define GNSS_MAX_NFW_STRING_LEN  20
+
+typedef enum {
+    GNSS_NFW_CTRL_PLANE = 0,
+    GNSS_NFW_SUPL = 1,
+    GNSS_NFW_IMS = 10,
+    GNSS_NFW_SIM = 11,
+    GNSS_NFW_OTHER_PROTOCOL_STACK = 100
+} GnssNfwProtocolStack;
+
+typedef enum {
+    GNSS_NFW_CARRIER = 0,
+    GNSS_NFW_OEM = 10,
+    GNSS_NFW_MODEM_CHIPSET_VENDOR = 11,
+    GNSS_NFW_GNSS_CHIPSET_VENDOR = 12,
+    GNSS_NFW_OTHER_CHIPSET_VENDOR = 13,
+    GNSS_NFW_AUTOMOBILE_CLIENT = 20,
+    GNSS_NFW_OTHER_REQUESTOR = 100
+} GnssNfwRequestor;
+
+typedef enum {
+    GNSS_NFW_REJECTED = 0,
+    GNSS_NFW_ACCEPTED_NO_LOCATION_PROVIDED = 1,
+    GNSS_NFW_ACCEPTED_LOCATION_PROVIDED = 2,
+} GnssNfwResponseType;
+
+typedef struct {
+    char                    proxyAppPackageName[GNSS_MAX_NFW_STRING_LEN];
+    GnssNfwProtocolStack    protocolStack;
+    char                    otherProtocolStackName[GNSS_MAX_NFW_STRING_LEN];
+    GnssNfwRequestor        requestor;
+    char                    requestorId[GNSS_MAX_NFW_STRING_LEN];
+    GnssNfwResponseType     responseType;
+    bool                    inEmergencyMode;
+    bool                    isCachedLocation;
+} GnssNfwNotification;
+
 /* ODCPI Request Info */
 enum OdcpiRequestType {
     ODCPI_REQUEST_TYPE_START,
@@ -2058,6 +2103,11 @@ typedef std::function<void(const OdcpiRequestInfo& request)> OdcpiRequestCallbac
  * @param status Will be of type AGnssExtStatusIpV4.
  */
 typedef void (*AgnssStatusIpV4Cb)(AGnssExtStatusIpV4 status);
+
+/*
+* Callback with NFW information.
+*/
+typedef void(*NfwStatusCb)(GnssNfwNotification notification);
 
 /*
  * Callback with AGNSS(IpV6) status information.
