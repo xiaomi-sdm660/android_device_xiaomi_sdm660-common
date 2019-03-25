@@ -1,0 +1,1 @@
+allow cnd kernel:system module_request;

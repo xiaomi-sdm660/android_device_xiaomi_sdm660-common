@@ -1,3 +1,7 @@
 #============= radio ==============
 allow radio vendor_file:file { execute getattr open read };
 allow radio vendor_file:file rx_file_perms;
+allow radio bg_boot_complete_prop:file read;
+allow radio bg_daemon_prop:file read;
+allow radio bluetooth_a2dp_offload_prop:file read;
+allow radio bluetooth_prop:file read;

@@ -1,2 +1,2 @@
 #============= mediacodec ==============
-allow mediacodec default_prop:file read;
+allow mediacodec default_prop:file { read getattr open };

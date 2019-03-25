@@ -1,0 +1,7 @@
+allow isolated_app bg_boot_complete_prop:file read;
+allow isolated_app bg_daemon_prop:file read;
+allow isolated_app bluetooth_a2dp_offload_prop:file read;
+allow isolated_app bluetooth_prop:file read;
+allow isolated_app bootloader_boot_reason_prop:file read;
+allow isolated_app boottime_prop:file read;
+allow isolated_app cnd_vendor_prop:file read;

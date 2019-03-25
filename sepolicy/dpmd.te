@@ -1,2 +1,3 @@
 #============= dpmd ==============
 allow dpmd vendor_file:file { execute getattr open read };
+allow dpmd netutils_wrapper:process noatsecure;

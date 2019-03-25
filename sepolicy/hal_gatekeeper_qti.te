@@ -1,0 +1,1 @@
+allow hal_gatekeeper_qti system_prop:file { getattr open read };

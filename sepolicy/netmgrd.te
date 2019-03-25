@@ -1,3 +1,5 @@
 #============= netmgrd ==============
 allow netmgrd default_prop:property_service set;
 allow netmgrd property_socket:sock_file write;
+allow netmgrd netutils_wrapper:process noatsecure;
+allow netmgrd kernel:system module_request;

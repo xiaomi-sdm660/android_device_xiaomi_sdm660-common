@@ -1,2 +1,4 @@
 #============= bluetooth ==============
-allow bluetooth vendor_file:file { open read };
+allow bluetooth vendor_file:file { open read execute getattr };
+allow bluetooth bg_boot_complete_prop:file read;
+allow bluetooth bg_daemon_prop:file read;

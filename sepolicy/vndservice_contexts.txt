@@ -1,1 +1,0 @@
-android.hardware.fingerprint.IGoodixFingerprintDaemon  u:object_r:goodixvnd_service:s0

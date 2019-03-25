@@ -12,8 +12,12 @@ allow hal_fingerprint_sdm660 { fuse mnt_user_file storage_file }:dir search;
 allow hal_fingerprint_sdm660 { mnt_user_file storage_file }:lnk_file read;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:dir rw_dir_perms;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:file rw_file_perms;
-
+allow hal_fingerprint_sdm660 fingerprintd_data_file:dir write;
+allow hal_fingerprint_sdm660 default_prop:file { getattr read };
+allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
+allow hal_fingerprint_sdm660 system_prop:file { open read getattr };
 allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
+allow hal_fingerprint_sdm660 vndbinder_device:chr_file ioctl;
 
 binder_call(hal_fingerprint_sdm660, vndservicemanager)
 binder_call(hal_fingerprint_sdm660, hal_perf_default)
@@ -25,12 +29,9 @@ r_dir_file(hal_fingerprint_sdm660, firmware_file)
 add_service(hal_fingerprint_sdm660, goodixvnd_service)
 add_hwservice(hal_fingerprint_sdm660, goodixhw_service)
 
-allow hal_fingerprint_sdm660 vndbinder_device:chr_file ioctl;
-
 get_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 set_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 
 vndbinder_use(hal_fingerprint_sdm660)
 
-dontaudit hal_fingerprint_sdm660 { media_rw_data_file sdcardfs}:dir search;
-dontaudit hal_fingerprint_sdm660 media_rw_data_file:dir { read open };
+dontaudit hal_fingerprint_sdm660 { media_rw_data_file sdcardfs}:dir { search read open };

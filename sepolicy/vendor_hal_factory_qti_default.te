@@ -1,0 +1,1 @@
+allow vendor_hal_factory_qti_default default_prop:file { open read };

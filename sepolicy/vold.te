@@ -1,0 +1,2 @@
+allow vold sdcardd:process noatsecure;
+allow vold vold_prepare_subdirs:process noatsecure;

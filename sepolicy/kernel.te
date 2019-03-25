@@ -1,0 +1,2 @@
+allow kernel init:process noatsecure;
+allow kernel self:capability dac_override;

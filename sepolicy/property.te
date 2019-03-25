@@ -1,3 +1,5 @@
 type hal_fingerprint_prop, property_type;
 # Mlipay
 type ifaa_prop, property_type;
+# Spectrum
+type spectrum_prop, property_type;

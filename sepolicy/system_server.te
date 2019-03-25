@@ -12,3 +12,5 @@ allow system_server proc:file r_file_perms;
 allow system_server sysfs_vibrator:file read;
 allow system_server vendor_camera_prop:file { getattr open read };
 allow system_server vendor_default_prop:file { getattr open read };
+allow system_server adsprpc_prop:file read;
+allow system_server bg_boot_complete_prop:file read;

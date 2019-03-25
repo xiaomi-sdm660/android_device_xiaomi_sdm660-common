@@ -17,3 +17,4 @@ allow qti_init_shell system_radio_prop:property_service set;
 allow qti_init_shell sysfs:file write;
 allow qti_init_shell system_prop:file { getattr open read };
 allow qti_init_shell vendor_radio_data_file:dir search;
+allow qti_init_shell sysfs_devices_system_cpu:file setattr;
