@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1682,10 +1682,12 @@ bool SystemStatus::setDefaultGnssEngineStates(void)
 
 @return     true when successfully done
 ******************************************************************************/
-bool SystemStatus::eventConnectionStatus(bool connected, int8_t type)
+bool SystemStatus::eventConnectionStatus(bool connected, int8_t type,
+                                         bool roaming, NetworkHandle networkHandle)
 {
     // send networkinof dataitem to systemstatus observer clients
-    SystemStatusNetworkInfo s(type, "", "", connected);
+    SystemStatusNetworkInfo s(type, "", "", connected, roaming,
+                              (uint64_t) networkHandle);
     mSysStatusObsvr.notify({&s});
 
     return true;
