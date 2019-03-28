@@ -85,7 +85,6 @@ struct GnssInterface {
     void (*getGnssEnergyConsumed)(GnssEnergyConsumedCallback energyConsumedCb);
     void (*enableNfwLocationAccess)(bool enable);
     void (*nfwInit)(const NfwCbInfo& cbInfo);
-    uint8_t (*getGpsLock)();
     void (*getPowerStateChanges)(void* powerStateCb);
 };
 
