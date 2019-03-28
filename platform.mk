@@ -349,6 +349,7 @@ PRODUCT_PACKAGES += \
 	init.qcom.post_boot.sh \
 	init.qcom.sh \
 	init.qcom.usb.sh \
+	init.qcom.power.sh \
 	init.qti.fm.sh \
 	init.qti.qseecomd.sh
 
