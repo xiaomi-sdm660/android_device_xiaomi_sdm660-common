@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, The Linux Foundation. All rights reserved.
+Copyright (c) 2013, 2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -75,6 +75,7 @@ static char* IPACM_read_content_element
 )
 {
 	xmlNode* child_ptr;
+	uint32_t str_len;
 
 	for (child_ptr  = element->children;
 			 child_ptr != NULL;
@@ -82,7 +83,15 @@ static char* IPACM_read_content_element
 	{
 		if (child_ptr->type == XML_TEXT_NODE)
 		{
-			return (char*)child_ptr->content;
+			str_len = strlen((char*)child_ptr->content);
+
+			if(str_len < MAX_XML_STR_LEN)
+				return (char*)child_ptr->content;
+			else
+			{
+				IPACMERR("Invalid string size\n");
+				break;
+			}
 		}
 	}
 	return NULL;
