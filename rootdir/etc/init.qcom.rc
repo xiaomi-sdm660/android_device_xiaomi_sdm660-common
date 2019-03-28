@@ -752,10 +752,6 @@ on charger
     setprop persist.sys.usb.config mass_storage
     start qcom-post-boot
 
-on property:init.svc.surfaceflinger=restarting
-    stop  vendor.hwcomposer-2-1
-    start vendor.hwcomposer-2-1
-
 on property:vendor.display.lcd_density=*
     setprop ro.sf.lcd_density ${vendor.display.lcd_density}
 
