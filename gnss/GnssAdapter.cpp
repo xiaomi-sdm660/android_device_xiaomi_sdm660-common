@@ -303,11 +303,11 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
     }
     if (GPS_LOCATION_EXTENDED_HAS_NORTH_STD_DEV & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_NORTH_STD_DEV_BIT;
-        out.northVelocityStdDeviation = locationExtended.northStdDeviation;
+        out.northStdDeviation = locationExtended.northStdDeviation;
     }
     if (GPS_LOCATION_EXTENDED_HAS_EAST_STD_DEV & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_EAST_STD_DEV_BIT;
-        out.eastVelocityStdDeviation = locationExtended.eastStdDeviation;
+        out.eastStdDeviation = locationExtended.eastStdDeviation;
     }
     if (GPS_LOCATION_EXTENDED_HAS_NORTH_VEL & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_NORTH_VEL_BIT;
