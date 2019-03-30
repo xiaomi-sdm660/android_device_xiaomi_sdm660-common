@@ -51,8 +51,8 @@ inline bool operator ==(LocationSessionKey const& left, LocationSessionKey const
 inline bool operator !=(LocationSessionKey const& left, LocationSessionKey const& right) {
     return left.id != right.id || left.client != right.client;
 }
-typedef std::map<LocationSessionKey, LocationOptions> LocationSessionMap;
-typedef std::map<LocationSessionKey, TrackingOptions> TrackingOptionsMap;
+
+typedef void (*removeClientCompleteCallback)(LocationAPI* client);
 
 namespace loc_core {
 
@@ -62,6 +62,8 @@ class LocAdapterBase {
 private:
     static uint32_t mSessionIdCounter;
     const bool mIsMaster;
+    bool mIsEngineCapabilitiesKnown = false;
+
 protected:
     LOC_API_ADAPTER_EVENT_MASK_T mEvtMask;
     ContextBase* mContext;
@@ -71,6 +73,20 @@ protected:
     inline LocAdapterBase(const MsgTask* msgTask) :
         mIsMaster(false), mEvtMask(0), mContext(NULL), mLocApi(NULL),
         mLocAdapterProxyBase(NULL), mMsgTask(msgTask) {}
+
+    /* ==== CLIENT ========================================================================= */
+    typedef std::map<LocationAPI*, LocationCallbacks> ClientDataMap;
+    ClientDataMap mClientData;
+    std::vector<LocMsg*> mPendingMsgs; // For temporal storage of msgs before Open is completed
+    /* ======== UTILITIES ================================================================== */
+    void saveClient(LocationAPI* client, const LocationCallbacks& callbacks);
+    void eraseClient(LocationAPI* client);
+    LocationCallbacks getClientCallbacks(LocationAPI* client);
+    LocationCapabilitiesMask getCapabilities();
+    void broadcastCapabilities(LocationCapabilitiesMask mask);
+    virtual void updateClientsEventMask();
+    virtual void stopClientSessions(LocationAPI* client);
+
 public:
     inline virtual ~LocAdapterBase() { mLocApi->removeAdapter(this); }
     LocAdapterBase(const LOC_API_ADAPTER_EVENT_MASK_T mask,
@@ -126,12 +142,11 @@ public:
         return mIsMaster;
     }
 
+    inline bool isEngineCapabilitiesKnown() { return mIsEngineCapabilitiesKnown;}
+    inline void setEngineCapabilitiesKnown(bool value) { mIsEngineCapabilitiesKnown = value;}
+
     virtual void handleEngineUpEvent();
     virtual void handleEngineDownEvent();
-    inline virtual void setPositionModeCommand(LocPosMode& posMode) {
-
-        (void)posMode;
-    }
     virtual void reportPositionEvent(const UlpLocation& location,
                                      const GpsLocationExtended& locationExtended,
                                      enum loc_sess_status status,
@@ -174,6 +189,28 @@ public:
     virtual bool reportGnssAdditionalSystemInfoEvent(
             GnssAdditionalSystemInfo& additionalSystemInfo);
     virtual void reportNfwNotificationEvent(GnssNfwNotification& notification);
+
+    virtual void geofenceBreachEvent(size_t count, uint32_t* hwIds, Location& location,
+                                     GeofenceBreachType breachType, uint64_t timestamp);
+    virtual void geofenceStatusEvent(GeofenceStatusAvailable available);
+
+    virtual void reportPositionEvent(UlpLocation &location,
+                                     GpsLocationExtended &locationExtended,
+                                     enum loc_sess_status status,
+                                     LocPosTechMask loc_technology_mask);
+
+    virtual void reportLocationsEvent(const Location* locations, size_t count,
+            BatchingMode batchingMode);
+    virtual void reportCompletedTripsEvent(uint32_t accumulated_distance);
+    virtual void reportBatchStatusChangeEvent(BatchingStatus batchStatus);
+
+    /* ==== CLIENT ========================================================================= */
+    /* ======== COMMANDS ====(Called from Client Thread)==================================== */
+    void addClientCommand(LocationAPI* client, const LocationCallbacks& callbacks);
+    void removeClientCommand(LocationAPI* client,
+                             removeClientCompleteCallback rmClientCb);
+    void requestCapabilitiesCommand(LocationAPI* client);
+
 };
 
 } // namespace loc_core

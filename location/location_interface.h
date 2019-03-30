@@ -85,23 +85,20 @@ struct GnssInterface {
     void (*enableNfwLocationAccess)(bool enable);
     void (*nfwInit)(const NfwCbInfo& cbInfo);
     uint8_t (*getGpsLock)();
+    void (*getPowerStateChanges)(void* powerStateCb);
 };
 
-struct FlpInterface {
+struct BatchingInterface {
     size_t size;
     void (*initialize)(void);
     void (*deinitialize)(void);
     void (*addClient)(LocationAPI* client, const LocationCallbacks& callbacks);
     void (*removeClient)(LocationAPI* client, removeClientCompleteCallback rmClientCb);
     void (*requestCapabilities)(LocationAPI* client);
-    uint32_t (*startTracking)(LocationAPI* client, TrackingOptions&);
-    void (*updateTrackingOptions)(LocationAPI* client, uint32_t id, TrackingOptions&);
-    void (*stopTracking)(LocationAPI* client, uint32_t id);
     uint32_t (*startBatching)(LocationAPI* client, BatchingOptions&);
     void (*stopBatching)(LocationAPI* client, uint32_t id);
     void (*updateBatchingOptions)(LocationAPI* client, uint32_t id, BatchingOptions&);
     void (*getBatchedLocations)(LocationAPI* client, uint32_t id, size_t count);
-    void (*getPowerStateChanges)(void* powerStateCb);
 };
 
 struct GeofenceInterface {

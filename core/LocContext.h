@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2017-2019 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -26,8 +26,8 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef __LOC_ENG_CONTEXT__
-#define __LOC_ENG_CONTEXT__
+#ifndef __LOC_CONTEXT__
+#define __LOC_CONTEXT__
 
 #include <stdbool.h>
 #include <ctype.h>
@@ -36,35 +36,26 @@
 
 namespace loc_core {
 
-class LocDualContext : public ContextBase {
+class LocContext : public ContextBase {
     static const MsgTask* mMsgTask;
-    static ContextBase* mFgContext;
-    static ContextBase* mBgContext;
+    static ContextBase* mContext;
     static const MsgTask* getMsgTask(LocThread::tCreate tCreator,
                                      const char* name, bool joinable = true);
     static const MsgTask* getMsgTask(const char* name, bool joinable = true);
     static pthread_mutex_t mGetLocContextMutex;
 
 protected:
-    LocDualContext(const MsgTask* msgTask,
-                   LOC_API_ADAPTER_EVENT_MASK_T exMask);
-    inline virtual ~LocDualContext() {}
+    LocContext(const MsgTask* msgTask);
+    inline virtual ~LocContext() {}
 
 public:
     static const char* mLBSLibName;
-    static const LOC_API_ADAPTER_EVENT_MASK_T mFgExclMask;
-    static const LOC_API_ADAPTER_EVENT_MASK_T mBgExclMask;
     static const char* mLocationHalName;
 
-    static ContextBase* getLocFgContext(LocThread::tCreate tCreator, LocMsg* firstMsg,
+    static ContextBase* getLocContext(LocThread::tCreate tCreator, LocMsg* firstMsg,
                                         const char* name, bool joinable = true);
-    inline static ContextBase* getLocFgContext(const char* name, bool joinable = true) {
-        return getLocFgContext(NULL, NULL, name, joinable);
-    }
-    static ContextBase* getLocBgContext(LocThread::tCreate tCreator, LocMsg* firstMsg,
-                                        const char* name, bool joinable = true);
-    inline static ContextBase* getLocBgContext(const char* name, bool joinable = true) {
-        return getLocBgContext(NULL, NULL, name, joinable);
+    inline static ContextBase* getLocContext(const char* name, bool joinable = true) {
+        return getLocContext(NULL, NULL, name, joinable);
     }
 
     static void injectFeatureConfig(ContextBase *context);
@@ -72,4 +63,4 @@ public:
 
 }
 
-#endif //__LOC_ENG_CONTEXT__
+#endif //__LOC_CONTEXT__
