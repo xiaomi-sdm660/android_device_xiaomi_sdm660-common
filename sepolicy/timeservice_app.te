@@ -1,0 +1,11 @@
+#============= timeservice_app ==============
+allow timeservice_app bg_boot_complete_prop:file read;
+allow timeservice_app bg_daemon_prop:file read;
+allow timeservice_app bluetooth_a2dp_offload_prop:file read;
+allow timeservice_app bluetooth_prop:file read;
+allow timeservice_app bootloader_boot_reason_prop:file read;
+allow timeservice_app boottime_prop:file read;
+allow timeservice_app cnd_vendor_prop:file read;
+allow timeservice_app console_silent_prop:file read;
+allow timeservice_app ctl_LKCore_prop:file read;
+allow timeservice_app ctl_atfwd_prop:file read;

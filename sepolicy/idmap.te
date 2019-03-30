@@ -1,0 +1,2 @@
+#============= idmap ==============
+allow idmap installd:file read;

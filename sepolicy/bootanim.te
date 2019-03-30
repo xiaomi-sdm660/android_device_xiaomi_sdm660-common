@@ -1,0 +1,2 @@
+#============= bootanim ==============
+allow bootanim app_data_file:dir search;

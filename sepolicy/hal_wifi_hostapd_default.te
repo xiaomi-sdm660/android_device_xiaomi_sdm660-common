@@ -1,0 +1,2 @@
+#============= hal_wifi_hostapd_default ==============
+allow hal_wifi_hostapd_default kernel:system module_request;

@@ -1,3 +1,4 @@
+#============= hal_fingerprint_sdm660 ==============
 type hal_fingerprint_sdm660, domain, binder_in_vendor_violators;
 hal_server_domain(hal_fingerprint_sdm660, hal_fingerprint)
 
@@ -35,3 +36,13 @@ set_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 vndbinder_use(hal_fingerprint_sdm660)
 
 dontaudit hal_fingerprint_sdm660 { media_rw_data_file sdcardfs}:dir { search read open };
+allow hal_fingerprint_sdm660 default_android_hwservice:hwservice_manager add;
+allow hal_fingerprint_sdm660 default_prop:file open;
+allow hal_fingerprint_sdm660 fingerprintd_data_file:dir search;
+allow hal_fingerprint_sdm660 sysfs_fpc_dev:file write;
+allow hal_fingerprint_sdm660 fingerprintd_data_file:file getattr;
+allow hal_fingerprint_sdm660 sysfs_fpc_dev:file open;
+allow hal_fingerprint_sdm660 fingerprintd_data_file:dir { add_name remove_name };
+allow hal_fingerprint_sdm660 fingerprintd_data_file:file { rename unlink };
+allow hal_fingerprint_sdm660 sdcardfs:dir search;
+

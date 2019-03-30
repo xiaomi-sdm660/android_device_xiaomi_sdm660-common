@@ -1,0 +1,5 @@
+#============= hal_wifi_default ==============
+allow hal_wifi_default default_prop:file read;
+allow hal_wifi_default kernel:system module_request;
+allow hal_wifi_default default_prop:file open;
+allow hal_wifi_default default_prop:file getattr;

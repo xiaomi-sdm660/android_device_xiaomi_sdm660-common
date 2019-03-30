@@ -1,0 +1,2 @@
+#============= dnsmasq ==============
+allow dnsmasq kernel:system module_request;

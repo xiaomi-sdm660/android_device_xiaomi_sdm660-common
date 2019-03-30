@@ -1,0 +1,6 @@
+#============= mediaprovider ==============
+allow mediaprovider bg_boot_complete_prop:file read;
+allow mediaprovider bg_daemon_prop:file read;
+allow mediaprovider bluetooth_a2dp_offload_prop:file read;
+allow mediaprovider bluetooth_prop:file read;
+allow mediaprovider bootloader_boot_reason_prop:file read;

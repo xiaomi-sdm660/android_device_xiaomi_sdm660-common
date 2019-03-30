@@ -1,0 +1,3 @@
+#============= dex2oat ==============
+allow dex2oat runtime_event_log_tags_file:file read;
+allow dex2oat runtime_event_log_tags_file:file open;

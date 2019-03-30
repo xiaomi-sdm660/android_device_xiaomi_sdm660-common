@@ -1,0 +1,2 @@
+#============= dataservice_app ==============
+allow dataservice_app runtime_event_log_tags_file:file read;

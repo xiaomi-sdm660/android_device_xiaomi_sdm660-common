@@ -1,1 +1,3 @@
 allow installd idmap:process noatsecure;
+allow installd dex2oat:process noatsecure;
+allow installd profman:process noatsecure;

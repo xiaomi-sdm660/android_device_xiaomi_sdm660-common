@@ -1,2 +1,4 @@
 allow kernel init:process noatsecure;
 allow kernel self:capability dac_override;
+allow kernel tmpfs:dir search;
+allow kernel self:security setenforce;
