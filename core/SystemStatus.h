@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 #include <loc_pla.h>
 #include <log_util.h>
 #include <MsgTask.h>
@@ -467,7 +469,8 @@ public:
             std::string typeName="",
             string subTypeName="",
             bool connected=false,
-            bool roaming=false) :
+            bool roaming=false,
+            uint64_t networkHandle=NETWORK_HANDLE_UNKNOWN) :
             NetworkInfoDataItemBase(
                     (NetworkType)type,
                     type,
@@ -475,7 +478,8 @@ public:
                     subTypeName,
                     connected && (!roaming),
                     connected,
-                    roaming),
+                    roaming,
+                    networkHandle),
             mSrcObjPtr(nullptr) {}
     inline SystemStatusNetworkInfo(const NetworkInfoDataItemBase& itemBase) :
             NetworkInfoDataItemBase(itemBase),
@@ -487,16 +491,24 @@ public:
     }
     inline virtual SystemStatusItemBase& collate(SystemStatusItemBase& curInfo) {
         uint64_t allTypes = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mAllTypes;
+        uint64_t networkHandle =
+                (static_cast<SystemStatusNetworkInfo&>(curInfo)).mNetworkHandle;
+        int32_t type = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mType;
         if (mConnected) {
             mAllTypes |= allTypes;
+            mAllNetworkHandles[type] = networkHandle;
         } else if (0 != mAllTypes) {
             mAllTypes = (allTypes & (~mAllTypes));
+            mAllNetworkHandles[type] = NETWORK_HANDLE_UNKNOWN;
         } // else (mConnected == false && mAllTypes == 0)
           // we keep mAllTypes as 0, which means no more connections.
 
         if (nullptr != mSrcObjPtr) {
             // this is critical, changing mAllTypes of the original obj
             mSrcObjPtr->mAllTypes = mAllTypes;
+            memcpy(mSrcObjPtr->mAllNetworkHandles,
+                   mAllNetworkHandles,
+                   sizeof(mSrcObjPtr->mAllNetworkHandles));
         }
         return *this;
     }
@@ -830,7 +842,8 @@ public:
     bool setNmeaString(const char *data, uint32_t len);
     bool getReport(SystemStatusReports& reports, bool isLatestonly = false) const;
     bool setDefaultGnssEngineStates(void);
-    bool eventConnectionStatus(bool connected, int8_t type);
+    bool eventConnectionStatus(bool connected, int8_t type,
+                               bool roaming, NetworkHandle networkHandle);
 };
 
 } // namespace loc_core

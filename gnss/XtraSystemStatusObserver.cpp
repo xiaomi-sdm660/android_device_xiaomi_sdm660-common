@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -69,17 +69,21 @@ bool XtraSystemStatusObserver::updateLockStatus(GnssConfigGpsLock lock) {
     return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
-bool XtraSystemStatusObserver::updateConnections(uint64_t allConnections) {
+bool XtraSystemStatusObserver::updateConnections(uint64_t allConnections,
+        uint64_t wifiNetworkHandle, uint64_t mobileNetworkHandle) {
     mIsConnectivityStatusKnown = true;
     mConnections = allConnections;
+    mWifiNetworkHandle = wifiNetworkHandle;
+    mMobileNetworkHandle = mobileNetworkHandle;
 
     if (!mReqStatusReceived) {
         return true;
     }
 
     stringstream ss;
-    ss <<  "connection";
-    ss << " " << mConnections;
+    ss << "connection" << endl << mConnections << endl << wifiNetworkHandle
+            << endl << mobileNetworkHandle;
+
     return ( send(LOC_IPC_XTRA, ss.str()) );
 }
 
@@ -134,6 +138,7 @@ inline bool XtraSystemStatusObserver::onStatusRequested(int32_t xtraStatusUpdate
     ss << "respondStatus" << endl;
     (mGpsLock == -1 ? ss : ss << mGpsLock) << endl;
     (mConnections == (uint64_t)~0 ? ss : ss << mConnections) << endl
+            << mWifiNetworkHandle << endl << mMobileNetworkHandle << endl
             << mTac << endl << mMccmnc << endl << mIsConnectivityStatusKnown;
 
     return ( send(LOC_IPC_XTRA, ss.str()) );
@@ -235,7 +240,11 @@ void XtraSystemStatusObserver::notify(const list<IDataItemCore*>& dlist)
                     {
                         NetworkInfoDataItemBase* networkInfo =
                                 static_cast<NetworkInfoDataItemBase*>(each);
-                        mXtraSysStatObj->updateConnections(networkInfo->getAllTypes());
+                        mXtraSysStatObj->updateConnections(networkInfo->getAllTypes(),
+                                (NetworkHandle) networkInfo->getNetworkHandle(
+                                        loc_core::NetworkInfoDataItemBase::TYPE_WIFI),
+                                (NetworkHandle) networkInfo->getNetworkHandle(
+                                        loc_core::NetworkInfoDataItemBase::TYPE_MOBILE));
                     }
                     break;
 

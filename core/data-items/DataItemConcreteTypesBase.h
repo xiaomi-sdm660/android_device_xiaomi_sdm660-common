@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2017, 2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -34,6 +34,7 @@
 #include <cstring>
 #include <DataItemId.h>
 #include <IDataItemCore.h>
+#include <gps_extended_c.h>
 
 #define MAC_ADDRESS_LENGTH    6
 // MAC address length in bytes
@@ -222,7 +223,7 @@ protected:
 class NetworkInfoDataItemBase : public IDataItemCore {
 public:
     enum NetworkType {
-        TYPE_MOBILE,
+        TYPE_MOBILE = 0,
         TYPE_WIFI,
         TYPE_ETHERNET,
         TYPE_BLUETOOTH,
@@ -236,7 +237,7 @@ public:
     };
     NetworkInfoDataItemBase(
     NetworkType initialType, int32_t type, string typeName, string subTypeName,
-    bool available, bool connected, bool roaming ):
+    bool available, bool connected, bool roaming, uint64_t networkHandle ):
             mAllTypes(typeToAllTypes(initialType)),
             mType(type),
             mTypeName(typeName),
@@ -244,7 +245,12 @@ public:
             mAvailable(available),
             mConnected(connected),
             mRoaming(roaming),
-            mId(NETWORKINFO_DATA_ITEM_ID) {}
+            mNetworkHandle(networkHandle),
+            mId(NETWORKINFO_DATA_ITEM_ID) {
+                memset (&mAllNetworkHandles, NETWORK_HANDLE_UNKNOWN,
+                        sizeof (mAllNetworkHandles));
+                mAllNetworkHandles[type] = networkHandle;
+            }
     virtual ~NetworkInfoDataItemBase() {}
     inline virtual DataItemId getId() { return mId; }
     virtual void stringify(string& /*valueStr*/) {}
@@ -253,6 +259,9 @@ public:
         return (NetworkType)mType;
     }
     inline uint64_t getAllTypes() { return mAllTypes; }
+    inline uint64_t getNetworkHandle(NetworkType type) {
+        return mAllNetworkHandles[type];
+    }
     // Data members
     uint64_t mAllTypes;
     int32_t mType;
@@ -261,6 +270,8 @@ public:
     bool mAvailable;
     bool mConnected;
     bool mRoaming;
+    uint64_t mAllNetworkHandles[TYPE_UNKNOWN + 1];
+    uint64_t mNetworkHandle;
 protected:
     DataItemId mId;
     inline uint64_t typeToAllTypes(NetworkType type) {

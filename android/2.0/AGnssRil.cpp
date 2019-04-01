@@ -102,7 +102,7 @@ Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool
                 }
                 break;
         }
-        mGnss->getGnssInterface()->updateConnectionStatus(connected, typeout);
+        mGnss->getGnssInterface()->updateConnectionStatus(connected, false, typeout, 0);
     }
     return true;
 }
@@ -111,12 +111,17 @@ Return<bool> AGnssRil::updateNetworkState_2_0(const V2_0::IAGnssRil::NetworkAttr
 
     if (nullptr != mGnss && (nullptr != mGnss->getGnssInterface())) {
         int8_t typeout = loc_core::NetworkInfoDataItemBase::TYPE_UNKNOWN;
+        bool roaming = false;
         if (attributes.capabilities & IAGnssRil::NetworkCapability::NOT_METERED) {
             typeout = loc_core::NetworkInfoDataItemBase::TYPE_WIFI;
         } else {
             typeout = loc_core::NetworkInfoDataItemBase::TYPE_MOBILE;
         }
-        mGnss->getGnssInterface()->updateConnectionStatus(attributes.isConnected, typeout);
+        if (attributes.capabilities & IAGnssRil::NetworkCapability::NOT_ROAMING) {
+            roaming = false;
+        }
+        mGnss->getGnssInterface()->updateConnectionStatus(attributes.isConnected,
+                typeout, roaming, (NetworkHandle) attributes.networkHandle);
     }
     return true;
 }
