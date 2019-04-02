@@ -15,6 +15,7 @@ allow hal_fingerprint_sdm660 fingerprint_sysfs:dir rw_dir_perms;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:file rw_file_perms;
 allow hal_fingerprint_sdm660 fingerprintd_data_file:dir write;
 allow hal_fingerprint_sdm660 default_prop:file { getattr read };
+allow hal_fingerprint_sdm660 fingerprint_prop:file read;
 allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
 allow hal_fingerprint_sdm660 system_prop:file { open read getattr };
 allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
@@ -45,4 +46,3 @@ allow hal_fingerprint_sdm660 sysfs_fpc_dev:file open;
 allow hal_fingerprint_sdm660 fingerprintd_data_file:dir { add_name remove_name };
 allow hal_fingerprint_sdm660 fingerprintd_data_file:file { rename unlink };
 allow hal_fingerprint_sdm660 sdcardfs:dir search;
-
