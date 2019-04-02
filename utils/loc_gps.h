@@ -548,7 +548,7 @@ typedef uint8_t                         LocGnssConstellationType;
 /** Represents a location. */
 typedef struct {
     /** set to sizeof(LocGpsLocation) */
-    size_t          size;
+    uint32_t        size;
     /** Contains LocGpsLocationFlags bits. */
     uint16_t        flags;
     /** The spoof mask */
