@@ -14,3 +14,6 @@ allow hal_camera_default { hal_configstore_default hal_graphics_allocator_defaul
 allow hal_camera_default default_prop:file { getattr open read };
 allow hal_camera_default persist_debug_prop:file { getattr open read };
 allow hal_camera_default system_prop:file { getattr open read };
+allow hal_camera_default exported3_default_prop:file read;
+allow hal_camera_default exported3_default_prop:file open;
+allow hal_camera_default exported3_default_prop:file getattr;

@@ -1,1 +1,4 @@
 allow hal_drm_default media_data_file:dir search;
+allow hal_drm_default media_data_file:dir getattr;
+allow hal_drm_default media_data_file:dir read;
+allow hal_drm_default media_data_file:file { read write };

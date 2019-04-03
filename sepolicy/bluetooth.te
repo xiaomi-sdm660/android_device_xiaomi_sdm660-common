@@ -18,3 +18,8 @@ allow bluetooth ctl_default_prop:file read;
 allow bluetooth ctl_dumpstate_prop:file read;
 allow bluetooth ctl_interface_stop_prop:file read;
 allow bluetooth ctl_mdnsd_prop:file read;
+allow bluetooth ctl_qcrild_prop:file read;
+allow bluetooth ctl_restart_prop:file read;
+allow bluetooth ctl_rildaemon_prop:file read;
+allow bluetooth ctl_sigstop_prop:file read;
+allow bluetooth ctl_start_prop:file read;

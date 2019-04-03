@@ -6,3 +6,6 @@ allow hal_audio_default init:unix_stream_socket connectto;
 allow hal_audio_default property_socket:sock_file write;
 allow hal_audio_default default_prop:file { read open };
 allow hal_audio_default default_prop:file getattr;
+allow hal_audio_default mnt_vendor_file:dir search;
+allow hal_audio_default sysfs:file read;
+allow hal_audio_default sysfs:file open;

@@ -20,3 +20,8 @@ allow vendor_init radio_prop:property_service set;
 allow vendor_init rootfs:lnk_file setattr;
 allow vendor_init tombstone_data_file:dir { add_name create };
 allow vendor_init vendor_camera_prop:property_service set;
+allow vendor_init audio_prop:property_service set;
+allow vendor_init bservice_prop:property_service set;
+allow vendor_init mm_parser_prop:property_service set;
+allow vendor_init overlay_prop:property_service set;
+allow vendor_init spectrum_prop:property_service set;

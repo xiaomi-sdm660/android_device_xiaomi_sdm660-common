@@ -8,6 +8,8 @@ allow hal_fingerprint_default property_socket:sock_file write;
 allow hal_fingerprint_default sysfs:file write;
 allow hal_fingerprint_default system_prop:property_service set;
 allow hal_fingerprint_default default_prop:file { getattr open read };
+allow hal_fingerprint_sdm660 fingerprint_prop:file open;
+allow hal_fingerprint_sdm660 media_rw_data_file:dir search;
 
 allow hal_fingerprint_default tee_device:chr_file rw_file_perms;
 allow hal_fingerprint_default uhid_device:chr_file rw_file_perms;
