@@ -26,7 +26,7 @@ import com.android.internal.os.DeviceKeyHandler;
 
 public class KeyHandler implements DeviceKeyHandler {
 
-    private static final int SCANCODE_JASMINE = 96;
+    private static final int SCANCODE_JASMINE = 108;
     private static final int SCANCODE_CLOVER = 172;
 
     private static int sActionBefore = KeyEvent.ACTION_DOWN;
