@@ -57,6 +57,7 @@ on fs
     chmod 0771 /mnt/vendor/persist
     mkdir /mnt/vendor/persist/bluetooth 0770 bluetooth bluetooth
     mkdir /mnt/vendor/persist/data 0700 system system
+    mkdir /mnt/vendor/persist/stability 0755 system system
     mkdir /mnt/vendor/persist/bms 0700 root system
     mkdir /mnt/vendor/persist/display 0770 system graphics
     mkdir /mnt/vendor/persist/hvdcp_opti 0770 root system
@@ -87,7 +88,6 @@ on post-fs-data
 #end
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/vendor/tloc 0700 system drmrpc
-    start pa-cal-load
 
 #USB controller configuration
     setprop vendor.usb.rndis.func.name "rndis_bam"
@@ -96,6 +96,10 @@ on post-fs-data
     setprop vendor.usb.dpl.inst.name "dpl"
     write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
     setprop sys.usb.configfs 1
+
+# Thermal
+    mkdir /data/vendor/thermal 0771 root system
+    mkdir /data/vendor/thermal/config 0771 root system
 
 on boot
     start vendor.rmt_storage
@@ -129,6 +133,14 @@ on boot
     mkdir /data/vendor/camera 0770 camera camera
 
 # Wifi firmware reload path
+    #add for display feature
+    chown system system /sys/class/graphics/fb0/msm_fb_ce
+    chown system system /sys/class/graphics/fb0/msm_fb_cabc
+    chown system system /sys/class/graphics/fb0/msm_fb_srgb
+    chown system system /sys/class/graphics/fb0/msm_fb_gamma
+    chown system system /sys/class/graphics/fb0/msm_fb_cabc_movie
+    chown system system /sys/class/graphics/fb0/msm_fb_cabc_still
+    chown system system /sys/class/graphics/fb0/msm_fb_hbm
     chown wifi wifi /sys/module/wlan/parameters/fwpath
 
 # default country code
@@ -154,6 +166,11 @@ on property:sys.shutdown.requested=*
     stop vendor.per_proxy
     stop vendor.ims_rtp_daemon
 
+on property:vendor.camera.thermal_lc=12
+    write /sys/class/thermal/thermal_message/sconfig 12
+
+on property:vendor.camera.thermal_lc=0
+    write /sys/class/thermal/thermal_message/sconfig 0
 service vendor.qseecomd /vendor/bin/qseecomd
    class core
    user root
@@ -265,6 +282,7 @@ on charger
     start vendor.hvdcp_opti
     setprop sys.usb.configfs 1
     start vendor.power_off_alarm
+    start vendor.thermal-engine
 
 service vendor.qfp-daemon /vendor/bin/qfp-daemon
     class late_start
@@ -277,34 +295,27 @@ service vendor.hvdcp_opti /system/vendor/bin/hvdcp_opti
      group system wakelock
      writepid /dev/cpuset/system-background/tasks
 
+# lcd effect
 on property:persist.sys.display_srgb=1
     write /sys/class/graphics/fb0/msm_fb_srgb 1
 
 on property:persist.sys.display_srgb=2
     write /sys/class/graphics/fb0/msm_fb_srgb 2
 
-on property:sys.dynamic_debug=1
-   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-digital-cdc.c +p"
-   write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c +p"
+on property:persist.sys.display_ce=4
+    write /sys/class/graphics/fb0/msm_fb_ce 1
 
-on property:sys.dynamic_debug=0
-   write /sys/kernel/debug/dynamic_debug/control "file q6afe.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file q6adm.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-pcm-routing-v2.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-dai-q6-v2.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file soc-core.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file soc-dapm.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-internal.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file sdm660-common.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-analog-cdc.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file msm-digital-cdc.c -p"
-   write /sys/kernel/debug/dynamic_debug/control "file wcd-mbhc-v2.c -p"
+on property:persist.sys.display_ce=0
+    write /sys/class/graphics/fb0/msm_fb_ce 2
+
+on property:persist.sys.display_cabc=1
+    write /sys/class/graphics/fb0/msm_fb_cabc 1
+
+on property:persist.sys.display_cabc=2
+    write /sys/class/graphics/fb0/msm_fb_cabc 2
+
+on property:persist.sys.display_gamma=1
+    write /sys/class/graphics/fb0/msm_fb_gamma 1
+
+on property:persist.sys.display_gamma=2
+    write /sys/class/graphics/fb0/msm_fb_gamma 2

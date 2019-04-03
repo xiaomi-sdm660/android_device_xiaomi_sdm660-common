@@ -231,8 +231,7 @@ function configure_zram_parameters() {
     # Zram disk - 75% for Go devices.
     # For 512MB Go device, size = 384MB, set same for Non-Go.
     # For 1GB Go device, size = 768MB, set same for Non-Go.
-    # For 2GB and 3GB Non-Go device, size = 1GB
-    # For 4GB and 6GB Non-Go device, size = 2GB
+    # For >=2GB Non-Go device, size = 1GB
     # And enable lz4 zram compression for Go targets.
 
     if [ "$low_ram" == "true" ]; then
@@ -374,6 +373,11 @@ else
 
             vmpres_file_min=$((minfree_5 + (minfree_5 - rem_minfree_4)))
             echo $vmpres_file_min > /sys/module/lowmemorykiller/parameters/vmpressure_file_min
+            if [ $MemTotal -gt 5505024 ]; then
+                echo "18432,23040,27648,32256,85296,120640" > /sys/module/lowmemorykiller/parameters/minfree
+            else
+                echo "18432,23040,27648,32256,55296,100640" > /sys/module/lowmemorykiller/parameters/minfree
+            fi
         else
             # Set LMK series, vmpressure_file_min for 32 bit non-go targets.
             # Disable Core Control, enable KLMK for non-go 8909.
@@ -1602,7 +1606,7 @@ case "$target" in
                 case "$soc_id" in
                         "277" | "278")
                         # Start energy-awareness for 8976
-                        start vendor.energy-awareness
+                        start energy-awareness
                 ;;
                 esac
 
@@ -2382,10 +2386,9 @@ case "$target" in
 
             # cpuset settings
             echo 0-7 > /dev/cpuset/top-app/cpus
-            echo 4-7 > /dev/cpuset/foreground/boost/cpus
-            echo 0-2,4-7 > /dev/cpuset/foreground/cpus
             echo 0-1 > /dev/cpuset/background/cpus
             echo 0-2 > /dev/cpuset/system-background/cpus
+            echo 0-2,4-7 > /dev/cpuset/foreground/cpus
 
             # disable thermal bcl hotplug to switch governor
             echo 0 > /sys/module/msm_thermal/core_control/enabled
@@ -2462,6 +2465,14 @@ case "$target" in
 
             # Set Memory parameters
             configure_memory_parameters
+
+            # set lmk minfree for MemTotal greater than 6G
+	    arch_type=`uname -m`
+	    MemTotalStr=`cat /proc/meminfo | grep MemTotal`
+	    MemTotal=${MemTotalStr:16:8}
+	    if [ "$arch_type" == "aarch64" ] && [ $MemTotal -gt 5505024 ]; then
+	        echo "18432,23040,27648,32256,85296,120640" > /sys/module/lowmemorykiller/parameters/minfree
+	    fi
 
             # Enable bus-dcvs
             for cpubw in /sys/class/devfreq/*qcom,cpubw*
@@ -3444,8 +3455,6 @@ case "$target" in
 		echo N > /sys/module/lpm_levels/parameters/sleep_disabled
 	fi
 	echo N > /sys/module/lpm_levels/parameters/sleep_disabled
-        # Starting io prefetcher service
-        start iop
 
         # Set Memory parameters
         configure_memory_parameters
@@ -3812,7 +3821,6 @@ case "$target" in
 	echo 5 > /proc/sys/kernel/sched_spill_nr_run
 	echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
         echo 1 > /proc/sys/kernel/sched_prefer_sync_wakee_to_waker
-	start iop
 
         # disable thermal bcl hotplug to switch governor
         echo 0 > /sys/module/msm_thermal/core_control/enabled
