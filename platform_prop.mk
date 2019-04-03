@@ -76,7 +76,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.qti.telephony.vt_cam_interface=1 \
 	vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi,org.cyanogenmod.snap \
 	camera.hal1.packagelist=com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android \
-	vendor.camera.hal1.packagelist= com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android
+	vendor.camera.hal1.packagelist= com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android \
+	persist.vendor.camera.fdvideo=1 \
+	persist.vendor.camera.awb.sync=2 \
+	persist.vendor.camera.ltm.overlap=13
 
 # Charger
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -194,22 +197,21 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.data.df.iwlan_mux=9 \
 	persist.data.df.dev_name=rmnet_usb0 \
 	persist.vendor.data.mode=concurrent \
-	persist.data.netmgrd.qos.enable=true \
 	persist.data.wda.enable=true \
 	persist.vendor.radio.apm_sim_not_pwdn=1 \
 	persist.vendor.radio.atfwd.start=true \
 	persist.radio.aosp_usr_pref_sel=true \
-	persist.radio.data_con_rprt=1 \
 	persist.rmnet.data.enable=true \
 	persist.vendor.radio.sib16_support=1 \
 	persist.vendor.radio.custom_ecc=1 \
 	persist.vendor.radio.rat_on=combine \
 	persist.radio.schd.cache=3500 \
 	rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so \
-	ro.com.android.dataroaming=true \
 	ro.telephony.default_network=22,20 \
 	ro.vendor.use_data_netmgrd=true \
-	telephony.lteOnCdmaDevice=1
+	telephony.lteOnCdmaDevice=1 \
+	persist.vendor.radio.data_con_rprt=1 \
+	persist.vendor.radio.ignore_dom_time=15
 
 # Sensors
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -219,6 +221,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vendor.sensors.pmd=true \
 	ro.vendor.sensors.sta_detect=true \
 	ro.vendor.sensors.mot_detect=true \
+	ro.vendor.sensors.pug=true \
 	ro.vendor.sdk.sensors.gestures=false \
 	vendor.display.disable_rotator_downscale=1
 
@@ -253,7 +256,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Video encoding
 PRODUCT_PROPERTY_OVERRIDES += \
-	vendor.vidc.dec.enable.downscalar=1 \
+	vendor.vidc.dec.enable.downscalar=0 \
 	vendor.vidc.enc.disable_bframes=1 \
 	vendor.vidc.enc.disable.pq=false \
 	vidc.enc.dcvs.extra-buff-count=2 \
