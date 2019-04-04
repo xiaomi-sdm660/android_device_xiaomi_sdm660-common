@@ -25,3 +25,4 @@ allow vendor_init bservice_prop:property_service set;
 allow vendor_init mm_parser_prop:property_service set;
 allow vendor_init overlay_prop:property_service set;
 allow vendor_init spectrum_prop:property_service set;
+allow vendor_init media_rw_data_file:file getattr;

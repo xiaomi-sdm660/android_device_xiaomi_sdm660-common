@@ -91,3 +91,12 @@ allow init self:process execmem;
 allow init mediadrmserver:binder call;
 allow init sensors:process noatsecure;
 allow init thermalserviced:process noatsecure;
+<<<<<<< HEAD
+=======
+allow init mediadrmserver:binder transfer;
+allow init atfwd:process noatsecure;
+allow init energyawareness:process noatsecure;
+allow init hvdcp:process noatsecure;
+allow init keystore:process noatsecure;
+allow init thermal-engine:process noatsecure;
+>>>>>>> 3f69f4840... fix more denials

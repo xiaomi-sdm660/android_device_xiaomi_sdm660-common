@@ -47,3 +47,5 @@ allow hal_fingerprint_sdm660 sysfs_fpc_dev:file open;
 allow hal_fingerprint_sdm660 fingerprintd_data_file:dir { add_name remove_name };
 allow hal_fingerprint_sdm660 fingerprintd_data_file:file { rename unlink };
 allow hal_fingerprint_sdm660 sdcardfs:dir search;
+allow hal_fingerprint_sdm660 fingerprint_data_file:dir search;
+allow hal_fingerprint_sdm660 media_rw_data_file:dir { open read };

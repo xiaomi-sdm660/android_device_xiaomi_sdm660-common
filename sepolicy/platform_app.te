@@ -41,3 +41,8 @@ allow platform_app exported_audio_prop:file read;
 allow platform_app exported_bluetooth_prop:file read;
 allow platform_app exported_overlay_prop:file read;
 allow platform_app exported_wifi_prop:file read;
+allow platform_app firstboot_prop:file read;
+allow platform_app fm_prop:file read;
+allow platform_app fst_prop:file read;
+allow platform_app graphics_vulkan_prop:file read;
+allow platform_app hal_fingerprint_prop:file read;

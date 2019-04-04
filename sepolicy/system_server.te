@@ -34,3 +34,8 @@ allow system_server ctl_restart_prop:file read;
 allow system_server ctl_rildaemon_prop:file read;
 allow system_server ctl_sigstop_prop:file read;
 allow system_server ctl_start_prop:file read;
+allow system_server ctl_stop_prop:file read;
+allow system_server ctl_vendor_hbtp_prop:file read;
+allow system_server ctl_vendor_imsrcsservice_prop:file read;
+allow system_server ctl_vendor_mmid_prop:file read;
+allow system_server ctl_vendor_netmgrd_prop:file read;

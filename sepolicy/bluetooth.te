@@ -23,3 +23,8 @@ allow bluetooth ctl_restart_prop:file read;
 allow bluetooth ctl_rildaemon_prop:file read;
 allow bluetooth ctl_sigstop_prop:file read;
 allow bluetooth ctl_start_prop:file read;
+allow bluetooth ctl_stop_prop:file read;
+allow bluetooth ctl_vendor_hbtp_prop:file read;
+allow bluetooth ctl_vendor_imsrcsservice_prop:file read;
+allow bluetooth ctl_vendor_mmid_prop:file read;
+allow bluetooth ctl_vendor_netmgrd_prop:file read;

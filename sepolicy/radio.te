@@ -35,3 +35,8 @@ allow radio ctl_vendor_qmuxd_prop:file read;
 allow radio ctl_vendor_rild_prop:file read;
 allow radio ctl_vendor_rmt_storage_prop:file read;
 allow radio ctl_vendor_wigigsvc_prop:file read;
+allow radio device_logging_prop:file read;
+allow radio dumpstate_options_prop:file read;
+allow radio exported_audio_prop:file read;
+allow radio exported_bluetooth_prop:file read;
+allow radio exported_overlay_prop:file read;
