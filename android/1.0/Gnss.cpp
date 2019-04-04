@@ -27,7 +27,7 @@
 #include "Gnss.h"
 #include <LocationUtil.h>
 
-typedef void* (getLocationInterface)();
+typedef const GnssInterface* (getLocationInterface)();
 
 namespace android {
 namespace hardware {
@@ -84,7 +84,7 @@ GnssAPIClient* Gnss::getApi() {
     return mApi;
 }
 
-GnssInterface* Gnss::getGnssInterface() {
+const GnssInterface* Gnss::getGnssInterface() {
     static bool getGnssInterfaceFailed = false;
     if (nullptr == mGnssInterface && !getGnssInterfaceFailed) {
         LOC_LOGD("%s]: loading libgnss.so::getGnssInterface ...", __func__);
@@ -105,7 +105,7 @@ GnssInterface* Gnss::getGnssInterface() {
         if (NULL == getter) {
             getGnssInterfaceFailed = true;
         } else {
-            mGnssInterface = (GnssInterface*)(*getter)();
+            mGnssInterface = (const GnssInterface*)(*getter)();
         }
     }
     return mGnssInterface;
@@ -238,7 +238,7 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
                                   double longitudeDegrees,
                                   float accuracyMeters)  {
     ENTRY_LOG_CALLFLOW();
-    GnssInterface* gnssInterface = getGnssInterface();
+    const GnssInterface* gnssInterface = getGnssInterface();
     if (nullptr != gnssInterface) {
         gnssInterface->injectLocation(latitudeDegrees, longitudeDegrees, accuracyMeters);
         return true;
@@ -250,7 +250,7 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
 Return<bool> Gnss::injectTime(int64_t timeMs, int64_t timeReferenceMs,
                               int32_t uncertaintyMs) {
     ENTRY_LOG_CALLFLOW();
-    GnssInterface* gnssInterface = getGnssInterface();
+    const GnssInterface* gnssInterface = getGnssInterface();
     if (nullptr != gnssInterface) {
         gnssInterface->injectTime(timeMs, timeReferenceMs, uncertaintyMs);
         return true;

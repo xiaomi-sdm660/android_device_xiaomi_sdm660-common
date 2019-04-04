@@ -27,7 +27,7 @@
 #include "Gnss.h"
 #include "LocationUtil.h"
 
-typedef void* (getLocationInterface)();
+typedef const GnssInterface* (getLocationInterface)();
 
 #define IMAGES_INFO_FILE "/sys/devices/soc0/images"
 #define DELIMITER ";"
@@ -125,7 +125,7 @@ GnssAPIClient* Gnss::getApi() {
     return mApi;
 }
 
-GnssInterface* Gnss::getGnssInterface() {
+const GnssInterface* Gnss::getGnssInterface() {
     static bool getGnssInterfaceFailed = false;
     if (nullptr == mGnssInterface && !getGnssInterfaceFailed) {
         LOC_LOGD("%s]: loading libgnss.so::getGnssInterface ...", __func__);
@@ -146,7 +146,7 @@ GnssInterface* Gnss::getGnssInterface() {
         if (NULL == getter) {
             getGnssInterfaceFailed = true;
         } else {
-            mGnssInterface = (GnssInterface*)(*getter)();
+            mGnssInterface = (const GnssInterface*)(*getter)();
         }
     }
     return mGnssInterface;
@@ -283,7 +283,7 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
                                   double longitudeDegrees,
                                   float accuracyMeters)  {
     ENTRY_LOG_CALLFLOW();
-    GnssInterface* gnssInterface = getGnssInterface();
+    const GnssInterface* gnssInterface = getGnssInterface();
     if (nullptr != gnssInterface) {
         gnssInterface->injectLocation(latitudeDegrees, longitudeDegrees, accuracyMeters);
         return true;
@@ -295,7 +295,7 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
 Return<bool> Gnss::injectTime(int64_t timeMs, int64_t timeReferenceMs,
                               int32_t uncertaintyMs) {
     ENTRY_LOG_CALLFLOW();
-    GnssInterface* gnssInterface = getGnssInterface();
+    const GnssInterface* gnssInterface = getGnssInterface();
     if (nullptr != gnssInterface) {
         gnssInterface->injectTime(timeMs, timeReferenceMs, uncertaintyMs);
         return true;
@@ -383,7 +383,7 @@ Return<bool> Gnss::setCallback_1_1(const sp<V1_1::IGnssCallback>& callback) {
     ENTRY_LOG_CALLFLOW();
     callback->gnssNameCb(getVersionString());
     mGnssCbIface_1_1 = callback;
-    GnssInterface* gnssInterface = getGnssInterface();
+    const GnssInterface* gnssInterface = getGnssInterface();
     if (nullptr != gnssInterface) {
         OdcpiRequestCallback cb = [this](const OdcpiRequestInfo& odcpiRequest) {
             odcpiRequestCb(odcpiRequest);
@@ -431,7 +431,7 @@ Return<sp<V1_1::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_1_1() {
 
 Return<bool> Gnss::injectBestLocation(const GnssLocation& gnssLocation) {
     ENTRY_LOG_CALLFLOW();
-    GnssInterface* gnssInterface = getGnssInterface();
+    const GnssInterface* gnssInterface = getGnssInterface();
     if (nullptr != gnssInterface) {
         Location location = {};
         convertGnssLocation(gnssLocation, location);
@@ -521,9 +521,9 @@ Return<sp<V2_0::IGnssDebug>> Gnss::getExtensionGnssDebug_2_0() {
     return nullptr;
 }
 
-IGnss* HIDL_FETCH_IGnss(const char* hal) {
+V1_0::IGnss* HIDL_FETCH_IGnss(const char* hal) {
     ENTRY_LOG_CALLFLOW();
-    IGnss* iface = nullptr;
+    V1_0::IGnss* iface = nullptr;
     iface = new Gnss();
     if (iface == nullptr) {
         LOC_LOGE("%s]: failed to get %s", __FUNCTION__, hal);
