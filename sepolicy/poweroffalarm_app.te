@@ -1,0 +1,6 @@
+#============= poweroffalarm_app ==============
+allow poweroffalarm_app bg_boot_complete_prop:file read;
+allow poweroffalarm_app bg_daemon_prop:file read;
+allow poweroffalarm_app bluetooth_a2dp_offload_prop:file read;
+allow poweroffalarm_app bluetooth_prop:file read;
+allow poweroffalarm_app bootloader_boot_reason_prop:file read;

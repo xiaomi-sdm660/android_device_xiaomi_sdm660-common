@@ -1,0 +1,2 @@
+#============= drmserver ==============
+allow drmserver runtime_event_log_tags_file:file read;
