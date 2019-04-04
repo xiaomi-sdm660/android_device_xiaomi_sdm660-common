@@ -121,6 +121,10 @@ struct Gnss : public IGnss {
 
     Return<bool> injectBestLocation_2_0(const ::android::hardware::gnss::V2_0::GnssLocation& location) override;
 
+    Return<sp<V2_0::IGnssBatching>> getExtensionGnssBatching_2_0() override;
+    Return<sp<V2_0::IGnssDebug>> getExtensionGnssDebug_2_0() override;
+
+
     /**
      * This method returns the IGnssVisibilityControl interface.
      *

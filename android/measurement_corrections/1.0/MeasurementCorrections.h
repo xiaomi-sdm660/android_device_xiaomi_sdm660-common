@@ -31,6 +31,7 @@
 #define ANDROID_HARDWARE_GNSS_V1_0_MeasurementCorrections_H
 
 #include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrections.h>
+#include <android/hardware/gnss/measurement_corrections/1.0/IMeasurementCorrectionsCallback.h>
 #include <hidl/MQDescriptor.h>
 #include <hidl/Status.h>
 
@@ -51,6 +52,7 @@ using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::sp;
 using ::android::hardware::gnss::V1_0::GnssLocation;
+using ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrectionsCallback;
 
 struct MeasurementCorrections : public IMeasurementCorrections {
     MeasurementCorrections();
@@ -58,6 +60,8 @@ struct MeasurementCorrections : public IMeasurementCorrections {
 
 // Methods from ::android::hardware::gnss::measurement_corrections::V1_0::IMeasurementCorrections follow.
 Return<bool> setCorrections(const ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections& corrections) override;
+
+Return<bool> setCallback(const sp<IMeasurementCorrectionsCallback>& callback) override;
 
 };
 

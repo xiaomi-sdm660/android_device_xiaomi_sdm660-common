@@ -374,9 +374,11 @@ static void convertGnssData_2_0(GnssMeasurementsNotification& in,
         if (in.measurements[i].adrStateMask & GNSS_MEASUREMENTS_ACCUMULATED_DELTA_RANGE_STATE_HALF_CYCLE_RESOLVED_BIT)
             out.measurements[i].v1_1.accumulatedDeltaRangeState |=
             IGnssMeasurementCallback::GnssAccumulatedDeltaRangeState::ADR_STATE_HALF_CYCLE_RESOLVED;
-        out.measurements[i].codeType =
-            static_cast<IGnssMeasurementCallback::GnssMeasurementCodeType>(in.measurements[i].codeType);
-        out.measurements[i].otherCodeTypeName = in.measurements[i].otherCodeTypeName;
+
+//        out.measurements[i].codeType =
+//            static_cast<IGnssMeasurementCallback::GnssMeasurementCodeType>(in.measurements[i].codeType);
+//        out.measurements[i].otherCodeTypeName = in.measurements[i].otherCodeTypeName;
+
         if (in.measurements[i].stateMask & GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT)
             out.measurements[i].state |= IGnssMeasurementCallback::GnssMeasurementState::STATE_CODE_LOCK;
         if (in.measurements[i].stateMask & GNSS_MEASUREMENTS_STATE_BIT_SYNC_BIT)

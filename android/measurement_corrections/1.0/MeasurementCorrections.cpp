@@ -58,6 +58,10 @@ Return<bool> MeasurementCorrections::setCorrections(const ::android::hardware::g
     return true;
 }
 
+Return<bool> MeasurementCorrections::setCallback(const sp<IMeasurementCorrectionsCallback>& callback) {
+    return true;
+}
+
 }  // namespace implementation
 }  // namespace V1_0
 }  // namespace measurement_corrections
