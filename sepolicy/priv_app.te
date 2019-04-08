@@ -99,3 +99,8 @@ allow priv_app usf_prop:file read;
 allow priv_app vendor_alarm_boot_prop:file read;
 allow priv_app vendor_am_prop:file read;
 allow priv_app vendor_audio_debug_prop:file read;
+allow priv_app e2fs_exec:file getattr;
+allow priv_app otapreopt_slot_exec:file getattr;
+allow priv_app postinstall_file:filesystem getattr;
+allow priv_app recovery_refresh_exec:file getattr;
+allow priv_app vendor_audio_prop:file read;

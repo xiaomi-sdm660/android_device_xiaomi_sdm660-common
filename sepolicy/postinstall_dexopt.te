@@ -1,0 +1,2 @@
+allow postinstall_dexopt dex2oat:process noatsecure;
+allow postinstall_dexopt vendor_overlay_file:dir search;

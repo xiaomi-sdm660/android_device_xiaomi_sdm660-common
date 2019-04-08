@@ -1,2 +1,0 @@
-allow update_engine runtime_event_log_tags_file:file { open read };
-allow update_engine self:capability fsetid;
