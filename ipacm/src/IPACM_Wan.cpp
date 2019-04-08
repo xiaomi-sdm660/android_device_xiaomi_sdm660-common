@@ -1740,9 +1740,14 @@ int IPACM_Wan::post_wan_up_tether_evt(ipa_ip_type iptype, int ipa_if_num_tether)
 	{
 		wanup_data->is_sta = false;
 	}
+	/* xlat mux-id*/
+	if(is_xlat && (m_is_sta_mode == Q6_WAN))
+		wanup_data->xlat_mux_id = ext_prop->ext[0].mux_id;
+	else
+		wanup_data->xlat_mux_id = 0;
 	IPACMDBG_H("Posting IPA_HANDLE_WAN_UP_TETHER with below information:\n");
-	IPACMDBG_H("tether_if_name:%s, is sta mode:%d\n",
-			IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether].iface_name, wanup_data->is_sta);
+	IPACMDBG_H("tether_if_name:%s, is sta mode:%d xlat_mux_id: %d\n",
+			IPACM_Iface::ipacmcfg->iface_table[ipa_if_num_tether].iface_name, wanup_data->is_sta, wanup_data->xlat_mux_id);
 	memset(&evt_data, 0, sizeof(evt_data));
 
 	if (iptype == IPA_IP_v4)
