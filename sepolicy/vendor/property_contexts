@@ -29,3 +29,4 @@ sys.thermal.                        u:object_r:thermal_engine_prop:s0
 
 # vendor_default_prop
 fpc_kpi                             u:object_r:vendor_default_prop:s0
+gpu.stats.debug.level               u:object_r:vendor_default_prop:s0
