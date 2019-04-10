@@ -36,6 +36,17 @@ public class StartAction extends IntentService {
     private static final String[] CAMERA_PACKAGES = new String[]{"com.android.camera",
             "com.android.camera2", "com.google.android.GoogleCamera"};
 
+    private static final String FP_SWIPE_DIRECTION = "FP_SWIPE_DIRECTION";
+    private static final int FP_SWIPE_UP = 0;
+    private static final int FP_SWIPE_DOWN = 1;
+    private static final int FP_SWIPE_LEFT = 2;
+    private static final int FP_SWIPE_RIGHT = 3;
+
+    private String fpActionUp;
+    private String fpActionDown;
+    private String fpActionLeft;
+    private String fpActionRight;
+
     private static StatusBarManager sStatusBarManager;
 
     public StartAction() {
@@ -56,22 +67,62 @@ public class StartAction extends IntentService {
                 DeviceSettings.PREF_ENABLE_FPACTION, 0) == 1;
         boolean fpShutterEnabled = Settings.Secure.getInt(this.getContentResolver(),
                 DeviceSettings.PREF_FP_SHUTTER, 0) == 1;
-        String fpAction = Settings.Secure.getString(this.getContentResolver(),
-                DeviceSettings.PREF_FPACTION);
 
+        fpActionUp = Settings.Secure.getString(this.getContentResolver(),
+                DeviceSettings.PREF_FPACTION_UP);
+        fpActionDown = Settings.Secure.getString(this.getContentResolver(),
+                DeviceSettings.PREF_FPACTION_DOWN);
+        fpActionLeft = Settings.Secure.getString(this.getContentResolver(),
+                DeviceSettings.PREF_FPACTION_LEFT);
+        fpActionRight = Settings.Secure.getString(this.getContentResolver(),
+                DeviceSettings.PREF_FPACTION_RIGHT);
+
+        int swipeDirection = intent.getIntExtra(FP_SWIPE_DIRECTION, 4);
         if (fpShutterEnabled) {
             if (cameraActive) {
                 sendKeyCode(KeyEvent.KEYCODE_CAMERA);
             } else if (fpActionEnabled) {
-                fpAction(fpAction);
+                fpAction(swipeDirection);
             }
         } else if (fpActionEnabled) {
-            fpAction(fpAction);
+            fpAction(swipeDirection);
         }
     }
 
-    private void fpAction(String action) {
+    private void fpAction(int swipeDirection) {
+        String action;
+        int codeDef;
+        switch (swipeDirection) {
+            case FP_SWIPE_UP:
+                action = fpActionUp;
+                codeDef = 280;
+                break;
+
+            case FP_SWIPE_DOWN:
+                action = fpActionDown;
+                codeDef = 281;
+                break;
+
+            case FP_SWIPE_LEFT:
+                action = fpActionLeft;
+                codeDef = 282;
+                break;
+
+            case FP_SWIPE_RIGHT:
+                action = fpActionRight;
+                codeDef = 283;
+                break;
+
+            default:
+                action = fpActionDown;
+                codeDef = 281;
+                break;
+        }
+
         switch (action) {
+            case "def":
+                sendKeyCode(codeDef);
+                break;
             case "expnp":
                 sStatusBarManager.expandNotificationsPanel();
                 break;
