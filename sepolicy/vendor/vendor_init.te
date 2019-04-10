@@ -11,3 +11,5 @@ allow vendor_init persist_debug_prop:property_service set;
 allow vendor_init persist_dpm_prop:property_service set;
 allow vendor_init qcom_ims_prop:property_service set;
 allow vendor_init rootfs:lnk_file setattr;
+set_prop(vendor_init, camera_prop)
+set_prop(vendor_init, vendor_camera_prop)
