@@ -56,8 +56,13 @@
     <string name="fpaction_dialogTitle">Action</string>
     <string name="fpaction_summary">Choose Action</string>
     <string name="fpaction_title">Fingerprint Actions</string>
+    <string name="fpaction_up_title">Swipe Up</string>
+    <string name="fpaction_down_title">Swipe Down</string>
+    <string name="fpaction_left_title">Swipe left</string>
+    <string name="fpaction_right_title">Swipe right</string>
 
     <!-- Values for FP Actions -->
+    <string name="fpaction_none">None</string>
     <string name="fpaction_expand_np">Expand Notification Panel</string>
     <string name="fpaction_expand_qs">Expand QS</string>
     <string name="fpaction_assistant">Assistant</string>

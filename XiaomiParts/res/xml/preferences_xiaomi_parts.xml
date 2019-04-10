@@ -46,9 +46,39 @@
             android:dialogTitle="@string/fpaction_dialogTitle"
             android:entries="@array/fpaction_enteries"
             android:entryValues="@array/fpaction_values"
-            android:key="fpaction"
+            android:key="fpaction_up"
             android:summary="@string/fpaction_summary"
-            android:title="@string/fpaction_title" />
+            android:title="@string/fpaction_up_title" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingListPreference
+            android:defaultValue="expnp"
+            android:dependency="fpaction_enabled"
+            android:dialogTitle="@string/fpaction_dialogTitle"
+            android:entries="@array/fpaction_enteries"
+            android:entryValues="@array/fpaction_values"
+            android:key="fpaction_down"
+            android:summary="@string/fpaction_summary"
+            android:title="@string/fpaction_down_title" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingListPreference
+            android:defaultValue="expnp"
+            android:dependency="fpaction_enabled"
+            android:dialogTitle="@string/fpaction_dialogTitle"
+            android:entries="@array/fpaction_enteries"
+            android:entryValues="@array/fpaction_values"
+            android:key="fpaction_left"
+            android:summary="@string/fpaction_summary"
+            android:title="@string/fpaction_left_title" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingListPreference
+            android:defaultValue="expnp"
+            android:dependency="fpaction_enabled"
+            android:dialogTitle="@string/fpaction_dialogTitle"
+            android:entries="@array/fpaction_enteries"
+            android:entryValues="@array/fpaction_values"
+            android:key="fpaction_right"
+            android:summary="@string/fpaction_summary"
+            android:title="@string/fpaction_right_title" />
 
     </PreferenceCategory>
 

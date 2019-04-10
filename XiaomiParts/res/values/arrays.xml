@@ -32,6 +32,7 @@
     </string-array>
 
     <string-array name="fpaction_enteries">
+        <item>@string/fpaction_none</item>
         <item>@string/fpaction_expand_np</item>
         <item>@string/fpaction_expand_qs</item>
         <item>@string/fpaction_assistant</item>
@@ -42,6 +43,7 @@
         <item>@string/fpaction_media_previous</item>
     </string-array>
     <string-array name="fpaction_values">
+        <item>def</item>
         <item>expnp</item>
         <item>expqs</item>
         <item>219</item>
