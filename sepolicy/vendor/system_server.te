@@ -2,3 +2,9 @@ allow system_server vendor_keylayout_file:dir search;
 allow system_server vendor_keylayout_file:file r_file_perms;
 allow system_server sysfs_vibrator:file rw_file_perms;
 allow system_server sysfs_rtc:file r_file_perms;
+allow system_server vendor_camera_prop:file { getattr open read };
+allow system_server vendor_default_prop:file { getattr open read };
+# /vendor/usr/keylayout
+r_dir_file(system_server, idc_file)
+# /vendor/usr/idc
+r_dir_file(system_server, vendor_keylayout_file)

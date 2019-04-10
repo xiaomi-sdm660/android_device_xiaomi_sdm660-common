@@ -13,8 +13,16 @@
 /data/misc/goodix(/.*)?                         u:object_r:fingerprint_data_file:s0
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
 
-# Fpc Fingerprint data
-/persist/fpc(/.*)?                              u:object_r:fingerprint_data_file:s0
+# Fingerprint
+/data/misc/goodix(/.*)?                             u:object_r:fingerprintd_data_file:s0
+/data/gf_data(/.*)?                                 u:object_r:fingerprintd_data_file:s0
+/data/vendor/fpc(/.*)?                              u:object_r:fingerprint_vendor_data_file:s0
+/data/vendor/gf_data(/.*)?                          u:object_r:fingerprint_vendor_data_file:s0
+/data/vendor/goodix(/.*)?                           u:object_r:fingerprint_vendor_data_file:s0
+/dev/goodix_fp                                      u:object_r:fingerprintd_device:s0
+/persist/fpc(/.*)?                                  u:object_r:persist_fingerprint_file:s0
+/sys/devices/soc/soc:fpc1020(/.*)?                  u:object_r:sysfs_fingerprint:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660 u:object_r:hal_fingerprint_default_exec:s0
 
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
@@ -23,7 +31,7 @@
 /dev/spidev7.1                                  u:object_r:spidev_device:s0
 
 # Keylayout
-/vendor/usr/idc(/.*)?                           u:object_r:vendor_keylayout_file:s0
+/vendor/usr/idc(/.*)?                           u:object_r:idc_file:s0
 /vendor/usr/keylayout(/.*)?                     u:object_r:vendor_keylayout_file:s0
 
 # Light HAL
@@ -43,3 +51,8 @@
 
 # Thermal
 /data/vendor/thermal(/.*)?                      u:object_r:thermal_data_file:s0
+
+# Video4linux sysfs nodes
+/sys/devices/soc/ca00000\.qcom,msm-cam/video4linux/video0(/.*)? u:object_r:sysfs_graphics:s0
+/sys/devices/soc/caa0000\.qcom,jpeg/video4linux/video1(/.*)?   u:object_r:sysfs_graphics:s0
+/sys/devices/soc/c900000\.qcom,mdss_rotator/video4linux/video2(/.*)?     u:object_r:sysfs_graphics:s0
