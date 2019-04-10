@@ -2,4 +2,3 @@ allow system_app vendor_default_prop:file { getattr open read };
 allow system_app wificond:binder call;
 allow system_app hal_mlipay_hwservice:hwservice_manager find;
 allow system_app hal_mlipay_default:binder call;
-add_service(system_app, goodix_fingerprint_service)

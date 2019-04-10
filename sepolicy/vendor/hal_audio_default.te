@@ -1,2 +1,0 @@
-allow hal_audio_default vendor_data_file:dir { create write add_name };
-allow hal_audio_default vendor_data_file:file { append create getattr open read };

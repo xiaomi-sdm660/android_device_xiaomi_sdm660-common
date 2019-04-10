@@ -53,6 +53,4 @@
 /data/vendor/thermal(/.*)?                      u:object_r:thermal_data_file:s0
 
 # Video4linux sysfs nodes
-/sys/devices/soc/ca00000\.qcom,msm-cam/video4linux/video0(/.*)? u:object_r:sysfs_graphics:s0
 /sys/devices/soc/caa0000\.qcom,jpeg/video4linux/video1(/.*)?   u:object_r:sysfs_graphics:s0
-/sys/devices/soc/c900000\.qcom,mdss_rotator/video4linux/video2(/.*)?     u:object_r:sysfs_graphics:s0
