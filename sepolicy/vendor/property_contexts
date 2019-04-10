@@ -6,8 +6,6 @@ persist.vendor.sys.pay.fido         u:object_r:mlipay_prop:s0
 persist.vendor.sys.pay.ifaa         u:object_r:mlipay_prop:s0
 persist.vendor.sys.pay.soter        u:object_r:mlipay_prop:s0
 persist.vendor.sys.provision.status u:object_r:mlipay_prop:s0
-persist.sys.thermal.  u:object_r:thermal_engine_prop:s0
-sys.thermal.          u:object_r:thermal_engine_prop:s0
 
 # Camera
 camera.                             u:object_r:camera_prop:s0
@@ -24,6 +22,10 @@ persist.vendor.sys.fp.              u:object_r:vendor_fp_prop:s0
 ro.boot.fp.                         u:object_r:vendor_fp_prop:s0
 sys.fp.                             u:object_r:vendor_fp_prop:s0
 ro.boot.fpsensor                    u:object_r:vendor_fp_prop:s0
+
+# Thermal engine
+persist.sys.thermal.                u:object_r:thermal_engine_prop:s0
+sys.thermal.                        u:object_r:thermal_engine_prop:s0
 
 # vendor_default_prop
 fpc_kpi                             u:object_r:vendor_default_prop:s0
