@@ -375,9 +375,6 @@
 	<!-- Flag indicating whether we should enable smart battery. -->
 	<bool name="config_smart_battery_available">true</bool>
 
-	<!-- Make things go fast -->
-	<bool name="config_ui_enableFadingMarquee">false</bool>
-
 	<!-- Set this to true to enable the platform's auto-power-save modes like doze and
 		  app standby.  These are not enabled by default because they require a standard
 		  cloud-to-device messaging service for apps to interact correctly with the modes
@@ -450,5 +447,5 @@
     <!-- Whether to enable smart clock feature -->
      <bool name="config_enableSmartClock">true</bool>
     <!-- Full screen aspect ratio -->
-    <bool name="config_haveHigherAspectRatioScreen">true</bool> 
+    <bool name="config_haveHigherAspectRatioScreen">true</bool>
 </resources>
