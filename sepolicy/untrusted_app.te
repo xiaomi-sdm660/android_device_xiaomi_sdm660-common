@@ -1,0 +1,1 @@
+allow init untrusted_app:fd { use };
