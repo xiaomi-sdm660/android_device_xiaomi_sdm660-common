@@ -444,11 +444,11 @@ function sdm660_sched_interactive_dcvs() {
             echo 762 > $cpubw/min_freq
             echo "1525 3143 5859 7759 9887 10327 11863 13763" > $cpubw/bw_hwmon/mbps_zones
             echo 4 > $cpubw/bw_hwmon/sample_ms
-            echo 85 > $cpubw/bw_hwmon/io_percent
+            echo 34 > $cpubw/bw_hwmon/io_percent
             echo 100 > $cpubw/bw_hwmon/decay_rate
             echo 50 > $cpubw/bw_hwmon/bw_step
             echo 20 > $cpubw/bw_hwmon/hist_memory
-            echo 0 > $cpubw/bw_hwmon/hyst_length
+            echo 10 > $cpubw/bw_hwmon/hyst_length
             echo 80 > $cpubw/bw_hwmon/down_thres
             echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
             echo 34 > $cpubw/bw_hwmon/low_power_io_percent
