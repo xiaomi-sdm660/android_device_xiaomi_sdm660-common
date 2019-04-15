@@ -5,3 +5,4 @@ allow hwservicemanager init:process getattr;
 allow hwservicemanager init:binder call;
 allow hwservicemanager runtime_event_log_tags_file:file read;
 allow hwservicemanager runtime_event_log_tags_file:file open;
+allow init hidl_memory_hwservice:hwservice_manager { find };

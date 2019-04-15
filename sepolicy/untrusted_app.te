@@ -1,1 +1,2 @@
 allow init untrusted_app:fd { use };
+allow init untrusted_app_27:fd { use };
