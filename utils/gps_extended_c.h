@@ -2165,7 +2165,9 @@ typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void*
 
 #define SOCKET_DIR_TO_CLIENT           "/dev/socket/loc_client/"
 #define SOCKET_TO_LOCATION_CLIENT_BASE "/dev/socket/loc_client/toclient"
-#define SOCKET_TO_EXTERANL_AP_LOCATION_CLIENT_BASE "/dev/socket/loc_client/extap.toclient"
+
+#define DIR_FOR_EXT_AP_LOC_CLIENT       "/data/vendor/location/extap_locclient/"
+#define FILE_FOR_EXT_AP_LOC_CLIENT_BASE "/data/vendor/location/extap_locclient/client"
 
 typedef uint64_t NetworkHandle;
 #define NETWORK_HANDLE_UNKNOWN  ~0
