@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -562,6 +562,7 @@ void AgpsManager::requestATL(int connHandle, AGpsExtType agpsType,
         LOC_AGPS_TYPE_SUPL_ES == agpsType) {
         agpsType = LOC_AGPS_TYPE_SUPL;
         apnTypeMask &= ~LOC_APN_TYPE_MASK_EMERGENCY;
+        apnTypeMask |= LOC_APN_TYPE_MASK_SUPL;
         LOC_LOGD("Changed agpsType to non-emergency when USE_EMERGENCY... is 0"
                  "and removed LOC_APN_TYPE_MASK_EMERGENCY from apnTypeMask"
                  "agpsType 0x%X apnTypeMask : 0x%X",
