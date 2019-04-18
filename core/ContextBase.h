@@ -71,6 +71,7 @@ typedef struct loc_gps_cfg_s
     double         CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD;
     uint32_t       CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET;
     uint32_t       POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED;
+    char           PROXY_APP_PACKAGE_NAME[LOC_MAX_PARAM_STRING];
 } loc_gps_cfg_s_type;
 
 /* NOTE: the implementaiton of the parser casts number
