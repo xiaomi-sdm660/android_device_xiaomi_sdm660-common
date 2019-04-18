@@ -1397,6 +1397,12 @@ typedef struct {
 
 } GnssSvMeasurementSet;
 
+typedef struct {
+    uint32_t size;                  // set to sizeof(GnssMeasurements)
+    GnssSvMeasurementSet            gnssSvMeasurementSet;
+    GnssMeasurementsNotification    gnssMeasNotification;
+} GnssMeasurements;
+
 typedef enum
 {
    GNSS_SV_POLY_COEFF_VALID             = 0x01,

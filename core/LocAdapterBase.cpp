@@ -101,10 +101,6 @@ void LocAdapterBase::
 DEFAULT_IMPL()
 
 void LocAdapterBase::
-    reportSvMeasurementEvent(GnssSvMeasurementSet &/*svMeasurementSet*/)
-DEFAULT_IMPL()
-
-void LocAdapterBase::
     reportSvPolynomialEvent(GnssSvPolynomial &/*svPolynomial*/)
 DEFAULT_IMPL()
 
@@ -162,7 +158,7 @@ bool LocAdapterBase::
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
-    reportGnssMeasurementDataEvent(const GnssMeasurementsNotification& /*measurements*/,
+reportGnssMeasurementsEvent(const GnssMeasurements& /*gnssMeasurements*/,
                                    int /*msInWeek*/)
 DEFAULT_IMPL()
 
