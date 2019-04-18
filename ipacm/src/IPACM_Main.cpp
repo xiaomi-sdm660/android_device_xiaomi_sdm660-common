@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -63,6 +63,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Neighbor.h"
 #include "IPACM_IfaceManager.h"
 #include "IPACM_Log.h"
+#include "IPACM_Wan.h"
 
 #include "IPACM_ConntrackListener.h"
 #include "IPACM_ConntrackClient.h"
@@ -713,6 +714,7 @@ void* ipa_driver_msg_notifier(void *param)
 			continue;
 		case IPA_SSR_BEFORE_SHUTDOWN:
 			IPACMDBG_H("Received IPA_SSR_BEFORE_SHUTDOWN\n");
+			IPACM_Wan::clearExtProp();
 			OffloadMng = IPACM_OffloadManager::GetInstance();
 			if (OffloadMng->elrInstance == NULL) {
 				IPACMERR("OffloadMng->elrInstance is NULL, can't forward to framework!\n");

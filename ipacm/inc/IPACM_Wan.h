@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -224,6 +224,13 @@ public:
 	static bool getXlat_Mux_Id()
 	{
 		return xlat_mux_id;
+	}
+
+	static void clearExtProp()
+	{
+		IPACM_Wan::is_ext_prop_set = false;
+		IPACM_Iface::ipacmcfg->DelExtProp(IPA_IP_v4);
+		IPACM_Iface::ipacmcfg->DelExtProp(IPA_IP_v6);
 	}
 
 	void event_callback(ipa_cm_event_id event,
