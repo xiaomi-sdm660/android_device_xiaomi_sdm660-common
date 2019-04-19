@@ -475,6 +475,16 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.flags |= GNSS_LOCATION_INFO_TIME_UNC_BIT;
         out.timeUncMs = locationExtended.timeUncMs;
     }
+
+    if (GPS_LOCATION_EXTENDED_HAS_CALIBRATION_CONFIDENCE & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_CALIBRATION_CONFIDENCE_BIT;
+        out.calibrationConfidence = locationExtended.calibrationConfidence;
+    }
+
+    if (GPS_LOCATION_EXTENDED_HAS_CALIBRATION_STATUS & locationExtended.flags) {
+        out.flags |= GNSS_LOCATION_INFO_CALIBRATION_STATUS_BIT;
+        out.calibrationStatus = locationExtended.calibrationStatus;
+    }
 }
 
 
