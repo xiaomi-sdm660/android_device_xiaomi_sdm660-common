@@ -120,6 +120,9 @@
     <string name="fpaction_right_title">Nach rechts wischen</string>
     <string name="fpaction_up_title">Nach oben wischen</string>
     <string name="fpaction_left_title">Nach links wischen</string>
-    <string name="fpaction_down_title" translatable="false">Nach unten wischen</string>
+    <string name="fpaction_down_title">Nach unten wischen</string>
     <string name="advanced_doze_summary">Inaktivitätsdisplay</string>
+    <string name="grayscale">Graustufen-Modus</string>
+    <string name="microphone_gain">Mikrofonverstärkung</string>
+    <string name="headphone_gain">Kopfhörerverstärkung</string>
 </resources>

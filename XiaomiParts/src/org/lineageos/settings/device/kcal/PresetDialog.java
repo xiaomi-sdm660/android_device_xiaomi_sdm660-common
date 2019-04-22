@@ -49,7 +49,7 @@ public class PresetDialog extends DialogFragment {
         return findIndexOfValue(mValue);
     }
 
-    public int findIndexOfValue(String value) {
+    private int findIndexOfValue(String value) {
         if (value != null && mEntryValues != null) {
             for (int i = mEntryValues.length - 1; i >= 0; i--) {
                 if (mEntryValues[i].equals(value)) {

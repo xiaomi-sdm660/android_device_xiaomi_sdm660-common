@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.support.v14.preference.PreferenceFragment;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
-import android.support.v7.preference.PreferenceScreen;
 
 import org.lineageos.settings.device.kcal.KCalSettingsActivity;
 import org.lineageos.settings.device.preferences.SecureSettingCustomSeekBarPreference;
@@ -33,7 +32,7 @@ import org.lineageos.settings.device.preferences.VibrationSeekBarPreference;
 public class DeviceSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener {
 
-    final static String CATEGORY_FP = "fingerprint";
+    private static final String CATEGORY_FP = "fingerprint";
     final static String PREF_ENABLE_FPACTION = "fpaction_enabled";
     final static String PREF_FP_SHUTTER = "fp_shutter";
     final static String PREF_FPACTION_UP = "fpaction_up";
@@ -67,6 +66,10 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_ENABLE_DIRAC = "dirac_enabled";
     private static final String PREF_HEADSET = "dirac_headset_pref";
     private static final String PREF_PRESET = "dirac_preset_pref";
+    final static String PREF_HEADPHONE_GAIN = "headphone_gain";
+    private static final String HEADPHONE_GAIN_PATH = "/sys/kernel/sound_control/headphone_gain";
+    final static String PREF_MICROPHONE_GAIN = "microphone_gain";
+    private static final String MICROPHONE_GAIN_PATH = "/sys/kernel/sound_control/mic_gain";
 
     private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
 
@@ -84,6 +87,8 @@ public class DeviceSettings extends PreferenceFragment implements
     private SecureSettingSwitchPreference mEnableDirac;
     private SecureSettingListPreference mHeadsetType;
     private SecureSettingListPreference mPreset;
+    private SecureSettingCustomSeekBarPreference mHeadphoneGain;
+    private SecureSettingCustomSeekBarPreference mMicrophoneGain;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -169,6 +174,12 @@ public class DeviceSettings extends PreferenceFragment implements
 
         mPreset = (SecureSettingListPreference) findPreference(PREF_PRESET);
         mPreset.setOnPreferenceChangeListener(this);
+
+        mHeadphoneGain = (SecureSettingCustomSeekBarPreference) findPreference(PREF_HEADPHONE_GAIN);
+        mHeadphoneGain.setOnPreferenceChangeListener(this);
+
+        mMicrophoneGain = (SecureSettingCustomSeekBarPreference) findPreference(PREF_MICROPHONE_GAIN);
+        mMicrophoneGain.setOnPreferenceChangeListener(this);
     }
 
     @Override
@@ -240,6 +251,14 @@ public class DeviceSettings extends PreferenceFragment implements
                     getContext().startService(new Intent(getContext(), DiracService.class));
                     DiracService.sDiracUtils.setLevel(String.valueOf(value));
                 }
+                break;
+
+            case PREF_HEADPHONE_GAIN:
+                FileUtils.setValue(HEADPHONE_GAIN_PATH, value + " " + value);
+                break;
+
+            case PREF_MICROPHONE_GAIN:
+                FileUtils.setValue(MICROPHONE_GAIN_PATH, (int) value);
                 break;
 
             default:

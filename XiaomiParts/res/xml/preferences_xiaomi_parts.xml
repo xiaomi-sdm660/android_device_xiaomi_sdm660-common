@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -13,7 +12,8 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         android:key="camera"
         android:title="@string/camera_title">
@@ -90,7 +90,7 @@
             android:defaultValue="100"
             android:key="torch_brightness"
             android:max="255"
-            android:min="1"
+            app:min="1"
             android:title="@string/torch_brightness_title" />
 
     </PreferenceCategory>
@@ -103,7 +103,8 @@
             android:defaultValue="80"
             android:key="vibration_strength"
             android:max="100"
-            android:min="1"
+            app:min="1"
+            app:units="%"
             android:title="@string/vibration_strength_title" />
 
     </PreferenceCategory>
@@ -176,6 +177,20 @@
             android:key="dirac_preset_pref"
             android:summary="%s"
             android:title="@string/dirac_preset_title" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingCustomSeekBarPreference
+            android:defaultValue="4"
+            android:key="headphone_gain"
+            android:max="20"
+            app:min="-40"
+            android:title="@string/headphone_gain" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingCustomSeekBarPreference
+            android:defaultValue="0"
+            android:key="microphone_gain"
+            android:max="20"
+            app:min="-10"
+            android:title="@string/microphone_gain" />
 
     </PreferenceCategory>
 </PreferenceScreen>

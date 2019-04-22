@@ -27,6 +27,7 @@ public interface Utils {
     String PREF_VALUE = "value";
     String PREF_CONTRAST = "contrast";
     String PREF_HUE = "hue";
+    String PREF_GRAYSCALE = "grayscale";
 
     boolean SETONBOOT_DEFAULT = false;
     int MINIMUM_DEFAULT = 35;
@@ -40,6 +41,7 @@ public interface Utils {
     int CONTRAST_DEFAULT = 127;
     int CONTRAST_OFFSET = 128;
     int HUE_DEFAULT = 0;
+    boolean GRAYSCALE_DEFAULT = false;
 
     String KCAL_ENABLE = "/sys/devices/platform/kcal_ctrl.0/kcal_enable";
     String KCAL_CONT = "/sys/devices/platform/kcal_ctrl.0/kcal_cont";
