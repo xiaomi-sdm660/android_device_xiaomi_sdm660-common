@@ -238,16 +238,18 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
         out.flags |= GNSS_LOCATION_INFO_ALTITUDE_MEAN_SEA_LEVEL_BIT;
         out.altitudeMeanSeaLevel = locationExtended.altitudeMeanSeaLevel;
     }
-    if (GPS_LOCATION_EXTENDED_HAS_DOP & locationExtended.flags) {
+    if (GPS_LOCATION_EXTENDED_HAS_EXT_DOP & locationExtended.flags) {
+        out.flags |= (GNSS_LOCATION_INFO_DOP_BIT|GNSS_LOCATION_INFO_EXT_DOP_BIT);
+        out.pdop = locationExtended.extDOP.PDOP;
+        out.hdop = locationExtended.extDOP.HDOP;
+        out.vdop = locationExtended.extDOP.VDOP;
+        out.gdop = locationExtended.extDOP.GDOP;
+        out.tdop = locationExtended.extDOP.TDOP;
+    } else if (GPS_LOCATION_EXTENDED_HAS_DOP & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_DOP_BIT;
         out.pdop = locationExtended.pdop;
         out.hdop = locationExtended.hdop;
         out.vdop = locationExtended.vdop;
-    }
-    if (GPS_LOCATION_EXTENDED_HAS_EXT_DOP & locationExtended.flags) {
-        out.flags |= GNSS_LOCATION_INFO_EXT_DOP_BIT;
-        out.gdop = locationExtended.extDOP.GDOP;
-        out.tdop = locationExtended.extDOP.TDOP;
     }
     if (GPS_LOCATION_EXTENDED_HAS_MAG_DEV & locationExtended.flags) {
         out.flags |= GNSS_LOCATION_INFO_MAGNETIC_DEVIATION_BIT;
