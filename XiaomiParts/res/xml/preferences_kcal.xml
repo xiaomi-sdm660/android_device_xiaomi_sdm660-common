@@ -91,5 +91,11 @@
             android:max="1536"
             android:title="@string/hue" />
 
+        <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
+            android:defaultValue="false"
+            android:dependency="kcal_enabled"
+            android:key="grayscale"
+            android:title="@string/grayscale" />
+
     </PreferenceCategory>
 </PreferenceScreen>

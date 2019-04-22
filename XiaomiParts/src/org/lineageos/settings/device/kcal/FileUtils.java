@@ -33,49 +33,51 @@ class FileUtils {
         return new File(filename).exists();
     }
 
-    boolean isSupported(String path) {
-        return fileWritable(path);
-    }
-
     void setValue(String path, Boolean value) {
-        if (path == null) {
-            return;
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(new File(path));
-            fos.write((value ? "1" : "0").getBytes());
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (fileWritable(path)) {
+            if (path == null) {
+                return;
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(new File(path));
+                fos.write((value ? "1" : "0").getBytes());
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     void setValue(String path, int value) {
-        if (path == null) {
-            return;
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(new File(path));
-            fos.write(Integer.toString(value).getBytes());
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (fileWritable(path)) {
+            if (path == null) {
+                return;
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(new File(path));
+                fos.write(Integer.toString(value).getBytes());
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     void setValue(String path, String value) {
-        if (path == null) {
-            return;
-        }
-        try {
-            FileOutputStream fos = new FileOutputStream(new File(path));
-            fos.write(value.getBytes());
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (fileWritable(path)) {
+            if (path == null) {
+                return;
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(new File(path));
+                fos.write(value.getBytes());
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

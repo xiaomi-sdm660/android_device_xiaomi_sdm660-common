@@ -43,7 +43,7 @@ final class DiracUtils {
         StringBuilder selected = new StringBuilder();
         for (int band = 0; band <= 6; band++) {
             int temp = (int) mDiracSound.getLevel(band);
-            selected.append(String.valueOf(temp));
+            selected.append(temp);
             if (band != 6) selected.append(",");
         }
         return selected.toString();

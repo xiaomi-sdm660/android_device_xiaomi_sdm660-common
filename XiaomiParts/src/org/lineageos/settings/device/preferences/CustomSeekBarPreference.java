@@ -36,7 +36,7 @@ import android.widget.TextView;
 import org.lineageos.settings.device.R;
 
 public class CustomSeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
-    private static final String SETTINGS_NS = "http://schemas.android.com/apk/res/com.android.settings";
+    private static final String APP_NS = "http://schemas.android.com/apk/res-auto";
     private static final String ANDROIDNS = "http://schemas.android.com/apk/res/android";
     private static final int DEFAULT_VALUE = 50;
     private final String TAG = getClass().getName();
@@ -59,13 +59,13 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomSeekBarPreference);
 
         mMax = attrs.getAttributeIntValue(ANDROIDNS, "max", 100);
-        mMin = attrs.getAttributeIntValue(SETTINGS_NS, "min", 0);
+        mMin = attrs.getAttributeIntValue(APP_NS, "min", 0);
         mDefaultValue = attrs.getAttributeIntValue(ANDROIDNS, "defaultValue", -1);
         if (mDefaultValue > mMax) {
             mDefaultValue = mMax;
         }
-        mUnits = getAttributeStringValue(attrs, SETTINGS_NS, "units", "");
-        mDefaultText = getAttributeStringValue(attrs, SETTINGS_NS, "defaultText",
+        mUnits = getAttributeStringValue(attrs, APP_NS, "units", "");
+        mDefaultText = getAttributeStringValue(attrs, APP_NS, "defaultText",
                 Integer.toString(mDefaultValue));
 
         int id = a.getResourceId(R.styleable.CustomSeekBarPreference_units, 0);
@@ -78,7 +78,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         }
 
         try {
-            String newInterval = attrs.getAttributeValue(SETTINGS_NS, "interval");
+            String newInterval = attrs.getAttributeValue(APP_NS, "interval");
             if (newInterval != null)
                 mInterval = Integer.parseInt(newInterval);
         } catch (Exception e) {
@@ -148,7 +148,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
         if (mCurrentValue == mDefaultValue) {
             mStatusText.setText(mDefaultText);
         } else {
-            mStatusText.setText(String.valueOf(mCurrentValue) + mUnits);
+            mStatusText.setText(mCurrentValue + mUnits);
         }
         mSeekBar.setProgress(mCurrentValue - mMin);
         mStatusTextContainer = (LinearLayout) view.findViewById(R.id.text_container);
@@ -164,7 +164,13 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
                     })
                     .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                         if (mEdit != null) {
-                            refresh(Integer.parseInt(mEdit.getText().toString()));
+                            try {
+                                if (Integer.parseInt(mEdit.getText().toString()) >= mMin && Integer.parseInt(mEdit.getText().toString()) <= mMax) {
+                                    refresh(Integer.parseInt(mEdit.getText().toString()));
+                                }
+                            } catch (NumberFormatException e) {
+                                // Prevent crashes and ignore invalid input
+                            }
                         }
                         mDialog = null;
                     })
@@ -245,7 +251,7 @@ public class CustomSeekBarPreference extends Preference implements SeekBar.OnSee
             if (newValue == mDefaultValue) {
                 mStatusText.setText(mDefaultText);
             } else {
-                mStatusText.setText(String.valueOf(newValue) + mUnits);
+                mStatusText.setText(newValue + mUnits);
             }
         }
         persistInt(newValue);

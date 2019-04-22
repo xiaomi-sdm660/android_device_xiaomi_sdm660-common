@@ -60,6 +60,7 @@ public class KCalSettingsActivity extends Activity implements Utils {
                         VALUE_DEFAULT + " " +
                         CONTRAST_DEFAULT + " " +
                         HUE_DEFAULT);
+                mKCalSettingsFragment.setmGrayscale(GRAYSCALE_DEFAULT);
                 mKCalSettingsFragment.setmSetOnBoot(SETONBOOT_DEFAULT);
                 return true;
 
