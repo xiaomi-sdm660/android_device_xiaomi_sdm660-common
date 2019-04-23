@@ -42,6 +42,10 @@ public class StartAction extends IntentService {
     private static final int FP_SWIPE_LEFT = 2;
     private static final int FP_SWIPE_RIGHT = 3;
 
+    private boolean mCameraActive = false;
+    private boolean mFpActionEnabled = false;
+    private boolean mFpShutterEnabled = false;
+
     private String fpActionUp;
     private String fpActionDown;
     private String fpActionLeft;
@@ -62,10 +66,10 @@ public class StartAction extends IntentService {
         ComponentName componentName = activityManager.getRunningTasks(1).get(0)
                 .topActivity;
 
-        boolean cameraActive = Arrays.asList(CAMERA_PACKAGES).contains(componentName.getPackageName());
-        boolean fpActionEnabled = Settings.Secure.getInt(this.getContentResolver(),
+        mCameraActive = Arrays.asList(CAMERA_PACKAGES).contains(componentName.getPackageName());
+        mFpActionEnabled = Settings.Secure.getInt(this.getContentResolver(),
                 DeviceSettings.PREF_ENABLE_FPACTION, 0) == 1;
-        boolean fpShutterEnabled = Settings.Secure.getInt(this.getContentResolver(),
+        mFpShutterEnabled = Settings.Secure.getInt(this.getContentResolver(),
                 DeviceSettings.PREF_FP_SHUTTER, 0) == 1;
 
         fpActionUp = Settings.Secure.getString(this.getContentResolver(),
@@ -78,13 +82,13 @@ public class StartAction extends IntentService {
                 DeviceSettings.PREF_FPACTION_RIGHT);
 
         int swipeDirection = intent.getIntExtra(FP_SWIPE_DIRECTION, 4);
-        if (fpShutterEnabled) {
-            if (cameraActive) {
+        if (mFpShutterEnabled) {
+            if (mCameraActive) {
                 sendKeyCode(KeyEvent.KEYCODE_CAMERA);
-            } else if (fpActionEnabled) {
+            } else {
                 fpAction(swipeDirection);
             }
-        } else if (fpActionEnabled) {
+        } else {
             fpAction(swipeDirection);
         }
     }
@@ -117,6 +121,10 @@ public class StartAction extends IntentService {
                 action = fpActionDown;
                 codeDef = 281;
                 break;
+        }
+
+        if (!mFpActionEnabled && (!mCameraActive || !mFpShutterEnabled)) {
+            action = "def";
         }
 
         switch (action) {
