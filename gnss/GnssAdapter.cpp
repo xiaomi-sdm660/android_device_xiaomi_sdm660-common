@@ -687,7 +687,8 @@ GnssAdapter::setConfigCommand()
                 if (gpsConf.AGPS_CONFIG_INJECT) {
                     gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
                             GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
-                            GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT;
+                            GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
+                            GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
                     gnssConfigRequested.suplVersion =
                             adapter.mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
                     gnssConfigRequested.lppProfile =
