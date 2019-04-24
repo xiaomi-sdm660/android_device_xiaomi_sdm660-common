@@ -382,16 +382,19 @@ public:
     uint32_t  mBdsXtraAge;
     uint32_t  mGalXtraAge;
     uint32_t  mQzssXtraAge;
+    uint32_t  mNavicXtraAge;
     uint32_t  mGpsXtraValid;
     uint32_t  mGloXtraValid;
     uint64_t  mBdsXtraValid;
     uint64_t  mGalXtraValid;
     uint8_t   mQzssXtraValid;
+    uint32_t  mNavicXtraValid;
 };
 
 class SystemStatusPQWP3parser : public SystemStatusNmeaBase
 {
 private:
+    // todo: update for navic once available
     enum
     {
         eTalker = 0,
@@ -418,11 +421,13 @@ public:
     inline uint32_t   getBdsXtraAge() { return mP3.mBdsXtraAge;       }
     inline uint32_t   getGalXtraAge() { return mP3.mGalXtraAge;       }
     inline uint32_t   getQzssXtraAge() { return mP3.mQzssXtraAge;      }
+    inline uint32_t   getNavicXtraAge() { return mP3.mNavicXtraAge;     }
     inline uint32_t   getGpsXtraValid() { return mP3.mGpsXtraValid;     }
     inline uint32_t   getGloXtraValid() { return mP3.mGloXtraValid;     }
     inline uint64_t   getBdsXtraValid() { return mP3.mBdsXtraValid;     }
     inline uint64_t   getGalXtraValid() { return mP3.mGalXtraValid;     }
     inline uint8_t    getQzssXtraValid() { return mP3.mQzssXtraValid;    }
+    inline uint32_t   getNavicXtraValid() { return mP3.mNavicXtraValid;     }
 
     SystemStatusPQWP3parser(const char *str_in, uint32_t len_in)
         : SystemStatusNmeaBase(str_in, len_in)
@@ -431,6 +436,7 @@ public:
             return;
         }
         memset(&mP3, 0, sizeof(mP3));
+        // todo: update for navic once available
         mP3.mXtraValidMask = strtol(mField[eXtraValidMask].c_str(), NULL, 16);
         mP3.mGpsXtraAge = atoi(mField[eGpsXtraAge].c_str());
         mP3.mGloXtraAge = atoi(mField[eGloXtraAge].c_str());
@@ -511,21 +517,25 @@ public:
     uint64_t  mBdsUnknownMask;
     uint64_t  mGalUnknownMask;
     uint8_t   mQzssUnknownMask;
+    uint32_t  mNavicUnknownMask;
     uint32_t  mGpsGoodMask;
     uint32_t  mGloGoodMask;
     uint64_t  mBdsGoodMask;
     uint64_t  mGalGoodMask;
     uint8_t   mQzssGoodMask;
+    uint32_t  mNavicGoodMask;
     uint32_t  mGpsBadMask;
     uint32_t  mGloBadMask;
     uint64_t  mBdsBadMask;
     uint64_t  mGalBadMask;
     uint8_t   mQzssBadMask;
+    uint32_t  mNavicBadMask;
 };
 
 class SystemStatusPQWP5parser : public SystemStatusNmeaBase
 {
 private:
+    // todo: update for navic once available
     enum
     {
         eTalker = 0,
@@ -555,16 +565,19 @@ public:
     inline uint64_t   getBdsUnknownMask() { return mP5.mBdsUnknownMask;   }
     inline uint64_t   getGalUnknownMask() { return mP5.mGalUnknownMask;   }
     inline uint8_t    getQzssUnknownMask() { return mP5.mQzssUnknownMask;  }
+    inline uint32_t   getNavicUnknownMask() { return mP5.mNavicUnknownMask;   }
     inline uint32_t   getGpsGoodMask() { return mP5.mGpsGoodMask;      }
     inline uint32_t   getGloGoodMask() { return mP5.mGloGoodMask;      }
     inline uint64_t   getBdsGoodMask() { return mP5.mBdsGoodMask;      }
     inline uint64_t   getGalGoodMask() { return mP5.mGalGoodMask;      }
     inline uint8_t    getQzssGoodMask() { return mP5.mQzssGoodMask;     }
+    inline uint32_t   getNavicGoodMask() { return mP5.mNavicGoodMask;      }
     inline uint32_t   getGpsBadMask() { return mP5.mGpsBadMask;       }
     inline uint32_t   getGloBadMask() { return mP5.mGloBadMask;       }
     inline uint64_t   getBdsBadMask() { return mP5.mBdsBadMask;       }
     inline uint64_t   getGalBadMask() { return mP5.mGalBadMask;       }
     inline uint8_t    getQzssBadMask() { return mP5.mQzssBadMask;      }
+    inline uint32_t   getNavicBadMask() { return mP5.mNavicBadMask;       }
 
     SystemStatusPQWP5parser(const char *str_in, uint32_t len_in)
         : SystemStatusNmeaBase(str_in, len_in)
@@ -573,6 +586,7 @@ public:
             return;
         }
         memset(&mP5, 0, sizeof(mP5));
+        // todo: update for navic once available
         mP5.mGpsUnknownMask = strtol(mField[eGpsUnknownMask].c_str(), NULL, 16);
         mP5.mGloUnknownMask = strtol(mField[eGloUnknownMask].c_str(), NULL, 16);
         mP5.mBdsUnknownMask = strtol(mField[eBdsUnknownMask].c_str(), NULL, 16);
@@ -971,11 +985,13 @@ SystemStatusXtra::SystemStatusXtra(const SystemStatusPQWP3& nmea) :
     mBdsXtraAge(nmea.mBdsXtraAge),
     mGalXtraAge(nmea.mGalXtraAge),
     mQzssXtraAge(nmea.mQzssXtraAge),
+    mNavicXtraAge(nmea.mNavicXtraAge),
     mGpsXtraValid(nmea.mGpsXtraValid),
     mGloXtraValid(nmea.mGloXtraValid),
     mBdsXtraValid(nmea.mBdsXtraValid),
     mGalXtraValid(nmea.mGalXtraValid),
-    mQzssXtraValid(nmea.mQzssXtraValid)
+    mQzssXtraValid(nmea.mQzssXtraValid),
+    mNavicXtraValid(nmea.mNavicXtraValid)
 {
 }
 
@@ -987,11 +1003,13 @@ bool SystemStatusXtra::equals(const SystemStatusXtra& peer)
         (mBdsXtraAge != peer.mBdsXtraAge) ||
         (mGalXtraAge != peer.mGalXtraAge) ||
         (mQzssXtraAge != peer.mQzssXtraAge) ||
+        (mNavicXtraAge != peer.mNavicXtraAge) ||
         (mGpsXtraValid != peer.mGpsXtraValid) ||
         (mGloXtraValid != peer.mGloXtraValid) ||
         (mBdsXtraValid != peer.mBdsXtraValid) ||
         (mGalXtraValid != peer.mGalXtraValid) ||
-        (mQzssXtraValid != peer.mQzssXtraValid)) {
+        (mQzssXtraValid != peer.mQzssXtraValid) ||
+        (mNavicXtraValid != peer.mNavicXtraValid)) {
         return false;
     }
     return true;
@@ -1060,16 +1078,19 @@ SystemStatusSvHealth::SystemStatusSvHealth(const SystemStatusPQWP5& nmea) :
     mBdsUnknownMask(nmea.mBdsUnknownMask),
     mGalUnknownMask(nmea.mGalUnknownMask),
     mQzssUnknownMask(nmea.mQzssUnknownMask),
+    mNavicUnknownMask(nmea.mNavicUnknownMask),
     mGpsGoodMask(nmea.mGpsGoodMask),
     mGloGoodMask(nmea.mGloGoodMask),
     mBdsGoodMask(nmea.mBdsGoodMask),
     mGalGoodMask(nmea.mGalGoodMask),
     mQzssGoodMask(nmea.mQzssGoodMask),
+    mNavicGoodMask(nmea.mNavicGoodMask),
     mGpsBadMask(nmea.mGpsBadMask),
     mGloBadMask(nmea.mGloBadMask),
     mBdsBadMask(nmea.mBdsBadMask),
     mGalBadMask(nmea.mGalBadMask),
-    mQzssBadMask(nmea.mQzssBadMask)
+    mQzssBadMask(nmea.mQzssBadMask),
+    mNavicBadMask(nmea.mNavicBadMask)
 {
 }
 

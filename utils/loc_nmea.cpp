@@ -123,6 +123,7 @@ typedef struct loc_sv_cache_info_s
     uint32_t gal_used_mask;
     uint32_t qzss_used_mask;
     uint32_t bds_used_mask;
+    uint32_t navic_used_mask;
     uint32_t gps_l1_count;
     uint32_t gps_l5_count;
     uint32_t glo_g1_count;
@@ -133,6 +134,7 @@ typedef struct loc_sv_cache_info_s
     uint32_t qzss_l5_count;
     uint32_t bds_b1_count;
     uint32_t bds_b2_count;
+    uint32_t navic_l5_count;
     float hdop;
     float pdop;
     float vdop;
@@ -324,6 +326,9 @@ static uint32_t convert_signalType_to_signalId(GnssSignalTypeMask signalType)
         case GNSS_SIGNAL_BEIDOU_B2AI:
             signalId = SIGNAL_ID_BDS_B2A;
             break;
+        case GNSS_SIGNAL_NAVIC_L5:
+            signalId = SIGNAL_ID_NAVIC_L5SPS;
+            break;
         default:
             signalId = SIGNAL_ID_ALL_SIGNALS;
     }
@@ -418,6 +423,16 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
                 sv_meta.svCount = sv_cache_info.bds_b2_count;
             }
             break;
+        case GNSS_SV_TYPE_NAVIC:
+            sv_meta.talker[0] = 'G';
+            sv_meta.talker[1] = 'I';
+            sv_meta.mask = sv_cache_info.navic_used_mask;
+            // NAVIC SV ids are from 401-414. So keep svIdOffset 0
+            sv_meta.systemId = SYSTEM_ID_NAVIC;
+            if (GNSS_SIGNAL_NAVIC_L5 == signalType) {
+                sv_meta.svCount = sv_cache_info.navic_l5_count;
+            }
+            break;
         default:
             LOC_LOGE("NMEA Error unknow constellation type: %d", svType);
             return NULL;
@@ -428,7 +443,8 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
                 (sv_cache_info.glo_used_mask ? 1 : 0) +
                 (sv_cache_info.gal_used_mask ? 1 : 0) +
                 (sv_cache_info.qzss_used_mask ? 1 : 0) +
-                (sv_cache_info.bds_used_mask ? 1 : 0) > 1)
+                (sv_cache_info.bds_used_mask ? 1 : 0) +
+                (sv_cache_info.navic_used_mask ? 1 : 0) > 1)
     {
         // If GPS, GLONASS, Galileo, QZSS, BDS etc. are combined
         // to obtain the reported position solution,
@@ -700,6 +716,9 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
                         break;
                     case GNSS_SV_TYPE_SBAS:
                         signalType = GNSS_SIGNAL_SBAS_L1;
+                        break;
+                    case GNSS_SV_TYPE_NAVIC:
+                        signalType = GNSS_SIGNAL_NAVIC_L5;
                         break;
                     default:
                         LOC_LOGE("NMEA Error unknow constellation type: %d",
@@ -1814,6 +1833,19 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 // If no signal type in report, it means default B1I
                 sv_cache_info.bds_b1_count++;
             }
+        }
+        else if (GNSS_SV_TYPE_NAVIC == svNotify.gnssSvs[svNumber - 1].type)
+        {
+            // cache the used in fix mask, as it will be needed to send $PQGSA
+            // during the position report
+            if (GNSS_SV_OPTIONS_USED_IN_FIX_BIT ==
+                (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
+                  GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
+            {
+                sv_cache_info.navic_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+            }
+            // GNSS_SIGNAL_NAVIC_L5 is the only signal type for NAVIC
+            sv_cache_info.navic_l5_count++;
         }
     }
 

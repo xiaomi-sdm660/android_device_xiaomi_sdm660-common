@@ -3364,6 +3364,11 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                 // SV id passed to here by LocApi is 1-based.
                 svNotify.gnssSvs[i].svId += (QZSS_SV_PRN_MIN - 1);
                 break;
+            case GNSS_SV_TYPE_NAVIC:
+                if (mGnssSvIdUsedInPosAvail) {
+                    svUsedIdMask = mGnssSvIdUsedInPosition.navic_sv_used_ids_mask;
+                }
+                break;
             default:
                 svUsedIdMask = 0;
                 break;
@@ -4384,6 +4389,19 @@ void GnssAdapter::convertSatelliteInfo(std::vector<GnssDebugSatelliteInfo>& out,
                 server_perdiction_age = (float)(in.mXtra.back().mGalXtraAge);
             }
             break;
+        case GNSS_SV_TYPE_NAVIC:
+            svid_min = GNSS_BUGREPORT_NAVIC_MIN;
+            svid_num = NAVIC_NUM;
+            svid_idx = GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM+GAL_NUM;
+            if (!in.mSvHealth.empty()) {
+                eph_health_good_mask = in.mSvHealth.back().mNavicGoodMask;
+                eph_health_bad_mask  = in.mSvHealth.back().mNavicBadMask;
+            }
+            if (!in.mXtra.empty()) {
+                server_perdiction_available_mask = in.mXtra.back().mNavicXtraValid;
+                server_perdiction_age = (float)(in.mXtra.back().mNavicXtraAge);
+            }
+            break;
         default:
             return;
     }
@@ -4541,6 +4559,7 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_QZSS, reports);
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_BEIDOU, reports);
     convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_GALILEO, reports);
+    convertSatelliteInfo(r.mSatelliteInfo, GNSS_SV_TYPE_NAVIC, reports);
     LOC_LOGV("getDebugReport - satellite=%zu", r.mSatelliteInfo.size());
 
     return true;

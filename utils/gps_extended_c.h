@@ -434,6 +434,8 @@ typedef uint32_t GnssAdditionalSystemInfoMask;
 #define BDS_SV_PRN_MAX      235
 #define GAL_SV_PRN_MIN      301
 #define GAL_SV_PRN_MAX      336
+#define NAVIC_SV_PRN_MIN    401
+#define NAVIC_SV_PRN_MAX    414
 
 typedef uint32_t LocPosTechMask;
 #define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
@@ -467,6 +469,7 @@ typedef struct {
     uint64_t gal_sv_used_ids_mask;
     uint64_t bds_sv_used_ids_mask;
     uint64_t qzss_sv_used_ids_mask;
+    uint64_t navic_sv_used_ids_mask;
 } GnssSvUsedInPosition;
 
 typedef struct {
@@ -594,6 +597,8 @@ typedef uint32_t GnssSignalTypeMask;
 #define GNSS_SIGNAL_QZSS_L5      ((GnssSignalTypeMask)0x00010000ul)
 /** SBAS L1 RF Band */
 #define GNSS_SIGNAL_SBAS_L1      ((GnssSignalTypeMask)0x00020000ul)
+/** NAVIC L5 RF Band */
+#define GNSS_SIGNAL_NAVIC_L5     ((GnssSignalTypeMask)0x00040000ul)
 
 typedef uint16_t GnssMeasUsageStatusBitMask;
 /** Used in fix */
@@ -1352,26 +1357,32 @@ typedef struct
 
 
 typedef uint64_t GpsSvMeasHeaderFlags;
-#define GNSS_SV_MEAS_HEADER_HAS_LEAP_SECOND                0x00000001
-#define GNSS_SV_MEAS_HEADER_HAS_CLOCK_FREQ                 0x00000002
-#define GNSS_SV_MEAS_HEADER_HAS_AP_TIMESTAMP               0x00000004
-#define GNSS_SV_MEAS_HEADER_HAS_GPS_GLO_INTER_SYSTEM_BIAS  0x00000008
-#define GNSS_SV_MEAS_HEADER_HAS_GPS_BDS_INTER_SYSTEM_BIAS  0x00000010
-#define GNSS_SV_MEAS_HEADER_HAS_GPS_GAL_INTER_SYSTEM_BIAS  0x00000020
-#define GNSS_SV_MEAS_HEADER_HAS_BDS_GLO_INTER_SYSTEM_BIAS  0x00000040
-#define GNSS_SV_MEAS_HEADER_HAS_GAL_GLO_INTER_SYSTEM_BIAS  0x00000080
-#define GNSS_SV_MEAS_HEADER_HAS_GAL_BDS_INTER_SYSTEM_BIAS  0x00000100
-#define GNSS_SV_MEAS_HEADER_HAS_GPS_SYSTEM_TIME            0x00000200
-#define GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME            0x00000400
-#define GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME            0x00000800
-#define GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME           0x00001000
-#define GNSS_SV_MEAS_HEADER_HAS_GLO_SYSTEM_TIME            0x00002000
-#define GNSS_SV_MEAS_HEADER_HAS_GPS_SYSTEM_TIME_EXT        0x00004000
-#define GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME_EXT        0x00008000
-#define GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME_EXT        0x00010000
-#define GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME_EXT       0x00020000
-#define GNSS_SV_MEAS_HEADER_HAS_GPSL1L5_TIME_BIAS          0x00040000
-#define GNSS_SV_MEAS_HEADER_HAS_GALE1E5A_TIME_BIAS         0x00080000
+#define GNSS_SV_MEAS_HEADER_HAS_LEAP_SECOND                  0x00000001
+#define GNSS_SV_MEAS_HEADER_HAS_CLOCK_FREQ                   0x00000002
+#define GNSS_SV_MEAS_HEADER_HAS_AP_TIMESTAMP                 0x00000004
+#define GNSS_SV_MEAS_HEADER_HAS_GPS_GLO_INTER_SYSTEM_BIAS    0x00000008
+#define GNSS_SV_MEAS_HEADER_HAS_GPS_BDS_INTER_SYSTEM_BIAS    0x00000010
+#define GNSS_SV_MEAS_HEADER_HAS_GPS_GAL_INTER_SYSTEM_BIAS    0x00000020
+#define GNSS_SV_MEAS_HEADER_HAS_BDS_GLO_INTER_SYSTEM_BIAS    0x00000040
+#define GNSS_SV_MEAS_HEADER_HAS_GAL_GLO_INTER_SYSTEM_BIAS    0x00000080
+#define GNSS_SV_MEAS_HEADER_HAS_GAL_BDS_INTER_SYSTEM_BIAS    0x00000100
+#define GNSS_SV_MEAS_HEADER_HAS_GPS_SYSTEM_TIME              0x00000200
+#define GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME              0x00000400
+#define GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME              0x00000800
+#define GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME             0x00001000
+#define GNSS_SV_MEAS_HEADER_HAS_GLO_SYSTEM_TIME              0x00002000
+#define GNSS_SV_MEAS_HEADER_HAS_GPS_SYSTEM_TIME_EXT          0x00004000
+#define GNSS_SV_MEAS_HEADER_HAS_GAL_SYSTEM_TIME_EXT          0x00008000
+#define GNSS_SV_MEAS_HEADER_HAS_BDS_SYSTEM_TIME_EXT          0x00010000
+#define GNSS_SV_MEAS_HEADER_HAS_QZSS_SYSTEM_TIME_EXT         0x00020000
+#define GNSS_SV_MEAS_HEADER_HAS_GPSL1L5_TIME_BIAS            0x00040000
+#define GNSS_SV_MEAS_HEADER_HAS_GALE1E5A_TIME_BIAS           0x00080000
+#define GNSS_SV_MEAS_HEADER_HAS_GPS_NAVIC_INTER_SYSTEM_BIAS  0x00100000
+#define GNSS_SV_MEAS_HEADER_HAS_GAL_NAVIC_INTER_SYSTEM_BIAS  0x00200000
+#define GNSS_SV_MEAS_HEADER_HAS_GLO_NAVIC_INTER_SYSTEM_BIAS  0x00400000
+#define GNSS_SV_MEAS_HEADER_HAS_BDS_NAVIC_INTER_SYSTEM_BIAS  0x00800000
+#define GNSS_SV_MEAS_HEADER_HAS_NAVIC_SYSTEM_TIME            0x01000000
+#define GNSS_SV_MEAS_HEADER_HAS_NAVIC_SYSTEM_TIME_EXT        0x02000000
 
 
 
@@ -1393,6 +1404,10 @@ typedef struct
     Gnss_InterSystemBiasStructType              bdsGloInterSystemBias;
     Gnss_InterSystemBiasStructType              galGloInterSystemBias;
     Gnss_InterSystemBiasStructType              galBdsInterSystemBias;
+    Gnss_InterSystemBiasStructType              gpsNavicInterSystemBias;
+    Gnss_InterSystemBiasStructType              galNavicInterSystemBias;
+    Gnss_InterSystemBiasStructType              gloNavicInterSystemBias;
+    Gnss_InterSystemBiasStructType              bdsNavicInterSystemBias;
     Gnss_InterSystemBiasStructType              gpsL1L5TimeBias;
     Gnss_InterSystemBiasStructType              galE1E5aTimeBias;
 
@@ -1400,6 +1415,7 @@ typedef struct
     GnssSystemTimeStructType                    galSystemTime;
     GnssSystemTimeStructType                    bdsSystemTime;
     GnssSystemTimeStructType                    qzssSystemTime;
+    GnssSystemTimeStructType                    navicSystemTime;
     GnssGloTimeStructType                       gloSystemTime;
 
     /** GPS system RTC time information. */
@@ -1410,6 +1426,8 @@ typedef struct
     Gnss_LocGnssTimeExtStructType               bdsSystemTimeExt;
     /** QZSS system RTC time information. */
     Gnss_LocGnssTimeExtStructType               qzssSystemTimeExt;
+    /** NAVIC system RTC time information. */
+    Gnss_LocGnssTimeExtStructType               navicSystemTimeExt;
 
 } GnssSvMeasurementHeader;
 
@@ -2025,10 +2043,11 @@ typedef struct
 /* Mask indicating enabled or disabled constellations */
 typedef uint64_t GnssSvTypesMask;
 typedef enum {
-    GNSS_SV_TYPES_MASK_GLO_BIT  = (1<<0),
-    GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
-    GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
-    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
+    GNSS_SV_TYPES_MASK_GLO_BIT    = (1<<0),
+    GNSS_SV_TYPES_MASK_BDS_BIT    = (1<<1),
+    GNSS_SV_TYPES_MASK_QZSS_BIT   = (1<<2),
+    GNSS_SV_TYPES_MASK_GAL_BIT    = (1<<3),
+    GNSS_SV_TYPES_MASK_NAVIC_BIT  = (1<<4),
 } GnssSvTypesMaskBits;
 
 /* This SV Type config is injected directly to GNSS Adapter

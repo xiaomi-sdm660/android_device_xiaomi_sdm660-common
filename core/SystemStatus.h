@@ -44,20 +44,22 @@
 
 #include <gps_extended_c.h>
 
-#define GPS_MIN  (1)   //1-32
-#define SBAS_MIN (33)
-#define GLO_MIN  (65)  //65-88
-#define QZSS_MIN (193) //193-197
-#define BDS_MIN  (201) //201-237
-#define GAL_MIN  (301) //301-336
+#define GPS_MIN    (1)   //1-32
+#define SBAS_MIN   (33)
+#define GLO_MIN    (65)  //65-88
+#define QZSS_MIN   (193) //193-197
+#define BDS_MIN    (201) //201-237
+#define GAL_MIN    (301) //301-336
+#define NAVIC_MIN  (401) //401-414
 
-#define GPS_NUM  (32)
-#define SBAS_NUM (32)
-#define GLO_NUM  (24)
-#define QZSS_NUM (5)
-#define BDS_NUM  (37)
-#define GAL_NUM  (36)
-#define SV_ALL_NUM  (GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM+GAL_NUM) //=134
+#define GPS_NUM     (32)
+#define SBAS_NUM    (32)
+#define GLO_NUM     (24)
+#define QZSS_NUM    (5)
+#define BDS_NUM     (37)
+#define GAL_NUM     (36)
+#define NAVIC_NUM   (14)
+#define SV_ALL_NUM  (GPS_NUM+GLO_NUM+QZSS_NUM+BDS_NUM+GAL_NUM+NAVIC_NUM) //=148
 
 namespace loc_core
 {
@@ -258,11 +260,13 @@ public:
     uint32_t  mBdsXtraAge;
     uint32_t  mGalXtraAge;
     uint32_t  mQzssXtraAge;
+    uint32_t  mNavicXtraAge;
     uint32_t  mGpsXtraValid;
     uint32_t  mGloXtraValid;
     uint64_t  mBdsXtraValid;
     uint64_t  mGalXtraValid;
     uint8_t   mQzssXtraValid;
+    uint32_t  mNavicXtraValid;
     inline SystemStatusXtra() :
         mXtraValidMask(0),
         mGpsXtraAge(0),
@@ -270,11 +274,13 @@ public:
         mBdsXtraAge(0),
         mGalXtraAge(0),
         mQzssXtraAge(0),
+        mNavicXtraAge(0),
         mGpsXtraValid(0),
         mGloXtraValid(0),
         mBdsXtraValid(0ULL),
         mGalXtraValid(0ULL),
-        mQzssXtraValid(0) {}
+        mQzssXtraValid(0),
+        mNavicXtraValid(0) {}
     inline SystemStatusXtra(const SystemStatusPQWP3& nmea);
     bool equals(const SystemStatusXtra& peer);
     void dump(void);
@@ -309,32 +315,38 @@ public:
     uint64_t  mBdsUnknownMask;
     uint64_t  mGalUnknownMask;
     uint8_t   mQzssUnknownMask;
+    uint32_t  mNavicUnknownMask;
     uint32_t  mGpsGoodMask;
     uint32_t  mGloGoodMask;
     uint64_t  mBdsGoodMask;
     uint64_t  mGalGoodMask;
     uint8_t   mQzssGoodMask;
+    uint32_t  mNavicGoodMask;
     uint32_t  mGpsBadMask;
     uint32_t  mGloBadMask;
     uint64_t  mBdsBadMask;
     uint64_t  mGalBadMask;
     uint8_t   mQzssBadMask;
+    uint32_t  mNavicBadMask;
     inline SystemStatusSvHealth() :
         mGpsUnknownMask(0),
         mGloUnknownMask(0),
         mBdsUnknownMask(0ULL),
         mGalUnknownMask(0ULL),
         mQzssUnknownMask(0),
+        mNavicUnknownMask(0),
         mGpsGoodMask(0),
         mGloGoodMask(0),
         mBdsGoodMask(0ULL),
         mGalGoodMask(0ULL),
         mQzssGoodMask(0),
+        mNavicGoodMask(0),
         mGpsBadMask(0),
         mGloBadMask(0),
         mBdsBadMask(0ULL),
         mGalBadMask(0ULL),
-        mQzssBadMask(0) {}
+        mQzssBadMask(0),
+        mNavicBadMask(0) {}
     inline SystemStatusSvHealth(const SystemStatusPQWP5& nmea);
     bool equals(const SystemStatusSvHealth& peer);
     void dump(void);

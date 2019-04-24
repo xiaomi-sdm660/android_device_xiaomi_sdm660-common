@@ -209,6 +209,9 @@ void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& o
         case GNSS_SV_TYPE_GALILEO:
             out = V2_0::GnssConstellationType::GALILEO;
             break;
+        case GNSS_SV_TYPE_NAVIC:
+            out = V2_0::GnssConstellationType::IRNSS;
+            break;
         case GNSS_SV_TYPE_UNKNOWN:
         default:
             out = V2_0::GnssConstellationType::UNKNOWN;
