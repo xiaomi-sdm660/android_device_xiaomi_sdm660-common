@@ -94,7 +94,8 @@ GnssAdapter::GnssAdapter() :
     mPowerOn(false),
     mAllowFlpNetworkFixes(0),
     mGnssEnergyConsumedCb(nullptr),
-    mPowerStateCb(nullptr)
+    mPowerStateCb(nullptr),
+    mIsE911Session(NULL)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -3367,21 +3368,36 @@ GnssAdapter::requestNiNotifyEvent(const GnssNiNotification &notify, const void* 
 
     struct MsgReportNiNotify : public LocMsg {
         GnssAdapter& mAdapter;
+        LocApiBase& mApi;
         const GnssNiNotification mNotify;
         const void* mData;
         inline MsgReportNiNotify(GnssAdapter& adapter,
+                                 LocApiBase& api,
                                  const GnssNiNotification& notify,
                                  const void* data) :
             LocMsg(),
             mAdapter(adapter),
+            mApi(api),
             mNotify(notify),
             mData(data) {}
         inline virtual void proc() const {
-            mAdapter.requestNiNotify(mNotify, mData);
+            if (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type ||
+                GNSS_NI_TYPE_CONTROL_PLANE == mNotify.type) {
+                if (mAdapter.getE911State() ||
+                    ((GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES) &&
+                     (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type))) {
+                    mApi.informNiResponse(GNSS_NI_RESPONSE_ACCEPT, mData);
+                }
+                else {
+                    mApi.informNiResponse(GNSS_NI_RESPONSE_DENY, mData);
+                }
+            } else {
+                mAdapter.requestNiNotify(mNotify, mData);
+            }
         }
     };
 
-    sendMsg(new MsgReportNiNotify(*this, notify, data));
+    sendMsg(new MsgReportNiNotify(*this, *mLocApi, notify, data));
 
     return true;
 }
