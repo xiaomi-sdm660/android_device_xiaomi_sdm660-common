@@ -161,6 +161,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.pmd=true \
     ro.vendor.sensors.sta_detect=true
 
+#Storaged
+ PRODUCT_PROPERTY_OVERRIDES += \
+    ro.storaged.event.interval=99999
+
 # WFD
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.debug.wfd.enable=1 \
