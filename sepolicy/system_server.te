@@ -21,7 +21,6 @@ allow system_server camera_prop:file read;
 allow system_server cnd_vendor_prop:file read;
 allow system_server console_silent_prop:file read;
 allow system_server ctl_LKCore_prop:file read;
-allow system_server ctl_atfwd_prop:file read;
 allow system_server ctl_console_prop:file read;
 allow system_server ctl_dumpstate_prop:file read;
 allow system_server ctl_fuse_prop:file read;

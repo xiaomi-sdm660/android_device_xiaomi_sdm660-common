@@ -17,7 +17,6 @@ allow system_app boottime_prop:file read;
 allow system_app cnd_vendor_prop:file read;
 allow system_app console_silent_prop:file read;
 allow system_app ctl_LKCore_prop:file read;
-allow system_app ctl_atfwd_prop:file read;
 allow system_app ctl_bootanim_prop:file read;
 allow system_app ctl_console_prop:file read;
 allow system_app ctl_fuse_prop:file read;

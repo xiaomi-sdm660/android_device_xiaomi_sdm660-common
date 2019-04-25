@@ -10,7 +10,6 @@ allow radio boottime_prop:file read;
 allow radio cnd_vendor_prop:file read;
 allow radio console_silent_prop:file read;
 allow radio ctl_LKCore_prop:file read;
-allow radio ctl_atfwd_prop:file read;
 allow radio ctl_bootanim_prop:file read;
 allow radio ctl_bugreport_prop:file read;
 allow radio ctl_console_prop:file read;

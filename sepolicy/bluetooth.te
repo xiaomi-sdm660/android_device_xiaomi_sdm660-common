@@ -7,7 +7,6 @@ allow bluetooth boottime_prop:file read;
 allow bluetooth cnd_vendor_prop:file read;
 allow bluetooth console_silent_prop:file read;
 allow bluetooth ctl_LKCore_prop:file read;
-allow bluetooth ctl_atfwd_prop:file read;
 allow bluetooth ctl_bootanim_prop:file read;
 allow bluetooth ctl_bugreport_prop:file read;
 allow bluetooth ctl_fuse_prop:file read;

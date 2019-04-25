@@ -9,7 +9,6 @@ allow platform_app cnd_vendor_prop:file read;
 allow platform_app console_silent_prop:file read;
 allow platform_app ctl_LKCore_prop:file read;
 allow platform_app sysfs_leds:dir search;
-allow platform_app ctl_atfwd_prop:file read;
 allow platform_app ctl_bootanim_prop:file read;
 allow platform_app ctl_bugreport_prop:file read;
 allow platform_app ctl_console_prop:file read;

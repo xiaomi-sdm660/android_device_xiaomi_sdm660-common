@@ -24,7 +24,6 @@ allow priv_app proc_interrupts:file open;
 allow priv_app mnt_vendor_file:dir search;
 allow priv_app console_silent_prop:file read;
 allow priv_app ctl_LKCore_prop:file read;
-allow priv_app ctl_atfwd_prop:file read;
 allow priv_app ctl_bootanim_prop:file read;
 allow priv_app ctl_bugreport_prop:file read;
 allow priv_app ctl_console_prop:file read;
