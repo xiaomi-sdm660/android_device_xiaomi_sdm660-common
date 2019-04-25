@@ -257,6 +257,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.debug.coresight.config=stm-events
 
+#Storaged
+PRODUCT_PROPERTY_OVERRIDES += \
+        ro.storaged.event.interval=99999
+
 # Suspend Time
 PRODUCT_PROPERTY_OVERRIDES += \
 	sys.autosuspend.timeout=500000
