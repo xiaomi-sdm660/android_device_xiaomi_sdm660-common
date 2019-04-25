@@ -36,7 +36,7 @@ DEVICE_PACKAGE_OVERLAYS := device/xiaomi/sdm660-common/overlay
 
 # Build Fingerprint
 PRODUCT_BUILD_PROP_OVERRIDES += \
-		PRIVATE_BUILD_DESC="taimen-user 9 PQ2A.190405.003 5310204 release-keys"
+	PRIVATE_BUILD_DESC="taimen-user 9 PQ2A.190405.003 5310204 release-keys"
 
 BUILD_FINGERPRINT := google/taimen/taimen:9/PQ2A.190405.003/5310204:user/release-keys
 
@@ -93,11 +93,6 @@ PRODUCT_COPY_FILES += \
 	$(TOPDIR)frameworks/av/services/audiopolicy/config/default_volume_tables.xml:/$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
 	$(TOPDIR)frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:/$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
 	$(TOPDIR)frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:/$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
-
-PRODUCT_PROPERTY_OVERRIDES += \
-	ro.af.client_heap_size_kbyte=7168 \
-	ro.config.media_vol_steps=25 \
-	ro.config.vc_call_vol_steps=7
 
 # Bluetooth
 PRODUCT_PACKAGES += \
