@@ -1,0 +1,35 @@
+type vendor_toolbox, domain;
+
+init_daemon_domain(vendor_toolbox)
+
+# Allow vendor_toolbox to use sys_admin capability
+allow vendor_toolbox self:capability sys_admin;
+
+# For the use of /vendor/bin/toybox_vendor from vendor init.rc fragments
+domain_trans(init, vendor_toolbox_exec, vendor_toolbox)
+
+# Allow vendor_toolbox to execute /vendor/bin/toybox_vendor
+allow vendor_toolbox vendor_toolbox_exec:file execute_no_trans;
+
+# Allow vendor_toolbox to read directories in rootfs
+allow vendor_toolbox rootfs:dir r_dir_perms;
+
+# Allow vendor_toolbox to remove "security.*" xattrs from /mnt/vendor/persist
+allow vendor_toolbox {
+    mnt_vendor_file
+    persist_alarm_file
+    persist_bluetooth_file
+    persist_bms_file
+    persist_display_file
+    persist_drm_file
+    persist_misc_file
+    persist_qti_fp_file
+    persist_rfs_file
+    persist_rfs_shared_hlos_file
+    persist_secnvm_file
+    persist_time_file
+    persist_vpp_file
+    regionalization_file
+    sensors_persist_file
+    unlabeled
+}:dir { r_dir_perms setattr };
