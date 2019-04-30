@@ -153,7 +153,9 @@ typedef enum {
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MAJOR_BIT = (1<<5), // valid elipsode semi major
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_SEMI_MINOR_BIT = (1<<6), // valid elipsode semi minor
     GNSS_LOCATION_INFO_HOR_ACCURACY_ELIP_AZIMUTH_BIT    = (1<<7), // valid accuracy elipsode azimuth
-    GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT            = (1<<8), // valid gnss sv used in pos data
+    GNSS_LOCATION_INFO_GNSS_SV_USED_DATA_BIT            = (1<<8), // valid svUsedInPosition,
+                                                                  //       numOfMeasReceived
+                                                                  //       and measUsageInfo
     GNSS_LOCATION_INFO_NAV_SOLUTION_MASK_BIT            = (1<<9), // valid navSolutionMask
     GNSS_LOCATION_INFO_POS_TECH_MASK_BIT                = (1<<10),// valid LocPosTechMask
     GNSS_LOCATION_INFO_SV_SOURCE_INFO_BIT               = (1<<11),// valid LocSvInfoSource
@@ -168,7 +170,9 @@ typedef enum {
     GNSS_LOCATION_INFO_EAST_VEL_UNC_BIT                 = (1<<20),// valid East Velocity Uncertainty
     GNSS_LOCATION_INFO_UP_VEL_UNC_BIT                   = (1<<21),// valid Up Velocity Uncertainty
     GNSS_LOCATION_INFO_LEAP_SECONDS_BIT                 = (1<<22),// valid leap seconds
-    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23) // valid time uncertainty
+    GNSS_LOCATION_INFO_TIME_UNC_BIT                     = (1<<23),// valid time uncertainty
+    GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT      = (1<<24) // number of SV used in position
+
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -940,6 +944,7 @@ typedef struct {
     float northVelocityStdDeviation;
     float eastVelocityStdDeviation;
     float upVelocityStdDeviation;
+    uint16_t numSvUsedInPosition;
     GnssLocationSvUsedInPosition svUsedInPosition;// Gnss sv used in position data
     GnssLocationNavSolutionMask navSolutionMask;  // Nav solution mask to indicate sbas corrections
     GnssLocationPosTechMask posTechMask;          // Position technology used in computing this fix

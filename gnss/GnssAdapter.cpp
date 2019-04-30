@@ -225,6 +225,31 @@ GnssAdapter::convertLocation(Location& out, const UlpLocation& ulpLocation,
     }
 }
 
+/* This is utility routine that computes number of SV used
+   in the fix from the svUsedIdsMask.
+ */
+#define MAX_SV_CNT_SUPPORTED_IN_ONE_CONSTELLATION 64
+uint16_t GnssAdapter::getNumSvUsed(uint64_t svUsedIdsMask,
+                                   int totalSvCntInThisConstellation)
+{
+    if (totalSvCntInThisConstellation > MAX_SV_CNT_SUPPORTED_IN_ONE_CONSTELLATION) {
+        LOC_LOGe ("error: total SV count in this constellation %d exceeded limit of %d",
+                  totalSvCntInThisConstellation, MAX_SV_CNT_SUPPORTED_IN_ONE_CONSTELLATION);
+        return 0;
+    }
+
+    uint16_t numSvUsed = 0;
+    uint64_t mask = 0x1;
+    for (int i = 0; i < totalSvCntInThisConstellation; i++) {
+        if (svUsedIdsMask & mask) {
+            numSvUsed++;
+        }
+        mask <<= 1;
+    }
+
+    return numSvUsed;
+}
+
 void
 GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
                                  const GpsLocationExtended& locationExtended)
@@ -345,8 +370,20 @@ GnssAdapter::convertLocationInfo(GnssLocationInfoNotification& out,
                 locationExtended.gnss_sv_used_ids.bds_sv_used_ids_mask;
         out.svUsedInPosition.qzssSvUsedIdsMask =
                 locationExtended.gnss_sv_used_ids.qzss_sv_used_ids_mask;
-        out.numOfMeasReceived = locationExtended.numOfMeasReceived;
 
+        out.flags |= GNSS_LOCATION_INFO_NUM_SV_USED_IN_POSITION_BIT;
+        out.numSvUsedInPosition = getNumSvUsed(out.svUsedInPosition.gpsSvUsedIdsMask,
+                                               GPS_SV_PRN_MAX - GPS_SV_PRN_MIN + 1);
+        out.numSvUsedInPosition += getNumSvUsed(out.svUsedInPosition.gloSvUsedIdsMask,
+                                                GLO_SV_PRN_MAX - GLO_SV_PRN_MIN + 1);
+        out.numSvUsedInPosition += getNumSvUsed(out.svUsedInPosition.qzssSvUsedIdsMask,
+                                                QZSS_SV_PRN_MAX - QZSS_SV_PRN_MIN + 1);
+        out.numSvUsedInPosition += getNumSvUsed(out.svUsedInPosition.bdsSvUsedIdsMask,
+                                                BDS_SV_PRN_MAX - BDS_SV_PRN_MIN + 1);
+        out.numSvUsedInPosition += getNumSvUsed(out.svUsedInPosition.galSvUsedIdsMask,
+                                                GAL_SV_PRN_MAX - GAL_SV_PRN_MIN + 1);
+
+        out.numOfMeasReceived = locationExtended.numOfMeasReceived;
         for (int idx =0; idx < locationExtended.numOfMeasReceived; idx++) {
             out.measUsageInfo[idx].gnssSignalType =
                     locationExtended.measUsageInfo[idx].gnssSignalType;
