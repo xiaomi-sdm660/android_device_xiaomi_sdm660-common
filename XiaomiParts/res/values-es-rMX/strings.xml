@@ -37,7 +37,6 @@
     <string name="spectrum_dialogTitle">Elija su configuración de Rendimiento</string>
 
     <!-- Values for Spectrum Presets -->
-    <string name="spectrum_stock">Stock</string>
     <string name="spectrum_performance">Rendimiento</string>
     <string name="spectrum_battery">Batería</string>
     <string name="spectrum_gaming">Juego</string>

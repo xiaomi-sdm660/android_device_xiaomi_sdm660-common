@@ -37,7 +37,6 @@
     <string name="fpaction_dialogTitle">Aktion</string>
     <string name="fpaction_summary">Aktion auswählen</string>
     <string name="fpaction_title">Fingerabdruckaktionen</string>
-    <string name="spectrum_stock">Standard</string>
     <string name="spectrum_performance">Performance</string>
     <string name="spectrum_battery">Energieeffizient</string>
     <string name="spectrum_gaming">Gaming</string>

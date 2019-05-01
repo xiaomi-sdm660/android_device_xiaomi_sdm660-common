@@ -41,7 +41,6 @@
     <string name="spectrum_dialogTitle">设置性能选项</string>
 
     <!-- Values for Spectrum Presets -->
-    <string name="spectrum_stock">原生</string>
     <string name="spectrum_performance">高性能</string>
     <string name="spectrum_battery">延长电池</string>
     <string name="spectrum_gaming">游戏</string>

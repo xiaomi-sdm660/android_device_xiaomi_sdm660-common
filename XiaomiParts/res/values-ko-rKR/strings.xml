@@ -43,7 +43,6 @@
     <string name="spectrum_dialogTitle">성능 설정 선택</string>
 
     <!-- Values for Spectrum Presets -->
-    <string name="spectrum_stock">기본</string>
     <string name="spectrum_performance">성능 향상</string>
     <string name="spectrum_battery">배터리 향상</string>
     <string name="spectrum_gaming">게이밍 최적화</string>

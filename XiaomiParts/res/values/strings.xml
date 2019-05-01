@@ -41,7 +41,6 @@
     <string name="spectrum_dialogTitle">Choose your Performance settings</string>
 
     <!-- Values for Spectrum Presets -->
-    <string name="spectrum_stock">Stock</string>
     <string name="spectrum_performance">Performance</string>
     <string name="spectrum_battery">Battery</string>
     <string name="spectrum_gaming">Gaming</string>
