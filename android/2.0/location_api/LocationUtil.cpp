@@ -28,6 +28,8 @@
  */
 
 #include <LocationUtil.h>
+#include <log_util.h>
+#include <inttypes.h>
 
 namespace android {
 namespace hardware {
@@ -35,13 +37,13 @@ namespace gnss {
 namespace V2_0 {
 namespace implementation {
 
-using ::android::hardware::gnss::V1_0::GnssLocation;
-using ::android::hardware::gnss::V1_0::GnssConstellationType;
+using ::android::hardware::gnss::V2_0::GnssLocation;
+using ::android::hardware::gnss::V2_0::GnssConstellationType;
 using ::android::hardware::gnss::V1_0::GnssLocationFlags;
 
-void convertGnssLocation(Location& in, GnssLocation& out)
+void convertGnssLocation(Location& in, V1_0::GnssLocation& out)
 {
-    memset(&out, 0, sizeof(GnssLocation));
+    memset(&out, 0, sizeof(V1_0::GnssLocation));
     if (in.flags & LOCATION_HAS_LAT_LONG_BIT) {
         out.gnssLocationFlags |= GnssLocationFlags::HAS_LAT_LONG;
         out.latitudeDegrees = in.latitude;
@@ -79,7 +81,40 @@ void convertGnssLocation(Location& in, GnssLocation& out)
     out.timestamp = static_cast<V1_0::GnssUtcTime>(in.timestamp);
 }
 
-void convertGnssLocation(const GnssLocation& in, Location& out)
+void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
+{
+    memset(&out, 0, sizeof(V2_0::GnssLocation));
+    convertGnssLocation(in, out.v1_0);
+
+    struct timespec sinceBootTime;
+    struct timespec currentTime;
+    if (0 == clock_gettime(CLOCK_BOOTTIME,&sinceBootTime) &&
+        0 == clock_gettime(CLOCK_REALTIME,&currentTime)) {
+
+        int64_t sinceBootTimeNanos = sinceBootTime.tv_sec*1000000000 + sinceBootTime.tv_nsec;
+        int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
+        int64_t locationTimeNanos = in.timestamp*1000000;
+        LOC_LOGD("%s]: sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+                " locationTimeNanos:%" PRIi64 "",
+                __FUNCTION__, sinceBootTimeNanos, currentTimeNanos, locationTimeNanos);
+        if (currentTimeNanos >= locationTimeNanos) {
+            int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
+            LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
+            if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
+                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
+                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                // time uncertainty is 1 ms since it is calculated from utc time that is in ms
+                out.elapsedRealtime.timeUncertaintyNs = 1000000;
+                LOC_LOGD("%s]: timestampNs:%" PRIi64 ")",
+                        __FUNCTION__, out.elapsedRealtime.timestampNs);
+            }
+        }
+    }
+
+}
+
+void convertGnssLocation(const V1_0::GnssLocation& in, Location& out)
 {
     memset(&out, 0, sizeof(out));
     if (in.gnssLocationFlags & GnssLocationFlags::HAS_LAT_LONG) {
@@ -119,30 +154,64 @@ void convertGnssLocation(const GnssLocation& in, Location& out)
     out.timestamp = static_cast<uint64_t>(in.timestamp);
 }
 
-void convertGnssConstellationType(GnssSvType& in, GnssConstellationType& out)
+void convertGnssLocation(const V2_0::GnssLocation& in, Location& out)
+{
+    memset(&out, 0, sizeof(out));
+    convertGnssLocation(in.v1_0, out);
+}
+
+void convertGnssConstellationType(GnssSvType& in, V1_0::GnssConstellationType& out)
 {
     switch(in) {
         case GNSS_SV_TYPE_GPS:
-            out = GnssConstellationType::GPS;
+            out = V1_0::GnssConstellationType::GPS;
             break;
         case GNSS_SV_TYPE_SBAS:
-            out = GnssConstellationType::SBAS;
+            out = V1_0::GnssConstellationType::SBAS;
             break;
         case GNSS_SV_TYPE_GLONASS:
-            out = GnssConstellationType::GLONASS;
+            out = V1_0::GnssConstellationType::GLONASS;
             break;
         case GNSS_SV_TYPE_QZSS:
-            out = GnssConstellationType::QZSS;
+            out = V1_0::GnssConstellationType::QZSS;
             break;
         case GNSS_SV_TYPE_BEIDOU:
-            out = GnssConstellationType::BEIDOU;
+            out = V1_0::GnssConstellationType::BEIDOU;
             break;
         case GNSS_SV_TYPE_GALILEO:
-            out = GnssConstellationType::GALILEO;
+            out = V1_0::GnssConstellationType::GALILEO;
             break;
         case GNSS_SV_TYPE_UNKNOWN:
         default:
-            out = GnssConstellationType::UNKNOWN;
+            out = V1_0::GnssConstellationType::UNKNOWN;
+            break;
+    }
+}
+
+void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& out)
+{
+    switch(in) {
+        case GNSS_SV_TYPE_GPS:
+            out = V2_0::GnssConstellationType::GPS;
+            break;
+        case GNSS_SV_TYPE_SBAS:
+            out = V2_0::GnssConstellationType::SBAS;
+            break;
+        case GNSS_SV_TYPE_GLONASS:
+            out = V2_0::GnssConstellationType::GLONASS;
+            break;
+        case GNSS_SV_TYPE_QZSS:
+            out = V2_0::GnssConstellationType::QZSS;
+            break;
+        case GNSS_SV_TYPE_BEIDOU:
+            out = V2_0::GnssConstellationType::BEIDOU;
+            break;
+        case GNSS_SV_TYPE_GALILEO:
+            out = V2_0::GnssConstellationType::GALILEO;
+            break;
+        case GNSS_SV_TYPE_UNKNOWN:
+        default:
+            out = V2_0::GnssConstellationType::UNKNOWN;
             break;
     }
 }
