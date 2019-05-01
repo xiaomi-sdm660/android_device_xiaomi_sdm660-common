@@ -165,8 +165,10 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== NFW =========================================================================== */
     NfwStatusCb mNfwCb;
+    IsInEmergencySession mIsE911Session;
     inline void initNfw(const NfwCbInfo& cbInfo) {
         mNfwCb = (NfwStatusCb)cbInfo.visibilityControlCb;
+        mIsE911Session = (IsInEmergencySession)cbInfo.isInEmergencySession;
     }
 
     /* ==== ODCPI ========================================================================== */
@@ -395,6 +397,12 @@ public:
         if (NULL != mNfwCb) {
             mNfwCb(notification);
         }
+    }
+    inline bool getE911State(void) {
+        if (NULL != mIsE911Session) {
+            return mIsE911Session();
+        }
+        return false;
     }
 
     /*======== GNSSDEBUG ================================================================*/

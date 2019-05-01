@@ -66,6 +66,13 @@ void GnssVisibilityControl::nfwStatusCb(GnssNfwNotification notification) {
     }
 }
 
+bool GnssVisibilityControl::isInEmergencySession() {
+    if (nullptr != spGnssVisibilityControl) {
+        return spGnssVisibilityControl->isE911Session();
+    }
+    return false;
+}
+
 static void convertGnssNfwNotification(GnssNfwNotification& in,
     IGnssVisibilityControlCallback::NfwNotification& out)
 {
@@ -94,6 +101,22 @@ void GnssVisibilityControl::statusCb(GnssNfwNotification notification) {
         }
     } else {
         LOC_LOGw("setCallback has not been called yet");
+    }
+}
+
+bool GnssVisibilityControl::isE911Session() {
+
+    if (mGnssVisibilityControlCbIface != nullptr) {
+        auto r = mGnssVisibilityControlCbIface->isInEmergencySession();
+        if (!r.isOk()) {
+            LOC_LOGw("Error invoking NFW status cb %s", r.description().c_str());
+            return false;
+        } else {
+            return (r);
+        }
+    } else {
+        LOC_LOGw("setCallback has not been called yet");
+        return false;
     }
 }
 
@@ -131,6 +154,7 @@ Return<bool> GnssVisibilityControl::setCallback(const ::android::sp<::android::h
 
     NfwCbInfo cbInfo = {};
     cbInfo.visibilityControlCb = (void*)nfwStatusCb;
+    cbInfo.isInEmergencySession = (void*)isInEmergencySession;
 
     mGnss->getGnssInterface()->nfwInit(cbInfo);
 

@@ -2115,6 +2115,7 @@ typedef void (*AgnssStatusIpV4Cb)(AGnssExtStatusIpV4 status);
 * Callback with NFW information.
 */
 typedef void(*NfwStatusCb)(GnssNfwNotification notification);
+typedef bool(*IsInEmergencySession)(void);
 
 /*
  * Callback with AGNSS(IpV6) status information.
