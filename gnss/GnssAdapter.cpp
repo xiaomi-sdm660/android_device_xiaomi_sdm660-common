@@ -3409,15 +3409,19 @@ GnssAdapter::requestNiNotifyEvent(const GnssNiNotification &notify, const void* 
             mNotify(notify),
             mData(data) {}
         inline virtual void proc() const {
-            if (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type ||
-                GNSS_NI_TYPE_CONTROL_PLANE == mNotify.type) {
+            if (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type) {
                 if (mAdapter.getE911State() ||
-                    ((GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES) &&
-                     (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type))) {
+                    (GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES)) {
                     mApi.informNiResponse(GNSS_NI_RESPONSE_ACCEPT, mData);
-                }
-                else {
+                } else {
                     mApi.informNiResponse(GNSS_NI_RESPONSE_DENY, mData);
+                }
+            } else if (GNSS_NI_TYPE_CONTROL_PLANE == mNotify.type) {
+                if (mAdapter.getE911State() &&
+                    (1 == ContextBase::mGps_conf.CP_MTLR_ES)) {
+                    mApi.informNiResponse(GNSS_NI_RESPONSE_ACCEPT, mData);
+                } else {
+                    mAdapter.requestNiNotify(mNotify, mData);
                 }
             } else {
                 mAdapter.requestNiNotify(mNotify, mData);
