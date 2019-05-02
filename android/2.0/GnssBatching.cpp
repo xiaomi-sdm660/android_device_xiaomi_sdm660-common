@@ -53,7 +53,7 @@ GnssBatching::~GnssBatching() {
 
 
 // Methods from ::android::hardware::gnss::V1_0::IGnssBatching follow.
-Return<bool> GnssBatching::init(const sp<IGnssBatchingCallback>& callback) {
+Return<bool> GnssBatching::init(const sp<V1_0::IGnssBatchingCallback>& callback) {
     if (mApi != nullptr) {
         LOC_LOGD("%s]: mApi is NOT nullptr, delete it first", __FUNCTION__);
         delete mApi;
@@ -117,10 +117,43 @@ Return<bool> GnssBatching::stop() {
 }
 
 Return<void> GnssBatching::cleanup() {
+    if (mApi != nullptr) {
+        mApi->stopSession();
+    }
     if (mGnssBatchingCbIface != nullptr) {
         mGnssBatchingCbIface->unlinkToDeath(mGnssBatchingDeathRecipient);
+        mGnssBatchingCbIface = nullptr;
+    }
+    if (mGnssBatchingCbIface_2_0 != nullptr) {
+        mGnssBatchingCbIface_2_0->unlinkToDeath(mGnssBatchingDeathRecipient);
+        mGnssBatchingCbIface_2_0 = nullptr;
     }
     return Void();
+}
+
+// Methods from ::android::hardware::gnss::V2_0::IGnssBatching follow.
+Return<bool> GnssBatching::init_2_0(const sp<V2_0::IGnssBatchingCallback>& callback) {
+    if (mApi != nullptr) {
+        LOC_LOGD("%s]: mApi is NOT nullptr, delete it first", __FUNCTION__);
+        delete mApi;
+        mApi = nullptr;
+    }
+
+    mApi = new BatchingAPIClient(callback);
+    if (mApi == nullptr) {
+        LOC_LOGE("%s]: failed to create mApi", __FUNCTION__);
+        return false;
+    }
+
+    if (mGnssBatchingCbIface_2_0 != nullptr) {
+        mGnssBatchingCbIface_2_0->unlinkToDeath(mGnssBatchingDeathRecipient);
+    }
+    mGnssBatchingCbIface_2_0 = callback;
+    if (mGnssBatchingCbIface_2_0 != nullptr) {
+        mGnssBatchingCbIface_2_0->linkToDeath(mGnssBatchingDeathRecipient, 0 /*cookie*/);
+    }
+
+    return true;
 }
 
 }  // namespace implementation

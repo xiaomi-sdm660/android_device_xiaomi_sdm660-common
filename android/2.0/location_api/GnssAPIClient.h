@@ -33,7 +33,7 @@
 
 #include <mutex>
 #include <android/hardware/gnss/2.0/IGnss.h>
-//#include <android/hardware/gnss/1.1/IGnssCallback.h>
+#include <android/hardware/gnss/2.0/IGnssCallback.h>
 #include <LocationAPIClientBase.h>
 
 namespace android {
@@ -49,6 +49,7 @@ class GnssAPIClient : public LocationAPIClientBase
 public:
     GnssAPIClient(const sp<V1_0::IGnssCallback>& gpsCb,
             const sp<V1_0::IGnssNiCallback>& niCb);
+    GnssAPIClient(const sp<V2_0::IGnssCallback>& gpsCb);
     virtual ~GnssAPIClient();
     GnssAPIClient(const GnssAPIClient&) = delete;
     GnssAPIClient& operator=(const GnssAPIClient&) = delete;
@@ -56,6 +57,7 @@ public:
     // for GpsInterface
     void gnssUpdateCallbacks(const sp<V1_0::IGnssCallback>& gpsCb,
             const sp<V1_0::IGnssNiCallback>& niCb);
+    void gnssUpdateCallbacks_2_0(const sp<V2_0::IGnssCallback>& gpsCb);
     bool gnssStart();
     bool gnssStop();
     bool gnssSetPositionMode(V1_0::IGnss::GnssPositionMode mode,
@@ -91,6 +93,8 @@ public:
     void onStopTrackingCb(LocationError error) final;
 
 private:
+    void setCallbacks();
+    void initLocationOptions();
     sp<V1_0::IGnssCallback> mGnssCbIface;
     sp<V1_0::IGnssNiCallback> mGnssNiCbIface;
     std::mutex mMutex;
@@ -98,6 +102,7 @@ private:
     LocationCapabilitiesMask mLocationCapabilitiesMask;
     bool mLocationCapabilitiesCached;
     TrackingOptions mTrackingOptions;
+    sp<V2_0::IGnssCallback> mGnssCbIface_2_0;
 };
 
 }  // namespace implementation

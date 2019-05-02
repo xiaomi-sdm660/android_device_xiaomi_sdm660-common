@@ -21,7 +21,7 @@
 #ifndef ANDROID_HARDWARE_GNSS_V2_0_GNSSBATCHING_H
 #define ANDROID_HARDWARE_GNSS_V2_0_GNSSBATCHING_H
 
-#include <android/hardware/gnss/1.0/IGnssBatching.h>
+#include <android/hardware/gnss/2.0/IGnssBatching.h>
 #include <hidl/Status.h>
 
 
@@ -31,8 +31,8 @@ namespace gnss {
 namespace V2_0 {
 namespace implementation {
 
-using ::android::hardware::gnss::V1_0::IGnssBatching;
-using ::android::hardware::gnss::V1_0::IGnssBatchingCallback;
+using ::android::hardware::gnss::V2_0::IGnssBatching;
+using ::android::hardware::gnss::V2_0::IGnssBatchingCallback;
 using ::android::hidl::base::V1_0::IBase;
 using ::android::hardware::hidl_array;
 using ::android::hardware::hidl_memory;
@@ -48,12 +48,15 @@ struct GnssBatching : public IGnssBatching {
     ~GnssBatching();
 
     // Methods from ::android::hardware::gnss::V1_0::IGnssBatching follow.
-    Return<bool> init(const sp<IGnssBatchingCallback>& callback) override;
+    Return<bool> init(const sp<V1_0::IGnssBatchingCallback>& callback) override;
     Return<uint16_t> getBatchSize() override;
     Return<bool> start(const IGnssBatching::Options& options ) override;
     Return<void> flush() override;
     Return<bool> stop() override;
     Return<void> cleanup() override;
+
+    // Methods from ::android::hardware::gnss::V2_0::IGnssBatching follow.
+    Return<bool> init_2_0(const sp<V2_0::IGnssBatchingCallback>& callback) override;
 
  private:
     struct GnssBatchingDeathRecipient : hidl_death_recipient {
@@ -67,8 +70,9 @@ struct GnssBatching : public IGnssBatching {
 
  private:
     sp<GnssBatchingDeathRecipient> mGnssBatchingDeathRecipient = nullptr;
-    sp<IGnssBatchingCallback> mGnssBatchingCbIface = nullptr;
+    sp<V1_0::IGnssBatchingCallback> mGnssBatchingCbIface = nullptr;
     BatchingAPIClient* mApi = nullptr;
+    sp<V2_0::IGnssBatchingCallback> mGnssBatchingCbIface_2_0 = nullptr;
 };
 
 }  // namespace implementation

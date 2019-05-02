@@ -54,11 +54,12 @@ MeasurementCorrections::MeasurementCorrections() {
 MeasurementCorrections::~MeasurementCorrections() {
 }
 
-Return<bool> MeasurementCorrections::setCorrections(const ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections& corrections) {
+Return<bool> MeasurementCorrections::setCorrections(const ::android::hardware::gnss::measurement_corrections::V1_0::MeasurementCorrections& /*corrections*/) {
     return true;
 }
 
-Return<bool> MeasurementCorrections::setCallback(const sp<IMeasurementCorrectionsCallback>& callback) {
+Return<bool> MeasurementCorrections::setCallback(
+        const sp<V1_0::IMeasurementCorrectionsCallback>& /*callback*/) {
     return true;
 }
 

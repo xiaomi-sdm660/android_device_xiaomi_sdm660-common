@@ -30,7 +30,7 @@
 #ifndef LOCATION_UTIL_H
 #define LOCATION_UTIL_H
 
-#include <android/hardware/gnss/1.0/types.h>
+#include <android/hardware/gnss/2.0/types.h>
 #include <LocationAPI.h>
 #include <GnssDebug.h>
 
@@ -41,8 +41,11 @@ namespace V2_0 {
 namespace implementation {
 
 void convertGnssLocation(Location& in, V1_0::GnssLocation& out);
+void convertGnssLocation(Location& in, V2_0::GnssLocation& out);
 void convertGnssLocation(const V1_0::GnssLocation& in, Location& out);
+void convertGnssLocation(const V2_0::GnssLocation& in, Location& out);
 void convertGnssConstellationType(GnssSvType& in, V1_0::GnssConstellationType& out);
+void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& out);
 void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out);
 void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);
 void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);

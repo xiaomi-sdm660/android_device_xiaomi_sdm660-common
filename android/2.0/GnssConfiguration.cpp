@@ -38,20 +38,8 @@ GnssConfiguration::GnssConfiguration(Gnss* gnss) : mGnss(gnss) {
 
 // Methods from ::android::hardware::gps::V1_0::IGnssConfiguration follow.
 Return<bool> GnssConfiguration::setSuplEs(bool enabled)  {
-    if (mGnss == nullptr) {
-        LOC_LOGE("%s]: mGnss is nullptr", __FUNCTION__);
-        return false;
-    }
-
-    GnssConfig config;
-    memset(&config, 0, sizeof(GnssConfig));
-    config.size = sizeof(GnssConfig);
-    config.flags = GNSS_CONFIG_FLAGS_SUPL_EM_SERVICES_BIT;
-    config.suplEmergencyServices = (enabled ?
-            GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_YES :
-            GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO);
-
-    return mGnss->updateConfiguration(config);
+    // deprecated function. Must return false to pass VTS
+    return false;
 }
 
 Return<bool> GnssConfiguration::setSuplVersion(uint32_t version)  {
@@ -174,10 +162,9 @@ Return<bool> GnssConfiguration::setGlonassPositioningProtocol(uint8_t protocol) 
     return mGnss->updateConfiguration(config);
 }
 
-Return<bool> GnssConfiguration::setGpsLock(uint8_t lock) {
-    /* we no longer set GPS lock here, there is
-       visibility control for this */
-    return true;
+Return<bool> GnssConfiguration::setGpsLock(uint8_t /*lock*/) {
+    // deprecated function. Must return false to pass VTS
+    return false;
 }
 
 Return<bool> GnssConfiguration::setEmergencySuplPdn(bool enabled) {
@@ -268,7 +255,7 @@ bool GnssConfiguration::setBlacklistedSource(
         break;
     default:
         copyToSource.constellation = GNSS_SV_TYPE_UNKNOWN;
-        LOC_LOGe("Invalid constellation %d", copyFromSource.constellation);
+        LOC_LOGe("Invalid constellation %u", copyFromSource.constellation);
         retVal = false;
         break;
     }

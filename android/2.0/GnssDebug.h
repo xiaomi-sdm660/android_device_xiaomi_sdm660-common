@@ -22,7 +22,7 @@
 #define ANDROID_HARDWARE_GNSS_V2_0_GNSSDEBUG_H
 
 
-#include <android/hardware/gnss/1.0/IGnssDebug.h>
+#include <android/hardware/gnss/2.0/IGnssDebug.h>
 #include <hidl/Status.h>
 
 namespace android {
@@ -31,7 +31,7 @@ namespace gnss {
 namespace V2_0 {
 namespace implementation {
 
-using ::android::hardware::gnss::V1_0::IGnssDebug;
+using ::android::hardware::gnss::V2_0::IGnssDebug;
 using ::android::hardware::Return;
 using ::android::hardware::Void;
 using ::android::hardware::hidl_vec;
@@ -44,11 +44,10 @@ struct GnssDebug : public IGnssDebug {
     GnssDebug(Gnss* gnss);
     ~GnssDebug() {};
 
-    /*
-     * Methods from ::android::hardware::gnss::V1_0::IGnssDebug follow.
-     * These declarations were generated from IGnssDebug.hal.
-     */
+    //  Methods from ::android::hardware::gnss::V1_0::IGnssDebug follow
     Return<void> getDebugData(getDebugData_cb _hidl_cb) override;
+    //  Methods from ::android::hardware::gnss::V2_0::IGnssDebug follow.
+    Return<void> getDebugData_2_0(getDebugData_2_0_cb _hidl_cb) override;
 
 private:
     Gnss* mGnss = nullptr;
