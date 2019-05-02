@@ -4383,9 +4383,18 @@ bool GnssAdapter::getDebugReport(GnssDebugReport& r)
               (int64_t)(reports.mTimeAndClock.back().mLeapSeconds))*1000ULL +
               (int64_t)(reports.mTimeAndClock.back().mGpsTowMs);
 
-        r.mTime.timeUncertaintyNs =
-                ((float)(reports.mTimeAndClock.back().mTimeUnc) +
-                 (float)(reports.mTimeAndClock.back().mLeapSecUnc))*1000.0f;
+        if (reports.mTimeAndClock.back().mTimeUncNs > 0) {
+            // TimeUncNs value is available
+            r.mTime.timeUncertaintyNs =
+                    (float)(reports.mTimeAndClock.back().mLeapSecUnc)*1000.0f +
+                    (float)(reports.mTimeAndClock.back().mTimeUncNs);
+        } else {
+            // fall back to legacy TimeUnc
+            r.mTime.timeUncertaintyNs =
+                    ((float)(reports.mTimeAndClock.back().mTimeUnc) +
+                     (float)(reports.mTimeAndClock.back().mLeapSecUnc))*1000.0f;
+        }
+
         r.mTime.frequencyUncertaintyNsPerSec =
             (float)(reports.mTimeAndClock.back().mClockFreqBiasUnc);
         LOC_LOGV("getDebugReport - timeestimate=%" PRIu64 " unc=%f frequnc=%f",

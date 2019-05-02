@@ -36,7 +36,8 @@ using ::android::hardware::hidl_vec;
 #define GNSS_DEBUG_UNKNOWN_BEARING_ACCURACY_DEG       (180)
 
 #define GNSS_DEBUG_UNKNOWN_UTC_TIME            (1483228800000LL) // 1/1/2017 00:00 GMT
-#define GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC        (1.57783680E17) // 5 years in ns
+#define GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC_MIN    (999) // 999 ns
+#define GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC_MAX    (1.57783680E17) // 5 years in ns
 #define GNSS_DEBUG_UNKNOWN_FREQ_UNC_NS_PER_SEC (2.0e5)  // ppm
 
 GnssDebug::GnssDebug(Gnss* gnss) : mGnss(gnss)
@@ -125,9 +126,10 @@ Return<void> GnssDebug::getDebugData(getDebugData_cb _hidl_cb)
     if (data.time.timeEstimate < GNSS_DEBUG_UNKNOWN_UTC_TIME) {
         data.time.timeEstimate = GNSS_DEBUG_UNKNOWN_UTC_TIME;
     }
-    if (data.time.timeUncertaintyNs <= 0 ||
-        data.time.timeUncertaintyNs > (float)GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC) {
-        data.time.timeUncertaintyNs = (float)GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC;
+    if (data.time.timeUncertaintyNs <= 0) {
+        data.time.timeUncertaintyNs = (float)GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC_MIN;
+    } else if (data.time.timeUncertaintyNs > GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC_MAX) {
+        data.time.timeUncertaintyNs = (float)GNSS_DEBUG_UNKNOWN_UTC_TIME_UNC_MAX;
     }
     if (data.time.frequencyUncertaintyNsPerSec <= 0 ||
         data.time.frequencyUncertaintyNsPerSec > (float)GNSS_DEBUG_UNKNOWN_FREQ_UNC_NS_PER_SEC) {

@@ -116,6 +116,7 @@ public:
     int32_t  mClockFreqBiasUnc;
     int32_t  mLeapSeconds;
     int32_t  mLeapSecUnc;
+    uint64_t mTimeUncNs;
     inline SystemStatusTimeAndClock() :
         mGpsWeek(0),
         mGpsTowMs(0),
@@ -125,7 +126,8 @@ public:
         mClockFreqBias(0),
         mClockFreqBiasUnc(0),
         mLeapSeconds(0),
-        mLeapSecUnc(0) {}
+        mLeapSecUnc(0),
+        mTimeUncNs(0ULL) {}
     inline SystemStatusTimeAndClock(const SystemStatusPQWM1& nmea);
     bool equals(const SystemStatusTimeAndClock& peer);
     void dump(void);
