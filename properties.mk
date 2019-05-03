@@ -215,6 +215,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.sensors.pmd=true \
     ro.vendor.sensors.sta_detect=true
 
+# SurfaceFlinger
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    ro.surface_flinger.protected_contents=true
+
 #Storaged
  PRODUCT_PROPERTY_OVERRIDES += \
     ro.storaged.event.interval=99999
