@@ -218,6 +218,8 @@ typedef enum {
     LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT      = (1<<10),
     // support agpm
     LOCATION_CAPABILITIES_AGPM_BIT                          = (1<<11),
+    // support location privacy
+    LOCATION_CAPABILITIES_PRIVACY_BIT                       = (1<<12),
 } LocationCapabilitiesBits;
 
 typedef enum {

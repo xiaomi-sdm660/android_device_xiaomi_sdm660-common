@@ -298,6 +298,9 @@ LocAdapterBase::getCapabilities()
         if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_AGPM_V02)) {
             mask |= LOCATION_CAPABILITIES_AGPM_BIT;
         }
+        if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY)) {
+            mask |= LOCATION_CAPABILITIES_PRIVACY_BIT;
+        }
     } else {
         LOC_LOGE("%s]: attempt to get capabilities before they are known.", __func__);
     }
