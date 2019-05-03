@@ -205,9 +205,6 @@ TARGET_COPY_OUT_VENDOR := vendor
 # Peripheral manager
 TARGET_PER_MGR_ENABLED := true
 
-# Power
-TARGET_USES_INTERACTION_BOOST := true
-
 # Properties
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 
