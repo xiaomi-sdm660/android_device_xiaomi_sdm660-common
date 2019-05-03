@@ -57,7 +57,9 @@ using namespace loc_core;
 #define LOG_TAG "LocSvc_XSSO"
 
 bool XtraSystemStatusObserver::updateLockStatus(GnssConfigGpsLock lock) {
-    mGpsLock = lock;
+    // mask NI(NFW bit) since from XTRA's standpoint GPS is enabled if
+    // MO(AFW bit) is enabled and disabled when MO is disabled
+    mGpsLock = lock & ~GNSS_CONFIG_GPS_LOCK_NI;
 
     if (!mReqStatusReceived) {
         return true;
