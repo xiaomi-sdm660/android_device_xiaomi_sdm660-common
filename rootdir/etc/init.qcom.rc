@@ -30,6 +30,7 @@ import /vendor/etc/init/hw/init.msm.usb.configfs.rc
 import /vendor/etc/init/hw/init.target.rc
 import /vendor/etc/init/hw/init.device.rc
 import /vendor/etc/init/hw/init.spectrum.rc
+import /vendor/etc/init/hw/init.performance.sdm660.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
