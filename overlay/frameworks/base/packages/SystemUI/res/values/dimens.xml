@@ -24,4 +24,7 @@
     <!-- Margin on the right side of the system icon group on Keyguard. -->
     <dimen name="system_icons_keyguard_padding_end">16dp</dimen>
 
+    <!-- Remove custom extra padding for the QS icons and statusbar date -->
+    <dimen name="qs_items_padding">8dp</dimen>
+
 </resources>
