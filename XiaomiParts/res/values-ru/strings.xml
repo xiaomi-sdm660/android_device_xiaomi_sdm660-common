@@ -70,7 +70,7 @@
     <string name="fpaction_home">Домой</string>
     <string name="fpaction_recent_apps">Недавние приложения</string>
     <string name="fpaction_media_next">Следующее медиа</string>
-    <string name="fpaction_media_play_pause">Медиа плей/пауза</string>
+    <string name="fpaction_media_play_pause">Медиа играть/пауза</string>
     <string name="fpaction_media_previous">Превью медиа</string>
 
     <string name="audio_title">Аудио</string>
@@ -141,22 +141,9 @@
     <string name="grayscale">Экран в оттенках серого</string>
 
     <string name="presets_dialog_title">Выберите пресет</string>
-    <!-- Presets -->
-    <string name="preset_default">По умолчанию</string>
-    <string name="preset_version_1">Версия 1</string>
-    <string name="preset_version_2">Версия 2</string>
-    <string name="preset_version_3">Версия 3</string>
-    <string name="preset_triluminous">Triluminous</string>
-    <string name="preset_deep_black_white">Глубокие черный и белый</string>
-    <string name="preset_deep_natural">Глубокие натуральные цвета</string>
-    <string name="preset_cool_amoled">Крутой AMOLED</string>
-    <string name="preset_extreme_amoled">Экстримный AMOLED</string>
-    <string name="preset_warm_amoled">Теплый AMOLED</string>
-    <string name="preset_hybrid_mamba">Гибридная мамба</string>
 
     <!-- menu -->
-    <string name="kcal_presets" translatable="false">@string/presets_dialog_title</string>
-    <string name="kcal_reset">Сбросить</string>
+    <string name="kcal_reset">Вернуть пресет по умолчанию</string>
 
     <!-- CustomSeekBarPreference -->
     <string name="edit_value">Выбрать новое значение</string>
