@@ -31,6 +31,14 @@
          </interface>
     </hal>
     <hal format="hidl" optional="true">
+        <name>vendor.qti.data.factory</name> 
+        <version>1.1</version> 
+        <interface> 
+             <name>IFactory</name> 
+             <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
         <name>vendor.display.color</name>
         <version>1.0-2</version>
         <interface>
@@ -45,6 +53,18 @@
              <name>IDisplayPostproc</name>
              <instance>default</instance>
         </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+         <name>vendor.lineage.livedisplay</name>
+         <version>2.0</version>
+         <interface>
+             <name>IDisplayModes</name>
+             <instance>default</instance>
+         </interface>
+         <interface>
+            <name>IPictureAdjustment</name>
+            <instance>default</instance>
+         </interface>
     </hal>
     <hal format="hidl" optional="true">
         <name>vendor.display.config</name>
