@@ -91,7 +91,6 @@ allow priv_app slpi_prop:file read;
 allow priv_app spcomlib_prop:file read;
 allow priv_app spectrum_prop:file read;
 allow priv_app system_boot_reason_prop:file read;
-allow priv_app theme_prop:file read;
 allow priv_app tombstoned_exec:file getattr;
 allow priv_app test_boot_reason_prop:file read;
 allow priv_app traced_enabled_prop:file read;
