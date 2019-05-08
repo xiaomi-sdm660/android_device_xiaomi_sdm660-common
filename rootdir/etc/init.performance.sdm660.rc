@@ -1,3 +1,14 @@
+on early-init
+    # mount schedtune and blkio together in "on early-init",
+    # so that mount schedtune in init.rc will fail
+    mkdir /dev/stune
+    mount cgroup none /dev/stune nodev noexec nosuid schedtune,blkio
+
+    mkdir /dev/stune/foreground
+    mkdir /dev/stune/background
+    mkdir /dev/stune/top-app
+    mkdir /dev/stune/rt
+
 on init
     # Setup schedtune
     write /dev/stune/foreground/schedtune.prefer_idle 1
@@ -40,10 +51,23 @@ on init
     write /dev/cpuset/application/background/mems 0
     chown system system /dev/cpuset/application/background/tasks
     chmod 0660 /dev/cpuset/application/background/tasks
+    mkdir /dev/cpuset/camera-daemon 0750 cameraserver cameraserver
+    write /dev/cpuset/camera-daemon/cpus 0
+    write /dev/cpuset/camera-daemon/mems 0
+    chown cameraserver cameraserver /dev/cpuset/camera-daemon/tasks
+    chmod 0660 /dev/cpuset/camera-daemon/tasks
+
+    # Setup swap
+    write /proc/sys/vm/page-cluster 0
+    write /proc/sys/vm/swappiness 100
+
 
 on post-fs
     # Disable sched autogroup
     write /proc/sys/kernel/sched_autogroup_enabled 0
+
+    # set RLIMIT_MEMLOCK to 64MB
+    setrlimit 8 67108864 67108864
 
     chmod 0664 /sys/devices/virtual/graphics/fb0/idle_time
     chown system graphics /sys/devices/virtual/graphics/fb0/idle_time
@@ -66,6 +90,8 @@ on boot
     write /dev/cpuset/application/cpus 0-7
 
 on property:sys.boot_completed=1
+    # Set the default IRQ affinity to the silver cluster.
+    write /proc/irq/default_smp_affinity f
 
     # according to Qcom this legacy value improves first launch latencies
     # stock value is 512k
@@ -90,6 +116,9 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "schedutil"
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "schedutil"
 
-    # Disable sched boost
-    write /proc/sys/kernel/sched_boost 0
-    chmod 0444 /proc/sys/kernel/sched_boost
+    # Setup dirty ratios
+    write /proc/sys/vm/dirty_ratio 5
+    write /proc/sys/vm/dirty_background_ratio 1
+
+    # Lower vfs_cache_pressure
+    write /proc/sys/vm/vfs_cache_pressure 100
