@@ -368,7 +368,9 @@ void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
             data |= IGnssCallback::Capabilities::SATELLITE_BLACKLIST;
 
         IGnssCallback::GnssSystemInfo gnssInfo;
-        if (capabilitiesMask & LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT ||
+        if (capabilitiesMask & LOCATION_CAPABILITIES_PRIVACY_BIT) {
+            gnssInfo.yearOfHw = 2019;
+        } else if (capabilitiesMask & LOCATION_CAPABILITIES_CONSTELLATION_ENABLEMENT_BIT ||
             capabilitiesMask & LOCATION_CAPABILITIES_AGPM_BIT) {
             gnssInfo.yearOfHw = 2018;
         } else if (capabilitiesMask & LOCATION_CAPABILITIES_DEBUG_NMEA_BIT) {
