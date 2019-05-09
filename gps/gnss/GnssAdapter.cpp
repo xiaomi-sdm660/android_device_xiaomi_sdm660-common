@@ -2929,6 +2929,8 @@ void GnssAdapter::dataConnOpenCommand(
             LOC_LOGV("AgpsMsgAtlOpenSuccess");
             if (mApnName == nullptr) {
                 LOC_LOGE("%s] new allocation failed, fatal error.", __func__);
+                // Reporting the failure here
+                mAgpsManager->reportAtlClosed(mAgpsType);
                 return;
             }
             memcpy(mApnName, apnName, apnLen);
@@ -2945,9 +2947,16 @@ void GnssAdapter::dataConnOpenCommand(
             mAgpsManager->reportAtlOpenSuccess(mAgpsType, mApnName, mApnLen, mBearerType);
         }
     };
-
-    sendMsg( new AgpsMsgAtlOpenSuccess(
-            &mAgpsManager, agpsType, apnName, apnLen, bearerType));
+    // Added inital length checks for apnlen check to avoid security issues
+    // In case of failure reporting the same
+    if (NULL == apnName || apnLen <= 0 || apnLen > MAX_APN_LEN ||
+            (strlen(apnName) != (unsigned)apnLen)) {
+        LOC_LOGe("%s]: incorrect apnlen length or incorrect apnName", __func__);
+        mAgpsManager.reportAtlClosed(agpsType);
+    } else {
+        sendMsg( new AgpsMsgAtlOpenSuccess(
+                    &mAgpsManager, agpsType, apnName, apnLen, bearerType));
+    }
 }
 
 void GnssAdapter::dataConnClosedCommand(AGpsExtType agpsType){
