@@ -643,10 +643,12 @@ typedef uint16_t GnssSvPolyStatusMask;
 #define GNSS_SV_POLY_SRC_ALM_CORR_V02 ((GnssSvPolyStatusMask)0x01)
 #define GNSS_SV_POLY_GLO_STR4_V02 ((GnssSvPolyStatusMask)0x02)
 #define GNSS_SV_POLY_DELETE_V02 ((GnssSvPolyStatusMask)0x04)
+#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_V02 ((GnssSvPolyStatusMask)0x08)
 typedef uint16_t GnssSvPolyStatusMaskValidity;
 #define GNSS_SV_POLY_SRC_ALM_CORR_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x01)
 #define GNSS_SV_POLY_GLO_STR4_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x02)
 #define GNSS_SV_POLY_DELETE_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x04)
+#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x08)
 
 
 typedef struct {
@@ -1032,9 +1034,19 @@ enum ulp_gnss_sv_poly_valid_flags{
     ULP_GNSS_SV_POLY_ELEVATIONUNC,
     ULP_GNSS_SV_POLY_VELO_COEFF,
     ULP_GNSS_SV_POLY_ENHANCED_IOD,
-
-    ULP_GNSS_SV_POLY_VALID_FLAGS
-
+    ULP_GNSS_SV_POLY_GPS_ISC_L1CA,
+    ULP_GNSS_SV_POLY_GPS_ISC_L2C,
+    ULP_GNSS_SV_POLY_GPS_ISC_L5I5,
+    ULP_GNSS_SV_POLY_GPS_ISC_L5Q5,
+    ULP_GNSS_SV_POLY_GPS_TGD,
+    ULP_GNSS_SV_POLY_GLO_TGD_G1G2,
+    ULP_GNSS_SV_POLY_BDS_TGD_B1,
+    ULP_GNSS_SV_POLY_BDS_TGD_B2,
+    ULP_GNSS_SV_POLY_BDS_TGD_B2A,
+    ULP_GNSS_SV_POLY_BDS_ISC_B2A,
+    ULP_GNSS_SV_POLY_GAL_BGD_E1E5A,
+    ULP_GNSS_SV_POLY_GAL_BGD_E1E5B,
+    ULP_GNSS_SV_POLY_NAVIC_TGD_L5
 };
 
 #define ULP_GNSS_SV_POLY_BIT_GLO_FREQ               (1<<ULP_GNSS_SV_POLY_GLO_FREQ)
@@ -1055,6 +1067,19 @@ enum ulp_gnss_sv_poly_valid_flags{
 #define ULP_GNSS_SV_POLY_BIT_ELEVATIONUNC           (1<<ULP_GNSS_SV_POLY_ELEVATIONUNC)
 #define ULP_GNSS_SV_POLY_BIT_VELO_COEFF             (1<<ULP_GNSS_SV_POLY_VELO_COEFF)
 #define ULP_GNSS_SV_POLY_BIT_ENHANCED_IOD           (1<<ULP_GNSS_SV_POLY_ENHANCED_IOD)
+#define ULP_GNSS_SV_POLY_BIT_GPS_ISC_L1CA           (1<<ULP_GNSS_SV_POLY_GPS_ISC_L1CA)
+#define ULP_GNSS_SV_POLY_BIT_GPS_ISC_L2C            (1<<ULP_GNSS_SV_POLY_GPS_ISC_L2C)
+#define ULP_GNSS_SV_POLY_BIT_GPS_ISC_L5I5           (1<<ULP_GNSS_SV_POLY_GPS_ISC_L5I5)
+#define ULP_GNSS_SV_POLY_BIT_GPS_ISC_L5Q5           (1<<ULP_GNSS_SV_POLY_GPS_ISC_L5Q5)
+#define ULP_GNSS_SV_POLY_BIT_GPS_TGD                (1<<ULP_GNSS_SV_POLY_GPS_TGD)
+#define ULP_GNSS_SV_POLY_BIT_GLO_TGD_G1G2           (1<<ULP_GNSS_SV_POLY_GLO_TGD_G1G2)
+#define ULP_GNSS_SV_POLY_BIT_BDS_TGD_B1             (1<<ULP_GNSS_SV_POLY_BDS_TGD_B1)
+#define ULP_GNSS_SV_POLY_BIT_BDS_TGD_B2             (1<<ULP_GNSS_SV_POLY_BDS_TGD_B2)
+#define ULP_GNSS_SV_POLY_BIT_BDS_TGD_B2A            (1<<ULP_GNSS_SV_POLY_BDS_TGD_B2A)
+#define ULP_GNSS_SV_POLY_BIT_BDS_ISC_B2A            (1<<ULP_GNSS_SV_POLY_BDS_ISC_B2A)
+#define ULP_GNSS_SV_POLY_BIT_GAL_BGD_E1E5A          (1<<ULP_GNSS_SV_POLY_GAL_BGD_E1E5A)
+#define ULP_GNSS_SV_POLY_BIT_GAL_BGD_E1E5B          (1<<ULP_GNSS_SV_POLY_GAL_BGD_E1E5B)
+#define ULP_GNSS_SV_POLY_BIT_NAVIC_TGD_L5           (1<<ULP_GNSS_SV_POLY_NAVIC_TGD_L5)
 
 typedef enum
 {
@@ -1527,6 +1552,19 @@ typedef struct
     double      velCoef[GNSS_SV_POLY_VELOCITY_COEF_MAX_SIZE];
     /* Coefficients of velocity poly */
     uint32_t    enhancedIOD;    /*  Enhanced Reference Time */
+    float gpsIscL1ca;
+    float gpsIscL2c;
+    float gpsIscL5I5;
+    float gpsIscL5Q5;
+    float gpsTgd;
+    float gloTgdG1G2;
+    float bdsTgdB1;
+    float bdsTgdB2;
+    float bdsTgdB2a;
+    float bdsIscB2a;
+    float galBgdE1E5a;
+    float galBgdE1E5b;
+    float navicTgdL5;
 } GnssSvPolynomial;
 
 typedef enum {
