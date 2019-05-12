@@ -433,6 +433,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	libdng_sdk.vendor_32 \
 	libstdc++.vendor \
+	vndk-ext \
 	vndk_package
 
 PRODUCT_COPY_FILES += \
