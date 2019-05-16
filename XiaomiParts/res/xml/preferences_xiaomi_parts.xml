@@ -19,7 +19,7 @@
         android:title="@string/camera_title">
 
         <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="hal3"
             android:title="@string/camera_hal3_title" />
 
