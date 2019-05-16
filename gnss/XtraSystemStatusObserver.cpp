@@ -123,7 +123,7 @@ bool XtraSystemStatusObserver::updateLockStatus(GnssConfigGpsLock lock) {
 
     stringstream ss;
     ss <<  "gpslock";
-    ss << " " << lock;
+    ss << " " << mGpsLock;
     string s = ss.str();
     return ( LocIpc::send(*mSender, (const uint8_t*)s.data(), s.size()) );
 }
