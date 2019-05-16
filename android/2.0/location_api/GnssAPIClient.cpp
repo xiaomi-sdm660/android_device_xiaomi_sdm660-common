@@ -517,7 +517,7 @@ void GnssAPIClient::onGnssNiCb(uint32_t id, GnssNiNotification gnssNiNotificatio
 
 void GnssAPIClient::onGnssSvCb(GnssSvNotification gnssSvNotification)
 {
-    LOC_LOGD("%s]: (count: %zu)", __FUNCTION__, gnssSvNotification.count);
+    LOC_LOGD("%s]: (count: %u)", __FUNCTION__, gnssSvNotification.count);
     mMutex.lock();
     auto gnssCbIface(mGnssCbIface);
     auto gnssCbIface_2_0(mGnssCbIface_2_0);
@@ -561,7 +561,7 @@ void GnssAPIClient::onGnssNmeaCb(GnssNmeaNotification gnssNmeaNotification)
                 auto r = gnssCbIface_2_0->gnssNmeaCb(
                         static_cast<V1_0::GnssUtcTime>(gnssNmeaNotification.timestamp), nmeaString);
                 if (!r.isOk()) {
-                    LOC_LOGE("%s] Error from gnssCbIface_2_0 nmea=%s length=%zu description=%s",
+                    LOC_LOGE("%s] Error from gnssCbIface_2_0 nmea=%s length=%u description=%s",
                              __func__, gnssNmeaNotification.nmea, gnssNmeaNotification.length,
                              r.description().c_str());
                 }
@@ -569,7 +569,7 @@ void GnssAPIClient::onGnssNmeaCb(GnssNmeaNotification gnssNmeaNotification)
                 auto r = gnssCbIface->gnssNmeaCb(
                         static_cast<V1_0::GnssUtcTime>(gnssNmeaNotification.timestamp), nmeaString);
                 if (!r.isOk()) {
-                    LOC_LOGE("%s] Error from gnssNmeaCb nmea=%s length=%zu description=%s",
+                    LOC_LOGE("%s] Error from gnssNmeaCb nmea=%s length=%u description=%s",
                              __func__, gnssNmeaNotification.nmea, gnssNmeaNotification.length,
                              r.description().c_str());
                 }

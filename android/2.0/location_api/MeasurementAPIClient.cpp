@@ -170,7 +170,7 @@ void MeasurementAPIClient::measurementClose() {
 void MeasurementAPIClient::onGnssMeasurementsCb(
         GnssMeasurementsNotification gnssMeasurementsNotification)
 {
-    LOC_LOGD("%s]: (count: %zu active: %d)",
+    LOC_LOGD("%s]: (count: %u active: %d)",
             __FUNCTION__, gnssMeasurementsNotification.count, mTracking);
     if (mTracking) {
         mMutex.lock();

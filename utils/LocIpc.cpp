@@ -48,7 +48,7 @@ namespace loc_util {
 
 #define SOCK_OP_AND_LOG(buf, length, opable, rtv, exe)  \
     if (nullptr == (buf) || 0 == (length)) { \
-        LOC_LOGe("Invalid inputs: buf - %p, length - %d", (buf), (length)); \
+        LOC_LOGe("Invalid inputs: buf - %p, length - %u", (buf), (length)); \
     } else if (!(opable)) {                                             \
         LOC_LOGe("Invalid object: operable - %d", (opable));            \
     } else { \
@@ -60,7 +60,7 @@ namespace loc_util {
 
 const char Sock::MSG_ABORT[] = "LocIpc::Sock::ABORT";
 const char Sock::LOC_IPC_HEAD[] = "$MSGLEN$";
-ssize_t Sock::send(const void *buf, size_t len, int flags, const struct sockaddr *destAddr,
+ssize_t Sock::send(const void *buf, uint32_t len, int flags, const struct sockaddr *destAddr,
                           socklen_t addrlen) const {
     ssize_t rtv = -1;
     SOCK_OP_AND_LOG(buf, len, isValid(), rtv, sendto(buf, len, flags, destAddr, addrlen));
