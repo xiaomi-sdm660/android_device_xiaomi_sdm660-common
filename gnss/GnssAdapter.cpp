@@ -1039,9 +1039,18 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             mConfig(config),
             mCount(count),
             mIds(ids) {}
+        inline MsgGnssUpdateConfig(const MsgGnssUpdateConfig& obj) :
+                MsgGnssUpdateConfig(obj.mAdapter, obj.mApi, obj.mConfig,
+                        new uint32_t[obj.mCount], obj.mCount) {
+            if (mIds != nullptr) {
+                for (int i = 0; i < mCount; ++i) {
+                    mIds[i] = obj.mIds[i];
+                }
+            }
+        }
         inline virtual ~MsgGnssUpdateConfig()
         {
-            delete [] mIds;
+            delete[] mIds;
         }
 
         inline virtual void proc() const {
@@ -1299,6 +1308,16 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
             mConfigMask(configMask),
             mIds(ids),
             mCount(count) {}
+
+        inline MsgGnssGetConfig(const MsgGnssGetConfig& obj) :
+                MsgGnssGetConfig(obj.mAdapter, obj.mApi, obj.mConfigMask,
+                        new uint32_t[obj.mCount], obj.mCount) {
+            if (mIds != nullptr) {
+                for (int i = 0; i < mCount; ++i) {
+                    mIds[i] = obj.mIds[i];
+                }
+            }
+        }
         inline virtual ~MsgGnssGetConfig()
         {
             delete[] mIds;

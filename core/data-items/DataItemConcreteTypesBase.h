@@ -249,7 +249,7 @@ public:
             mId(NETWORKINFO_DATA_ITEM_ID) {
                 memset (&mAllNetworkHandles, NETWORK_HANDLE_UNKNOWN,
                         sizeof (mAllNetworkHandles));
-                mAllNetworkHandles[type] = networkHandle;
+                mAllNetworkHandles[initialType] = networkHandle;
             }
     virtual ~NetworkInfoDataItemBase() {}
     inline virtual DataItemId getId() { return mId; }
