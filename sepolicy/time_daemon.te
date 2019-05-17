@@ -1,0 +1,2 @@
+#============= time_daemon ==============
+allow time_daemon self:capability { dac_override dac_read_search };
