@@ -134,6 +134,10 @@ case "$target" in
                 ;;
             355)
                 setprop vendor.media.sm6150.version 1
+                setprop vendor.chre.enabled 0
+                ;;
+            369|377|384)
+                setprop vendor.chre.enabled 0
                 ;;
             *)
         esac
@@ -383,7 +387,15 @@ case "$product" in
         ;;
 esac
 case "$product" in
-        "talos_au")
+        "sm6150_au")
+         setprop vendor.display.lcd_density 160
+         ;;
+        *)
+        ;;
+esac
+
+case "$product" in
+        "sdmshrike_au")
          setprop vendor.display.lcd_density 160
          ;;
         *)
