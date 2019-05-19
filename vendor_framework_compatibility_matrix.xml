@@ -480,7 +480,6 @@
             <instance>default</instance>
         </interface>
     </hal>
-  </hal>
   <hal format="hidl" optional="true">
       <name>vendor.qti.power.pasrmanager</name>
       <transport>hwbinder</transport>
