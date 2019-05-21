@@ -467,4 +467,6 @@
     <string name="config_SmartChargingSupspendValue" translatable="false">1</string>
     <string name="config_SmartChargingResumeValue" translatable="false">0</string>
 
+    <!-- Whether device has oled display -->
+    <bool name="config_hasOledDisplay">true</bool>
 </resources>
