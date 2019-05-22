@@ -141,7 +141,7 @@ void GeofenceAPIClient::geofenceRemoveAll()
 // callbacks
 void GeofenceAPIClient::onGeofenceBreachCb(GeofenceBreachNotification geofenceBreachNotification)
 {
-    LOC_LOGD("%s]: (%zu)", __FUNCTION__, geofenceBreachNotification.count);
+    LOC_LOGD("%s]: (%d)", __FUNCTION__, geofenceBreachNotification.count);
     if (mGnssGeofencingCbIface != nullptr) {
         for (size_t i = 0; i < geofenceBreachNotification.count; i++) {
             GnssLocation gnssLocation;

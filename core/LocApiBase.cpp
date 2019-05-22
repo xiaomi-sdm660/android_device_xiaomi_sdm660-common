@@ -404,7 +404,7 @@ void LocApiBase::reportSv(GnssSvNotification& svNotify)
         "QZSS", "BEIDOU", "GALILEO" };
 
     // print the SV info before delivering
-    LOC_LOGV("num sv: %zu\n"
+    LOC_LOGV("num sv: %u\n"
         "      sv: constellation svid         cN0"
         "    elevation    azimuth    flags",
         svNotify.count);
