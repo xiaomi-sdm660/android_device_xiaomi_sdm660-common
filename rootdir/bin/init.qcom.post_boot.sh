@@ -725,7 +725,7 @@ else
 
         # Enable adaptive LMK for all targets &
         # use Google default LMK series for all 64-bit targets >=2GB.
-        echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
+        echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
 
         # Enable oom_reaper
         if [ -f /sys/module/lowmemorykiller/parameters/oom_reaper ]; then
