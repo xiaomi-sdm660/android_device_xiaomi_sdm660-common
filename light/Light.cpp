@@ -39,15 +39,15 @@
 /*
  * 15 duty percent steps.
  */
-#define RAMP_STEPS 18
+#define RAMP_STEPS 17
 /*
  * Each step will stay on for 150ms by default.
  */
-#define RAMP_STEP_DURATION 150
+#define RAMP_STEP_DURATION 100
 /*
  * Each value represents a duty percent (0 - 100) for the led pwm.
  */
-static int32_t BRIGHTNESS_RAMP[RAMP_STEPS] = {0, 8, 12, 24, 36, 48, 64, 86, 100, 86, 64, 48, 36, 24, 12, 8, 0, 0};
+static int32_t BRIGHTNESS_RAMP[RAMP_STEPS] = {0, 8, 12, 24, 36, 52, 74, 90, 100, 90, 74, 52, 36, 24, 12, 8, 0};
 
 namespace {
 /*
