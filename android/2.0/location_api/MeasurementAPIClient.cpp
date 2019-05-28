@@ -217,7 +217,7 @@ void MeasurementAPIClient::onGnssMeasurementsCb(
 static void convertGnssMeasurement(GnssMeasurementsData& in,
         V1_0::IGnssMeasurementCallback::GnssMeasurement& out)
 {
-    memset(&out, 0, sizeof(IGnssMeasurementCallback::GnssMeasurement));
+    memset(&out, 0, sizeof(out));
     if (in.flags & GNSS_MEASUREMENTS_DATA_SIGNAL_TO_NOISE_RATIO_BIT)
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_SNR;
     if (in.flags & GNSS_MEASUREMENTS_DATA_CARRIER_FREQUENCY_BIT)
