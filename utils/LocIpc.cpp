@@ -193,7 +193,8 @@ public:
             mSockType(sockType),
             mSock(make_shared<Sock>((nullptr == name) ? -1 : (::socket(AF_INET, mSockType, 0)))),
             mName((nullptr == name) ? "" : name),
-            mAddr({.sin_family=AF_INET, .sin_port=htons(port), .sin_addr={htonl(INADDR_ANY)}}) {
+            mAddr({.sin_family = AF_INET, .sin_port = htons(port),
+                    .sin_addr = {htonl(INADDR_ANY)}}) {
         if (mSock != nullptr && mSock->isValid() && nullptr != name) {
             struct hostent* hp = gethostbyname(name);
             if (nullptr != hp) {
@@ -222,12 +223,14 @@ public:
 };
 
 class LocIpcInetRecver : public LocIpcInetSender, public LocIpcRecver {
+     int32_t mPort;
 protected:
      virtual ssize_t recv() const = 0;
 public:
     inline LocIpcInetRecver(const shared_ptr<ILocIpcListener>& listener, const char* name,
                                int32_t port, int sockType) :
-            LocIpcInetSender(name, port, sockType), LocIpcRecver(listener, *this) {
+            LocIpcInetSender(name, port, sockType), LocIpcRecver(listener, *this),
+            mPort(port) {
         if (mSock->isValid() && ::bind(mSock->mSid, (struct sockaddr*)&mAddr, sizeof(mAddr)) < 0) {
             LOC_LOGe("bind socket error. sock fd: %d, reason: %s", mSock->mSid, strerror(errno));
             mSock->close();
@@ -237,7 +240,9 @@ public:
     inline virtual const char* getName() const override { return mName.data(); };
     inline virtual void abort() const override {
         if (isSendable()) {
-            mSock->sendAbort(0, (struct sockaddr*)&mAddr, sizeof(mAddr));
+            sockaddr_in loopBackAddr = {.sin_family = AF_INET, .sin_port = htons(mPort),
+                    .sin_addr = {htonl(INADDR_LOOPBACK)}};
+            mSock->sendAbort(0, (struct sockaddr*)&loopBackAddr, sizeof(loopBackAddr));
         }
     }
 
