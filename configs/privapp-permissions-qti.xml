@@ -163,6 +163,7 @@ It allows additional grants on top of privapp-permissions-platform.xml
     <privapp-permissions package="com.android.mms">
       <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
       <permission name="android.permission.WRITE_APN_SETTINGS"/>
+      <permission name="android.permission.CALL_PRIVILEGED"/>
     </privapp-permissions>
 
     <privapp-permissions package="org.codeaurora.bluetooth.batestapp">
