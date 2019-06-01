@@ -1,2 +1,5 @@
-genfscon proc /nvt_wake_gesture u:object_r:proc_dt2w:s0
-genfscon debugfs /wlan0   u:object_r:debugfs_wlan:s0
+# Power
+genfscon debugfs /wlan0                                         u:object_r:debugfs_wlan:s0
+
+# Touchscreen
+genfscon proc /nvt_wake_gesture                                 u:object_r:proc_dt2w:s0
