@@ -164,7 +164,7 @@ public:
     inline Sock(int sid, const uint32_t maxTxSize = 8192) : mMaxTxSize(maxTxSize), mSid(sid) {}
     inline ~Sock() { close(); }
     inline bool isValid() const { return -1 != mSid; }
-    ssize_t send(const void *buf, size_t len, int flags, const struct sockaddr *destAddr,
+    ssize_t send(const void *buf, uint32_t len, int flags, const struct sockaddr *destAddr,
                  socklen_t addrlen) const;
     ssize_t recv(const shared_ptr<ILocIpcListener>& dataCb, int flags, struct sockaddr *srcAddr,
                  socklen_t *addrlen, int sid = -1) const;

@@ -714,90 +714,91 @@ GnssAdapter::setConfigCommand()
            loc_gps_cfg_s gpsConf = ContextBase::mGps_conf;
            loc_sap_cfg_s_type sapConf = ContextBase::mSap_conf;
 
-            mApi.sendMsg(new LocApiMsg(
-                    [&adapter, gpsConf, sapConf, oldServerUrl, oldMoServerUrl] () {
-                //cache the injected configuration with GnssConfigRequested struct
-                GnssConfig gnssConfigRequested = {};
-                gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT |
-                        GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT |
-                        GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT |
-                        GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
-                gnssConfigRequested.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
-                if (0 == adapter.getAfwControlId() || NULL != adapter.mNfwCb) {
-                    gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
-                }
+           //cache the injected configuration with GnssConfigRequested struct
+           GnssConfig gnssConfigRequested = {};
+           gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT |
+                   GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT |
+                   GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT |
+                   GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
+           gnssConfigRequested.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
+           if (0 == adapter.getAfwControlId() || NULL != adapter.mNfwCb) {
+               gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
+           }
 
-                if (gpsConf.AGPS_CONFIG_INJECT) {
-                    gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
-                            GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
-                            GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
-                            GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
-                    gnssConfigRequested.suplVersion =
-                            adapter.mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
-                    gnssConfigRequested.lppProfile =
-                            adapter.mLocApi->convertLppProfile(gpsConf.LPP_PROFILE);
-                    gnssConfigRequested.aGlonassPositionProtocolMask =
-                            gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
-                }
-                gnssConfigRequested.lppeControlPlaneMask =
-                        adapter.mLocApi->convertLppeCp(gpsConf.LPPE_CP_TECHNOLOGY);
-                gnssConfigRequested.lppeUserPlaneMask =
-                        adapter.mLocApi->convertLppeUp(gpsConf.LPPE_UP_TECHNOLOGY);
-                gnssConfigRequested.blacklistedSvIds.assign(adapter.mBlacklistedSvIds.begin(),
-                        adapter.mBlacklistedSvIds.end());
-                adapter.gnssUpdateConfig(oldServerUrl, oldMoServerUrl, gnssConfigRequested,
-                        gnssConfigRequested);
+           if (gpsConf.AGPS_CONFIG_INJECT) {
+               gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
+                       GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
+                       GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
+                       GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
+               gnssConfigRequested.suplVersion =
+                       adapter.mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
+               gnssConfigRequested.lppProfile =
+                       adapter.mLocApi->convertLppProfile(gpsConf.LPP_PROFILE);
+               gnssConfigRequested.aGlonassPositionProtocolMask =
+                       gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
+           }
+           gnssConfigRequested.lppeControlPlaneMask =
+                   adapter.mLocApi->convertLppeCp(gpsConf.LPPE_CP_TECHNOLOGY);
+           gnssConfigRequested.lppeUserPlaneMask =
+                   adapter.mLocApi->convertLppeUp(gpsConf.LPPE_UP_TECHNOLOGY);
+           gnssConfigRequested.blacklistedSvIds.assign(adapter.mBlacklistedSvIds.begin(),
+                                                       adapter.mBlacklistedSvIds.end());
+           mApi.sendMsg(new LocApiMsg(
+                   [&adapter, gpsConf, sapConf, oldServerUrl,
+                    oldMoServerUrl, gnssConfigRequested] () {
+               adapter.gnssUpdateConfig(oldServerUrl, oldMoServerUrl, gnssConfigRequested,
+                       gnssConfigRequested);
 
-                // set nmea mask type
-                uint32_t mask = 0;
-                if (NMEA_PROVIDER_MP == gpsConf.NMEA_PROVIDER) {
-                    mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
-                }
-                if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
-                    mask |= LOC_NMEA_MASK_DEBUG_V02;
-                }
+               // set nmea mask type
+               uint32_t mask = 0;
+               if (NMEA_PROVIDER_MP == gpsConf.NMEA_PROVIDER) {
+                   mask |= LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK;
+               }
+               if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_DEBUG_NMEA_V02)) {
+                   mask |= LOC_NMEA_MASK_DEBUG_V02;
+               }
 
-                if (mask != 0) {
-                    adapter.mLocApi->setNMEATypesSync(mask);
-                }
+               if (mask != 0) {
+                   adapter.mLocApi->setNMEATypesSync(mask);
+               }
 
-                adapter.mLocApi->setXtraVersionCheckSync(gpsConf.XTRA_VERSION_CHECK);
+               adapter.mLocApi->setXtraVersionCheckSync(gpsConf.XTRA_VERSION_CHECK);
 
-                adapter.mLocApi->setConstrainedTuncMode(
-                        gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED == 1,
-                        (float)gpsConf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD,
-                        gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET);
-                adapter.mLocApi->setPositionAssistedClockEstimatorMode(
-                        gpsConf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED == 1);
+               adapter.mLocApi->setConstrainedTuncMode(
+                       gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED == 1,
+                       (float)gpsConf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD,
+                       gpsConf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET);
+               adapter.mLocApi->setPositionAssistedClockEstimatorMode(
+                       gpsConf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED == 1);
 
-                if (sapConf.GYRO_BIAS_RANDOM_WALK_VALID ||
-                    sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
-                    sapConf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
-                    sapConf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
-                    sapConf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID ) {
-                    adapter.mLocApi->setSensorPropertiesSync(
-                        sapConf.GYRO_BIAS_RANDOM_WALK_VALID,
-                        sapConf.GYRO_BIAS_RANDOM_WALK,
-                        sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                        sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,
-                        sapConf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                        sapConf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,
-                        sapConf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                        sapConf.RATE_RANDOM_WALK_SPECTRAL_DENSITY,
-                        sapConf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
-                        sapConf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY);
-                }
-                adapter.mLocApi->setSensorPerfControlConfigSync(
-                    sapConf.SENSOR_CONTROL_MODE,
-                    sapConf.SENSOR_ACCEL_SAMPLES_PER_BATCH,
-                    sapConf.SENSOR_ACCEL_BATCHES_PER_SEC,
-                    sapConf.SENSOR_GYRO_SAMPLES_PER_BATCH,
-                    sapConf.SENSOR_GYRO_BATCHES_PER_SEC,
-                    sapConf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH,
-                    sapConf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,
-                    sapConf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,
-                    sapConf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,
-                    sapConf.SENSOR_ALGORITHM_CONFIG_MASK);
+               if (sapConf.GYRO_BIAS_RANDOM_WALK_VALID ||
+                   sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
+                   sapConf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
+                   sapConf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID ||
+                   sapConf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID ) {
+                   adapter.mLocApi->setSensorPropertiesSync(
+                       sapConf.GYRO_BIAS_RANDOM_WALK_VALID,
+                       sapConf.GYRO_BIAS_RANDOM_WALK,
+                       sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                       sapConf.ACCEL_RANDOM_WALK_SPECTRAL_DENSITY,
+                       sapConf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                       sapConf.ANGLE_RANDOM_WALK_SPECTRAL_DENSITY,
+                       sapConf.RATE_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                       sapConf.RATE_RANDOM_WALK_SPECTRAL_DENSITY,
+                       sapConf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY_VALID,
+                       sapConf.VELOCITY_RANDOM_WALK_SPECTRAL_DENSITY);
+               }
+               adapter.mLocApi->setSensorPerfControlConfigSync(
+                       sapConf.SENSOR_CONTROL_MODE,
+                       sapConf.SENSOR_ACCEL_SAMPLES_PER_BATCH,
+                       sapConf.SENSOR_ACCEL_BATCHES_PER_SEC,
+                       sapConf.SENSOR_GYRO_SAMPLES_PER_BATCH,
+                       sapConf.SENSOR_GYRO_BATCHES_PER_SEC,
+                       sapConf.SENSOR_ACCEL_SAMPLES_PER_BATCH_HIGH,
+                       sapConf.SENSOR_ACCEL_BATCHES_PER_SEC_HIGH,
+                       sapConf.SENSOR_GYRO_SAMPLES_PER_BATCH_HIGH,
+                       sapConf.SENSOR_GYRO_BATCHES_PER_SEC_HIGH,
+                       sapConf.SENSOR_ALGORITHM_CONFIG_MASK);
             } ));
         }
     };
@@ -1039,9 +1040,18 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             mConfig(config),
             mCount(count),
             mIds(ids) {}
+        inline MsgGnssUpdateConfig(const MsgGnssUpdateConfig& obj) :
+                MsgGnssUpdateConfig(obj.mAdapter, obj.mApi, obj.mConfig,
+                        new uint32_t[obj.mCount], obj.mCount) {
+            if (mIds != nullptr) {
+                for (int i = 0; i < mCount; ++i) {
+                    mIds[i] = obj.mIds[i];
+                }
+            }
+        }
         inline virtual ~MsgGnssUpdateConfig()
         {
-            delete [] mIds;
+            delete[] mIds;
         }
 
         inline virtual void proc() const {
@@ -1066,7 +1076,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                     newGpsLock = GNSS_CONFIG_GPS_LOCK_MO;
                 }
                 if (newGpsLock == ContextBase::mGps_conf.GPS_LOCK ||
-                    0 != mAdapter.getAfwControlId()) {
+                    0 != mAdapter.getAfwControlId() || NULL != adapter.mNfwCb) {
                     gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
                 }
                 ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
@@ -1299,6 +1309,16 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
             mConfigMask(configMask),
             mIds(ids),
             mCount(count) {}
+
+        inline MsgGnssGetConfig(const MsgGnssGetConfig& obj) :
+                MsgGnssGetConfig(obj.mAdapter, obj.mApi, obj.mConfigMask,
+                        new uint32_t[obj.mCount], obj.mCount) {
+            if (mIds != nullptr) {
+                for (int i = 0; i < mCount; ++i) {
+                    mIds[i] = obj.mIds[i];
+                }
+            }
+        }
         inline virtual ~MsgGnssGetConfig()
         {
             delete[] mIds;
