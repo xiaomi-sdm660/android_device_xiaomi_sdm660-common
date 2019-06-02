@@ -86,7 +86,7 @@ public:
     virtual RET getStats(const char * /* upstream */, bool /* reset */,
 		OffloadStatistics& /* ret */);
 
-	static IPACM_OffloadManager *pInstance; //sky
+	static IPACM_OffloadManager *pInstance;
 
 	IpaEventListener *elrInstance;
 
@@ -95,6 +95,8 @@ public:
 	bool search_framwork_cache(char * interface_name);
 
 	bool push_framework_event(const char * if_name, _ipacm_offload_prefix prefix);
+
+	static int num_offload_v4_tethered_iface;
 
 private:
 

@@ -77,6 +77,7 @@ int IPACM_Wan::num_ipv6_modem_pdn = 0;
 
 bool IPACM_Wan::embms_is_on = false;
 bool IPACM_Wan::backhaul_is_wan_bridge = false;
+bool IPACM_Wan::is_xlat = false;
 
 uint32_t IPACM_Wan::backhaul_ipv6_prefix[2];
 
@@ -132,7 +133,7 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	header_name_count = 0;
 	memset(invalid_mac, 0, sizeof(invalid_mac));
 
-	is_xlat = false;
+	is_xlat_local = false;
 	hdr_hdl_dummy_v6 = 0;
 	hdr_proc_hdl_dummy_v6 = 0;
 	is_default_gateway = false;
@@ -565,9 +566,9 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 			ipa_interface_index = IPACM_Iface::iface_ipa_index_query(data->if_index);
 			if ((ipa_interface_index == ipa_if_num) && (m_is_sta_mode == Q6_WAN))
 			{
-				is_xlat = true;
+				is_xlat_local = true;
 				IPACMDBG_H("WAN-LTE (%s) link up, iface: %d is_xlat: %d\n",
-						IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,data->if_index, is_xlat);
+						IPACM_Iface::ipacmcfg->iface_table[ipa_interface_index].iface_name,data->if_index, is_xlat_local);
 			}
 			break;
 		}
@@ -767,9 +768,9 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						}
 					}
 #ifdef FEATURE_IPA_ANDROID
-#ifdef FEATURE_IPACM_HAL
-					post_wan_up_tether_evt(data->iptype, 0);
-#else
+#ifndef FEATURE_IPACM_HAL
+					/* Fixed CR 2438491 for HAL-android platform trgets.
+					   Need to revisit for non-hal-android-platform targets if issue could be reproduced there as well */
 					/* using ipa_if_index, not netdev_index */
 					post_wan_up_tether_evt(data->iptype, iface_ipa_index_query(data->if_index_tether));
 #endif
@@ -802,15 +803,14 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 							handle_route_add_evt(data->iptype);
 						}
 					}
-#ifdef FEATURE_IPA_ANDROID
-#ifdef FEATURE_IPACM_HAL
-					post_wan_up_tether_evt(data->iptype, 0);
-#else
-					/* using ipa_if_index, not netdev_index */
-					post_wan_up_tether_evt(data->iptype, iface_ipa_index_query(data->if_index_tether));
-#endif
-#endif
 				}
+#ifdef FEATURE_IPA_ANDROID
+#ifndef FEATURE_IPACM_HAL
+				/* using ipa_if_index, not netdev_index */
+				post_wan_up_tether_evt(data->iptype, iface_ipa_index_query(data->if_index_tether));
+#endif
+#endif
+
 			}
 			else /* double check if current default iface is not itself */
 			{
@@ -963,7 +963,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 					handle_sta_header_add_evt();
 					handle_route_add_evt(data->iptype);
 					/* Add IPv6 routing table if XLAT is enabled */
-					if(is_xlat && (m_is_sta_mode == Q6_WAN) && (active_v6 == false))
+					if(is_xlat_local && (m_is_sta_mode == Q6_WAN) && (active_v6 == false))
 					{
 						IPACMDBG_H("XLAT enabled: adding IPv6 routing table dev (%s)\n", dev_name);
 						handle_route_add_evt(IPA_IP_v6);
@@ -1052,7 +1052,7 @@ void IPACM_Wan::event_callback(ipa_cm_event_id event, void *param)
 						install_wan_filtering_rule(false);
 						handle_route_del_evt_ex(IPA_IP_v4);
 
-						if(is_xlat && active_v6 == true)
+						if(is_xlat_local && active_v6 == true)
 						{
 							IPACMDBG_H("XLAT enabled: Delete IPv6 routing table dev (%s)\n", dev_name);
 							del_wan_firewall_rule(IPA_IP_v6);
@@ -1616,14 +1616,17 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 				wanup_data->ifname, wanup_data->ipv4_addr, wanup_data->is_sta);
 		memset(&evt_data, 0, sizeof(evt_data));
 
+		/* set backhaul type as xlat */
+		IPACM_Wan::is_xlat = is_xlat_local;
+
 		/* send xlat configuration for installing uplink rules */
-		if(is_xlat && (m_is_sta_mode == Q6_WAN))
+		if(IPACM_Wan::is_xlat && (m_is_sta_mode == Q6_WAN))
 		{
 			IPACM_Wan::xlat_mux_id = ext_prop->ext[0].mux_id;
 			wanup_data->xlat_mux_id = IPACM_Wan::xlat_mux_id;
 			IPACMDBG_H("Set xlat configuraiton with below information:\n");
 			IPACMDBG_H("xlat_enabled: %d xlat_mux_id: %d \n",
-					is_xlat, xlat_mux_id);
+					IPACM_Wan::is_xlat, xlat_mux_id);
 		}
 		else
 		{
@@ -1638,6 +1641,10 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		evt_data.event = IPA_HANDLE_WAN_UP;
 		evt_data.evt_data = (void *)wanup_data;
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
+
+#ifdef FEATURE_IPACM_HAL
+		post_wan_up_tether_evt(IPA_IP_v4, 0);
+#endif
 	}
 	else
 	{
@@ -1677,6 +1684,10 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		evt_data.event = IPA_HANDLE_WAN_UP_V6;
 		evt_data.evt_data = (void *)wanup_data;
 		IPACM_EvtDispatcher::PostEvt(&evt_data);
+
+#ifdef FEATURE_IPACM_HAL
+                post_wan_up_tether_evt(IPA_IP_v6, 0);
+#endif
 	}
 		if(IPACM_Iface::ipacmcfg->GetIPAVer() >= IPA_HW_None && IPACM_Iface::ipacmcfg->GetIPAVer() < IPA_HW_v4_0)
 		{

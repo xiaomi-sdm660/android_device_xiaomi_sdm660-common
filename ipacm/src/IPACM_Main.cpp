@@ -74,10 +74,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <HAL.h>
 #endif
 
-/* not defined(FEATURE_IPA_ANDROID)*/
-#ifndef FEATURE_IPA_ANDROID
 #include "IPACM_LanToLan.h"
-#endif
 
 #define IPA_DRIVER  "/dev/ipa"
 
@@ -876,6 +873,7 @@ int main(int argc, char **argv)
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 	IPACM_LanToLan* lan2lan = IPACM_LanToLan::get_instance();
+	IPACMDBG_H("Staring IPACM_LanToLan instance %p\n", lan2lan);
 #endif
 
 	CtList = new IPACM_ConntrackListener();

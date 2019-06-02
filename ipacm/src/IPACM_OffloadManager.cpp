@@ -51,6 +51,7 @@ const char *IPACM_OffloadManager::DEVICE_NAME = "/dev/wwan_ioctl";
 
 /* NatApp class Implementation */
 IPACM_OffloadManager *IPACM_OffloadManager::pInstance = NULL;
+int IPACM_OffloadManager::num_offload_v4_tethered_iface = 0;
 
 IPACM_OffloadManager::IPACM_OffloadManager()
 {
@@ -273,8 +274,8 @@ RET IPACM_OffloadManager::addDownstream(const char * downstream_name, const Pref
 			if(i == MAX_EVENT_CACHE - 1)
 			{
 				IPACMDBG_H(" run out of event cache (%d)\n", i);
-		return FAIL_HARDWARE;
-	}
+				return FAIL_HARDWARE;
+			}
 		}
 
 		return SUCCESS;
@@ -566,6 +567,7 @@ RET IPACM_OffloadManager::stopAllOffload()
 	memset(event_cache, 0, MAX_EVENT_CACHE*sizeof(framework_event_cache));
 	latest_cache_index = 0;
 	valid_ifaces.clear();
+	IPACM_OffloadManager::num_offload_v4_tethered_iface = 0;
 	return result;
 }
 
