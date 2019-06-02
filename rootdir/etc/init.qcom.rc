@@ -592,6 +592,12 @@ service vendor.sensors /vendor/bin/sensors.qti
     group root
 	writepid /dev/cpuset/system-background/tasks
 
+service vendor.sensors2 /vendor/bin/sensors.qcom
+    class core
+    user root
+    group root
+	writepid /dev/cpuset/system-background/tasks
+
 on property:ro.vendor.use_data_netmgrd=false
     # netmgr not supported on specific target
     stop vendor.netmgrd
