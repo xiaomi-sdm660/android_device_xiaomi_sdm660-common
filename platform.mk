@@ -31,6 +31,9 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_o_mr1.mk
 $(call inherit-product-if-exists, build/target/product/embedded.mk)
 $(call inherit-product-if-exists, vendor/xiaomi/MiuiCamera/config.mk)
 
+# Vendor files
+$(call inherit-product, vendor/xiaomi/sdm660-common/sdm660-common-vendor.mk)
+
 # Overlays
 DEVICE_PACKAGE_OVERLAYS := device/xiaomi/sdm660-common/overlay
 
