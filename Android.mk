@@ -115,5 +115,6 @@ ALL_DEFAULT_INSTALLED_MODULES += \
     $(RFS_MSM_MPSS_SYMLINKS) \
     $(RFS_MSM_SLPI_SYMLINKS)
 
-include $(call all-makefiles-under,$(LOCAL_PATH))
+subdir_makefiles=$(call first-makefiles-under,$(LOCAL_PATH))
+$(foreach mk,$(subdir_makefiles),$(info including $(mk) ...)$(eval include $(mk)))
 endif
