@@ -98,3 +98,4 @@ allow init hvdcp:process noatsecure;
 allow init keystore:process noatsecure;
 allow init thermal-engine:process noatsecure;
 allow init hal_mlipay_hwservice:hwservice_manager add;
+allow init hal_power_hwservice:hwservice_manager { add };
