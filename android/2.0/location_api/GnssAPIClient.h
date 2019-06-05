@@ -102,6 +102,7 @@ private:
     LocationCapabilitiesMask mLocationCapabilitiesMask;
     bool mLocationCapabilitiesCached;
     TrackingOptions mTrackingOptions;
+    bool mTracking;
     sp<V2_0::IGnssCallback> mGnssCbIface_2_0;
 };
 
