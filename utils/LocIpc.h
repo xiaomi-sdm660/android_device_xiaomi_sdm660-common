@@ -127,6 +127,7 @@ protected:
     virtual bool isOperable() const = 0;
     virtual ssize_t send(const uint8_t data[], uint32_t length, int32_t msgId) const = 0;
 public:
+    virtual void informRecverRestarted() {}
     inline bool isSendable() const { return isOperable(); }
     inline bool sendData(const uint8_t data[], uint32_t length, int32_t msgId) const {
         return isSendable() && (send(data, length, msgId) > 0);
