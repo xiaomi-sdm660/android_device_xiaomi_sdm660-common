@@ -155,6 +155,35 @@ bool LocApiBase::isInSession()
     return inSession;
 }
 
+bool LocApiBase::needReport(const UlpLocation& ulpLocation,
+                                   enum loc_sess_status status,
+                                   LocPosTechMask techMask)
+{
+    bool reported = false;
+
+    if (LOC_SESS_SUCCESS == status) {
+        // this is a final fix
+        LocPosTechMask mask =
+            LOC_POS_TECH_MASK_SATELLITE | LOC_POS_TECH_MASK_SENSORS | LOC_POS_TECH_MASK_HYBRID;
+        // it is a Satellite fix or a sensor fix
+        reported = (mask & techMask);
+    }
+    else if (LOC_SESS_INTERMEDIATE == status &&
+        LOC_SESS_INTERMEDIATE == ContextBase::mGps_conf.INTERMEDIATE_POS) {
+        // this is a intermediate fix and we accept intermediate
+
+        // it is NOT the case that
+        // there is inaccuracy; and
+        // we care about inaccuracy; and
+        // the inaccuracy exceeds our tolerance
+        reported = !((ulpLocation.gpsLocation.flags & LOC_GPS_LOCATION_HAS_ACCURACY) &&
+            (ContextBase::mGps_conf.ACCURACY_THRES != 0) &&
+            (ulpLocation.gpsLocation.accuracy > ContextBase::mGps_conf.ACCURACY_THRES));
+    }
+
+    return reported;
+}
+
 void LocApiBase::addAdapter(LocAdapterBase* adapter)
 {
     for (int i = 0; i < MAX_ADAPTERS && mLocAdapters[i] != adapter; i++) {
