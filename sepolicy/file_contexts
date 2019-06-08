@@ -19,7 +19,7 @@
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
 
 # USB HAL
-/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.0-service\.xiaomi_sdm660       u:object_r:hal_usb_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.1-service\.xiaomi_sdm660       u:object_r:hal_usb_default_exec:s0
 
 # Vibrator HAL
  /(vendor|system/vendor)/bin/hw/android\.hardware\.vibrator@1\.1-service\.xiaomi_sdm660 u:object_r:hal_vibrator_default_exec:s0

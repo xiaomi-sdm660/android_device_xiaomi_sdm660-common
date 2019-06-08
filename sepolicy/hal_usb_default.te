@@ -1,0 +1,1 @@
+allow hal_usb_default hal_usb_gadget_hwservice:hwservice_manager { add };
