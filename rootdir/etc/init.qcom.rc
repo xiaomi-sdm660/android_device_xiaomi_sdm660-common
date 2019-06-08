@@ -475,6 +475,9 @@ on post-fs-data
     # Create FTM_AP dir for factory test
     mkdir /data/FTM_AP 0775 system system
 
+on property:sys.boot_completed=1
+    stop vendor.ipacm-diag
+
 on property:ro.vendor.iocgrp.config=1
     mkdir /dev/blkio
     mount cgroup none /dev/blkio blkio
