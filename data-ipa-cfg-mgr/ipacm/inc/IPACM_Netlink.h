@@ -1,4 +1,4 @@
-/*
+/* 
 Copyright (c) 2013, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -64,11 +64,11 @@ extern "C"
 #define MAX_NUM_OF_FD 10
 #define IPA_NL_MSG_MAX_LEN (2048)
 
-/*---------------------------------------------------------------------------
+/*--------------------------------------------------------------------------- 
 	 Type representing enumeration of NetLink event indication messages
 ---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------
+/*--------------------------------------------------------------------------- 
 	 Types representing parsed NetLink message
 ---------------------------------------------------------------------------*/
 #define IPA_NLA_PARAM_NONE        (0x0000)
@@ -93,8 +93,8 @@ extern "C"
 #define IPA_RTA_PARAM_METRICS     (0x0100)
 
 
-/*---------------------------------------------------------------------------
-	 Type representing function callback registered with a socket listener
+/*--------------------------------------------------------------------------- 
+	 Type representing function callback registered with a socket listener 
 	 thread for reading from a socket on receipt of an incoming message
 ---------------------------------------------------------------------------*/
 typedef int (*ipa_sock_thrd_fd_read_f)(int fd);

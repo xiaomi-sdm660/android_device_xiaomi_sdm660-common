@@ -23,7 +23,7 @@
 			<Iface>
 			   <Name>rmnet_data1</Name>
 			   <Category>WAN</Category>
-			</Iface>
+			</Iface>			
 			<Iface>
 			   <Name>rmnet_data2</Name>
 			   <Category>WAN</Category>
@@ -57,7 +57,7 @@
 			   <Name>wlan0</Name>
 			   <Category>UNKNOWN</Category>
 			   <WlanMode>full</WlanMode>
-			</Iface>
+			</Iface>			
 			<Iface>
 			   <Name>wlan1</Name>
 			   <Category>UNKNOWN</Category>
@@ -89,7 +89,7 @@
 			<Subnet>
   			   <SubnetAddress>192.168.225.0</SubnetAddress>
   			   <SubnetMask>255.255.255.0</SubnetMask>
-		    </Subnet>
+		    </Subnet>		
 		</IPACMPrivateSubnet>
 		<IPACMALG>
 			<ALG>
@@ -168,7 +168,7 @@
 			   <Description>SANE</Description>
 		    </ALG>
 		</IPACMALG>
-		<IPACMNAT>
+		<IPACMNAT>		
  	        <MaxNatEntries>500</MaxNatEntries>
 		</IPACMNAT>
 		</IPACM>

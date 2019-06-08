@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -226,6 +226,13 @@ public:
 		return xlat_mux_id;
 	}
 
+	static void clearExtProp()
+	{
+		IPACM_Wan::is_ext_prop_set = false;
+		IPACM_Iface::ipacmcfg->DelExtProp(IPA_IP_v4);
+		IPACM_Iface::ipacmcfg->DelExtProp(IPA_IP_v6);
+	}
+
 	void event_callback(ipa_cm_event_id event,
 											void *data);
 
@@ -242,6 +249,7 @@ public:
 
 	static bool embms_is_on;
 	static bool backhaul_is_wan_bridge;
+	static bool is_xlat;
 
 	static bool isWan_Bridge_Mode()
 	{
@@ -253,6 +261,11 @@ public:
 	static int ipa_if_num_tether_v4[IPA_MAX_IFACE_ENTRIES];
 	static uint32_t ipa_if_num_tether_v6_total;
 	static int ipa_if_num_tether_v6[IPA_MAX_IFACE_ENTRIES];
+
+	static bool isXlat()
+	{
+		return is_xlat;
+	}
 #endif
 
 private:
@@ -307,7 +320,7 @@ private:
 	int header_name_count;
 	uint32_t num_wan_client;
 	uint8_t invalid_mac[IPA_MAC_ADDR_SIZE];
-	bool is_xlat;
+	bool is_xlat_local;
 
 	/* update network stats for CNE */
 	int ipa_network_stats_fd;

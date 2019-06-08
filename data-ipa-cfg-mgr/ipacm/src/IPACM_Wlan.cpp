@@ -366,9 +366,10 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 			IPACMERR("No event data is found.\n");
 			return;
 		}
-		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d tether_if_name:%s\n", data_wan_tether->is_sta,
+		IPACMDBG_H("Backhaul is sta mode?%d, if_index_tether:%d tether_if_name:%s xlat_mux_id: %d\n", data_wan_tether->is_sta,
 					data_wan_tether->if_index_tether,
-					IPACM_Iface::ipacmcfg->iface_table[data_wan_tether->if_index_tether].iface_name);
+					IPACM_Iface::ipacmcfg->iface_table[data_wan_tether->if_index_tether].iface_name,
+					data_wan_tether->xlat_mux_id);
 #ifndef FEATURE_IPACM_HAL
 		if (data_wan_tether->if_index_tether != ipa_if_num)
 		{
@@ -390,7 +391,7 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 					{
 						ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v4);
 						handle_wan_up_ex(ext_prop, IPA_IP_v4,
-							IPACM_Wan::getXlat_Mux_Id());
+							data_wan_tether->xlat_mux_id);
 					} else {
 						handle_wan_up(IPA_IP_v4);
 					}
@@ -560,6 +561,21 @@ void IPACM_Wlan::event_callback(ipa_cm_event_id event, void *param)
 		if(ipa_interface_index == ipa_if_num)
 		{
 			IPACMDBG_H("Received IPA_DOWNSTREAM_ADD event.\n");
+#ifdef FEATURE_IPA_ANDROID
+			/* indicate v4-offload */
+			IPACM_OffloadManager::num_offload_v4_tethered_iface++;
+
+			/* xlat not support for 2st tethered iface sky */
+			if (IPACM_Wan::isXlat() && (data->prefix.iptype == IPA_IP_v4) && (IPACM_OffloadManager::num_offload_v4_tethered_iface > 1))
+			{
+				IPACMDBG_H("Not support 2st downstream iface %s for xlat, cur: %d\n", dev_name,
+					IPACM_OffloadManager::num_offload_v4_tethered_iface);
+				return;
+			}
+
+			IPACMDBG_H(" support downstream iface %s, cur %d\n", dev_name,
+				IPACM_OffloadManager::num_offload_v4_tethered_iface);
+#endif
 			if(data->prefix.iptype < IPA_IP_MAX && is_downstream_set[data->prefix.iptype] == false)
 			{
 				IPACMDBG_H("Add downstream for IP iptype %d.\n", data->prefix.iptype);

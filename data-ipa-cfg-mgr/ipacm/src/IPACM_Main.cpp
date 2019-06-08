@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -63,6 +63,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Neighbor.h"
 #include "IPACM_IfaceManager.h"
 #include "IPACM_Log.h"
+#include "IPACM_Wan.h"
 
 #include "IPACM_ConntrackListener.h"
 #include "IPACM_ConntrackClient.h"
@@ -73,10 +74,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <HAL.h>
 #endif
 
-/* not defined(FEATURE_IPA_ANDROID)*/
-#ifndef FEATURE_IPA_ANDROID
 #include "IPACM_LanToLan.h"
-#endif
 
 #define IPA_DRIVER  "/dev/ipa"
 
@@ -413,12 +411,11 @@ void* ipa_driver_msg_notifier(void *param)
 			}
 			memcpy(event_ex, buffer + sizeof(struct ipa_msg_meta), length);
 			data_ex = (ipacm_event_data_wlan_ex *)malloc(sizeof(ipacm_event_data_wlan_ex) + event_ex_o.num_of_attribs * sizeof(ipa_wlan_hdr_attrib_val));
-			if (data_ex == NULL)
-			{
+		    if (data_ex == NULL)
+		    {
 				IPACMERR("unable to allocate memory for event data\n");
-				free(event_ex);
-				return NULL;
-			}
+		    	return NULL;
+		    }
 			data_ex->num_of_attribs = event_ex->num_of_attribs;
 
 			memcpy(data_ex->attribs,
@@ -714,6 +711,7 @@ void* ipa_driver_msg_notifier(void *param)
 			continue;
 		case IPA_SSR_BEFORE_SHUTDOWN:
 			IPACMDBG_H("Received IPA_SSR_BEFORE_SHUTDOWN\n");
+			IPACM_Wan::clearExtProp();
 			OffloadMng = IPACM_OffloadManager::GetInstance();
 			if (OffloadMng->elrInstance == NULL) {
 				IPACMERR("OffloadMng->elrInstance is NULL, can't forward to framework!\n");
@@ -875,6 +873,7 @@ int main(int argc, char **argv)
 
 #ifdef FEATURE_ETH_BRIDGE_LE
 	IPACM_LanToLan* lan2lan = IPACM_LanToLan::get_instance();
+	IPACMDBG_H("Staring IPACM_LanToLan instance %p\n", lan2lan);
 #endif
 
 	CtList = new IPACM_ConntrackListener();
