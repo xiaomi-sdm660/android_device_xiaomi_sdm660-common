@@ -1,1 +1,9 @@
 allow hal_usb_default hal_usb_gadget_hwservice:hwservice_manager { add };
+allow hal_usb_default configfs:dir search;
+allow hal_usb_default configfs:file write;
+allow hal_usb_default configfs:file open;
+allow hal_usb_default configfs:dir { read write };
+allow hal_usb_default configfs:dir { add_name open remove_name };
+allow hal_usb_default configfs:file unlink;
+allow hal_usb_default configfs:lnk_file create;
+allow hal_usb_default functionfs:dir read;
