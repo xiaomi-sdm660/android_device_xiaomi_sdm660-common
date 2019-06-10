@@ -492,6 +492,7 @@ typedef struct {
     uint64_t qzss_l2_sv_used_ids_mask;      // QZSS L2
     uint64_t qzss_l5_sv_used_ids_mask;      // QZSS L5
     uint64_t sbas_l1_sv_used_ids_mask;      // SBAS L1
+    uint64_t bds_b2aq_sv_used_ids_mask;     // BDS B2AQ
 } GnssSvMbUsedInPosition;
 
 /* Body Frame parameters */
@@ -600,6 +601,8 @@ typedef uint32_t GnssSignalTypeMask;
 #define GNSS_SIGNAL_SBAS_L1      ((GnssSignalTypeMask)0x00020000ul)
 /** NAVIC L5 RF Band */
 #define GNSS_SIGNAL_NAVIC_L5     ((GnssSignalTypeMask)0x00040000ul)
+/** BEIDOU B2A_Q RF Band */
+#define GNSS_SIGNAL_BEIDOU_B2AQ   ((GnssSignalTypeMask)0x00080000ul)
 
 typedef uint16_t GnssMeasUsageStatusBitMask;
 /** Used in fix */
