@@ -720,10 +720,7 @@ GnssAdapter::setConfigCommand()
                    GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT |
                    GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT |
                    GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
-           gnssConfigRequested.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
-           if (0 == adapter.getAfwControlId() || NULL != adapter.mNfwCb) {
-               gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
-           }
+           gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
 
            if (gpsConf.AGPS_CONFIG_INJECT) {
                gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
@@ -1075,10 +1072,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                 if (GNSS_CONFIG_GPS_LOCK_NONE == newGpsLock) {
                     newGpsLock = GNSS_CONFIG_GPS_LOCK_MO;
                 }
-                if (newGpsLock == ContextBase::mGps_conf.GPS_LOCK ||
-                    0 != mAdapter.getAfwControlId() || NULL != adapter.mNfwCb) {
-                    gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
-                }
+                gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
                 ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
                 index++;
             }
@@ -2976,10 +2970,8 @@ GnssAdapter::enableCommand(LocationTechnologyType techType)
                 mAdapter.setAfwControlId(mSessionId);
 
                 GnssConfigGpsLock gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
-                if (NULL != mAdapter.mNfwCb) {
-                    ContextBase::mGps_conf.GPS_LOCK &= GNSS_CONFIG_GPS_LOCK_NI;
-                    gpsLock = ContextBase::mGps_conf.GPS_LOCK;
-                }
+                ContextBase::mGps_conf.GPS_LOCK &= GNSS_CONFIG_GPS_LOCK_NI;
+                gpsLock = ContextBase::mGps_conf.GPS_LOCK;
                 mApi.sendMsg(new LocApiMsg([&mApi = mApi, gpsLock]() {
                     mApi.setGpsLockSync(gpsLock);
                 }));
@@ -3026,10 +3018,8 @@ GnssAdapter::disableCommand(uint32_t id)
                 mContext.modemPowerVote(false);
                 mAdapter.setAfwControlId(0);
 
-                if (NULL != mAdapter.mNfwCb) {
-                    /* We need to disable MO (AFW) */
-                    ContextBase::mGps_conf.GPS_LOCK |= GNSS_CONFIG_GPS_LOCK_MO;
-                }
+                /* We need to disable MO (AFW) */
+                ContextBase::mGps_conf.GPS_LOCK |= GNSS_CONFIG_GPS_LOCK_MO;
                 GnssConfigGpsLock gpsLock = ContextBase::mGps_conf.GPS_LOCK;
                 mApi.sendMsg(new LocApiMsg([&mApi = mApi,gpsLock] () {
                     mApi.setGpsLockSync(gpsLock);
