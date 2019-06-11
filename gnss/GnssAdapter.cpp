@@ -1630,7 +1630,7 @@ GnssAdapter::gnssSvTypeConfigUpdate(const GnssSvTypeConfig& config)
 void
 GnssAdapter::gnssSvTypeConfigUpdate(bool sendReset)
 {
-    LOC_LOGd("size %zu constellations blacklisted 0x%" PRIx64 ", enabled 0x%" PRIx64
+    LOC_LOGd("size %" PRIu32" constellations blacklisted 0x%" PRIx64 ", enabled 0x%" PRIx64
              ", sendReset %d",
              mGnssSvTypeConfig.size, mGnssSvTypeConfig.blacklistedSvTypesMask,
              mGnssSvTypeConfig.enabledSvTypesMask, sendReset);
