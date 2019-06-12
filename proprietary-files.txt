@@ -279,7 +279,7 @@ vendor/lib64/hw/vulkan.sdm660.so
 
 # Listen
 vendor/etc/audio.scd
-vendor/lib/hw/sound_trigger.primary.sdm660.so
+vendor/lib/hw/sound_trigger.primary.sdm660.so|bd7ce820f661e269dbb7ff68a7123f0247e225bc
 vendor/lib/libadpcmdec.so
 vendor/lib/libgcs-calwrapper.so
 vendor/lib/libgcs-ipc.so
@@ -288,7 +288,7 @@ vendor/lib/libgcs.so
 vendor/lib/libsmwrapper.so
 vendor/lib/libnwa.so
 vendor/lib/libsse.so
-vendor/lib64/hw/sound_trigger.primary.sdm660.so
+vendor/lib64/hw/sound_trigger.primary.sdm660.so|77f393d110d9e917d9791c1bc1653b880fd55567
 vendor/lib64/libgcs-calwrapper.so
 vendor/lib64/libgcs-ipc.so
 vendor/lib64/libgcs-osal.so
