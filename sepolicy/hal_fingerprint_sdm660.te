@@ -21,6 +21,10 @@ allow hal_fingerprint_sdm660 system_prop:file { open read getattr };
 allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
 allow hal_fingerprint_sdm660 vndbinder_device:chr_file ioctl;
 allow hal_fingerprint_sdm660 fingerprint_prop:file getattr;
+allow hal_fingerprint_sdm660 sdcardfs:file getattr;
+allow hal_fingerprint_sdm660 system_prop:property_service set;
+allow hal_fingerprint_sdm660 vendor_system_prop:property_service set;
+
 
 binder_call(hal_fingerprint_sdm660, vndservicemanager)
 binder_call(hal_fingerprint_sdm660, hal_perf_default)

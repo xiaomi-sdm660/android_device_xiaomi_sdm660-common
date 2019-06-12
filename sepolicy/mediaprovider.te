@@ -13,6 +13,8 @@ allow mediaprovider boottime_prop:file read;
 allow mediaprovider cnd_vendor_prop:file read;
 allow mediaprovider console_silent_prop:file read;
 allow mediaprovider ctl_LKCore_prop:file read;
+allow mediaprovider system_app_data_file:dir getattr;
+
 
 #============= mediadrmserver ==============
 allow mediadrmserver init:binder transfer;

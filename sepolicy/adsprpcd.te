@@ -2,3 +2,4 @@
 allow adsprpcd default_prop:file { getattr open read };
 allow adsprpcd sysfs:file read;
 allow adsprpcd sysfs:file open;
+allow adsprpcd sysfs:file getattr;

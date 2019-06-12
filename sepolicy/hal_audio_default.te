@@ -9,3 +9,4 @@ allow hal_audio_default default_prop:file getattr;
 allow hal_audio_default mnt_vendor_file:dir search;
 allow hal_audio_default sysfs:file read;
 allow hal_audio_default sysfs:file open;
+allow hal_audio_default sysfs:file getattr;
