@@ -18,3 +18,4 @@ allow hal_camera_default exported3_default_prop:file read;
 allow hal_camera_default exported3_default_prop:file open;
 allow hal_camera_default exported3_default_prop:file getattr;
 allow cameraserver mediacodec:binder call;
+allow hal_camera_default vendor_default_prop:property_service set;

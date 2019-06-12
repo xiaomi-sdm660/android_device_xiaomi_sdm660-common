@@ -1,4 +1,5 @@
-persist.camera.HAL3.enable  u:object_r:camera_prop:s0
+persist.camera.HAL3.enabled  u:object_r:camera_prop:s0
+persist.camera.eis.enable  u:object_r:camera_prop:s0
 sys.fp.goodix	           u:object_r:hal_fingerprint_prop:s0
 sys.fp.vendor               u:object_r:hal_fingerprint_prop:s0
 persist.sys.fp.info         u:object_r:hal_fingerprint_prop:s0
