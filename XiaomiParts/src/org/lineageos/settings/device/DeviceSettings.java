@@ -56,6 +56,9 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_ENABLE_HAL3 = "hal3";
     private static final String HAL3_SYSTEM_PROPERTY = "persist.camera.HAL3.enabled";
 
+    private static final String PREF_ENABLE_EIS = "eis";
+    private static final String EIS_SYSTEM_PROPERTY = "persist.camera.eis.enable";
+
     private static final String CATEGORY_DISPLAY = "display";
     private static final String PREF_DEVICE_DOZE = "device_doze";
     private static final String PREF_DEVICE_KCAL = "device_kcal";
@@ -74,6 +77,7 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
 
     private SecureSettingSwitchPreference mEnableHAL3;
+    private SecureSettingSwitchPreference mEnableEIS;
     private SecureSettingSwitchPreference mEnableFpAction;
     private SecureSettingSwitchPreference mFpShutter;
     private SecureSettingListPreference mFpActionUp;
@@ -99,6 +103,10 @@ public class DeviceSettings extends PreferenceFragment implements
         mEnableHAL3 = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_HAL3);
         mEnableHAL3.setChecked(FileUtils.getProp(HAL3_SYSTEM_PROPERTY, false));
         mEnableHAL3.setOnPreferenceChangeListener(this);
+
+        mEnableEIS = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_EIS);
+        mEnableEIS.setChecked(FileUtils.getProp(EIS_SYSTEM_PROPERTY, false));
+        mEnableEIS.setOnPreferenceChangeListener(this);
 
         mEnableFpAction = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_FPACTION);
         mEnableFpAction.setOnPreferenceChangeListener(this);
@@ -188,6 +196,10 @@ public class DeviceSettings extends PreferenceFragment implements
         switch (key) {
             case PREF_ENABLE_HAL3:
                 FileUtils.setProp(HAL3_SYSTEM_PROPERTY, (Boolean) value);
+                break;
+
+            case PREF_ENABLE_EIS:
+                FileUtils.setProp(EIS_SYSTEM_PROPERTY, (Boolean) value);
                 break;
 
             case PREF_FPACTION_UP:

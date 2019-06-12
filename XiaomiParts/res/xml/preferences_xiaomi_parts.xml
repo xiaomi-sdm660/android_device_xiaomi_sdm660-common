@@ -23,6 +23,11 @@
             android:key="hal3"
             android:title="@string/camera_hal3_title" />
 
+        <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
+            android:defaultValue="false"
+            android:key="eis"
+            android:title="@string/camera_eis_title" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

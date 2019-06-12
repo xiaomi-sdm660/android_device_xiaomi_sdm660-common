@@ -19,6 +19,7 @@
 
     <string name="camera_title">相机</string>
     <string name="camera_hal3_title">开启 Camera2 API</string>
+    <string name="camera_eis_title">开启 EIS</string>
 
     <string name="display_title">显示</string>
 

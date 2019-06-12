@@ -21,6 +21,7 @@
 
     <string name="camera_title">카메라</string>
     <string name="camera_hal3_title">Camera2 API 활성화</string>
+    <string name="camera_eis_title">전자식 손떨림 방지 활성화</string>
 
     <string name="display_title">디스플레이</string>
 

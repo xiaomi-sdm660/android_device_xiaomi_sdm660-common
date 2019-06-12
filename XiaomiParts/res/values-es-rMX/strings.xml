@@ -19,6 +19,7 @@
 
     <string name="camera_title">Cámara</string>
     <string name="camera_hal3_title">Activar Camera2 API</string>
+    <string name="camera_eis_title">Activar EIS (Estabilización de Imagen Electronica)</string>
 
     <string name="display_title">Pantalla</string>
 

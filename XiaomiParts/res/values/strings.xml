@@ -19,6 +19,7 @@
 
     <string name="camera_title">Camera</string>
     <string name="camera_hal3_title">Enable Camera2 API</string>
+    <string name="camera_eis_title">Enable EIS</string>
 
     <string name="display_title">Display</string>
 
