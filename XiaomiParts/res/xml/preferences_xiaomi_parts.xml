@@ -198,4 +198,14 @@
             android:title="@string/microphone_gain" />
 
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="usb_fastcharge"
+        android:title="@string/usb_fastcharge_title" >
+        <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
+            android:key="fastcharge"
+            android:defaultValue="false"
+            android:title="@string/fastcharge_title"
+            android:summary="@string/fastcharge_summary" />
+    </PreferenceCategory>
 </PreferenceScreen>

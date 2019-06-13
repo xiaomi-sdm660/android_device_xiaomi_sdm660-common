@@ -153,6 +153,11 @@
     <string name="preset_warm_amoled">Warm Amoled</string>
     <string name="preset_hybrid_mamba">Hybrid Mamba</string>
 
+    <!-- usb fastcharge -->
+    <string name="usb_fastcharge_title">USB Fastcharge</string>
+    <string name="fastcharge_title">Enable USB Fastcharge</string>
+    <string name="fastcharge_summary">Use fastcharge when connected to a computer via usb port</string>
+
     <!-- menu -->
     <string name="kcal_presets" translatable="false">@string/presets_dialog_title</string>
     <string name="kcal_reset">Reset</string>
