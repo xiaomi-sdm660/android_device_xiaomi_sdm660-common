@@ -685,6 +685,22 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl" optional="true">
+        <name>vendor.qti.hardware.radio.qtiradio</name>
+        <version>2.3</version>
+        <interface>
+            <name>IQtiRadio</name>
+            <instance>slot1</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.qti.hardware.radio.qtiradio</name>
+        <version>2.3</version>
+        <interface>
+            <name>IQtiRadio</name>
+            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
         <name>vendor.qti.hardware.radio.uim</name>
         <version>1.1</version>
         <interface>
