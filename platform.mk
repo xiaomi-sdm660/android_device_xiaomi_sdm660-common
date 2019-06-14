@@ -343,7 +343,8 @@ PRODUCT_PACKAGES += \
 	init.qcom.usb.sh \
 	init.qcom.power.sh \
 	init.qti.fm.sh \
-	init.qti.qseecomd.sh
+	init.qti.qseecomd.sh \
+	move_goodix_data.sh
 
 PRODUCT_PACKAGES += \
 	init.msm.usb.configfs.rc \

@@ -23,7 +23,14 @@ on post-fs-data
     copy /data/vendor/fpc/user.db /data/vendor_de/0/fpdata/user.db
     chown system system /data/vendor_de/0/fpdata/user.db
     rm /data/vendor/fpc/user.db
+    start vendor.move_goodix_data
 
+service vendor.move_goodix_data /vendor/bin/move_goodix_data.sh
+    class main
+    user system
+    group system
+    disabled
+    oneshot
 
 service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
     class late_start
