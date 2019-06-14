@@ -354,20 +354,11 @@ unique_ptr<LocIpcRecver> LocIpc::getLocIpcQrtrRecver(const shared_ptr<ILocIpcLis
                                                      int service, int instance) {
     typedef unique_ptr<LocIpcRecver> (*creator_t)(const shared_ptr<ILocIpcListener>&, int, int);
     static creator_t creator = (creator_t)dlGetSymFromLib(sLibQrtrHandle, sLibQrtrName,
+#ifdef USE_GLIB
+            "_ZN8loc_util22createLocIpcQrtrRecverERKSt10shared_ptrINS_15ILocIpcListenerEEii");
+#else
             "_ZN8loc_util22createLocIpcQrtrRecverERKNSt3__110shared_ptrINS_15ILocIpcListenerEEEii");
-    return (nullptr == creator) ? nullptr : creator(listener, service, instance);
-}
-shared_ptr<LocIpcSender> LocIpc::getLocIpcQsockSender(int service, int instance) {
-    typedef shared_ptr<LocIpcSender> (*creator_t) (int, int);
-    static creator_t creator = (creator_t)dlGetSymFromLib(sLibQrtrHandle, sLibQrtrName,
-            "_ZN8loc_util23createLocIpcQsockSenderEii");
-    return (nullptr == creator) ? nullptr : creator(service, instance);
-}
-unique_ptr<LocIpcRecver> LocIpc::getLocIpcQsockRecver(const shared_ptr<ILocIpcListener>& listener,
-                                                      int service, int instance) {
-    typedef unique_ptr<LocIpcRecver> (*creator_t)(const shared_ptr<ILocIpcListener>&, int, int);
-    static creator_t creator = (creator_t)dlGetSymFromLib(sLibQrtrHandle, sLibQrtrName,
-            "_ZN8loc_util23createLocIpcQsockRecverERKSt10shared_ptrINS_15ILocIpcListenerEEii");
+#endif
     return (nullptr == creator) ? nullptr : creator(listener, service, instance);
 }
 shared_ptr<LocIpcSender> LocIpc::getLocIpcInetTcpSender(const char* serverName, int32_t port) {

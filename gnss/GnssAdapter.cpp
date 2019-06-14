@@ -1636,9 +1636,10 @@ GnssAdapter::gnssSvTypeConfigUpdate(const GnssSvTypeConfig& config)
 void
 GnssAdapter::gnssSvTypeConfigUpdate(bool sendReset)
 {
-    LOC_LOGd("constellations blacklisted 0x%" PRIx64 ", enabled 0x%" PRIx64 ", sendReset %d",
-             mGnssSvTypeConfig.blacklistedSvTypesMask, mGnssSvTypeConfig.enabledSvTypesMask,
-             sendReset);
+    LOC_LOGd("size %zu constellations blacklisted 0x%" PRIx64 ", enabled 0x%" PRIx64
+             ", sendReset %d",
+             mGnssSvTypeConfig.size, mGnssSvTypeConfig.blacklistedSvTypesMask,
+             mGnssSvTypeConfig.enabledSvTypesMask, sendReset);
 
     if (mGnssSvTypeConfig.size == sizeof(mGnssSvTypeConfig)) {
 
@@ -1674,8 +1675,6 @@ GnssAdapter::gnssSvTypeConfigUpdate(bool sendReset)
             svTypeConfig.enabledSvTypesMask = mGnssSvTypeConfig.enabledSvTypesMask;
             mLocApi->setConstellationControl(svTypeConfig);
         }
-    } else {
-        LOC_LOGE("Invalid GnssSvTypeConfig size");
     }
 }
 

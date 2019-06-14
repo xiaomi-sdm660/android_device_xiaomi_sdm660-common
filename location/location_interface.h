@@ -87,6 +87,7 @@ struct GnssInterface {
     void (*nfwInit)(const NfwCbInfo& cbInfo);
     void (*getPowerStateChanges)(void* powerStateCb);
     void (*injectLocationExt)(const GnssLocationInfoNotification &locationInfo);
+    void (*updateBatteryStatus)(bool charging);
 };
 
 struct BatchingInterface {

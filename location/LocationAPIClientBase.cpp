@@ -366,7 +366,7 @@ void LocationAPIClientBase::locAPIStopTracking()
             mLocationAPI->stopTracking(session);
             mTracking = false;
         } else {
-            LOC_LOGE("%s:%d] invalid session: %d.", __FUNCTION__, __LINE__, session);
+            LOC_LOGD("%s:%d] invalid session: %d.", __FUNCTION__, __LINE__, session);
         }
     }
     pthread_mutex_unlock(&mMutex);

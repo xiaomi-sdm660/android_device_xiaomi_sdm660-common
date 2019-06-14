@@ -70,8 +70,6 @@ public:
             getLocIpcInetTcpSender(const char* serverName, int32_t port);
     static shared_ptr<LocIpcSender>
             getLocIpcQrtrSender(int service, int instance);
-    static shared_ptr<LocIpcSender>
-            getLocIpcQsockSender(int service, int instance);
 
     static unique_ptr<LocIpcRecver>
             getLocIpcLocalRecver(const shared_ptr<ILocIpcListener>& listener,
@@ -82,9 +80,6 @@ public:
     static unique_ptr<LocIpcRecver>
             getLocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
                                 int service, int instance);
-    static unique_ptr<LocIpcRecver>
-            getLocIpcQsockRecver(const shared_ptr<ILocIpcListener>& listener,
-                                 int service, int instance);
 
     static pair<shared_ptr<LocIpcSender>, unique_ptr<LocIpcRecver>>
             getLocIpcQmiLocServiceSenderRecverPair(const shared_ptr<ILocIpcListener>& listener,

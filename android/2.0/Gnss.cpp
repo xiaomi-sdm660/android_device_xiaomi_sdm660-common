@@ -19,6 +19,7 @@
  */
 
 #define LOG_TAG "LocSvc_GnssInterface"
+#define LOG_NDEBUG 0
 
 #include <fstream>
 #include <log_util.h>
@@ -26,6 +27,7 @@
 #include <cutils/properties.h>
 #include "Gnss.h"
 #include "LocationUtil.h"
+#include "battery_listener.h"
 
 typedef const GnssInterface* (getLocationInterface)();
 
@@ -39,7 +41,7 @@ namespace V2_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::visibility_control::V1_0::implementation::GnssVisibilityControl;
-
+static sp<Gnss> sGnss;
 static std::string getVersionString() {
     static std::string version;
     if (!version.empty())
@@ -85,8 +87,17 @@ void Gnss::GnssDeathRecipient::serviceDied(uint64_t cookie, const wp<IBase>& who
     }
 }
 
+void location_on_battery_status_changed(bool charging) {
+    LOC_LOGd("battery status changed to %s charging", charging ? "" : "not");
+    if (sGnss != nullptr) {
+        sGnss->getGnssInterface()->updateBatteryStatus(charging);
+    }
+}
 Gnss::Gnss() {
     ENTRY_LOG_CALLFLOW();
+    sGnss = this;
+    // register health client to listen on battery change
+    loc_extn_battery_properties_listener_init(location_on_battery_status_changed);
     // clear pending GnssConfig
     memset(&mPendingConfig, 0, sizeof(GnssConfig));
     mGnssDeathRecipient = new GnssDeathRecipient(this);
@@ -98,6 +109,7 @@ Gnss::~Gnss() {
         delete mApi;
         mApi = nullptr;
     }
+    sGnss = nullptr;
 }
 
 GnssAPIClient* Gnss::getApi() {
