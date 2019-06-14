@@ -10,17 +10,12 @@ vendor/lib64/hw/vendor.qti.hardware.alarm@1.0-impl.so
 vendor/lib64/libalarmservice_jni.so
 vendor/lib64/vendor.qti.hardware.alarm@1.0.so
 
-# ANT+ (system) - from enchilada - PKQ1.180716.001
-lib/com.qualcomm.qti.ant@1.0.so|fcd6a7130c480bfe4e4d9cc00702ed8444cddc82
--lib/libantradio.so|7506f2577f2f1068688b623ca85e432be9c3dac9
-lib64/com.qualcomm.qti.ant@1.0.so|199481b290856fb63f5c5bf6def426b43309becb
--lib64/libantradio.so|fb958cb68c99c71455f969afdf96225f5110f0df
-
-# ANT+ (vendor) - from Redmi Note 7 lavender-user 9 PKQ1.180904.001 9.2.11 release-keys
-vendor/lib/com.qualcomm.qti.ant@1.0.so|6028cb95d17ee080a3d05bdcff952ddc9aa1f494
-vendor/lib/hw/com.qualcomm.qti.ant@1.0-impl.so|86d7fd231c4c820172e133509dd338f700f1aaf1
-vendor/lib64/com.qualcomm.qti.ant@1.0.so|44294189280e86d95538bc51bdccd87b3f010f27
-vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|474187a8132aabd45089cacd2f8de9a6d9f449a3
+# ANT+ - from LA.UM.7.2.r1-06900-sdm660.0
+-lib/libantradio.so|b6b7b93dfa155de37d755542a0d66cc9f77e256c
+lib64/com.qualcomm.qti.ant@1.0.so|33d353a1077c70c3d7c013938b092e93a18d5b58
+-lib64/libantradio.so|def8c83cab05b53fe70754f23cf475240a8358fd
+vendor/lib64/com.qualcomm.qti.ant@1.0.so|5779ba85ae23ede7552a768afb8042d72f71afe2
+vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|94729946e6ba94dd5d24c0495661efadc7ab782e
 
 # AptX - from Nokia 7 Plus Onyx_00WW-user 9 PPR1.180610.011 00WW_3_22C release-keys
 lib64/libaptX_encoder.so|22f5749edb5099526788c22708099a7791dd837f
@@ -28,7 +23,6 @@ lib64/libaptXHD_encoder.so|c4ad4d6d7615f7df3ea1a4be5c6dae8a8c8ee8b1
 
 # Bluetooth
 vendor/bin/hci_qcomm_init
-vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti
 vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc
 vendor/lib/hw/android.hardware.bluetooth@1.0-impl-qti.so
 vendor/lib/libbt-hidlclient.so
@@ -36,6 +30,9 @@ vendor/lib/libbtnv.so
 vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so
 vendor/lib64/libbt-hidlclient.so
 vendor/lib64/libbtnv.so
+
+# Bluetooth - from LA.UM.7.2.r1-06900-sdm660.0
+vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti|514226960669db32e44a9457e6de7c07ac70ec1b
 
 # Charger
 vendor/bin/hvdcp_opti
@@ -147,19 +144,6 @@ vendor/lib/hw/vendor.qti.esepowermanager@1.0-impl.so
 vendor/lib/vendor.qti.esepowermanager@1.0.so
 vendor/lib64/hw/vendor.qti.esepowermanager@1.0-impl.so
 vendor/lib64/vendor.qti.esepowermanager@1.0.so
-
-# FM
-lib/libfm-hci.so
-lib/fm_helium.so
-lib64/libfm-hci.so
-lib64/fm_helium.so
-vendor/bin/fm_qsoc_patches
--lib/vendor.qti.hardware.fm@1.0.so
--lib64/vendor.qti.hardware.fm@1.0.so
-vendor/lib/hw/vendor.qti.hardware.fm@1.0-impl.so
-vendor/lib/vendor.qti.hardware.fm@1.0.so
-vendor/lib64/hw/vendor.qti.hardware.fm@1.0-impl.so
-vendor/lib64/vendor.qti.hardware.fm@1.0.so
 
 # Hotword enrollment
 -priv-app/HotwordEnrollmentOKGoogleWCD9340/HotwordEnrollmentOKGoogleWCD9340.apk;PRESIGNED
