@@ -53,7 +53,11 @@
 #endif
 
 #ifndef TAP_TO_WAKE_NODE
-#define TAP_TO_WAKE_NODE "/proc/touchpanel/double_tap_enable"
+#define TAP_TO_WAKE_NODE "/proc/nvt_wake_gesture"
+#endif
+
+#ifndef TAP_TO_WAKE_NODE2
+#define TAP_TO_WAKE_NODE2 "/proc/touchscreen/enable_dt2w"
 #endif
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
@@ -120,6 +124,7 @@ void set_feature(feature_t feature, int state) {
     switch (feature) {
         case POWER_FEATURE_DOUBLE_TAP_TO_WAKE:
             sysfs_write(TAP_TO_WAKE_NODE, state ? "1" : "0");
+            sysfs_write(TAP_TO_WAKE_NODE2, state ? "1" : "0");
             break;
         default:
             break;
