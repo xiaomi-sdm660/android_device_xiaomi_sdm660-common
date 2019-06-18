@@ -553,11 +553,10 @@ vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc
 vendor/lib64/vendor.qti.hardware.soter@1.0.so
 vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so
 
-# Time services
--vendor/app/TimeService/TimeService.apk
-vendor/bin/time_daemon
-vendor/lib/libtime_genoff.so
-vendor/lib64/libtime_genoff.so
+# Time services - from LA.UM.7.2.r1-06900-sdm660.0
+-vendor/app/TimeService/TimeService.apk|693a68e35a2cbc40d23b291fcc836c8567f90b14
+vendor/bin/time_daemon|ac244644735005d4c4322168001dcd3ae757007f
+vendor/lib64/libtime_genoff.so|9de68b1aa139b06b0e455bd1c24ed0c527492c3b
 
 # TUI
 lib/vendor.qti.hardware.tui_comm@1.0.so
