@@ -12,3 +12,4 @@ persist.sys.ifaa            u:object_r:ifaa_prop:s0
 
 # Spectrum
 persist.spectrum.profile    u:object_r:spectrum_prop:s0
+vendor.powerhal.init u:object_r:power_prop:s0

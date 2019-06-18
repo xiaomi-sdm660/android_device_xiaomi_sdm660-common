@@ -32,3 +32,4 @@ allow vendor_init exported_secure_prop:property_service set;
 allow vendor_init media_rw_data_file:file relabelfrom;
 allow vendor_init proc_dirty:file write;
 allow vendor_init proc_dirty_ratio:file write;
+allow vendor_init power_prop:property_service set;
