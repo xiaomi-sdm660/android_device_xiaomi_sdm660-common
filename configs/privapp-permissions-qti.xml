@@ -176,6 +176,10 @@ It allows additional grants on top of privapp-permissions-platform.xml
       <permission name="android.permission.WRITE_MEDIA_STORAGE"/>
     </privapp-permissions>
 
+    <privapp-permissions package="org.codeaurora.gallery">
+      <permission name="android.permission.MODIFY_AUDIO_ROUTING"/>
+    </privapp-permissions>
+
     <privapp-permissions package="com.qualcomm.qti.callenhancement">
       <permission name="android.permission.RECORD_AUDIO" />
       <permission name="android.permission.CAPTURE_AUDIO_OUTPUT" />
