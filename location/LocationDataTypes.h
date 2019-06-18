@@ -941,7 +941,8 @@ typedef struct {
 } GnssSystemTime;
 
 typedef struct {
-    uint32_t size;                        // set to sizeof(GnssLocationInfo)
+    uint32_t size;                      // set to sizeof(GnssLocationInfo)
+    Location location;                  // basic locaiton info, latitude, longitude, and etc
     GnssLocationInfoFlagMask flags;     // bitwise OR of GnssLocationInfoBits for param validity
     float altitudeMeanSeaLevel;         // altitude wrt mean sea level
     float pdop;                         // position dilusion of precision
@@ -974,7 +975,6 @@ typedef struct {
     GnssMeasUsageInfo measUsageInfo[GNSS_SV_MAX]; // GNSS Measurement Usage info
     uint8_t leapSeconds;                          // leap second
     float timeUncMs;                              // Time uncertainty in milliseconds
-    Location location;
 } GnssLocationInfoNotification;
 
 typedef struct {
