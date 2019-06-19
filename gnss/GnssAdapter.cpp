@@ -3772,26 +3772,28 @@ GnssAdapter::reportGnssMeasurementsEvent(const GnssMeasurements& gnssMeasurement
 {
     LOC_LOGD("%s]: msInWeek=%d", __func__, msInWeek);
 
-    struct MsgReportGnssMeasurementData : public LocMsg {
-        GnssAdapter& mAdapter;
-        GnssMeasurements mGnssMeasurements;
-        GnssMeasurementsNotification mMeasurementsNotify;
-        inline MsgReportGnssMeasurementData(GnssAdapter& adapter,
-                                            const GnssMeasurements& gnssMeasurements,
-                                            int msInWeek) :
-                LocMsg(),
-                mAdapter(adapter),
-                mMeasurementsNotify(gnssMeasurements.gnssMeasNotification) {
-            if (-1 != msInWeek) {
-                mAdapter.getAgcInformation(mMeasurementsNotify, msInWeek);
+    if (0 != gnssMeasurements.gnssMeasNotification.count) {
+        struct MsgReportGnssMeasurementData : public LocMsg {
+            GnssAdapter& mAdapter;
+            GnssMeasurements mGnssMeasurements;
+            GnssMeasurementsNotification mMeasurementsNotify;
+            inline MsgReportGnssMeasurementData(GnssAdapter& adapter,
+                                                const GnssMeasurements& gnssMeasurements,
+                                                int msInWeek) :
+                    LocMsg(),
+                    mAdapter(adapter),
+                    mMeasurementsNotify(gnssMeasurements.gnssMeasNotification) {
+                if (-1 != msInWeek) {
+                    mAdapter.getAgcInformation(mMeasurementsNotify, msInWeek);
+                }
             }
-        }
-        inline virtual void proc() const {
-            mAdapter.reportGnssMeasurementData(mMeasurementsNotify);
-        }
-    };
+            inline virtual void proc() const {
+                mAdapter.reportGnssMeasurementData(mMeasurementsNotify);
+            }
+        };
 
-    sendMsg(new MsgReportGnssMeasurementData(*this, gnssMeasurements, msInWeek));
+        sendMsg(new MsgReportGnssMeasurementData(*this, gnssMeasurements, msInWeek));
+    }
     mEngHubProxy->gnssReportSvMeasurement(gnssMeasurements.gnssSvMeasurementSet);
 }
 
