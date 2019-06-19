@@ -659,7 +659,7 @@ GnssAdapter::setSuplHostServer(const char* server, int port, LocServerType type)
             LOC_LOGe("Invalid type=%d", type);
         } else {
             string& url = (LOC_AGPS_SUPL_SERVER == type) ? getServerUrl() : getMoServerUrl();
-            if (length > 0 && strncasecmp(url.c_str(), serverUrl, sizeof(serverUrl)) != 0) {
+            if (length >= 0 && strncasecmp(url.c_str(), serverUrl, sizeof(serverUrl)) != 0) {
                 url.assign(serverUrl);
 
                 if (LOC_AGPS_SUPL_SERVER == type) {
@@ -837,7 +837,7 @@ std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldS
                 GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT) {
             if (gnssConfigNeedEngineUpdate.assistanceServer.type ==
                     GNSS_ASSISTANCE_TYPE_SUPL) {
-                if ((serverUrlLen != 0) && (oldServerUrl.compare(serverUrl) !=0)) {
+                if (0 != oldServerUrl.compare(serverUrl)) {
 
                     err = mLocApi->setServerSync(
                             serverUrl.c_str(), serverUrlLen, LOC_AGPS_SUPL_SERVER);
@@ -845,7 +845,7 @@ std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldS
                         errsList[index] = err;
                     }
                 }
-                if ((moServerUrlLen != 0) && (oldMoServerUrl.compare(moServerUrl) != 0)) {
+                if (0 != oldMoServerUrl.compare(moServerUrl)) {
                     LocationError locErr =
                         mLocApi->setServerSync(moServerUrl.c_str(),
                                 moServerUrlLen,
