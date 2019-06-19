@@ -248,7 +248,8 @@ PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-service-qti \
     libgnss \
     libgnsspps \
-    libsensorndkbridge
+    libsensorndkbridge \
+    libsynergy_loc_api
 
 PRODUCT_COPY_FILES += \
     $(COMMON_PATH)/configs/gps/apdr.conf:$(TARGET_COPY_OUT_VENDOR)/etc/apdr.conf \
