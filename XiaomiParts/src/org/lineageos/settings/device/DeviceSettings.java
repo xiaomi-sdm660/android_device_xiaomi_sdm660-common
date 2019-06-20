@@ -77,6 +77,7 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final String CATEGORY_FASTCHARGE = "usb_fastcharge";
     public static final String PREF_USB_FASTCHARGE = "fastcharge";
     public static final String USB_FASTCHARGE_PATH = "/sys/kernel/fast_charge/force_fast_charge";
+    public static final String CHARGE_PATH = "/sys/class/power_supply/battery/input_suspend";
 
     public static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
 
@@ -288,6 +289,8 @@ public class DeviceSettings extends PreferenceFragment implements
 
             case PREF_USB_FASTCHARGE:
                 FileUtils.setValue(USB_FASTCHARGE_PATH, (boolean) value);
+                FileUtils.setValue(CHARGE_PATH, (int) 1);
+                FileUtils.setValue(CHARGE_PATH, (int) 0);
                 break;
 
             default:
