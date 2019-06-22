@@ -324,6 +324,7 @@ static uint32_t convert_signalType_to_signalId(GnssSignalTypeMask signalType)
             signalId = SIGNAL_ID_BDS_B2I;
             break;
         case GNSS_SIGNAL_BEIDOU_B2AI:
+        case GNSS_SIGNAL_BEIDOU_B2AQ:
             signalId = SIGNAL_ID_BDS_B2A;
             break;
         case GNSS_SIGNAL_NAVIC_L5:
