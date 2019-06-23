@@ -93,6 +93,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.netflix.bsp_rev=Q660-13149-1
 
+# Proximity
+PRODUCT_PROPERTY_OVERRIDES += \
+    gsm.proximity.enable=true
+
 # QCOM
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.timed.enable=true \
