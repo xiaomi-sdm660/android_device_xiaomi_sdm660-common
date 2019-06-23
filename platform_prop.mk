@@ -214,6 +214,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	sdm.debug.disable_rotator_split=1 \
 	sdm.perf_hint_window=50
 
+# Proximity
+PRODUCT_PROPERTY_OVERRIDES += \
+	gsm.proximity.enable=true
+
 # Qcom System Daemon
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.qcomsysd.enabled=1
