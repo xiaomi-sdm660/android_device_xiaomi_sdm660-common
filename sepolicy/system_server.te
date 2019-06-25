@@ -38,3 +38,4 @@ allow system_server ctl_vendor_hbtp_prop:file read;
 allow system_server ctl_vendor_imsrcsservice_prop:file read;
 allow system_server ctl_vendor_mmid_prop:file read;
 allow system_server ctl_vendor_netmgrd_prop:file read;
+allow system_server sysfs_battery_supply:file { getattr open read write };
