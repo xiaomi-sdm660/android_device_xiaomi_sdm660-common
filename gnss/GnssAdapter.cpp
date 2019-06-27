@@ -97,8 +97,7 @@ GnssAdapter::GnssAdapter() :
     mPowerStateCb(nullptr),
     mIsE911Session(NULL),
     mGnssMbSvIdUsedInPosition{},
-    mGnssMbSvIdUsedInPosAvail(false),
-    mGnssSignalType()
+    mGnssMbSvIdUsedInPosAvail(false)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -3206,9 +3205,6 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                 if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_MULTIBAND) {
                     mGnssMbSvIdUsedInPosAvail = true;
                     mGnssMbSvIdUsedInPosition = locationExtended.gnss_mb_sv_used_ids;
-                    for (int i = 0; i < GNSS_SV_MAX; i++) {
-                        mGnssSignalType[i] = locationExtended.measUsageInfo[i].gnssSignalType;
-                    }
                 }
             }
 
@@ -3277,11 +3273,12 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
     for (int i=0; i < numSv; i++) {
         svUsedIdMask = 0;
         gnssSvId = svNotify.gnssSvs[i].svId;
+        GnssSignalTypeMask signalTypeMask = svNotify.gnssSvs[i].gnssSignalTypeMask;
         switch (svNotify.gnssSvs[i].type) {
             case GNSS_SV_TYPE_GPS:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_GPS_L1CA:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.gps_l1ca_sv_used_ids_mask;
                             break;
@@ -3303,7 +3300,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_GLONASS:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_GLONASS_G1:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.glo_g1_sv_used_ids_mask;
                             break;
@@ -3319,7 +3316,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_BEIDOU:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_BEIDOU_B1I:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.bds_b1i_sv_used_ids_mask;
                             break;
@@ -3344,7 +3341,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_GALILEO:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_GALILEO_E1:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.gal_e1_sv_used_ids_mask;
                             break;
@@ -3363,7 +3360,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_QZSS:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_QZSS_L1CA:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.qzss_l1ca_sv_used_ids_mask;
                             break;
