@@ -102,7 +102,7 @@ Return<bool> AGnssRil::updateNetworkState(bool connected, NetworkType type, bool
                 }
                 break;
         }
-        mGnss->getGnssInterface()->updateConnectionStatus(connected, typeout);
+        mGnss->getGnssInterface()->updateConnectionStatus(connected, false, typeout, 0);
     }
     return true;
 }
