@@ -54,5 +54,5 @@ allow hal_fingerprint_sdm660 sdcardfs:dir search;
 allow hal_fingerprint_sdm660 fingerprint_data_file:dir search;
 allow hal_fingerprint_sdm660 media_rw_data_file:dir { open read };
 allow hal_fingerprint_sdm660 rootfs:dir read;
-allow move-goofix-data-sh fingerprint_data_file:dir { read search };
-allow move-goofix-data-sh fingerprint_data_file:dir { getattr open };
+allow move-goodix-data-sh fingerprint_data_file:dir { read search };
+allow move-goodix-data-sh fingerprint_data_file:dir { getattr open };
