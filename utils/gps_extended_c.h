@@ -35,7 +35,12 @@
 #include <string.h>
 #include <loc_gps.h>
 #include <LocationAPI.h>
-#include <time.h>
+
+struct timespec32_t {
+  uint32_t  tv_sec;   /* seconds */
+  uint32_t  tv_nsec;  /* and nanoseconds */
+};
+
 
 /**
  * @file
@@ -132,7 +137,7 @@ typedef enum {
 
 typedef struct {
     /** set to sizeof(UlpLocation) */
-    size_t          size;
+    uint32_t          size;
     LocGpsLocation     gpsLocation;
     /* Provider indicator for HYBRID or GPS */
     uint16_t        position_source;
@@ -142,7 +147,7 @@ typedef struct {
 
 typedef struct {
     /** set to sizeof(UlpNmea) */
-    size_t          size;
+    uint32_t          size;
     char            nmea_str[ULP_MAX_NMEA_STRING_SIZE];
     unsigned int    len;
 } UlpNmea;
@@ -208,7 +213,7 @@ typedef struct {
 /** GPS extended callback structure. */
 typedef struct {
     /** set to sizeof(LocGpsCallbacks) */
-    size_t      size;
+    uint32_t      size;
     loc_gps_set_capabilities set_capabilities_cb;
     loc_gps_acquire_wakelock acquire_wakelock_cb;
     loc_gps_release_wakelock release_wakelock_cb;
@@ -232,7 +237,7 @@ typedef struct {
 /** Represents the status of AGPS. */
 typedef struct {
     /** set to sizeof(AGpsExtStatus) */
-    size_t          size;
+    uint32_t          size;
 
     AGpsExtType type;
     LocAGpsStatusValue status;
@@ -367,15 +372,19 @@ typedef uint64_t GpsLocationExtendedFlags;
 /** GpsLocationExtended has Clock drift*/
 #define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT   0x20000000
 /** GpsLocationExtended has Clock drift std deviation**/
-#define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT_STD_DEV   0x40000000
+#define GPS_LOCATION_EXTENDED_HAS_CLOCK_DRIFT_STD_DEV    0x40000000
 /** GpsLocationExtended has leap seconds **/
-#define GPS_LOCATION_EXTENDED_HAS_LEAP_SECONDS   0x80000000
+#define GPS_LOCATION_EXTENDED_HAS_LEAP_SECONDS           0x80000000
 /** GpsLocationExtended has time uncertainty **/
-#define GPS_LOCATION_EXTENDED_HAS_TIME_UNC   0x100000000
+#define GPS_LOCATION_EXTENDED_HAS_TIME_UNC               0x100000000
 /** GpsLocationExtended has heading rate  **/
-#define GPS_LOCATION_EXTENDED_HAS_HEADING_RATE 0x200000000
+#define GPS_LOCATION_EXTENDED_HAS_HEADING_RATE           0x200000000
 /** GpsLocationExtended has multiband signals  **/
-#define GPS_LOCATION_EXTENDED_HAS_MULTIBAND 0x400000000
+#define GPS_LOCATION_EXTENDED_HAS_MULTIBAND              0x400000000
+/** GpsLocationExtended has sensor calibration confidence */
+#define GPS_LOCATION_EXTENDED_HAS_CALIBRATION_CONFIDENCE 0x800000000
+/** GpsLocationExtended has sensor calibration status */
+#define GPS_LOCATION_EXTENDED_HAS_CALIBRATION_STATUS     0x1000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -392,6 +401,8 @@ typedef uint32_t LocNavSolutionMask;
 #define LOC_NAV_MASK_RTK_CORRECTION ((LocNavSolutionMask)0x0020)
 /**<  Bitmask to specify whether Position Report is PPP corrected   */
 #define LOC_NAV_MASK_PPP_CORRECTION ((LocNavSolutionMask)0x0040)
+/**<  Bitmask to specify whether Position Report is RTK fixed corrected   */
+#define LOC_NAV_MASK_RTK_FIXED_CORRECTION ((LocNavSolutionMask)0x0080)
 
 typedef uint32_t LocPosDataMask;
 /* Bitmask to specify whether Navigation data has Forward Acceleration  */
@@ -458,7 +469,7 @@ typedef enum {
 }LocReliability;
 
 typedef struct {
-    struct timespec apTimeStamp;
+    struct timespec32_t apTimeStamp;
     /*boottime received from pps-ktimer*/
     float apTimeStampUncertaintyMs;
     /* timestamp uncertainty in milli seconds */
@@ -492,6 +503,7 @@ typedef struct {
     uint64_t qzss_l2_sv_used_ids_mask;      // QZSS L2
     uint64_t qzss_l5_sv_used_ids_mask;      // QZSS L5
     uint64_t sbas_l1_sv_used_ids_mask;      // SBAS L1
+    uint64_t bds_b2aq_sv_used_ids_mask;     // BDS B2AQ
 } GnssSvMbUsedInPosition;
 
 /* Body Frame parameters */
@@ -600,6 +612,8 @@ typedef uint32_t GnssSignalTypeMask;
 #define GNSS_SIGNAL_SBAS_L1      ((GnssSignalTypeMask)0x00020000ul)
 /** NAVIC L5 RF Band */
 #define GNSS_SIGNAL_NAVIC_L5     ((GnssSignalTypeMask)0x00040000ul)
+/** BEIDOU B2A_Q RF Band */
+#define GNSS_SIGNAL_BEIDOU_B2AQ   ((GnssSignalTypeMask)0x00080000ul)
 
 typedef uint16_t GnssMeasUsageStatusBitMask;
 /** Used in fix */
@@ -685,7 +699,7 @@ typedef struct {
 /** Represents gps location extended. */
 typedef struct {
     /** set to sizeof(GpsLocationExtended) */
-    size_t          size;
+    uint32_t          size;
     /** Contains GpsLocationExtendedFlags bits. */
     uint64_t        flags;
     /** Contains the Altitude wrt mean sea level */
@@ -784,6 +798,9 @@ typedef struct {
         Range: 0 to 359.999. 946
         Unit: Degrees per Seconds */
     float headingRateDeg;
+    /** Sensor calibration confidence percent. Range: 0 - 100 */
+    uint8_t calibrationConfidence;
+    DrCalibrationStatusMask calibrationStatus;
 } GpsLocationExtended;
 
 enum loc_sess_status {
@@ -1058,7 +1075,7 @@ typedef enum
 
 typedef struct
 {
-    size_t                          size;
+    uint32_t                          size;
     float                           clockDrift;
     /**< Receiver clock Drift \n
          - Units: meter per sec \n
@@ -1072,7 +1089,7 @@ typedef struct
 
 typedef struct
 {
-    size_t      size;
+    uint32_t      size;
     uint8_t     leapSec;
     /**< GPS time leap second delta to UTC time  \n
          - Units: sec \n
@@ -1093,7 +1110,7 @@ typedef enum
 
 typedef struct
 {
-    size_t          size;
+    uint32_t          size;
     uint32_t        validMask;
     /* Validity mask as per Gnss_LocInterSystemBiasValidMaskType */
 
@@ -1110,7 +1127,7 @@ typedef struct
 
 typedef struct {
 
-  size_t    size;
+  uint32_t    size;
 
   uint8_t   systemRtc_valid;
   /**<   Validity indicator for System RTC */
@@ -1156,7 +1173,7 @@ typedef enum
 
 typedef struct
 {
-    size_t              size;
+    uint32_t              size;
     uint32_t            svMs;
     /**<  Satellite time milisecond.\n
           For GPS, BDS, GAL range of 0 thru (604800000-1) \n
@@ -1216,7 +1233,7 @@ typedef enum
 
 typedef struct
 {
-    size_t                          size;
+    uint32_t                          size;
     Gnss_LocSvSystemEnumType        gnssSystem;
     // 0 signal type mask indicates invalid value
     GnssSignalTypeMask              gnssSignalTypeMask;
@@ -1389,7 +1406,7 @@ typedef uint64_t GpsSvMeasHeaderFlags;
 
 typedef struct
 {
-    size_t                                      size;
+    uint32_t                                      size;
     // see defines in GNSS_SV_MEAS_HEADER_HAS_XXX_XXX
     uint64_t                                    flags;
 
@@ -1433,7 +1450,7 @@ typedef struct
 } GnssSvMeasurementHeader;
 
 typedef struct {
-    size_t                        size;
+    uint32_t                        size;
     bool                          isNhz;
     GnssSvMeasurementHeader       svMeasSetHeader;
     uint32_t                      svMeasCount;
@@ -1473,7 +1490,7 @@ typedef enum
 
 typedef struct
 {
-    size_t      size;
+    uint32_t      size;
     uint16_t     gnssSvId;
     /* GPS: 1-32, GLO: 65-96, 0: Invalid,
        SBAS: 120-151, BDS:201-237,GAL:301 to 336
@@ -2034,7 +2051,7 @@ typedef enum {
 
 typedef struct
 {
-    size_t                 size;
+    uint32_t                 size;
     Gnss_SrnTech           srnTechType; /* SRN Technology type in request */
     bool                   srnRequest; /* scan - start(true) or stop(false) */
     bool                   e911Mode; /* If in E911 emergency */
@@ -2054,7 +2071,7 @@ typedef enum {
 /* This SV Type config is injected directly to GNSS Adapter
  * bypassing Location API */
 typedef struct {
-    size_t size; // set to sizeof(GnssSvTypeConfig)
+    uint32_t size; // set to sizeof(GnssSvTypeConfig)
     // Enabled Constellations
     GnssSvTypesMask enabledSvTypesMask;
     // Disabled Constellations
@@ -2141,7 +2158,7 @@ enum OdcpiRequestType {
     ODCPI_REQUEST_TYPE_STOP
 };
 struct OdcpiRequestInfo {
-    size_t size;
+    uint32_t size;
     OdcpiRequestType type;
     uint32_t tbfMillis;
     bool isEmergencyMode;

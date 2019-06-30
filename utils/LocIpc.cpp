@@ -164,7 +164,8 @@ public:
 
         umask(0157);
         if (mSock->isValid() && ::bind(mSock->mSid, (struct sockaddr*)&mAddr, sizeof(mAddr)) < 0) {
-            LOC_LOGe("bind socket error. sock fd: %d, reason: %s", mSock->mSid, strerror(errno));
+            LOC_LOGe("bind socket error. sock fd: %d: %s, reason: %s", mSock->mSid,
+                    mAddr.sun_path, strerror(errno));
             mSock->close();
         }
     }
@@ -177,26 +178,22 @@ public:
     }
 };
 
-class LocIpcInetTcpSender : public LocIpcSender {
+class LocIpcInetSender : public LocIpcSender {
 protected:
+    int mSockType;
     shared_ptr<Sock> mSock;
     const string mName;
     sockaddr_in mAddr;
-    mutable bool mFirstTime;
     inline virtual bool isOperable() const override { return mSock != nullptr && mSock->isValid(); }
-    inline virtual ssize_t send(const uint8_t data[], uint32_t length, int32_t /* msgId */) const {
-        if (mFirstTime) {
-            mFirstTime = false;
-            ::connect(mSock->mSid, (const struct sockaddr*)&mAddr, sizeof(mAddr));
-        }
+    virtual ssize_t send(const uint8_t data[], uint32_t length, int32_t /* msgId */) const {
         return mSock->send(data, length, 0, (struct sockaddr*)&mAddr, sizeof(mAddr));
     }
 public:
-    inline LocIpcInetTcpSender(const char* name, int32_t port) : LocIpcSender(),
-            mSock(make_shared<Sock>((nullptr == name) ? -1 : (::socket(AF_INET, SOCK_STREAM, 0)))),
+    inline LocIpcInetSender(const char* name, int32_t port, int sockType) : LocIpcSender(),
+            mSockType(sockType),
+            mSock(make_shared<Sock>((nullptr == name) ? -1 : (::socket(AF_INET, mSockType, 0)))),
             mName((nullptr == name) ? "" : name),
-            mAddr({.sin_family=AF_INET, .sin_port=htons(port), .sin_addr={htonl(INADDR_ANY)}}),
-            mFirstTime(true) {
+            mAddr({.sin_family=AF_INET, .sin_port=htons(port), .sin_addr={htonl(INADDR_ANY)}}) {
         if (mSock != nullptr && mSock->isValid() && nullptr != name) {
             struct hostent* hp = gethostbyname(name);
             if (nullptr != hp) {
@@ -206,7 +203,47 @@ public:
     }
 };
 
-class LocIpcInetTcpRecver : public LocIpcInetTcpSender, public LocIpcRecver {
+class LocIpcInetTcpSender : public LocIpcInetSender {
+protected:
+    mutable bool mFirstTime;
+
+    virtual ssize_t send(const uint8_t data[], uint32_t length, int32_t /* msgId */) const {
+        if (mFirstTime) {
+            mFirstTime = false;
+            ::connect(mSock->mSid, (const struct sockaddr*)&mAddr, sizeof(mAddr));
+        }
+        return mSock->send(data, length, 0, (struct sockaddr*)&mAddr, sizeof(mAddr));
+    }
+
+public:
+    inline LocIpcInetTcpSender(const char* name, int32_t port) :
+            LocIpcInetSender(name, port, SOCK_STREAM),
+            mFirstTime(true) {}
+};
+
+class LocIpcInetRecver : public LocIpcInetSender, public LocIpcRecver {
+protected:
+     virtual ssize_t recv() const = 0;
+public:
+    inline LocIpcInetRecver(const shared_ptr<ILocIpcListener>& listener, const char* name,
+                               int32_t port, int sockType) :
+            LocIpcInetSender(name, port, sockType), LocIpcRecver(listener, *this) {
+        if (mSock->isValid() && ::bind(mSock->mSid, (struct sockaddr*)&mAddr, sizeof(mAddr)) < 0) {
+            LOC_LOGe("bind socket error. sock fd: %d, reason: %s", mSock->mSid, strerror(errno));
+            mSock->close();
+        }
+    }
+    inline virtual ~LocIpcInetRecver() {}
+    inline virtual const char* getName() const override { return mName.data(); };
+    inline virtual void abort() const override {
+        if (isSendable()) {
+            mSock->sendAbort(0, (struct sockaddr*)&mAddr, sizeof(mAddr));
+        }
+    }
+
+};
+
+class LocIpcInetTcpRecver : public LocIpcInetRecver {
     mutable int32_t mConnFd;
 protected:
     inline virtual ssize_t recv() const override {
@@ -223,20 +260,25 @@ protected:
 public:
     inline LocIpcInetTcpRecver(const shared_ptr<ILocIpcListener>& listener, const char* name,
                                int32_t port) :
-            LocIpcInetTcpSender(name, port), LocIpcRecver(listener, *this), mConnFd(-1) {
-        if (mSock->isValid() && ::bind(mSock->mSid, (struct sockaddr*)&mAddr, sizeof(mAddr)) < 0) {
-            LOC_LOGe("bind socket error. sock fd: %d, reason: %s", mSock->mSid, strerror(errno));
-            mSock->close();
-        }
-    }
-    inline virtual ~LocIpcInetTcpRecver() { if (-1 != mConnFd) ::close(mConnFd); }
-    inline virtual const char* getName() const override { return mName.data(); };
-    inline virtual void abort() const override {
-        if (isSendable()) {
-            mSock->sendAbort(0, (struct sockaddr*)&mAddr, sizeof(mAddr));
-        }
-    }
+            LocIpcInetRecver(listener, name, port, SOCK_STREAM), mConnFd(-1) {}
+    inline virtual ~LocIpcInetTcpRecver() { if (-1 != mConnFd) ::close(mConnFd);}
 };
+
+class LocIpcInetUdpRecver : public LocIpcInetRecver {
+protected:
+    inline virtual ssize_t recv() const override {
+        socklen_t size = sizeof(mAddr);
+        return mSock->recv(mDataCb, 0, (struct sockaddr*)&mAddr, &size);
+    }
+public:
+    inline LocIpcInetUdpRecver(const shared_ptr<ILocIpcListener>& listener, const char* name,
+                                int32_t port) :
+            LocIpcInetRecver(listener, name, port, SOCK_DGRAM) {}
+
+    inline virtual ~LocIpcInetUdpRecver() {}
+};
+
+
 
 #ifdef NOT_DEFINED
 class LocIpcQcsiSender : public LocIpcSender {
@@ -365,8 +407,15 @@ shared_ptr<LocIpcSender> LocIpc::getLocIpcInetTcpSender(const char* serverName, 
     return make_shared<LocIpcInetTcpSender>(serverName, port);
 }
 unique_ptr<LocIpcRecver> LocIpc::getLocIpcInetTcpRecver(const shared_ptr<ILocIpcListener>& listener,
-                                                        const char* serverName, int32_t port) {
+                                                            const char* serverName, int32_t port) {
     return make_unique<LocIpcInetTcpRecver>(listener, serverName, port);
+}
+shared_ptr<LocIpcSender> LocIpc::getLocIpcInetUdpSender(const char* serverName, int32_t port) {
+    return make_shared<LocIpcInetSender>(serverName, port, SOCK_DGRAM);
+}
+unique_ptr<LocIpcRecver> LocIpc::getLocIpcInetUdpRecver(const shared_ptr<ILocIpcListener>& listener,
+                                                             const char* serverName, int32_t port) {
+    return make_unique<LocIpcInetUdpRecver>(listener, serverName, port);
 }
 pair<shared_ptr<LocIpcSender>, unique_ptr<LocIpcRecver>>
         LocIpc::getLocIpcQmiLocServiceSenderRecverPair(const shared_ptr<ILocIpcListener>& listener, int instance) {
