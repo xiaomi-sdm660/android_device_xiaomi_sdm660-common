@@ -48,7 +48,7 @@
     <string name="fpaction_expand_qs">Schnelleinstellungen</string>
     <string name="fpaction_assistant">Assistent</string>
     <string name="fpaction_home">Home</string>
-    <string name="fpaction_recent_apps">Anwendngsverlauf</string>
+    <string name="fpaction_recent_apps">Anwendungsverlauf</string>
 
     <!-- Dirac settings -->
     <string name="dirac_title">Mi Klangverbesserung</string>
