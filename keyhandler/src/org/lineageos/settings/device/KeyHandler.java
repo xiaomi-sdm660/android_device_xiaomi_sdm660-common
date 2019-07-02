@@ -39,6 +39,8 @@ public class KeyHandler implements DeviceKeyHandler {
     private static final int FP_SWIPE_LEFT = 2;
     private static final int FP_SWIPE_RIGHT = 3;
 
+    private static int sActionBefore = KeyEvent.ACTION_DOWN;
+
     private static PackageManager sPackageManager;
     private Context mContext;
 
@@ -78,16 +80,19 @@ public class KeyHandler implements DeviceKeyHandler {
         }
 
         if (swipeDirection >= 0) {
-            if (action == KeyEvent.ACTION_UP) {
-                Intent startAction = new Intent()
-                        .setComponent(new ComponentName("org.lineageos.settings.device",
-                                "org.lineageos.settings.device.StartAction"))
-                        .putExtra(FP_SWIPE_DIRECTION, swipeDirection);
+            if (sActionBefore != KeyEvent.ACTION_UP) {
+                if (action == KeyEvent.ACTION_UP) {
+                    Intent startAction = new Intent()
+                            .setComponent(new ComponentName("org.lineageos.settings.device",
+                                    "org.lineageos.settings.device.StartAction"))
+                            .putExtra(FP_SWIPE_DIRECTION, swipeDirection);
 
-                if (startAction.resolveActivity(sPackageManager) != null) {
-                    mContext.startService(startAction);
+                    if (startAction.resolveActivity(sPackageManager) != null) {
+                        mContext.startService(startAction);
+                    }
                 }
             }
+            sActionBefore = action;
         }
         return event;
     }
