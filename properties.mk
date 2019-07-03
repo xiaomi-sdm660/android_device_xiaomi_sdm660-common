@@ -104,7 +104,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.bluetooth.bluetooth_audio_hal.disabled=true \
     ro.vendor.bluetooth.wipower=false \
     persist.bluetooth.a2dp_offload.disabled=false \
-    persist.bluetooth.a2dp_offload.cap=sbc-aac-aptx-aptxhd-ldac
+    persist.bluetooth.a2dp_offload.cap=sbc-aac-aptx-aptxhd-ldac \
+    persist.vendor.bt.aac_frm_ctl.enabled=true
 
 # Camera
 PRODUCT_PROPERTY_OVERRIDES += \
