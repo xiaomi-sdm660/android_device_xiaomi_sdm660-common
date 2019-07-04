@@ -457,6 +457,12 @@ typedef enum {
     LOC_RELIABILITY_HIGH = 4
 }LocReliability;
 
+typedef enum {
+    LOC_IN_EMERGENCY_UNKNOWN = 0,
+    LOC_IN_EMERGENCY_SET = 1,
+    LOC_IN_EMERGENCY_NOT_SET = 2
+}LocInEmergency;
+
 typedef struct {
     struct timespec32_t apTimeStamp;
     /*boottime received from pps-ktimer*/
