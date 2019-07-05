@@ -208,4 +208,14 @@
             android:title="@string/fastcharge_title"
             android:summary="@string/fastcharge_summary" />
     </PreferenceCategory>
+
+    <PreferenceCategory
+         android:key="hall_wakeup"
+         android:title="@string/hall_wakeup_title" >
+         <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
+             android:key="hall"
+             android:defaultValue="true"
+             android:title="@string/hall_wakeup_title"
+             android:summary="@string/hall_wakeup_summary" />
+     </PreferenceCategory>
 </PreferenceScreen>

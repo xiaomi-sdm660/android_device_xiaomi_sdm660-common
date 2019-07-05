@@ -127,4 +127,6 @@
     <string name="headphone_gain">Kopfhörerverstärkung</string>
     <string name="fastcharge_summary">Benutze USB Fastcharge beim verbinden mit dem Computer</string>
     <string name="fastcharge_title">Aktiviere USB Fastcharge</string>
+    <string name="hall_title">Aktiviere Aufwecken mit Flip Cover </string>
+    <string name="hall_wakeup_summary">Schalte das Gerät AN und AUS mit einem magnetischen Flip Cover</string>
 </resources>

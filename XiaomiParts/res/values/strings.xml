@@ -158,6 +158,10 @@
     <string name="fastcharge_title">Enable USB Fastcharge</string>
     <string name="fastcharge_summary">Use fastcharge when connected to a computer via usb port</string>
 
+    <!-- usb fastcharge -->
+     <string name="hall_wakeup_title">Flip Cover Wakeup</string>
+     <string name="hall_title">Enable Flip Cover Wakeup</string>
+     <string name="hall_wakeup_summary">Wakeup device via magnetic Flip Cover</string>
     <!-- menu -->
     <string name="kcal_presets" translatable="false">@string/presets_dialog_title</string>
     <string name="kcal_reset">Reset</string>

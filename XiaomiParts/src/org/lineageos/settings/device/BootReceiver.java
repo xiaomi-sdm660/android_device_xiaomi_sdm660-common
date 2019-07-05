@@ -68,6 +68,8 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
                 DeviceSettings.PREF_MICROPHONE_GAIN, 0));
         FileUtils.setValue(DeviceSettings.USB_FASTCHARGE_PATH, Settings.Secure.getInt(context.getContentResolver(),
                 DeviceSettings.PREF_USB_FASTCHARGE, 0));
+        FileUtils.setValue(DeviceSettings.HALL_WAKEUP_PATH, Settings.Secure.getInt(context.getContentResolver(),
+                DeviceSettings.PREF_HALL_WAKEUP, 1));
         context.startService(new Intent(context, DiracService.class));
     }
 }
