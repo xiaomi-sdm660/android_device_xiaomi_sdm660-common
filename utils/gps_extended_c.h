@@ -449,17 +449,6 @@ typedef uint32_t GnssAdditionalSystemInfoMask;
 #define NAVIC_SV_PRN_MIN    401
 #define NAVIC_SV_PRN_MAX    414
 
-typedef uint32_t LocPosTechMask;
-#define LOC_POS_TECH_MASK_DEFAULT ((LocPosTechMask)0x00000000)
-#define LOC_POS_TECH_MASK_SATELLITE ((LocPosTechMask)0x00000001)
-#define LOC_POS_TECH_MASK_CELLID ((LocPosTechMask)0x00000002)
-#define LOC_POS_TECH_MASK_WIFI ((LocPosTechMask)0x00000004)
-#define LOC_POS_TECH_MASK_SENSORS ((LocPosTechMask)0x00000008)
-#define LOC_POS_TECH_MASK_REFERENCE_LOCATION ((LocPosTechMask)0x00000010)
-#define LOC_POS_TECH_MASK_INJECTED_COARSE_POSITION ((LocPosTechMask)0x00000020)
-#define LOC_POS_TECH_MASK_AFLT ((LocPosTechMask)0x00000040)
-#define LOC_POS_TECH_MASK_HYBRID ((LocPosTechMask)0x00000080)
-
 typedef enum {
     LOC_RELIABILITY_NOT_SET = 0,
     LOC_RELIABILITY_VERY_LOW = 1,
