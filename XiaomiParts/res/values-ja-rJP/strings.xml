@@ -72,7 +72,7 @@
     <string name="fpaction_media_play_pause">メディアの 再生/一時停止</string>
     <string name="fpaction_media_previous">前のメディア</string>
 
-    <string name="audio_title">Audio</string>
+    <string name="audio_title">音楽</string>
 
     <!-- Dirac settings -->
     <string name="dirac_title">Mi サウンドエンハンサー</string>
