@@ -55,7 +55,7 @@ public :
 
     bool updateLockStatus(GnssConfigGpsLock lock);
     bool updateConnections(uint64_t allConnections,
-            uint64_t wifiNetworkHandle, uint64_t mobileNetworkHandle);
+            loc_core::NetworkInfoType* networkHandleInfo);
     bool updateTac(const string& tac);
     bool updateMccMnc(const string& mccmnc);
     bool updateXtraThrottle(const bool enabled);
@@ -69,8 +69,7 @@ private:
     GnssConfigGpsLock mGpsLock;
     LocIpc mIpc;
     uint64_t mConnections;
-    uint64_t mWifiNetworkHandle;
-    uint64_t mMobileNetworkHandle;
+    loc_core::NetworkInfoType mNetworkHandle[MAX_NETWORK_HANDLES];
     string mTac;
     string mMccmnc;
     bool mXtraThrottle;

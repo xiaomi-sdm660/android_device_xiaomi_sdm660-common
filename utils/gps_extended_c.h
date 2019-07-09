@@ -2191,11 +2191,12 @@ typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void*
 
 #define SOCKET_LOC_CLIENT_DIR          "/dev/socket/loc_client/"
 #define EAP_LOC_CLIENT_DIR             "/data/vendor/location/extap_locclient/"
-    
+
 #define LOC_CLIENT_NAME_PREFIX         "toclient"
 
 typedef uint64_t NetworkHandle;
 #define NETWORK_HANDLE_UNKNOWN  ~0
+#define MAX_NETWORK_HANDLES 10
 
 #ifdef __cplusplus
 }
