@@ -12,6 +12,4 @@ else
 include $(DIR_LIST)/1.0/Android.mk
 endif #GNSS HIDL 1.1
 endif #GNSS HIDL 2.0
-else #QMAA flag set, build dummy android.hardware.gnss@1.0-impl-qti
-include $(LOCAL_PATH)/dummy/Android.mk
 endif #BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE
