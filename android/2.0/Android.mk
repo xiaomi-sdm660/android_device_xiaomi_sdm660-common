@@ -70,7 +70,11 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := android.hardware.gnss@2.0-service-qti
+ifeq ($(GNSS_HIDL_LEGACY_MEASURMENTS),true)
+LOCAL_VINTF_FRAGMENTS := legacy/android.hardware.gnss@2.0-service-qti.xml
+else
 LOCAL_VINTF_FRAGMENTS := android.hardware.gnss@2.0-service-qti.xml
+endif
 LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_INIT_RC := android.hardware.gnss@2.0-service-qti.rc
