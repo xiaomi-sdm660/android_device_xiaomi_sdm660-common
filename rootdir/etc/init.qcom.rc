@@ -69,6 +69,14 @@ on early-boot
     write /sys/kernel/boot_slpi/boot 1
     setprop ro.alarm_boot false
 
+    # SSR Setup
+    write /sys/bus/msm_subsys/devices/subsys0/restart_level RELATED
+    write /sys/bus/msm_subsys/devices/subsys1/restart_level RELATED
+    write /sys/bus/msm_subsys/devices/subsys2/restart_level RELATED
+    write /sys/bus/msm_subsys/devices/subsys3/restart_level RELATED
+    write /sys/bus/msm_subsys/devices/subsys4/restart_level RELATED
+    write /sys/bus/msm_subsys/devices/subsys5/restart_level RELATED
+
     # for backward compatibility
     chown system system /persist/sensors
     chown system system /persist/sensors/registry
