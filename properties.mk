@@ -174,6 +174,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
  PRODUCT_PROPERTY_OVERRIDES += \
     ro.storaged.event.interval=99999
 
+# System restart
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.vendor.ssr.restart_level=ALL_ENABLE
+
 # WFD
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.debug.wfd.enable=1 \
