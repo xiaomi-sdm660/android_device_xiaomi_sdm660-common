@@ -106,7 +106,6 @@ vendor/lib64/libxml.so
 vendor/lib64/vendor.qti.hardware.data.latency@1.0.so
 vendor/lib64/vendor.qti.hardware.data.dynamicdds@1.0.so
 vendor/lib64/vendor.qti.hardware.data.qmi@1.0.so
-vendor/lib64/vendor.qti.data.factory@1.0.so
 vendor/lib64/vendor.qti.latency@2.0.so
 
 # Dirac - from Xiaomi
@@ -449,6 +448,17 @@ vendor/lib64/libqmi_encdec.so
 vendor/lib64/libqmi.so
 vendor/lib64/libqmiservices.so
 
+# QTI factory
+vendor/bin/hw/vendor.qti.hardware.factory@1.0-service
+vendor/etc/init/vendor.qti.hardware.factory@1.0-service.rc
+vendor/etc/permissions/vendor.qti.hardware.factory.xml
+vendor/lib64/hw/vendor.qti.hardware.factory@1.0-impl.so
+vendor/lib64/vendor.qti.data.factory@1.0.so
+vendor/lib64/vendor.qti.hardware.factory@1.0.so
+vendor/lib/hw/vendor.qti.hardware.factory@1.0-impl.so
+vendor/lib/vendor.qti.data.factory@1.0.so
+vendor/lib/vendor.qti.hardware.factory@1.0.so
+
 # Radio
 -app/datastatusnotification/datastatusnotification.apk
 -app/embms/embms.apk
@@ -559,6 +569,15 @@ vendor/lib64/vendor.qti.imsrtpservice@1.0-service-Impl.so
 vendor/lib64/vendor.qti.imsrtpservice@1.0.so
 vendor/lib64/vendor.qti.ims.callinfo@1.0.so
 vendor/lib64/vendor.qti.ims.rcsconfig@1.0.so
+
+# SSR
+vendor/bin/ssr_diag
+vendor/bin/ssr_setup
+vendor/bin/subsystem_ramdump
+vendor/lib/libSubSystemShutdown.so
+vendor/lib/libsubsystem_control.so
+vendor/lib64/libSubSystemShutdown.so
+vendor/lib64/libsubsystem_control.so
 
 # Soter
 -app/SoterService/SoterService.apk
