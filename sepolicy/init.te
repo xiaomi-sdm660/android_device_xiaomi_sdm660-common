@@ -8,6 +8,7 @@ allow init proc:file { getattr open setattr read };
 allow init property_socket:sock_file write;
 allow init sysfs:file { open read write };
 allow init sysfs_dm:file { open write };
+allow init sysfs_battery_supply:file setattr;
 allow init tee_device:chr_file { write ioctl };
 allow init vndbinder_device:chr_file { ioctl open read write };
 allow init vendor_file:file { execute execute_no_trans };
