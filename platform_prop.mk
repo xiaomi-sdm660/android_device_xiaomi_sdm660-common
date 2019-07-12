@@ -289,6 +289,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.sys.job_delay=true
 
+# System restart
+PRODUCT_PROPERTY_OVERRIDES += \
+	persist.vendor.ssr.restart_level=ALL_ENABLE
+
 # Time daemon
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.timed.enable=true \
