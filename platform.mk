@@ -418,7 +418,7 @@ PRODUCT_PACKAGES += \
 
 # USB
 PRODUCT_PACKAGES += \
-	android.hardware.usb@1.1-service.xiaomi_sdm660
+	android.hardware.usb@1.0-service
 
 # Video seccomp policy files
 PRODUCT_COPY_FILES += \
