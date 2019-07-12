@@ -117,7 +117,7 @@
 
     <!-- Audio amplification -->
     <string name="headphone_gain">ヘッドホンゲイン</string>
-    <string name="microphone_gain">イヤホンゲイン</string>
+    <string name="microphone_gain">マイクゲイン</string>
 
     <!-- kcal -->
     <string name="advanced_settings_kcal">画面の色補正</string>
