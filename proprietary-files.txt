@@ -4,7 +4,6 @@ vendor/bin/hw/vendor.qti.hardware.alarm@1.0-service
 vendor/bin/power_off_alarm
 vendor/etc/init/vendor.qti.hardware.alarm@1.0-service.rc
 vendor/lib/hw/vendor.qti.hardware.alarm@1.0-impl.so
-vendor/lib/libalarmservice_jni.so
 vendor/lib/vendor.qti.hardware.alarm@1.0.so
 vendor/lib64/hw/vendor.qti.hardware.alarm@1.0-impl.so
 vendor/lib64/libalarmservice_jni.so
@@ -32,7 +31,6 @@ vendor/bin/hci_qcomm_init
 vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc
 vendor/lib/hw/android.hardware.bluetooth@1.0-impl-qti.so
 vendor/lib/libbt-hidlclient.so
-vendor/lib/libbtnv.so
 vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so
 vendor/lib64/libbt-hidlclient.so
 vendor/lib64/libbtnv.so
@@ -296,10 +294,6 @@ vendor/lib64/libnwa.so
 vendor/lib64/libsse.so
 
 # Media
-lib/libmmosal.so
-lib/vendor.qti.hardware.vpp@1.1.so
-lib64/libmmosal.so
-lib64/vendor.qti.hardware.vpp@1.1.so
 vendor/lib/libAlacSwDec.so
 vendor/lib/libApeSwDec.so
 vendor/lib/libdsd2pcm.so
@@ -581,8 +575,6 @@ vendor/lib64/libsubsystem_control.so
 
 # Soter
 -app/SoterService/SoterService.apk
-framework/vendor.qti.hardware.soter-V1.0-java.jar
-lib64/vendor.qti.hardware.soter@1.0.so
 vendor/bin/hw/vendor.qti.hardware.soter@1.0-service
 vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc
 vendor/lib64/vendor.qti.hardware.soter@1.0.so
@@ -594,7 +586,6 @@ vendor/bin/time_daemon|ac244644735005d4c4322168001dcd3ae757007f
 vendor/lib64/libtime_genoff.so|9de68b1aa139b06b0e455bd1c24ed0c527492c3b
 
 # TUI
-lib/vendor.qti.hardware.tui_comm@1.0.so
 lib64/vendor.qti.hardware.tui_comm@1.0.so
 vendor/bin/hw/vendor.qti.hardware.tui_comm@1.0-service-qti
 vendor/etc/init/vendor.qti.hardware.tui_comm@1.0-service-qti.rc
