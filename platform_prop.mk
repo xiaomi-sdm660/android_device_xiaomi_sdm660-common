@@ -293,6 +293,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.vendor.ssr.restart_level=ALL_ENABLE
 
+# Thermal configs path
+PRODUCT_PROPERTY_OVERRIDES += \
+	sys.thermal.data.path=/data/vendor/thermal/
+
 # Time daemon
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.timed.enable=true \
