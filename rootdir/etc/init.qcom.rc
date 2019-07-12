@@ -753,7 +753,7 @@ service charger /system/bin/charger
     user system
     group system graphics input
     capabilities SYS_BOOT
-    seclabel u:r:healthd:s0
+    seclabel u:r:charger:s0
 
 service vendor.ssr_diag /system/vendor/bin/ssr_diag
     class late_start
