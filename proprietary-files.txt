@@ -21,6 +21,12 @@ vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|94729946e6ba94dd5d24c0495661efa
 lib64/libaptX_encoder.so|22f5749edb5099526788c22708099a7791dd837f
 lib64/libaptXHD_encoder.so|c4ad4d6d7615f7df3ea1a4be5c6dae8a8c8ee8b1
 
+# Audio FX modules - from perseus-user 9 PKQ1.180729.001 V10.3.1.0.PEECNXM release-keys
+etc/permissions/audiosphere.xml|3c6d8f14bd99e52a424282fd5d0a5b9b06485dea
+framework/audiosphere.jar|727fac8181bd3a7f8a18e14692747628a8a0c752
+vendor/lib/soundfx/libdirac.so|cc5f8c9521c49af00800715299179f2ed90811ce
+vendor/lib64/soundfx/libdirac.so|4fcb33c0584439e6f9d130cc4c6affd943bbcb73
+
 # Bluetooth
 vendor/bin/hci_qcomm_init
 vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc
@@ -104,7 +110,6 @@ vendor/lib64/vendor.qti.data.factory@1.0.so
 vendor/lib64/vendor.qti.latency@2.0.so
 
 # Dirac - from Xiaomi
-vendor/lib/soundfx/libdirac.so|f63826a905b520fa524e4c1b147be7cf65240953
 vendor/lib/libDiracAPI_SHARED.so|42b49679d38eca93fead05ea06ddbdc8108fd4b1
 vendor/etc/diracmobile.config|d781cd6798a7481a8f7128d144abfb2b8794212d
 
