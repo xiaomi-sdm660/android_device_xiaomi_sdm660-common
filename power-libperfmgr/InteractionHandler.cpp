@@ -118,8 +118,10 @@ void InteractionHandler::Acquire(int32_t duration) {
     ATRACE_CALL();
 
     std::lock_guard<std::mutex> lk(mLock);
-    if (mState == INTERACTION_STATE_UNINITIALIZED)
+    if (mState == INTERACTION_STATE_UNINITIALIZED) {
+        ALOGW("%s: called while uninitialized", __func__);
         return;
+    }
 
     int inputDuration = duration + 650;
     int finalDuration;
