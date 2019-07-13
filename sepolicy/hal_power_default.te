@@ -1,5 +1,6 @@
 allow hal_power_default sysfs_tap_to_wake:file rw_file_perms;
 allow hal_power_default debugfs:file { read open getattr };
+allow hal_power_default sysfs:file { open read };
 
 # Allow writing to files in /proc/nvt_wake_gesture
 allow hal_power_default proc:dir search;
