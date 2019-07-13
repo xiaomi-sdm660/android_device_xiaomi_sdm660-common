@@ -97,8 +97,7 @@ GnssAdapter::GnssAdapter() :
     mPowerStateCb(nullptr),
     mIsE911Session(NULL),
     mGnssMbSvIdUsedInPosition{},
-    mGnssMbSvIdUsedInPosAvail(false),
-    mGnssSignalType()
+    mGnssMbSvIdUsedInPosAvail(false)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -1089,12 +1088,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT) {
                 uint32_t newSuplVersion =
                         mAdapter.convertSuplVersion(gnssConfigRequested.suplVersion);
-                if (newSuplVersion != ContextBase::mGps_conf.SUPL_VER &&
-                    ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
-                    ContextBase::mGps_conf.SUPL_VER = newSuplVersion;
-                } else {
-                    gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT);
-                }
+                ContextBase::mGps_conf.SUPL_VER = newSuplVersion;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT) {
@@ -1113,47 +1107,26 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT) {
                 uint32_t newLppProfile = mAdapter.convertLppProfile(gnssConfigRequested.lppProfile);
-                if (newLppProfile != ContextBase::mGps_conf.LPP_PROFILE &&
-                    ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
-                    ContextBase::mGps_conf.LPP_PROFILE = newLppProfile;
-                } else {
-                    gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT);
-                }
+                ContextBase::mGps_conf.LPP_PROFILE = newLppProfile;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT) {
                 uint32_t newLppeControlPlaneMask =
-                    mAdapter.convertLppeCp(gnssConfigRequested.lppeControlPlaneMask);
-                if (newLppeControlPlaneMask != ContextBase::mGps_conf.LPPE_CP_TECHNOLOGY) {
-                    ContextBase::mGps_conf.LPPE_CP_TECHNOLOGY = newLppeControlPlaneMask;
-                } else {
-                    gnssConfigNeedEngineUpdate.flags &=
-                            ~(GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT);
-                }
+                        mAdapter.convertLppeCp(gnssConfigRequested.lppeControlPlaneMask);
+                ContextBase::mGps_conf.LPPE_CP_TECHNOLOGY = newLppeControlPlaneMask;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT) {
                 uint32_t newLppeUserPlaneMask =
-                    mAdapter.convertLppeUp(gnssConfigRequested.lppeUserPlaneMask);
-                if (newLppeUserPlaneMask != ContextBase::mGps_conf.LPPE_UP_TECHNOLOGY) {
-                    ContextBase::mGps_conf.LPPE_UP_TECHNOLOGY = newLppeUserPlaneMask;
-                } else {
-                    gnssConfigNeedEngineUpdate.flags &=
-                            ~(GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT);
-                }
+                        mAdapter.convertLppeUp(gnssConfigRequested.lppeUserPlaneMask);
+                ContextBase::mGps_conf.LPPE_UP_TECHNOLOGY = newLppeUserPlaneMask;
                 index++;
             }
             if (gnssConfigRequested.flags &
                     GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT) {
                 uint32_t newAGloProtMask =
-                    mAdapter.convertAGloProt(gnssConfigRequested.aGlonassPositionProtocolMask);
-                if (newAGloProtMask != ContextBase::mGps_conf.A_GLONASS_POS_PROTOCOL_SELECT &&
-                    ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
-                    ContextBase::mGps_conf.A_GLONASS_POS_PROTOCOL_SELECT = newAGloProtMask;
-                } else {
-                    gnssConfigNeedEngineUpdate.flags &=
-                            ~(GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT);
-                }
+                        mAdapter.convertAGloProt(gnssConfigRequested.aGlonassPositionProtocolMask);
+                ContextBase::mGps_conf.A_GLONASS_POS_PROTOCOL_SELECT = newAGloProtMask;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_EM_PDN_FOR_EM_SUPL_VALID_BIT) {
@@ -1174,10 +1147,8 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_MODE_BIT) {
                 uint32_t newSuplMode = mAdapter.convertSuplMode(gnssConfigRequested.suplModeMask);
-                if (newSuplMode != ContextBase::mGps_conf.SUPL_MODE) {
-                    ContextBase::mGps_conf.SUPL_MODE = newSuplMode;
-                    mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
-                }
+                ContextBase::mGps_conf.SUPL_MODE = newSuplMode;
+                mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
                 index++;
             }
 
@@ -3206,9 +3177,6 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                 if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_MULTIBAND) {
                     mGnssMbSvIdUsedInPosAvail = true;
                     mGnssMbSvIdUsedInPosition = locationExtended.gnss_mb_sv_used_ids;
-                    for (int i = 0; i < GNSS_SV_MAX; i++) {
-                        mGnssSignalType[i] = locationExtended.measUsageInfo[i].gnssSignalType;
-                    }
                 }
             }
 
@@ -3277,11 +3245,12 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
     for (int i=0; i < numSv; i++) {
         svUsedIdMask = 0;
         gnssSvId = svNotify.gnssSvs[i].svId;
+        GnssSignalTypeMask signalTypeMask = svNotify.gnssSvs[i].gnssSignalTypeMask;
         switch (svNotify.gnssSvs[i].type) {
             case GNSS_SV_TYPE_GPS:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_GPS_L1CA:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.gps_l1ca_sv_used_ids_mask;
                             break;
@@ -3303,7 +3272,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_GLONASS:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_GLONASS_G1:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.glo_g1_sv_used_ids_mask;
                             break;
@@ -3319,7 +3288,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_BEIDOU:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_BEIDOU_B1I:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.bds_b1i_sv_used_ids_mask;
                             break;
@@ -3344,7 +3313,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_GALILEO:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_GALILEO_E1:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.gal_e1_sv_used_ids_mask;
                             break;
@@ -3363,7 +3332,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
             case GNSS_SV_TYPE_QZSS:
                 if (mGnssSvIdUsedInPosAvail) {
                     if (mGnssMbSvIdUsedInPosAvail) {
-                        switch (mGnssSignalType[i]) {
+                        switch (signalTypeMask) {
                         case GNSS_SIGNAL_QZSS_L1CA:
                             svUsedIdMask = mGnssMbSvIdUsedInPosition.qzss_l1ca_sv_used_ids_mask;
                             break;
