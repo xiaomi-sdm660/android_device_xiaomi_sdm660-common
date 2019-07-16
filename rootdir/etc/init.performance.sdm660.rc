@@ -133,7 +133,7 @@ on property:sys.boot_completed=1
     write /proc/sys/vm/vfs_cache_pressure 100
 
 # Setup permission for Power HAL
-on property:sys.post_boot.parsed=1
+on property:vendor.post_boot.parsed=1
    chown system system /sys/devices/soc/soc:qcom,cpubw/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
    chown system system /sys/devices/soc/soc:qcom,cpubw/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
    chown system system /sys/devices/soc/soc:qcom,cpubw/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_length
