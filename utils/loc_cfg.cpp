@@ -467,6 +467,7 @@ void loc_read_conf(const char* conf_file_name, const loc_param_s_type* config_ta
 #define LOC_FEATURE_MASK_GTP_CELL_PREMIUM          0X08
 #define LOC_FEATURE_MASK_SAP_BASIC                 0x40
 #define LOC_FEATURE_MASK_SAP_PREMIUM               0X80
+#define LOC_FEATURE_MASK_GTP_WAA_BASIC             0X100
 #define LOC_FEATURE_MASK_GTP_MODEM_CELL_BASIC      0X400
 #define LOC_FEATURE_MASK_ODCPI                     0x1000
 #define LOC_FEATURE_MASK_FREE_WIFI_SCAN_INJECT     0x2000
@@ -484,6 +485,7 @@ typedef struct {
     char baseband[LOC_MAX_PARAM_STRING];
     unsigned int sglte_target;
     char feature_gtp_mode[LOC_MAX_PARAM_STRING];
+    char feature_gtp_waa[LOC_MAX_PARAM_STRING];
     char feature_sap[LOC_MAX_PARAM_STRING];
     char feature_odcpi[LOC_MAX_PARAM_STRING];
     char feature_free_wifi_scan_inject[LOC_MAX_PARAM_STRING];
@@ -504,6 +506,7 @@ static const loc_param_s_type gps_conf_parameter_table[] = {
 /* location feature conf, e.g.: izat.conf feature mode table*/
 static const loc_param_s_type loc_feature_conf_table[] = {
     {"GTP_MODE",              &conf.feature_gtp_mode,               NULL, 's'},
+    {"GTP_WAA",               &conf.feature_gtp_waa,                NULL, 's'},
     {"SAP",                   &conf.feature_sap,                    NULL, 's'},
     {"ODCPI",                 &conf.feature_odcpi,                  NULL, 's'},
     {"FREE_WIFI_SCAN_INJECT", &conf.feature_free_wifi_scan_inject,  NULL, 's'},
@@ -567,6 +570,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     char config_mask = 0;
     unsigned char proc_list_length=0;
     int gtp_cell_ap_enabled = 0;
+    char arg_gtp_waa[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
     char arg_gtp_modem_cell[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
     char arg_gtp_wifi[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
     char arg_sap[LOC_PROCESS_MAX_ARG_STR_LENGTH] = "--";
@@ -582,6 +586,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     UTIL_READ_CONF(LOC_PATH_GPS_CONF, gps_conf_parameter_table);
 
     //Form argument strings
+    strlcat(arg_gtp_waa, LOC_FEATURE_GTP_WAA, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
     strlcat(arg_gtp_modem_cell, LOC_FEATURE_GTP_MODEM_CELL, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
     strlcat(arg_gtp_wifi, LOC_FEATURE_GTP_WIFI, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
     strlcat(arg_sap, LOC_FEATURE_SAP, LOC_PROCESS_MAX_ARG_STR_LENGTH-3);
@@ -611,6 +616,19 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     else {
         LOC_LOGE("%s:%d]: Unrecognized value for GTP MODE Mode."\
                  " Setting GTP WIFI to default mode: DISABLED", __func__, __LINE__);
+    }
+    //Set service mask for GTP_WAA
+    if(strcmp(conf.feature_gtp_waa, "BASIC") == 0) {
+      LOC_LOGD("%s:%d]: Setting GTP WAA to mode: BASIC", __func__, __LINE__);
+      loc_service_mask |= LOC_FEATURE_MASK_GTP_WAA_BASIC;
+    }
+    else if(strcmp(conf.feature_gtp_waa, "DISABLED") == 0) {
+      LOC_LOGD("%s:%d]: GTP WAA DISABLED", __func__, __LINE__);
+    }
+    //conf file has a garbage value
+    else {
+      LOC_LOGE("%s:%d]: Unrecognized value for GTP WAA Mode."\
+               " Setting GTP WAA to default mode: DISABLED", __func__, __LINE__);
     }
 
     //Set service mask for SAP
@@ -956,6 +974,22 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
                             strlcpy(child_proc[j].args[i++], arg_disabled,
                                     LOC_PROCESS_MAX_ARG_STR_LENGTH);
                         }
+                    }
+
+                    if(conf.loc_feature_mask & LOC_FEATURE_MASK_GTP_WAA_BASIC) {
+                      if(loc_service_mask & LOC_FEATURE_MASK_GTP_WAA_BASIC) {
+                        strlcpy(child_proc[j].args[i++], arg_gtp_waa,
+                                LOC_PROCESS_MAX_ARG_STR_LENGTH);
+                        strlcpy(child_proc[j].args[i++], arg_basic,
+                                LOC_PROCESS_MAX_ARG_STR_LENGTH);
+                      }
+                      else
+                      {
+                        strlcpy(child_proc[j].args[i++], arg_gtp_waa,
+                                LOC_PROCESS_MAX_ARG_STR_LENGTH);
+                        strlcpy(child_proc[j].args[i++], arg_disabled,
+                                LOC_PROCESS_MAX_ARG_STR_LENGTH);
+                      }
                     }
                     IF_LOC_LOGD {
                         LOC_LOGD("%s:%d]: %s args\n", __func__, __LINE__, child_proc[j].name[0]);
