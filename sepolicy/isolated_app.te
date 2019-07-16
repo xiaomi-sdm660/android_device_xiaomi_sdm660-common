@@ -42,3 +42,4 @@ allow isolated_app exported_wifi_prop:file read;
 allow isolated_app firstboot_prop:file read;
 allow isolated_app graphics_vulkan_prop:file read;
 allow isolated_app hal_fingerprint_prop:file read;
+allow isolated_app app_data_file:dir getattr;

@@ -1,2 +1,9 @@
 allow init untrusted_app:fd { use };
 allow init untrusted_app_27:fd { use };
+allow untrusted_app proc_qtaguid_stat:file read;
+allow untrusted_app proc_version:file read;
+allow untrusted_app proc_zoneinfo:file read;
+allow untrusted_app serialno_prop:file read;
+allow untrusted_app sysfs_kgsl:dir search;
+allow untrusted_app system_app_data_file:dir getattr;
+allow untrusted_app vendor_default_prop:file read;

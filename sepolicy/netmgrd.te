@@ -5,3 +5,4 @@ allow netmgrd netutils_wrapper:process noatsecure;
 allow netmgrd kernel:system module_request;
 allow netmgrd default_prop:file read;
 allow netmgrd default_prop:file open;
+allow netmgrd default_prop:file getattr;
