@@ -125,12 +125,6 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "schedutil"
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "schedutil"
 
-    # Setup dirty ratios
-    write /proc/sys/vm/dirty_ratio 5
-    write /proc/sys/vm/dirty_background_ratio 1
-
-    # Lower vfs_cache_pressure
-    write /proc/sys/vm/vfs_cache_pressure 100
 
 # Setup permission for Power HAL
 on property:vendor.post_boot.parsed=1
