@@ -210,7 +210,7 @@ public class DeviceSettings extends PreferenceFragment implements
 
         if (FileUtils.fileWritable(HALL_WAKEUP_PATH)) {
              mHall = (SecureSettingSwitchPreference) findPreference(PREF_HALL_WAKEUP);
-             mHall.setChecked(FileUtils.getFileValueAsBoolean(HALL_WAKEUP_PATH, false));
+             mHall.setChecked(FileUtils.readLine(HALL_WAKEUP_PATH).equals("Y"));
              mHall.setOnPreferenceChangeListener(this);
          } else {
              getPreferenceScreen().removePreference(findPreference(CATEGORY_HALL_WAKEUP));
@@ -307,7 +307,7 @@ public class DeviceSettings extends PreferenceFragment implements
                 break;
 
             case PREF_HALL_WAKEUP:
-                FileUtils.setValue(HALL_WAKEUP_PATH, (boolean) value);
+                FileUtils.setValue(HALL_WAKEUP_PATH, (boolean) value ? "Y" : "N");
                 break;
 
             default:
