@@ -1,3 +1,6 @@
+# Battery
+genfscon sysfs /devices/soc/c176000.i2c/i2c-2/2-001d            u:object_r:sysfs_battery_supply:s0
+
 # Power
 genfscon debugfs /wlan0                                         u:object_r:debugfs_wlan:s0
 
