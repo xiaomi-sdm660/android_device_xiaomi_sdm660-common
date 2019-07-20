@@ -17,6 +17,9 @@ type sysfs_fingerprint, sysfs_type, fs_type;
 # Input files
 type idc_file, file_type, vendor_file_type;
 
+# Kcal
+type kcal_dev, sysfs_type, fs_type;
+
 # Keylayout
 type vendor_keylayout_file, file_type, vendor_file_type;
 

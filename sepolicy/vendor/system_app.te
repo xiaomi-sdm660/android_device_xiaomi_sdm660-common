@@ -2,3 +2,5 @@ allow system_app vendor_default_prop:file { getattr open read };
 allow system_app wificond:binder call;
 allow system_app hal_mlipay_hwservice:hwservice_manager find;
 allow system_app hal_mlipay_default:binder call;
+allow system_app kcal_dev:file rw_file_perms;
+allow system_app kcal_dev:dir search;

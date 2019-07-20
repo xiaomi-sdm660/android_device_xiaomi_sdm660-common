@@ -1,0 +1,3 @@
+allow ueventd kcal_dev:dir r_dir_perms;
+allow ueventd kcal_dev:file rw_file_perms;
+allow ueventd kcal_dev:lnk_file r_file_perms;
