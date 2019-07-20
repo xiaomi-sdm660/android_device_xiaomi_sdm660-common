@@ -281,7 +281,6 @@ public:
     void disableCommand(uint32_t id);
     void setControlCallbacksCommand(LocationControlCallbacks& controlCallbacks);
     void readConfigCommand();
-    void setConfigCommand();
     void requestUlpCommand();
     void initEngHubProxyCommand();
     uint32_t* gnssUpdateConfigCommand(GnssConfig config);
@@ -313,6 +312,7 @@ public:
     { mGnssSvTypeConfigCb = callback; }
     inline GnssSvTypeConfigCallback gnssGetSvTypeConfigCallback()
     { return mGnssSvTypeConfigCb; }
+    void setConfig();
 
     /* ========= AGPS ====================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
