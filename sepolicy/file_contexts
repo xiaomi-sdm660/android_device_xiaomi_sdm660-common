@@ -40,6 +40,7 @@
 /sys/devices/soc/soc:fpc1020.*/irq                            u:object_r:sysfs_fpc_dev:s0
 /sys/devices/soc/soc:fpc1020.*/hw_reset                       u:object_r:sysfs_fpc_dev:s0
 /sys/devices/soc/soc:fpc1020.*/wakeup_enable                  u:object_r:sysfs_fpc_dev:s0
+/data/vendor/gf_data(/.*)?                          u:object_r:fingerprint_vendor_data_file:s0
 
 # Mlipay
 /(vendor|system/vendor)/bin/mlipayd                 u:object_r:hal_mlipay_default_exec:s0

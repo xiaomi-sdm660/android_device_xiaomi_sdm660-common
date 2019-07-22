@@ -17,6 +17,7 @@ allow hal_fingerprint_default fingerprintd_device:chr_file rw_file_perms;
 
 allow hal_fingerprint_default hal_perf_hwservice:hwservice_manager find;
 allow hal_fingerprint_default hal_perf_default:binder call;
+binder_call(hal_fingerprint_default, hal_perf_default)
 
 allow hal_fingerprint_default sysfs_fpc_dev:dir r_dir_perms;
 allow hal_fingerprint_default sysfs_fpc_dev:file rw_file_perms;
@@ -24,7 +25,6 @@ allow hal_fingerprint_default sysfs_fpc_dev:file rw_file_perms;
 allow hal_fingerprint_default fingerprint_data_file:dir rw_dir_perms;
 allow hal_fingerprint_default fingerprint_data_file:file create_file_perms;
 
-allow hal_fingerprint_default fingerprint_persist_file:file r_file_perms;
 
 binder_call(hal_fingerprint_default, goodix_fingerprint_vndservice)
 allow hal_fingerprint_default goodix_fingerprint_vndservice:service_manager add;
@@ -35,9 +35,16 @@ allow hal_fingerprint_default self:netlink_socket create_socket_perms_no_ioctl;
 
 allow hal_fingerprint_default fingerprintd_data_file:dir { write search remove_name add_name };
 allow hal_fingerprint_default fingerprintd_data_file:file { getattr rename unlink };
+# hal_fingerprint no longer directly accesses fingerprintd_data_file.
+typeattribute hal_fingerprint_default data_between_core_and_vendor_violators;
+# access to /data/system/users/[0-9]+/fpdata
+allow hal_fingerprint_default fingerprintd_data_file:file create_file_perms;
+allow hal_fingerprint_default fingerprintd_data_file:dir rw_dir_perms;
 
 allow hal_fingerprint_default mnt_user_file:dir r_dir_perms;
 allow hal_fingerprint_default mnt_user_file:file r_file_perms;
 allow hal_fingerprint_default mnt_user_file:lnk_file r_file_perms;
 
 set_prop(hal_fingerprint_default, fingerprint_prop)
+allow hal_fingerprint_default sdcardfs:dir { search };
+allow hal_fingerprint_default media_rw_data_file:dir { search read open };
