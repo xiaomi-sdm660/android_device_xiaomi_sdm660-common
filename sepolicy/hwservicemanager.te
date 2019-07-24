@@ -2,4 +2,3 @@
 allow hwservicemanager init:dir search;
 allow hwservicemanager init:file { open read };
 allow hwservicemanager init:process getattr;
-

@@ -1,2 +1,0 @@
-#============= bt_firmware_file ==============
-allow bt_firmware_file rootfs:filesystem associate;

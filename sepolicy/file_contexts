@@ -9,7 +9,12 @@
 
 # Goodix Fingerprint data
 /data/gf_data/frr_database.db                   u:object_r:fingerprint_data_file:s0
+/data/misc/gf_data(/.*)?                        u:object_r:fingerprint_data_file:s0
+/data/misc/goodix(/.*)?                         u:object_r:fingerprint_data_file:s0
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
+
+# Fpc Fingerprint data
+/persist/fpc(/.*)?                              u:object_r:fingerprint_data_file:s0
 
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
@@ -17,14 +22,24 @@
 # IR
 /dev/spidev7.1                                  u:object_r:spidev_device:s0
 
+# Keylayout
+/vendor/usr/idc(/.*)?                           u:object_r:vendor_keylayout_file:s0
+/vendor/usr/keylayout(/.*)?                     u:object_r:vendor_keylayout_file:s0
+
 # Light HAL
 /(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_wayne u:object_r:hal_light_default_exec:s0
 
 # Mlipay
-/(vendor|system/vendor)/bin/mlipayd             u:object_r:hal_mlipay_default_exec:s0
+/(vendor|system/vendor)/bin/mlipayd@1.1         u:object_r:hal_mlipay_default_exec:s0
 
 # Persist
 /persist/PRSensorData\.txt                      u:object_r:sensors_persist_file:s0
 
+# RTC
+/sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-00/800f000.qcom,spmi:qcom,pm660@0:qcom,pm660_rtc/rtc/rtc0(/.*)? u:object_r:sysfs_rtc:s0
+
 # Shell Script
 /(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
+
+# Thermal
+/data/vendor/thermal(/.*)?                      u:object_r:thermal_data_file:s0

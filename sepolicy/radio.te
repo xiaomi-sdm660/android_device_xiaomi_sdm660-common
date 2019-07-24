@@ -1,2 +1,0 @@
-#============= radio ==============
-allow radio vendor_file:file { execute getattr open read };

@@ -2,15 +2,18 @@ type hal_fingerprint_wayne, domain, binder_in_vendor_violators;
 hal_server_domain(hal_fingerprint_wayne, hal_fingerprint)
  
 type hal_fingerprint_wayne_exec, exec_type, vendor_file_type, file_type;
+typeattribute hal_fingerprint_wayne data_between_core_and_vendor_violators;
 binder_use(hal_fingerprint_wayne)
 init_daemon_domain(hal_fingerprint_wayne)
 
 allow hal_fingerprint_wayne fingerprint_device:chr_file { read write open ioctl };
 allow hal_fingerprint_wayne { tee_device uhid_device }:chr_file { read write open ioctl };
 allow hal_fingerprint_wayne fingerprint_data_file:file rw_file_perms;
+allow hal_fingerprint_wayne fingerprintd_data_file:dir rw_dir_perms;
+allow hal_fingerprint_wayne fingerprintd_data_file:file create_file_perms;
 allow hal_fingerprint_wayne { fuse mnt_user_file storage_file }:dir search;
 allow hal_fingerprint_wayne { mnt_user_file storage_file }:lnk_file read;
-allow hal_fingerprint_wayne fingerprint_sysfs:dir rw_dir_perms;
+allow hal_fingerprint_wayne fingerprint_sysfs:dir r_dir_perms;
 allow hal_fingerprint_wayne fingerprint_sysfs:file rw_file_perms;
 
 allow hal_fingerprint_wayne hal_fingerprint_wayne:netlink_socket { create bind write read };

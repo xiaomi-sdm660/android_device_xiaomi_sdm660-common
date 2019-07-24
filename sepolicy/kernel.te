@@ -1,0 +1,1 @@
+allow kernel debugfs_wlan:dir search;

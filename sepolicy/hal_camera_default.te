@@ -1,3 +1,6 @@
-allow hal_camera_default sysfs_kgsl:file r_file_perms;
+binder_call(hal_camera_default, hal_configstore_default)
+binder_call(hal_camera_default, hal_graphics_allocator_default)
+
 allow hal_camera_default { hal_configstore_ISurfaceFlingerConfigs hal_graphics_allocator_hwservice }:hwservice_manager find;
-allow hal_camera_default { hal_configstore_default hal_graphics_allocator_default }:binder call;
+allow hal_camera_default sysfs:file { getattr open read };
+allow hal_camera_default sysfs_kgsl:file { getattr open read };

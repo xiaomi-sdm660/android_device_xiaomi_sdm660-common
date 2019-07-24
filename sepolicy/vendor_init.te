@@ -1,0 +1,13 @@
+typeattribute vendor_init data_between_core_and_vendor_violators;
+
+allow vendor_init {
+  system_data_file
+  tombstone_data_file
+}:dir { create search getattr open read setattr ioctl write add_name remove_name rmdir relabelfrom };
+
+set_prop(vendor_init, camera_prop)
+allow vendor_init rootfs:dir { add_name create setattr write };
+allow vendor_init persist_debug_prop:property_service set;
+allow vendor_init persist_dpm_prop:property_service set;
+allow vendor_init qcom_ims_prop:property_service set;
+allow vendor_init rootfs:lnk_file setattr;

@@ -1,2 +1,4 @@
-#============= system_server ==============
-allow system_server vendor_file:file { execute getattr open read };
+allow system_server vendor_keylayout_file:dir search;
+allow system_server vendor_keylayout_file:file r_file_perms;
+allow system_server sysfs_vibrator:file rw_file_perms;
+allow system_server sysfs_rtc:file r_file_perms;

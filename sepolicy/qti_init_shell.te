@@ -1,3 +1,4 @@
-#============= qti_init_shell ==============
 allow qti_init_shell sysfs_cpu_boost:file write;
-allow qti_init_shell sysfs_lowmemorykiller:dir write;
+allow qti_init_shell sysfs:file write;
+allow qti_init_shell vendor_radio_data_file:dir { getattr read search };
+allow qti_init_shell vendor_radio_data_file:file { getattr read setattr write };

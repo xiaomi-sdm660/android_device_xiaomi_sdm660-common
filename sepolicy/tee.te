@@ -1,6 +1,6 @@
-# /data/goodix labeling
-type_transition tee system_data_file:{ dir file } fingerprint_data_file;
-
-allow tee fingerprint_data_file:dir create_dir_perms;
-allow tee fingerprint_data_file:file create_file_perms;
-allow tee system_data_file:dir create_dir_perms;
+# TODO(b/36644492): Remove data_between_core_and_vendor_violators once
+# tee no longer directly accesses /data owned by the frameworks.
+typeattribute tee data_between_core_and_vendor_violators;
+allow tee system_data_file:dir r_dir_perms;
+allow tee fingerprintd_data_file:dir rw_dir_perms;
+allow tee fingerprintd_data_file:file create_file_perms;
