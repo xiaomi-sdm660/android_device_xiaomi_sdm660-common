@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1756,16 +1756,50 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         if ((location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_ALTITUDE) &&
             (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL))
         {
-            length = snprintf(pMarker, lengthRemaining, "%.1lf,,",
+            length = snprintf(pMarker, lengthRemaining, "%.1lf,",
                               ref_lla.alt - locationExtended.altitudeMeanSeaLevel);
         }
         else
         {
-            length = snprintf(pMarker, lengthRemaining,",,");
+            length = snprintf(pMarker, lengthRemaining, ",");
         }
-
+        if (length < 0 || length >= lengthRemaining)
+        {
+            LOC_LOGE("NMEA Error in string formatting");
+            return;
+        }
         pMarker += length;
         lengthRemaining -= length;
+
+        if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_DGNSS_DATA_AGE)
+        {
+            length = snprintf(pMarker, lengthRemaining, "%.1f,",
+                              (float)locationExtended.dgnssDataAgeMsec / 1000);
+        }
+        else
+        {
+            length = snprintf(pMarker, lengthRemaining, ",");
+        }
+        if (length < 0 || length >= lengthRemaining)
+        {
+            LOC_LOGE("NMEA Error in string formatting");
+            return;
+        }
+        pMarker += length;
+        lengthRemaining -= length;
+
+        if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_DGNSS_REF_STATION_ID)
+        {
+            length = snprintf(pMarker, lengthRemaining, "%04d",
+                              locationExtended.dgnssRefStationId);
+            if (length < 0 || length >= lengthRemaining)
+            {
+                LOC_LOGE("NMEA Error in string formatting");
+                return;
+            }
+            pMarker += length;
+            lengthRemaining -= length;
+        }
 
         // hardcode Navigation Status field to 'V'
         length = snprintf(pMarker, lengthRemaining, ",%c", 'V');
@@ -1885,12 +1919,49 @@ void loc_nmea_generate_pos(const UlpLocation &location,
         if ((location.gpsLocation.flags & LOC_GPS_LOCATION_HAS_ALTITUDE) &&
             (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_ALTITUDE_MEAN_SEA_LEVEL))
         {
-            length = snprintf(pMarker, lengthRemaining, "%.1lf,M,,",
+            length = snprintf(pMarker, lengthRemaining, "%.1lf,M,",
                               ref_lla.alt - locationExtended.altitudeMeanSeaLevel);
         }
         else
         {
-            length = snprintf(pMarker, lengthRemaining,",,,");
+            length = snprintf(pMarker, lengthRemaining, ",,");
+        }
+        if (length < 0 || length >= lengthRemaining)
+        {
+            LOC_LOGE("NMEA Error in string formatting");
+            return;
+        }
+        pMarker += length;
+        lengthRemaining -= length;
+
+        if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_DGNSS_DATA_AGE)
+        {
+            length = snprintf(pMarker, lengthRemaining, "%.1f,",
+                              (float)locationExtended.dgnssDataAgeMsec / 1000);
+        }
+        else
+        {
+            length = snprintf(pMarker, lengthRemaining, ",");
+        }
+        if (length < 0 || length >= lengthRemaining)
+        {
+            LOC_LOGE("NMEA Error in string formatting");
+            return;
+        }
+        pMarker += length;
+        lengthRemaining -= length;
+
+        if (locationExtended.flags & GPS_LOCATION_EXTENDED_HAS_DGNSS_REF_STATION_ID)
+        {
+            length = snprintf(pMarker, lengthRemaining, "%04d",
+                              locationExtended.dgnssRefStationId);
+            if (length < 0 || length >= lengthRemaining)
+            {
+                LOC_LOGE("NMEA Error in string formatting");
+                return;
+            }
+            pMarker += length;
+            lengthRemaining -= length;
         }
 
         length = loc_nmea_put_checksum(sentence_GGA, sizeof(sentence_GGA));
