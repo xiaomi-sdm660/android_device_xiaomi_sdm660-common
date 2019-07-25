@@ -1475,6 +1475,7 @@ typedef uint64_t GpsSvMeasHeaderFlags;
 #define GNSS_SV_MEAS_HEADER_HAS_DGNSS_CORRECTION_SOURCE_TYPE  0x08000000
 #define GNSS_SV_MEAS_HEADER_HAS_DGNSS_CORRECTION_SOURCE_ID    0x010000000
 #define GNSS_SV_MEAS_HEADER_HAS_DGNSS_REF_STATION_ID          0x020000000
+#define GNSS_SV_MEAS_HEADER_HAS_REF_COUNT_TICKS              0x040000000
 
 typedef struct
 {
@@ -1535,7 +1536,6 @@ typedef struct
     /** DGNSS Ref station ID: 32bit number identifying the DGNSS
      *  ref station ID, if DGNSS was used for these measurements. */
     uint16_t                                    dgnssRefStationId;
-
 } GnssSvMeasurementHeader;
 
 typedef struct {
