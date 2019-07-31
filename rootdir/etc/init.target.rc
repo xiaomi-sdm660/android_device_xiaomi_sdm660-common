@@ -119,7 +119,8 @@ on boot
     chown wifi wifi /sys/module/wlan/parameters/fwpath
 
 # default country code
-    setprop ro.boot.wificountrycode 00
+    setprop persist.sys.wifi.country_code "00"
+    setprop ro.boot.wificountrycode "00"
 
 #add for display feature
     chown system system /sys/class/graphics/fb0/msm_fb_ce
