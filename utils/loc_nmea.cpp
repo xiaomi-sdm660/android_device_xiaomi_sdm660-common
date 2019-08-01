@@ -36,6 +36,7 @@
 #include <loc_cfg.h>
 
 #define GLONASS_SV_ID_OFFSET 64
+#define QZSS_SV_ID_OFFSET    (-192)
 #define MAX_SV_COUNT_SUPPORTED_IN_ONE_CONSTELLATION  64
 #define MAX_SATELLITES_IN_USE 12
 #define MSEC_IN_ONE_WEEK      604800000ULL
@@ -439,7 +440,8 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
             sv_meta.talker[0] = 'G';
             sv_meta.talker[1] = 'Q';
             sv_meta.mask = sv_cache_info.qzss_used_mask;
-            // QZSS SV ids are from 193-197. So keep svIdOffset 0
+            // QZSS SV ids are from 193-199. So keep svIdOffset -192
+            sv_meta.svIdOffset = QZSS_SV_ID_OFFSET;
             sv_meta.systemId = SYSTEM_ID_QZSS;
             if (GNSS_SIGNAL_QZSS_L1CA == signalType) {
                 sv_meta.svCount = sv_cache_info.qzss_l1_count;
@@ -588,6 +590,10 @@ static uint32_t loc_nmea_generate_GSA(const GpsLocationExtended &locationExtende
     const char* talker = sv_meta_p->talker;
     uint32_t svIdOffset = sv_meta_p->svIdOffset;
     uint64_t mask = sv_meta_p->mask;
+
+    if(sv_meta_p->svType != GNSS_SV_TYPE_GLONASS) {
+        svIdOffset = 0;
+    }
 
     for (uint8_t i = 1; mask > 0 && svUsedCount < 64; i++)
     {

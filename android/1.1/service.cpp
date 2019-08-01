@@ -48,7 +48,8 @@ int main() {
 
     ALOGI("%s", __FUNCTION__);
 
-    bool vendorEnhanced = isRunningWithVendorEnhancedFramework();
+    int vendorInfo = getVendorEnhancedInfo();
+    bool vendorEnhanced = ( 1 == vendorInfo || 3 == vendorInfo );
     setVendorEnhanced(vendorEnhanced);
 
 #ifdef ARCH_ARM_32

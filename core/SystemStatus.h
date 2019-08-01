@@ -501,19 +501,67 @@ public:
         mType = itemBase.getType();
     }
     inline bool equals(const SystemStatusNetworkInfo& peer) {
-        return (mAllTypes == peer.mAllTypes);
+        for (uint8_t i = 0; i < MAX_NETWORK_HANDLES; ++i) {
+             if (!(mAllNetworkHandles[i] == peer.mAllNetworkHandles[i])) {
+                 return false;
+             }
+         }
+        return true;
     }
     inline virtual SystemStatusItemBase& collate(SystemStatusItemBase& curInfo) {
         uint64_t allTypes = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mAllTypes;
         uint64_t networkHandle =
                 (static_cast<SystemStatusNetworkInfo&>(curInfo)).mNetworkHandle;
         int32_t type = (static_cast<SystemStatusNetworkInfo&>(curInfo)).mType;
+        // Replace current with cached table for now and then update
+        memcpy(mAllNetworkHandles,
+               (static_cast<SystemStatusNetworkInfo&>(curInfo)).getNetworkHandle(),
+               sizeof(mAllNetworkHandles));
         if (mConnected) {
             mAllTypes |= allTypes;
-            mAllNetworkHandles[type] = networkHandle;
+            for (uint8_t i = 0; i < MAX_NETWORK_HANDLES; ++i) {
+                if (mNetworkHandle == mAllNetworkHandles[i].networkHandle) {
+                    LOC_LOGD("collate duplicate detected, not updating");
+                    break;
+                }
+                if (NETWORK_HANDLE_UNKNOWN == mAllNetworkHandles[i].networkHandle) {
+                    mAllNetworkHandles[i].networkHandle = mNetworkHandle;
+                    mAllNetworkHandles[i].networkType = (loc_core::NetworkType) mType;
+                    break;
+                }
+            }
         } else if (0 != mAllTypes) {
-            mAllTypes = (allTypes & (~mAllTypes));
-            mAllNetworkHandles[type] = NETWORK_HANDLE_UNKNOWN;
+            uint8_t deletedIndex = MAX_NETWORK_HANDLES;
+            uint8_t lastValidIndex = 0;
+            uint8_t typeCount = 0;
+            for (; lastValidIndex < MAX_NETWORK_HANDLES &&
+                     NETWORK_HANDLE_UNKNOWN != mAllNetworkHandles[lastValidIndex].networkHandle;
+                 ++lastValidIndex) {
+                // Maintain count for number of network handles still
+                // connected for given type
+                if (mType == mAllNetworkHandles[lastValidIndex].networkType) {
+                    typeCount++;
+                }
+
+                if (mNetworkHandle == mAllNetworkHandles[lastValidIndex].networkHandle) {
+                    deletedIndex = lastValidIndex;
+                    typeCount--;
+                }
+            }
+
+            if (MAX_NETWORK_HANDLES != deletedIndex) {
+                LOC_LOGD("deletedIndex:%u, lastValidIndex:%u, typeCount:%u",
+                        deletedIndex, lastValidIndex, typeCount);
+                mAllNetworkHandles[deletedIndex] = mAllNetworkHandles[lastValidIndex];
+                mAllNetworkHandles[lastValidIndex].networkHandle = NETWORK_HANDLE_UNKNOWN;
+                mAllNetworkHandles[lastValidIndex].networkType = TYPE_UNKNOWN;
+            }
+
+            // If no more handles of given type, set bitmask
+            if (0 == typeCount) {
+                mAllTypes = (allTypes & (~mAllTypes));
+                LOC_LOGD("mAllTypes:%" PRIx64, mAllTypes);
+            }
         } // else (mConnected == false && mAllTypes == 0)
           // we keep mAllTypes as 0, which means no more connections.
 
