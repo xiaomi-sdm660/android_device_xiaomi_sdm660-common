@@ -16,7 +16,7 @@
 
 //Author := dev_harsh1998, Isaac Chen
 
-#define LOG_TAG "android.hardware.light@2.0-service.xiaomi_wayne"
+#define LOG_TAG "android.hardware.light@2.0-service.xiaomi_sdm660"
 
 #include <log/log.h>
 #include <fstream>

@@ -17,7 +17,7 @@
 
 set -e
 
-DEVICE_COMMON=wayne-common
+DEVICE_COMMON=sdm660-common
 VENDOR=xiaomi
 
 INITIAL_COPYRIGHT_YEAR=2018
@@ -39,7 +39,7 @@ fi
 setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true
 
 # Copyright headers and guards
-write_headers "jasmine_sprout wayne"
+write_headers "jasmine_sprout wayne clover"
 
 write_makefiles "$MY_DIR"/proprietary-files.txt true
 

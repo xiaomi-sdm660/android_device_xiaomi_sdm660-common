@@ -11,7 +11,7 @@ on boot
     chown system system /sys/devices/soc/soc:fpc1020/wakeup_enable
     chmod 0660 /sys/devices/soc/soc:fpc1020/wakeup_enable
 
-service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_wayne
+service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
     class late_start
     user system
     group system input

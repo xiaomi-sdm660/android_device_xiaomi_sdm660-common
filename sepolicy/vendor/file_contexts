@@ -1,5 +1,5 @@
 # Biometric
-/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_wayne u:object_r:hal_fingerprint_wayne_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660 u:object_r:hal_fingerprint_sdm660_exec:s0
 
 # Fpc Fingerprint
 /sys/devices/soc/soc:fpc1020(/.*)?		u:object_r:fingerprint_sysfs:s0
@@ -27,7 +27,7 @@
 /vendor/usr/keylayout(/.*)?                     u:object_r:vendor_keylayout_file:s0
 
 # Light HAL
-/(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_wayne u:object_r:hal_light_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660 u:object_r:hal_light_default_exec:s0
 
 # Mlipay
 /(vendor|system/vendor)/bin/mlipayd@1.1         u:object_r:hal_mlipay_default_exec:s0
