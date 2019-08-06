@@ -15,20 +15,24 @@
 
 cc_binary {
     name: "android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660",
-    relative_install_path: "hw",
     defaults: ["hidl_defaults"],
     init_rc: ["android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660.rc"],
-    srcs: ["service.cpp", "BiometricsFingerprint.cpp"],
+    vendor: true,
+    relative_install_path: "hw",
+    srcs: [
+        "BiometricsFingerprint.cpp",
+        "service.cpp",
+    ],
+
     shared_libs: [
-        "libbase",
-	"libcutils",
-        "libhardware",
+        "libcutils",
+        "liblog",
         "libhidlbase",
         "libhidltransport",
-        "libhwbinder",
-        "liblog",
+        "libhardware",
         "libutils",
         "android.hardware.biometrics.fingerprint@2.1",
     ],
     proprietary: true,
+
 }
