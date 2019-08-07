@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 The Xiaomi-SDM660 Project
+# Copyright (C) 2018 The nubia-SDM660 Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@
 #
 
 # Platform Path
-PLATFORM_PATH := device/xiaomi/sdm660-common
+PLATFORM_PATH := device/nubia/sdm660-common
 
 # Platform
-BOARD_VENDOR := xiaomi
+BOARD_VENDOR := nubia
 TARGET_BOARD_PLATFORM := sdm660
 TARGET_BOARD_PLATFORM_GPU := qcom-adreno512
 

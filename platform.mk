@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 The Xiaomi-SDM660 Project
+# Copyright (C) 2018 The nubia-SDM660 Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,20 +22,20 @@
 #
 
 # Platform Path
-PLATFORM_PATH := device/xiaomi/sdm660-common
+PLATFORM_PATH := device/nubia/sdm660-common
 
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_o_mr1.mk)
 $(call inherit-product-if-exists, build/target/product/embedded.mk)
-$(call inherit-product-if-exists, vendor/xiaomi/MiuiCamera/config.mk)
+$(call inherit-product-if-exists, vendor/nubia/MiuiCamera/config.mk)
 
 # Vendor files
-$(call inherit-product, vendor/xiaomi/sdm660-common/sdm660-common-vendor.mk)
+$(call inherit-product, vendor/nubia/sdm660-common/sdm660-common-vendor.mk)
 
 # Overlays
-DEVICE_PACKAGE_OVERLAYS := device/xiaomi/sdm660-common/overlay
+DEVICE_PACKAGE_OVERLAYS := device/nubia/sdm660-common/overlay
 
 # Build Fingerprint
 PRODUCT_BUILD_PROP_OVERRIDES += \
@@ -144,7 +144,7 @@ PRODUCT_PACKAGES += \
 
 # Doze
 PRODUCT_PACKAGES += \
-	XiaomiDoze
+	nubiaDoze
 
 # DRM
 PRODUCT_PACKAGES += \
@@ -159,7 +159,7 @@ PRODUCT_COPY_FILES += \
 # Fingerprint feature
 PRODUCT_PACKAGES += \
 	fingerprintd \
-	android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
+	android.hardware.biometrics.fingerprint@2.1-service.nubia_sdm660
 
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml
@@ -177,7 +177,7 @@ PRODUCT_PACKAGES += \
 	fstab.qcom
 
 # GMS
-PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
+PRODUCT_GMS_CLIENTID_BASE := android-nubia
 
 # Google Media Codec
 PRODUCT_COPY_FILES += \
@@ -246,7 +246,7 @@ PRODUCT_COPY_FILES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-	android.hardware.light@2.0-service.xiaomi_sdm660
+	android.hardware.light@2.0-service.nubia_sdm660
 
 # LiveDisplay native
 PRODUCT_PACKAGES += \
@@ -467,8 +467,8 @@ PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/wifi/wpa_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wpa_supplicant_overlay.conf \
 	$(PLATFORM_PATH)/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
 
-# XiaomiParts
-PRODUCT_PACKAGES += \
+# nubiaParts
+#PRODUCT_PACKAGES += \
 	XiaomiParts
 
 # KeyHandler

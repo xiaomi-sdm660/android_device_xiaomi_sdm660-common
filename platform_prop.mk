@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 The Xiaomi-SDM660 Project
+# Copyright (C) 2018 The nubia-SDM660 Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.fuse_sdcard=true
 
-# Dirac (Xiaomi Headset Effect)
+# Dirac (nubia Headset Effect)
 PRODUCT_PROPERTY_OVERRIDES += \
 	persist.dirac.acs.controller=qem \
 	persist.dirac.acs.storeSettings=1 \

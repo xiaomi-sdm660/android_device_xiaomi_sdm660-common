@@ -1,5 +1,5 @@
 <!-- #
-# Copyright (C) 2018 The Xiaomi-SDM660 Project
+# Copyright (C) 2018 The nubia-SDM660 Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -573,26 +573,18 @@
             <instance>default</instance>
         </interface>
     </hal>
-    <hal format="hidl" optional="true">
-        <name>vendor.xiaomi.hardware.mlipay</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IMlipayService</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl" optional="true">
-        <name>vendor.lineage.livedisplay</name>
-        <transport>hwbinder</transport>
-        <version>2.0</version>
-        <interface>
-            <name>IDisplayModes</name>
-            <instance>default</instance>
-        </interface>
-        <interface>
-            <name>IPictureAdjustment</name>
-            <instance>default</instance>
-        </interface>
+
+	<hal format="hidl" optional="true">
+		<name>vendor.lineage.livedisplay</name>
+		<transport>hwbinder</transport>
+		<version>2.0</version>
+		<interface>
+			<name>IDisplayModes</name>
+			<instance>default</instance>
+		</interface>
+		<interface>
+			<name>IPictureAdjustment</name>
+			<instance>default</instance>
+		</interface>
     </hal>
 </compatibility-matrix>
