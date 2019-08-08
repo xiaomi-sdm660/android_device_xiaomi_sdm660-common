@@ -410,10 +410,6 @@ on post-fs-data
     mkdir /dev/socket/wifihal 0770 wifi wifi
     chmod 2770 /dev/socket/wifihal
 
-    #Create directory for FOTA
-    mkdir /data/fota 0771
-    chown system system /data/fota
-
     # SSC/SLPI sensors
     mkdir /vendor/mnt/persist/sensors 0775 sensors sensors
     write /vendor/mnt/persist/sensors/sensors_settings 1
@@ -430,9 +426,6 @@ on post-fs-data
 
 
     setprop vold.post_fs_data_done 1
-
-    #Create a folder for SRS to be able to create a usercfg file
-    #mkdir /data/data/media 0770 media media
 
     #Create FM dir for patchdownloader
     mkdir /data/vendor/fm 0770 system system
