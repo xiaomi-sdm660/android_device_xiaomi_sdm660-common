@@ -22,7 +22,7 @@
 #
 
 LOCAL_PATH:= $(call my-dir)
-ifeq ($(BOARD_VENDOR_PLATFORM),xiaomi-sdm660)
+ifeq ($(BOARD_VENDOR_PLATFORM),nubia-sdm660)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE_TAGS := optional

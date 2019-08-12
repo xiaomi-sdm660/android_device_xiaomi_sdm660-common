@@ -24,12 +24,14 @@
 # Platform Path
 PLATFORM_PATH := device/nubia/sdm660-common
 
+$(warning "device sdm660 common: src_target_dir:$(SRC_TARGET_DIR)")
+
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/product_launched_with_o_mr1.mk)
 $(call inherit-product-if-exists, build/target/product/embedded.mk)
-$(call inherit-product-if-exists, vendor/nubia/MiuiCamera/config.mk)
+#$(call inherit-product-if-exists, vendor/nubia/MiuiCamera/config.mk)
 
 # Vendor files
 $(call inherit-product, vendor/nubia/sdm660-common/sdm660-common-vendor.mk)
