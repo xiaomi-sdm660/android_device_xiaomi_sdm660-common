@@ -149,6 +149,17 @@ if [ "$target" == "msm8937" ]; then
 		*)
 		;;
 	   esac
+	else
+	   case "$soc_id" in
+		"313" | "320")
+		   setprop vendor.usb.rndis.func.name "rndis_bam"
+		   setprop vendor.usb.rmnet.func.name "rmnet_bam"
+		   setprop vendor.usb.rmnet.inst.name "rmnet"
+		   setprop vendor.usb.dpl.inst.name "dpl"
+		;;
+		*)
+		;;
+	   esac
 	fi
 fi
 

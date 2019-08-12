@@ -34,16 +34,15 @@ on early-init
     mount debugfs debugfs /sys/kernel/debug
     chmod 0755 /sys/kernel/debug
 
-  # create symlink for vendor mount points
-    symlink /vendor/firmware_mnt /firmware
-    symlink /vendor/bt_firmware /bt_firmware
-    symlink /vendor/dsp /dsp
-
   # Change ownership of hw_recovery related nodes
     chown system graphics /sys/kernel/debug/dri/0/debug/dump
     chown system graphics /sys/kernel/debug/dri/0/debug/recovery_reg
     chown system graphics /sys/kernel/debug/dri/0/debug/recovery_dbgbus
     chown system graphics /sys/kernel/debug/dri/0/debug/recovery_vbif_dbgbus
+
+    # Change ownership of sw_sync node
+    chown system graphics /sys/kernel/debug/sync/sw_sync
+    chmod 0666 /sys/kernel/debug/sync/sw_sync
 
     chown root system /dev/kmsg
     chmod 0620 /dev/kmsg
@@ -51,18 +50,15 @@ on early-init
     exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -a -d /vendor/lib/modules msm_11ad_proxy
 
 on init
-
-    # Support legacy paths
-    symlink /sdcard /mnt/sdcard
-    symlink /sdcard /storage/sdcard0
+    # Create cgroup mount point for memory
+    mkdir /sys/fs/cgroup/memory/bg 0750 root system
+    write /sys/fs/cgroup/memory/bg/memory.swappiness 140
+    write /sys/fs/cgroup/memory/bg/memory.move_charge_at_immigrate 1
+    chown root system /sys/fs/cgroup/memory/bg/tasks
+    chmod 0660 /sys/fs/cgroup/memory/bg/tasks
 
 on post-fs
     chmod 0755 /sys/kernel/debug/tracing
-    chown 0660 /sys/class/leds/red/brightness
-    chown 0660 /sys/class/leds/red/blink
-    chown system system /sys/class/leds/red/brightness
-    chown system system /sys/class/leds/red/blink
-    chown system system /sys/class/leds/red/duty_pcts
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -84,11 +80,13 @@ on early-boot
 
     chown system system /mnt/vendor/persist/sensors
     chown system system /mnt/vendor/persist/sensors/sns.reg
+    chown system system /mnt/vendor/persist/sensors/sensors_list.txt
     chown system system /mnt/vendor/persist/sensors/registry
     chown system system /mnt/vendor/persist/sensors/registry/registry
     chown system system /mnt/vendor/persist/sensors/registry/registry/sensors_registry
     chown system system /mnt/vendor/persist/sensors/sensors_settings
     chown system system /mnt/vendor/persist/sensors/registry/sns_reg_config
+    chown system system /mnt/vendor/persist/sensors/registry/sns_reg_version
     chown system system /mnt/vendor/persist/sensors/registry/config
     chmod 0664 /mnt/vendor/persist/sensors/sensors_settings
 
@@ -106,6 +104,7 @@ on boot
     chown system system /sys/kernel/debug/msm_core/enable
     chown system system /sys/kernel/debug/msm_core/ptable
     chown system system /sys/kernel/boot_slpi/ssr
+    chown system system /sys/kernel/boot_adsp/ssr
     chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
     chmod 0660 /sys/module/bluetooth_power/parameters/power
     chmod 0660 /sys/module/hci_smd/parameters/hcismd_set
@@ -134,7 +133,6 @@ on boot
     chmod 2770 /dev/socket/qmux_bluetooth
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
-
 
     #define back flash and front flash
     chmod 0660 /sys/android_camera/sensor
@@ -191,6 +189,9 @@ on boot
     #enable camera read sensors data
     setprop persist.camera.gyro.disable 0
 
+    #Remove SUID bit for iproute2 ip tool
+    chmod 0755 /system/bin/ip
+
     chmod 0444 /sys/devices/platform/msm_hsusb/gadget/usb_state
 
 #   Define TCP buffer sizes for various networks
@@ -220,9 +221,6 @@ on boot
     # connections on high-throughput links get dropped when
     # an ack packet comes out of order
     write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
-
-    #Make MTU adjusting for sometimes cannot access to internet
-    write /proc/sys/net/ipv4/tcp_mtu_probing 1
 
     # Set the console loglevel to < KERN_INFO
     # Set the default message loglevel to KERN_INFO
@@ -258,7 +256,9 @@ on boot
     chown system system /sys/class/sensors/apds9930-proximity/poll_delay
 
     # Create directory used for display
-    mkdir /vendor/mnt/persist/display 0770 system graphics
+    # for backward compatibility
+    mkdir /persist/display 0770 system graphics
+    mkdir /mnt/vendor/persist/display 0770 system graphics
 
     # Create vpp directory
     mkdir /mnt/vendor/persist/vpp 0770 media media
@@ -288,8 +288,8 @@ on post-fs-data
     # create QDMA dropbox
     mkdir /data/vendor/qdmastats 0700 system system
     mkdir /data/vendor/qdma 0770 system system
-    mkdir /dev/socket/qdma 0770 system system
-    chmod 2770 /dev/socket/qdma
+    mkdir /dev/socket/qdma 0777 system system
+    chmod 2777 /dev/socket/qdma
 
     # Create /data/vendor/tzstorage directory for SFS listener
     mkdir /data/vendor/tzstorage 0770 system system
@@ -300,9 +300,6 @@ on post-fs-data
     #Create folder of camera
     mkdir /data/vendor/camera 0770 camera camera
     mkdir /data/misc/camera 0770 camera camera
-
-    mkdir /data/media 0770 media_rw media_rw
-    chown media_rw media_rw /data/media
 
     #Change ownership to system
     chown system system /data/vendor/tombstones
@@ -319,7 +316,6 @@ on post-fs-data
     mkdir /data/vendor/wifi/wpa_supplicant 0770 wifi wifi
     mkdir /data/vendor/wifi/wigig_hostapd 0770 wifi wifi
     mkdir /data/vendor/wifi/wpa 0770 wifi wifi
-	mkdir /data/vendor/wlan_logs 0770 system wifi
     mkdir /data/vendor/wifi/wpa/sockets 0770 wifi wifi
 
     #create port-bridge log dir
@@ -342,28 +338,10 @@ on post-fs-data
     mkdir /data/vendor/connectivity 0771 radio radio
     chown radio radio /data/vendor/connectivity
 
-    # Create the directories used by CnE subsystem
-    mkdir /data/vendor/connectivity 0771 radio radio
-    chown radio radio /data/vendor/connectivity
-
-    # Create the directories used by LctDiagSendData
-    mkdir /data/vendor/lct_diag 0771 root root
-    chown root root /data/vendor/lct_diag
-    rm /data/vendor/lct_diag/client_*
-
     # Create directory used by audio subsystem
     mkdir /data/vendor/audio 0770 audio audio
 
     # Create directory for audio delta files
-    mkdir /data/vendor/audio/acdbdata 0770 media audio
-    mkdir /data/vendor/audio/acdbdata/delta 0770 media audio
-
-    # Create directory used by the DASH client
-    mkdir /data/misc/dash 0770 media audio
-
-    mkdir /data/vendor/audio/ 0770 media audio
-
-   # Create a folder for audio delta files
     mkdir /data/vendor/audio/acdbdata 0770 media audio
     mkdir /data/vendor/audio/acdbdata/delta 0770 media audio
 
@@ -400,6 +378,11 @@ on post-fs-data
     mkdir /dev/socket/location 0770 gps gps
     mkdir /dev/socket/location/mq 0770 gps gps
     mkdir /dev/socket/location/xtra 0770 gps gps
+    mkdir /data/vendor/location-partner 0770 gps gps
+    mkdir /data/vendor/location-partner/dre 0770 gps gps
+    mkdir /data/vendor/location-partner/ppe 0770 gps gps
+    mkdir /dev/socket/location 0770 gps gps
+    mkdir /dev/socket/location/ehub 0770 gps gps
 
     #Create directory from IMS services
     mkdir /data/shared 0755
@@ -436,6 +419,11 @@ on post-fs-data
     mkdir /data/vendor/perfd 0770 root system
     chmod 2770 /data/vendor/perfd
     rm /data/vendor/perfd/default_values
+
+    mkdir /data/vendor/secure_element 0777 system system
+
+    #Create IOP  deamon related dirs
+    mkdir /data/vendor/iop 0700 root system
 
     # Mark the copy complete flag to not completed
     write /data/vendor/radio/copy_complete 0
@@ -476,6 +464,22 @@ on post-fs-data
     # Create vpp directory
     mkdir /data/vendor/vpp 0770 media media
 
+    #Create dir for TUI
+    mkdir /data/vendor/tui 0700 system system
+
+    #Start move time data to /data/vendor once post-fs-data done
+    start vendor.move_time_data
+
+service vendor.ssr_setup /system/vendor/bin/ssr_setup
+    oneshot
+    disabled
+
+service vendor.ss_ramdump /system/vendor/bin/subsystem_ramdump
+    class main
+    user system
+    group system
+    disabled
+
 on property:ro.vendor.iocgrp.config=1
     mkdir /dev/blkio
     mount cgroup none /dev/blkio blkio
@@ -488,23 +492,11 @@ on property:ro.vendor.iocgrp.config=1
     write /dev/blkio/blkio.weight 1000
     write /dev/blkio/bg/blkio.weight 100
 
-    #Create dir for TUI
-    mkdir /data/vendor/tui 0600 system drmrpc
-
-service vendor.ssr_setup /system/vendor/bin/ssr_setup
-    oneshot
-    disabled
-
-service vendor.ss_ramdump /system/vendor/bin/subsystem_ramdump
-    class main
-    user system
-    group system
-    disabled
-on property:persist.sys.ssr.enable_debug=*
-    write /sys/module/subsystem_restart/parameters/enable_debug ${persist.sys.ssr.enable_debug}
+on property:persist.vendor.sys.ssr.enable_debug=*
+    write /sys/module/subsystem_restart/parameters/enable_debug ${persist.vendor.sys.ssr.enable_debug}
 
 on property:persist.vendor.sys.mba_boot_timeout=*
-    write /sys/module/pil_msa/parameters/pbl_mba_boot_timeout_ms ${persist.sys.mba_boot_timeout}
+    write /sys/module/pil_msa/parameters/pbl_mba_boot_timeout_ms ${persist.vendor.sys.mba_boot_timeout}
 
 on property:persist.vendor.sys.modem_auth_timeout=*
     write /sys/module/pil_msa/parameters/modem_auth_timeout_ms ${persist.vendor.sys.modem_auth_timeout}
@@ -545,8 +537,6 @@ on property:persist.debug.trace=1
 
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
-on property:sys.ftmd=1
-    start vendor.ftmd
 
 on property:ro.bluetooth.ftm_enabled=true
     start vendor.ftmd
@@ -630,7 +620,6 @@ service vendor.sensors.qti /vendor/bin/sensors.qti
     class core
     user system
     group system
-    disabled
 
 service vendor.sensors.qcom /vendor/bin/sensors.qcom
     class core
@@ -681,7 +670,7 @@ service loc_launcher /system/vendor/bin/loc_launcher
     group gps
     writepid /dev/cpuset/system-background/tasks
 
-service qcom-sh /vendor/bin/init.qcom.sh
+service vendor.qcom-sh /vendor/bin/init.qcom.sh
     class late_start
     user root
     group root system radio
@@ -695,7 +684,7 @@ service vendor.qcom-post-boot /vendor/bin/init.qcom.post_boot.sh
     oneshot
 
 on property:sys.boot_completed=1
-    start qcom-post-boot
+    start vendor.qcom-post-boot
 
 on property:ro.vendor.ril.mbn_copy_completed=1
     write /data/vendor/radio/copy_complete 1
@@ -756,6 +745,7 @@ service vendor.msm_irqbal_lb /vendor/bin/msm_irqbalance -f /system/vendor/etc/ms
 
 on charger
     setprop persist.sys.usb.config mass_storage
+    load_system_props
     start qcom-post-boot
 
 on property:vendor.display.lcd_density=*
@@ -768,34 +758,11 @@ on property:vendor.rild.libpath=*
 on property:ro.vendor.radio.noril=*
     setprop ro.radio.noril ${ro.vendor.radio.noril}
 
-#ant check change permission
-    chown system system /sys/class/ant_class/ant_state
-    chmod 0644 /sys/class/ant_class/ant_state
-
-#lct add video status
-on property:sys.thermal.isinvideo=1
-    write /sys/class/power_supply/battery/device/thermalvideo 1
-
-on property:sys.thermal.isinvideo=0
-    write /sys/class/power_supply/battery/device/thermalvideo 0
 
 service vendor.power_off_alarm /vendor/bin/power_off_alarm
     class core
     group system
     disabled
-    oneshot
-
-#lct add video status
-on property:sys.thermal.isinvideo=1
-    write /sys/class/power_supply/battery/device/thermalvideo 1
-
-on property:sys.thermal.isinvideo=0
-    write /sys/class/power_supply/battery/device/thermalvideo 0
-
-service config_bt_addr /vendor/bin/btnvtool -O
-    class core
-    user bluetooth
-    group bluetooth radio
     oneshot
 
 #Set GPU Opengles version
@@ -828,3 +795,19 @@ on property:sys.camera.not.ctsverify.apk=*
 #add cts verify flag
     on property:sys.gyro.sensorname=*
     setprop vendor.camera.gyro.sensorname ${sys.gyro.sensorname}
+
+service vendor.audio-hal-2-0 /vendor/bin/hw/android.hardware.audio@2.0-service
+    override
+    class hal
+    user audioserver
+    # media gid needed for /dev/fm (radio) and for /data/misc/media (tee)
+    group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct oem_2901 wakelock system
+    capabilities BLOCK_SUSPEND
+    ioprio rt 4
+    writepid /dev/cpuset/foreground/tasks /dev/stune/foreground/tasks
+    # audioflinger restarts itself when it loses connection with the hal
+    # and its .rc file has an "onrestart restart audio-hal" rule, thus
+    # an additional auto-restart from the init process isn't needed.
+    oneshot
+    interface android.hardware.audio@4.0::IDevicesFactory default
+    interface android.hardware.audio@2.0::IDevicesFactory default

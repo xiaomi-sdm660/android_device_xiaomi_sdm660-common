@@ -154,23 +154,13 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/mdss_rotator         0664   system     system
 /dev/cpu_dma_latency      0660   root       system
 
-# QDSS
+#QDSS
 /dev/byte-cntr            0660   system    oem_2902
 # fpc fingerprint
 /sys/devices/soc/soc:fpc1020*   hw_reset 0660 system system
 /sys/devices/soc/soc:fpc1020*   irq 0660 system system
 /sys/devices/soc/soc:fpc1020*   wakeup_enable 0660 system system
 /sys/devices/soc/soc:fpc1020*    fingerdown_wait 0220 system system
-
-/sys/class/leds/red      delay_on     0640    system    system
-/sys/class/leds/red      delay_off    0640    system    system
-/sys/class/leds/red      breath       0640    system    system
-/sys/class/leds/green    delay_on     0640    system    system
-/sys/class/leds/green    delay_off    0640    system    system
-/sys/class/leds/green    breath       0640    system    system
-/sys/class/leds/blue     delay_on     0640    system    system
-/sys/class/leds/blue     delay_off    0640    system    system
-/sys/class/leds/blue     breath       0640    system    system
 /dev/mhi_qdss             0660   system    oem_2902
 /sys/class/qdss_bridge/mhi_qdss  mode      0660     system   oem_2902
 
@@ -192,6 +182,7 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/msm_vidc_dec_sec     0660   system     audio
 /dev/msm_vidc_enc         0660   system     audio
 /dev/msm_rotator          0660   system     system
+/dev/hw_random            0600   root       root
 /dev/sdsprpc-smd          0660   system     system
 
 #permissions for audio
@@ -366,6 +357,31 @@ firmware_directories /vendor/firmware_mnt/image/
 # This is temporary while using SD card for initial bring-up
 /dev/block/platform/soc/8804000.sdhci/by-name/frp       0600   system     system
 
+# Kmsg device
+/dev/kmsg                                               0620   root       system
+
+# LED class devices
+/sys/class/leds/red      delay_on     0640    system    system
+/sys/class/leds/red      delay_off    0640    system    system
+/sys/class/leds/red      breath       0640    system    system
+/sys/class/leds/green    delay_on     0640    system    system
+/sys/class/leds/green    delay_off    0640    system    system
+/sys/class/leds/green    breath       0640    system    system
+/sys/class/leds/blue     delay_on     0640    system    system
+/sys/class/leds/blue     delay_off    0640    system    system
+/sys/class/leds/blue     breath       0640    system    system
+
+# NPU device
+/dev/msm_npu             0644   system     system
+
+# USB role switch
+/sys/class/dual_role_usb/*	data_role	0660	system	system
+/sys/class/dual_role_usb/*	power_role	0660	system	system
+/sys/class/dual_role_usb/*	mode		0660	system	system
+
+#Memory Offline
+/sys/devices/system/memory/memory* state    0660 system system
+
 # sys-fs display
 /sys/class/graphics/fb*     hpd                      0664    system  graphics
 /sys/class/graphics/fb*     res_info                 0664    system  graphics
@@ -398,33 +414,6 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/class/graphics/fb0     dynamic_bitclk           0664    system  graphics
 /sys/devices/virtual/hdcp/msm_hdcp  min_level_change 0664    system  graphics
 
-# Kmsg device
-/dev/kmsg                                               0620   root       system
-
-# LED class devices
-/sys/class/leds/red      delay_on     0640    system    system
-/sys/class/leds/red      delay_off    0640    system    system
-/sys/class/leds/red      breath       0640    system    system
-/sys/class/leds/green    delay_on     0640    system    system
-/sys/class/leds/green    delay_off    0640    system    system
-/sys/class/leds/green    breath       0640    system    system
-/sys/class/leds/blue     delay_on     0640    system    system
-/sys/class/leds/blue     delay_off    0640    system    system
-/sys/class/leds/blue     breath       0640    system    system
-
-# NPU device
-/dev/msm_npu             0644   system     system
-
-# USB role switch
-/sys/class/dual_role_usb/*	data_role	0660	system	system
-/sys/class/dual_role_usb/*	power_role	0660	system	system
-/sys/class/dual_role_usb/*	mode		0660	system	system
-
-# sys-fs display
-/sys/class/graphics/fb0     dynamic_fps		0664   system	graphics
-
-#Memory Offline
-/sys/devices/system/memory/memory* state    0660 system system
 
 #QG device
 /dev/qg               0660   system     system

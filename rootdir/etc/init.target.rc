@@ -47,6 +47,11 @@ on init
     write /dev/cpuset/camera-daemon/mems 0
     chown cameraserver cameraserver /dev/cpuset/camera-daemon/tasks
     chmod 0660 /dev/cpuset/camera-daemon/tasks
+    # chmod node /dev/gpio_rf
+    chmod 0644 /dev/gpio_rf
+
+    chown system system /dev/lirc0
+    chmod 0660 /dev/lirc0
 
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
@@ -64,25 +69,14 @@ on fs
     mkdir /mnt/vendor/persist/secnvm 0770 system system
     mkdir /mnt/vendor/persist/time 0770 system system
     restorecon_recursive /mnt/vendor/persist
-
-    mkdir /vendor/mnt/persist/wlan_bt 0777 root system
-    #add by Quanyu.Lee for MI-feature
-    #only needed on Factory version,DO NOT push to MIUI!
-    chmod 0644 /vendor/mnt/persist/wlan_bt/bt.mac
-    chmod 0644 /vendor/mnt/persist/wlan_bt/wlan.mac
-    chown system system /vendor/mnt/persist/wlan_bt/bt.mac
-    chown system system /vendor/mnt/persist/wlan_bt/wlan.mac
-
     write /sys/kernel/boot_adsp/boot 1
-    chown system system /dev/goodix_fp
-    #chmod 0644 /dev/goodix_fp
-
     chmod 0664 /sys/class/thermal/thermal_message/sconfig
     chown system system /sys/class/thermal/thermal_message/sconfig
 
 on post-fs
     start vendor.qseecomd
     exec - system system -- /vendor/bin/init.qti.qseecomd.sh
+    write /dev/ipa 1
 
 on init
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
@@ -106,19 +100,19 @@ on post-fs-data
     setprop vendor.usb.dpl.inst.name "dpl"
     write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
     setprop sys.usb.configfs 1
-
-# Thermal
+    mkdir /data/vendor/mac_addr 0770 system system
     mkdir /data/vendor/thermal 0771 root system
     mkdir /data/vendor/thermal/config 0771 root system
 
 on boot
     start vendor.rmt_storage
+    start rfs_access
     write /dev/cpuset/top-app/cpus 0-7
+    write /dev/cpuset/audio-app/cpus 1-2
     write /dev/cpuset/foreground/cpus 0-7
+    write /dev/cpuset/foreground/boost/cpus 0-7
     write /dev/cpuset/background/cpus 0-7
     write /dev/cpuset/system-background/cpus 0-7
-    write /dev/cpuset/restricted/cpus 0-7
-
     ####Regionalization config and prop files####
     chmod 0644 /vendor/mnt/persist/speccfg/spec
     chmod 0644 /vendor/mnt/persist/speccfg/devicetype
@@ -143,7 +137,16 @@ on boot
 #Create folder dump yuv images while debugging
     mkdir /data/vendor/camera 0770 camera camera
 
-# Wifi firmware reload path
+
+#USB controller configuration
+    setprop vendor.usb.rndis.func.name "rndis_bam"
+    setprop vendor.usb.rmnet.func.name "rmnet_bam"
+    setprop vendor.usb.rmnet.inst.name "rmnet"
+    setprop vendor.usb.dpl.inst.name "dpl"
+    write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
+    setprop sys.usb.configfs 1
+
+    # Wifi firmware reload path
     chown wifi wifi /sys/module/wlan/parameters/fwpath
 
 # default country code
@@ -178,11 +181,7 @@ on property:sys.shutdown.requested=*
     stop vendor.per_proxy
     stop vendor.ims_rtp_daemon
 
-on property:vendor.camera.thermal_lc=12
-    write /sys/class/thermal/thermal_message/sconfig 12
 
-on property:vendor.camera.thermal_lc=0
-    write /sys/class/thermal/thermal_message/sconfig 0
 service vendor.qseecomd /vendor/bin/qseecomd
    class core
    user root
@@ -198,9 +197,10 @@ service vendor.thermal-engine /system/vendor/bin/thermal-engine
    group root
 
 service vendor.time_daemon /system/vendor/bin/time_daemon
-   class late_start
-   user root
-   group root
+   class main
+   user system
+   group system
+   capabilities SYS_TIME
    writepid /dev/cpuset/system-background/tasks
 
 service vendor.adsprpcd /system/vendor/bin/adsprpcd audiopd
@@ -209,6 +209,11 @@ service vendor.adsprpcd /system/vendor/bin/adsprpcd audiopd
    group media
    writepid /dev/cpuset/system-background/tasks
 
+service adsprpcd /vendor/bin/adsprpcd audiopd
+   class main
+   user media
+   group media
+
 service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
     class main
     user system
@@ -216,6 +221,7 @@ service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
     group radio log diag
     writepid /dev/cpuset/system-background/tasks
 
+# imsdatadaemon starts with root and UID will be downgraded to SYSTEM.
 service vendor.imsdatadaemon /system/vendor/bin/imsdatadaemon
     class main
     user system
@@ -237,14 +243,15 @@ service vendor.pd_mapper /system/vendor/bin/pd-mapper
 on property:vendor.ims.QMI_DAEMON_STATUS=1
     start vendor.imsdatadaemon
 
-#on property:vold.decrypt=trigger_restart_framework
-#   start cnss_diag
+on property:vold.decrypt=trigger_restart_framework
+   start vendor.cnss_diag
+   restart vendor.camera-provider-2-4
 
 service vendor.cnss_diag /system/vendor/bin/cnss_diag -q -f -t HELIUM
    class main
    user system
    group system wifi inet sdcard_rw media_rw diag
-   disabled
+   oneshot
 
 service vendor.ims_rtp_daemon /system/vendor/bin/ims_rtp_daemon
    class main
@@ -255,13 +262,12 @@ service vendor.ims_rtp_daemon /system/vendor/bin/ims_rtp_daemon
 service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    class main
    user system
-   group radio diag inet log
+   group radio diag inet log wakelock
    writepid /dev/cpuset/system-background/tasks
+
 
 on property:vendor.ims.DATA_DAEMON_STATUS=1
     restart vendor.ims_rtp_daemon
-    setprop persist.rcs.supported 0
-# add for HMI_L8866_A01-502: end
 
 service vendor.ppd /system/vendor/bin/mm-pp-dpps
     class hal
@@ -294,7 +300,12 @@ on charger
     start vendor.hvdcp_opti
     setprop sys.usb.configfs 1
     start vendor.power_off_alarm
+
+    mount tmpfs tmpfs /data
+    restorecon_recursive /data
+
     start vendor.thermal-engine
+    start charger
 
 service vendor.qfp-daemon /vendor/bin/qfp-daemon
     class late_start
@@ -306,28 +317,3 @@ service vendor.hvdcp_opti /system/vendor/bin/hvdcp_opti
      user root
      group system wakelock
      writepid /dev/cpuset/system-background/tasks
-
-# lcd effect
-on property:persist.sys.display_srgb=1
-    write /sys/class/graphics/fb0/msm_fb_srgb 1
-
-on property:persist.sys.display_srgb=2
-    write /sys/class/graphics/fb0/msm_fb_srgb 2
-
-on property:persist.sys.display_ce=4
-    write /sys/class/graphics/fb0/msm_fb_ce 1
-
-on property:persist.sys.display_ce=0
-    write /sys/class/graphics/fb0/msm_fb_ce 2
-
-on property:persist.sys.display_cabc=1
-    write /sys/class/graphics/fb0/msm_fb_cabc 1
-
-on property:persist.sys.display_cabc=2
-    write /sys/class/graphics/fb0/msm_fb_cabc 2
-
-on property:persist.sys.display_gamma=1
-    write /sys/class/graphics/fb0/msm_fb_gamma 1
-
-on property:persist.sys.display_gamma=2
-    write /sys/class/graphics/fb0/msm_fb_gamma 2
