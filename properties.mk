@@ -59,6 +59,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi \
     persist.vendor.camera.HAL3.enabled=1 \
+		persist.vendor.camera.eis.enable=1 \
     persist.vendor.camera.exif.make=Xiaomi \
     vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 
