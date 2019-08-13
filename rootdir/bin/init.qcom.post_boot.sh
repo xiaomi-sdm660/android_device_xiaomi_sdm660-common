@@ -5964,3 +5964,12 @@ esac
 misc_link=$(ls -l /dev/block/bootdevice/by-name/misc)
 real_path=${misc_link##*>}
 setprop persist.vendor.mmi.misc_dev_path $real_path
+
+# set sys.use_fifo_ui prop if eas exist
+	available_governors=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors)
+
+	if echo "$available_governors" | grep schedutil; then
+	  echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+	  echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+	  setprop sys.use_fifo_ui 1
+	fi
