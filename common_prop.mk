@@ -166,10 +166,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.high_fps_early_gl_phase_offset_ns=9000000 \
     debug.sf.phase_offset_threshold_for_next_vsync_ns=6100000
 
-# FIFO scheduling for UI
-PRODUCT_PROPERTY_OVERRIDES += \
-    sys.use_fifo_ui=1
-
 # Fling
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.min.fling_velocity=160 \
