@@ -16,6 +16,9 @@ allow hal_fingerprint_sdm660 { mnt_user_file storage_file }:lnk_file read;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:dir r_dir_perms;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:file rw_file_perms;
 
+allow hal_fingerprint_sdm660 vendor_fp_prop:property_service set;
+allow hal_fingerprint_sdm660 vendor_fp_prop:file { getattr open read };
+
 allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
 
 binder_call(hal_fingerprint_sdm660, vndservicemanager)
