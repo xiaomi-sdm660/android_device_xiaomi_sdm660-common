@@ -156,16 +156,15 @@ firmware_directories /vendor/firmware_mnt/image/
 
 #QDSS
 /dev/byte-cntr            0660   system    oem_2902
+/dev/mhi_qdss             0660   system    oem_2902
+/sys/class/qdss_bridge/mhi_qdss  mode      0660     system   oem_2902
+
 # fpc fingerprint
 /sys/devices/soc/soc:fpc1020*   hw_reset 0660 system system
 /sys/devices/soc/soc:fpc1020*   irq 0660 system system
 /sys/devices/soc/soc:fpc1020*   wakeup_enable 0660 system system
-/sys/devices/soc/soc:fpc1020*    fingerdown_wait 0220 system system
-/dev/mhi_qdss             0660   system    oem_2902
-/sys/class/qdss_bridge/mhi_qdss  mode      0660     system   oem_2902
-
-# QDSS
-/dev/byte-cntr            0660   system    oem_2902
+/sys/devices/soc/soc:fpc1020*   fingerdown_wait 0220 system system
+/sys/devices/soc/soc:fpc1020*   compatible_all 0660 system system
 
 # wlan
 /dev/wcnss_wlan           0660   system     system
