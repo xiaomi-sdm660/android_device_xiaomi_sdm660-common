@@ -149,7 +149,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.radio.aosp_usr_pref_sel=true \
     persist.radio.VT_CAM_INTERFACE=2 \
     persist.radio.data_con_rprt=1 \
-    persist.radio.multisim.config=dsds \
     persist.radio.schd.cache=3500 \
     persist.rmnet.data.enable=true \
     persist.vendor.data.mode=concurrent \
