@@ -18,6 +18,10 @@
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
 
+# HW Info
+/sys/devices/platform/HardwareInfo(/.*)? u:object_r:sysfs_info:s0
+/sys/devices/platform/HardwareInfo/gsensor  u:object_r:sysfs_info:s0
+
 # IR
 /dev/spidev7.1                                  u:object_r:spidev_device:s0
 

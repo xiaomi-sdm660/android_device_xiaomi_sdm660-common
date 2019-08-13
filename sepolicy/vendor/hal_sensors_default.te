@@ -1,1 +1,2 @@
 allow hal_sensors_default sysfs:file { read open };
+allow hal_sensors_default sysfs_info:file { read write };
