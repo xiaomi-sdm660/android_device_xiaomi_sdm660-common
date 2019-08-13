@@ -679,7 +679,14 @@
 
     <!-- If this is true, device supports Sustained Performance Mode. -->
     <bool name="config_sustainedPerformanceModeSupported">true</bool>
-    
+
     <!-- Enable dual LTE capability support-->
     <bool name="config_dual_LTE_capability">true</bool>
+
+    <!-- The default value for transition animation scale found in developer settings.
+         1.0 corresponds to 1x animator scale, 0 means that there will be no transition
+         animations. Note that this is only a default and will be overridden by a
+         user-set value if toggled by settings so the "Transition animation scale" setting
+         should also be hidden if intended to be permanent. -->
+    <item name="config_appTransitionAnimationDurationScaleDefault" format="float" type="dimen">0.5</item>
 </resources>
