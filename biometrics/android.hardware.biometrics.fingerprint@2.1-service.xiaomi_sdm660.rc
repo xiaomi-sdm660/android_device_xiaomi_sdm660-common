@@ -35,7 +35,4 @@ service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.
 service vendor.goodix_script /vendor/bin/init.goodix.sh
     class late_start
     user system
-    disabled
-
-on property:ro.boot.fpsensor=gdx
-    start vendor.goodix_script
+    oneshot
