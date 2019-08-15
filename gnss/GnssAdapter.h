@@ -163,7 +163,6 @@ class GnssAdapter : public LocAdapterBase {
     /* ==== AGPS =========================================================================== */
     // This must be initialized via initAgps()
     AgpsManager mAgpsManager;
-    AgpsCbInfo mAgpsCbInfo;
     void initAgps(const AgpsCbInfo& cbInfo);
 
     /* ==== NFW =========================================================================== */

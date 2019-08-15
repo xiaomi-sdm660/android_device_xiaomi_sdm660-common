@@ -105,7 +105,7 @@ Return<void> AGnss::setCallback(const sp<IAGnssCallback>& callback) {
 
     AgpsCbInfo cbInfo = {};
     cbInfo.statusV4Cb = (void*)agnssStatusIpV4Cb;
-    cbInfo.cbPriority = AGPS_CB_PRIORITY_LOW;
+    cbInfo.atlType = AGPS_ATL_TYPE_SUPL | AGPS_ATL_TYPE_SUPL_ES;
 
     mGnss->getGnssInterface()->agpsInit(cbInfo);
     return Void();

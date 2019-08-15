@@ -137,6 +137,7 @@ protected:
     /* Current state for this state machine */
     AgpsState mState;
 
+    AgnssStatusIpV4Cb     mFrameworkStatusV4Cb;
 private:
     /* AGPS Type for this state machine
        LOC_AGPS_TYPE_ANY           0
@@ -154,6 +155,7 @@ private:
 public:
     /* CONSTRUCTOR */
     AgpsStateMachine(AgpsManager* agpsManager, AGpsExtType agpsType):
+        mFrameworkStatusV4Cb(NULL),
         mAgpsManager(agpsManager), mSubscriberList(),
         mCurrentSubscriber(NULL), mState(AGPS_STATE_RELEASED),
         mAgpsType(agpsType), mAPN(NULL), mAPNLen(0),
@@ -174,6 +176,10 @@ public:
     inline AGpsExtType getType() const { return mAgpsType; }
     inline void setCurrentSubscriber(AgpsSubscriber* subscriber)
     { mCurrentSubscriber = subscriber; }
+
+    inline void registerFrameworkStatusCallback(AgnssStatusIpV4Cb frameworkStatusV4Cb) {
+        mFrameworkStatusV4Cb = frameworkStatusV4Cb;
+    }
 
     /* Fetch subscriber with specified handle */
     AgpsSubscriber* getSubscriber(int connHandle);
@@ -234,7 +240,6 @@ class AgpsManager {
 public:
     /* CONSTRUCTOR */
     AgpsManager():
-        mFrameworkStatusV4Cb(NULL),
         mAtlOpenStatusCb(), mAtlCloseStatusCb(),
         mAgnssNif(NULL), mInternetNif(NULL)/*, mDsNif(NULL)*/ {}
 
@@ -246,12 +251,11 @@ public:
         mAtlCloseStatusCb = atlCloseStatusCb;
     }
 
-    inline void registerFrameworkStatusCallback(AgnssStatusIpV4Cb frameworkStatusV4Cb) {
-        mFrameworkStatusV4Cb = frameworkStatusV4Cb;
-    }
+    /* Check if AGPS client is registered */
+    inline bool isRegistered() { return nullptr != mAgnssNif || nullptr != mInternetNif; }
 
     /* Create all AGPS state machines */
-    void createAgpsStateMachines();
+    void createAgpsStateMachines(const AgpsCbInfo& cbInfo);
 
     /* Process incoming ATL requests */
     void requestATL(int connHandle, AGpsExtType agpsType, LocApnTypeMask apnTypeMask);
@@ -266,7 +270,6 @@ public:
     void handleModemSSR();
 
 protected:
-    AgnssStatusIpV4Cb     mFrameworkStatusV4Cb;
 
     AgpsAtlOpenStatusCb   mAtlOpenStatusCb;
     AgpsAtlCloseStatusCb  mAtlCloseStatusCb;
