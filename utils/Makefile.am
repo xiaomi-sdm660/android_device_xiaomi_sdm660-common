@@ -29,6 +29,7 @@ libgps_utils_la_h_sources = \
         gps_extended.h \
         loc_gps.h \
         log_util.h \
+        LocSharedLock.h \
         LocUnorderedSetMap.h
 
 libgps_utils_la_c_sources = \
