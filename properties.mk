@@ -63,6 +63,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.camera.exif.make=Xiaomi \
     vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 
+# Dalvik
+PRODUCT_PROPERTY_OVERRIDES += \
+    dalvik.vm.heapgrowthlimit=256m \
+    dalvik.vm.heapstartsize=8m \
+    dalvik.vm.heapsize=512m \
+    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heapminfree=512k \
+    dalvik.vm.heapmaxfree=8m
+
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.hwui.renderer=skiagl \
