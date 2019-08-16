@@ -161,6 +161,10 @@ on boot
     chown system system /sys/class/graphics/fb0/msm_fb_cabc_still
     chown system system /sys/class/graphics/fb0/msm_fb_hbm
 
+# XiaomiParts
+    chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
+    chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
+
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
     class core
