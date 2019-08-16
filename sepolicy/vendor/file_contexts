@@ -15,6 +15,9 @@
 /(mnt/vendor)/persist/fpc(/.*)?                 u:object_r:persist_fingerprint_file:s0
 /sys/devices/soc/soc:fpc1020(/.*)?              u:object_r:fingerprint_sysfs:s0
 
+# Hall Switch
+/sys/module/hall/parameters(/.*)?               u:object_r:hall_dev:s0
+
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
 
