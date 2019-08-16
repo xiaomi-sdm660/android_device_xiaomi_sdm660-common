@@ -21,15 +21,15 @@
 # definition file).
 #
 -->
-<!-- <manifest version="1.0" type="framework"> -->
+ <manifest version="1.0" type="framework"> 
     <!-- atfwd -->
-	<!-- <hal format="hidl"> -->
-		<!-- <name>vendor.qti.hardware.radio.atcmdfwd</name> -->
-		<!-- <transport>hwbinder</transport> -->
-		<!-- <version>1.0</version> -->
-		<!-- <interface> -->
-			<!-- <name>IAtCmdFwd</name> -->
-			<!-- <instance>AtCmdFwdService</instance> -->
-			<!-- </interface> -->
-		<!-- </hal> -->
-	<!-- </manifest> -->
+	 <hal format="hidl"> 
+		 <name>vendor.qti.hardware.radio.atcmdfwd</name> 
+		 <transport>hwbinder</transport> 
+		 <version>1.0</version> 
+		 <interface> 
+			 <name>IAtCmdFwd</name> 
+			 <instance>AtCmdFwdService</instance> 
+		 </interface> 
+	 </hal> 
+</manifest> 

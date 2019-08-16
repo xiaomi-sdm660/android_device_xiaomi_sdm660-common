@@ -13,11 +13,13 @@ EXTRA_VENDOR_LIBRARIES_32 := \
     libicui18n \
     libicuuc \
     libmedia \
-    libmediaextractor \
+    libmediaextractorservice \
     libmediametrics \
     libminikin \
-    libpdx_default_transport \
+    libhidltransport \
     libsonivox
+
+    #libpdx_default_transport \
 
 define define-vndk-lib
 include $$(CLEAR_VARS)

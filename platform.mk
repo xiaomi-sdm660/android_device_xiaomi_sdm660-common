@@ -24,8 +24,6 @@
 # Platform Path
 PLATFORM_PATH := device/nubia/sdm660-common
 
-$(warning "device sdm660 common: src_target_dir: $(SRC_TARGET_DIR)")
-
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 
@@ -48,13 +46,16 @@ BUILD_FINGERPRINT := nubia/nx611j/nx611j:8/OP3A.190814.001/5565753:user/release-
 # Platform properties
 $(call inherit-product, $(PLATFORM_PATH)/platform_prop.mk)
 
+# Vendor files
+$(call inherit-product, vendor/nubia/nx611j/nx611j-vendor.mk)
+
 # Alipay
 #PRODUCT_PACKAGES += \
-#  IFAAService \
-#  org.ifaa.android.manager
+#   IFAAService \
+#   org.ifaa.android.manager
 
 #PRODUCT_BOOT_JARS += \
-#  org.ifaa.android.manager
+	#org.ifaa.android.manager
 
 # Android_filesystem_config
 PRODUCT_PACKAGES += \
@@ -62,6 +63,8 @@ PRODUCT_PACKAGES += \
 
 # ANT+
 PRODUCT_PACKAGES += \
+	AntHalService \
+	antradio_app \
 	com.dsi.ant.antradio_library \
 	libantradio
 
@@ -70,18 +73,38 @@ PRODUCT_COPY_FILES += \
 
 # Audio
 PRODUCT_PACKAGES += \
-	android.hardware.audio@2.0 \
-	android.hardware.audio.effect@2.0 \
-	android.hardware.audio.common@2.0 \
-	android.hardware.audio.common@2.0-util \
-	com.qualcom.qti.bluetooth_audio@1.0 \
+	android.hardware.audio@4.0-impl:32 \
+	android.hardware.audio@2.0-service \
+	android.hardware.audio.effect@4.0-impl:32 \
+	android.hardware.audio.effect@2.0-service \
+	android.hardware.soundtrigger@2.1-impl:32 \
+	android.hardware.soundtrigger@2.1-service \
+	android.hardware.audio@4.0 \
+	android.hardware.audio.common@4.0 \
+	android.hardware.audio.common@4.0-util \
+	audio.a2dp.default \
+	audio.primary.sdm660 \
+	audio.r_submix.default \
+	audio.usb.default \
 	libaudio-resampler \
-	libaudio-hal \
 	libqcompostprocbundle \
 	libqcomvisualizer \
 	libqcomvoiceprocessing \
 	libvolumelistener \
-	nubia_mmi_audio 
+	tinymix
+					
+	#android.hardware.audio@2.0 \
+	#android.hardware.audio.effect@2.0 \
+	#android.hardware.audio.common@2.0 \
+	#android.hardware.audio.common@2.0-util \
+	#com.qualcom.qti.bluetooth_audio@1.0 \
+	#libaudio-resampler \
+	#libaudio-hal \
+	#libqcompostprocbundle \
+	#libqcomvisualizer \
+	#libqcomvoiceprocessing \
+	#libvolumelistener \
+	#nubia_mmi_audio 
 
 PRODUCT_COPY_FILES += \
 	frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:/$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
@@ -98,46 +121,76 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-	android.frameworks.displayservice@1.0 \
-	vendor.display.color@1.0_vendor \
-	vendor.display.config@1.0_vendor \
-	vendor.display.config@1.1_vendor \
-	vendor.display.postproc@1.0_vendor \
-	android.hardware.camera.provider@2.4 \
-	camera.device@1.0-impl \
+	android.frameworks.displayservice@1.0_32 \
+	android.hardware.camera.provider@2.4-impl:32 \
+	android.hardware.camera.provider@2.4-service \
 	camera.device@3.2-impl \
-	camera.device@3.3-impl \
-	libxml2_1 \
+	libxml2 \
+	Snap \
 	vendor.qti.hardware.camera.device@1.0 \
-	vendor.qti.hardware.camera.device@1.0_vendor
+	vendor.qti.hardware.camera.device@1.0_vendor	
+
+	#android.frameworks.displayservice@1.0 \
+	#vendor.display.color@1.0_vendor \
+	#vendor.display.config@1.0_vendor \
+	#vendor.display.config@1.1_vendor \
+	#vendor.display.postproc@1.0_vendor \
+	#android.hardware.camera.provider@2.4 \
+	#camera.device@1.0-impl \
+	#camera.device@3.2-impl \
+	#camera.device@3.3-impl \
+	#libxml2_1 \
+	#vendor.qti.hardware.camera.device@1.0 \
+	#vendor.qti.hardware.camera.device@1.0_vendor
 
 # CNE
 PRODUCT_PACKAGES += \
-	libcneapiclient \
-	com.quicinc.cne.api@1.0 \
-	com.quicinc.cne.constants@1.0 \
-	com.quicinc.cne.constants@2.0 \
-	com.quicinc.cne.server@1.0 \
-	com.quicinc.cne.server@2.0 \
-	libservices
+	cneapiclient \
+	com.quicinc.cne \
+	services-ex
+	#libcneapiclient \
+	#com.quicinc.cne.api@1.0 \
+	#com.quicinc.cne.constants@1.0 \
+	#com.quicinc.cne.constants@2.0 \
+	#com.quicinc.cne.server@1.0 \
+	#com.quicinc.cne.server@2.0 \
+	#libservices
 
 # Display
 PRODUCT_PACKAGES += \
-	android.hardware.graphics.allocator@2.0 \
-	android.hardware.graphics.composer@2.1 \
-	android.hardware.graphics.mapper@2.0 \
-	android.hardware.memtrack@1.0 \
-	libmemtrack \
-	libgrallocutils \
+	android.hardware.graphics.allocator@2.0-impl:64 \
+	android.hardware.graphics.allocator@2.0-service \
+	android.hardware.graphics.composer@2.1-impl:64 \
+	android.hardware.graphics.composer@2.1-service \
+	android.hardware.graphics.mapper@2.0-impl \
+	android.hardware.memtrack@1.0-impl \
+	android.hardware.memtrack@1.0-service \
+	copybit.sdm660 \
+	gralloc.sdm660 \
+	hwcomposer.sdm660 \
 	libdisplayconfig \
-	libsd_sdk_display \
-	vendor.display.color@1.0  \
+	liboverlay \
 	libqdMetaData.system \
+	libtinyxml \
+	memtrack.sdm660 \
 	libgpu_tonemapper \
-	vendor.display.config@1.0 \
-	vendor.display.config@1.1 \
-	vendor.display.postproc@1.0 \
-	libsdmcore
+	libsdm_core
+
+	#android.hardware.graphics.allocator@2.0 \
+	#android.hardware.graphics.composer@2.1 \
+	#android.hardware.graphics.mapper@2.0 \
+	#android.hardware.memtrack@1.0 \
+	#libmemtrack \
+	#libgrallocutils \
+	#libdisplayconfig \
+	#libsd_sdk_display \
+	#vendor.display.color@1.0  \
+	#libqdMetaData.system \
+	#libgpu_tonemapper \
+	#vendor.display.config@1.0 \
+	#vendor.display.config@1.1 \
+	#vendor.display.postproc@1.0 \
+	#libsdmcore
 
 PRODUCT_PACKAGES += \
 	android.hardware.configstore@1.0 \
@@ -145,11 +198,15 @@ PRODUCT_PACKAGES += \
 
 # DRM
 PRODUCT_PACKAGES += \
-	android.hardware.drm@1.0 \
-	libdrmframework_jni \
-	libdrmframework \
-	libdrminputstream \
-	libmediadrm
+	android.hardware.drm@1.0-impl:32 \
+	android.hardware.drm@1.0-service \
+	android.hardware.drm@1.1-service.clearkey	
+
+	#android.hardware.drm@1.0 \
+	#libdrmframework_jni \
+	#libdrmframework \
+	#libdrminputstream \
+	#libmediadrm
 
 
 # Exclude TOF sensor from InputManager
@@ -158,10 +215,12 @@ PRODUCT_COPY_FILES += \
 
 # Fingerprint feature
 PRODUCT_PACKAGES += \
-	vendor.qti.hardware.fingerprint@1.0 \
-	vendor.sw.swfingerprint@1.0 \
-	nubia_mmi_fingerprint \
-	android.hardware.biometrics.fingerprint@2.1
+	fingerprintd \
+	android.hardware.biometrics.fingerprint@2.1-service.nubia_sdm660
+	#vendor.qti.hardware.fingerprint@1.0 \
+	#vendor.sw.swfingerprint@1.0 \
+	#nubia_mmi_fingerprint \
+	#android.hardware.biometrics.fingerprint@2.1
 
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml
@@ -199,19 +258,25 @@ PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/configs/com.qualcomm.location.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/com.qualcomm.location.xml
 
 PRODUCT_PACKAGES += \
-	android.hardware.gnss@1.0 \
-	vendor.qti.gnss@1.0_vendor \
-	vendor.qti.gnss@1.0 \
+	android.hardware.gnss@1.0-impl-qti \
+	android.hardware.gnss@1.0-service-qti \
 	libgnss \
 	libgnsspps \
-	android.frameworks.sensorservice@1.0  \
-	libsensorservice \
-	libsensor1 \
-	libsensor_reg \
-	nubia_mmi_sensor \
-	sensor_calibrate \
-	android.hardware.neuralnetworks@1.0 \
-	libneuralnetworks
+	libsensorndkbridge \
+	libvehiclenetwork-native
+	#android.hardware.gnss@1.0 \
+	#vendor.qti.gnss@1.0_vendor \
+	#vendor.qti.gnss@1.0 \
+	#libgnss \
+	#libgnsspps \
+	#android.frameworks.sensorservice@1.0  \
+	#libsensorservice \
+	#libsensor1 \
+	#libsensor_reg \
+	#nubia_mmi_sensor \
+	#sensor_calibrate \
+	#android.hardware.neuralnetworks@1.0 \
+	#libneuralnetworks
 
 # Health
 PRODUCT_PACKAGES += \
@@ -221,61 +286,59 @@ PRODUCT_PACKAGES += \
 # HIDL
 PRODUCT_PACKAGES += \
 	android.hidl.base@1.0 \
-	libbt-hidlclient \
-	libkeystore-engine-wifi-hidl \
-	libkeystore-wifi-hidl \
-	android.hidl.allocator@1.0 \
-	android.hidl.base@1.0 \
-	android.hidl.memory@1.0 \
-	android.hidl.token@1.0 \
-	android.hidl.token@1.0-utils \
-	libdisplayservicehidl \
-	libhidlbase \
-	libhidl-gen-utils \
-	libhidlmemory \
-	libhidltransport \
-	libschedulerservicehidl \
-	libsensorservicehidl
+	#libbt-hidlclient \
+	#libkeystore-engine-wifi-hidl \
+	#libkeystore-wifi-hidl \
+	#android.hidl.allocator@1.0 \
+	#android.hidl.base@1.0 \
+	#android.hidl.memory@1.0 \
+	#android.hidl.token@1.0 \
+	#android.hidl.token@1.0-utils \
+	#libdisplayservicehidl \
+	#libhidlbase \
+	#libhidl-gen-utils \
+	#libhidlmemory \
+	#libhidltransport \
+	#libschedulerservicehidl \
+	#libsensorservicehidl
 
 
 # IMS
 PRODUCT_PACKAGES += \
-	com.qualcomm.qti.imscmservice@1.0_vendor \
-	com.qualcomm.qti.imscmservice@1.1_vendor \
-	com.qualcomm.qti.imscmservice@1.0 \
-	com.qualcomm.qti.imscmservice@1.1 \
-	vendor.qti.hardware.radio.ims@1.0_vendor \
-	vendor.qti.imsrtpservice@1.0-service-Impl \
-	vendor.qti.imsrtpservice@1.0_vendor \
-	vendor.qti.imsrtpservice@1.0 \
-	lib-imscmservice \
-	lib-imsdpl \
-	lib-imsqimf \
-	lib-imsrcs-v2 \
-	lib-imsxml \
-	libimscamera_jni \
-	lib-imscamera \
-	libimsmedia_jni \
-	lib-imsvideocodec \
-	lib-imsvtextutils \
-	lib-imsvt \
-	lib-imsvtutils 
+	ims-ext-common
+	#com.qualcomm.qti.imscmservice@1.0_vendor \
+	#com.qualcomm.qti.imscmservice@1.1_vendor \
+	#com.qualcomm.qti.imscmservice@1.0 \
+	#com.qualcomm.qti.imscmservice@1.1 \
+	#vendor.qti.hardware.radio.ims@1.0_vendor \
+	#vendor.qti.imsrtpservice@1.0-service-Impl \
+	#vendor.qti.imsrtpservice@1.0_vendor \
+	#vendor.qti.imsrtpservice@1.0 \
+	#lib-imscmservice \
+	#lib-imsdpl \
+	#lib-imsqimf \
+	#lib-imsrcs-v2 \
+	#lib-imsxml \
+	#libimscamera_jni \
+	#lib-imscamera \
+	#libimsmedia_jni \
+	#lib-imsvideocodec \
+	#lib-imsvtextutils \
+	#lib-imsvt \
+	#lib-imsvtutils 
 
 # Input
 PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/configs/idc/uinput-fpc.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/uinput-fpc.idc \
 	$(PLATFORM_PATH)/configs/idc/uinput-goodix.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/uinput-goodix.idc
 
-# IPACM
-PRODUCT_PACKAGES += \
-	libipanat \
-	liboffloadhal
-
 # IPv6
 PRODUCT_PACKAGES += \
-	libebtable_broute \
-	libebtable_filter \
-	libebtable_nat \
+	ebtables \
+	ethertypes
+	#libebtable_broute \
+	#libebtable_filter \
+	#libebtable_nat \
 
 # IRSC
 PRODUCT_COPY_FILES += \
@@ -290,7 +353,7 @@ PRODUCT_COPY_FILES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-	android.hardware.light@2.0
+	android.hardware.light@2.0-service.nubia_sdm660
 
 # LiveDisplay native
 #PRODUCT_PACKAGES += \
@@ -304,47 +367,61 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	android.system.net.netd@1.0 \
 	libandroid_net \
-	libnetdaidl \
-	libnetd_client \
-	libnetdutils \
-	libnetlink \
-	libnetutils \
-	libnetmgr
+	netutils-wrapper-1.0
+	#libnetdaidl \
+	#libnetd_client \
+	#libnetdutils \
+	#libnetlink \
+	#libnetutils \
+	#libnetmgr
 
 
 # OMX
 PRODUCT_PACKAGES += \
-	libOmxMux \
-	android.hardware.media.omx@1.0 \
-	libmedia_omx \
-	libstagefright_omx \
-	libstagefright_omx_utils \
+	libc2dcolorconvert \
+	libaacwrapper \
 	libmm-omxcore \
-	libOmxAacDec \
 	libOmxAacEnc \
-	libOmxAlacDec \
-	libOmxAlacDecSw \
-	libOmxAmrDec \
 	libOmxAmrEnc \
-	libOmxAmrwbplusDec \
-	libOmxApeDec \
-	libOmxApeDecSw \
 	libOmxCore \
-	libOmxEvrcDec \
 	libOmxEvrcEnc \
-	libOmxG711Dec \
 	libOmxG711Enc \
-	libOmxQcelp13Dec \
 	libOmxQcelp13Enc \
 	libOmxVdec \
 	libOmxVenc \
-	libOmxVpp \
-	libOmxWmaDec \
-	libc2dcolorconvert \
-	libI420colorconvert \
-	libmm-color-convertor \
-	libsdm-color \
 	libstagefrighthw
+
+	#libOmxMux \
+	#android.hardware.media.omx@1.0 \
+	#libmedia_omx \
+	#libstagefright_omx \
+	#libstagefright_omx_utils \
+	#libmm-omxcore \
+	#libOmxAacDec \
+	#libOmxAacEnc \
+	#libOmxAlacDec \
+	#libOmxAlacDecSw \
+	#libOmxAmrDec \
+	#libOmxAmrEnc \
+	#libOmxAmrwbplusDec \
+	#libOmxApeDec \
+	#libOmxApeDecSw \
+	#libOmxCore \
+	#libOmxEvrcDec \
+	#libOmxEvrcEnc \
+	#libOmxG711Dec \
+	#libOmxG711Enc \
+	#libOmxQcelp13Dec \
+	#libOmxQcelp13Enc \
+	#libOmxVdec \
+	#libOmxVenc \
+	#libOmxVpp \
+	#libOmxWmaDec \
+	#libc2dcolorconvert \
+	#libI420colorconvert \
+	#libmm-color-convertor \
+	#libsdm-color \
+	#libstagefrighthw
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -387,13 +464,14 @@ PRODUCT_COPY_FILES += \
 
 # Power
 PRODUCT_PACKAGES += \
-	vendor.qti.esepowermanager@1.0_vendor \
-	vendor.qti.hardware.wipower@1.0_vendor \
-	android.hardware.power@1.0 \
-	android.hardware.power@1.1 \
-	libpowermanager \
-	libpower \
-	vendor.qti.esepowermanager@1.0 
+	android.hardware.power@1.3-service.sdm660-libperfmgr
+	#vendor.qti.esepowermanager@1.0_vendor \
+	#vendor.qti.hardware.wipower@1.0_vendor \
+	#android.hardware.power@1.0 \
+	#android.hardware.power@1.1 \
+	#libpowermanager \
+	#libpower \
+	#vendor.qti.esepowermanager@1.0 
 
 PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/power-libperfmgr/powerhint.json:$(TARGET_COPY_OUT_VENDOR)/etc/powerhint.json
@@ -454,53 +532,56 @@ PRODUCT_PACKAGES += \
 
 # RenderScript HAL
 PRODUCT_PACKAGES += \
-	android.hardware.renderscript@1.0
+	android.hardware.renderscript@1.0-impl
 
 # RIL
 PRODUCT_PACKAGES += \
-	android.hardware.broadcastradio@1.0 \
-	android.hardware.broadcastradio@1.1 \
-	android.hardware.radio@1.0 \
-	android.hardware.radio@1.1 \
-	android.hardware.radio.deprecated@1.0 \
-	libantradio \
-	libradio_metadata \
-	libril-qc-radioconfig \
-	vendor.qti.hardware.radio.am@1.0_vendor \
-	vendor.qti.hardware.radio.atcmdfwd@1.0_vendor \
-	vendor.qti.hardware.radio.lpa@1.0_vendor \
-	vendor.qti.hardware.radio.qcrilhook@1.0_vendor \
-	vendor.qti.hardware.radio.qtiradio@1.0_vendor \
-	vendor.qti.hardware.radio.uim@1.0_vendor \
-	vendor.qti.hardware.radio.uim_remote_client@1.0_vendor \
-	vendor.qti.hardware.radio.uim_remote_server@1.0_vendor \
+	android.hardware.radio@1.2 \
+	android.hardware.radio.config@1.0 \
+	android.hardware.secure_element@1.0 \
 	librmnetctl \
-	libxml \
+	libxml2 \
 	libprotobuf-cpp-full
+	#android.hardware.broadcastradio@1.0 \
+	#android.hardware.broadcastradio@1.1 \
+	#android.hardware.radio@1.0 \
+	#android.hardware.radio@1.1 \
+	#android.hardware.radio.deprecated@1.0 \
+	#libantradio \
+	#libradio_metadata \
+	#libril-qc-radioconfig \
+	#vendor.qti.hardware.radio.am@1.0_vendor \
+	#vendor.qti.hardware.radio.atcmdfwd@1.0_vendor \
+	#vendor.qti.hardware.radio.lpa@1.0_vendor \
+	#vendor.qti.hardware.radio.qcrilhook@1.0_vendor \
+	#vendor.qti.hardware.radio.qtiradio@1.0_vendor \
+	#vendor.qti.hardware.radio.uim@1.0_vendor \
+	#vendor.qti.hardware.radio.uim_remote_client@1.0_vendor \
+	#vendor.qti.hardware.radio.uim_remote_server@1.0_vendor \
+	#librmnetctl \
+	#libxml \
+	#libprotobuf-cpp-full
 	#android.hardware.radio.config@1.0 \
 	#android.hardware.secure_element@1.0 \
 
-#PRODUCT_PACKAGES += \
-	#rild \
-	#CarrierConfig
+PRODUCT_PACKAGES += \
+	rild \
+	CarrierConfig
 
 # Sensors
 PRODUCT_PACKAGES += \
 	android.hardware.sensors@1.0 \
-	sensors.hal.tof \
-	sensors.oem \
-	sensors.ssc 
+	#sensors.hal.tof \
+	#sensors.oem \
+	#sensors.ssc 
 
 # Sensor HAL conf file
 PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/sensors/hals.conf:$(TARGET_COPY_OUT_VENDOR)/etc/sensors/hals.conf
 
 # Telephony
-#PRODUCT_PACKAGES += \
+PRODUCT_PACKAGES += \
 .	telephony-ext
-
-#PRODUCT_BOOT_JARS += \
-#	telephony-ext
 
 # TextClassifier
 #PRODUCT_PACKAGES += \
@@ -508,27 +589,30 @@ PRODUCT_COPY_FILES += \
 
 # Thermal
 PRODUCT_PACKAGES += \
-	android.hardware.thermal@1.0 \
-	android.hardware.thermal@1.1 \
-	libthermalclient \
-	libthermalioctl \
-	libthermalcallback \
-	libthermalservice
+	android.hardware.thermal@1.0-impl \
+	android.hardware.thermal@1.0-service \
+	thermal.sdm660	
+	#android.hardware.thermal@1.0 \
+	#android.hardware.thermal@1.1 \
+	#libthermalclient \
+	#libthermalioctl \
+	#libthermalcallback \
+	#libthermalservice
 	#thermal.sdm660
 
 # ThermalController app
-#PRODUCT_PACKAGES += \
-	#ThermalController
+PRODUCT_PACKAGES += \
+	ThermalController
 
 # Touchscreen
 PRODUCT_PACKAGES += \
-	libtinyxml \
 	libtinyxml2_1
+	#libtinyxml \
 
 # USB
 PRODUCT_PACKAGES += \
 	android.hardware.usb@1.0 \
-	libusbhost
+	#libusbhost
 
 # Video seccomp policy files
 PRODUCT_COPY_FILES += \
@@ -537,10 +621,14 @@ PRODUCT_COPY_FILES += \
 
 # VNDK
 PRODUCT_PACKAGES += \
-	libdng_sdk \
-	libstdc++ \
-	vndk-sp \
-	libvndksupport
+	libdng_sdk.vendor_32 \
+	libstdc++.vendor \
+	vndk-ext \
+	vndk_package
+	#libdng_sdk \
+	#libstdc++ \
+	#vndk-sp \
+	#libvndksupport
 
 #PRODUCT_COPY_FILES += \
 	#prebuilts/vndk/v27/arm/arch-arm-armv7-a-neon/shared/vndk-core/android.frameworks.sensorservice@1.0.so:$(TARGET_COPY_OUT_VENDOR)/lib/android.frameworks.sensorservice@1.0-v27.so \
@@ -552,52 +640,55 @@ PRODUCT_COPY_FILES += \
 
 # VR
 PRODUCT_PACKAGES += \
-	android.frameworks.vr.composer@1.0 \
-	android.hardware.vr@1.0 \
-	libvr_amb_engine \
-	libvraudio \
-	libvr_object_engine \
-	libvr_sam_wrapper 
-
-    #vr.sdm660
+    vr.sdm660
+	#android.frameworks.vr.composer@1.0 \
+	#android.hardware.vr@1.0 \
+	#libvr_amb_engine \
+	#libvraudio \
+	#libvr_object_engine \
+	#libvr_sam_wrapper 
 
 # Wifi
 PRODUCT_PACKAGES += \
-	android.hardware.wifi@1.0 \
-	android.hardware.wifi@1.1 \
-	android.hardware.wifi.offload@1.0 \
-	android.hardware.wifi.supplicant@1.0 \
-	android.system.wifi.keystore@1.0 \
-	com.qualcomm.qti.wifidisplayhal@1.0 \
-	com.qualcomm.qti.wifidisplayhal@1.0-halimpl \
-	com.qualcomm.qti.wifidisplayhal@1.0-impl \
-	com.qualcomm.qti.wifidisplayhal@1.0_vendor \
-	vendor.qti.hardware.wifi.keystore@1.0 \
-	vendor.qti.hardware.wifi.keystore@1.0_vendor \
-	vendor.qti.hardware.wifi.supplicant@1.0_vendor \
-	libwificond_ipc \
-	libwifikeystorehalext \
-	libwifikeystorehal \
-	libwifi-service \
-	libwifi-system-iface \
-	libwifi-system \
-	libkeystore-engine-wifi-hidl \
-	libkeystore-wifi-hidl \
-	liblowi_wifihal \
+	android.hardware.wifi@1.0-service \
+	hostapd \
+	hostapd_cli \
+	libqsap_sdk \
+	libQWiFiSoftApCfg \
 	libwifi-hal-qcom \
-	libwifi-hal \
-	libxtwifi_ulp_adaptor \
-	libcert_parse.wpa_s \
 	libwpa_client \
-	libqsap_sdk 
-
-	#hostapd \
-	#hostapd_cli \
-	#libQWiFiSoftApCfg \
-	#wificond \
-	#wifilogd \
-	#wpa_supplicant \
-	#wpa_supplicant.conf
+	wificond \
+	wifilogd \
+	wpa_supplicant \
+	wpa_supplicant.conf
+	#libstagefright_wfd \
+	#android.hardware.wifi@1.0 \
+	#android.hardware.wifi@1.1 \
+	#android.hardware.wifi.offload@1.0 \
+	#android.hardware.wifi.supplicant@1.0 \
+	#android.system.wifi.keystore@1.0 \
+	#com.qualcomm.qti.wifidisplayhal@1.0 \
+	#com.qualcomm.qti.wifidisplayhal@1.0-halimpl \
+	#com.qualcomm.qti.wifidisplayhal@1.0-impl \
+	#com.qualcomm.qti.wifidisplayhal@1.0_vendor \
+	#vendor.qti.hardware.wifi.keystore@1.0 \
+	#vendor.qti.hardware.wifi.keystore@1.0_vendor \
+	#vendor.qti.hardware.wifi.supplicant@1.0_vendor \
+	#libwificond_ipc \
+	#libwifikeystorehalext \
+	#libwifikeystorehal \
+	#libwifi-service \
+	#libwifi-system-iface \
+	#libwifi-system \
+	#libkeystore-engine-wifi-hidl \
+	#libkeystore-wifi-hidl \
+	#liblowi_wifihal \
+	#libwifi-hal-qcom \
+	#libwifi-hal \
+	#libxtwifi_ulp_adaptor \
+	#libcert_parse.wpa_s \
+	#libwpa_client \
+	#libqsap_sdk 
 
 PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/wifi/p2p_supplicant_overlay.conf:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/p2p_supplicant_overlay.conf \
@@ -605,39 +696,17 @@ PRODUCT_COPY_FILES += \
 	$(PLATFORM_PATH)/wifi/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/WCNSS_qcom_cfg.ini
 
 # KeyHandler
-#PRODUCT_PACKAGES += \
-#	org.lineageos.keyhandler
+PRODUCT_PACKAGES += \
+	org.lineageos.keyhandler
+
+PRODUCT_BOOT_JARS += \
+	telephony-ext
 
 # Wi-Fi Display
 PRODUCT_BOOT_JARS += \
-	libstagefright_wfd \
-	libwfdavenhancements \
-	libwfdcodecv4l2 \
-	libwfdcommonutils \
-	libwfdconfigutils \
-	libwfdmminterface \
-	libwfdmmsink \
-	libwfdmmsrc \
-	libwfdnative \
-	libwfdrtsp \
-	libwfdservice \
-	libwfdsm \
-	libwfds \
-	libwfduibcinterface \
-	libwfduibcsinkinterface \
-	libwfduibcsink \
-	libwfduibcsrcinterface \
-	libwfduibcsrc \
-	libwfdcommonutils_proprietary \
-	libwfdhaldsmanager \
-	libwfdhdcpcp \
-	libwfdmmservice \
-	libwfdmodulehdcpsession
-
+	WfdCommon
 
 PRODUCT_PACKAGES += \
-	libnl 
-	#libwfdaac
+	libnl \
+	libwfdaac
 
-# Vendor files
-#$(call inherit-product, vendor/nubia/sdm660-common/sdm660-common-vendor.mk)
