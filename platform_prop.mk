@@ -26,9 +26,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	dalvik.vm.dex2oat-filter=speed \
 	dalvik.vm.image-dex2oat-filter=speed \
 	ro.vendor.qti.am.reschedule_service=true \
-	ro.sys.fw.dex2oat_thread_count=8 \
 	dalvik.vm.boot-dex2oat-threads=8 \
 	dalvik.vm.dex2oat-threads=8
+	#ro.sys.fw.dex2oat_thread_count=8 \
 
 # Audio
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -65,7 +65,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	vendor.fm.a2dp.conc.disabled=true \
 	vendor.voice.path.for.pcm.voip=true \
 	vendor.audio_hal.in_period_size=144 \
-  vendor.audio_hal.period_multiplier=3
+	vendor.audio_hal.period_multiplier=3
 
 # Bluetooth
 PRODUCT_PROPERTY_OVERRIDES += \

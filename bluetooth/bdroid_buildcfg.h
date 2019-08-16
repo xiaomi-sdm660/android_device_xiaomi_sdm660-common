@@ -34,8 +34,8 @@ static inline const char* BtmGetDefaultName()
     char product_model[PROPERTY_VALUE_MAX];
     property_get("ro.product.model", product_model, "");
 
-    if (strstr(product_model, "Mi A2"))
-        return "Mi A2";
+    if (strstr(product_model, "NX611J"))
+        return "NX611J";
     if (strstr(product_model, "MI 6X"))
         return "MI 6X";
     if (strstr(product_model, "MI PAD 4"))
