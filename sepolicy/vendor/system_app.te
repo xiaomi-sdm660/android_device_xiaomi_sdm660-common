@@ -6,3 +6,5 @@ allow system_app kcal_dev:file rw_file_perms;
 allow system_app kcal_dev:dir search;
 allow system_app hall_dev:file rw_file_perms;
 allow system_app hall_dev:dir search;
+allow system_app sysfs_thermal:file rw_file_perms;
+allow system_app sysfs_thermal:dir search;
