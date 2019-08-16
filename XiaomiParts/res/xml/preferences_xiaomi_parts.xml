@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        android:key="vibration"
+        android:title="@string/vibration_title">
+
+        <org.lineageos.settings.device.preferences.VibrationSeekBarPreference
+            android:defaultValue="80"
+            android:key="vibration_strength"
+            android:max="100"
+            android:title="@string/vibration_strength_title"
+            app:min="1"
+            app:units="%" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="display"
+        android:title="@string/display_title">
+
+        <Preference
+            android:key="device_kcal"
+            android:persistent="false"
+            android:title="@string/device_kcal_title">
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetClass="org.lineageos.settings.kcal.KCalSettingsActivity"
+                android:targetPackage="org.lineageos.settings.kcal" />
+        </Preference>
+
+        <Preference
+            android:key="device_doze"
+            android:persistent="false"
+            android:summary="@string/advanced_doze_summary"
+            android:title="@string/ambient_display_xiaomi">
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetClass="org.lineageos.settings.doze.DozeSettingsActivity"
+                android:targetPackage="org.lineageos.settings.doze" />
+        </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="spectrum_profile"
+        android:title="@string/spectrum_profile_title">
+
+        <org.lineageos.settings.device.preferences.SecureSettingListPreference
+            android:defaultValue="0"
+            android:dialogTitle="@string/spectrum_dialogTitle"
+            android:entries="@array/spectrum_profiles"
+            android:entryValues="@array/spectrum_values"
+            android:key="spectrum"
+            android:summary="@string/spectrum_summary"
+            android:title="@string/spectrum_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="audio"
+        android:title="@string/audio_title">
+
+        <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
+            android:defaultValue="false"
+            android:key="dirac_enabled"
+            android:summary="@string/dirac_summary"
+            android:title="@string/dirac_title" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingListPreference
+            android:defaultValue="0"
+            android:dependency="dirac_enabled"
+            android:entries="@array/dirac_headset_pref_entries"
+            android:entryValues="@array/dirac_headset_pref_values"
+            android:key="dirac_headset_pref"
+            android:summary="%s"
+            android:title="@string/dirac_headset_title" />
+
+        <org.lineageos.settings.device.preferences.SecureSettingListPreference
+            android:defaultValue="0,0,0,0,0,0,0"
+            android:dependency="dirac_enabled"
+            android:entries="@array/dirac_preset_pref_entries"
+            android:entryValues="@array/dirac_preset_pref_values"
+            android:key="dirac_preset_pref"
+            android:summary="%s"
+            android:title="@string/dirac_preset_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="hall_wakeup"
+        android:title="@string/hall_wakeup_title">
+
+        <org.lineageos.settings.device.preferences.SecureSettingSwitchPreference
+            android:defaultValue="true"
+            android:key="hall"
+            android:summary="@string/hall_wakeup_summary"
+            android:title="@string/hall_title" />
+    </PreferenceCategory>
+</PreferenceScreen>

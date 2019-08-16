@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+	 
+	 Translated with <3 by pqhaz
+-->
+<resources>
+    <string name="advanced_settings">Настройки Xiaomi</string>
+    <string name="advanced_settings_summary">Дополнительные настройки</string>
+
+    <string name="display_title">Экран</string>
+
+    <!-- KCal -->
+    <string name="device_kcal_title">Калибрация цвета экрана</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display_xiaomi">Дозе Xiaomi</string>
+    <string name="advanced_doze_summary">Ambient экран</string>
+
+    <string name="vibration_title">Вибрация</string>
+    <string name="vibration_strength_title">Сила</string>
+
+    <!-- Spectrum Profiles -->
+    <string name="spectrum_profile_title">Производительность</string>
+    <string name="spectrum_title">Настройки производительности</string>
+    <string name="spectrum_summary">Выберите Ваш профил производительности</string>
+    <string name="spectrum_dialogTitle">Выберите Ваш профил производительности</string>
+
+    <!-- Values for Spectrum Presets -->
+    <string name="spectrum_performance">Производительность</string>
+    <string name="spectrum_battery">Энергосбережение</string>
+    <string name="spectrum_gaming">Игры</string>
+    <string name="spectrum_balance">Баланс</string>
+    <string name="spectrum_extreme_battery">Экстримное энергосбережение</string>
+
+    <!-- FP Actions -->
+
+    <!-- Values for FP Actions -->
+
+    <string name="audio_title">Аудио</string>
+
+    <!-- Dirac settings -->
+    <string name="dirac_title">Mi Оптимизатор звука</string>
+    <string name="dirac_summary">Oтимизирует качество звучания</string>
+    <string name="dirac_headset_title">Выберите тип наушников</string>
+    <string name="dirac_preset_title">Выберите пресет</string>
+
+    <!-- Dirac settings: Headset types -->
+    <string name="dirac_headset_default">По умолчанию</string>
+    <string name="dirac_headset_earbuds">Mi Earbuds</string>
+    <string name="dirac_headset_in_ear_2013">Mi In-Ear (2013)</string>
+    <string name="dirac_headset_piston_1">Mi Piston-1</string>
+    <string name="dirac_headset_general">General</string>
+    <string name="dirac_headset_general_inear">General In-Ear</string>
+    <string name="dirac_headset_piston_basic">Basic Edition</string>
+    <string name="dirac_headset_piston_2">Mi Piston-2</string>
+    <string name="dirac_headset_piston_standard">Standard Edition</string>
+    <string name="dirac_headset_headphone">Mi Headphones</string>
+    <string name="dirac_headset_piston_youth">Youth Edition</string>
+    <string name="dirac_headset_piston_color">Color Edition</string>
+    <string name="dirac_headset_in_ear">Mi In-Ear</string>
+    <string name="dirac_headset_capsule">Mi Capsule</string>
+    <string name="dirac_headset_in_ear_pro">Mi In-Ear Pro</string>
+    <string name="dirac_headset_comfort">Mi Comfort</string>
+    <string name="dirac_headset_reduction_noise">Mi Noise Cancelling Type-C</string>
+    <string name="dirac_headset_cancelling">Mi Noise Cancelling 3.5mm</string>
+    <string name="dirac_headset_half_in_ear">Mi Half In-Ear</string>
+    <string name="dirac_headset_in_ear2">Mi In-Ear 2</string>
+    <string name="dirac_headset_earphone_basic">Mi Earphones Basic</string>
+    <string name="dirac_headset_earphone">Mi Earphones</string>
+
+    <!-- Dirac settings: Equalizer presets -->
+    <string name="dirac_preset_default">По умолчанию</string>
+    <string name="dirac_preset_rock">Рок</string>
+    <string name="dirac_preset_jazz">Джаз</string>
+    <string name="dirac_preset_pop">Поп</string>
+    <string name="dirac_preset_classical">Классика</string>
+    <string name="dirac_preset_hiphop">Хип-хоп</string>
+    <string name="dirac_preset_blues">Блюз</string>
+    <string name="dirac_preset_electronic">Электроника</string>
+    <string name="dirac_preset_country">Кантри</string>
+    <string name="dirac_preset_dance">Танцевальная</string>
+    <string name="dirac_preset_metal">Металл</string>
+
+    <!-- Audio amplification -->
+
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">Калибрация цвета экрана</string>
+    <string name="cat_colormanagement">Настройки цвета</string>
+    <string name="cat_calibration">Калибрация экрана</string>
+
+    <string name="kcal_enabled">Включено</string>
+    <string name="kcal_disabled">Выключено</string>
+    <string name="set_on_boot">Включать при загрузке</string>
+    <string name="color_red">Красный</string>
+    <string name="color_green">Зелёный</string>
+    <string name="color_blue">Синий</string>
+    <string name="color_minimum">Минимум</string>
+    <string name="saturation">Насыщеность</string>
+    <string name="value">Значение</string>
+    <string name="contrast">Контраст</string>
+    <string name="hue">Оттенок</string>
+    <string name="grayscale">Экран в оттенках серого</string>
+
+    <string name="presets_dialog_title">Выберите пресет</string>
+
+    <!-- menu -->
+    <string name="kcal_reset">Вернуть пресет по умолчанию</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">Выбрать новое значение</string>
+    <string name="default_value">Значение по умолчанию</string>
+    <string name="edit_hint">Значение между %1$d и %2$d</string>
+</resources>

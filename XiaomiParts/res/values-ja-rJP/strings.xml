@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="advanced_settings">Xiaomi パーツ</string>
+    <string name="advanced_settings_summary">追加の設定</string>
+
+    <string name="display_title">画面</string>
+
+    <!-- KCal -->
+    <string name="device_kcal_title">画面の色補正</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display_xiaomi">Xiaomi Doze</string>
+    <string name="advanced_doze_summary">アンビエント画面</string>
+
+    <string name="vibration_title">振動フィードバック</string>
+    <string name="vibration_strength_title">強さ</string>
+
+    <!-- Spectrum Profiles -->
+    <string name="spectrum_profile_title">パフォーマンス</string>
+    <string name="spectrum_title">パフォーマンスの設定</string>
+    <string name="spectrum_summary">パフォーマンス設定を選択して下さい</string>
+    <string name="spectrum_dialogTitle">パフォーマンス設定を選択して下さい</string>
+
+    <!-- Values for Spectrum Presets -->
+    <string name="spectrum_performance">高性能</string>
+    <string name="spectrum_battery">省電力</string>
+    <string name="spectrum_gaming">ゲーム</string>
+    <string name="spectrum_balance">バランス</string>
+    <string name="spectrum_extreme_battery">超省電力</string>
+
+    <!-- FP Actions -->
+
+    <!-- Values for FP Actions -->
+
+    <string name="audio_title">音楽</string>
+
+    <!-- Dirac settings -->
+    <string name="dirac_title">Mi サウンドエンハンサー</string>
+    <string name="dirac_summary">オーディオ品質を最適化</string>
+    <string name="dirac_headset_title">ヘッドフォンの種類を選択</string>
+    <string name="dirac_preset_title">プリセットを選択してください</string>
+    <!-- Dirac settings: Headset types -->
+    <string name="dirac_headset_default">デフォルト</string>
+    <string name="dirac_headset_earbuds">Mi イヤーバッド</string>
+    <string name="dirac_headset_in_ear_2013">Mi インイヤー (2013)</string>
+    <string name="dirac_headset_piston_1">Mi ピストン 1</string>
+    <string name="dirac_headset_general">一般</string>
+    <string name="dirac_headset_general_inear">一般的なインイヤー型</string>
+    <string name="dirac_headset_piston_basic">ベーシック版</string>
+    <string name="dirac_headset_piston_2">Mi ピストン 2</string>
+    <string name="dirac_headset_piston_standard">スタンダード版</string>
+    <string name="dirac_headset_headphone">Mi ヘッドフォン</string>
+    <string name="dirac_headset_piston_youth">青春版</string>
+    <string name="dirac_headset_piston_color">カラー版</string>
+    <string name="dirac_headset_in_ear">Mi インイヤー</string>
+    <string name="dirac_headset_capsule">Mi カプセル</string>
+    <string name="dirac_headset_in_ear_pro">Mi インイヤー Pro</string>
+    <string name="dirac_headset_comfort">Mi コンフォート</string>
+    <string name="dirac_headset_reduction_noise">Mi ノイズキャンセリング Type-C</string>
+    <string name="dirac_headset_cancelling">Mi ノイズキャンセリング 3.5mm</string>
+    <string name="dirac_headset_half_in_ear">Mi ハーフインイヤー</string>
+    <string name="dirac_headset_in_ear2">Mi インイヤー2</string>
+    <string name="dirac_headset_earphone_basic">Mi イヤフォン ベーシック</string>
+    <string name="dirac_headset_earphone">Mi イヤホン</string>
+    <!-- Dirac settings: Equalizer presets -->
+    <string name="dirac_preset_default">デフォルト</string>
+    <string name="dirac_preset_rock">ロック</string>
+    <string name="dirac_preset_jazz">ジャズ</string>
+    <string name="dirac_preset_pop">ポップ</string>
+    <string name="dirac_preset_classical">クラシック</string>
+    <string name="dirac_preset_hiphop">ヒップホップ</string>
+    <string name="dirac_preset_blues">ブルース</string>
+    <string name="dirac_preset_electronic">エレクトロニック</string>
+    <string name="dirac_preset_country">カントリー</string>
+    <string name="dirac_preset_dance">ダンス</string>
+    <string name="dirac_preset_metal">メタル</string>
+
+    <!-- Audio amplification -->
+
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">画面の色補正</string>
+    <string name="cat_colormanagement">色の設定</string>
+    <string name="cat_calibration">画面の補正</string>
+
+    <string name="kcal_enabled">ON</string>
+    <string name="kcal_disabled">OFF</string>
+    <string name="set_on_boot">起動時に設定</string>
+    <string name="color_red">赤</string>
+    <string name="color_green">緑</string>
+    <string name="color_blue">青</string>
+    <string name="color_minimum">最小</string>
+    <string name="saturation">彩度</string>
+    <string name="value">値</string>
+    <string name="contrast">コントラスト</string>
+    <string name="hue">色相</string>
+    <string name="grayscale">グレースケール画面</string>
+
+    <string name="presets_dialog_title">プリセットを選択</string>
+    <!-- Presets -->
+    <string name="preset_default">既定</string>
+    <string name="preset_version_1">バージョン 1</string>
+    <string name="preset_version_2">バージョン 2</string>
+    <string name="preset_version_3">バージョン 3</string>
+    <string name="preset_triluminous">トリルミナス</string>
+    <string name="preset_deep_black_white">深い黒と白</string>
+    <string name="preset_deep_natural">ディープナチュラル</string>
+    <string name="preset_cool_amoled">寒色 AMOLED</string>
+    <string name="preset_extreme_amoled">エクストリーム AMOLED</string>
+    <string name="preset_warm_amoled">暖色 AMOLED</string>
+    <string name="preset_hybrid_mamba">Hybrid Mamba</string>
+
+    <!-- usb fastcharge -->
+
+    <!-- menu -->
+    <string name="kcal_presets" translatable="false">@string/presets_dialog_title</string>
+    <string name="kcal_reset">リセット</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">新しい値を選択して下さい</string>
+    <string name="default_value">既定値</string>
+    <string name="edit_hint">値は %1$d と %2$d の間です</string>
+     
+     <!-- Flip cover wake -->
+     <string name="hall_wakeup_title">フリップカバーの復帰</string>
+     <string name="hall_title">フリップカバーの復帰の有効化</string>
+     <string name="hall_wakeup_summary">マグネットフリップカバーでスリープ解除する</string>
+</resources>

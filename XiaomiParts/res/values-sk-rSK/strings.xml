@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="advanced_settings">Xiaomi Parts</string>
+    <string name="advanced_settings_summary">Rozšírené nastavenia</string>
+    <string name="display_title">Displej</string>
+    <string name="device_kcal_title">Kalibrácia farieb</string>
+    <string name="vibration_strength_title">Sila vibrácií</string>
+
+    <!-- Spectrum Profiles -->
+    <string name="spectrum_profile_title">Výkon</string>
+    <string name="spectrum_title">Nastavenia výkonu</string>
+    <string name="spectrum_summary">Výber nastavenia výkonu</string>
+    <string name="spectrum_dialogTitle">Výber nastavenia výkonu</string>
+
+    <string name="spectrum_performance">Výkon</string>
+    <string name="spectrum_battery">Šetrič batérie</string>
+    <string name="spectrum_gaming">Gaming</string>
+    <string name="spectrum_balance">Vyvážený</string>
+    <string name="spectrum_extreme_battery">Extrémny šetrič batérie</string>
+    <string name="vibration_title">Vibrácie</string>
+
+    <!-- Dirac settings -->
+    <string name="dirac_title">Mi vylepšenie zvuku</string>
+    <string name="dirac_summary">Optimalizácia kvality zvuku</string>
+    <string name="dirac_headset_title">Výber typu slúchadiel</string>
+    <string name="dirac_preset_title">Výber profilu</string>
+    <!-- Dirac settings: Headset types -->
+    <string name="dirac_headset_default">Default</string>
+    <string name="dirac_headset_earbuds">Mi Earbuds</string>
+    <string name="dirac_headset_in_ear_2013">Mi In Ear (2013)</string>
+    <string name="dirac_headset_piston_1">Mi Piston 1</string>
+    <string name="dirac_headset_general">General Earbuds</string>
+    <string name="dirac_headset_general_inear">General In Ear</string>
+    <string name="dirac_headset_piston_basic">Basis Edition</string>
+    <string name="dirac_headset_piston_2">Mi Piston 2</string>
+    <string name="dirac_headset_piston_standard">Standard Edition</string>
+    <string name="dirac_headset_headphone">Mi Headphones</string>
+    <string name="dirac_headset_piston_youth">Youth Edition</string>
+    <string name="dirac_headset_piston_color">Color Edition</string>
+    <string name="dirac_headset_in_ear">Mi In Ear</string>
+    <string name="dirac_headset_capsule">Mi Capsule</string>
+    <string name="dirac_headset_in_ear_pro">Mi In Ear Pro</string>
+    <string name="dirac_headset_comfort">Mi Comfort</string>
+    <string name="dirac_headset_reduction_noise">Mi Noise Cancelling Type-C</string>
+    <string name="dirac_headset_cancelling">Mi Noise Cancelling 3.5mm</string>
+    <string name="dirac_headset_half_in_ear">Mi Half In Ear</string>
+    <string name="dirac_headset_in_ear2">Mi In Ear 2</string>
+    <string name="dirac_headset_earphone_basic">Mi Earphones Basic</string>
+    <string name="dirac_headset_earphone">Mi Earphones</string>
+    <!-- Dirac settings: Equalizer presets -->
+    <string name="dirac_preset_default">Standard</string>
+    <string name="dirac_preset_rock">Rock</string>
+    <string name="dirac_preset_jazz">Jazz</string>
+    <string name="dirac_preset_pop">Pop</string>
+    <string name="dirac_preset_classical">Klasika</string>
+    <string name="dirac_preset_hiphop">Hip Hop</string>
+    <string name="dirac_preset_blues">Blues</string>
+    <string name="dirac_preset_electronic">Elektronická hudba</string>
+    <string name="dirac_preset_country">Country</string>
+    <string name="dirac_preset_dance">Dance</string>
+    <string name="dirac_preset_metal">Metal</string>
+
+    <string name="advanced_settings_kcal">Kalibrácia farieb displeja</string>
+    <string name="cat_calibration">Kalibrácia displeja</string>
+    <string name="set_on_boot">Aktivuj pri štarte systému</string>
+    <string name="kcal_enabled">Zapnuté</string>
+    <string name="kcal_disabled">Vypnuté</string>
+    <string name="color_red">Červená</string>
+    <string name="color_green">Zelená</string>
+    <string name="color_blue">Modrá</string>
+    <string name="color_minimum">Minimum</string>
+    <string name="saturation">Sýtosť</string>
+    <string name="contrast">Kontrast</string>
+    <string name="cat_colormanagement">Nastavenia farieb</string>
+    <string name="value">Hodnota</string>
+    <string name="hue">Odtieň</string>
+    <string name="kcal_reset">Východzie nastavenie</string>
+    <string name="presets_dialog_title">Výber nastavenia</string>
+    <string name="preset_default">Default</string>
+    <string name="preset_deep_black_white">Výrazná čierna a biela</string>
+    <string name="preset_extreme_amoled">Extrémny AMOLED</string>
+    <string name="preset_warm_amoled">Teplé farby AMOLED</string>
+    <string name="preset_cool_amoled">Chladné farby AMOLED</string>
+    <string name="preset_deep_natural">Prírodné farby</string>
+    <string name="edit_value">Výber novej hodnoty</string>
+    <string name="default_value">Pôvodná hodnota</string>
+    <string name="edit_hint">Hodnota medzi %1d a %2d</string>
+    <string name="advanced_doze_summary">Ambient display</string>
+    <string name="grayscale">Čiernobiely mód</string>
+</resources>

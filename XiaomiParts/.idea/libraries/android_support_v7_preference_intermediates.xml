@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="android-support-v7-preference_intermediates">
+    <CLASSES>
+      <root url="file://$USER_HOME$/dev/rom/havoc/out/target/common/obj/JAVA_LIBRARIES/android-support-v7-preference_intermediates" />
+      <root url="file://$USER_HOME$/dev/rom/havoc/out/target/common/obj/JAVA_LIBRARIES/android-support-v14-preference_intermediates" />
+      <root url="file://$USER_HOME$/dev/rom/havoc/out/target/common/obj/JAVA_LIBRARIES/android-support-v4_intermediates" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$USER_HOME$/dev/rom/havoc/out/target/common/obj/JAVA_LIBRARIES/android-support-v14-preference_intermediates" recursive="false" />
+    <jarDirectory url="file://$USER_HOME$/dev/rom/havoc/out/target/common/obj/JAVA_LIBRARIES/android-support-v4_intermediates" recursive="false" />
+    <jarDirectory url="file://$USER_HOME$/dev/rom/havoc/out/target/common/obj/JAVA_LIBRARIES/android-support-v7-preference_intermediates" recursive="false" />
+  </library>
+</component>

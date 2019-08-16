@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="advanced_settings">Xiaomi Parts</string>
+    <string name="advanced_settings_summary">Erweiterte Einstellungen</string>
+    <string name="display_title">Display</string>
+    <string name="device_kcal_title">Displaykalibierung</string>
+    <string name="vibration_strength_title">Stärke</string>
+
+    <!-- Spectrum Profiles -->
+    <string name="spectrum_profile_title">Leistung</string>
+    <string name="spectrum_title">Leistung Einstellung</string>
+    <string name="spectrum_summary">Wähle die Leistungstufe</string>
+    <string name="spectrum_dialogTitle">Wähle die Leistungstufe</string>
+
+    <string name="spectrum_performance">Performance</string>
+    <string name="spectrum_battery">Energieeffizient</string>
+    <string name="spectrum_gaming">Gaming</string>
+    <string name="spectrum_balance">Balance</string>
+    <string name="spectrum_extreme_battery">Energiesparmodus</string>
+    <string name="vibration_title">Haptisches Feedback</string>
+
+    <!-- Dirac settings -->
+    <string name="dirac_title">Mi Klangverbesserung</string>
+    <string name="dirac_summary">Audioqualität optimieren</string>
+    <string name="dirac_headset_title">Kopfhörertyp auswählen</string>
+    <string name="dirac_preset_title">Vorgabe auswählen</string>
+    <!-- Dirac settings: Headset types -->
+    <string name="dirac_headset_default">Standard</string>
+    <string name="dirac_headset_earbuds">Mi Ohrhörer</string>
+    <string name="dirac_headset_in_ear_2013">Mi In Ear (2013)</string>
+    <string name="dirac_headset_piston_1">Mi Piston 1</string>
+    <string name="dirac_headset_general">Allgemeine Earbuds</string>
+    <string name="dirac_headset_general_inear">Allgemeine In Ear</string>
+    <string name="dirac_headset_piston_basic">Basis Edition</string>
+    <string name="dirac_headset_piston_2">Mi Piston 2</string>
+    <string name="dirac_headset_piston_standard">Standard Edition</string>
+    <string name="dirac_headset_headphone">Mi Kopfhörer</string>
+    <string name="dirac_headset_piston_youth">Jugend Edition</string>
+    <string name="dirac_headset_piston_color">Farbige Edition</string>
+    <string name="dirac_headset_in_ear">Mi In Ear</string>
+    <string name="dirac_headset_capsule">Mi Capsule</string>
+    <string name="dirac_headset_in_ear_pro">Mi In Ear Pro</string>
+    <string name="dirac_headset_comfort">Mi Komfort</string>
+    <string name="dirac_headset_reduction_noise">Mi-Geräuschunterdrückung (Typ-C)</string>
+    <string name="dirac_headset_cancelling">Mi-Geräuschunterdrückung (3.5 mm)</string>
+    <string name="dirac_headset_half_in_ear">Mi Half In Ear</string>
+    <string name="dirac_headset_in_ear2">Mi In Ear 2</string>
+    <string name="dirac_headset_earphone_basic">Mi Earphones Basic</string>
+    <string name="dirac_headset_earphone">Mi Earphones</string>
+    <!-- Dirac settings: Equalizer presets -->
+    <string name="dirac_preset_default">Standard</string>
+    <string name="dirac_preset_rock">Rock</string>
+    <string name="dirac_preset_jazz">Jazz</string>
+    <string name="dirac_preset_pop">Pop</string>
+    <string name="dirac_preset_classical">Klassisch</string>
+    <string name="dirac_preset_hiphop">Hip Hop</string>
+    <string name="dirac_preset_blues">Blues</string>
+    <string name="dirac_preset_electronic">Elektronik</string>
+    <string name="dirac_preset_country">Country</string>
+    <string name="dirac_preset_dance">Dance</string>
+    <string name="dirac_preset_metal">Metal</string>
+
+    <string name="advanced_settings_kcal">Display Farbeinstellungen</string>
+    <string name="cat_calibration">Bildschirm Kalibrierung</string>
+    <string name="set_on_boot">Beim Systemstart anwenden</string>
+    <string name="kcal_enabled">An</string>
+    <string name="kcal_disabled">Aus</string>
+    <string name="color_red">Rot</string>
+    <string name="color_green">Grün</string>
+    <string name="color_blue">Blau</string>
+    <string name="color_minimum">Minimum</string>
+    <string name="saturation">Sättigung</string>
+    <string name="contrast">Kontrast</string>
+    <string name="cat_colormanagement">Farbeinstellungen</string>
+    <string name="value">Farbwert</string>
+    <string name="hue">Farbton</string>
+    <string name="kcal_reset">Zurücksetzen</string>
+    <string name="presets_dialog_title">Voreinstellung auswählen</string>
+    <string name="preset_default">Standard</string>
+    <string name="preset_deep_black_white">Tiefes Schwarz und Weiß</string>
+    <string name="preset_extreme_amoled">Extremes AMOLED</string>
+    <string name="preset_warm_amoled">Warmes AMOLED</string>
+    <string name="preset_cool_amoled">Kühles AMOLED</string>
+    <string name="preset_deep_natural">Naturfarben</string>
+    <string name="edit_value">Wähle neuen Wert</string>
+    <string name="default_value">Standard Wert</string>
+    <string name="edit_hint">Wert zwischen %1d und %2d</string>
+    <string name="advanced_doze_summary">Inaktivitätsdisplay</string>
+    <string name="grayscale">Graustufen-Modus</string>
+    <string name="hall_title">Aktiviere Aufwecken mit Flip Cover </string>
+    <string name="hall_wakeup_summary">Schalte das Gerät AN und AUS mit einem magnetischen Flip Cover</string>
+</resources>
