@@ -164,6 +164,8 @@ on boot
 # XiaomiParts
     chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
     chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
+    chown system system /sys/module/hall/parameters/hall_toggle
+    chmod 0660 /sys/module/hall/parameters/hall_toggle
 
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
