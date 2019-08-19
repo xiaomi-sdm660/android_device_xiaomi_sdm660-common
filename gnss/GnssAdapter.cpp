@@ -722,8 +722,6 @@ GnssAdapter::setConfig()
     //cache the injected configuration with GnssConfigRequested struct
     GnssConfig gnssConfigRequested = {};
     gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT |
-            GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT |
-            GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT |
             GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
     /* Here we process an SSR. We need to set the GPS_LOCK to the proper values, as follows:
     1. Q behavior. This is identified by mSupportNfwControl being 1. In this case
@@ -756,10 +754,17 @@ GnssAdapter::setConfig()
         gnssConfigRequested.aGlonassPositionProtocolMask =
                 gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
     }
-    gnssConfigRequested.lppeControlPlaneMask =
-            mLocApi->convertLppeCp(gpsConf.LPPE_CP_TECHNOLOGY);
-    gnssConfigRequested.lppeUserPlaneMask =
-            mLocApi->convertLppeUp(gpsConf.LPPE_UP_TECHNOLOGY);
+    if (gpsConf.LPPE_CP_TECHNOLOGY) {
+        gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT;
+        gnssConfigRequested.lppeControlPlaneMask =
+                mLocApi->convertLppeCp(gpsConf.LPPE_CP_TECHNOLOGY);
+    }
+
+    if (gpsConf.LPPE_UP_TECHNOLOGY) {
+        gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT;
+        gnssConfigRequested.lppeUserPlaneMask =
+                mLocApi->convertLppeUp(gpsConf.LPPE_UP_TECHNOLOGY);
+    }
     gnssConfigRequested.blacklistedSvIds.assign(mBlacklistedSvIds.begin(),
                                                 mBlacklistedSvIds.end());
     mLocApi->sendMsg(new LocApiMsg(
