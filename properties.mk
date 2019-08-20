@@ -1,6 +1,6 @@
 # ART
 PRODUCT_PROPERTY_OVERRIDES += \
- 	  dalvik.vm.dex2oat-filter=speed \
+    dalvik.vm.dex2oat-filter=speed \
     dalvik.vm.image-dex2oat-filter=speed \
     ro.vendor.qti.am.reschedule_service=true \
     ro.sys.fw.dex2oat_thread_count=8 \
@@ -59,7 +59,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi \
     persist.vendor.camera.HAL3.enabled=1 \
-		persist.vendor.camera.eis.enable=1 \
+    persist.vendor.camera.eis.enable=1 \
     persist.vendor.camera.exif.make=Xiaomi \
     vendor.camera.aux.packagelist=org.codeaurora.snapcam,com.android.camera,com.qualcomm.qti.qmmi
 
@@ -87,7 +87,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.qualcomm.cabl=0 \
     vendor.display.disable_skip_validate=1 \
     vendor.gralloc.enable_fb_ubwc=1 \
-    vendor.video.disable.ubwc=1
+    vendor.video.disable.ubwc=1 \
+    video.disable.ubwc=1
 
 # enable FIFO scheduling for UI and Render threads by default
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -164,11 +165,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.data.netmgrd.qos.enable=true \
     persist.data.wda.enable=true \
     persist.radio.aosp_usr_pref_sel=true \
-		persist.radio.add_power_save=1 \
+    persist.radio.add_power_save=1 \
     persist.radio.VT_CAM_INTERFACE=2 \
     persist.radio.data_con_rprt=1 \
     persist.radio.schd.cache=3500 \
-		persist.radio.calls.on.ims=1 \
+    persist.radio.calls.on.ims=1 \
     persist.rmnet.data.enable=true \
     persist.vendor.data.mode=concurrent \
     persist.vendor.qti.telephony.vt_cam_interface=1 \
