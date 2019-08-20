@@ -23,6 +23,7 @@
 #include <log_util.h>
 #include "Gnss.h"
 #include "GnssConfiguration.h"
+#include "ContextBase.h"
 #include <android/hardware/gnss/1.0/types.h>
 
 namespace android {
@@ -32,6 +33,7 @@ namespace V2_0 {
 namespace implementation {
 
 using ::android::hardware::gnss::V1_0::GnssConstellationType;
+using namespace loc_core;
 
 GnssConfiguration::GnssConfiguration(Gnss* gnss) : mGnss(gnss) {
 }
@@ -109,8 +111,7 @@ Return<bool> GnssConfiguration::setLppProfile(uint8_t lppProfile) {
         return false;
     }
 
-    GnssConfig config;
-    memset(&config, 0, sizeof(GnssConfig));
+    GnssConfig config = {};
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
     switch (lppProfile) {
@@ -162,8 +163,37 @@ Return<bool> GnssConfiguration::setGlonassPositioningProtocol(uint8_t protocol) 
     return mGnss->updateConfiguration(config);
 }
 
-Return<bool> GnssConfiguration::setGpsLock(uint8_t /*lock*/) {
-    // deprecated function. Must return false to pass VTS
+Return<bool> GnssConfiguration::setGpsLock(uint8_t lock) {
+
+    if (mGnss == nullptr) {
+        LOC_LOGE("%s]: mGnss is nullptr", __FUNCTION__);
+        return false;
+    }
+
+    GnssConfig config = {};
+    config.size = sizeof(GnssConfig);
+    config.flags = GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT;
+    switch (lock) {
+    case 0:
+        config.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
+        break;
+    case 1:
+        config.gpsLock = GNSS_CONFIG_GPS_LOCK_MO;
+        break;
+    case 2:
+        config.gpsLock = GNSS_CONFIG_GPS_LOCK_NI;
+        break;
+    case 3:
+        config.gpsLock = GNSS_CONFIG_GPS_LOCK_MO_AND_NI;
+        break;
+    default:
+        LOC_LOGE("%s]: invalid lock: %d.", __FUNCTION__, lock);
+        return false;
+        break;
+    }
+
+    mGnss->updateConfiguration(config);
+    // Must return false to pass VTS
     return false;
 }
 

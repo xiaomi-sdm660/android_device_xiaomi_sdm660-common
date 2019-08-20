@@ -150,11 +150,12 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== CONTROL ======================================================================== */
     LocationControlCallbacks mControlCallbacks;
-    uint32_t mPowerVoteId;
+    uint32_t mAfwControlId;
     uint32_t mNmeaMask;
     GnssSvIdConfig mGnssSvIdConfig;
     GnssSvTypeConfig mGnssSvTypeConfig;
     GnssSvTypeConfigCallback mGnssSvTypeConfigCb;
+    bool mSupportNfwControl;
 
     /* ==== NI ============================================================================= */
     NiData mNiData;
@@ -337,10 +338,8 @@ public:
     LocationControlCallbacks& getControlCallbacks() { return mControlCallbacks; }
     void setControlCallbacks(const LocationControlCallbacks& controlCallbacks)
     { mControlCallbacks = controlCallbacks; }
-    void setAfwControlId(uint32_t id) { mPowerVoteId = id; }
-    uint32_t getAfwControlId() { return mPowerVoteId; }
-    void setPowerVoteId(uint32_t id) { mPowerVoteId = id; }
-    uint32_t getPowerVoteId() { return mPowerVoteId; }
+    void setAfwControlId(uint32_t id) { mAfwControlId = id; }
+    uint32_t getAfwControlId() { return mAfwControlId; }
     virtual bool isInSession() { return !mTimeBasedTrackingSessions.empty(); }
     void initDefaultAgps();
     bool initEngHubProxy();

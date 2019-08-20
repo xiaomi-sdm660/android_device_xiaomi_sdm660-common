@@ -73,7 +73,7 @@ GnssAdapter::GnssAdapter() :
     mGnssSvIdUsedInPosition(),
     mGnssSvIdUsedInPosAvail(false),
     mControlCallbacks(),
-    mPowerVoteId(0),
+    mAfwControlId(0),
     mNmeaMask(0),
     mGnssSvIdConfig(),
     mGnssSvTypeConfig(),
@@ -97,7 +97,8 @@ GnssAdapter::GnssAdapter() :
     mPowerStateCb(nullptr),
     mIsE911Session(NULL),
     mGnssMbSvIdUsedInPosition{},
-    mGnssMbSvIdUsedInPosAvail(false)
+    mGnssMbSvIdUsedInPosAvail(false),
+    mSupportNfwControl(true)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -724,7 +725,24 @@ GnssAdapter::setConfig()
             GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT |
             GNSS_CONFIG_FLAGS_LPPE_USER_PLANE_VALID_BIT |
             GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
-    gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
+    /* Here we process an SSR. We need to set the GPS_LOCK to the proper values, as follows:
+    1. Q behavior. This is identified by mSupportNfwControl being 1. In this case
+    ContextBase::mGps_conf.GPS_LOCK is a "state", meaning it should reflect the
+    NV value. Therefore we will set the NV to ContextBase::mGps_conf.GPS_LOCK
+    2. P behavior. This is identified by mSupportNfwControl being 0. In this case
+    ContextBase::mGps_conf.GPS_LOCK is a "configuration", meaning it should hold
+    the "mask" for NI. There are two subcases:
+    a. Location enabled in GUI (1 == getAfwControlId()). We need to set
+    the NV to GNSS_CONFIG_GPS_LOCK_NONE (both MO and NI enabled)
+    b. Location disabled in GUI (0 == getAfwControlId()). We need to set
+    the NV to ContextBase::mGps_conf.GPS_LOCK (the "mask", which is SIM-card
+    specific)
+    */
+    if (mSupportNfwControl || (0 == getAfwControlId())) {
+        gnssConfigRequested.gpsLock = gpsConf.GPS_LOCK;
+    } else {
+        gnssConfigRequested.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
+    }
 
     if (gpsConf.AGPS_CONFIG_INJECT) {
         gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
@@ -1067,8 +1085,31 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                 if (GNSS_CONFIG_GPS_LOCK_NONE == newGpsLock) {
                     newGpsLock = GNSS_CONFIG_GPS_LOCK_MO;
                 }
-                gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
                 ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
+                /* If we get here it means that the changes in the framework to request for
+                   'P' behavior were made, and therefore we need to "behave" as in 'P'
+                However, we need to determine if enableCommand function has already been
+                called, since it could get called before this function.*/
+                if (0 != mAdapter.getAfwControlId()) {
+                    /* enableCommand function has already been called since getAfwControlId
+                    returns non zero. Now there are two possible cases:
+                    1. This is the first time this function is called
+                       (mSupportNfwControl is true). We need to behave as in 'P', but
+                       for the first time, meaning MO was enabled, but NI was not, so
+                       we need to unlock NI
+                    2. This is not the first time this function is called, meaning we
+                       are already behaving as in 'P'. No need to update the configuration
+                       in this case (return to 'P' code) */
+                    if (mAdapter.mSupportNfwControl) {
+                        // case 1 above
+                        newGpsLock &= ~GNSS_CONFIG_GPS_LOCK_NI;
+                    } else {
+                        // case 2 above
+                        gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
+                    }
+                }
+                gnssConfigRequested.gpsLock = newGpsLock;
+                mAdapter.mSupportNfwControl = false;
                 index++;
             }
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT) {
@@ -2926,18 +2967,20 @@ GnssAdapter::enableCommand(LocationTechnologyType techType)
             mTechType(techType) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_SUCCESS;
-            uint32_t powerVoteId = mAdapter.getAfwControlId();
+            uint32_t afwControlId = mAdapter.getAfwControlId();
             if (mTechType != LOCATION_TECHNOLOGY_TYPE_GNSS) {
                 err = LOCATION_ERROR_INVALID_PARAMETER;
-            } else if (powerVoteId > 0) {
+            } else if (afwControlId > 0) {
                 err = LOCATION_ERROR_ALREADY_STARTED;
             } else {
                 mContext.modemPowerVote(true);
                 mAdapter.setAfwControlId(mSessionId);
 
                 GnssConfigGpsLock gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
-                ContextBase::mGps_conf.GPS_LOCK &= GNSS_CONFIG_GPS_LOCK_NI;
-                gpsLock = ContextBase::mGps_conf.GPS_LOCK;
+                if (mAdapter.mSupportNfwControl) {
+                    ContextBase::mGps_conf.GPS_LOCK &= GNSS_CONFIG_GPS_LOCK_NI;
+                    gpsLock = ContextBase::mGps_conf.GPS_LOCK;
+                }
                 mApi.sendMsg(new LocApiMsg([&mApi = mApi, gpsLock]() {
                     mApi.setGpsLockSync(gpsLock);
                 }));
@@ -2977,21 +3020,22 @@ GnssAdapter::disableCommand(uint32_t id)
             mSessionId(sessionId) {}
         inline virtual void proc() const {
             LocationError err = LOCATION_ERROR_SUCCESS;
-            uint32_t powerVoteId = mAdapter.getAfwControlId();
-            if (powerVoteId != mSessionId) {
+            uint32_t afwControlId = mAdapter.getAfwControlId();
+            if (afwControlId != mSessionId) {
                 err = LOCATION_ERROR_ID_UNKNOWN;
             } else {
                 mContext.modemPowerVote(false);
                 mAdapter.setAfwControlId(0);
 
-                /* We need to disable MO (AFW) */
-                ContextBase::mGps_conf.GPS_LOCK |= GNSS_CONFIG_GPS_LOCK_MO;
+                if (mAdapter.mSupportNfwControl) {
+                    /* We need to disable MO (AFW) */
+                    ContextBase::mGps_conf.GPS_LOCK |= GNSS_CONFIG_GPS_LOCK_MO;
+                }
                 GnssConfigGpsLock gpsLock = ContextBase::mGps_conf.GPS_LOCK;
-                mApi.sendMsg(new LocApiMsg([&mApi = mApi,gpsLock] () {
+                mApi.sendMsg(new LocApiMsg([&mApi = mApi, gpsLock]() {
                     mApi.setGpsLockSync(gpsLock);
                 }));
-                mAdapter.mXtraObserver.updateLockStatus(
-                        ContextBase::mGps_conf.GPS_LOCK);
+                mAdapter.mXtraObserver.updateLockStatus(gpsLock);
             }
             mAdapter.reportResponse(err, mSessionId);
         }
@@ -4775,11 +4819,11 @@ GnssAdapter::getGnssEnergyConsumedCommand(GnssEnergyConsumedCallback energyConsu
 
 void
 GnssAdapter::nfwControlCommand(bool enable) {
-    struct MsgenableNfwLocationAccess : public LocMsg {
+    struct MsgControlNfwLocationAccess : public LocMsg {
         GnssAdapter& mAdapter;
         LocApiBase& mApi;
         bool mEnable;
-        inline MsgenableNfwLocationAccess(GnssAdapter& adapter, LocApiBase& api,
+        inline MsgControlNfwLocationAccess(GnssAdapter& adapter, LocApiBase& api,
             bool enable) :
             LocMsg(),
             mAdapter(adapter),
@@ -4801,7 +4845,11 @@ GnssAdapter::nfwControlCommand(bool enable) {
         }
     };
 
-    sendMsg(new MsgenableNfwLocationAccess(*this, *mLocApi, enable));
+    if (mSupportNfwControl) {
+        sendMsg(new MsgControlNfwLocationAccess(*this, *mLocApi, enable));
+    } else {
+        LOC_LOGw("NFW control is not supported, do not use this for NFW");
+    }
 }
 
 /* ==== Eng Hub Proxy ================================================================= */
