@@ -1082,9 +1082,8 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
 
             if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
                 GnssConfigGpsLock newGpsLock = gnssConfigRequested.gpsLock;
-                if (GNSS_CONFIG_GPS_LOCK_NONE == newGpsLock) {
-                    newGpsLock = GNSS_CONFIG_GPS_LOCK_MO;
-                }
+
+                newGpsLock |= GNSS_CONFIG_GPS_LOCK_MO;
                 ContextBase::mGps_conf.GPS_LOCK = newGpsLock;
                 /* If we get here it means that the changes in the framework to request for
                    'P' behavior were made, and therefore we need to "behave" as in 'P'
@@ -1102,7 +1101,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
                        in this case (return to 'P' code) */
                     if (mAdapter.mSupportNfwControl) {
                         // case 1 above
-                        newGpsLock &= ~GNSS_CONFIG_GPS_LOCK_NI;
+                        newGpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
                     } else {
                         // case 2 above
                         gnssConfigNeedEngineUpdate.flags &= ~(GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT);
