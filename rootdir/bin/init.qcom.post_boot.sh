@@ -3661,10 +3661,8 @@ case "$target" in
     # Turn off scheduler boost at the end
     echo 0 > /proc/sys/kernel/sched_boost
 
-    # Disable core_ctl until sleep is enabled.
-    echo 6 > /sys/devices/system/cpu/cpu0/core_ctl/min_cpus
-    # Turn off sleep modes.. To be changed after BU stabilty verified
-    echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
+    # Turn on sleep modes
+    echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
   ;;
 esac
 
