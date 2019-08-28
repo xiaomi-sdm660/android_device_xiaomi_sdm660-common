@@ -27,6 +27,9 @@
 #
 #
 
+on early-init
+    write /sys/module/dm_verity/parameters/prefetch_cluster 0
+
 on early-boot
     # Update dm-verity state and set partition.*.verified properties
     verity_update_state
