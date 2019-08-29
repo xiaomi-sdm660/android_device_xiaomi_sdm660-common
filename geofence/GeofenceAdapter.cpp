@@ -242,30 +242,33 @@ GeofenceAdapter::addGeofencesCommand(LocationAPI* client, size_t count, Geofence
                 if (NULL == mIds || NULL == mOptions || NULL == mInfos) {
                     errs[i] = LOCATION_ERROR_INVALID_PARAMETER;
                 } else {
-                    mApi.addGeofence(mIds[i],
-                             mOptions[i],
-                             mInfos[i],
-                             new LocApiResponseData<LocApiGeofenceData>(*mAdapter.getContext(),
-                                    [&mAdapter = mAdapter, mOptions = mOptions, mClient = mClient,
-                                    mCount = mCount, mIds = mIds, mInfos = mInfos, errs, i]
-                                    (LocationError err, LocApiGeofenceData data) {
-                        if (LOCATION_ERROR_SUCCESS == err) {
-                            mAdapter.saveGeofenceItem(mClient,
-                                                      mIds[i],
-                                                      data.hwId,
-                                                      mOptions[i],
-                                                      mInfos[i]);
-                        }
-                        errs[i] = err;
+                    mApi.addToCallQueue(new LocApiResponse(*mAdapter.getContext(),
+                            [&mAdapter = mAdapter, mCount = mCount, mClient = mClient,
+                            mOptions = mOptions, mInfos = mInfos, mIds = mIds, &mApi = mApi,
+                            errs, i] (LocationError err ) {
+                        mApi.addGeofence(mIds[i], mOptions[i], mInfos[i],
+                        new LocApiResponseData<LocApiGeofenceData>(*mAdapter.getContext(),
+                        [&mAdapter = mAdapter, mOptions = mOptions, mClient = mClient,
+                        mCount = mCount, mIds = mIds, mInfos = mInfos, errs, i]
+                        (LocationError err, LocApiGeofenceData data) {
+                            if (LOCATION_ERROR_SUCCESS == err) {
+                                mAdapter.saveGeofenceItem(mClient,
+                                mIds[i],
+                                data.hwId,
+                                mOptions[i],
+                                mInfos[i]);
+                            }
+                            errs[i] = err;
 
-                        // Send aggregated response on last item and cleanup
-                        if (i == mCount-1) {
-                            mAdapter.reportResponse(mClient, mCount, errs, mIds);
-                            delete[] errs;
-                            delete[] mIds;
-                            delete[] mOptions;
-                            delete[] mInfos;
-                        }
+                            // Send aggregated response on last item and cleanup
+                            if (i == mCount-1) {
+                                mAdapter.reportResponse(mClient, mCount, errs, mIds);
+                                delete[] errs;
+                                delete[] mIds;
+                                delete[] mOptions;
+                                delete[] mInfos;
+                            }
+                        }));
                     }));
                 }
             }
