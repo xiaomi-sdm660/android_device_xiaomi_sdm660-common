@@ -194,15 +194,14 @@ typedef uint32_t LocApnTypeMask;
 /**<  Denotes APN type for emergency  */
 #define LOC_APN_TYPE_MASK_EMERGENCY ((LocApnTypeMask)0x00000200)
 
-typedef enum {
-    AGPS_CB_PRIORITY_LOW  = 1,
-    AGPS_CB_PRIORITY_MED  = 2,
-    AGPS_CB_PRIORITY_HIGH = 3
-} AgpsCbPriority;
+typedef uint32_t AGpsTypeMask;
+#define AGPS_ATL_TYPE_SUPL       ((AGpsTypeMask)0x00000001)
+#define AGPS_ATL_TYPE_SUPL_ES   ((AGpsTypeMask)0x00000002)
+#define AGPS_ATL_TYPE_WWAN       ((AGpsTypeMask)0x00000004)
 
 typedef struct {
     void* statusV4Cb;
-    AgpsCbPriority cbPriority;
+    AGpsTypeMask atlType;
 } AgpsCbInfo;
 
 typedef struct {
