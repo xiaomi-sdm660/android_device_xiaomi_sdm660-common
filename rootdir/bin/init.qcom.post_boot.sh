@@ -2105,7 +2105,7 @@ case "$target" in
 
         # Socid 386 = Pukeena
         case "$soc_id" in
-           "303" | "307" | "308" | "309" | "320" | "386" )
+           "303" | "307" | "308" | "309" | "320" | "386" | "436")
 
                   # Start Host based Touch processing
                   case "$hw_platform" in
@@ -2440,7 +2440,7 @@ case "$target" in
         esac
 
         case "$soc_id" in
-             "386" )
+             "386" | "436")
 
                 # Start Host based Touch processing
                 case "$hw_platform" in
