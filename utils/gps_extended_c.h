@@ -384,6 +384,13 @@ typedef uint64_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_CALIBRATION_CONFIDENCE 0x800000000
 /** GpsLocationExtended has sensor calibration status */
 #define GPS_LOCATION_EXTENDED_HAS_CALIBRATION_STATUS     0x1000000000
+/** GpsLocationExtended has the engine type that produced this
+ *  position, the bit mask will only be set when there are two
+ *  or more position engines running in the system */
+#define GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_TYPE       0x2000000000
+ /** GpsLocationExtended has the engine mask that indicates the
+  *     set of engines contribute to the fix. */
+#define GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_MASK       0x4000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -797,6 +804,16 @@ typedef struct {
     /** Sensor calibration confidence percent. Range: 0 - 100 */
     uint8_t calibrationConfidence;
     DrCalibrationStatusMask calibrationStatus;
+    /* location engine type. When the fix. when the type is set to
+        LOC_ENGINE_SRC_FUSED, the fix is the propagated/aggregated
+        reports from all engines running on the system (e.g.:
+        DR/SPE/PPE) based proprietary algorithm. To check which
+        location engine contributes to the fused output, check for
+        locOutputEngMask. */
+    LocOutputEngineType locOutputEngType;
+    /* when loc output eng type is set to fused, this field
+        indicates the set of engines contribute to the fix. */
+    PositioningEngineMask locOutputEngMask;
 } GpsLocationExtended;
 
 enum loc_sess_status {
@@ -804,6 +821,13 @@ enum loc_sess_status {
     LOC_SESS_INTERMEDIATE,
     LOC_SESS_FAILURE
 };
+
+// struct that contains complete position info from engine
+typedef struct {
+    UlpLocation location;
+    GpsLocationExtended locationExtended;
+    enum loc_sess_status sessionStatus;
+} EngineLocationInfo;
 
 // Nmea sentence types mask
 typedef uint32_t NmeaSentenceTypesMask;
