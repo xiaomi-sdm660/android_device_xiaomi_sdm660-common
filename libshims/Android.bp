@@ -1,0 +1,17 @@
+/* libMiWatermark */
+cc_library_shared {
+    name: "libMiWatermark_shim",
+    proprietary: true,
+    defaults: ["hidl_defaults"],
+    srcs: [
+        "miwatermark.cpp",
+    ],
+    cflags: [
+        "-Werror",
+        "-Wextra",
+        "-Wall",
+    ],
+    shared_libs: [
+        "libutils",
+    ],
+}

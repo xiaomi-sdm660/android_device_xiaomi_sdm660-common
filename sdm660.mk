@@ -173,6 +173,7 @@ PRODUCT_PACKAGES += \
     libbthost_if
 
 PRODUCT_PACKAGES += \
+    libMiWatermark_shim \
     Snap
 
 PRODUCT_PACKAGES += \
