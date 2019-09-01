@@ -84,7 +84,7 @@ public:
             mSystemStatus(systemstatus), mContext(msgTask, this),
             mAddress("SystemStatusOsObserver"),
             mClientToDataItems(MAX_DATA_ITEM_ID), mDataItemToClients(MAX_DATA_ITEM_ID)
-#ifdef USE_QCMAP
+#ifdef USE_GLIB
             , mBackHaulConnectReqCount(0)
 #endif
     {
@@ -106,7 +106,7 @@ public:
     // To set the framework action request object
     inline void setFrameworkActionReqObj(IFrameworkActionReq* frameworkActionReqObj) {
         mContext.mFrameworkActionReqObj = frameworkActionReqObj;
-#ifdef USE_QCMAP
+#ifdef USE_GLIB
         if (mBackHaulConnectReqCount > 0) {
             connectBackhaul();
             mBackHaulConnectReqCount = 0;
@@ -134,7 +134,7 @@ public:
     // IFrameworkActionReq Overrides
     virtual void turnOn(DataItemId dit, int timeOut = 0) override;
     virtual void turnOff(DataItemId dit) override;
-#ifdef USE_QCMAP
+#ifdef USE_GLIB
     virtual bool connectBackhaul() override;
     virtual bool disconnectBackhaul();
 #endif
@@ -151,7 +151,7 @@ private:
     // Cache the subscribe and requestData till subscription obj is obtained
     void cacheObserverRequest(ObserverReqCache& reqCache,
             const list<DataItemId>& l, IDataItemObserver* client);
-#ifdef USE_QCMAP
+#ifdef USE_GLIB
     // Cache the framework action request for connect/disconnect
     int         mBackHaulConnectReqCount;
 #endif

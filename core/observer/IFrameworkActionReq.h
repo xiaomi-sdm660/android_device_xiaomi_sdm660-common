@@ -70,7 +70,7 @@ public:
      */
     virtual void turnOff (DataItemId dit) = 0;
 
-#ifdef USE_QCMAP
+#ifdef USE_GLIB
     /**
      * @brief Setup WWAN backhaul
      * @details  Setup WWAN backhaul
