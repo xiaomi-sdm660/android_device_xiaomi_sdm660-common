@@ -104,7 +104,7 @@
     <string name="color_blue">青</string>
     <string name="color_minimum">最小</string>
     <string name="saturation">彩度</string>
-    <string name="value">値</string>
+    <string name="value">輝度</string>
     <string name="contrast">コントラスト</string>
     <string name="hue">色相</string>
     <string name="grayscale">グレースケール画面</string>
