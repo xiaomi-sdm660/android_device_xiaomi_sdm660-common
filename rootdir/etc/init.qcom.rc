@@ -640,8 +640,8 @@ service vendor.dataqti /system/vendor/bin/qti
 service vendor.sensors /vendor/bin/sscrpcd sensorspd
     class early_hal
     user system
-    group system
-    disabled
+    group system wakelock
+    capabilities BLOCK_SUSPEND
 
 service vendor.sensors.qti /vendor/bin/sensors.qti
     class main
