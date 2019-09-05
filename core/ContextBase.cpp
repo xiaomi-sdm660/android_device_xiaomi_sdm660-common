@@ -40,6 +40,10 @@
 
 namespace loc_core {
 
+#define SLL_LOC_API_LIB_NAME "libsynergy_loc_api.so"
+#define LOC_APIV2_0_LIB_NAME "libloc_api_v02.so"
+#define IS_SS5_HW_ENABLED  1
+
 loc_gps_cfg_s_type ContextBase::mGps_conf {};
 loc_sap_cfg_s_type ContextBase::mSap_conf {};
 bool ContextBase::sIsEngineCapabilitiesKnown = false;
@@ -80,6 +84,7 @@ const loc_param_s_type ContextBase::mGps_conf_table[] =
   {"POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED",  &mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED, NULL, 'n'},
   {"PROXY_APP_PACKAGE_NAME",         &mGps_conf.PROXY_APP_PACKAGE_NAME,         NULL, 's' },
   {"CP_MTLR_ES",                     &mGps_conf.CP_MTLR_ES,                     NULL, 'n' },
+  {"GNSS_DEPLOYMENT",  &mGps_conf.GNSS_DEPLOYMENT, NULL, 'n'},
 };
 
 const loc_param_s_type ContextBase::mSap_conf_table[] =
@@ -171,9 +176,15 @@ void ContextBase::readConfig()
         mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET = 0;
         /* default configuration value of position assisted clock estimator mode */
         mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED = 0;
+        /* default configuration QCOM GNSS H/W */
+        mGps_conf.GNSS_DEPLOYMENT = 0;
 
         UTIL_READ_CONF(LOC_PATH_GPS_CONF, mGps_conf_table);
         UTIL_READ_CONF(LOC_PATH_SAP_CONF, mSap_conf_table);
+
+        LOC_LOGI("%s] GNSS Deployment: %s", __FUNCTION__,
+                ((mGps_conf.GNSS_DEPLOYMENT == 1) ? "SS5" :
+                ((mGps_conf.GNSS_DEPLOYMENT == 2) ? "QFUSION" : "QGNSS")));
 
         switch (getTargetGnssType(loc_get_target())) {
           case GNSS_GSS:
@@ -231,19 +242,24 @@ LBSProxyBase* ContextBase::getLBSProxy(const char* libName)
 LocApiBase* ContextBase::createLocApi(LOC_API_ADAPTER_EVENT_MASK_T exMask)
 {
     LocApiBase* locApi = NULL;
+    const char* libname = LOC_APIV2_0_LIB_NAME;
 
     // Check the target
     if (TARGET_NO_GNSS != loc_get_target()){
 
         if (NULL == (locApi = mLBSProxy->getLocApi(exMask, this))) {
             void *handle = NULL;
-            //try to see if LocApiV02 is present
-            if ((handle = dlopen("libloc_api_v02.so", RTLD_NOW)) != NULL) {
-                LOC_LOGD("%s:%d]: libloc_api_v02.so is present", __func__, __LINE__);
+
+            if (IS_SS5_HW_ENABLED == mGps_conf.GNSS_DEPLOYMENT) {
+                libname = SLL_LOC_API_LIB_NAME;
+            }
+
+            if ((handle = dlopen(libname, RTLD_NOW)) != NULL) {
+                LOC_LOGD("%s:%d]: %s is present", __func__, __LINE__, libname);
                 getLocApi_t* getter = (getLocApi_t*) dlsym(handle, "getLocApi");
                 if (getter != NULL) {
-                    LOC_LOGD("%s:%d]: getter is not NULL for LocApiV02", __func__,
-                            __LINE__);
+                    LOC_LOGD("%s:%d]: getter is not NULL of %s", __func__,
+                            __LINE__, libname);
                     locApi = (*getter)(exMask, this);
                 }
             }
