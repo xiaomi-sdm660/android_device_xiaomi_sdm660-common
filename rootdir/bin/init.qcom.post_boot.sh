@@ -3361,6 +3361,9 @@ case "$target" in
     echo 85 > /proc/sys/kernel/sched_group_downmigrate
     echo 100 > /proc/sys/kernel/sched_group_upmigrate
     echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks
+    echo 0 > /proc/sys/kernel/sched_coloc_busy_hyst_ns
+    echo 0 > /proc/sys/kernel/sched_coloc_busy_hysteresis_enable_cpus
+    echo 0 > /proc/sys/kernel/sched_coloc_busy_hyst_max_ms
 
     # disable unfiltering
     echo 1 > /proc/sys/kernel/sched_task_unfilter_nr_windows
