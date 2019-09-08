@@ -39,6 +39,10 @@ COMMON_PATH := device/xiaomi/sdm660-common
 # Inherit properties
 $(call inherit-product, $(COMMON_PATH)/properties.mk)
 
+# Shims 
+PRODUCT_PACKAGES += \
+    camera.sdm660_shim
+
 # RRO
 PRODUCT_ENFORCE_RRO_TARGETS := \
     framework-res
