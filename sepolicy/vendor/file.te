@@ -17,14 +17,8 @@ type sysfs_fingerprint, sysfs_type, fs_type;
 # Hall Switch
 type hall_dev, sysfs_type, fs_type;
 
-# Input files
-type idc_file, file_type, vendor_file_type;
-
 # Kcal
 type kcal_dev, sysfs_type, fs_type;
-
-# Keylayout
-type vendor_keylayout_file, file_type, vendor_file_type;
 
 type sysfs_light, fs_type, sysfs_type;
 type thermal_data_file, file_type, data_file_type;

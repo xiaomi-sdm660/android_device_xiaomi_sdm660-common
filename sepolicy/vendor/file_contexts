@@ -36,10 +36,6 @@
 /sys/devices/platform/kcal_ctrl.0(/.*)?         u:object_r:kcal_dev:s0
 /sys/bus/platform/drivers/kcal_ctrl(/.*)?       u:object_r:kcal_dev:s0
 
-# Keylayout
-/vendor/usr/idc(/.*)?                           u:object_r:idc_file:s0
-/vendor/usr/keylayout(/.*)?                     u:object_r:vendor_keylayout_file:s0
-
 # Light HAL
 /(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660 u:object_r:hal_light_default_exec:s0
 
