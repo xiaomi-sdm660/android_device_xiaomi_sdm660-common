@@ -12,7 +12,8 @@ EXTRA_VENDOR_LIBRARIES_32 := \
     libicui18n \
     libicuuc \
     libmedia \
-    libmediaextractor \
+    libstagefright \
+    libstagefright_foundation \
     libmediametrics \
     libminikin \
     libsonivox
