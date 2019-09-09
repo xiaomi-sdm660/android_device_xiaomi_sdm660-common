@@ -49,22 +49,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </interface>
     </hal>
     <hal format="hidl" optional="false">
-        <name>android.hardware.graphics.composer</name>
-        <version>2.1</version>
-        <interface>
-            <name>IComposer</name>
-            <instance>vr</instance>
-        </interface>
-    </hal>
-    <hal format="hidl" optional="false">
-        <name>android.hardware.health</name>
-        <version>2.0</version>
-        <interface>
-            <name>IHealth</name>
-            <instance>backup</instance>
-        </interface>
-    </hal>
-    <hal format="hidl" optional="false">
         <name>android.hidl.allocator</name>
         <version>1.0</version>
         <interface>
