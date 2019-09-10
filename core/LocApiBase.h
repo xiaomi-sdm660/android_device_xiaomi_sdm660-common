@@ -34,6 +34,7 @@
 #include <gps_extended.h>
 #include <LocationAPI.h>
 #include <MsgTask.h>
+#include <LocSharedLock.h>
 #include <log_util.h>
 
 namespace loc_core {
@@ -107,6 +108,7 @@ class LocApiBase {
     friend struct LocKillMsg;
     friend class ContextBase;
     static MsgTask* mMsgTask;
+    static volatile int32_t mMsgTaskRefCount;
     LocAdapterBase* mLocAdapters[MAX_ADAPTERS];
 
 protected:
@@ -121,7 +123,8 @@ protected:
     LocApiBase(LOC_API_ADAPTER_EVENT_MASK_T excludedMask,
                ContextBase* context = NULL);
     inline virtual ~LocApiBase() {
-        if (nullptr != mMsgTask) {
+        android_atomic_dec(&mMsgTaskRefCount);
+        if (nullptr != mMsgTask && 0 == mMsgTaskRefCount) {
             mMsgTask->destroy();
             mMsgTask = nullptr;
         }
@@ -132,7 +135,9 @@ protected:
 
 public:
     inline void sendMsg(const LocMsg* msg) const {
-        mMsgTask->sendMsg(msg);
+        if (nullptr != mMsgTask) {
+            mMsgTask->sendMsg(msg);
+        }
     }
     inline void destroy() {
         close();

@@ -304,7 +304,7 @@ void AgpsStateMachine::requestOrReleaseDataConn(bool request){
         nifRequest.status = LOC_GPS_RELEASE_AGPS_DATA_CONN;
     }
 
-    mAgpsManager->mFrameworkStatusV4Cb(nifRequest);
+    mFrameworkStatusV4Cb(nifRequest);
 }
 
 void AgpsStateMachine::notifyAllSubscribers(
@@ -511,7 +511,7 @@ void AgpsStateMachine::dropAllSubscribers(){
 
 /* CREATE AGPS STATE MACHINES
  * Must be invoked in Msg Handler context */
-void AgpsManager::createAgpsStateMachines() {
+void AgpsManager::createAgpsStateMachines(const AgpsCbInfo& cbInfo) {
 
     LOC_LOGD("AgpsManager::createAgpsStateMachines");
 
@@ -519,13 +519,16 @@ void AgpsManager::createAgpsStateMachines() {
             ((loc_core::ContextBase::mGps_conf.CAPABILITIES & LOC_GPS_CAPABILITY_MSA) ||
                     (loc_core::ContextBase::mGps_conf.CAPABILITIES & LOC_GPS_CAPABILITY_MSB));
 
-    if (NULL == mInternetNif) {
+    if (NULL == mInternetNif && (cbInfo.atlType & AGPS_ATL_TYPE_WWAN)) {
         mInternetNif = new AgpsStateMachine(this, LOC_AGPS_TYPE_WWAN_ANY);
+        mInternetNif->registerFrameworkStatusCallback((AgnssStatusIpV4Cb)cbInfo.statusV4Cb);
         LOC_LOGD("Internet NIF: %p", mInternetNif);
     }
     if (agpsCapable) {
-        if (NULL == mAgnssNif) {
+        if (NULL == mAgnssNif && (cbInfo.atlType & AGPS_ATL_TYPE_SUPL) &&
+                (cbInfo.atlType & AGPS_ATL_TYPE_SUPL_ES)) {
             mAgnssNif = new AgpsStateMachine(this, LOC_AGPS_TYPE_SUPL);
+            mAgnssNif->registerFrameworkStatusCallback((AgnssStatusIpV4Cb)cbInfo.statusV4Cb);
             LOC_LOGD("AGNSS NIF: %p", mAgnssNif);
         }
     }
@@ -544,6 +547,11 @@ AgpsStateMachine* AgpsManager::getAgpsStateMachine(AGpsExtType agpsType) {
                 LOC_LOGE("NULL AGNSS NIF !");
             }
             return mAgnssNif;
+        case LOC_AGPS_TYPE_WWAN_ANY:
+            if (mInternetNif == NULL) {
+                LOC_LOGE("NULL Internet NIF !");
+            }
+            return mInternetNif;
         default:
             return mInternetNif;
     }

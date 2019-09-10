@@ -194,15 +194,14 @@ typedef uint32_t LocApnTypeMask;
 /**<  Denotes APN type for emergency  */
 #define LOC_APN_TYPE_MASK_EMERGENCY ((LocApnTypeMask)0x00000200)
 
-typedef enum {
-    AGPS_CB_PRIORITY_LOW  = 1,
-    AGPS_CB_PRIORITY_MED  = 2,
-    AGPS_CB_PRIORITY_HIGH = 3
-} AgpsCbPriority;
+typedef uint32_t AGpsTypeMask;
+#define AGPS_ATL_TYPE_SUPL       ((AGpsTypeMask)0x00000001)
+#define AGPS_ATL_TYPE_SUPL_ES   ((AGpsTypeMask)0x00000002)
+#define AGPS_ATL_TYPE_WWAN       ((AGpsTypeMask)0x00000004)
 
 typedef struct {
     void* statusV4Cb;
-    AgpsCbPriority cbPriority;
+    AGpsTypeMask atlType;
 } AgpsCbInfo;
 
 typedef struct {
@@ -385,6 +384,13 @@ typedef uint64_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_CALIBRATION_CONFIDENCE 0x800000000
 /** GpsLocationExtended has sensor calibration status */
 #define GPS_LOCATION_EXTENDED_HAS_CALIBRATION_STATUS     0x1000000000
+/** GpsLocationExtended has the engine type that produced this
+ *  position, the bit mask will only be set when there are two
+ *  or more position engines running in the system */
+#define GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_TYPE       0x2000000000
+ /** GpsLocationExtended has the engine mask that indicates the
+  *     set of engines contribute to the fix. */
+#define GPS_LOCATION_EXTENDED_HAS_OUTPUT_ENG_MASK       0x4000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -798,6 +804,16 @@ typedef struct {
     /** Sensor calibration confidence percent. Range: 0 - 100 */
     uint8_t calibrationConfidence;
     DrCalibrationStatusMask calibrationStatus;
+    /* location engine type. When the fix. when the type is set to
+        LOC_ENGINE_SRC_FUSED, the fix is the propagated/aggregated
+        reports from all engines running on the system (e.g.:
+        DR/SPE/PPE) based proprietary algorithm. To check which
+        location engine contributes to the fused output, check for
+        locOutputEngMask. */
+    LocOutputEngineType locOutputEngType;
+    /* when loc output eng type is set to fused, this field
+        indicates the set of engines contribute to the fix. */
+    PositioningEngineMask locOutputEngMask;
 } GpsLocationExtended;
 
 enum loc_sess_status {
@@ -805,6 +821,13 @@ enum loc_sess_status {
     LOC_SESS_INTERMEDIATE,
     LOC_SESS_FAILURE
 };
+
+// struct that contains complete position info from engine
+typedef struct {
+    UlpLocation location;
+    GpsLocationExtended locationExtended;
+    enum loc_sess_status sessionStatus;
+} EngineLocationInfo;
 
 // Nmea sentence types mask
 typedef uint32_t NmeaSentenceTypesMask;
@@ -826,6 +849,20 @@ typedef uint32_t NmeaSentenceTypesMask;
 #define LOC_NMEA_MASK_PQGSA_V02 ((NmeaSentenceTypesMask)0x00008000) /**<  Enable PQGSA type  */
 #define LOC_NMEA_MASK_PQGSV_V02 ((NmeaSentenceTypesMask)0x00010000) /**<  Enable PQGSV type  */
 #define LOC_NMEA_MASK_DEBUG_V02 ((NmeaSentenceTypesMask)0x00020000) /**<  Enable DEBUG type  */
+#define LOC_NMEA_MASK_GPDTM_V02 ((NmeaSentenceTypesMask)0x00040000) /**<  Enable GPDTM type  */
+#define LOC_NMEA_MASK_GNGGA_V02 ((NmeaSentenceTypesMask)0x00080000) /**<  Enable GNGGA type  */
+#define LOC_NMEA_MASK_GNRMC_V02 ((NmeaSentenceTypesMask)0x00100000) /**<  Enable GNRMC type  */
+#define LOC_NMEA_MASK_GNVTG_V02 ((NmeaSentenceTypesMask)0x00200000) /**<  Enable GNVTG type  */
+#define LOC_NMEA_MASK_GAGNS_V02 ((NmeaSentenceTypesMask)0x00400000) /**<  Enable GAGNS type  */
+#define LOC_NMEA_MASK_GBGGA_V02 ((NmeaSentenceTypesMask)0x00800000) /**<  Enable GBGGA type  */
+#define LOC_NMEA_MASK_GBGSA_V02 ((NmeaSentenceTypesMask)0x01000000) /**<  Enable GBGSA type  */
+#define LOC_NMEA_MASK_GBGSV_V02 ((NmeaSentenceTypesMask)0x02000000) /**<  Enable GBGSV type  */
+#define LOC_NMEA_MASK_GBRMC_V02 ((NmeaSentenceTypesMask)0x04000000) /**<  Enable GBRMC type  */
+#define LOC_NMEA_MASK_GBVTG_V02 ((NmeaSentenceTypesMask)0x08000000) /**<  Enable GBVTG type  */
+#define LOC_NMEA_MASK_GQGSV_V02 ((NmeaSentenceTypesMask)0x10000000) /**<  Enable GQGSV type  */
+#define LOC_NMEA_MASK_GIGSV_V02 ((NmeaSentenceTypesMask)0x20000000) /**<  Enable GIGSV type  */
+#define LOC_NMEA_MASK_GNDTM_V02 ((NmeaSentenceTypesMask)0x40000000) /**<  Enable GNDTM type  */
+
 
 // all bitmasks of general supported NMEA sentenses - debug is not part of this
 #define LOC_NMEA_ALL_GENERAL_SUPPORTED_MASK  (LOC_NMEA_MASK_GGA_V02 | LOC_NMEA_MASK_RMC_V02 | \
@@ -833,7 +870,12 @@ typedef uint32_t NmeaSentenceTypesMask;
         LOC_NMEA_MASK_PQXFI_V02 | LOC_NMEA_MASK_PSTIS_V02 | LOC_NMEA_MASK_GLGSV_V02 | \
         LOC_NMEA_MASK_GNGSA_V02 | LOC_NMEA_MASK_GNGNS_V02 | LOC_NMEA_MASK_GARMC_V02 | \
         LOC_NMEA_MASK_GAGSV_V02 | LOC_NMEA_MASK_GAGSA_V02 | LOC_NMEA_MASK_GAVTG_V02 | \
-        LOC_NMEA_MASK_GAGGA_V02 | LOC_NMEA_MASK_PQGSA_V02 | LOC_NMEA_MASK_PQGSV_V02)
+        LOC_NMEA_MASK_GAGGA_V02 | LOC_NMEA_MASK_PQGSA_V02 | LOC_NMEA_MASK_PQGSV_V02 | \
+        LOC_NMEA_MASK_GPDTM_V02 | LOC_NMEA_MASK_GNGGA_V02 | LOC_NMEA_MASK_GNRMC_V02 | \
+        LOC_NMEA_MASK_GNVTG_V02 | LOC_NMEA_MASK_GAGNS_V02 | LOC_NMEA_MASK_GBGGA_V02 | \
+        LOC_NMEA_MASK_GBGSA_V02 | LOC_NMEA_MASK_GBGSV_V02 | LOC_NMEA_MASK_GBRMC_V02 | \
+        LOC_NMEA_MASK_GBVTG_V02 | LOC_NMEA_MASK_GQGSV_V02 | LOC_NMEA_MASK_GIGSV_V02 | \
+        LOC_NMEA_MASK_GNDTM_V02)
 
 typedef enum {
   LOC_ENG_IF_REQUEST_SENDER_ID_QUIPC = 0,
