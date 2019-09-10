@@ -145,6 +145,8 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/spdaemon_ssr         0660   system     system
 /dev/cam-hyp-intf*        0660   system     camera
 /dev/iuicc                0660   system     system
+/dev/iuicc0               0660   system     system
+/dev/iuicc1               0660   system     system
 /dev/gemini0              0660   system     camera
 /dev/jpeg0                0660   system     camera
 /dev/jpeg1                0660   system     camera
