@@ -59,6 +59,33 @@ if [ -z "$SRC" ]; then
     SRC=adb
 fi
 
+function blob_fixup() {
+    case "${1}" in
+
+    vendor/bin/mlipayd@1.1)
+        patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        ;;
+
+    vendor/lib64/libmlipay.so | vendor/lib64/libmlipay@1.1.so)
+        patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        sed -i "s|/system/etc/firmware|/vendor/firmware\x0\x0\x0\x0|g" "${2}"
+        ;;
+
+    vendor/lib/hw/camera.sdm660.so)
+        patchelf --replace-needed libMiWatermark.so libMiWatermark_shim.so "${2}"
+        patchelf --add-needed libcamera_sdm660_shim.so "${2}"
+        ;;
+
+    vendor/lib/hw/sound_trigger.primary.sdm660.so | vendor/lib64/hw/sound_trigger.primary.sdm660.so)
+        patchelf --add-needed libprocessgroup.so "${2}"
+        ;;
+
+    product/etc/permissions/vendor.qti.hardware.data.connection-V1.{0,1}-java.xml)
+        sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
+
+    esac
+}
+
 # Initialize the common helper
 setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true $clean_vendor
 
@@ -73,19 +100,3 @@ if [ -s "$MY_DIR"/../$DEVICE/proprietary-files.txt ]; then
 fi
 
 "$MY_DIR"/setup-makefiles.sh
-
-DEVICE_BLOB_ROOT="$LINEAGE_ROOT"/vendor/"$VENDOR"/"$DEVICE"/proprietary
-
-patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "$DEVICE_BLOB_ROOT"/vendor/bin/mlipayd@1.1
-patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "$DEVICE_BLOB_ROOT"/vendor/lib64/libmlipay.so
-patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "$BLOB_ROOT"/vendor/lib64/libmlipay@1.1.so
-patchelf --add-needed libprocessgroup.so "$DEVICE_BLOB_ROOT"vendor/lib/hw/sound_trigger.primary.sdm660.so
-patchelf --add-needed libprocessgroup.so "$DEVICE_BLOB_ROOT"vendor/lib64/hw/sound_trigger.primary.sdm660.so
-sed -i "s|/system/etc/firmware|/vendor/firmware\x0\x0\x0\x0|g" "$DEVICE_BLOB_ROOT"/vendor/lib64/libmlipay.so
-sed -i "s|/system/etc/firmware|/vendor/firmware\x0\x0\x0\x0|g" "$DEVICE_BLOB_ROOT"/vendor/lib64/libmlipay@1.1.so
-sed -i 's/xml version="2.0"/xml version="1.0"/' "$DEVICE_BLOB_ROOT"/product/etc/permissions/vendor.qti.hardware.data.connection-V1.{0,1}-java.xml
-
-# Load camera.sdm660.so shim
-CAM_SDM660="$DEVICE_BLOB_ROOT"/vendor/lib/hw/camera.sdm660.so
-patchelf --add-needed camera.sdm660_shim.so "$CAM_SDM660"
-patchelf --replace-needed libMiWatermark.so libMiWatermark_shim.so "$CAM_SDM660"
