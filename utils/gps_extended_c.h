@@ -2223,6 +2223,13 @@ typedef void (*LocAgpsOpenResultCb)(bool isSuccess, AGpsExtType agpsType, const 
 
 typedef void (*LocAgpsCloseResultCb)(bool isSuccess, AGpsExtType agpsType, void* userDataPtr);
 
+enum PowerStateType {
+    POWER_STATE_UNKNOWN = 0,
+    POWER_STATE_SUSPEND = 1,
+    POWER_STATE_RESUME  = 2,
+    POWER_STATE_SHUTDOWN = 3
+};
+
 /* Shared resources of LocIpc */
 #define LOC_IPC_HAL                    "/dev/socket/location/socket_hal"
 #define LOC_IPC_XTRA                   "/dev/socket/location/xtra/socket_xtra"

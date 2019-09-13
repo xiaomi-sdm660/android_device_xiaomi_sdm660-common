@@ -98,7 +98,8 @@ GnssAdapter::GnssAdapter() :
     mIsE911Session(NULL),
     mGnssMbSvIdUsedInPosition{},
     mGnssMbSvIdUsedInPosAvail(false),
-    mSupportNfwControl(true)
+    mSupportNfwControl(true),
+    mSystemPowerState(POWER_STATE_UNKNOWN)
 {
     LOC_LOGD("%s]: Constructor %p", __func__, this);
     mLocPositionMode.mode = LOC_POSITION_MODE_INVALID;
@@ -1998,6 +1999,35 @@ GnssAdapter::blockCPICommand(double latitude, double longitude,
 }
 
 void
+GnssAdapter::updateSystemPowerState(PowerStateType systemPowerState) {
+    if (POWER_STATE_UNKNOWN != systemPowerState) {
+        mSystemPowerState = systemPowerState;
+        mLocApi->updateSystemPowerState(mSystemPowerState);
+    }
+}
+
+void
+GnssAdapter::updateSystemPowerStateCommand(PowerStateType systemPowerState) {
+    LOC_LOGd("power event %d", systemPowerState);
+
+    struct MsgUpdatePowerState : public LocMsg {
+        GnssAdapter& mAdapter;
+        PowerStateType mSystemPowerState;
+
+        inline MsgUpdatePowerState(GnssAdapter& adapter,
+                                   PowerStateType systemPowerState) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSystemPowerState(systemPowerState) {}
+        inline virtual void proc() const {
+            mAdapter.updateSystemPowerState(mSystemPowerState);
+        }
+    };
+
+    sendMsg(new MsgUpdatePowerState(*this, systemPowerState));
+}
+
+void
 GnssAdapter::addClientCommand(LocationAPI* client, const LocationCallbacks& callbacks)
 {
     LOC_LOGD("%s]: client %p", __func__, client);
@@ -2133,9 +2163,10 @@ GnssAdapter::handleEngineUpEvent()
             mAdapter.broadcastCapabilities(mAdapter.getCapabilities());
             // must be called only after capabilities are known
             mAdapter.setConfig();
-            mAdapter.restartSessions();
             mAdapter.gnssSvIdConfigUpdate();
             mAdapter.gnssSvTypeConfigUpdate();
+            mAdapter.updateSystemPowerState(mAdapter.getSystemPowerState());
+            mAdapter.restartSessions();
             for (auto msg: mAdapter.mPendingMsgs) {
                 mAdapter.sendMsg(msg);
             }
