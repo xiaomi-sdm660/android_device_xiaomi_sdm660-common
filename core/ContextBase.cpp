@@ -176,7 +176,7 @@ void ContextBase::readConfig()
         mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET = 0;
         /* default configuration value of position assisted clock estimator mode */
         mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED = 0;
-        /* default configuration QCOM GNSS H/W */
+        /* default configuration QTI GNSS H/W */
         mGps_conf.GNSS_DEPLOYMENT = 0;
 
         UTIL_READ_CONF(LOC_PATH_GPS_CONF, mGps_conf_table);
