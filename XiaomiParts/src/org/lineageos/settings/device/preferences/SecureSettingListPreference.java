@@ -17,7 +17,7 @@
 package org.lineageos.settings.device.preferences;
 
 import android.content.Context;
-import android.support.v7.preference.ListPreference;
+import androidx.preference.ListPreference;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
