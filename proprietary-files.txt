@@ -353,26 +353,11 @@ vendor/lib64/libmlipay@1.1.so|4dfa016779bcba8da2ff293e5112c678044c6474
 vendor/lib64/vendor.xiaomi.hardware.mlipay@1.0.so|d0bb854210433066945f9d6e7943d08a8435e746
 vendor/lib64/vendor.xiaomi.hardware.mlipay@1.1.so|785984e3c3b30671b78624484899dd418979cb56
 
-# Perf - from LA.UM.8.2.r1-05700-sdm660.0
-vendor/bin/hw/vendor.qti.hardware.perf@2.0-service|3478f1a1de33d39b239f54e47b85dde6f01578c5
-vendor/bin/msm_irqbalance|0e967f5c7eaf8d863a50996459101be47adf96a2
-vendor/etc/init/vendor.qti.hardware.perf@2.0-service.rc|cc8658db5e19f8e5e575fb986e7d38147e675f8d
-vendor/etc/perf/commonresourceconfigs.xml|42005b8a9ec8a527d22800e3aaa9215e6d58c8a9
-vendor/etc/perf/perfboostsconfig.xml|0fd6a9951f22cfe9f0942629f9d20da433604f14
-vendor/etc/perf/targetconfig.xml|376ae331df9d6c30b6208f25d04ae4ea11c0e2ea
-vendor/etc/perf/targetresourceconfigs.xml|7132f1e9ce3bb21b4854b81d6e5d24409251f177
-vendor/lib/libperfconfig.so|3fabe6d587329cbb619514cc36896cd97c94a113
+# Perf - from Taimen QP1A.190711.020
+vendor/lib/libqti-perfd-client.so|16816cfdc873a2fdc9467db52bd5f2aaa33d2b50
+vendor/lib64/libqti-perfd-client.so|93c3f90f1b72a21ca325cbb375923b1deba80467
 vendor/lib/libperfgluelayer.so|500a68089bbbda8bae53459c7adeed4048dce3fd
-vendor/lib/libqti-perfd-client.so|2c488bc54a6ba25c6dab51dcb538efe6b0ae2b86
-vendor/lib/libqti-perfd.so|62a2831b0dd64c982c419d1e22cc6e1cf11533b1
-vendor/lib/libqti-util.so|4c77c24bd8db8d80eddea739b2a7809e78613e06
-vendor/lib/vendor.qti.hardware.perf@2.0.so|9b4983ba1941496f4ba06b646a0397d635ca8f32
-vendor/lib64/libperfconfig.so|391033893fe1889a608b4351f58e0c4b09c3a14b
 vendor/lib64/libperfgluelayer.so|4c95e08abc1cef5b39db06579d8f9faceb8f23d4
-vendor/lib64/libqti-perfd-client.so|0c2b82b5e5df6e0efb03ace4a259eb63487dd2b6
-vendor/lib64/libqti-perfd.so|c58d1192cff3f9c8fc00a064e14346fc0886c840
-vendor/lib64/libqti-util.so|9f5f18d548e3c3b39fbfe0ad078ea7ad4399b70e
-vendor/lib64/vendor.qti.hardware.perf@2.0.so|b05e762bf5c7e86b0d6c1be4c8ae91e3f706dca7
 
 # Peripheral manager - from LA.UM.8.2.r1-05100-sdm660.0
 vendor/bin/pm-proxy|bd8cf7d8228db1556cb9d1b933f3d4ab230ddba4
