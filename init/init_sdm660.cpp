@@ -1,6 +1,6 @@
 /*
    Copyright (c) 2016, The CyanogenMod Project
-   Copyright (c) 2017, The LineageOS Project
+   Copyright (c) 2019, The LineageOS Project
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -42,7 +42,6 @@
 
 #include "vendor_init.h"
 #include "property_service.h"
-#include "init_sdm660.h"
 
 using android::base::GetProperty;
 using android::init::property_set;
@@ -54,11 +53,6 @@ char const *heapgrowthlimit;
 char const *heapsize;
 char const *heapminfree;
 char const *heapmaxfree;
-
-#ifdef TARGET_HAVE_LIBINIT
-__attribute__ ((weak))
-void init_target_properties() {}
-#endif
 
 void property_override(char const prop[], char const value[])
 {
@@ -80,10 +74,6 @@ void property_override_dual(char const system_prop[],
 
 void vendor_load_properties()
 {
-#ifdef TARGET_HAVE_LIBINIT
-    init_target_properties();
-#endif
-
     std::string product = GetProperty("ro.product.name", "");
     if (product.find("clover") != std::string::npos) {
 
