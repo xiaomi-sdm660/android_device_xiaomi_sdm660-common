@@ -171,9 +171,14 @@ void ContextBase::readConfig()
         /* default configuration value of constrained time uncertainty mode:
            feature disabled, time uncertainty threshold defined by modem,
            and unlimited power budget */
+#ifdef FEATURE_AUTOMOTIVE
+        mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED = 1;
+#else
         mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENABLED = 0;
+#endif
         mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_THRESHOLD = 0.0;
         mGps_conf.CONSTRAINED_TIME_UNCERTAINTY_ENERGY_BUDGET = 0;
+
         /* default configuration value of position assisted clock estimator mode */
         mGps_conf.POSITION_ASSISTED_CLOCK_ESTIMATOR_ENABLED = 0;
         /* default configuration QTI GNSS H/W */
