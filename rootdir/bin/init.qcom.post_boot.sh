@@ -3630,7 +3630,7 @@ case "$target" in
             echo 1600 > $llccbw/bw_hwmon/idle_mbps
         done
 
-        for npubw in $device/*npu-npu-ddr-bw/devfreq/*npu-npu-ddr-bw
+        for npubw in $device/*npu*-npu-ddr-bw/devfreq/*npu*-npu-ddr-bw
         do
             echo 1 > /sys/devices/virtual/npu/msm_npu/pwr
             echo "bw_hwmon" > $npubw/governor
