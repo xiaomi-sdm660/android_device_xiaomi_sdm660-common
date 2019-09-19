@@ -198,6 +198,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.rat_on=combine \
     persist.vendor.radio.sib16_support=1 \
 		persist.vendor.radio.procedure_bytes=SKIP \
+		persist.vendor.radio.flexmap_type=none \
     ril.subscription.types=NV,RUIM \
     rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so \
     ro.telephony.default_network=22,20 \
