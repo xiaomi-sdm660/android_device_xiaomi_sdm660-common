@@ -86,27 +86,25 @@ on post-fs-data
     mkdir /data/tombstones/lpass 0771 system system
     mkdir /data/tombstones/wcnss 0771 system system
     mkdir /data/tombstones/dsps 0771 system system
-#D2SP has no hbtp feature
-#    mkdir /data/vendor/hbtp 0750 system system
-#end
     mkdir /vendor/mnt/persist/qti_fp 0700 system system
+    mkdir /data/vendor/hbtp 0750 system system
     mkdir /data/misc/seemp 0700 system system
     mkdir /data/vendor/tloc 0700 system drmrpc
-
-#USB controller configuration
-    setprop vendor.usb.rndis.func.name "rndis_bam"
-    setprop vendor.usb.rmnet.func.name "rmnet_bam"
-    setprop vendor.usb.rmnet.inst.name "rmnet"
-    setprop vendor.usb.dpl.inst.name "dpl"
-    write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
-    setprop sys.usb.configfs 1
     mkdir /data/vendor/mac_addr 0770 system system
     mkdir /data/vendor/thermal 0771 root system
     mkdir /data/vendor/thermal/config 0771 root system
 
+    #USB controller configuration
+        setprop vendor.usb.rndis.func.name "rndis_bam"
+        setprop vendor.usb.rmnet.func.name "rmnet_bam"
+        setprop vendor.usb.rmnet.inst.name "rmnet"
+        setprop vendor.usb.dpl.inst.name "dpl"
+        setprop vendor.usb.qdss.inst.name "qdss"
+        write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
+        setprop sys.usb.configfs 1
+
 on boot
     start vendor.rmt_storage
-    start rfs_access
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/audio-app/cpus 1-2
     write /dev/cpuset/foreground/cpus 0-7
@@ -114,21 +112,8 @@ on boot
     write /dev/cpuset/background/cpus 0-7
     write /dev/cpuset/system-background/cpus 0-7
 
-
-#spk pa-cal lct-20180914
-    chmod 0664 /dev/tiload_node
-
 #Create folder dump yuv images while debugging
     mkdir /data/vendor/camera 0770 camera camera
-
-
-#USB controller configuration
-    setprop vendor.usb.rndis.func.name "rndis_bam"
-    setprop vendor.usb.rmnet.func.name "rmnet_bam"
-    setprop vendor.usb.rmnet.inst.name "rmnet"
-    setprop vendor.usb.dpl.inst.name "dpl"
-    write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
-    setprop sys.usb.configfs 1
 
     # Wifi firmware reload path
     chown wifi wifi /sys/module/wlan/parameters/fwpath
@@ -297,9 +282,6 @@ on charger
     start vendor.hvdcp_opti
     setprop sys.usb.configfs 1
     start vendor.power_off_alarm
-
-    mount tmpfs tmpfs /data
-    restorecon_recursive /data
 
     start vendor.thermal-engine
     start charger
