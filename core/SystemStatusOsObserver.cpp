@@ -448,7 +448,7 @@ void SystemStatusOsObserver::turnOff(DataItemId dit)
     }
 }
 
-#ifdef USE_QCMAP
+#ifdef USE_GLIB
 bool SystemStatusOsObserver::connectBackhaul()
 {
     bool result = false;
