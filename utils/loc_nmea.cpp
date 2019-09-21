@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -782,8 +782,13 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
             if (sv_meta_p->svType == svNotify.gnssSvs[svNumber - 1].type &&
                     sv_meta_p->signalId == convert_signalType_to_signalId(signalType))
             {
+                uint16_t svId = svNotify.gnssSvs[svNumber - 1].svId;
+                // For QZSS we adjusted SV id's in GnssAdapter, we need to re-adjust here
+                if (GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[svNumber - 1].type) {
+                    svId = svId - (QZSS_SV_PRN_MIN - 1);
+                }
                 length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
-                        svNotify.gnssSvs[svNumber - 1].svId + svIdOffset,
+                        svId + svIdOffset,
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].elevation), //float to int
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].azimuth)); //float to int
 
@@ -1901,7 +1906,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                     (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                       GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.gps_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.gps_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if (GNSS_SIGNAL_GPS_L5 == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask) {
                 sv_cache_info.gps_l5_count++;
@@ -1919,7 +1924,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                     (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                       GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.glo_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.glo_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if (GNSS_SIGNAL_GLONASS_G2 == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
                 sv_cache_info.glo_g2_count++;
@@ -1937,7 +1942,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                     (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                       GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.gal_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.gal_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if(GNSS_SIGNAL_GALILEO_E5A == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
                 sv_cache_info.gal_e5_count++;
@@ -1955,7 +1960,9 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                   GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.qzss_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                // For QZSS we adjusted SV id's in GnssAdapter, we need to re-adjust here
+                sv_cache_info.qzss_used_mask |=
+                        (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - (QZSS_SV_PRN_MIN - 1) - 1));
             }
             if (GNSS_SIGNAL_QZSS_L5 == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask) {
                 sv_cache_info.qzss_l5_count++;
@@ -1973,7 +1980,7 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                   GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.bds_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.bds_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             if(GNSS_SIGNAL_BEIDOU_B2AI == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
                 sv_cache_info.bds_b2_count++;
@@ -1991,7 +1998,8 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
                 (svNotify.gnssSvs[svNumber - 1].gnssSvOptionsMask &
                   GNSS_SV_OPTIONS_USED_IN_FIX_BIT))
             {
-                sv_cache_info.navic_used_mask |= (1 << (svNotify.gnssSvs[svNumber - 1].svId - 1));
+                sv_cache_info.navic_used_mask |=
+                        (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
             // GNSS_SIGNAL_NAVIC_L5 is the only signal type for NAVIC
             sv_cache_info.navic_l5_count++;

@@ -3484,7 +3484,7 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
 
         // If SV ID was used in previous position fix, then set USED_IN_FIX
         // flag, else clear the USED_IN_FIX flag.
-        if (svUsedIdMask & (1 << (gnssSvId - 1))) {
+        if ((gnssSvId < 64) && (svUsedIdMask & (1ULL << (gnssSvId - 1)))) {
             svNotify.gnssSvs[i].gnssSvOptionsMask |= GNSS_SV_OPTIONS_USED_IN_FIX_BIT;
         }
     }
