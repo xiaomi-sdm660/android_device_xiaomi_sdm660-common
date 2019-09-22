@@ -606,6 +606,23 @@ vendor/lib64/vendor.qti.imsrtpservice@2.1.so|7b227f1a007619dcae8d541eabe99eb5581
 vendor/lib64/vendor.qti.ims.callinfo@1.0.so|54fc671e0d5ddb10077b7f705fc096a0217a3db9
 vendor/lib64/vendor.qti.ims.rcsconfig@1.0.so|d9299e6d5d18aa4ebfb984772f3111ddcf196044
 
+# Sensors
+vendor/bin/sensors.qti
+vendor/lib/hw/activity_recognition.sdm660.so
+vendor/lib/libsensor_reg.so
+vendor/lib/libsensor1.so
+vendor/lib/sensor_calibrate.so
+vendor/lib/sensors.ssc.so
+vendor/lib/vendor.qti.hardware.sensorscalibrate@1.0.so
+vendor/lib64/hw/sensors.sdm660.so
+vendor/lib64/hw/sensors.sda660.so
+vendor/lib64/hw/activity_recognition.sdm660.so
+vendor/lib64/libsensor_reg.so
+vendor/lib64/libsensor1.so
+vendor/lib64/sensor_calibrate.so
+vendor/lib64/sensors.ssc.so
+vendor/lib64/vendor.qti.hardware.sensorscalibrate@1.0.so
+
 # SSR
 vendor/bin/ssr_diag
 vendor/bin/ssr_setup
