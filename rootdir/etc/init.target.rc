@@ -209,7 +209,7 @@ service vendor.imsqmidaemon /system/vendor/bin/imsqmidaemon
     class main
     user radio
     socket ims_qmid stream 0660 system radio
-    group radio log diag
+    group radio vendor_qti_diag log
     writepid /dev/cpuset/system-background/tasks
 
 # imsdatadaemon starts with root and UID will be downgraded to SYSTEM.
@@ -217,7 +217,7 @@ service vendor.imsdatadaemon /system/vendor/bin/imsdatadaemon
     class main
     user radio
     socket ims_datad stream 0660 system radio
-    group radio wifi inet log diag
+    group radio wifi inet vendor_qti_diag log
     disabled
     writepid /dev/cpuset/system-background/tasks
 
@@ -247,13 +247,13 @@ service vendor.cnss_diag /system/vendor/bin/cnss_diag -q -f -t HELIUM
 service vendor.ims_rtp_daemon /system/vendor/bin/ims_rtp_daemon
    class main
    user radio
-   group radio  vendor_qti_diag inet log
+   group radio vendor_qti_diag inet log
    writepid /dev/cpuset/system-background/tasks
 
 service vendor.imsrcsservice /system/vendor/bin/imsrcsd
    class main
    user radio
-   group radio diag inet log wakelock
+   group radio vendor_qti_diag log inet wakelock
    writepid /dev/cpuset/system-background/tasks
 
 
