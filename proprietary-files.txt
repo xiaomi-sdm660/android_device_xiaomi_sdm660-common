@@ -534,6 +534,8 @@ vendor/radio/qcril_database/upgrade/2_version_add_wps_config.sql|b4a825ba20fea3e
 vendor/radio/qcril_database/upgrade/3_version_update_wps_config.sql|0571aacaf9fc0868c48bba2f7542f5b4e68c9022
 
 # Radio - IMS - from LA.UM.8.2.r1-04000-sdm660.0
+lib/libdiag_system.so|fae3701605925188b757b501473ad8e6f4e06674
+lib64/libdiag_system.so|7c57857c5c529490d194516d12ace122d120465e
 -product/app/imssettings/imssettings.apk|7f1ddb90c7d3d1cd10e5d737346cb9e284a8f9cc
 -product/priv-app/ims/ims.apk|6b03277c738c1eb73a09b9d41adabb73d776d30e
 etc/permissions/com.qualcomm.qti.imscmservice.xml|db25ef24f1937366d58a53b4f4b8923bc9e98d2d
