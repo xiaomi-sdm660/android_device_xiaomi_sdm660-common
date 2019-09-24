@@ -277,67 +277,44 @@ vendor/lib64/libgcs.so|2f03999d491119478c2d0fe639e01c71316d7ccd
 vendor/lib64/libnwa.so|b46e7d73a32c4e319670f419354842f4c8bb1066
 vendor/lib64/libsse.so|dad58a9bf919a977dee70fcd45089873aeae0b7f
 
-# Media
-lib/libmmosal.so|37719ae5647ef6ec826d06b93e34e0b53c565529
-lib64/libmmosal.so|3d50c7ea56db9c3676be9d6e36e1030386ecdb02
-vendor/lib/libAlacSwDec.so|702aa4606b6999334cb0a04e806fbc4defaa6d8c
-vendor/lib/libApeSwDec.so|c9a060dff8d2c5839225ae975860861d03d97e9e
-vendor/lib/libdsd2pcm.so|5c74d35900ae66f59cf1e09a6a0ffb31d8a3a66d
-vendor/lib/libFlacSwDec.so|d67b8618a0e2cab0aa5dbe0eb6b9f881b4ad457f
--vendor/lib/libgpustats.so|bd3b3b6214e8c0bd21907a55320db0c965ee7812
-vendor/lib/libvpplibrary.so|98ed4aed2719677efa334c56e8231c58e146b0a7
-vendor/lib/libI420colorconvert.so|22dcfbf4f1205c7c8ecb20602df80c2c64cab13f
-vendor/lib/libmm-color-convertor.so|4a4f408dd749f5a1bfdc0dc8d59762e451b93cb7
-vendor/lib/libmmosal_proprietary.so|c65b22b4a22d913ed0fbe25a8ef06d14deca064e
-vendor/lib/libmmsw_detail_enhancement.so|15c19f4c3eeae1128b9fb0bb165ba3b5fe86aeba
-vendor/lib/libmmsw_math.so|a9888704dff725608102ba0f13ff516308f572f2
-vendor/lib/libmmsw_opencl.so|0716c272e05e479546a1b0a81259bbb69c841105
-vendor/lib/libmmsw_platform.so|96c1777d46a35859ce6c517b5b821b2efd7839be
-vendor/lib/libOmxAacDec.so|dfb8ecaa053059e472762ab16accc064f0769a82
-vendor/lib/libOmxEvrcDec.so|5a4b6e0ded018932b92c5562341eee39ffc14d7a
-vendor/lib/libOmxQcelp13Dec.so|434a2af46001e65e9ed7eb1caaa165455d581eb1
-vendor/lib/libOmxVpp.so|6bd9212c608722b3676a17fee2dbb3043080145c
-vendor/lib/libOmxAlacDec.so|af8b35f6dcede01e3127e8e6cc0dbe42fe870a54
-vendor/lib/libOmxAlacDecSw.so|c48d83a933bf84a658877d062c3d0dfa7bed7ee6
-vendor/lib/libOmxAmrDec.so|e9a0f1b7494a011dd7d704f06f04f1bd579b1e83
-vendor/lib/libOmxAmrwbplusDec.so|669a8ddcdb77aae48dfd3928675d97eb5f303a70
-vendor/lib/libOmxApeDec.so|03bb685c8922b7b16e0c73c20a9b517fc8aec65c
-vendor/lib/libOmxApeDecSw.so|9489a58e0ef7fac4b9dd094a14eaa06da8eae05c
-vendor/lib/libOmxDsdDec.so|fc99cc935651833dd7f88e0258cd67ea2d6e083b
-vendor/lib/libOmxG711Dec.so|44f11b59fae8d06589661a3a37c220ad1fdad173
-vendor/lib/libOmxVideoDSMode.so|4fb16dcdf16af547854ac03cef4399a164b8a142
-vendor/lib/libOmxWmaDec.so|da13664bd67725bb21873b3d53f0e0b38f2960cc
-vendor/lib/libvpphvx.so|7937bbf848ea2970ce61d4e5c75f31d7a27b867c
-vendor/lib/libvqzip.so|c1c4f35456ff34b4baba373f18ed034a7d1e2721
-vendor/lib/libvpptestutils.so|8ae726fad8f763778b0af509b4bf70657f1700d5
-vendor/lib/vendor.qti.hardware.vpp@1.1.so|0463443d75cdd6b9b1f67e823d4d8704e219c181
-vendor/lib64/libAlacSwDec.so|01d886461932c82aef5627a6f17c3405d887d9c1
-vendor/lib64/libApeSwDec.so|f6aef64a6a48c83e22fcfb9baa51f9606a893d53
-vendor/lib64/libFlacSwDec.so|40d8b7af7eeb11eec93361f9123238048b92d182
--vendor/lib64/libgpustats.so|4872f22000e1efa0bdc776033585504b12d699cf
-vendor/lib64/libI420colorconvert.so|3c473f6152360737fd787d30852cb3f1114e72ad
-vendor/lib64/libmm-color-convertor.so|f729793b8950403acf4de59dca75d1df5ca34d71
-vendor/lib64/libmmosal_proprietary.so|3e61257e525983a11a6198fac1fdf17afec4823e
-vendor/lib64/libmmsw_detail_enhancement.so|597572582aadc8b6b19121e5a8c49436706f1f8c
-vendor/lib64/libmmsw_math.so|ddba2e939c9f00cf6db47b6f868d54bc53db3d12
-vendor/lib64/libmmsw_opencl.so|e77331d37ddb468573fe666c2f441697fef43027
-vendor/lib64/libmmsw_platform.so|20e0fee86a711e7dcfddd869f61c95d59d586f0f
-vendor/lib64/libOmxAacDec.so|de9f4b739ede1c215d99a12a21ad1da7ff98976f
-vendor/lib64/libOmxAlacDec.so|974044a4e93eea597c58dee3a0b6388914b83b1f
-vendor/lib64/libOmxAlacDecSw.so|f5674a318b592581295b816430f197fdf32b6f2c
-vendor/lib64/libOmxAmrDec.so|37c72175f3cdd705b9328fe1ce2b77204634af8d
-vendor/lib64/libOmxAmrwbplusDec.so|971d0ecd06a01072e18f1a19417b93c76a1d5717
-vendor/lib64/libOmxApeDec.so|99310d2d639a584d8aa82173d51b13659a5f2a1c
-vendor/lib64/libOmxApeDecSw.so|3a952f4e6bf68615e9fd868a6b4c68a696aba212
-vendor/lib64/libOmxEvrcDec.so|dd2b87f34a2f3b39e316ac8b6360a9bc099f668c
-vendor/lib64/libOmxG711Dec.so|60ca837f5de27e9c70ed3cf43f4dbd51f1610558
-vendor/lib64/libOmxQcelp13Dec.so|496abd450ef004bfb3cc93f349ed7cafe16c256d
-vendor/lib64/libOmxVpp.so|1526807a0207a749d37dc7ed6e7b120b87165d45
-vendor/lib64/libOmxWmaDec.so|169807f55141c71815df58fbcea9c95a41bd476f
-vendor/lib64/libvpplibrary.so|1217229b58500a2e2a38e6f2bcce70a85147d716
-vendor/lib64/libvpphvx.so|e4bc7b7e5b9f3e40b24a2bb498883e9bff55622c
-vendor/lib64/libvpptestutils.so|4b3118fecb925791ffb180a7363493d82de18140
-vendor/lib64/vendor.qti.hardware.vpp@1.1.so|47ad0a41f418ce1ff7f0f845dc5be0e7a13e6d0c
+# Media - from LA.UM.8.2.r1-03200-sdm660.0
+vendor/lib/libAlacSwDec.so|c76e16146cf26ad1ac9e0f6d7d6dccb055edb10d
+vendor/lib/libApeSwDec.so|50bff571da2a5aab7b9fef0098975f70eff0d5fb
+vendor/lib/libFlacSwDec.so|51acbe30b629163715bcb7ccf71a8ce954363027
+vendor/lib/libgpustats.so|c2d5b3c387e693c7ea45ed393951e842da2c0525
+vendor/lib/libI420colorconvert.so|53f3b7d5a1ce7edfb0a290165f638b82100bbce9
+vendor/lib/libmm-color-convertor.so|25caefa7d590b6746be01c4cf3be6ed1db9f3241
+vendor/lib/libOmxAacDec.so|27c15bbfeea82b5eaaa0e8b6d063a195f7e4dde3
+vendor/lib/libOmxAlacDec.so|ba4f12335fc009ba827e320767c8917a10d38a46
+vendor/lib/libOmxAlacDecSw.so|172ba157a0334301ad1efd0399f4649b72335892
+vendor/lib/libOmxAmrDec.so|c1380dc702aa605559861f8bc3815fe2968d3b11
+vendor/lib/libOmxAmrwbplusDec.so|1523926f5a04543837131fd799e834258ec6486e
+vendor/lib/libOmxApeDec.so|743e7f245b002e9982b9d26e7e2dbd3393ce097e
+vendor/lib/libOmxApeDecSw.so|2a45e27bb8c14efee9632778093ff0b44fa52a18
+vendor/lib/libOmxDsdDec.so|903e9d215e6d84156e349cf07ea7ef41e3c06e44
+vendor/lib/libOmxEvrcDec.so|9e69f84e7a952b84156d19c582d17d4a852c5da1
+vendor/lib/libOmxG711Dec.so|6a9c81927954d79ad637095d2db7cf06541f0cb7
+vendor/lib/libOmxQcelp13Dec.so|256b87cdb55137e422a1f1b9248b442f98779381
+vendor/lib/libOmxVideoDSMode.so|cbb06767e08011ba8bd21b52f434293aebe54f1c
+vendor/lib/libOmxWmaDec.so|9a40d6986e5f1d4a4041e9cad0166c81717300c8
+vendor/lib/libvqzip.so|ba6bcf70b1bb5809ffa30b1b0b951bb367e49d08
+vendor/lib64/libAlacSwDec.so|871b8e3e4d347dc2875e7a8f990d3eb5fb13ea8b
+vendor/lib64/libApeSwDec.so|682afcac712a044bc71a93fe1a3706d66b79d1e7
+vendor/lib64/libFlacSwDec.so|90fe14444c30689bdfc26ba0a127e96de0e0cdb0
+vendor/lib64/libgpustats.so|44a05ad8805a1ee05d43d22a86f71b4e98158c69
+vendor/lib64/libI420colorconvert.so|d014b1fdf2fd649d90dfcc825de1929e544d7a89
+vendor/lib64/libmm-color-convertor.so|672ca0a21603a3c75100aeca0d598fd5ac595d0a
+vendor/lib64/libOmxAacDec.so|efea6cffe86ab91c0bd3d14058b19fcc243e2deb
+vendor/lib64/libOmxAlacDec.so|15bf3da0b1d186d009cf34b009beb8368aa70361
+vendor/lib64/libOmxAlacDecSw.so|8eac4f2aa572b11a13a750fbaf2d960a8fa39338
+vendor/lib64/libOmxAmrDec.so|5a7f4e6d0913eee390a9caae87de0267736a5576
+vendor/lib64/libOmxAmrwbplusDec.so|38f19930b8d00b6b0372ee70022f0fe91d4b928f
+vendor/lib64/libOmxApeDec.so|edb65bfa6a5123ce1375da5c93e91fe0ac798b6e
+vendor/lib64/libOmxApeDecSw.so|078528e769d85b3b7489813c61f3ff568188c5c3
+vendor/lib64/libOmxEvrcDec.so|04a4695bec4be9a00f30b513ce88cb8badd379d2
+vendor/lib64/libOmxG711Dec.so|731ab6dfd96ad47daa61fb97dcfeca122dc46ba0
+vendor/lib64/libOmxQcelp13Dec.so|2271d0d4cf923add10f5a751b637db9d5a56b573
+vendor/lib64/libOmxWmaDec.so|96b140f2484df7af2364298c41e48881708945a0
 
 # Mlipay
 vendor/bin/mlipayd@1.1|4c30cfd1b32f99ff3043eadca8e7a4b7b9a00c79
@@ -347,59 +324,55 @@ vendor/lib64/libmlipay.so|00643f75ce0646577a3b2713579dffcb6acd9584
 vendor/lib64/vendor.xiaomi.hardware.mlipay@1.0.so|c90f47cc012a338c4f334e6f8c2b3e50dbf2ef40
 vendor/lib64/vendor.xiaomi.hardware.mlipay@1.1.so|4611f408f9bf230594533103e61456ebdc075a32
 
-# Perf
--framework/QPerformance.jar|aabd894450b05b76ff0b2a8898af20ca2a44c66d
--framework/UxPerformance.jar|626e351420adb5ad4db6d2ffd0233c539ebb34ed
-lib/libqti_performance.so|dc0995fa3217b6c44029b55b5151adaae515392a
-lib/vendor.qti.hardware.perf@1.0.so|f992941847fd9043f0569e6dc71f89cedccb586f
-lib/libqti-perfd-client_system.so|74f4d9657cf492cf1de2e9b93983f4e7b5431c45
-lib64/libqti_performance.so|9c88af412e0276c578f06e1069b6c3aeae7e3f8d
-lib64/vendor.qti.hardware.perf@1.0.so|935d13179f58bdc09d31e6be87bdd9fac8afcdbe
-lib64/libqti-perfd-client_system.so|de5b61f07d7981bb208167b357f46a9ad083c9e7
-vendor/bin/msm_irqbalance|117d7c8a8f6f12b3615ec8ab676231df93d277f1
-vendor/bin/hw/vendor.qti.hardware.perf@1.0-service|ecd8296c848b6470a75a6ae7b235d079cacee3a5
-vendor/etc/init/vendor.qti.hardware.perf@1.0-service.rc|b50182aadab2e31409df61c523d0fb914a394e43
-vendor/etc/perf/commonresourceconfigs.xml|20280e40ca43784316e96be09fe2d2296d79e972
-vendor/etc/perf/perfboostsconfig.xml|f4b70245319440d90381a95f298152f4b1797cb4
+# Perf - from LA.UM.8.2.r1-03200-sdm660.0
+product/lib/vendor.qti.hardware.perf@1.0.so|c97191d162d608ad9f75556de3c4cff1ac9518ab
+product/lib/vendor.qti.hardware.perf@2.0.so|f51966661accc69c30f88259b603e1f2bcac33f5
+product/lib64/vendor.qti.hardware.perf@1.0.so|fb06dcbbf156f0307cb8d07200929d58d5d8d0a1
+product/lib64/vendor.qti.hardware.perf@2.0.so|17cf6b3a3c73ed5cee96db80b5f7da11e5f4b3cb
+lib/libqti_performance.so|675c6320c8c8386d670f0a900851fd72dd39f5ee
+lib/libqti-perfd-client_system.so|438aec970092990f1b6bf00ce7741f6052b80c93
+lib64/libqti_performance.so|31fad5d36f1b5c4e86b6b3547d810b0cb7943762
+lib64/libqti-perfd-client_system.so|f4dca1c60940f5112a2a421c203dfe047b9902f4
+vendor/bin/energy-awareness|f8c2fd0dcdde5e971a7cca14f9287bfc2c33cff6
+vendor/bin/hw/vendor.qti.hardware.perf@2.0-service|d82b193e12e54fa74d39c4d940c52cd76c004759
+vendor/etc/init/vendor.qti.hardware.perf@2.0-service.rc|0101a3294311c2988060a00f7b25d8abf2f428f9
+vendor/etc/perf/commonresourceconfigs.xml|9e277f76243eb5ad16d3e55843aadf68a54e7aaa
+vendor/etc/perf/perfconfigstore.xml|760248b82c4f1ad8b0e7ed1924d2b198229e118d
+vendor/etc/perf/perfboostsconfig.xml|0ef809551a9f33d7a2a6a2fbdb0ed4a6f4c3a20e
 vendor/etc/perf/targetconfig.xml|376ae331df9d6c30b6208f25d04ae4ea11c0e2ea
-vendor/etc/perf/targetresourceconfigs.xml|2084cab83603da8fb1817902836ffb890dfc8a16
-vendor/lib/libperfgluelayer.so|9e14c8e4bddf1f5c9c03c3b85fd2a44bfad1a977
-vendor/lib/libqti-perfd-client.so|85ebe15611a5153a70fb48cce5ddd28ebdd5701c
-vendor/lib/libqti-perfd.so|c49b92951d6adabcda2c89e5f432eb6ab31234a3
-vendor/lib/libqti-util.so|d7f4c7588d562a17a379eda7403d487e088769ee
-vendor/lib/libqti-utils.so|d1e1b7b1abb1a631e3f8b65dcdcc2a5329a94ea8
-vendor/lib/vendor.qti.hardware.perf@1.0.so|471b0b886fdbb69d204dc13c7f0ba653087f6c6d
-vendor/lib64/libperfgluelayer.so|afd773f4eb5aaa215706763c2376eaa9d1382143
-vendor/lib64/libqti-perfd-client.so|974abf576e3cbb13774671f8a80be5705063e5c2
-vendor/lib64/libqti-perfd.so|e0ddd0f14062d4d7c033a3f1fe0c810e14eedd55
-vendor/lib64/libqti-util.so|bdf3e4bd3ff525c76948230e26829a3999664a02
-vendor/lib64/libqti-utils.so|0411b2b1033fbb699c75c5a7772b8651910f2b97
-vendor/lib64/vendor.qti.hardware.perf@1.0.so|133620816ff53fce37a99f5d10e170d58afb02c6
+vendor/etc/perf/targetresourceconfigs.xml|7132f1e9ce3bb21b4854b81d6e5d24409251f177
+vendor/lib/libperfconfig.so|9c4123512ab71bb34abb3b310bce18998cb373bf
+vendor/lib/libperfgluelayer.so|9fc1a68ec2b3063e0d336bb25cefc0dd0c64cc71
+vendor/lib/libqti-perfd-client.so|0d257135b88750d6b37252d61564758046499c0b
+vendor/lib/libqti-perfd.so|5ee70a516f43cacf11cdd7c727e71575f43bf8ab
+vendor/lib/libqti-util.so|5a7c58ce00c1cc8e49f7ef9fbfcadcae7afb9f97
+vendor/lib/libqti-utils.so|722620fd7a35ce8517a4e33ac947a765e8d707f3
+vendor/lib/vendor.qti.hardware.perf@1.0.so|4506f9f549b907180cd0ec3fc50e3aa4c12cba5e
+vendor/lib/vendor.qti.hardware.perf@2.0.so|c2c005c1b2d5fc89f539c27b49f0cb65ae51a17c
+vendor/lib64/libperfconfig.so|18e98f44adb360b31446defc434b693349dd1e86
+vendor/lib64/libperfgluelayer.so|e51addfa5ee4b757765aa23a7274bdac57bf6e40
+vendor/lib64/libqti-perfd-client.so|ab070ed07dea1e25458c36a3c53221e9aa4907aa
+vendor/lib64/libqti-perfd.so|3ed57d659d085c4c395aa897588b8e63829e9ddb
+vendor/lib64/libqti-util.so|ace0cd0de97ace0d914b2b481afc8ee2ff83a2df
+vendor/lib64/libqti-utils.so|dced5ae30fbea50bf6d7ef216a92126bf36e365b
+vendor/lib64/vendor.qti.hardware.perf@1.0.so|76644802e3633e129bf2867ea21c49fd411c9c2f
+vendor/lib64/vendor.qti.hardware.perf@2.0.so|1c5c2869cb808c222dbf24aabe2c8e23518d562d
 
-# Perf Profile - from Nokia 7 Plus Onyx_00WW-user 9 PPR1.180610.011 00WW_3_22C release-keys
-vendor/etc/perf/perf-profile0.conf|02204355bf29ceb0460cd53e6716552bb9d9b05f
-vendor/etc/perf/perf-profile1.conf|616319e91304072c93beaffd4f4e0b9b0b3c6ef7
+# IOP - from LA.UM.8.2.r1-03200-sdm660.0
+vendor/lib/vendor.qti.hardware.iop@1.0.so|fa391bc023fd1919f4bd75fc78bec816a8642f13
+vendor/lib/vendor.qti.hardware.iop@2.0.so|d66d69b2f08e146944c7020a67ce914754978e6f
+vendor/lib/hw/vendor.qti.hardware.iop@2.0-impl.so|e63f97ea47f0bec498279aa6e7f3ddef5f6e33ed
+vendor/lib/libqti-iopd-client.so|700da33aed4e1b3a17e156c77ff6b32db4cda891
+vendor/lib64/vendor.qti.hardware.iop@1.0.so|4b9c51f54b12fdd54f4088ec61b06fb3fa631f23
+vendor/lib64/vendor.qti.hardware.iop@2.0.so|89b912c55ceaecc4a230cc22579cab0fef43cf87
+vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so|e82595d915655c1d47ada579b9aba33905835f98
+vendor/lib64/libqti-iopd-client.so|896e83a986ed0f92b91b8f21d55de0071408752b
 
-# IOP
-lib/vendor.qti.hardware.iop@1.0.so|ba81cff0f438060909c3da6992a86b0e94439072
-lib/vendor.qti.hardware.iop@2.0.so|c5e14aa191331d32a17fd75f3e7ea6ecacce86d9
-lib64/vendor.qti.hardware.iop@1.0.so|cec08b8610dc998a079b4cb61feeb6d0c99388ca
-lib64/vendor.qti.hardware.iop@2.0.so|cd5ce2c19b10161cc9e08824e33a15487146d642
-vendor/lib/vendor.qti.hardware.iop@2.0.so|bd7436b57c4d4f99c3076f80ee403a741d3dfed7
-vendor/lib/hw/vendor.qti.hardware.iop@2.0-impl.so|c703642ce5b3a2368564b4b8e8b3ec7a73f6869c
-vendor/lib/libqti-iopd-client.so|0d54d3b4568ddee118507a734ce7cf70da336807
-vendor/lib/vendor.qti.hardware.iop@1.0.so|c437bf68569d9225a98dceb2f0999d06d4e6c309
-vendor/lib64/vendor.qti.hardware.iop@2.0.so|278247c6713527bcb40c08b3a2358a3529c806b8
-vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so|4aa645e7441c7f146ea287985f98755ddee096db
-vendor/lib64/libqti-iopd-client.so|363be4012d8add25f80c6986894c6d3e2bf2ebab
-vendor/lib64/vendor.qti.hardware.iop@1.0.so|0bd7728c4852a0bb7258c4f59784b42acbcaab3f
-
-# Peripheral manager
-vendor/bin/pm-proxy|e5f8c69e8d231dd2665dc411b4e9d9e696c90187
-vendor/bin/pm-service|d9fefe2b7fec574ac4eb70a29303eeec819e449d
-vendor/lib/libperipheral_client.so|27b655cf18a1282594e5c91376b705fe31db6dab
-vendor/lib64/libperipheral_client.so|c4b0cb11e908b234a54a9f212c42ff4c37e37391
-
+# Peripheral manager - from LA.UM.8.2.r1-03200-sdm660.0
+vendor/bin/pm-proxy|65c926065f90c470da839296cb81b900f28cb7a3
+vendor/bin/pm-service|96b32503ea0b98f5795c475dc5d43c2f378691fb
+vendor/lib/libperipheral_client.so|b780513a152f0b97cc26616aae1c0a48a1dbd729
+vendor/lib64/libperipheral_client.so|2df333be7002d87c9ec94fa0e73eec5b4dff6836
 
 # Power-off charging daemon
 -sbin/charger:sbin/chargeonlymode;rootfs|664dfa548b81cac348f1699222160f8d2b4d247c
@@ -643,10 +616,11 @@ vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc|76447a61ad5529949365eeb
 vendor/lib64/vendor.qti.hardware.soter@1.0.so|d131d2fba3ac604233e184fecc3f615a7b0d7423
 vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so|6339cd6fafe713a8ec0e86c8dae4f4b0a186d458
 
-# Time services - from LA.UM.7.2.r1-06900-sdm660.0
--vendor/app/TimeService/TimeService.apk|693a68e35a2cbc40d23b291fcc836c8567f90b14
-vendor/bin/time_daemon|ac244644735005d4c4322168001dcd3ae757007f
-vendor/lib64/libtime_genoff.so|9de68b1aa139b06b0e455bd1c24ed0c527492c3b
+# Time services - from LA.UM.8.2.r1-03200-sdm660.0
+-vendor/app/TimeService/TimeService.apk|c935b678fdaed033513f044f6492361c3370f9f0
+vendor/bin/time_daemon|8cae1e78c1bb3fe8ef35e566ba71a0cd3a249120
+-vendor/lib/libtime_genoff.so|739ffc0ae24400ba78be7677b8c054c69be1c30d
+-vendor/lib64/libtime_genoff.so|fb957aa23b8562678dd1289e67c25c4205ef3bd6
 
 # TUI
 vendor/bin/hw/vendor.qti.hardware.tui_comm@1.0-service-qti|c9d2461aec2f9b19aa1578f500c052d27451d204
@@ -654,8 +628,8 @@ vendor/etc/init/vendor.qti.hardware.tui_comm@1.0-service-qti.rc|2cfc563d7e157937
 vendor/lib/vendor.qti.hardware.tui_comm@1.0.so|5d6ffcf70f619cc5cfd7151dd7e65070eca98ec0
 vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so|b6e7dc05cd0b790358737c9b4205051b76e455e6
 
-# Wifi
-vendor/bin/cnss-daemon|93468d3c8c2100710b1f9ddec884fc455a839fd1
+# Wi-Fi - from LA.UM.8.2.r1-03200-sdm660.0
+vendor/bin/cnss-daemon|c4b8c64518093327549f688666e220f34e6f7d1f
 
 # Wfd
 bin/wfdservice|edeb291221024401cbae69c2fa4e58733b7efc4c
