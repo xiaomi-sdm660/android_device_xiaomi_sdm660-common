@@ -562,6 +562,7 @@ on property:sys.boot_completed=1
     #WDSP FW boot sysfs node used by STHAL
     chown media audio /sys/kernel/wdsp0/boot
     chown media audio /sys/kernel/wcd_cpe0/fw_name
+    chown media audio /sys/kernel/aud_dev/state
 
 on property:persist.vendor.radio.atfwd.start=false
     stop vendor.atfwd
