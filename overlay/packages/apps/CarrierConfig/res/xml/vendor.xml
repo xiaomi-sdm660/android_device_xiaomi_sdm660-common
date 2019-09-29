@@ -586,6 +586,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_toast" value="false"/>
         <boolean name="show_call_session_event_toast" value="false"/>
         <boolean name="show_data_usage_toast" value="false"/>
+        <boolean name="config_update_volte_icon" value="false"/>
         <string-array name="apn_hide_rule_strings_with_iccids_array" num="6">
             <item value="iccid"/>
             <item value="8991840,8991854,8991855,8991856,8991857,8991858,8991859,899186,8991870,8991871,8991872,8991873,8991874"/>
@@ -597,7 +598,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.-->
         <boolean name="show_video_quality_ui" value="true" />
         <boolean name="vowifi_call_quality" value="true" />
         <boolean name="config_retry_sms_over_ims" value="true"/>
-        <boolean name="config_update_service_status" value="true"/>
+        <boolean name="config_update_service_status" value="false"/>
     </carrier_config>
 
     <carrier_config mcc="405" mnc="857">
