@@ -65,9 +65,10 @@ static void agpsCloseResultCb (bool isSuccess, AGpsExtType agpsType, void* userD
 GnssAdapter::GnssAdapter() :
     LocAdapterBase(0,
                    LocContext::getLocContext(NULL,
-                                                   NULL,
-                                                   LocContext::mLocationHalName,
-                                                   false), true, nullptr),
+                                             NULL,
+                                             LocContext::mLocationHalName,
+                                             false),
+                   true, nullptr, true),
     mEngHubProxy(new EngineHubProxyBase()),
     mLocPositionMode(),
     mGnssSvIdUsedInPosition(),
@@ -127,6 +128,10 @@ GnssAdapter::GnssAdapter() :
     readConfigCommand();
     initDefaultAgpsCommand();
     initEngHubProxyCommand();
+
+    // at last step, let us inform adapater base that we are done
+    // with initialization, e.g.: ready to process handleEngineUpEvent
+    doneInit();
 }
 
 void
