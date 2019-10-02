@@ -212,6 +212,9 @@ on boot
     # an ack packet comes out of order
     write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
 
+    #Make MTU adjusting for sometimes cannot access to internet
+    write /proc/sys/net/ipv4/tcp_mtu_probing 1
+
     # Set the console loglevel to < KERN_INFO
     # Set the default message loglevel to KERN_INFO
     write /proc/sys/kernel/printk "6 6 1 7"
@@ -293,6 +296,12 @@ on post-fs-data
     # Create directory used by media clients
     mkdir /data/vendor/media 0770 mediacodec media
 
+    # create QDMA dropbox
+    mkdir /data/vendor/qdmastats 0700 system system
+    mkdir /data/vendor/qdma 0770 system system
+    mkdir /dev/socket/qdma 0770 system system
+    chmod 2770 /dev/socket/qdma
+
     # Create /data/vendor/tzstorage directory for SFS listener
     mkdir /data/vendor/tzstorage 0770 system system
 
@@ -340,6 +349,11 @@ on post-fs-data
     # Create the directories used by CnE subsystem
     mkdir /data/vendor/connectivity 0771 radio radio
     chown radio radio /data/vendor/connectivity
+
+    # Create the directories used by LctDiagSendData
+    mkdir /data/vendor/lct_diag 0771 root root
+    chown root root /data/vendor/lct_diag
+    rm /data/vendor/lct_diag/client_*
 
     # Create directory used by audio subsystem
     mkdir /data/vendor/audio 0770 audio audio
@@ -473,8 +487,11 @@ on post-fs-data
     # Create vpp directory
     mkdir /data/vendor/vpp 0770 media media
 
+    #Create FTM_AP dir for factory test
+    mkdir /data/FTM_AP 0775 system system
+
     #Create dir for TUI
-    mkdir /data/vendor/tui 0700 system drmrpc
+    mkdir /data/vendor/tui 0600 system drmrpc
 
     #Start move time data to /data/vendor once post-fs-data done
     start vendor.move_time_data
@@ -569,6 +586,11 @@ service vendor.cnd /system/vendor/bin/cnd
     user system
     group system wifi inet radio wakelock net_admin
     writepid /dev/cpuset/system-background/tasks
+
+service dpmQmiMgr /system/vendor/bin/dpmQmiMgr
+    class main
+    user system
+    group system
 
 service vendor.irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     class core
@@ -763,6 +785,12 @@ service charger /system/bin/charger
     user system
     group system graphics input
     seclabel u:r:healthd:s0
+
+service vendor.ssr_diag /system/vendor/bin/ssr_diag
+    class late_start
+    user system
+    group system
+    disabled
 
 
 service vendor.msm_irqbalance /vendor/bin/msm_irqbalance -f /system/vendor/etc/msm_irqbalance.conf
