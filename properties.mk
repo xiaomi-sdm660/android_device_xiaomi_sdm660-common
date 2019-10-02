@@ -1,3 +1,6 @@
+#Build FP to be picked by both system and vendor
+BUILD_FINGERPRINT := "google/walleye/walleye:8.1.0/OPM1.171019.021/4565141:user/release-keys"
+
 # ART
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dex2oat-filter=speed \
