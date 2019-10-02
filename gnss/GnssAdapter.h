@@ -138,6 +138,8 @@ class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
     EngineHubProxyBase* mEngHubProxy;
+    bool mNHzNeeded;
+    bool mSPEAlreadyRunningAtHighestInterval;
 
     /* ==== TRACKING ======================================================================= */
     TrackingOptionsMap mTimeBasedTrackingSessions;
@@ -228,6 +230,7 @@ public:
     virtual void handleEngineUpEvent();
     /* ======== UTILITIES ================================================================== */
     void restartSessions();
+    void checkAndRestartTimeBasedSession();
 
     /* ==== CLIENT ========================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -265,6 +268,7 @@ public:
             const TrackingOptions& trackingOptions);
     void updateTracking(LocationAPI* client, uint32_t sessionId,
             const TrackingOptions& updatedOptions, const TrackingOptions& oldOptions);
+    bool checkAndSetSPEToRunforNHz(TrackingOptions & out);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
