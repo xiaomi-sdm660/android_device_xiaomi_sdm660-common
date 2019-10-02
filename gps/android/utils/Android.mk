@@ -17,8 +17,6 @@ LOCAL_SRC_FILES:= \
 LOCAL_SHARED_LIBRARIES := \
     liblog \
     libhidlbase \
-    libhidltransport \
-    libhwbinder \
     libcutils \
     libutils \
     android.hardware.health@1.0 \
