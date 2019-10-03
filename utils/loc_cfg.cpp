@@ -483,6 +483,7 @@ typedef struct {
     unsigned int loc_feature_mask;
     char platform_list[LOC_MAX_PARAM_STRING];
     char baseband[LOC_MAX_PARAM_STRING];
+    char low_ram_targets[LOC_MAX_PARAM_STRING];
     unsigned int sglte_target;
     char feature_gtp_mode[LOC_MAX_PARAM_STRING];
     char feature_gtp_waa[LOC_MAX_PARAM_STRING];
@@ -524,6 +525,7 @@ static const loc_param_s_type loc_process_conf_parameter_table[] = {
     {"IZAT_FEATURE_MASK",          &conf.loc_feature_mask,         NULL, 'n'},
     {"PLATFORMS",                  &conf.platform_list,            NULL, 's'},
     {"BASEBAND",                   &conf.baseband,                 NULL, 's'},
+    {"LOW_RAM_TARGETS",            &conf.low_ram_targets,          NULL, 's'},
     {"HARDWARE_TYPE",              &conf.auto_platform,            NULL, 's'},
     {"VENDOR_ENHANCED_PROCESS",    &conf.vendor_enhanced_process,  NULL, 'n'},
 };
@@ -565,6 +567,7 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     int group_index=0, nstrings=0, status_length=0;
     FILE* conf_fp = nullptr;
     char platform_name[PROPERTY_VALUE_MAX], baseband_name[PROPERTY_VALUE_MAX];
+    int low_ram_target=0;
     char autoplatform_name[PROPERTY_VALUE_MAX];
     unsigned int loc_service_mask=0;
     char config_mask = 0;
@@ -597,6 +600,8 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
     loc_get_target_baseband(baseband_name, sizeof(baseband_name));
     //Identify if this is an automotive platform
     loc_get_auto_platform_name(autoplatform_name,sizeof(autoplatform_name));
+    //Identify if this is a low ram target from ro.config.low_ram property
+    low_ram_target = loc_identify_low_ram_target();
 
     UTIL_READ_CONF(conf_file_name, loc_feature_conf_table);
 
@@ -892,6 +897,13 @@ int loc_read_process_conf(const char* conf_file_name, uint32_t * process_count_p
                     break;
                 }
             }
+        }
+
+        nstrings = loc_util_split_string(conf.low_ram_targets, split_strings, MAX_NUM_STRINGS, ' ');
+        if (!strcmp("DISABLED", split_strings[0]) && low_ram_target) {
+            LOC_LOGd("Disabled for low ram targets\n");
+            child_proc[j].proc_status = DISABLED;
+            continue;
         }
 
         if((config_mask & CONFIG_MASK_TARGET_CHECK) &&
