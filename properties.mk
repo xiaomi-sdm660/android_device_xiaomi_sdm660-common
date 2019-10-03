@@ -13,6 +13,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     audio.deep_buffer.media=true \
     audio.offload.min.duration.secs=30 \
     audio.offload.video=true \
+    audio.volume.headset.gain.depcal=true \
     persist.dirac.acs.controller=qem \
     persist.dirac.acs.ignore_error=1 \
     persist.dirac.acs.storeSettings=1 \
@@ -56,7 +57,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     vendor.qcom.bluetooth.soc=cherokee \
     persist.bluetooth.bluetooth_audio_hal.disabled=true \
-    ro.vendor.bluetooth.wipower=false
+    ro.vendor.bluetooth.wipower=false \
+    persist.bluetooth.a2dp_offload.disabled=false \
+    persist.bluetooth.a2dp_offload.cap=sbc-aac-aptx-aptxhd-ldac
 
 # Camera
 PRODUCT_PROPERTY_OVERRIDES += \
