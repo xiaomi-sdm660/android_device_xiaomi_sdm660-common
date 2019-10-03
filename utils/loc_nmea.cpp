@@ -1327,6 +1327,14 @@ void loc_nmea_generate_pos(const UlpLocation &location,
             talker[1] = sv_meta.talker[1];
         }
 
+        // if svUsedCount is 0, it means we do not generate any GSA sentence yet.
+        // in this case, generate an empty GSA sentence
+        if (svUsedCount == 0) {
+            strlcpy(sentence, "$GPGSA,A,1,,,,,,,,,,,,,,,,", sizeof(sentence));
+            length = loc_nmea_put_checksum(sentence, sizeof(sentence));
+            nmeaArraystr.push_back(sentence);
+        }
+
         char ggaGpsQuality[3] = {'0', '\0', '\0'};
         char rmcModeIndicator = 'N';
         char vtgModeIndicator = 'N';
