@@ -34,7 +34,7 @@ fi
 . "$HELPER"
 
 # Default to sanitizing the vendor folder before extraction
-CLEAN_VENDOR=true
+clean_vendor=true
 
 while [ "${#}" -gt 0 ]; do
     case "${1}" in
@@ -46,7 +46,7 @@ while [ "${#}" -gt 0 ]; do
                 ;;
         -s | --section )
                 SECTION="${2}"; shift
-                CLEAN_VENDOR=false
+                clean_vendor=false
                 ;;
         * )
                 SRC="${1}"
