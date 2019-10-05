@@ -605,6 +605,14 @@ vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc|76447a61ad5529949365eeb
 vendor/lib64/vendor.qti.hardware.soter@1.0.so|d131d2fba3ac604233e184fecc3f615a7b0d7423
 vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so|6339cd6fafe713a8ec0e86c8dae4f4b0a186d458
 
+# Thermal
+vendor/bin/thermal-engine
+vendor/lib/libthermalfeature.so
+-vendor/lib/libthermalclient.so
+vendor/lib64/libthermalfeature.so
+-vendor/lib64/libthermalclient.so
+vendor/lib64/libthermalioctl.so
+
 # Time services - from LA.UM.8.2.r1-03200-sdm660.0
 -vendor/app/TimeService/TimeService.apk|c935b678fdaed033513f044f6492361c3370f9f0
 vendor/bin/time_daemon|8cae1e78c1bb3fe8ef35e566ba71a0cd3a249120
