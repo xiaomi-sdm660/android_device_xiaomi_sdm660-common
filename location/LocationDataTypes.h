@@ -567,28 +567,32 @@ typedef enum {
     GNSS_SIGNAL_GALILEO_E5A         = (1<<7),
     /** GALILEO E5B RF Band */
     GNSS_SIGNAL_GALILEO_E5B         = (1<<8),
-    /** BEIDOU B1_I RF Band */
-    GNSS_SIGNAL_BEIDOU_B1I          = (1<<9),
-    /** BEIDOU B1C RF Band */
-    GNSS_SIGNAL_BEIDOU_B1C          = (1<<10),
-    /** BEIDOU B2_I RF Band */
-    GNSS_SIGNAL_BEIDOU_B2I          = (1<<11),
-    /** BEIDOU B2A_I RF Band */
-    GNSS_SIGNAL_BEIDOU_B2AI         = (1<<12),
+    /** BEIDOU B1 RF Band */
+    GNSS_SIGNAL_BEIDOU_B1           = (1<<9),
+    /** BEIDOU B2 RF Band */
+    GNSS_SIGNAL_BEIDOU_B2           = (1<<10),
     /** QZSS L1CA RF Band */
-    GNSS_SIGNAL_QZSS_L1CA           = (1<<13),
+    GNSS_SIGNAL_QZSS_L1CA           = (1<<11),
     /** QZSS L1S RF Band */
-    GNSS_SIGNAL_QZSS_L1S            = (1<<14),
+    GNSS_SIGNAL_QZSS_L1S            = (1<<12),
     /** QZSS L2 RF Band */
-    GNSS_SIGNAL_QZSS_L2             = (1<<15),
+    GNSS_SIGNAL_QZSS_L2             = (1<<13),
     /** QZSS L5 RF Band */
-    GNSS_SIGNAL_QZSS_L5             = (1<<16),
+    GNSS_SIGNAL_QZSS_L5             = (1<<14),
     /** SBAS L1 RF Band */
-    GNSS_SIGNAL_SBAS_L1             = (1<<17),
+    GNSS_SIGNAL_SBAS_L1             = (1<<15),
+    /** BEIDOU B1I RF Band */
+    GNSS_SIGNAL_BEIDOU_B1I          = (1<<16),
+    /** BEIDOU B1C RF Band */
+    GNSS_SIGNAL_BEIDOU_B1C          = (1<<17),
+    /** BEIDOU B2I RF Band */
+    GNSS_SIGNAL_BEIDOU_B2I          = (1<<18),
+    /** BEIDOU B2AI RF Band */
+    GNSS_SIGNAL_BEIDOU_B2AI         = (1<<19),
     /** NAVIC L5 RF Band */
-    GNSS_SIGNAL_NAVIC_L5            = (1<<18),
+    GNSS_SIGNAL_NAVIC_L5            = (1<<20),
     /** BEIDOU B2A_Q RF Band */
-    GNSS_SIGNAL_BEIDOU_B2AQ         = (1<<19)
+    GNSS_SIGNAL_BEIDOU_B2AQ         = (1<<21),
 } GnssSignalTypeBits;
 
 #define GNSS_SIGNAL_TYPE_MASK_ALL\
