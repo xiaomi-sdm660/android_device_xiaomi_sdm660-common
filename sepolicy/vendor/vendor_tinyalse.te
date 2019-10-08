@@ -1,0 +1,16 @@
+# Tinyalsa installation for vendor binaries / scripts
+# Non-vendor processes are not allowed to execute the binary
+# and is always executed without transition.
+type vendor_tinyalsa_exec, exec_type, vendor_file_type, file_type;
+
+# Do not allow domains to transition to vendor tinyalsa
+# or read, execute the vendor_tinyalsa file.
+full_treble_only(`
+    # Do not allow non-vendor domains to transition
+    # to vendor tinyalsa except for the whitelisted domains.
+    neverallow {
+        coredomain
+        -init
+        -modprobe
+    } vendor_tinyalsa_exec:file { entrypoint execute execute_no_trans };
+')
