@@ -35,9 +35,13 @@ fi
 
 # Default to sanitizing the vendor folder before extraction
 clean_vendor=true
+ONLY_COMMON=
 
 while [ "${#}" -gt 0 ]; do
     case "${1}" in
+        -o | --only-common )
+                ONLY_COMMON=false
+                ;;
         -n | --no-cleanup )
             CLEAN_VENDOR=false
             ;;
@@ -92,7 +96,7 @@ setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true $clean_vendor
 extract "$MY_DIR"/proprietary-files.txt "$SRC" \
     "${KANG}" --section "${SECTION}"
 
-if [ -s "$MY_DIR"/../$DEVICE/proprietary-files.txt ]; then
+if [ -z "${ONLY_COMMON}" ] && [ -s "${MY_DIR}/../${DEVICE}/proprietary-files.txt" ]; then
     # Reinitialize the helper for device
     setup_vendor "$DEVICE" "$VENDOR" "$LINEAGE_ROOT" false "$CLEAN_VENDOR"
     extract "$MY_DIR"/../$DEVICE/proprietary-files.txt "$SRC" \
