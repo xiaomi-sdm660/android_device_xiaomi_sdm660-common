@@ -246,6 +246,11 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     folio_daemon
 
+# fwk-detect
+PRODUCT_PACKAGES += \
+    libqti_vndfwk_detect
+
+
 # GPS / Location
 PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-impl-qti \
