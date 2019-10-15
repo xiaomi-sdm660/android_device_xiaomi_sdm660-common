@@ -35,7 +35,8 @@
         <Preference
             android:key="device_kcal"
             android:persistent="false"
-            android:title="@string/device_kcal_title">
+            android:title="@string/device_kcal_title"
+            android:icon="@drawable/ic_color">
             <intent
                 android:action="android.intent.action.MAIN"
                 android:targetClass="org.lineageos.settings.kcal.KCalSettingsActivity"
@@ -46,7 +47,8 @@
             android:key="device_doze"
             android:persistent="false"
             android:summary="@string/advanced_doze_summary"
-            android:title="@string/ambient_display_xiaomi">
+            android:title="@string/ambient_display_xiaomi"
+            android:icon="@drawable/ic_doze">
             <intent
                 android:action="android.intent.action.MAIN"
                 android:targetClass="org.lineageos.settings.doze.DozeSettingsActivity"
@@ -65,7 +67,8 @@
             android:entryValues="@array/spectrum_values"
             android:key="spectrum"
             android:summary="@string/spectrum_summary"
-            android:title="@string/spectrum_title" />
+            android:title="@string/spectrum_title" 
+            android:icon="@drawable/ic_performance" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -76,7 +79,8 @@
             android:defaultValue="false"
             android:key="dirac_enabled"
             android:summary="@string/dirac_summary"
-            android:title="@string/dirac_title" />
+            android:title="@string/dirac_title" 
+            android:icon="@drawable/ic_dirac" />
 
         <org.lineageos.settings.device.preferences.SecureSettingListPreference
             android:defaultValue="0"
@@ -85,7 +89,8 @@
             android:entryValues="@array/dirac_headset_pref_values"
             android:key="dirac_headset_pref"
             android:summary="%s"
-            android:title="@string/dirac_headset_title" />
+            android:title="@string/dirac_headset_title"
+            android:icon="@drawable/ic_headphones" />
 
         <org.lineageos.settings.device.preferences.SecureSettingListPreference
             android:defaultValue="0,0,0,0,0,0,0"
@@ -94,7 +99,8 @@
             android:entryValues="@array/dirac_preset_pref_values"
             android:key="dirac_preset_pref"
             android:summary="%s"
-            android:title="@string/dirac_preset_title" />
+            android:title="@string/dirac_preset_title"
+            android:icon="@drawable/ic_preset" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -105,6 +111,7 @@
             android:defaultValue="true"
             android:key="hall"
             android:summary="@string/hall_wakeup_summary"
-            android:title="@string/hall_title" />
+            android:title="@string/hall_title" 
+            android:icon="@drawable/ic_flip" />
     </PreferenceCategory>
 </PreferenceScreen>
