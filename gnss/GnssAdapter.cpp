@@ -2086,7 +2086,9 @@ GnssAdapter::updateClientsEventMask()
 {
     LOC_API_ADAPTER_EVENT_MASK_T mask = 0;
     for (auto it=mClientData.begin(); it != mClientData.end(); ++it) {
-        if (it->second.trackingCb != nullptr || it->second.gnssLocationInfoCb != nullptr) {
+        if (it->second.trackingCb != nullptr ||
+            it->second.gnssLocationInfoCb != nullptr ||
+            it->second.engineLocationsInfoCb != nullptr) {
             mask |= LOC_API_ADAPTER_BIT_PARSED_POSITION_REPORT;
         }
         if (it->second.gnssSvCb != nullptr) {
@@ -2260,13 +2262,6 @@ GnssAdapter::notifyClientOfCachedLocationSystemInfo(
 }
 
 bool
-GnssAdapter::hasTrackingCallback(LocationAPI* client)
-{
-    auto it = mClientData.find(client);
-    return (it != mClientData.end() && (it->second.trackingCb || it->second.gnssLocationInfoCb));
-}
-
-bool
 GnssAdapter::isTimeBasedTrackingSession(LocationAPI* client, uint32_t sessionId)
 {
     LocationSessionKey key(client, sessionId);
@@ -2281,10 +2276,21 @@ GnssAdapter::isDistanceBasedTrackingSession(LocationAPI* client, uint32_t sessio
 }
 
 bool
-GnssAdapter::hasMeasurementsCallback(LocationAPI* client)
+GnssAdapter::hasCallbacksToStartTracking(LocationAPI* client)
 {
+    bool allowed = false;
     auto it = mClientData.find(client);
-    return (it != mClientData.end() && it->second.gnssMeasurementsCb);
+    if (it != mClientData.end()) {
+        if (it->second.trackingCb || it->second.gnssLocationInfoCb ||
+            it->second.engineLocationsInfoCb || it->second.gnssMeasurementsCb) {
+            allowed = true;
+        } else {
+            LOC_LOGi("missing right callback to start tracking")
+        }
+    } else {
+        LOC_LOGi("client %p not found", client)
+    }
+    return allowed;
 }
 
 bool
@@ -2452,8 +2458,7 @@ GnssAdapter::startTrackingCommand(LocationAPI* client, TrackingOptions& options)
                 return;
             }
             LocationError err = LOCATION_ERROR_SUCCESS;
-            if (!mAdapter.hasTrackingCallback(mClient) &&
-                !mAdapter.hasMeasurementsCallback(mClient)) {
+            if (!mAdapter.hasCallbacksToStartTracking(mClient)) {
                 err = LOCATION_ERROR_CALLBACK_MISSING;
             } else if (0 == mOptions.size) {
                 err = LOCATION_ERROR_INVALID_PARAMETER;
@@ -3137,21 +3142,35 @@ GnssAdapter::reportPositionEvent(const UlpLocation& ulpLocation,
                                  int msInWeek)
 {
     // this position is from QMI LOC API, then send report to engine hub
-    // if sending is successful, we return as we will wait for final report from engine hub
-    // if the position is called from engine hub, then send it out directly
+    // also, send out SPE fix promptly to the clients that have registered
+    // with SPE report
+    LOC_LOGd("reportPositionEvent, eng type: %d, unpro %d, sess status %d",
+             locationExtended.locOutputEngType, ulpLocation.unpropagatedPosition,
+             status);
 
     if (true == initEngHubProxy()){
+        // send the SPE fix to engine hub
         mEngHubProxy->gnssReportPosition(ulpLocation, locationExtended, status);
+        // report out all SPE fix if it is not propagated, even for failed fix
+        if (false == ulpLocation.unpropagatedPosition) {
+            EngineLocationInfo engLocationInfo = {};
+            engLocationInfo.location = ulpLocation;
+            engLocationInfo.locationExtended = locationExtended;
+            engLocationInfo.sessionStatus = status;
+            reportEnginePositionsEvent(1, &engLocationInfo);
+        }
         return;
     }
 
+    // unpropagated report: is only for engine hub to consume and no need
+    // to send out to the clients
     if (true == ulpLocation.unpropagatedPosition) {
         return;
     }
 
-    // Fix is from QMI, and it is not an
-    // unpropagated position and engine hub is not loaded, queue the msg
-    // when message is queued, the position can be dispatched to requesting client
+    // Fix is from QMI, and it is not an unpropagated position and engine hub
+    // is not loaded, queue the message when message is processed, the position
+    // can be dispatched to requesting client that registers for SPE report
     struct MsgReportPosition : public LocMsg {
         GnssAdapter& mAdapter;
         const UlpLocation mUlpLocation;
