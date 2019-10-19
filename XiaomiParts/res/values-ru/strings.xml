@@ -31,18 +31,18 @@
     <string name="vibration_title">Вибрация</string>
     <string name="vibration_strength_title">Сила</string>
 
-    <!-- Spectrum Profiles -->
-    <string name="spectrum_profile_title">Производительность</string>
-    <string name="spectrum_title">Настройки производительности</string>
-    <string name="spectrum_summary">Выберите Ваш профил производительности</string>
-    <string name="spectrum_dialogTitle">Выберите Ваш профил производительности</string>
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Производительность</string>
+    <string name="thermal_title">Настройки производительности</string>
+    <string name="thermal_summary">Выберите Ваш профил производительности</string>
+    <string name="thermal_dialogTitle">Выберите Ваш профил производительности</string>
 
-    <!-- Values for Spectrum Presets -->
-    <string name="spectrum_performance">Производительность</string>
-    <string name="spectrum_battery">Энергосбережение</string>
-    <string name="spectrum_gaming">Игры</string>
-    <string name="spectrum_balance">Баланс</string>
-    <string name="spectrum_extreme_battery">Экстримное энергосбережение</string>
+    <!-- Values for Thermal Presets -->
+    <string name="thermal_performance">Производительность</string>
+    <string name="thermal_battery">Энергосбережение</string>
+    <string name="thermal_gaming">Игры</string>
+    <string name="thermal_balance">Баланс</string>
+    <string name="thermal_extreme_battery">Экстримное энергосбережение</string>
 
     <!-- FP Actions -->
 

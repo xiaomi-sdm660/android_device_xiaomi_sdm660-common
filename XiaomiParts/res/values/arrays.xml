@@ -14,14 +14,14 @@
      limitations under the License.
 -->
 <resources>
-    <string-array name="spectrum_profiles">
-        <item>@string/spectrum_balance</item>
-        <item>@string/spectrum_performance</item>
-        <item>@string/spectrum_battery</item>
-        <item>@string/spectrum_gaming</item>
-        <item>@string/spectrum_extreme_battery</item>
+    <string-array name="thermal_profiles">
+        <item>@string/thermal_balance</item>
+        <item>@string/thermal_performance</item>
+        <item>@string/thermal_battery</item>
+        <item>@string/thermal_gaming</item>
+        <item>@string/thermal_extreme_battery</item>
     </string-array>
-    <string-array name="spectrum_values">
+    <string-array name="thermal_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>

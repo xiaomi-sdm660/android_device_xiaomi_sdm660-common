@@ -29,18 +29,18 @@
     <string name="vibration_title">Haptic feedback</string>
     <string name="vibration_strength_title">Strength</string>
 
-    <!-- Spectrum Profiles -->
-    <string name="spectrum_profile_title">Performance</string>
-    <string name="spectrum_title">Performance Settings</string>
-    <string name="spectrum_summary">Choose your Performance settings</string>
-    <string name="spectrum_dialogTitle">Choose your Performance settings</string>
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Thermal</string>
+    <string name="thermal_title">Thermal Settings</string>
+    <string name="thermal_summary">Choose your Thermal Profile</string>
+    <string name="thermal_dialogTitle">Choose your Thermal Profile</string>
 
-    <!-- Values for Spectrum Presets -->
-    <string name="spectrum_performance">Performance</string>
-    <string name="spectrum_battery">Battery</string>
-    <string name="spectrum_gaming">Gaming</string>
-    <string name="spectrum_balance">Balance</string>
-    <string name="spectrum_extreme_battery">Extreme Battery</string>
+    <!-- Values for Thermal Presets -->
+    <string name="thermal_performance">Performance</string>
+    <string name="thermal_battery">Battery</string>
+    <string name="thermal_gaming">Gaming</string>
+    <string name="thermal_balance">Balance</string>
+    <string name="thermal_extreme_battery">Extreme Battery</string>
 
     <string name="audio_title">Audio</string>
 

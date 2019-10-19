@@ -20,17 +20,17 @@
     <string name="device_kcal_title">Displaykalibierung</string>
     <string name="vibration_strength_title">Stärke</string>
 
-    <!-- Spectrum Profiles -->
-    <string name="spectrum_profile_title">Leistung</string>
-    <string name="spectrum_title">Leistung Einstellung</string>
-    <string name="spectrum_summary">Wähle die Leistungstufe</string>
-    <string name="spectrum_dialogTitle">Wähle die Leistungstufe</string>
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Temperatur</string>
+    <string name="thermal_title">Temperatur Einstellung</string>
+    <string name="thermal_summary">Wähle das Temperatur Profil</string>
+    <string name="thermal_dialogTitle">Wähle das Temperatur Profil</string>
 
-    <string name="spectrum_performance">Performance</string>
-    <string name="spectrum_battery">Energieeffizient</string>
-    <string name="spectrum_gaming">Gaming</string>
-    <string name="spectrum_balance">Balance</string>
-    <string name="spectrum_extreme_battery">Energiesparmodus</string>
+    <string name="thermal_performance">Performance</string>
+    <string name="thermal_battery">Energieeffizient</string>
+    <string name="thermal_gaming">Gaming</string>
+    <string name="thermal_balance">Balance</string>
+    <string name="thermal_extreme_battery">Energiesparen</string>
     <string name="vibration_title">Haptisches Feedback</string>
 
     <!-- Dirac settings -->
