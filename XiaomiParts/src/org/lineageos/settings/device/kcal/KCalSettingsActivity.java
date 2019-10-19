@@ -32,12 +32,13 @@ public class KCalSettingsActivity extends Activity implements Utils {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_kcal);
 
-        Fragment fragment = getFragmentManager().findFragmentById(android.R.id.content);
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.fragment_kcal);
         if (fragment == null) {
             mKCalSettingsFragment = new KCalSettings();
             getFragmentManager().beginTransaction()
-                    .add(android.R.id.content, mKCalSettingsFragment)
+                    .add(R.id.fragment_kcal, mKCalSettingsFragment)
                     .commit();
         } else {
             mKCalSettingsFragment = (KCalSettings) fragment;
