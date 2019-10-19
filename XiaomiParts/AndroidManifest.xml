@@ -45,7 +45,7 @@
         <activity
             android:name=".DeviceSettingsActivity"
             android:exported="false"
-            android:icon="@drawable/round_build_24"
+            android:icon="@drawable/ic_mi"
             android:label="@string/advanced_settings"
             android:launchMode="singleTask">
             <intent-filter>
@@ -57,6 +57,9 @@
             <meta-data
                 android:name="com.android.settings.dismiss"
                 android:value="9,13,30" />
+            <meta-data
+                android:name="com.android.settings.bg.hint"
+                android:resource="@color/homepage_parts_background" />
             <meta-data
                 android:name="com.android.settings.category"
                 android:value="com.android.settings.category.ia.homepage" />
