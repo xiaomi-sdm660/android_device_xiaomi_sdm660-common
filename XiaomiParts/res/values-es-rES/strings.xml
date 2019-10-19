@@ -25,18 +25,18 @@
     <string name="vibration_title">Retroalimentación háptica</string>
     <string name="vibration_strength_title">Fuerza</string>
 
-    <!-- Spectrum Profiles -->
-    <string name="spectrum_profile_title">Rendimiento</string>
-    <string name="spectrum_title">Ajustes de Rendimiento</string>
-    <string name="spectrum_summary">Elija su configuración de Rendimiento</string>
-    <string name="spectrum_dialogTitle">Elija su configuración de Rendimiento</string>
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Rendimiento</string>
+    <string name="thermal_title">Ajustes de Rendimiento</string>
+    <string name="thermal_summary">Elija su configuración de Rendimiento</string>
+    <string name="thermal_dialogTitle">Elija su configuración de Rendimiento</string>
 
-    <!-- Values for Spectrum Presets -->
-    <string name="spectrum_performance">Rendimiento</string>
-    <string name="spectrum_battery">Batería</string>
-    <string name="spectrum_gaming">Juego</string>
-    <string name="spectrum_balance">Balance</string>
-    <string name="spectrum_extreme_battery">Batería Extrema</string>
+    <!-- Values for Thermal Presets -->
+    <string name="thermal_performance">Rendimiento</string>
+    <string name="thermal_battery">Batería</string>
+    <string name="thermal_gaming">Juego</string>
+    <string name="thermal_balance">Balance</string>
+    <string name="thermal_extreme_battery">Batería Extrema</string>
 
     <!-- FP Actions -->
 

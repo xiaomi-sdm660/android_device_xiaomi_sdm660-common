@@ -20,17 +20,17 @@
     <string name="device_kcal_title">Kalibrácia farieb</string>
     <string name="vibration_strength_title">Sila vibrácií</string>
 
-    <!-- Spectrum Profiles -->
-    <string name="spectrum_profile_title">Výkon</string>
-    <string name="spectrum_title">Nastavenia výkonu</string>
-    <string name="spectrum_summary">Výber nastavenia výkonu</string>
-    <string name="spectrum_dialogTitle">Výber nastavenia výkonu</string>
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Výkon</string>
+    <string name="thermal_title">Nastavenia výkonu</string>
+    <string name="thermal_summary">Výber nastavenia výkonu</string>
+    <string name="thermal_dialogTitle">Výber nastavenia výkonu</string>
 
-    <string name="spectrum_performance">Výkon</string>
-    <string name="spectrum_battery">Šetrič batérie</string>
-    <string name="spectrum_gaming">Gaming</string>
-    <string name="spectrum_balance">Vyvážený</string>
-    <string name="spectrum_extreme_battery">Extrémny šetrič batérie</string>
+    <string name="thermal_performance">Výkon</string>
+    <string name="thermal_battery">Šetrič batérie</string>
+    <string name="thermal_gaming">Gaming</string>
+    <string name="thermal_balance">Vyvážený</string>
+    <string name="thermal_extreme_battery">Extrémny šetrič batérie</string>
     <string name="vibration_title">Vibrácie</string>
 
     <!-- Dirac settings -->

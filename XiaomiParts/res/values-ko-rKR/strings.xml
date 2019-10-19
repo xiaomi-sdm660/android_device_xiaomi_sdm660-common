@@ -31,18 +31,18 @@
     <string name="vibration_title">햅틱 피드백</string>
     <string name="vibration_strength_title">세기</string>
 
-    <!-- Spectrum Profiles -->
-    <string name="spectrum_profile_title">성능</string>
-    <string name="spectrum_title">성능 설정</string>
-    <string name="spectrum_summary">성능 설정 선택</string>
-    <string name="spectrum_dialogTitle">성능 설정 선택</string>
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">성능</string>
+    <string name="thermal_title">성능 설정</string>
+    <string name="thermal_summary">성능 설정 선택</string>
+    <string name="thermal_dialogTitle">성능 설정 선택</string>
 
-    <!-- Values for Spectrum Presets -->
-    <string name="spectrum_performance">성능 향상</string>
-    <string name="spectrum_battery">배터리 향상</string>
-    <string name="spectrum_gaming">게이밍 최적화</string>
-    <string name="spectrum_balance">균형 설정</string>
-    <string name="spectrum_extreme_battery">배터리 매우 향상</string>
+    <!-- Values for Thermal Presets -->
+    <string name="thermal_performance">성능 향상</string>
+    <string name="thermal_battery">배터리 향상</string>
+    <string name="thermal_gaming">게이밍 최적화</string>
+    <string name="thermal_balance">균형 설정</string>
+    <string name="thermal_extreme_battery">배터리 매우 향상</string>
 
     <!-- FP Actions -->
 

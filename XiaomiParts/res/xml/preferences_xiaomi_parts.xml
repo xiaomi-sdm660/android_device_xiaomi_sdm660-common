@@ -57,18 +57,18 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="spectrum_profile"
-        android:title="@string/spectrum_profile_title">
+        android:key="thermal_profile"
+        android:title="@string/thermal_profile_title">
 
         <org.lineageos.settings.device.preferences.SecureSettingListPreference
             android:defaultValue="0"
-            android:dialogTitle="@string/spectrum_dialogTitle"
-            android:entries="@array/spectrum_profiles"
-            android:entryValues="@array/spectrum_values"
-            android:key="spectrum"
-            android:summary="@string/spectrum_summary"
-            android:title="@string/spectrum_title" 
-            android:icon="@drawable/ic_performance" />
+            android:dialogTitle="@string/thermal_dialogTitle"
+            android:entries="@array/thermal_profiles"
+            android:entryValues="@array/thermal_values"
+            android:key="thermal"
+            android:summary="@string/thermal_summary"
+            android:title="@string/thermal_title"
+            android:icon="@drawable/ic_thermal" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -79,7 +79,7 @@
             android:defaultValue="false"
             android:key="dirac_enabled"
             android:summary="@string/dirac_summary"
-            android:title="@string/dirac_title" 
+            android:title="@string/dirac_title"
             android:icon="@drawable/ic_dirac" />
 
         <org.lineageos.settings.device.preferences.SecureSettingListPreference
@@ -111,7 +111,7 @@
             android:defaultValue="true"
             android:key="hall"
             android:summary="@string/hall_wakeup_summary"
-            android:title="@string/hall_title" 
+            android:title="@string/hall_title"
             android:icon="@drawable/ic_flip" />
     </PreferenceCategory>
 </PreferenceScreen>

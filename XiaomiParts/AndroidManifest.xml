@@ -78,8 +78,8 @@
 
         <service
             android:name=".PerformanceTileService"
-            android:icon="@drawable/spectrum_balance"
-            android:label="@string/spectrum_balance"
+            android:icon="@drawable/thermal_balance"
+            android:label="@string/thermal_balance"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE"/>

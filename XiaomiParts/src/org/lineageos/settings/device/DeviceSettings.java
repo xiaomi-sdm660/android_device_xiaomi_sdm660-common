@@ -42,8 +42,8 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_DEVICE_DOZE = "device_doze";
     private static final String PREF_DEVICE_KCAL = "device_kcal";
 
-    public static final String PREF_SPECTRUM = "spectrum";
-    public static final String SPECTRUM_PATH = "/sys/devices/virtual/thermal/thermal_message/sconfig";
+    public static final String PREF_THERMAL = "thermal";
+    public static final String THERMAL_PATH = "/sys/devices/virtual/thermal/thermal_message/sconfig";
 
     private static final String PREF_ENABLE_DIRAC = "dirac_enabled";
     private static final String PREF_HEADSET = "dirac_headset_pref";
@@ -55,7 +55,7 @@ public class DeviceSettings extends PreferenceFragment implements
 
     private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
 
-    private SecureSettingListPreference mSPECTRUM;
+    private SecureSettingListPreference mTHERMAL;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -78,10 +78,10 @@ public class DeviceSettings extends PreferenceFragment implements
             return true;
         });
 
-        mSPECTRUM = (SecureSettingListPreference) findPreference(PREF_SPECTRUM);
-        mSPECTRUM.setValue(FileUtils.getValue(SPECTRUM_PATH));
-        mSPECTRUM.setSummary(mSPECTRUM.getEntry());
-        mSPECTRUM.setOnPreferenceChangeListener(this);
+        mTHERMAL = (SecureSettingListPreference) findPreference(PREF_THERMAL);
+        mTHERMAL.setValue(FileUtils.getValue(THERMAL_PATH));
+        mTHERMAL.setSummary(mTHERMAL.getEntry());
+        mTHERMAL.setOnPreferenceChangeListener(this);
 
         boolean enhancerEnabled;
         try {
@@ -119,10 +119,10 @@ public class DeviceSettings extends PreferenceFragment implements
                 FileUtils.setValue(VIBRATION_STRENGTH_PATH, vibrationValue);
                 break;
 
-            case PREF_SPECTRUM:
-                mSPECTRUM.setValue((String) value);
-                mSPECTRUM.setSummary(mSPECTRUM.getEntry());
-                FileUtils.setValue(SPECTRUM_PATH, (String) value);
+            case PREF_THERMAL:
+                mTHERMAL.setValue((String) value);
+                mTHERMAL.setSummary(mTHERMAL.getEntry());
+                FileUtils.setValue(THERMAL_PATH, (String) value);
                 break;
 
             case PREF_ENABLE_DIRAC:
