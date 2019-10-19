@@ -88,7 +88,13 @@ public class DeviceSettings extends PreferenceFragment implements
             enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
         } catch (java.lang.NullPointerException e) {
             getContext().startService(new Intent(getContext(), DiracService.class));
-            enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
+            try {
+                enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
+            } catch (NullPointerException ne) {
+                // Avoid crash
+                ne.printStackTrace();
+                enhancerEnabled = false;
+            }
         }
 
         SecureSettingSwitchPreference enableDirac = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_DIRAC);
