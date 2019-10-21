@@ -158,6 +158,7 @@ private:
         eAgcGlo = 20,
         eAgcBds = 21,
         eAgcGal = 22,
+        eMax0 = eAgcGal,
         eLeapSeconds = 23,
         eLeapSecUnc = 24,
         eGloBpAmpI = 25,
@@ -166,7 +167,6 @@ private:
         eBdsBpAmpQ = 28,
         eGalBpAmpI = 29,
         eGalBpAmpQ = 30,
-        eMax0 = eGalBpAmpQ,
         eTimeUncNs = 31,
         eMax
     };
