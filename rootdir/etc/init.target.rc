@@ -98,8 +98,15 @@ on post-fs-data
         setprop vendor.usb.rmnet.inst.name "rmnet"
         setprop vendor.usb.dpl.inst.name "dpl"
         setprop vendor.usb.qdss.inst.name "qdss"
-        write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
+        setprop vendor.usb.controller a800000.dwc3
         setprop sys.usb.configfs 1
+        write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
+
+on boot && property:persist.vendor.usb.controller.default=*
+    setprop vendor.usb.controller ${persist.vendor.usb.controller.default}
+
+on property:vendor.usb.controller=*
+    setprop sys.usb.controller ${vendor.usb.controller}
 
 on boot
     start vendor.rmt_storage
@@ -249,6 +256,7 @@ on charger
     load_system_props
     start vendor.qcom-post-boot
     start vendor.hvdcp_opti
+    setprop vendor.usb.controller a800000.dwc3
     setprop sys.usb.configfs 1
     start vendor.power_off_alarm
 
