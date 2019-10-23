@@ -476,9 +476,14 @@ vendor/bin/port-bridge|471c38a6d0abf56bca814170bfb2c45e7dfd9fb2
 vendor/bin/rmt_storage|d6c84ec9228b11c5cb0f164fcafe607248646b72
 vendor/bin/tftp_server|3ea8b4c05df7d9b8c21374cecfa92d62d8b236b6
 vendor/bin/hw/qcrild|a5970b537a047a6e1ec937b9b95769af1584fc1b
+vendor/bin/adpl|d5724cd8b615ccb18c08ceb250f287ff8ea2809f
 vendor/etc/data/dsi_config.xml|5caf86ed7e28403955f7d9e076f459b8be2df81c
 vendor/etc/data/netmgr_config.xml|d6ee04006c2b4eee3e64f31b9e91c403abe3494f
 vendor/etc/init/qcrild.rc|17cf4934bf443cf6469d8b3ff622eeb0e4a0aac6
+vendor/etc/init/dataadpl.rc|cd4907d9bfd438fe5f5c86f5d6cec590ac0bac2a
+vendor/etc/init/dataqti.rc|6abfd1a850d782adbbb6f42c9d8ca870036b2ad1
+vendor/etc/init/netmgrd.rc|fd3457c69a9fab11b87d0d1b494188fe089684cd
+vendor/etc/init/port-bridge.rc|e52d61a0de5e8a3b21bfbfca929e862422645377
 product/etc/permissions/qcrilhook.xml|ceb890ab3c1645aa0d0044abab1ba58c4097a991
 product/etc/permissions/telephonyservice.xml|a39eefcaf85fb8da60044fdbbcfddd95deb031c8
 product/framework/qcrilhook.jar|23768fda90519d799e682fd058ec85b7b5cd6f89
