@@ -3272,9 +3272,10 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                           (0 == ulpLocation.gpsLocation.longitude) &&
                           (LOC_RELIABILITY_NOT_SET == locationExtended.horizontal_reliability));
         uint8_t generate_nmea = (reportToGnssClient && status != LOC_SESS_FAILURE && !blank_fix);
+        bool custom_nmea_gga = (1 == ContextBase::mGps_conf.CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED);
         std::vector<std::string> nmeaArraystr;
         loc_nmea_generate_pos(ulpLocation, locationExtended, mLocSystemInfo,
-                              generate_nmea, nmeaArraystr);
+                              generate_nmea, custom_nmea_gga, nmeaArraystr);
         stringstream ss;
         for (auto itor = nmeaArraystr.begin(); itor != nmeaArraystr.end(); ++itor) {
             ss << *itor;
