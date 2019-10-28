@@ -1148,6 +1148,7 @@ typedef struct {
     double agcLevelDb;
     GnssMeasurementsCodeType codeType;
     char otherCodeTypeName[GNSS_MAX_NAME_LENGTH];
+    int16_t gloFrequency;
 } GnssMeasurementsData;
 
 typedef struct {
