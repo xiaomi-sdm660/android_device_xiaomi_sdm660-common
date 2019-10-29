@@ -3453,7 +3453,7 @@ case "$target" in
     echo 1 > /proc/sys/kernel/sched_conservative_pl
 
     echo "0:1228800" > /sys/devices/system/cpu/cpu_boost/input_boost_freq
-    echo 40 > /sys/devices/system/cpu/cpu_boost/input_boost_ms
+    echo 120 > /sys/devices/system/cpu/cpu_boost/input_boost_ms
 
     # Set Memory parameters
     configure_memory_parameters
