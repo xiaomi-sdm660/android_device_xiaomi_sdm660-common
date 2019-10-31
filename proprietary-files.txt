@@ -400,11 +400,11 @@ vendor/lib64/vendor.qti.hardware.iop@2.0.so|89b912c55ceaecc4a230cc22579cab0fef43
 vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so|e82595d915655c1d47ada579b9aba33905835f98
 vendor/lib64/libqti-iopd-client.so|896e83a986ed0f92b91b8f21d55de0071408752b
 
-# Peripheral manager - from LA.UM.8.2.r1-03200-sdm660.0
-vendor/bin/pm-proxy|65c926065f90c470da839296cb81b900f28cb7a3
-vendor/bin/pm-service|96b32503ea0b98f5795c475dc5d43c2f378691fb
-vendor/lib/libperipheral_client.so|b780513a152f0b97cc26616aae1c0a48a1dbd729
-vendor/lib64/libperipheral_client.so|2df333be7002d87c9ec94fa0e73eec5b4dff6836
+# Peripheral manager - from LA.UM.8.2.r1-04000-sdm660.0
+vendor/bin/pm-proxy|bc4e972e3fe595b973197efe5114da8ff4339a59
+vendor/bin/pm-service|b0f77edfe04a3cc6284738196c0044e676d5eeb3
+vendor/lib/libperipheral_client.so|836411f7b88afe296b3f3090aab70fc5700ba434
+vendor/lib64/libperipheral_client.so|a0dd574c8af3135adae10ef49065fa765906db7a
 
 # Power-off charging daemon
 -sbin/charger:sbin/chargeonlymode;rootfs|664dfa548b81cac348f1699222160f8d2b4d247c
