@@ -33,16 +33,13 @@ vendor/lib/rfsa/adsp/libscveObjectSegmentation_skel.so|d2174a2a4a680e93ee4262b5e
 vendor/lib/rfsa/adsp/libscveT2T_skel.so|487f830aca26c85ef79c8b599b2f03668ab732b5
 vendor/lib/rfsa/adsp/libvpp_svc_skel.so|2da97f61c1d14f1f9a38aecd8ab89a1f6fa8d991
 
-# Alarm
--vendor/app/PowerOffAlarm/PowerOffAlarm.apk|62c1df25f0725bd07f4d8465a57f573dacb2bbf3
-vendor/bin/hw/vendor.qti.hardware.alarm@1.0-service|1300f2aacbcd159a2587abc1f38031d9c1f1beed
-vendor/bin/power_off_alarm|f973dabbdba85ece5115d4beb457cb37887e4358
+# Alarm - from LA.UM.8.2.r1-04000-sdm660.0
+product/framework/vendor.qti.hardware.alarm-V1.0-java.jar|69dedc62181ae26bb2fac4eaacb1f2c38eb21c31
+-product/app/PowerOffAlarm/PowerOffAlarm.apk|2399da8803ff7229476611f371fc435f48138881
+vendor/bin/hw/vendor.qti.hardware.alarm@1.0-service|faccc2a7d94d486c2f61a5fe85f5c4598b4147a7
 vendor/etc/init/vendor.qti.hardware.alarm@1.0-service.rc|c9877b6cae0353d5fdea5bc23dba77101b3d6980
-vendor/lib/hw/vendor.qti.hardware.alarm@1.0-impl.so|0b6cfa8af4a0a056f9f4d57b53df07d0cdf0c982
-vendor/lib/vendor.qti.hardware.alarm@1.0.so|096e095425c6e48b16bca99e8e84d49952da100f
-vendor/lib64/hw/vendor.qti.hardware.alarm@1.0-impl.so|7d163c35a9deee2801070ed50c6625709c3e0b65
-vendor/lib64/libalarmservice_jni.so|b741c55e734b8583599e6cd5866e4b541ea13f32
-vendor/lib64/vendor.qti.hardware.alarm@1.0.so|21dc6d367924c68c9976fd3739a8638d725c4939
+vendor/lib64/hw/vendor.qti.hardware.alarm@1.0-impl.so|1e2631850cc97dfedbde50a9d0d55c8d14881b44
+vendor/lib64/vendor.qti.hardware.alarm@1.0.so|e86242990b1e00c6d231f912f218e7ae137394b9
 
 # ANT+ - from LA.UM.7.2.r1-06900-sdm660.0
 -lib/libantradio.so|b6b7b93dfa155de37d755542a0d66cc9f77e256c
