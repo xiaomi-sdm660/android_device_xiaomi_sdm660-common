@@ -248,9 +248,6 @@ TARGET_USES_INTERACTION_BOOST := true
 # Properties
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 
-# Power
-TARGET_USES_INTERACTION_BOOST := true
-
 # Recovery
 ifeq ($(AB_OTA_UPDATER), true)
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_AB.qcom
