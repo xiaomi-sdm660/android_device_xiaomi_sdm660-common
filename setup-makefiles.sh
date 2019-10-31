@@ -39,7 +39,7 @@ fi
 setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true
 
 # Copyright headers and guards
-write_headers "twolip jasmine_sprout wayne clover"
+write_headers "twolip jasmine_sprout wayne clover lavender"
 
 write_makefiles "$MY_DIR"/proprietary-files.txt true
 
