@@ -87,7 +87,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE       := fstab.qcom
 LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := ETC
-ifeq ($(AB_OTA_UPDATER), true)
+ifneq ($(filter lavender,$(TARGET_DEVICE)),)
+LOCAL_SRC_FILES    := etc/fstab_A.qcom
+else ifeq ($(AB_OTA_UPDATER), true)
 LOCAL_SRC_FILES    := etc/fstab_AB.qcom
 else
 LOCAL_SRC_FILES    := etc/fstab.qcom
