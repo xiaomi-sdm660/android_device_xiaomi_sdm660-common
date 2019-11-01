@@ -171,6 +171,16 @@ vendor/lib/vendor.qti.esepowermanager@1.0.so|0747a833e0c6943d1bdcbbb370f7145db42
 vendor/lib64/hw/vendor.qti.esepowermanager@1.0-impl.so|074685bf48758830213b902e50c215a3a0d5dbfd
 vendor/lib64/vendor.qti.esepowermanager@1.0.so|bcdf6b26fdce85e7109eea798909f27c91a07791
 
+# Fido
+lib/libFidoCryptoJNI.so|16c2a50b7da470440032e51867f95653cb1c6406
+lib/libFidoCrypto_system.so|c538c239bb97553a4683662d6ed6567b3c5033cd
+lib64/libFidoCryptoJNI.so|bb9ee88f7696d5a66da2a0cd2daed429c274fd23
+lib64/libFidoCrypto_system.so|5f5254c97e4b4457e31da70843a004030411a8f3
+vendor/lib/libFidoCrypto_vendor.so|5911ca84a7beba33620c7468e03c685c32ea1a17
+vendor/lib64/libFidoCrypto_vendor.so|4cc8d054895e7eb78b35c42cbcf7d0184e9e88f4
+vendor/lib/libFIDOKeyProvisioning.so|35703aca065213fa86f095a557ae2dbebccfe336
+vendor/lib64/libFIDOKeyProvisioning.so|4df3293d1c62a5b1454d5162298a09a61d0d9c38
+
 # Hotword enrollment
 -priv-app/HotwordEnrollmentOKGoogleWCD9340/HotwordEnrollmentOKGoogleWCD9340.apk;PRESIGNED
 -priv-app/HotwordEnrollmentXGoogleWCD9340/HotwordEnrollmentXGoogleWCD9340.apk;PRESIGNED
