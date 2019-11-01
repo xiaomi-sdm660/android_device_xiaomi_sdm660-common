@@ -1518,7 +1518,7 @@ GnssAdapter::convertToGnssSvIdConfig(
                     LOC_LOGe("Invalid sv id %d for sv type %d",
                             source.svId, source.constellation);
                 } else {
-                    *svMaskPtr |= (1 << (source.svId - initialSvId));
+                    *svMaskPtr |= (1ULL << (source.svId - initialSvId));
                 }
             }
         }
