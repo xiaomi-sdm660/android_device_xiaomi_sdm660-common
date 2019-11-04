@@ -1,6 +1,6 @@
 #! /vendor/bin/sh
 
-# Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+# Copyright (c) 2013-2014, 2019 The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,18 +41,7 @@ case "$baseband" in
     stop ril-daemon
     stop vendor.ril-daemon
     stop vendor.qcrild
-    stop vendor.qcrild2
     start vendor.ipacm
-esac
-
-case "$baseband" in
-    "sa8")
-    start vendor.ipacm
-esac
-
-case "$baseband" in
-    "msm" | "csfb" | "svlte2a" | "mdm" | "mdm2" | "sglte" | "sglte2" | "dsda2" | "unknown" | "dsda3")
-    start vendor.qmuxd
 esac
 
 case "$baseband" in
@@ -107,8 +96,6 @@ case "$baseband" in
         start vendor.ril-daemon
     fi
 
-    start vendor.ipacm-diag
-    start vendor.ipacm
     case "$baseband" in
         "svlte2a" | "csfb")
           start qmiproxy
@@ -144,14 +131,14 @@ case "$baseband" in
         "tethered")
             start vendor.dataqti
             start vendor.port-bridge
+            start vendor.dataadpl
             ;;
         "concurrent")
             start vendor.dataqti
-            start vendor.netmgrd
             start vendor.port-bridge
+            start vendor.dataadpl
             ;;
         *)
-            start vendor.netmgrd
             ;;
     esac
 esac

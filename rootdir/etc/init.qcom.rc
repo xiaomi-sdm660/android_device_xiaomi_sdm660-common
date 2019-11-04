@@ -600,11 +600,6 @@ service vendor.port-bridge /system/vendor/bin/port-bridge
     oneshot
     writepid /dev/cpuset/system-background/tasks
 
-service vendor.netmgrd /system/vendor/bin/netmgrd
-    class main
-    disabled
-    writepid /dev/cpuset/system-background/tasks
-
 service vendor.ipacm /system/vendor/bin/ipacm
     class main
     user radio
@@ -612,13 +607,6 @@ service vendor.ipacm /system/vendor/bin/ipacm
     disabled
     writepid /dev/cpuset/system-background/tasks
 
-service vendor.dataqti /system/vendor/bin/qti
-    class main
-    user radio
-    socket qti_dpm_uds_file dgram 660 radio radio
-    group radio oem_2901 diag usb inet
-    disabled
-    writepid /dev/cpuset/system-background/tasks
 
 service vendor.sensors /vendor/bin/sscrpcd sensorspd
     class early_hal
