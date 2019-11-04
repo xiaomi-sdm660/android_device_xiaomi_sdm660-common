@@ -16,7 +16,7 @@
 
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(filter twolip jasmine_sprout wayne clover lavender,$(TARGET_DEVICE)),)
+ifneq ($(filter twolip jasmine_sprout wayne clover lavender platina,$(TARGET_DEVICE)),)
 
 $(shell mkdir -p $(TARGET_OUT_VENDOR)/firmware; \
     ln -sf /dev/block/bootdevice/by-name/msadp \
