@@ -664,11 +664,11 @@ vendor/lib64/libthermalfeature.so
 -vendor/lib64/libthermalclient.so
 vendor/lib64/libthermalioctl.so
 
-# Time services - from LA.UM.8.2.r1-03200-sdm660.0
--vendor/app/TimeService/TimeService.apk|c935b678fdaed033513f044f6492361c3370f9f0
-vendor/bin/time_daemon|8cae1e78c1bb3fe8ef35e566ba71a0cd3a249120
--vendor/lib/libtime_genoff.so|739ffc0ae24400ba78be7677b8c054c69be1c30d
--vendor/lib64/libtime_genoff.so|fb957aa23b8562678dd1289e67c25c4205ef3bd6
+# Time services - from LA.UM.8.2.r1-04000-sdm660.0
+-vendor/app/TimeService/TimeService.apk|4a37afd1395758d946580af184a738e3c657b1e2
+vendor/bin/time_daemon|1f0ab775a70bd863c0c59f999fcba2b6882d2a31
+-vendor/lib/libtime_genoff.so|e858cc52e829af0a9e4b5a4c39bddef8cece4bd9
+-vendor/lib64/libtime_genoff.so|c8e0bbc9c6b7b5beddba43bc4125a9eaeba7c79f
 
 # TUI
 vendor/bin/hw/vendor.qti.hardware.tui_comm@1.0-service-qti|c9d2461aec2f9b19aa1578f500c052d27451d204
