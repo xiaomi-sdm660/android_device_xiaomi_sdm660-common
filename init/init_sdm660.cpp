@@ -72,7 +72,7 @@ void property_override_dual(char const system_prop[],
     property_override(vendor_prop, value);
 }
 
-void vendor_load_properties()
+void vendor_load_persist_properties()
 {
     std::string product = GetProperty("ro.product.vendor.device", "");
     if (product.find("clover") != std::string::npos) {
