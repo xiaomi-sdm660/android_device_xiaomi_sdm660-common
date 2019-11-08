@@ -504,5 +504,5 @@ PRODUCT_PACKAGES += \
    WallpapersBReel2019
 
 # XiaomiParts
-PRODUCT_PACKAGES += \
-   XiaomiParts
+#PRODUCT_PACKAGES += \
+#   XiaomiParts //not allowed on official shits //
