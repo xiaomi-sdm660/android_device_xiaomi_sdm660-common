@@ -112,6 +112,115 @@ bool IPACM_Routing::AddRoutingRule(struct ipa_ioc_add_rt_rule *ruleTable)
 	return true;
 }
 
+#ifdef IPA_IOCTL_SET_FNR_COUNTER_INFO
+bool IPACM_Routing::AddRoutingRule_hw_index(struct ipa_ioc_add_rt_rule *ruleTable, int hw_counter_index)
+{
+	int retval = 0, cnt = 0, len = 0;
+	struct ipa_ioc_add_rt_rule_v2 *ruleTable_v2;
+	struct ipa_rt_rule_add_v2 rt_rule_entry;
+	bool ret = true;
+
+	IPACMDBG("Printing routing add attributes\n");
+	IPACMDBG("ip type: %d\n", ruleTable->ip);
+	IPACMDBG("rt tbl type: %s\n", ruleTable->rt_tbl_name);
+	IPACMDBG("Number of rules: %d\n", ruleTable->num_rules);
+	IPACMDBG("commit value: %d\n", ruleTable->commit);
+
+	/* change to v2 format*/
+	len = sizeof(struct ipa_ioc_add_rt_rule_v2);
+	ruleTable_v2 = (struct ipa_ioc_add_rt_rule_v2*)malloc(len);
+	if (ruleTable_v2 == NULL)
+	{
+		IPACMERR("Error Locate ipa_ioc_add_rt_rule_v2 memory...\n");
+		return false;
+	}
+	memset(ruleTable_v2, 0, len);
+	ruleTable_v2->rules = (uint64_t)calloc(ruleTable->num_rules, sizeof(struct ipa_rt_rule_add_v2));
+	if (!ruleTable_v2->rules) {
+		IPACMERR("Failed to allocate memory for routing rules\n");
+		ret = false;
+		goto fail_tbl;
+	}
+
+	ruleTable_v2->commit = ruleTable->commit;
+	ruleTable_v2->ip = ruleTable->ip;
+	ruleTable_v2->num_rules = ruleTable->num_rules;
+	ruleTable_v2->rule_add_size = sizeof(struct ipa_rt_rule_add_v2);
+	memcpy(ruleTable_v2->rt_tbl_name,
+		 ruleTable->rt_tbl_name,
+		 sizeof(ruleTable_v2->rt_tbl_name));
+
+	for (cnt=0; cnt < ruleTable->num_rules; cnt++)
+	{
+		memset(&rt_rule_entry, 0, sizeof(struct ipa_rt_rule_add_v2));
+		rt_rule_entry.at_rear = ruleTable->rules[cnt].at_rear;
+		rt_rule_entry.rule.dst = ruleTable->rules[cnt].rule.dst;
+		rt_rule_entry.rule.hdr_hdl = ruleTable->rules[cnt].rule.hdr_hdl;
+		rt_rule_entry.rule.hdr_proc_ctx_hdl = ruleTable->rules[cnt].rule.hdr_proc_ctx_hdl;
+		rt_rule_entry.rule.max_prio = ruleTable->rules[cnt].rule.max_prio;
+		rt_rule_entry.rule.hashable = ruleTable->rules[cnt].rule.hashable;
+		rt_rule_entry.rule.retain_hdr = ruleTable->rules[cnt].rule.retain_hdr;
+		rt_rule_entry.rule.coalesce = ruleTable->rules[cnt].rule.coalesce;
+		memcpy(&rt_rule_entry.rule.attrib,
+					 &ruleTable->rules[cnt].rule.attrib,
+					 sizeof(rt_rule_entry.rule.attrib));
+		IPACMDBG("RT rule:%d attrib mask: 0x%x\n", cnt,
+				ruleTable->rules[cnt].rule.attrib.attrib_mask);
+		/* 0 means disable hw-counter-sats */
+		if (hw_counter_index != 0)
+		{
+			rt_rule_entry.rule.enable_stats = 1;
+			rt_rule_entry.rule.cnt_idx = hw_counter_index;
+		}
+
+		/* copy to v2 table*/
+		memcpy((void *)(ruleTable_v2->rules + (cnt * sizeof(struct ipa_rt_rule_add_v2))),
+			&rt_rule_entry, sizeof(rt_rule_entry));
+	}
+
+	retval = ioctl(m_fd, IPA_IOC_ADD_RT_RULE_V2, ruleTable_v2);
+	if (retval != 0)
+	{
+		IPACMERR("Failed adding Routing rule %pK\n", ruleTable_v2);
+		PERROR("unable to add routing rule:");
+
+		for (int cnt = 0; cnt < ruleTable_v2->num_rules; cnt++)
+		{
+			if (((struct ipa_rt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status != 0)
+			{
+				IPACMERR("Adding Routing rule:%d failed with status:%d\n",
+								 cnt, ((struct ipa_rt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status);
+			}
+		}
+		ret = false;
+		goto fail_rule;
+	}
+
+	/* copy results from v2 to v1 format */
+	for (int cnt = 0; cnt < ruleTable->num_rules; cnt++)
+	{
+		/* copy status to v1 format */
+		ruleTable->rules[cnt].status = ((struct ipa_rt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status;
+		ruleTable->rules[cnt].rt_rule_hdl = ((struct ipa_rt_rule_add_v2 *)ruleTable_v2->rules)[cnt].rt_rule_hdl;
+
+		if(((struct ipa_rt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status != 0)
+		{
+			IPACMERR("Adding Routing rule:%d failed with status:%d\n",
+							 cnt, ((struct ipa_rt_rule_add_v2 *) ruleTable_v2->rules)[cnt].status);
+		}
+	}
+	IPACMDBG("Added Routing rule %pK\n", ruleTable_v2);
+fail_rule:
+	if((void *)ruleTable_v2->rules != NULL)
+		free((void *)ruleTable_v2->rules);
+fail_tbl:
+	if (ruleTable_v2 != NULL)
+		free(ruleTable_v2);
+	return ret;
+}
+#endif //IPA_IOCTL_SET_FNR_COUNTER_INFO
+
+
 bool IPACM_Routing::DeleteRoutingRule(struct ipa_ioc_del_rt_rule *ruleTable)
 {
 	int retval = 0;

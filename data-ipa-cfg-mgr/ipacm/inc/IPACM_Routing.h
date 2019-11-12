@@ -55,6 +55,10 @@ public:
 	~IPACM_Routing();
 
 	bool AddRoutingRule(struct ipa_ioc_add_rt_rule *ruleTable);
+
+#ifdef IPA_IOCTL_SET_FNR_COUNTER_INFO
+	bool AddRoutingRule_hw_index(struct ipa_ioc_add_rt_rule *ruleTable, int hw_counter_index);
+#endif //IPA_IOCTL_SET_FNR_COUNTER_INFO
 	bool DeleteRoutingRule(struct ipa_ioc_del_rt_rule *ruleTable);
 
 	bool Commit(enum ipa_ip_type ip);

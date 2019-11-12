@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 - 2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2013 - 2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -82,7 +82,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPA_NAT_FLAG_DISABLE_BIT 0
 
 #define IPA_NAT_INVALID_PROTO_FIELD_VALUE 0xFF00
-#define IPA_NAT_INVALID_PROTO_FIELD_CMP   0xFF
 
 #define IPA_NAT_INVALID_INDEX 0xFF
 #define IPA_NAT_INVALID_NAT_ENTRY 0x0

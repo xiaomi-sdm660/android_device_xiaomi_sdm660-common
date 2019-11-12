@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -471,7 +471,7 @@ void IPACM_LanToLan::handle_client_add(ipacm_event_eth_bridge *data)
 		if(it_iface->get_iface_pointer() == data->p_iface)	//find the interface
 		{
 			IPACMDBG_H("Found the interface.\n");
-			it_iface->handle_client_add(data->mac_addr, is_l2tp_client, mapping_info);
+			it_iface->handle_client_add(data->mac_addr, is_l2tp_client, mapping_info, data->ep);
 			break;
 		}
 	}
@@ -916,7 +916,7 @@ void IPACM_LanToLan_Iface::add_client_rt_rule(peer_iface_info *peer_info, client
 		IPACMDBG_H("This is for inter interface communication.\n");
 
 		m_p_iface->eth_bridge_add_rt_rule(client->mac_addr, peer_info->rt_tbl_name_for_rt[IPA_IP_v4], hdr_proc_ctx_for_inter_interface[peer_l2_hdr_type],
-			peer_l2_hdr_type, IPA_IP_v4, rt_rule_hdl, &num_rt_rule);
+			peer_l2_hdr_type, IPA_IP_v4, rt_rule_hdl, &num_rt_rule, client->ep);
 
 		client->inter_iface_rt_rule_hdl[peer_l2_hdr_type].num_hdl[IPA_IP_v4] = num_rt_rule;
 		IPACMDBG_H("Number of IPv4 routing rule is %d.\n", num_rt_rule);
@@ -927,7 +927,7 @@ void IPACM_LanToLan_Iface::add_client_rt_rule(peer_iface_info *peer_info, client
 		}
 
 		m_p_iface->eth_bridge_add_rt_rule(client->mac_addr, peer_info->rt_tbl_name_for_rt[IPA_IP_v6], hdr_proc_ctx_for_inter_interface[peer_l2_hdr_type],
-			peer_l2_hdr_type, IPA_IP_v6, rt_rule_hdl, &num_rt_rule);
+			peer_l2_hdr_type, IPA_IP_v6, rt_rule_hdl, &num_rt_rule, client->ep);
 
 		client->inter_iface_rt_rule_hdl[peer_l2_hdr_type].num_hdl[IPA_IP_v6] = num_rt_rule;
 		IPACMDBG_H("Number of IPv6 routing rule is %d.\n", num_rt_rule);
@@ -941,7 +941,7 @@ void IPACM_LanToLan_Iface::add_client_rt_rule(peer_iface_info *peer_info, client
 	{
 		IPACMDBG_H("This is for intra interface communication.\n");
 		m_p_iface->eth_bridge_add_rt_rule(client->mac_addr, peer_info->rt_tbl_name_for_rt[IPA_IP_v4], hdr_proc_ctx_for_intra_interface,
-			peer_l2_hdr_type, IPA_IP_v4, rt_rule_hdl, &num_rt_rule);
+			peer_l2_hdr_type, IPA_IP_v4, rt_rule_hdl, &num_rt_rule, client->ep);
 
 		client->intra_iface_rt_rule_hdl.num_hdl[IPA_IP_v4] = num_rt_rule;
 		IPACMDBG_H("Number of IPv4 routing rule is %d.\n", num_rt_rule);
@@ -952,7 +952,7 @@ void IPACM_LanToLan_Iface::add_client_rt_rule(peer_iface_info *peer_info, client
 		}
 
 		m_p_iface->eth_bridge_add_rt_rule(client->mac_addr, peer_info->rt_tbl_name_for_rt[IPA_IP_v6], hdr_proc_ctx_for_intra_interface,
-			peer_l2_hdr_type, IPA_IP_v6, rt_rule_hdl, &num_rt_rule);
+			peer_l2_hdr_type, IPA_IP_v6, rt_rule_hdl, &num_rt_rule, client->ep);
 
 		client->intra_iface_rt_rule_hdl.num_hdl[IPA_IP_v6] = num_rt_rule;
 		IPACMDBG_H("Number of IPv6 routing rule is %d.\n", num_rt_rule);
@@ -1574,7 +1574,10 @@ void IPACM_LanToLan_Iface::handle_new_iface_up(char rt_tbl_name_for_flt[][IPA_RE
 	return;
 }
 
-void IPACM_LanToLan_Iface::handle_client_add(uint8_t *mac, bool is_l2tp_client, l2tp_vlan_mapping_info *mapping_info)
+void IPACM_LanToLan_Iface::handle_client_add(uint8_t *mac,
+	bool is_l2tp_client,
+	l2tp_vlan_mapping_info *mapping_info,
+	int ep)
 {
 	list<client_info>::iterator it_client;
 	list<peer_iface_info>::iterator it_peer_info;
@@ -1583,7 +1586,7 @@ void IPACM_LanToLan_Iface::handle_client_add(uint8_t *mac, bool is_l2tp_client, 
 
 	for(it_client = m_client_info.begin(); it_client != m_client_info.end(); it_client++)
 	{
-		if(memcmp(it_client->mac_addr, mac, sizeof(it_client->mac_addr)) == 0)
+		if((memcmp(it_client->mac_addr, mac, sizeof(it_client->mac_addr)) == 0))
 		{
 			IPACMDBG_H("This client has been added before.\n");
 			return;
@@ -1601,6 +1604,7 @@ void IPACM_LanToLan_Iface::handle_client_add(uint8_t *mac, bool is_l2tp_client, 
 	memcpy(new_client.mac_addr, mac, sizeof(new_client.mac_addr));
 	new_client.is_l2tp_client = is_l2tp_client;
 	new_client.mapping_info = mapping_info;
+	new_client.ep = ep;
 	m_client_info.push_front(new_client);
 
 	client_info &front_client = m_client_info.front();

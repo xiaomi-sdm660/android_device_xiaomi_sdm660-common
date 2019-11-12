@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -49,6 +49,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "IPACM_Filtering.h"
 #include "IPACM_Config.h"
 #include "IPACM_Conntrack_NATApp.h"
+#include "IPACM_Wan.h"
 
 #define IPA_WAN_DEFAULT_FILTER_RULE_HANDLES  1
 #define IPA_PRIV_SUBNET_FILTER_RULE_HANDLES  3
@@ -94,6 +95,8 @@ typedef struct _ipa_eth_client
 	int ipv6_set;
 	bool ipv4_header_set;
 	bool ipv6_header_set;
+	/* used for pcie-modem */
+	uint32_t v6_rt_rule_id[IPV6_NUM_ADDR];
 	eth_client_rt_hdl eth_rt_hdl[0]; /* depends on number of tx properties */
 }ipa_eth_client;
 
@@ -121,10 +124,10 @@ public:
 	virtual int handle_wan_up_ex(ipacm_ext_prop* ext_prop, ipa_ip_type iptype, uint8_t xlat_mux_id);
 
 	/* delete filter rule for wan_down event*/
-	virtual int handle_wan_down(bool is_sta_mode);
+	virtual int handle_wan_down(ipacm_wan_iface_type backhaul_mode);
 
 	/* delete filter rule for wan_down event*/
-	virtual int handle_wan_down_v6(bool is_sta_mode);
+	virtual int handle_wan_down_v6(ipacm_wan_iface_type backhaul_mode);
 
 	/* configure private subnet filter rules*/
 	virtual int handle_private_subnet(ipa_ip_type iptype);
@@ -151,7 +154,7 @@ public:
 
 	/* add routing rule and return handle to lan2lan controller */
 	int eth_bridge_add_rt_rule(uint8_t *mac, char *rt_tbl_name, uint32_t hdr_proc_ctx_hdl,
-		ipa_hdr_l2_type peer_l2_hdr_type, ipa_ip_type iptype, uint32_t *rt_rule_hdl, int *rt_rule_count);
+		ipa_hdr_l2_type peer_l2_hdr_type, ipa_ip_type iptype, uint32_t *rt_rule_hdl, int *rt_rule_count, int ep);
 
 	/* modify routing rule*/
 	int eth_bridge_modify_rt_rule(uint8_t *mac, uint32_t hdr_proc_ctx_hdl,
@@ -209,7 +212,7 @@ protected:
 
 	/* mac address has to be provided for client related events */
 	void eth_bridge_post_event(ipa_cm_event_id evt, ipa_ip_type iptype, uint8_t *mac,
-		uint32_t *ipv6_addr, char *iface_name);
+		uint32_t *ipv6_addr, char *iface_name, int ep);
 
 #ifdef FEATURE_L2TP
 	/* check if the event is associated with vlan interface */
@@ -281,6 +284,10 @@ protected:
 	uint32_t tcp_syn_flt_rule_hdl[IPA_IP_MAX];
 
 private:
+
+	int set_client_pipe(enum ipa_client_type client, uint32_t *pipe);
+	int set_tether_client(wan_ioctl_set_tether_client_pipe *tether_client);
+	int set_tether_client_wigig(wan_ioctl_set_tether_client_pipe *tether_client);
 
 	/* get hdr proc ctx type given source and destination l2 hdr type */
 	ipa_hdr_proc_type eth_bridge_get_hdr_proc_type(ipa_hdr_l2_type t1, ipa_hdr_l2_type t2);
@@ -389,6 +396,18 @@ private:
 				{
 					for(num_v6 =0;num_v6 < get_client_memptr(eth_client, clt_indx)->route_rule_set_v6;num_v6++)
 					{
+						/* send client-v6 delete to pcie modem only with global ipv6 with tx_index = 1 one time*/
+						if(is_global_ipv6_addr(get_client_memptr(eth_client, clt_indx)->v6_addr[num_v6]) && (IPACM_Wan::backhaul_mode == Q6_MHI_WAN)
+							&& (get_client_memptr(eth_client, clt_indx)->v6_rt_rule_id[num_v6] > 0))
+						{
+							IPACMDBG_H("Delete client index %d ipv6 RT-rules for %d-st ipv6 for rule-id:%d\n", clt_indx,num_v6,
+								get_client_memptr(eth_client, clt_indx)->v6_rt_rule_id[num_v6]);
+							if (del_connection(clt_indx, num_v6))
+							{
+								IPACMERR("PCIE filter rule deletion failed! (%d-client) %d v6-entry\n",clt_indx, num_v6);
+							}
+						}
+
 						IPACMDBG_H("Delete client index %d ipv6 RT-rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
 						rt_hdl = get_client_memptr(eth_client, clt_indx)->eth_rt_hdl[tx_index].eth_rt_rule_hdl_v6[num_v6];
 						if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
@@ -441,6 +460,10 @@ private:
 
 	/*handle reset usb-client rt-rules */
 	int handle_lan_client_reset_rt(ipa_ip_type iptype);
+
+	/* for pcie modem */
+	virtual int add_connection(int client_index, int v6_num);
+	virtual int del_connection(int client_index, int v6_num);
 };
 
 #endif /* IPACM_LAN_H */

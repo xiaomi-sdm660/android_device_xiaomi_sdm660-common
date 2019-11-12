@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -101,6 +101,7 @@ struct client_info
 	bool is_l2tp_client;
 	l2tp_vlan_mapping_info *mapping_info;
 	l2tp_rt_rule_info l2tp_rt_rule_hdl[IPA_HDR_L2_MAX];
+	int ep;
 };
 
 struct flt_rule_info
@@ -140,7 +141,7 @@ public:
 	void handle_new_iface_up(char rt_tbl_name_for_flt[][IPA_RESOURCE_NAME_MAX], char rt_tbl_name_for_rt[][IPA_RESOURCE_NAME_MAX],
 		IPACM_LanToLan_Iface *peer_iface);
 
-	void handle_client_add(uint8_t *mac, bool is_l2tp_client, l2tp_vlan_mapping_info *mapping_info);
+	void handle_client_add(uint8_t *mac, bool is_l2tp_client, l2tp_vlan_mapping_info *mapping_info, int ep);
 
 	void handle_client_del(uint8_t *mac);
 

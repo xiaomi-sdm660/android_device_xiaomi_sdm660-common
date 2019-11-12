@@ -449,6 +449,7 @@ PRODUCT_COPY_FILES += \
 # Tetheroffload
 PRODUCT_PACKAGES += \
     ipacm \
+    ipacm.rc \
     IPACM_cfg.xml \
     libipanat \
     liboffloadhal

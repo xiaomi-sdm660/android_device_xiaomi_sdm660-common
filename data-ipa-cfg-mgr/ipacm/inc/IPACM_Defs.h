@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -122,6 +122,7 @@ extern "C"
 #define IPA_MAX_NUM_ETH_CLIENTS  15
 #define IPA_MAX_NUM_AMPDU_RULE  15
 #define IPA_MAC_ADDR_SIZE  6
+#define IPA_MAX_NUM_SW_PDNS 15
 
 /*===========================================================================
 										 GLOBAL DEFINITIONS AND DECLARATIONS
@@ -186,7 +187,8 @@ typedef enum
 	IPA_ETH_BRIDGE_CLIENT_ADD,                /* ipacm_event_eth_bridge */
 	IPA_ETH_BRIDGE_CLIENT_DEL,                /* ipacm_event_eth_bridge*/
 	IPA_ETH_BRIDGE_WLAN_SCC_MCC_SWITCH,       /* ipacm_event_eth_bridge*/
-	IPA_SSR_NOTICE,						      /* NULL*/
+	IPA_SSR_NOTICE,                           /* NULL*/
+	IPA_COALESCE_NOTICE,                      /* NULL*/
 #ifdef FEATURE_L2TP
 	IPA_ADD_VLAN_IFACE,                       /* ipa_ioc_vlan_iface_info */
 	IPA_DEL_VLAN_IFACE,                       /* ipa_ioc_vlan_iface_info */
@@ -197,6 +199,8 @@ typedef enum
 #endif
 	IPA_WLAN_FWR_SSR_BEFORE_SHUTDOWN_NOTICE,
 	IPA_LAN_DELETE_SELF,                      /* ipacm_event_data_fid */
+	IPA_WIGIG_CLIENT_ADD_EVENT,               /* ipacm_event_data_mac_ep */
+	IPA_WIGIG_FST_SWITCH,                     /* ipacm_event_data_fst */
 	IPACM_EVENT_MAX
 } ipa_cm_event_id;
 
@@ -275,6 +279,7 @@ typedef struct
 	ipa_ip_type iptype;
 	uint8_t mac_addr[6];
 	char iface_name[IPA_IFACE_NAME_LEN];
+	int ep;
 } ipacm_event_eth_bridge;
 
 typedef struct
@@ -328,6 +333,20 @@ typedef struct _ipacm_event_data_mac
 	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
 } ipacm_event_data_mac;
 
+typedef struct _ipacm_event_data_mac_ep
+{
+	int if_index;
+	enum ipa_client_type client;
+	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
+} ipacm_event_data_mac_ep;
+
+typedef struct _ipacm_event_data_fst
+{
+	int if_index;
+	bool to_wigig;
+	uint8_t mac_addr[IPA_MAC_ADDR_SIZE];
+} ipacm_event_data_fst;
+
 typedef struct
 {
 	int if_index;
@@ -335,31 +354,34 @@ typedef struct
 	struct ipa_wlan_hdr_attrib_val attribs[0];
 } ipacm_event_data_wlan_ex;
 
+typedef enum
+{
+	Q6_WAN = 0,
+	WLAN_WAN,
+	ECM_WAN,
+	Q6_MHI_WAN
+} ipacm_wan_iface_type;
+
 typedef struct _ipacm_event_iface_up
 {
+	ipacm_wan_iface_type backhaul_type;
 	char ifname[IPA_IFACE_NAME_LEN];
 	uint32_t ipv4_addr;
 	uint32_t addr_mask;
 	uint32_t ipv6_prefix[2];
-	bool is_sta;
 	uint8_t xlat_mux_id;
 	uint8_t mux_id;
 }ipacm_event_iface_up;
 
 typedef struct _ipacm_event_iface_up_tether
 {
+	ipacm_wan_iface_type backhaul_type;
 	uint32_t if_index_tether;
 	uint32_t ipv6_prefix[2];
 	bool is_sta;
 	uint8_t xlat_mux_id;
 }ipacm_event_iface_up_tehter;
 
-typedef enum
-{
-	Q6_WAN = 0,
-	WLAN_WAN,
-	ECM_WAN
-} ipacm_wan_iface_type;
 
 typedef struct _ipacm_ifacemgr_data
 {

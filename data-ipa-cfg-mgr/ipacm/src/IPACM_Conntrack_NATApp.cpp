@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -28,6 +28,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "IPACM_Conntrack_NATApp.h"
 #include "IPACM_ConntrackClient.h"
+#include "IPACM_ConntrackListener.h"
 #ifdef FEATURE_IPACM_HAL
 #include "IPACM_OffloadManager.h"
 #endif
@@ -47,6 +48,7 @@ NatApp::NatApp()
 
 	nat_table_hdl = 0;
 	pub_ip_addr = 0;
+	pub_mux_id = 0;
 
 	curCnt = 0;
 
@@ -57,6 +59,18 @@ NatApp::NatApp()
 	ct_hdl = NULL;
 
 	memset(temp, 0, sizeof(temp));
+	m_fd_ipa = open(IPA_DEVICE_NAME, O_RDWR);
+	if(m_fd_ipa < 0)
+	{
+		IPACMERR("Failed to open %s\n",IPA_DEVICE_NAME);
+	}
+}
+
+NatApp::~NatApp()
+{
+	if (m_fd_ipa) {
+		close(m_fd_ipa);
+	}
 }
 
 int NatApp::Init(void)
@@ -205,6 +219,22 @@ int NatApp::AddTable(uint32_t pub_ip, uint8_t mux_id)
 					continue;
 				}
 				cache[cnt].enabled = true;
+				/* send connections info to pcie modem only with DL direction */
+				if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP))
+				{
+					ret = AddConnection(&cache[cnt]);
+					if(ret > 0)
+					{
+						/* save the rule id for deletion */
+						cache[cnt].rule_id = ret;
+						IPACMDBG_H("rule-id(%d)\n", cache[cnt].rule_id);
+					}
+					else
+					{
+						IPACMERR("unable to add Connection to pcie modem: error:%d\n", ret);
+						cache[cnt].rule_id = 0;
+					}
+				}
 
 				IPACMDBG("On wan-iface reset added below rule successfully\n");
 				iptodot("Private IP", nat_rule.private_ip);
@@ -217,24 +247,21 @@ int NatApp::AddTable(uint32_t pub_ip, uint8_t mux_id)
 	}
 
 	pub_ip_addr = pub_ip;
+	pub_mux_id = mux_id;
+	IPACMDBG(" Set pub_mux_id: %d\t", pub_mux_id);
 	return 0;
 }
 
 void NatApp::Reset()
 {
-	int cnt = 0;
-
 	nat_table_hdl = 0;
 	pub_ip_addr = 0;
-	/* NAT tbl deleted, reset enabled bit */
-	for(cnt = 0; cnt < max_entries; cnt++)
-	{
-		cache[cnt].enabled = false;
-	}
+	pub_mux_id = 0;
 }
 
 int NatApp::DeleteTable(uint32_t pub_ip)
 {
+	int cnt = 0;
 	int ret;
 	IPACMDBG_H("%s() %d\n", __FUNCTION__, __LINE__);
 
@@ -245,6 +272,27 @@ int NatApp::DeleteTable(uint32_t pub_ip)
 		IPACMDBG("Public ip address is not matching\n");
 		IPACMERR("unable to delete the nat table\n");
 		return -1;
+	}
+
+	/* NAT tbl deleted, reset enabled bit */
+	for(cnt = 0; cnt < max_entries; cnt++)
+	{
+		cache[cnt].enabled = false;
+		/* send connections del info to pcie modem first */
+		if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP) && (cache[cnt].rule_id > 0))
+
+		{
+			ret = DelConnection(cache[cnt].rule_id);
+			if(ret)
+			{
+				IPACMERR("unable to del Connection to pcie modem: %d\n", ret);
+			}
+			else
+			{
+				/* save the rule id for deletion */
+				cache[cnt].rule_id = 0;
+			}
+		}
 	}
 
 	ret = ipa_nat_del_ipv4_tbl(nat_table_hdl);
@@ -286,6 +334,7 @@ bool NatApp::ChkForDup(const nat_table_entry *rule)
 int NatApp::DeleteEntry(const nat_table_entry *rule)
 {
 	int cnt = 0;
+	int ret = 0;
 	IPACMDBG("%s() %d\n", __FUNCTION__, __LINE__);
 
 	log_nat(rule->protocol,rule->private_ip,rule->target_ip,rule->private_port,\
@@ -303,6 +352,21 @@ int NatApp::DeleteEntry(const nat_table_entry *rule)
 
 			if(cache[cnt].enabled == true)
 			{
+				/* send connections del info to pcie modem first */
+				if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP) && (cache[cnt].rule_id > 0))
+				{
+					ret = DelConnection(cache[cnt].rule_id);
+					if(ret)
+					{
+						IPACMERR("unable to del Connection to pcie modem: %d\n", ret);
+					}
+					else
+					{
+						/* save the rule id for deletion */
+						cache[cnt].rule_id = 0;
+					}
+				}
+
 				if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
 				{
 					IPACMERR("%s() %d deletion failed\n", __FUNCTION__, __LINE__);
@@ -329,6 +393,7 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 {
 	int cnt = 0;
 	ipa_nat_ipv4_rule nat_rule;
+	int ret = 0;
 
 	IPACMDBG("%s() %d\n", __FUNCTION__, __LINE__);
 
@@ -398,8 +463,23 @@ int NatApp::AddEntry(const nat_table_entry *rule)
 				}
 
 				cache[cnt].enabled = true;
+				/* send connections info to pcie modem only with DL direction */
+				if ((CtList->backhaul_mode == Q6_MHI_WAN) && (rule->dst_nat == true || rule->protocol == IPPROTO_TCP))
+				{
+					ret = AddConnection(rule);
+					if(ret > 0)
+					{
+						/* save the rule id for deletion */
+						cache[cnt].rule_id = ret;
+						IPACMDBG_H("rule-id(%d)\n", cache[cnt].rule_id);
+					}
+					else
+					{
+						IPACMERR("unable to add Connection to pcie modem: error:%d\n", ret);
+						cache[cnt].rule_id = 0;
+					}
+				}
 			}
-
 			cache[cnt].private_ip = rule->private_ip;
 			cache[cnt].target_ip = rule->target_ip;
 			cache[cnt].target_port = rule->target_port;
@@ -428,6 +508,137 @@ int NatApp::AddEntry(const nat_table_entry *rule)
   }
 
 	return 0;
+}
+
+/* Add new entry to the nat table on new connection, return rule-id */
+int NatApp::AddConnection(const nat_table_entry *rule)
+{
+	int len, res = IPACM_SUCCESS;
+	ipa_ioc_add_flt_rule *pFilteringTable = NULL;
+
+	/* contruct filter rules to pcie modem */
+	struct ipa_flt_rule_add flt_rule_entry;
+	ipa_ioc_generate_flt_eq flt_eq;
+
+	IPACMDBG("\n");
+	len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
+	pFilteringTable = (struct ipa_ioc_add_flt_rule*)malloc(len);
+	if (pFilteringTable == NULL)
+	{
+		IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+
+	pFilteringTable->commit = 1;
+	pFilteringTable->global = false;
+	pFilteringTable->ip = IPA_IP_v4;
+	pFilteringTable->num_rules = (uint8_t)1;
+
+	/* Configuring Software-Routing Filtering Rule */
+	memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
+	flt_rule_entry.at_rear = true;
+	flt_rule_entry.flt_rule_hdl = -1;
+	flt_rule_entry.status = -1;
+
+	flt_rule_entry.rule.retain_hdr = 1;
+	flt_rule_entry.rule.to_uc = 0;
+	flt_rule_entry.rule.eq_attrib_type = 1;
+	flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
+#ifdef FEATURE_IPA_V3
+	flt_rule_entry.rule.hashable = true;
+#endif
+	flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_SRC_PORT;
+	flt_rule_entry.rule.attrib.src_port = rule->target_port;
+	flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_PORT;
+	flt_rule_entry.rule.attrib.dst_port = rule->public_port;
+	flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_PROTOCOL;
+	flt_rule_entry.rule.attrib.u.v4.protocol = rule->protocol;
+	flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
+	flt_rule_entry.rule.attrib.u.v4.dst_addr_mask = 0xFFFFFFFF;
+	flt_rule_entry.rule.attrib.u.v4.dst_addr = rule->public_ip;
+	flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
+	flt_rule_entry.rule.attrib.u.v4.src_addr_mask = 0xFFFFFFFF;
+	flt_rule_entry.rule.attrib.u.v4.src_addr = rule->target_ip;
+	IPACMDBG_H("src(0x%x) port(%d)->dst(0x%x) port(%d), protocol(%d) pub_mux_id (%d)\n",
+				rule->target_ip, rule->target_port, rule->public_ip, rule->public_port,
+				rule->protocol, pub_mux_id);
+
+	memset(&flt_eq, 0, sizeof(flt_eq));
+	memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
+	flt_eq.ip = IPA_IP_v4;
+	if(0 != ioctl(m_fd_ipa, IPA_IOC_GENERATE_FLT_EQ, &flt_eq))
+	{
+		IPACMERR("Failed to get eq_attrib\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	memcpy(&flt_rule_entry.rule.eq_attrib,
+		&flt_eq.eq_attrib,
+		sizeof(flt_rule_entry.rule.eq_attrib));
+	memcpy(&(pFilteringTable->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+
+	if(false == IPACM_Iface::m_filtering.AddOffloadFilteringRule(pFilteringTable, pub_mux_id, 0))
+	{
+		IPACMERR("Failed to install WAN DL filtering table.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+	/* get rule-id */
+	res = pFilteringTable->rules[0].flt_rule_hdl;
+
+fail:
+	if(pFilteringTable != NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
+}
+
+int NatApp::DelConnection(const uint32_t rule_id)
+{
+	int len, res = IPACM_SUCCESS;
+	ipa_ioc_del_flt_rule *pFilteringTable = NULL;
+
+
+	struct ipa_flt_rule_del flt_rule_entry;
+
+	IPACMDBG("\n");
+	len = sizeof(struct ipa_ioc_del_flt_rule) + sizeof(struct ipa_flt_rule_del);
+	pFilteringTable = (struct ipa_ioc_del_flt_rule*)malloc(len);
+	if (pFilteringTable == NULL)
+	{
+		IPACMERR("Error Locate ipa_ioc_del_flt_rule memory...\n");
+		return IPACM_FAILURE;
+	}
+	memset(pFilteringTable, 0, len);
+
+
+	pFilteringTable->commit = 1;
+	pFilteringTable->ip = IPA_IP_v4;
+	pFilteringTable->num_hdls = (uint8_t)1;
+
+	/* Configuring Software-Routing Filtering Rule */
+	memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_del));
+	flt_rule_entry.hdl = rule_id;
+
+	memcpy(&(pFilteringTable->hdl[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_del));
+
+	if(false == IPACM_Iface::m_filtering.DelOffloadFilteringRule(pFilteringTable))
+	{
+		IPACMERR("Failed to install WAN DL filtering table.\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+
+fail:
+	if(pFilteringTable != NULL)
+	{
+		free(pFilteringTable);
+	}
+	return res;
 }
 
 void NatApp::UpdateCTUdpTs(nat_table_entry *rule, uint32_t new_ts)
@@ -629,7 +840,7 @@ bool NatApp::isPwrSaveIf(uint32_t ip_addr)
 
 int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 {
-	int cnt;
+	int cnt, ret;
 	IPACMDBG_H("Received IP address: 0x%x\n", client_lan_ip);
 
 	if(client_lan_ip == INVALID_IP_ADDR)
@@ -662,6 +873,21 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 		if(cache[cnt].private_ip == client_lan_ip &&
 			 cache[cnt].enabled == true)
 		{
+			/* send connections del info to pcie modem first */
+			if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP) && (cache[cnt].rule_id > 0))
+			{
+				ret = DelConnection(cache[cnt].rule_id);
+				if(ret)
+				{
+					IPACMERR("unable to del Connection to pcie modem: %d\n", ret);
+				}
+				else
+				{
+					/* save the rule id for deletion */
+					cache[cnt].rule_id = 0;
+				}
+			}
+
 			if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
 			{
 				IPACMERR("unable to delete the rule\n");
@@ -678,7 +904,7 @@ int NatApp::UpdatePwrSaveIf(uint32_t client_lan_ip)
 
 int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 {
-	int cnt;
+	int cnt, ret;
 	ipa_nat_ipv4_rule nat_rule;
 
 	IPACMDBG_H("Received ip address: 0x%x\n", client_lan_ip);
@@ -721,6 +947,22 @@ int NatApp::ResetPwrSaveIf(uint32_t client_lan_ip)
 				continue;
 			}
 			cache[cnt].enabled = true;
+			/* send connections info to pcie modem only with DL direction */
+			if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP))
+			{
+				ret = AddConnection(&cache[cnt]);
+				if(ret > 0)
+				{
+					/* save the rule id for deletion */
+					cache[cnt].rule_id = ret;
+					IPACMDBG_H("rule-id(%d)\n", cache[cnt].rule_id);
+				}
+				else
+				{
+					IPACMERR("unable to add Connection to pcie modem: error:%d\n", ret);
+					cache[cnt].rule_id = 0;
+				}
+			}
 
 			IPACMDBG("On power reset added below rule successfully\n");
 			iptodot("Private IP", nat_rule.private_ip);
@@ -866,7 +1108,7 @@ void NatApp::FlushTempEntries(uint32_t ip_addr, bool isAdd,
 
 int NatApp::DelEntriesOnClntDiscon(uint32_t ip_addr)
 {
-	int cnt, tmp = 0;
+	int cnt, tmp = 0, ret;
 	IPACMDBG_H("Received IP address: 0x%x\n", ip_addr);
 
 	if(ip_addr == INVALID_IP_ADDR)
@@ -891,6 +1133,21 @@ int NatApp::DelEntriesOnClntDiscon(uint32_t ip_addr)
 		{
 			if(cache[cnt].enabled == true)
 			{
+				/* send connections del info to pcie modem first */
+				if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP) && (cache[cnt].rule_id > 0))
+				{
+					ret = DelConnection(cache[cnt].rule_id);
+					if(ret)
+					{
+						IPACMERR("unable to del Connection to pcie modem: %d\n", ret);
+					}
+					else
+					{
+						/* save the rule id for deletion */
+						cache[cnt].rule_id = 0;
+					}
+				}
+
 				if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
 				{
 					IPACMERR("unable to delete the rule\n");
@@ -913,7 +1170,7 @@ int NatApp::DelEntriesOnClntDiscon(uint32_t ip_addr)
 
 int NatApp::DelEntriesOnSTAClntDiscon(uint32_t ip_addr)
 {
-	int cnt, tmp = curCnt;
+	int cnt, tmp = curCnt, ret;
 	IPACMDBG_H("Received IP address: 0x%x\n", ip_addr);
 
 	if(ip_addr == INVALID_IP_ADDR)
@@ -929,6 +1186,21 @@ int NatApp::DelEntriesOnSTAClntDiscon(uint32_t ip_addr)
 		{
 			if(cache[cnt].enabled == true)
 			{
+				/* send connections del info to pcie modem first */
+				if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP) && (cache[cnt].rule_id > 0))
+				{
+					ret = DelConnection(cache[cnt].rule_id);
+					if(ret)
+					{
+						IPACMERR("unable to del Connection to pcie modem: %d\n", ret);
+					}
+					else
+					{
+						/* save the rule id for deletion */
+						cache[cnt].rule_id = 0;
+					}
+				}
+
 				if(ipa_nat_del_ipv4_rule(nat_table_hdl, cache[cnt].rule_hdl) < 0)
 				{
 					IPACMERR("unable to delete the rule\n");

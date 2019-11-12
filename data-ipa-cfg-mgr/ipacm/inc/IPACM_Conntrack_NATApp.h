@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -65,6 +65,8 @@ typedef struct _nat_table_entry
 	bool enabled;
 	uint32_t rule_hdl;
 
+	/* used for pcie-modem */
+	uint32_t rule_id;
 }nat_table_entry;
 
 #define CHK_TBL_HDL()  if(nat_table_hdl == 0){ return -1; }
@@ -80,6 +82,8 @@ private:
 	uint32_t pub_ip_addr;
 	uint32_t pub_ip_addr_pre;
 	uint32_t nat_table_hdl;
+	/* used for pcie-modem */
+	uint8_t pub_mux_id;
 
 	int curCnt, max_entries;
 
@@ -94,7 +98,10 @@ private:
 	struct nf_conntrack *ct;
 	struct nfct_handle *ct_hdl;
 
+	int m_fd_ipa;
+
 	NatApp();
+	~NatApp();
 	int Init();
 
 	void UpdateCTUdpTs(nat_table_entry *, uint32_t);
@@ -113,6 +120,9 @@ public:
 
 	int AddEntry(const nat_table_entry *);
 	int DeleteEntry(const nat_table_entry *);
+
+	int AddConnection(const nat_table_entry *);
+	int DelConnection(const uint32_t);
 
 	void UpdateUDPTimeStamp();
 

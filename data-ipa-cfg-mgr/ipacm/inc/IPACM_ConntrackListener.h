@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -103,7 +103,7 @@ private:
 public:
 	char wan_ifname[IPA_IFACE_NAME_LEN];
 	uint32_t wan_ipaddr;
-	bool isStaMode;
+	ipacm_wan_iface_type backhaul_mode;
 	IPACM_ConntrackListener();
 	void event_callback(ipa_cm_event_id, void *data);
 	inline bool isWanUp()

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -420,6 +420,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 #ifdef FEATURE_IPACM_HAL
 				IPACM_EvtDispatcher::registr(IPA_WLAN_FWR_SSR_BEFORE_SHUTDOWN_NOTICE, wl);
 #endif
+				IPACM_EvtDispatcher::registr(IPA_WIGIG_CLIENT_ADD_EVENT, wl);
 				/* IPA_LAN_DELETE_SELF should be always last */
 				IPACM_EvtDispatcher::registr(IPA_LAN_DELETE_SELF, wl);
 				IPACMDBG_H("ipa_WLAN (%s):ipa_index (%d) instance open/registr ok\n", wl->dev_name, wl->ipa_if_num);
@@ -483,6 +484,7 @@ int IPACM_IfaceManager::create_iface_instance(ipacm_ifacemgr_data *param)
 					}
 					else
 					{
+						IPACM_EvtDispatcher::registr(IPA_COALESCE_NOTICE, w);
 						IPACM_EvtDispatcher::registr(IPA_LINK_DOWN_EVENT, w);
 					}
 

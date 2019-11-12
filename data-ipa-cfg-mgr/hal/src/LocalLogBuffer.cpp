@@ -29,7 +29,7 @@
 #define LOG_TAG "IPAHALService/dump"
 
 /* External Includes */
-#include <log/log.h>
+#include <cutils/log.h>
 #include <deque>
 #include <string>
 #include <sys/types.h>

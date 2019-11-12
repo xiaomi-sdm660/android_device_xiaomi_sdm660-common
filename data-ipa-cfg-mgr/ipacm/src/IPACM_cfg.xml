@@ -54,6 +54,11 @@
 			   <WlanMode>full</WlanMode>
 			</Iface>
 			<Iface>
+			   <Name>wigig0</Name>
+			   <Category>UNKNOWN</Category>
+			   <WlanMode>full</WlanMode>
+			</Iface>
+			<Iface>
 			   <Name>wlan0</Name>
 			   <Category>UNKNOWN</Category>
 			   <WlanMode>full</WlanMode>
@@ -80,7 +85,7 @@
 			<Iface>
 			   <Name>bridge0</Name>
 			   <Category>VIRTUAL</Category>
-		    </Iface>
+			</Iface>
 		</IPACMIface>
 		<IPPassthroughFlag>
 			<IPPassthroughMode>0</IPPassthroughMode>

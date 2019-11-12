@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -54,6 +54,7 @@ typedef struct _wlan_client_rt_hdl
 	uint32_t wifi_rt_rule_hdl_v4;
 	uint32_t wifi_rt_rule_hdl_v6[IPV6_NUM_ADDR];
 	uint32_t wifi_rt_rule_hdl_v6_wan[IPV6_NUM_ADDR];
+
 }wlan_client_rt_hdl;
 
 typedef struct _ipa_wlan_client
@@ -71,6 +72,9 @@ typedef struct _ipa_wlan_client
 	bool ipv4_header_set;
 	bool ipv6_header_set;
 	bool power_save_set;
+	enum ipa_client_type wigig_ipa_client;
+	/* used for pcie-modem */
+	uint32_t v6_rt_rule_id[IPV6_NUM_ADDR];
 	wlan_client_rt_hdl wifi_rt_hdl[0]; /* depends on number of tx properties */
 }ipa_wlan_client;
 
@@ -184,6 +188,18 @@ private:
 				{
 					for(num_v6 =0;num_v6 < get_client_memptr(wlan_client, clt_indx)->route_rule_set_v6;num_v6++)
 					{
+						/* send client-v6 delete to pcie modem only with global ipv6 with tx_index = 0 one time*/
+						if(is_global_ipv6_addr(get_client_memptr(wlan_client, clt_indx)->v6_addr[num_v6]) && (IPACM_Wan::backhaul_mode == Q6_MHI_WAN)
+							&& (get_client_memptr(wlan_client, clt_indx)->v6_rt_rule_id[num_v6] > 0))
+						{
+							IPACMDBG_H("Delete client index %d ipv6 RT-rules for %d-st ipv6 for rule-id:%d\n", clt_indx,num_v6,
+								get_client_memptr(wlan_client, clt_indx)->v6_rt_rule_id[num_v6]);
+							if (del_connection(clt_indx, num_v6))
+							{
+								IPACMERR("PCIE filter rule deletion failed! (%d-client) %d v6-entry\n",clt_indx, num_v6);
+							}
+						}
+
 						IPACMDBG_H("Delete client index %d ipv6 Qos rules for %d-st ipv6 for tx:%d\n", clt_indx,num_v6,tx_index);
 						rt_hdl = get_client_memptr(wlan_client, clt_indx)->wifi_rt_hdl[tx_index].wifi_rt_rule_hdl_v6[num_v6];
 						if(m_routing.DeleteRoutingHdl(rt_hdl, IPA_IP_v6) == false)
@@ -211,6 +227,8 @@ private:
 		return IPACM_SUCCESS;
 	}
 
+	int handle_wigig_client_add(ipacm_event_data_mac_ep *data);
+
 	/* for handle wifi client initial,copy all partial headers (tx property) */
 	int handle_wlan_client_init_ex(ipacm_event_data_wlan_ex *data);
 
@@ -233,6 +251,11 @@ private:
 	int handle_wlan_client_reset_rt(ipa_ip_type iptype);
 
 	void handle_SCC_MCC_switch(ipa_ip_type);
+
+	/* for pcie modem */
+	int add_connection(int client_index, int v6_num);
+
+	int del_connection(int client_index, int v6_num);
 
 #ifdef FEATURE_IPACM_RESTART
 	/*query wlan-clients */

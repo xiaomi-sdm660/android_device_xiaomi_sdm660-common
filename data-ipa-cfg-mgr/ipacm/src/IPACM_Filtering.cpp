@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -57,6 +57,8 @@ IPACM_Filtering::IPACM_Filtering()
 	{
 		IPACMERR("Failed opening %s.\n", DEVICE_NAME);
 	}
+	total_num_offload_rules = 0;
+	pcie_modem_rule_id = 0;
 }
 
 IPACM_Filtering::~IPACM_Filtering()
@@ -113,6 +115,242 @@ bool IPACM_Filtering::AddFilteringRule(struct ipa_ioc_add_flt_rule const *ruleTa
 	IPACMDBG("Added Filtering rule %pK\n", ruleTable);
 	return true;
 }
+
+#ifdef IPA_IOCTL_SET_FNR_COUNTER_INFO
+bool IPACM_Filtering::AddFilteringRule_hw_index(struct ipa_ioc_add_flt_rule *ruleTable, int hw_counter_index)
+{
+	int retval=0, cnt = 0, len = 0;
+	struct ipa_ioc_add_flt_rule_v2 *ruleTable_v2;
+	struct ipa_flt_rule_add_v2 flt_rule_entry;
+	bool ret = true;
+
+	IPACMDBG("Printing filter add attributes\n");
+	IPACMDBG("ip type: %d\n", ruleTable->ip);
+	IPACMDBG("Number of rules: %d\n", ruleTable->num_rules);
+	IPACMDBG("End point: %d and global value: %d\n", ruleTable->ep, ruleTable->global);
+	IPACMDBG("commit value: %d\n", ruleTable->commit);
+
+	/* change to v2 format*/
+	len = sizeof(struct ipa_ioc_add_flt_rule_v2);
+	ruleTable_v2 = (struct ipa_ioc_add_flt_rule_v2*)malloc(len);
+	if (ruleTable_v2 == NULL)
+	{
+		IPACMERR("Error Locate ipa_ioc_add_flt_rule_v2 memory...\n");
+		return false;
+	}
+	memset(ruleTable_v2, 0, len);
+	ruleTable_v2->rules = (uint64_t)calloc(ruleTable->num_rules, sizeof(struct ipa_flt_rule_add_v2));
+	if (!ruleTable_v2->rules) {
+		IPACMERR("Failed to allocate memory for filtering rules\n");
+		ret = false;
+		goto fail_tbl;
+	}
+
+	ruleTable_v2->commit = ruleTable->commit;
+	ruleTable_v2->ep = ruleTable->ep;
+	ruleTable_v2->global = ruleTable->global;
+	ruleTable_v2->ip = ruleTable->ip;
+	ruleTable_v2->num_rules = ruleTable->num_rules;
+	ruleTable_v2->flt_rule_size = sizeof(struct ipa_flt_rule_add_v2);
+
+	for (cnt=0; cnt < ruleTable->num_rules; cnt++)
+	{
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add_v2));
+		flt_rule_entry.at_rear = ruleTable->rules[cnt].at_rear;
+		flt_rule_entry.rule.retain_hdr = ruleTable->rules[cnt].rule.retain_hdr;
+		flt_rule_entry.rule.to_uc = ruleTable->rules[cnt].rule.to_uc;
+		flt_rule_entry.rule.action = ruleTable->rules[cnt].rule.action;
+		flt_rule_entry.rule.rt_tbl_hdl = ruleTable->rules[cnt].rule.rt_tbl_hdl;
+		flt_rule_entry.rule.rt_tbl_idx = ruleTable->rules[cnt].rule.rt_tbl_idx;
+		flt_rule_entry.rule.eq_attrib_type = ruleTable->rules[cnt].rule.eq_attrib_type;
+		flt_rule_entry.rule.max_prio = ruleTable->rules[cnt].rule.max_prio;
+		flt_rule_entry.rule.hashable = ruleTable->rules[cnt].rule.hashable;
+		flt_rule_entry.rule.rule_id = ruleTable->rules[cnt].rule.rule_id;
+		flt_rule_entry.rule.set_metadata = ruleTable->rules[cnt].rule.set_metadata;
+		flt_rule_entry.rule.pdn_idx = ruleTable->rules[cnt].rule.pdn_idx;
+		memcpy(&flt_rule_entry.rule.eq_attrib,
+					 &ruleTable->rules[cnt].rule.eq_attrib,
+					 sizeof(flt_rule_entry.rule.eq_attrib));
+		memcpy(&flt_rule_entry.rule.attrib,
+					 &ruleTable->rules[cnt].rule.attrib,
+					 sizeof(flt_rule_entry.rule.attrib));
+		IPACMDBG("Filter rule:%d attrib mask: 0x%x\n", cnt,
+				ruleTable->rules[cnt].rule.attrib.attrib_mask);
+		/* 0 means disable hw-counter-sats */
+		if (hw_counter_index != 0)
+		{
+			flt_rule_entry.rule.enable_stats = 1;
+			flt_rule_entry.rule.cnt_idx = hw_counter_index;
+		}
+
+		/* copy to v2 table*/
+		memcpy((void *)(ruleTable_v2->rules + (cnt * sizeof(struct ipa_flt_rule_add_v2))),
+			&flt_rule_entry, sizeof(flt_rule_entry));
+	}
+
+	retval = ioctl(fd, IPA_IOC_ADD_FLT_RULE_V2, ruleTable_v2);
+	if (retval != 0)
+	{
+		IPACMERR("Failed adding Filtering rule %pK\n", ruleTable_v2);
+		PERROR("unable to add filter rule:");
+
+		for (int cnt = 0; cnt < ruleTable_v2->num_rules; cnt++)
+		{
+			if (((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status != 0)
+			{
+				IPACMERR("Adding Filter rule:%d failed with status:%d\n",
+								 cnt, ((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status);
+			}
+		}
+		ret = false;
+		goto fail_rule;
+	}
+
+	/* copy results from v2 to v1 format */
+	for (int cnt = 0; cnt < ruleTable->num_rules; cnt++)
+	{
+		/* copy status to v1 format */
+		ruleTable->rules[cnt].status = ((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status;
+		ruleTable->rules[cnt].flt_rule_hdl = ((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].flt_rule_hdl;
+
+		if(((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status != 0)
+		{
+			IPACMERR("Adding Filter rule:%d failed with status:%d\n",
+							 cnt, ((struct ipa_flt_rule_add_v2 *) ruleTable_v2->rules)[cnt].status);
+		}
+	}
+
+	IPACMDBG("Added Filtering rule %pK\n", ruleTable_v2);
+
+fail_rule:
+	if((void *)ruleTable_v2->rules != NULL)
+		free((void *)ruleTable_v2->rules);
+fail_tbl:
+	if (ruleTable_v2 != NULL)
+		free(ruleTable_v2);
+	return ret;
+}
+
+bool IPACM_Filtering::AddFilteringRuleAfter_hw_index(struct ipa_ioc_add_flt_rule_after *ruleTable, int hw_counter_index)
+{
+	bool ret = true;
+#ifdef FEATURE_IPA_V3
+	int retval=0, cnt = 0, len = 0;
+	struct ipa_ioc_add_flt_rule_after_v2 *ruleTable_v2;
+	struct ipa_flt_rule_add_v2 flt_rule_entry;
+
+	IPACMDBG("Printing filter add attributes\n");
+	IPACMDBG("ep: %d\n", ruleTable->ep);
+	IPACMDBG("ip type: %d\n", ruleTable->ip);
+	IPACMDBG("Number of rules: %d\n", ruleTable->num_rules);
+	IPACMDBG("add_after_hdl: %d\n", ruleTable->add_after_hdl);
+	IPACMDBG("commit value: %d\n", ruleTable->commit);
+
+	/* change to v2 format*/
+	len = sizeof(struct ipa_ioc_add_flt_rule_after_v2);
+	ruleTable_v2 = (struct ipa_ioc_add_flt_rule_after_v2*)malloc(len);
+	if (ruleTable_v2 == NULL)
+	{
+		IPACMERR("Error Locate ipa_ioc_add_flt_rule_after_v2 memory...\n");
+		return false;
+	}
+	memset(ruleTable_v2, 0, len);
+	ruleTable_v2->rules = (uint64_t)calloc(ruleTable->num_rules, sizeof(struct ipa_flt_rule_add_v2));
+	if (!ruleTable_v2->rules) {
+		IPACMERR("Failed to allocate memory for filtering rules\n");
+		ret = false;
+		goto fail_tbl;
+	}
+
+	ruleTable_v2->commit = ruleTable->commit;
+	ruleTable_v2->ep = ruleTable->ep;
+	ruleTable_v2->ip = ruleTable->ip;
+	ruleTable_v2->num_rules = ruleTable->num_rules;
+	ruleTable_v2->add_after_hdl = ruleTable->add_after_hdl;
+	ruleTable_v2->flt_rule_size = sizeof(struct ipa_flt_rule_add_v2);
+
+	for (cnt=0; cnt < ruleTable->num_rules; cnt++)
+	{
+		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add_v2));
+		flt_rule_entry.at_rear = ruleTable->rules[cnt].at_rear;
+		flt_rule_entry.rule.retain_hdr = ruleTable->rules[cnt].rule.retain_hdr;
+		flt_rule_entry.rule.to_uc = ruleTable->rules[cnt].rule.to_uc;
+		flt_rule_entry.rule.action = ruleTable->rules[cnt].rule.action;
+		flt_rule_entry.rule.rt_tbl_hdl = ruleTable->rules[cnt].rule.rt_tbl_hdl;
+		flt_rule_entry.rule.rt_tbl_idx = ruleTable->rules[cnt].rule.rt_tbl_idx;
+		flt_rule_entry.rule.eq_attrib_type = ruleTable->rules[cnt].rule.eq_attrib_type;
+		flt_rule_entry.rule.max_prio = ruleTable->rules[cnt].rule.max_prio;
+		flt_rule_entry.rule.hashable = ruleTable->rules[cnt].rule.hashable;
+		flt_rule_entry.rule.rule_id = ruleTable->rules[cnt].rule.rule_id;
+		flt_rule_entry.rule.set_metadata = ruleTable->rules[cnt].rule.set_metadata;
+		flt_rule_entry.rule.pdn_idx = ruleTable->rules[cnt].rule.pdn_idx;
+		memcpy(&flt_rule_entry.rule.eq_attrib,
+					 &ruleTable->rules[cnt].rule.eq_attrib,
+					 sizeof(flt_rule_entry.rule.eq_attrib));
+		memcpy(&flt_rule_entry.rule.attrib,
+					 &ruleTable->rules[cnt].rule.attrib,
+					 sizeof(flt_rule_entry.rule.attrib));
+		IPACMDBG("Filter rule:%d attrib mask: 0x%x\n", cnt,
+				ruleTable->rules[cnt].rule.attrib.attrib_mask);
+		/* 0 means disable hw-counter-sats */
+		if (hw_counter_index != 0)
+		{
+			flt_rule_entry.rule.enable_stats = 1;
+			flt_rule_entry.rule.cnt_idx = hw_counter_index;
+		}
+
+		/* copy to v2 table*/
+		memcpy((void *)(ruleTable_v2->rules + (cnt * sizeof(struct ipa_flt_rule_add_v2))),
+			&flt_rule_entry, sizeof(flt_rule_entry));
+	}
+
+	retval = ioctl(fd, IPA_IOC_ADD_FLT_RULE_AFTER_V2, ruleTable_v2);
+	if (retval != 0)
+	{
+		IPACMERR("Failed adding Filtering rule %pK\n", ruleTable_v2);
+		PERROR("unable to add filter rule:");
+
+		for (int cnt = 0; cnt < ruleTable_v2->num_rules; cnt++)
+		{
+			if (((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status != 0)
+			{
+				IPACMERR("Adding Filter rule:%d failed with status:%d\n",
+								 cnt, ((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status);
+			}
+		}
+		ret = false;
+		goto fail_rule;
+	}
+
+	/* copy results from v2 to v1 format */
+	for (int cnt = 0; cnt < ruleTable->num_rules; cnt++)
+	{
+		/* copy status to v1 format */
+		ruleTable->rules[cnt].status = ((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status;
+		ruleTable->rules[cnt].flt_rule_hdl = ((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].flt_rule_hdl;
+
+		if(((struct ipa_flt_rule_add_v2 *)ruleTable_v2->rules)[cnt].status != 0)
+		{
+			IPACMERR("Adding Filter rule:%d failed with status:%d\n",
+							 cnt, ((struct ipa_flt_rule_add_v2 *) ruleTable_v2->rules)[cnt].status);
+		}
+	}
+
+	IPACMDBG("Added Filtering rule %pK\n", ruleTable_v2);
+
+fail_rule:
+	if((void *)ruleTable_v2->rules != NULL)
+		free((void *)ruleTable_v2->rules);
+fail_tbl:
+	if (ruleTable_v2 != NULL)
+		free(ruleTable_v2);
+#else
+	if (ruleTable)
+	IPACMERR("Not support adding Filtering rule %pK\n", ruleTable);
+#endif
+	return ret;
+}
+#endif //IPA_IOCTL_SET_FNR_COUNTER_INFO
 
 bool IPACM_Filtering::AddFilteringRuleAfter(struct ipa_ioc_add_flt_rule_after const *ruleTable)
 {
@@ -459,6 +697,225 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 
 	close(fd_wwan_ioctl);
 	return true;
+}
+
+bool IPACM_Filtering::AddOffloadFilteringRule(struct ipa_ioc_add_flt_rule *flt_rule_tbl, uint8_t mux_id, uint8_t default_path)
+{
+#ifdef WAN_IOCTL_ADD_OFFLOAD_CONNECTION
+	int ret = 0, cnt, pos = 0;
+	ipa_add_offload_connection_req_msg_v01 qmi_add_msg;
+	int fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
+	if(fd_wwan_ioctl < 0)
+	{
+		IPACMERR("Failed to open %s.\n",WWAN_QMI_IOCTL_DEVICE_NAME);
+		return false;
+	}
+
+	if(flt_rule_tbl == NULL)
+	{
+		if(mux_id ==0)
+		{
+			IPACMERR("Invalid add_offload_req muxd: (%d)\n", mux_id);
+			close(fd_wwan_ioctl);
+			return false;
+		}
+#ifdef QMI_IPA_MAX_FILTERS_EX2_V01
+		/* used for sending mux_id info to modem for UL sky*/
+		IPACMDBG_H("sending mux_id info (%d) to modem for UL\n", mux_id);
+		memset(&qmi_add_msg, 0, sizeof(qmi_add_msg));
+		qmi_add_msg.embedded_call_mux_id_valid = true;
+		qmi_add_msg.embedded_call_mux_id = mux_id;
+		ret = ioctl(fd_wwan_ioctl, WAN_IOC_ADD_OFFLOAD_CONNECTION, &qmi_add_msg);
+		if (ret != 0)
+		{
+			IPACMERR("Failed sending WAN_IOC_ADD_OFFLOAD_CONNECTION with ret %d\n ", ret);
+			close(fd_wwan_ioctl);
+			return false;
+		}
+#endif
+		close(fd_wwan_ioctl);
+		return true;
+	}
+	/* check Max offload connections */
+	if (total_num_offload_rules + flt_rule_tbl->num_rules > QMI_IPA_MAX_FILTERS_V01)
+	{
+		IPACMERR("(%d) add_offload req with curent(%d), exceed max (%d).\n",
+		flt_rule_tbl->num_rules, total_num_offload_rules,
+		QMI_IPA_MAX_FILTERS_V01);
+		close(fd_wwan_ioctl);
+		return false;
+	}
+	else
+	{
+		memset(&qmi_add_msg, 0, sizeof(qmi_add_msg));
+
+		if (flt_rule_tbl->num_rules > 0)
+		{
+			qmi_add_msg.filter_spec_ex2_list_valid = true;
+		}
+		else
+		{
+			IPACMDBG_H("Get %d offload-req\n", flt_rule_tbl->num_rules);
+			close(fd_wwan_ioctl);
+			return true;
+		}
+		qmi_add_msg.filter_spec_ex2_list_len = flt_rule_tbl->num_rules;
+
+		/* check if we want to take default MHI path */
+		if (default_path)
+		{
+			qmi_add_msg.default_mhi_path_valid = true;
+			qmi_add_msg.default_mhi_path = true;
+		}
+
+		IPACMDBG_H("passing %d offload req to modem. default %d\n", flt_rule_tbl->num_rules, qmi_add_msg.default_mhi_path);
+
+		if(flt_rule_tbl != NULL)
+		{
+			for(cnt = flt_rule_tbl->num_rules - 1; cnt >= 0; cnt--)
+			{
+				if (pos < QMI_IPA_MAX_FILTERS_V01)
+				{
+					if (flt_rule_tbl->ip == IPA_IP_v4)
+					{
+						qmi_add_msg.filter_spec_ex2_list[pos].ip_type = QMI_IPA_IP_TYPE_V4_V01;
+					} else if (flt_rule_tbl->ip == IPA_IP_v6) {
+						qmi_add_msg.filter_spec_ex2_list[pos].ip_type = QMI_IPA_IP_TYPE_V6_V01;
+					} else {
+						IPACMDBG_H("invalid ip-type %d\n", flt_rule_tbl->ip);
+						close(fd_wwan_ioctl);
+						return true;
+					}
+
+					qmi_add_msg.filter_spec_ex2_list[pos].filter_action = GetQmiFilterAction(flt_rule_tbl->rules[cnt].rule.action);
+					qmi_add_msg.filter_spec_ex2_list[pos].is_mux_id_valid = 1;
+					qmi_add_msg.filter_spec_ex2_list[pos].mux_id = mux_id;
+					/* assign the rule-id */
+					flt_rule_tbl->rules[cnt].flt_rule_hdl = IPA_PCIE_MODEM_RULE_ID_START + pcie_modem_rule_id;
+					qmi_add_msg.filter_spec_ex2_list[pos].rule_id = flt_rule_tbl->rules[cnt].flt_rule_hdl;
+					qmi_add_msg.filter_spec_ex2_list[pos].is_rule_hashable = flt_rule_tbl->rules[cnt].rule.hashable;
+					memcpy(&qmi_add_msg.filter_spec_ex2_list[pos].filter_rule,
+						&flt_rule_tbl->rules[cnt].rule.eq_attrib,
+						sizeof(struct ipa_filter_rule_type_v01));
+					IPACMDBG_H("mux-id %d, hashable %d\n", qmi_add_msg.filter_spec_ex2_list[pos].mux_id, qmi_add_msg.filter_spec_ex2_list[pos].is_rule_hashable);
+					pos++;
+					pcie_modem_rule_id = (pcie_modem_rule_id + 1)%100;
+				}
+				else
+				{
+					IPACMERR(" QMI only support max %d rules, current (%d)\n ",QMI_IPA_MAX_FILTERS_V01, pos);
+				}
+			}
+		}
+
+		ret = ioctl(fd_wwan_ioctl, WAN_IOC_ADD_OFFLOAD_CONNECTION, &qmi_add_msg);
+		if (ret != 0)
+		{
+			IPACMERR("Failed sending WAN_IOC_ADD_OFFLOAD_CONNECTION with ret %d\n ", ret);
+			close(fd_wwan_ioctl);
+			return false;
+		}
+	}
+	/* update total_num_offload_rules */
+	total_num_offload_rules += flt_rule_tbl->num_rules;
+	IPACMDBG_H("total_num_offload_rules %d \n", total_num_offload_rules);
+	close(fd_wwan_ioctl);
+	return true;
+#else
+	if(flt_rule_tbl != NULL)
+	{
+		IPACMERR("Not support (%d) AddOffloadFilteringRule with mux-id (%d) and default path = %d\n", flt_rule_tbl->num_rules, mux_id, default_path);
+	}
+	return false;
+#endif
+}
+
+bool IPACM_Filtering::DelOffloadFilteringRule(struct ipa_ioc_del_flt_rule const *flt_rule_tbl)
+{
+#ifdef WAN_IOCTL_ADD_OFFLOAD_CONNECTION
+	bool result = true;
+	int ret = 0, cnt, pos = 0;
+	ipa_remove_offload_connection_req_msg_v01 qmi_del_msg;
+	int fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
+
+	if(fd_wwan_ioctl < 0)
+	{
+		IPACMERR("Failed to open %s.\n",WWAN_QMI_IOCTL_DEVICE_NAME);
+		return false;
+	}
+
+	if(flt_rule_tbl == NULL)
+	{
+		IPACMERR("Invalid add_offload_req\n");
+		result =  false;
+		goto fail;
+	}
+
+	/* check # of offload connections */
+	if (flt_rule_tbl->num_hdls > total_num_offload_rules) {
+		IPACMERR("(%d) del_offload req , exceed curent(%d)\n",
+		flt_rule_tbl->num_hdls, total_num_offload_rules);
+		result =  false;
+		goto fail;
+	}
+	else
+	{
+		memset(&qmi_del_msg, 0, sizeof(qmi_del_msg));
+
+		if (flt_rule_tbl->num_hdls > 0)
+		{
+			qmi_del_msg.filter_handle_list_valid = true;
+		}
+		else
+		{
+			IPACMERR("Get %d offload-req\n", flt_rule_tbl->num_hdls);
+			goto fail;
+		}
+		qmi_del_msg.filter_handle_list_len = flt_rule_tbl->num_hdls;
+
+		IPACMDBG_H("passing %d offload req to modem.\n", flt_rule_tbl->num_hdls);
+
+		if(flt_rule_tbl != NULL)
+		{
+			for(cnt = flt_rule_tbl->num_hdls - 1; cnt >= 0; cnt--)
+			{
+				if (pos < QMI_IPA_MAX_FILTERS_V01)
+				{
+					/* passing rule-id to wan-driver */
+					qmi_del_msg.filter_handle_list[pos].filter_spec_identifier = flt_rule_tbl->hdl[cnt].hdl;
+					pos++;
+				}
+				else
+				{
+					IPACMERR(" QMI only support max %d rules, current (%d)\n ",QMI_IPA_MAX_FILTERS_V01, pos);
+					result =  false;
+					goto fail;
+				}
+			}
+		}
+
+		ret = ioctl(fd_wwan_ioctl, WAN_IOC_RMV_OFFLOAD_CONNECTION, &qmi_del_msg);
+		if (ret != 0)
+		{
+			IPACMERR("Failed deleting Filtering rule %pK with ret %d\n ", &qmi_del_msg, ret);
+			result =  false;
+			goto fail;
+		}
+	}
+	/* update total_num_offload_rules */
+	total_num_offload_rules -= flt_rule_tbl->num_hdls;
+	IPACMDBG_H("total_num_offload_rules %d \n", total_num_offload_rules);
+
+fail:
+	close(fd_wwan_ioctl);
+	return result;
+#else
+	if(flt_rule_tbl != NULL)
+	{
+		IPACMERR("Not support (%d) DelOffloadFilteringRule\n", flt_rule_tbl->num_hdls);
+	}
+	return false;
+#endif
 }
 
 bool IPACM_Filtering::SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req_msg_v01* table)

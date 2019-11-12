@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -139,12 +139,16 @@ public:
 	static IPACM_Filtering m_filtering;
 	static IPACM_Header m_header;
 
+	void change_to_network_order(ipa_ip_type iptype, ipa_rule_attrib* attrib);
+
 	/* software routing enable */
-	virtual int handle_software_routing_enable(void);
+	virtual int handle_software_routing_enable(bool mhip);
 
 	/* software routing disable */
-	virtual int handle_software_routing_disable(void);
+	virtual int handle_software_routing_disable(bool mhip);
 	void delete_iface(void);
+
+	bool is_global_ipv6_addr(uint32_t* ipv6_addr);
 
 private:
 

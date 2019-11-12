@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -47,6 +47,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <IPACM_Defs.h>
 #include <linux/rmnet_ipa_fd_ioctl.h>
 
+#define IPA_PCIE_MODEM_RULE_ID_START 69
+
 class IPACM_Filtering
 {
 public:
@@ -54,6 +56,10 @@ public:
 	~IPACM_Filtering();
 	bool AddFilteringRule(struct ipa_ioc_add_flt_rule const *ruleTable);
 	bool AddFilteringRuleAfter(struct ipa_ioc_add_flt_rule_after const *ruleTable);
+#ifdef IPA_IOCTL_SET_FNR_COUNTER_INFO
+	bool AddFilteringRule_hw_index(struct ipa_ioc_add_flt_rule *ruleTable, int hw_counter_index);
+	bool AddFilteringRuleAfter_hw_index(struct ipa_ioc_add_flt_rule_after *ruleTable, int hw_counter_index);
+#endif //IPA_IOCTL_SET_FNR_COUNTER_INFO
 	bool DeleteFilteringRule(struct ipa_ioc_del_flt_rule *ruleTable);
 	bool Commit(enum ipa_ip_type ip);
 	bool Reset(enum ipa_ip_type ip);
@@ -63,6 +69,8 @@ public:
 													 uint8_t num_rules);
 
 	bool AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *rule_table_v4, struct ipa_ioc_add_flt_rule const * rule_table_v6, uint8_t mux_id);
+	bool AddOffloadFilteringRule(struct ipa_ioc_add_flt_rule *flt_rule_tbl, uint8_t mux_id, uint8_t default_path);
+	bool DelOffloadFilteringRule(struct ipa_ioc_del_flt_rule const *flt_rule_tbl);
 	bool SendFilteringRuleIndex(struct ipa_fltr_installed_notif_req_msg_v01* table);
 	bool ModifyFilteringRule(struct ipa_ioc_mdfy_flt_rule* ruleTable);
 	ipa_filter_action_enum_v01 GetQmiFilterAction(ipa_flt_action action);
@@ -70,6 +78,8 @@ public:
 private:
 	static const char *DEVICE_NAME;
 	int fd; /* File descriptor of the IPA device node /dev/ipa */
+	int total_num_offload_rules;
+	int pcie_modem_rule_id;
 };
 
 #endif //IPACM_FILTERING_H
