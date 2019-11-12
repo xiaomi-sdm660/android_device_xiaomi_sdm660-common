@@ -184,19 +184,6 @@ vendor/lib64/libFIDOKeyProvisioning.so|4df3293d1c62a5b1454d5162298a09a61d0d9c38
 -priv-app/HotwordEnrollmentXGoogleWCD9340/HotwordEnrollmentXGoogleWCD9340.apk;PRESIGNED
 
 # GPS - from LA.UM.7.2.r1-06900-sdm660.0
-etc/permissions/com.qti.location.sdk.xml|cb68a566bd77dcc75bb7547199d528289fac01cb
-etc/permissions/com.qualcomm.location.xml|3503eaff722ec6eaf8c31352b118dc8c8790d719
-etc/permissions/izat.xt.srv.xml|a0f460056f27b5495a4d6e959eecf0e429c42a57
-etc/permissions/privapp-permissions-com.qualcomm.location.xml|055fb40299c0a2340bb1b2c9be218a4d2c0f8c72
-framework/com.qti.location.sdk.jar|7d42c9198429b5da1b4cb0b5f90aa23160b8e817
-framework/izat.xt.srv.jar|586824fa7ebbf204e6f5d0a515fb572b00facc4c
-lib64/liblocationservice_jni.so|a26d9900188520c0ea32d037a91b3951197397ce
-lib64/libxt_native.so|4f1063ec145b241d74b2178e2aadafa5c9b386b2
-lib64/vendor.qti.gnss@1.0.so|861e5275831265a90709294d019abc45116c15a4
-lib64/vendor.qti.gnss@1.1.so|18402dc7743207e5c896088de25e1740ac4dc90d
-lib64/vendor.qti.gnss@1.2.so|e67548d5dbb3d7b9fd02007e3fb9392f5b824657
-lib64/vendor.qti.gnss@2.0.so|03f3ccbe561ae8b56a7ceecd67c3877eb4e6f622
-lib64/vendor.qti.gnss@2.1.so|a76e8d8700c8f55b805b64ad89835cdb83108d4e
 vendor/bin/hw/vendor.qti.gnss@2.0-service|7f92f169ef8fac413d517636bf9844c5abb6a044
 vendor/bin/loc_launcher|1705e75180e9bdf1ce7aa00bc9ce1d7c07e8fd74
 vendor/bin/lowi-server|fabc723b1a53809a8619061227f6bb9453a2e297

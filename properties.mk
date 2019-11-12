@@ -171,10 +171,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.com.google.clientidbase.ms=android-xiaomi-rev2
 
-# GPS
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.overlay.izat.optin=rro
-
 # HAL1 apps list
 PRODUCT_PROPERTY_OVERRIDES += \
     camera.hal1.packagelist=com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android \
