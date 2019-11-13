@@ -41,12 +41,12 @@ vendor/etc/init/vendor.qti.hardware.alarm@1.0-service.rc|c9877b6cae0353d5fdea5bc
 vendor/lib64/hw/vendor.qti.hardware.alarm@1.0-impl.so|1e2631850cc97dfedbde50a9d0d55c8d14881b44
 vendor/lib64/vendor.qti.hardware.alarm@1.0.so|e86242990b1e00c6d231f912f218e7ae137394b9
 
-# ANT+ - from LA.UM.7.2.r1-06900-sdm660.0
--lib/libantradio.so|b6b7b93dfa155de37d755542a0d66cc9f77e256c
-lib64/com.qualcomm.qti.ant@1.0.so|33d353a1077c70c3d7c013938b092e93a18d5b58
--lib64/libantradio.so|def8c83cab05b53fe70754f23cf475240a8358fd
-vendor/lib64/com.qualcomm.qti.ant@1.0.so|5779ba85ae23ede7552a768afb8042d72f71afe2
-vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|94729946e6ba94dd5d24c0495661efadc7ab782e
+# ANT+ - from LA.UM.8.2.r1-04300-sdm660.0
+-lib/libantradio.so|37c36369eeab19d5e6266d9d25ae0de9bb59502d
+product/lib64/com.qualcomm.qti.ant@1.0.so|452f459f04e5d819bf0325f83eaa14e0337a3c13
+-lib64/libantradio.so|43f6105678c082216f1606d8dd43fa1b0b753d7e
+vendor/lib64/com.qualcomm.qti.ant@1.0.so|cd400d59d68aad8e547487de9c3f49cefd4d2fca
+vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|aa08f9ec51392ed841f60ad08b7f083312c8c5ee
 
 # Audio FX modules - from perseus-user 9 PKQ1.180729.001 V10.3.1.0.PEECNXM release-keys
 vendor/lib/soundfx/libasphere.so|0783283ac9f68d5ebbeef350adc9b66b3248449b
