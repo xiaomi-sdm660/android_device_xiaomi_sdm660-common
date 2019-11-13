@@ -200,13 +200,6 @@ service vendor.thermal-engine /system/vendor/bin/thermal-engine
    socket thermal-send-rule stream 0660 system system
    group root
 
-service vendor.time_daemon /system/vendor/bin/time_daemon
-   class main
-   user system
-   group system
-   capabilities SYS_TIME
-   writepid /dev/cpuset/system-background/tasks
-
 service vendor.adsprpcd /system/vendor/bin/adsprpcd audiopd
    class main
    user media
