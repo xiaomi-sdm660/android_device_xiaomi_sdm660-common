@@ -189,6 +189,7 @@ class GnssAdapter : public LocAdapterBase {
     XtraSystemStatusObserver mXtraObserver;
     LocationSystemInfo mLocSystemInfo;
     std::vector<GnssSvIdSource> mBlacklistedSvIds;
+    PowerStateType mSystemPowerState;
 
     /* === Misc ===================================================================== */
     BlockCPIInfo mBlockCPIInfo;
@@ -416,6 +417,8 @@ public:
         return false;
     }
 
+    void updateSystemPowerState(PowerStateType systemPowerState);
+
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
     /* get AGC information from system status and fill it */
@@ -462,11 +465,14 @@ public:
     void reportPowerStateIfChanged();
     void savePowerStateCallback(powerStateCallback powerStateCb){ mPowerStateCb = powerStateCb; }
     bool getPowerState() { return mPowerOn; }
+    inline PowerStateType getSystemPowerState() { return mSystemPowerState; }
+
     void setAllowFlpNetworkFixes(uint32_t allow) { mAllowFlpNetworkFixes = allow; }
     uint32_t getAllowFlpNetworkFixes() { return mAllowFlpNetworkFixes; }
     void setSuplHostServer(const char* server, int port, LocServerType type);
     void notifyClientOfCachedLocationSystemInfo(LocationAPI* client,
                                                 const LocationCallbacks& callbacks);
+    void updateSystemPowerStateCommand(PowerStateType systemPowerState);
 };
 
 #endif //GNSS_ADAPTER_H
