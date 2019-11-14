@@ -2056,7 +2056,8 @@ void loc_nmea_generate_sv(const GnssSvNotification &svNotify,
             {
                 sv_cache_info.bds_used_mask |= (1ULL << (svNotify.gnssSvs[svNumber - 1].svId - 1));
             }
-            if(GNSS_SIGNAL_BEIDOU_B2AI == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask){
+            if ((GNSS_SIGNAL_BEIDOU_B2AI == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask) ||
+                   (GNSS_SIGNAL_BEIDOU_B2AQ == svNotify.gnssSvs[svNumber - 1].gnssSignalTypeMask)) {
                 sv_cache_info.bds_b2_count++;
             } else {
                 // GNSS_SIGNAL_BEIDOU_B1I or default
