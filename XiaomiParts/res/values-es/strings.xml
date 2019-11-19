@@ -15,7 +15,7 @@
 -->
 <resources>
     <string name="advanced_settings">Ajustes Xiaomi</string>
-    <string name="advanced_settings_summary">Ajustes Extras de Xiaomi MI 6X/A2</string>
+    <string name="advanced_settings_summary">Opciones extra para su equipo</string>
 
     <string name="display_title">Pantalla</string>
 
