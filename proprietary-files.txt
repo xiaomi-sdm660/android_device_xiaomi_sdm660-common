@@ -43,8 +43,8 @@ vendor/lib64/vendor.qti.hardware.alarm@1.0.so|e86242990b1e00c6d231f912f218e7ae13
 
 # ANT+ - from LA.UM.8.2.r1-04300-sdm660.0
 -lib/libantradio.so|37c36369eeab19d5e6266d9d25ae0de9bb59502d
-product/lib64/com.qualcomm.qti.ant@1.0.so|452f459f04e5d819bf0325f83eaa14e0337a3c13
 -lib64/libantradio.so|43f6105678c082216f1606d8dd43fa1b0b753d7e
+product/lib64/com.qualcomm.qti.ant@1.0.so|452f459f04e5d819bf0325f83eaa14e0337a3c13
 vendor/lib64/com.qualcomm.qti.ant@1.0.so|cd400d59d68aad8e547487de9c3f49cefd4d2fca
 vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|aa08f9ec51392ed841f60ad08b7f083312c8c5ee
 
@@ -63,11 +63,14 @@ vendor/lib64/soundfx/libqcvirt.so|88349315d99cea68a3b766fa4c6e1181d26f561b
 product/lib64/libaptX_encoder.so|df1c89d7af1bb35808d5fe3496b04ba066c10cbc
 product/lib64/libaptXHD_encoder.so|e13fa70c97caaa24d061678bdee608eb8850a69e
 
-# Bluetooth - from LA.UM.7.2.r1-06900-sdm660.0
-vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti|514226960669db32e44a9457e6de7c07ac70ec1b
+# Bluetooth - from LA.UM.8.2.r1-04300-sdm660.0
+vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti|57a0a575a2b1b96176fda1bcb84ea8371c4070d1
 vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc|a979981c55f3dcaf6cf2212e71b901ca4d58b959
-vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so|4e14141172904d2aa6e6c6944b6f15312b4e8651
-vendor/lib64/libbtnv.so|f354bf758b8d0b35e6ac0005640d05abe0f89280
+vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so|1d4a9d612e0f39b09aeef1d52b153f30ad409c07
+vendor/lib64/libbtnv.so|b58a40965697418c7b4809026bba17bd51bfb2ef
+vendor/lib64/vendor.qti.hardware.bluetooth_sar@1.0.so|0a1f3b4bd383ed547e667087c0aab922efee3473
+vendor/lib64/vendor.qti.hardware.btconfigstore@1.0.so|f5043d5f1bb02d18e940190f31017d2a1ed97de9
+vendor/lib64/vendor.qti.hardware.fm@1.0.so|fb0eff9ce52c5d2a073253f7c300bc9b54c85684
 
 # Charger
 vendor/bin/hvdcp_opti|9d0efda6f5cc8a03295690368ae823117a453d35
