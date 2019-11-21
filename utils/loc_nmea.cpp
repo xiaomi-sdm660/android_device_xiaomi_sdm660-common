@@ -1195,7 +1195,8 @@ void loc_nmea_generate_pos(const UlpLocation &location,
                     (location, locationExtended, systemInfo, utcPosTimestamp);
 
     time_t utcTime(utcPosTimestamp/1000);
-    tm * pTm = gmtime(&utcTime);
+    struct tm result;
+    tm * pTm = gmtime_r(&utcTime, &result);
     if (NULL == pTm) {
         LOC_LOGE("gmtime failed");
         return;
