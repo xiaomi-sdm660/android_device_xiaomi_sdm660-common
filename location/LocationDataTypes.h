@@ -248,6 +248,7 @@ typedef enum {
     GNSS_CONFIG_SUPL_VERSION_1_0_0 = 1,
     GNSS_CONFIG_SUPL_VERSION_2_0_0,
     GNSS_CONFIG_SUPL_VERSION_2_0_2,
+    GNSS_CONFIG_SUPL_VERSION_2_0_4,
 } GnssConfigSuplVersion;
 
 // LTE Positioning Profile

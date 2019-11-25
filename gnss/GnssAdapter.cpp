@@ -533,6 +533,8 @@ inline uint32_t
 GnssAdapter::convertSuplVersion(const GnssConfigSuplVersion suplVersion)
 {
     switch (suplVersion) {
+        case GNSS_CONFIG_SUPL_VERSION_2_0_4:
+            return 0x00020004;
         case GNSS_CONFIG_SUPL_VERSION_2_0_0:
             return 0x00020000;
         case GNSS_CONFIG_SUPL_VERSION_2_0_2:
