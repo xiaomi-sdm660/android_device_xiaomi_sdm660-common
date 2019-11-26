@@ -2089,26 +2089,6 @@ typedef struct
     Gnss_Srn_MacAddr_Type  macAddrType; /* SRN AP MAC Address type */
 } GnssSrnDataReq;
 
-/* Mask indicating enabled or disabled constellations */
-typedef uint64_t GnssSvTypesMask;
-typedef enum {
-    GNSS_SV_TYPES_MASK_GLO_BIT    = (1<<0),
-    GNSS_SV_TYPES_MASK_BDS_BIT    = (1<<1),
-    GNSS_SV_TYPES_MASK_QZSS_BIT   = (1<<2),
-    GNSS_SV_TYPES_MASK_GAL_BIT    = (1<<3),
-    GNSS_SV_TYPES_MASK_NAVIC_BIT  = (1<<4),
-} GnssSvTypesMaskBits;
-
-/* This SV Type config is injected directly to GNSS Adapter
- * bypassing Location API */
-typedef struct {
-    uint32_t size; // set to sizeof(GnssSvTypeConfig)
-    // Enabled Constellations
-    GnssSvTypesMask enabledSvTypesMask;
-    // Disabled Constellations
-    GnssSvTypesMask blacklistedSvTypesMask;
-} GnssSvTypeConfig;
-
 /* Provides the current GNSS SV Type configuration to the client.
  * This is fetched via direct call to GNSS Adapter bypassing
  * Location API */
@@ -2242,6 +2222,7 @@ enum PowerStateType {
 #define EAP_LOC_CLIENT_DIR             "/data/vendor/location/extap_locclient/"
 
 #define LOC_CLIENT_NAME_PREFIX         "toclient"
+#define LOC_INTAPI_NAME_PREFIX         "toIntapiClient"
 
 typedef uint64_t NetworkHandle;
 #define NETWORK_HANDLE_UNKNOWN  ~0

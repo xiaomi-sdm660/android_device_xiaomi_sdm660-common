@@ -122,6 +122,23 @@ typedef struct {
     double latLonDiffThreshold;
 } BlockCPIInfo;
 
+typedef struct {
+    bool isValid;
+    bool enable;
+    float tuncThresholdMs; // need to be specified if enable is true
+    uint32_t energyBudget; // need to be specified if enable is true
+} TuncConfigInfo;
+
+typedef struct {
+    bool isValid;
+    bool enable;
+} PaceConfigInfo;
+
+typedef struct {
+    TuncConfigInfo tuncConfigInfo;
+    PaceConfigInfo paceConfigInfo;
+} LocIntegrationConfigInfo;
+
 using namespace loc_core;
 
 namespace loc_core {
@@ -158,6 +175,7 @@ class GnssAdapter : public LocAdapterBase {
     GnssSvTypeConfig mGnssSvTypeConfig;
     GnssSvTypeConfigCallback mGnssSvTypeConfigCb;
     bool mSupportNfwControl;
+    LocIntegrationConfigInfo mLocConfigInfo;
 
     /* ==== NI ============================================================================= */
     NiData mNiData;
@@ -270,6 +288,14 @@ public:
             const TrackingOptions& updatedOptions, const TrackingOptions& oldOptions);
     bool checkAndSetSPEToRunforNHz(TrackingOptions & out);
 
+    void setConstrainedTunc(bool enable, float tuncConstraint,
+                            uint32_t energyBudget, uint32_t sessionId);
+    void setPositionAssistedClockEstimator(bool enable, uint32_t sessionId);
+    void updateSvConfig(uint32_t sessionId, const GnssSvTypeConfig& svTypeConfig,
+                        const GnssSvIdConfig& svIdConfig);
+    void resetSvConfig(uint32_t sessionId);
+    void configLeverArm(uint32_t sessionId, const LeverArmConfigInfo& configInfo);
+
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
     void gnssNiResponseCommand(LocationAPI* client, uint32_t id, GnssNiResponse response);
@@ -329,6 +355,13 @@ public:
     void dataConnFailedCommand(AGpsExtType agpsType);
     void getGnssEnergyConsumedCommand(GnssEnergyConsumedCallback energyConsumedCb);
     void nfwControlCommand(bool enable);
+    uint32_t setConstrainedTuncCommand (bool enable, float tuncConstraint,
+                                        uint32_t energyBudget);
+    uint32_t setPositionAssistedClockEstimatorCommand (bool enable);
+    uint32_t gnssUpdateSvConfigCommand(const GnssSvTypeConfig& svTypeConfig,
+                                       const GnssSvIdConfig& svIdConfig);
+    uint32_t gnssResetSvConfigCommand();
+    uint32_t configLeverArmCommand(const LeverArmConfigInfo& configInfo);
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */

@@ -659,6 +659,8 @@ typedef enum {
     DEAD_RECKONING_ENGINE       = (1 << 1),
     PRECISE_POSITIONING_ENGINE  = (1 << 2)
 } PositioningEngineBits;
+#define POSITION_ENGINE_MASK_ALL \
+        (STANDARD_POSITIONING_ENGINE|DEAD_RECKONING_ENGINE|PRECISE_POSITIONING_ENGINE)
 
 typedef uint64_t GnssDataMask;
 typedef enum {
@@ -1187,6 +1189,13 @@ typedef struct {
     // GAL - SV 301 maps to bit 0
 #define GNSS_SV_CONFIG_GAL_INITIAL_SV_ID 301
     uint64_t galBlacklistSvMask;
+
+    // SBAS - SV 120 to 158, maps to 0 to 38
+    //        SV 183 to 191, maps to 39 to 47
+#define GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID     120
+#define GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH 39
+#define GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID    183
+    uint64_t sbasBlacklistSvMask;
 } GnssSvIdConfig;
 
 struct GnssConfig{
@@ -1312,6 +1321,66 @@ typedef enum {
 struct LocationSystemInfo {
     LocationSystemInfoMask systemInfoMask;
     LeapSecondSystemInfo   leapSecondSysInfo;
+};
+
+/* Mask indicating enabled or disabled constellations */
+typedef uint64_t GnssSvTypesMask;
+typedef enum {
+    GNSS_SV_TYPES_MASK_GLO_BIT  = (1<<0),
+    GNSS_SV_TYPES_MASK_BDS_BIT  = (1<<1),
+    GNSS_SV_TYPES_MASK_QZSS_BIT = (1<<2),
+    GNSS_SV_TYPES_MASK_GAL_BIT  = (1<<3),
+    GNSS_SV_TYPES_MASK_NAVIC_BIT  = (1<<4),
+} GnssSvTypesMaskBits;
+
+/* This SV Type config is injected directly to GNSS Adapter
+ * bypassing Location API */
+typedef struct {
+    uint32_t size; // set to sizeof(GnssSvTypeConfig)
+    // Enabled Constellations
+    GnssSvTypesMask enabledSvTypesMask;
+    // Disabled Constellations
+    GnssSvTypesMask blacklistedSvTypesMask;
+} GnssSvTypeConfig;
+
+// Specify parameters related to lever arm
+struct LeverArmParams {
+    // Offset along the vehicle forward axis
+    float forwardOffsetMeters;
+    // Offset along the vehicle starboard axis
+    float sidewaysOffsetMeters;
+    // Offset along the vehicle up axis
+    float upOffsetMeters;
+};
+
+typedef uint32_t LeverArmTypeMask;
+
+enum LeverArmTypeBits {
+    // Lever arm regarding the VRP (Vehicle Reference Point) w.r.t
+    // the origin (at the GPS Antenna)
+    LEVER_ARM_TYPE_GNSS_TO_VRP_BIT = (1<<0),
+    // Lever arm regarding GNSS Antenna w.r.t the origin at the IMU
+    // e.g.: inertial measurement unit for DR (dead reckoning
+    // engine)
+    LEVER_ARM_TYPE_DR_IMU_TO_GNSS_BIT = (1<<1),
+    // Lever arm regarding GNSS Antenna w.r.t the origin at the
+    // IMU (inertial measurement unit) for VEPP (vision enhanced
+    // precise positioning engine)
+    LEVER_ARM_TYPE_VEPP_IMU_TO_GNSS_BIT = (1<<2)
+};
+
+struct LeverArmConfigInfo {
+    // Valid mask for the types of lever arm parameters provided
+    LeverArmTypeMask leverArmValidMask;
+    // Lever arm regarding the VRP (Vehicle Reference Point) w.r.t the origin
+    // (at the GPS Antenna)
+    LeverArmParams   gnssToVRP;
+    // Lever arm parameters regarding GNSS Antenna w.r.t the origin at the IMU
+    // (inertial measurement unit) for DR (dead reckoning engine)
+    LeverArmParams   drImuToGnss;
+    // Lever arm regarding GNSS Antenna w.r.t the origin at the IMU
+    // (inertial measurement unit) for VEPP (vision enhanced precise position engine)
+    LeverArmParams   veppImuToGnss;
 };
 
 /* Provides the capabilities of the system

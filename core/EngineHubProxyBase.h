@@ -101,6 +101,11 @@ public:
         (void) additionalSystemInfo;
         return false;
     }
+
+    inline virtual bool configLeverArm(const LeverArmConfigInfo& configInfo) {
+        (void) configInfo;
+        return false;
+    }
 };
 
 typedef std::function<void(int count, EngineLocationInfo* locationArr)>
