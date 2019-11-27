@@ -18,10 +18,6 @@ LOCAL_PATH := $(call my-dir)
 
 ifneq ($(filter twolip jasmine_sprout wayne clover lavender,$(TARGET_DEVICE)),)
 
-$(shell mkdir -p $(TARGET_OUT_VENDOR)/firmware; \
-    ln -sf /dev/block/bootdevice/by-name/msadp \
-        $(TARGET_OUT_VENDOR)/firmware/msadp)
-
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := wifi_symlinks
