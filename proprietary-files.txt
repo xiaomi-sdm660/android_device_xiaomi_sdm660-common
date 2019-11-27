@@ -646,7 +646,7 @@ vendor/lib64/libthermalfeature.so
 vendor/lib64/libthermalioctl.so
 
 # Time services - from LA.UM.8.2.r1-04300-sdm660.0
--vendor/app/TimeService/TimeService.apk|c935b678fdaed033513f044f6492361c3370f9f0
+-vendor/app/TimeService/TimeService.apk;PRESIGNED|c935b678fdaed033513f044f6492361c3370f9f0
 vendor/bin/time_daemon|1f0ab775a70bd863c0c59f999fcba2b6882d2a31
 vendor/etc/init/init.time_daemon.rc|edb18291351eb7efcb597d33c2c7f2d9bb7328a9
 -vendor/lib/libtime_genoff.so|e858cc52e829af0a9e4b5a4c39bddef8cece4bd9
