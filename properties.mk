@@ -27,7 +27,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.audio.hifi.int_codec=true \
     persist.vendor.audio.hw.binder.size_kbyte=1024 \
     persist.vendor.audio.ras.enabled=false \
-    persist.vendor.bt.a2dp_offload_cap=sbc-aac \
     ro.af.client_heap_size_kbyte=7168 \
     ro.audio.soundfx.dirac=true \
     ro.config.vc_call_vol_steps=14 \
@@ -109,7 +108,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.bluetooth.bluetooth_audio_hal.disabled=false \
     ro.vendor.bluetooth.wipower=false \
     persist.bluetooth.a2dp_offload.disabled=false \
-    persist.bluetooth.a2dp_offload.cap=sbc-aac-aptx-aptxhd-ldac \
+		persist.vendor.qcom.bluetooth.enable.splita2dp=false \
+    persist.vendor.bt.a2dp_offload_cap=sbc-aac-aptx-aptxhd-ldac \
     persist.vendor.bt.aac_frm_ctl.enabled=true
 
 # Camera
