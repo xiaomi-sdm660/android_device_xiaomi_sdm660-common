@@ -297,19 +297,21 @@ vendor/lib64/libtinyxml2_1.so|ba981e332895a053a67fc54a8190365a3ad37f2d
 vendor/lib/hw/vulkan.sdm660.so|87d87b2520d3a8adec7a24f5999a27b291edaeba
 vendor/lib64/hw/vulkan.sdm660.so|ad3a5d92c6c13ba0c937dd1b83f371e804a57c4e
 
-# Listen - from LA.UM.7.2.r1-06900-sdm660.0
-vendor/lib/hw/sound_trigger.primary.sdm660.so|bd7ce820f661e269dbb7ff68a7123f0247e225bc
-vendor/lib/libadpcmdec.so|7c12a153200fd2e9f1f6139fcf40beee1a96f48d
-vendor/lib/libgcs-calwrapper.so|79f99e29bf13b21cfa356cd805f363cc19efc59e
-vendor/lib/libgcs-ipc.so|6028691d48595aa9037b75aa731c0a05472bf2e2
-vendor/lib/libgcs-osal.so|302b254ab3afc2f088bdb9a0c8564055b4eca4af
-vendor/lib/libgcs.so|9357ae12df1096f478df6488a9199ab2baf41d45
-vendor/lib/libsmwrapper.so|05c0a44547291719a32a52fb8db102c6d19e9315
-vendor/lib64/hw/sound_trigger.primary.sdm660.so|f8626e5c30047a73373b64e44a9ea02886354844
-vendor/lib64/libgcs-calwrapper.so|8551451d41e218a5443efc2dc128277fe9741e0c
-vendor/lib64/libgcs-ipc.so|027147c87f15a8cb2e5f54e8d8e56d33b9476e47
-vendor/lib64/libgcs-osal.so|d70699bde8fe27c77bc6d858ff4cd5137c5ed36b
-vendor/lib64/libgcs.so|89b765782c7a4d935bce8954e8161d0f7ab07c50
+# Listen - from LA.UM.8.2.r1-04300-sdm660.0
+vendor/lib/hw/sound_trigger.primary.sdm660.so|11d9c2787bd8de1cc721249b24c57b1a3f9f2a05
+vendor/lib/libadpcmdec.so|6e9be864a1380e099a2d68237e13a724f3143314
+vendor/lib/libgcs-calwrapper.so|c4b29e7531b2fd318159bb6249bf982ce1b1d42c
+vendor/lib/libgcs-ipc.so|21628984389999cb473535812898e2b0eb25aa35
+vendor/lib/libgcs-osal.so|dfae7d1bb15b7bd19fef7427f0a6f6df28d5d30a
+vendor/lib/libgcs.so|5f2ef7f85bb9637e0899a38e4da2032f3a1f60af
+vendor/lib/libsmwrapper.so|d28c31e4dd25de2eb7d1face701b0f6acf1b1d0e
+vendor/lib/vendor.qti.voiceprint@1.0.so|f8763fca81735ef6978d7fd275d16db1d6b5b165
+vendor/lib64/hw/sound_trigger.primary.sdm660.so|ba57272d8f2d6e3cc92f66d143960f2c92eb0985
+vendor/lib64/libgcs-calwrapper.so|103ec83978233967af6d2ca3e7bcb7d28880be19
+vendor/lib64/libgcs-ipc.so|8b9ffa00f59589f50455e155158978ca0543baa5
+vendor/lib64/libgcs-osal.so|5eca0a8d8ea32505d5b8d69b3e13bf640b34976a
+vendor/lib64/libgcs.so|2092b98ac0aa2a720ae1f2ca3f5b5224e5e62b8a
+vendor/lib64/vendor.qti.voiceprint@1.0.so|a276ba6f6d663c99c4f7139d2734597322680ddf
 
 # Media - from LA.UM.8.2.r1-04000-sdm660.0
 vendor/lib/libAlacSwDec.so|bca4278cb74a63772a0fc369480b5d9814063d9b
