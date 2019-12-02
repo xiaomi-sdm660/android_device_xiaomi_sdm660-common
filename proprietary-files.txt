@@ -182,10 +182,6 @@ vendor/lib64/libFidoCrypto_vendor.so|4cc8d054895e7eb78b35c42cbcf7d0184e9e88f4
 vendor/lib/libFIDOKeyProvisioning.so|35703aca065213fa86f095a557ae2dbebccfe336
 vendor/lib64/libFIDOKeyProvisioning.so|4df3293d1c62a5b1454d5162298a09a61d0d9c38
 
-# Hotword enrollment
--priv-app/HotwordEnrollmentOKGoogleWCD9340/HotwordEnrollmentOKGoogleWCD9340.apk;PRESIGNED
--priv-app/HotwordEnrollmentXGoogleWCD9340/HotwordEnrollmentXGoogleWCD9340.apk;PRESIGNED
-
 # GPS - from LA.UM.7.2.r1-06900-sdm660.0
 vendor/bin/hw/vendor.qti.gnss@2.0-service|7f92f169ef8fac413d517636bf9844c5abb6a044
 vendor/bin/loc_launcher|1705e75180e9bdf1ce7aa00bc9ce1d7c07e8fd74
