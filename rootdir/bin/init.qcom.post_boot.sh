@@ -3385,6 +3385,7 @@ case "$target" in
     echo 0 > /proc/sys/kernel/sched_coloc_busy_hyst_max_ms
 
     # disable unfiltering
+    echo 20000000 > /proc/sys/kernel/sched_task_unfilter_period
     echo 1 > /proc/sys/kernel/sched_task_unfilter_nr_windows
 
     # configure governor settings for silver cluster
