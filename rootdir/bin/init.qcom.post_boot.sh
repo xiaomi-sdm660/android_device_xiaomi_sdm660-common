@@ -3720,7 +3720,7 @@ case "$target" in
 
             # Core control is temporarily disabled till bring up
             echo 0 > /sys/devices/system/cpu/cpu0/core_ctl/enable
-            echo 4 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
+            echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
             # Core control parameters on big
             echo 40 > /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres
             echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
@@ -3826,9 +3826,8 @@ case "$target" in
             # Turn off scheduler boost at the end
             echo 0 > /proc/sys/kernel/sched_boost
 
-            # Turn off sleep modes till bring up
-            # sleep modes to be enabled after bring up
-            echo 1 > /sys/module/lpm_levels/parameters/sleep_disabled
+            # Turn on sleep modes
+            echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
 
             ;;
         esac
