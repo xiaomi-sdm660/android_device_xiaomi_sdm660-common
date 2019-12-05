@@ -121,7 +121,7 @@ ALL_DEFAULT_INSTALLED_MODULES += \
     $(RFS_MSM_MPSS_SYMLINKS) \
     $(RFS_MSM_SLPI_SYMLINKS)
 
-EGL_SYMLINK := $(TARGET_OUT_VENDOR)/lib/libEGL_adreno.so
+EGL_SYMLINK := $(TARGET_OUT_VENDOR)/lib/libGLESv2_adreno.so
 $(EGL_SYMLINK): $(LOCAL_INSTALLED_MODULE)
 	@mkdir -p $(dir $@)
 	$(hide) ln -sf egl/$(notdir $@) $@
