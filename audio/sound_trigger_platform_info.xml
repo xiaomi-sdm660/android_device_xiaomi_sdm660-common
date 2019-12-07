@@ -50,7 +50,9 @@
     <!-- configuration. ISV must use their own unique vendor_uuid.          -->
     <sound_model_config>
         <param vendor_uuid="68ab2d40-e860-11e3-95ef-0002a5d5c51b" />
-        <param execution_type="WDSP" /> <!-- value: "WDSP" "ADSP" "DYNAMIC" -->
+	<!-- HMI_L6660_A01-1117 MOD by duanlongfei for VTS fail 20180603 begin  -->
+        <param execution_type="ADSP" /> <!-- value: "WDSP" "ADSP" "DYNAMIC" -->
+	<!-- HMI_L6660_A01-1117 MOD by duanlongfei for VTS fail 20180603 end    -->
         <param app_type="2" /> <!-- app type used in ACDB -->
         <param library="libsmwrapper.so" />
         <param max_cpe_phrases="6" />
