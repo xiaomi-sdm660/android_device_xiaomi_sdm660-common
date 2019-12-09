@@ -201,6 +201,10 @@ on boot
     mkdir /data/vendor/port_bridge 0770 radio radio
     chmod 0770 /data/vendor/port_bridge
 
+    #Fingerprint
+    mkdir /data/vendor_de/0/fpdata
+    chown system system /data/vendor_de/0/fpdata
+
     #Create NETMGR daemon socket area
     mkdir /dev/socket/netmgr 0750 radio radio
 
