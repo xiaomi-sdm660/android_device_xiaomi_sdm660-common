@@ -638,13 +638,15 @@ typedef struct {
     /** Specifies GNSS Constellation Type
         Mandatory Field*/
     Gnss_LocSvSystemEnumType gnssConstellation;
-    /**  GNSS SV ID.
-         For GPS:      1 to 32
-         For GLONASS:  65 to 96. When slot-number to SV ID mapping is unknown, set as 255.
-         For SBAS:     120 to 151
-         For QZSS-L1CA:193 to 197
-         For BDS:      201 to 237
-         For GAL:      301 to 336 */
+    /**  Unique SV Identifier.
+     *   SV Range for supported constellation is specified as below:
+     *    - For GPS:     1 to 32
+     *    - For GLONASS: 65 to 96
+     *    - For SBAS:    120 to 158 and 183 to 191
+     *    - For QZSS:    193 to 197
+     *    - For BDS:     201 to 237
+     *    - For GAL:     301 to 336
+     *    - For NAVIC:   401 to 414 */
     uint16_t gnssSvId;
     /** GLONASS frequency number + 7.
         Valid only for a GLONASS system and
@@ -1311,15 +1313,9 @@ typedef struct
     // 0 signal type mask indicates invalid value
     GnssSignalTypeMask              gnssSignalTypeMask;
     uint16_t                        gnssSvId;
-    /**< GNSS SV ID.
-         \begin{itemize1}
-         \item Range:  \begin{itemize1}
-           \item For GPS:      1 to 32
-           \item For GLONASS:  1 to 32
-           \item For SBAS:     120 to 151
-           \item For BDS:      201 to 237
-         \end{itemize1} \end{itemize1}
-        The GPS and GLONASS SVs can be disambiguated using the system field.
+    /** Unique SV Identifier.
+     *  For SV Range of supported constellation, please refer to the
+     *  comment section of gnssSvId in GpsMeasUsageInfo.
     */
     uint8_t                         gloFrequency;
     /**< GLONASS frequency number + 7 \n
@@ -1585,12 +1581,12 @@ typedef struct
 {
     uint32_t      size;
     uint16_t     gnssSvId;
-    /* GPS: 1-32, GLO: 65-96, 0: Invalid,
-       SBAS: 120-151, BDS:201-237,GAL:301 to 336
-       All others are reserved
+    /** Unique SV Identifier.
+     *  For SV Range of supported constellation, please refer to the
+     *  comment section of gnssSvId in GpsMeasUsageInfo.
     */
     int8_t      freqNum;
-    /* Freq index, only valid if u_SysInd is GLO */
+    /** Freq index, only valid if u_SysInd is GLO */
 
     GnssSvPolyStatusMaskValidity svPolyStatusMaskValidity;
     GnssSvPolyStatusMask         svPolyStatusMask;
@@ -1660,15 +1656,10 @@ typedef enum {
 
 typedef struct {
     uint16_t gnssSvId;
-    /**<   GNSS SV ID.
-      - Type: uint16
-      \begin{itemize1}
-      \item    Range:    \begin{itemize1}
-        \item    For GPS:     1 to 32
-        \item    For QZSS:    193 to 197
-        \item    For BDS:     201 to 237
-        \item    For GAL:     301 to 336
-      \vspace{-0.18in} \end{itemize1} \end{itemize1} */
+    /** Unique SV Identifier.
+     *  For SV Range of supported constellation, please refer to the
+     *  comment section of gnssSvId in GpsMeasUsageInfo.
+     */
 
     GnssEphAction updateAction;
     /**<   Specifies the action and source of ephemeris. \n

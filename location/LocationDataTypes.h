@@ -882,14 +882,11 @@ typedef struct {
     GnssSignalTypeMask gnssSignalType;
    /** Specifies GNSS Constellation Type */
     Gnss_LocSvSystemEnumType gnssConstellation;
-    /**  GNSS SV ID.
-     For GPS:      1 to 32
-     For GLONASS:  65 to 96. When slot-number to SV ID mapping is unknown, set as 255.
-     For SBAS:     120 to 151
-     For QZSS-L1CA:193 to 197
-     For BDS:      201 to 237
-     For GAL:      301 to 336
-     For NAVIC:    401 to 414  */
+    /** Unique SV Identifier.
+     *  For SV Range of supported constellation, please refer to
+     *  the comment section of svId in GnssSv.
+     *  For GLONASS:  When slot-number to SV ID mapping is unknown, set as 255.
+     */
     uint16_t gnssSvId;
 } GnssMeasUsageInfo;
 
@@ -1063,7 +1060,16 @@ typedef struct {
 
 typedef struct {
     uint32_t size;       // set to sizeof(GnssSv)
-    uint16_t svId;     // Unique Identifier
+    // Unique SV Identifier.
+    // SV Range for supported constellation is specified as below:
+    //    - For GPS:     1 to 32
+    //    - For GLONASS: 65 to 96
+    //    - For SBAS:    120 to 158 and 183 to 191
+    //    - For QZSS:    193 to 197
+    //    - For BDS:     201 to 237
+    //    - For GAL:     301 to 336
+    //    - For NAVIC:   401 to 41
+    uint16_t svId;
     GnssSvType type;   // type of SV (GPS, SBAS, GLONASS, QZSS, BEIDOU, GALILEO)
     float cN0Dbhz;     // signal strength
     float elevation;   // elevation of SV (in degrees)
@@ -1091,8 +1097,13 @@ struct GnssConfigSetAssistanceServer {
 };
 
 typedef struct {
-    uint32_t size;                               // set to sizeof(GnssMeasurementsData)
-    GnssMeasurementsDataFlagsMask flags;       // bitwise OR of GnssMeasurementsDataFlagsBits
+    // set to sizeof(GnssMeasurementsData)
+    uint32_t size;
+    // bitwise OR of GnssMeasurementsDataFlagsBits
+    GnssMeasurementsDataFlagsMask flags;
+    // Unique SV Identifier
+    // For SV Range of supported constellation,
+    // please refer to the comment section of svId in GnssSv.
     int16_t svId;
     GnssSvType svType;
     double timeOffsetNs;
@@ -1163,7 +1174,9 @@ typedef uint32_t GnssSvId;
 struct GnssSvIdSource{
     uint32_t size;              // set to sizeof(GnssSvIdSource)
     GnssSvType constellation;   // constellation for the sv to blacklist
-    GnssSvId svId;             // sv id to blacklist
+    GnssSvId svId;              // Unique SV Identifier,
+                                // For SV Range of supported constellation,
+                                // please refer to the comment section of svId in GnssSv.
 };
 inline bool operator ==(GnssSvIdSource const& left, GnssSvIdSource const& right) {
     return left.size == right.size &&
@@ -1253,7 +1266,11 @@ typedef struct {
 } GnssDebugTime;
 
 typedef struct {
-    uint32_t size;                        // set to sizeof
+    // set to sizeof
+    uint32_t size;
+    // Unique SV Identifier
+    // For SV Range of supported constellation,
+    // please refer to the comment section of svId in GnssSv.
     uint32_t                            svid;
     GnssSvType                          constellation;
     GnssEphemerisType                   mEphemerisType;
