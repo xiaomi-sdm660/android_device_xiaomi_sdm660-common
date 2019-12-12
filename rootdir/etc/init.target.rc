@@ -158,11 +158,11 @@ service folio_daemon /system/bin/folio_daemon
     group system uhid
     disabled
 
-on property:init.svc.zygote=running
-    start folio_daemon
-
-on property:init.svc.zygote=stopped
+on property:vendor.persist.hall_wakeup=0
     stop folio_daemon
+
+on property:vendor.persist.hall_wakeup=1
+    start folio_daemon
 
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service

@@ -37,3 +37,6 @@ persist.audio.dirac.                u:object_r:dirac_prop:s0
 
 # MPCTL
 sys.post_boot.parsed                u:object_r:vendor_mpctl_prop:s0
+
+# Hall wakeup
+vendor.persist.hall_wakeup          u:object_r:hall_wakeup_prop:s0
