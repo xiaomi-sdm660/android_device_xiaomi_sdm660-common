@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Xiaomi-SDM660 Project
+ * Copyright (C) 2018-2019 The Xiaomi-SDM660 Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.lineageos.settings.device;
+
+import android.os.SystemProperties;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -111,5 +113,13 @@ public class FileUtils {
         }
         // ignore
         return line;
+    }
+
+    static void setProp(String prop, boolean value) {
+        if (value) {
+            SystemProperties.set(prop, "1");
+        } else {
+            SystemProperties.set(prop, "0");
+        }
     }
 }
