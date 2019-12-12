@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2013-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -2297,7 +2297,10 @@ enum PowerStateType {
 #define EAP_LOC_CLIENT_DIR             "/data/vendor/location/extap_locclient/"
 
 #define LOC_CLIENT_NAME_PREFIX         "toclient"
-#define LOC_INTAPI_NAME_PREFIX         "toIntapiClient"
+// Please note that the socket name for all location hal daemon client need
+// to start with LOC_CLIENT_NAME_PREFIX so that upon hal daemon restarts,
+// every client can get the notification that hal daemon has restarted.
+#define LOC_INTAPI_NAME_PREFIX         LOC_CLIENT_NAME_PREFIX "_intapi"
 
 typedef uint64_t NetworkHandle;
 #define NETWORK_HANDLE_UNKNOWN  ~0
