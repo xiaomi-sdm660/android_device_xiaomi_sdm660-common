@@ -1211,20 +1211,26 @@ typedef enum
     /**< Satellite Doppler measured */
     GNSS_LOC_MEAS_STATUS_VELOCITY_FINE           = 0x00000020,
     /**< TRUE: Fine Doppler measured, FALSE: Coarse Doppler measured */
+    GNSS_LOC_MEAS_STATUS_LP_VALID                = 0x00000040,
+    /**<  TRUE/FALSE -- Lock Point is valid/invalid */
+    GNSS_LOC_MEAS_STATUS_LP_POS_VALID            = 0x00000080,
+    /**<  TRUE/FALSE -- Lock Point is positive/negative */
     GNSS_LOC_MEAS_STATUS_FROM_RNG_DIFF           = 0x00000200,
     /**< Range update from Satellite differences */
     GNSS_LOC_MEAS_STATUS_FROM_VE_DIFF            = 0x00000400,
     /**< Doppler update from Satellite differences */
     GNSS_LOC_MEAS_STATUS_DONT_USE_X              = 0x00000800,
     /**< Don't use measurement if bit is set */
-    GNSS_LOC_MEAS_STATUS_DONT_USE_M              = 0x000001000,
+    GNSS_LOC_MEAS_STATUS_DONT_USE_M              = 0x00001000,
     /**< Don't use measurement if bit is set */
-    GNSS_LOC_MEAS_STATUS_DONT_USE_D              = 0x000002000,
+    GNSS_LOC_MEAS_STATUS_DONT_USE_D              = 0x00002000,
     /**< Don't use measurement if bit is set */
-    GNSS_LOC_MEAS_STATUS_DONT_USE_S              = 0x000004000,
+    GNSS_LOC_MEAS_STATUS_DONT_USE_S              = 0x00004000,
     /**< Don't use measurement if bit is set */
-    GNSS_LOC_MEAS_STATUS_DONT_USE_P              = 0x000008000
+    GNSS_LOC_MEAS_STATUS_DONT_USE_P              = 0x00008000,
     /**< Don't use measurement if bit is set */
+    GNSS_LOC_MEAS_STATUS_GNSS_FRESH_MEAS         = 0x08000000
+    /**< TRUE -- Fresh GNSS measurement observed in last second    */
 }Gnss_LocSvMeasStatusMaskType;
 
 typedef struct
