@@ -14,6 +14,26 @@ on boot
     chmod 0700 /sys/bus/platform/devices/soc:fpc1020/device_prepare
     chmod 0600 /data/misc/fpc/calibration_image.pndat
 
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/irq
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/irq_enable
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/wakeup_enable
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/hw_reset
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/device_prepare
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/fingerdown_wait
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/vendor
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/regulator_enable
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/screen_status
+    chown system system /sys/bus/platform/devices/soc:fingerprint_fpc/vreg_op_cnt
+
+    chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/irq
+    chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/wakeup_enable
+    chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/hw_reset
+    chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/device_prepare
+    chmod 0700 /sys/bus/platform/devices/soc:fingerprint_fpc/vendor
+    chmod 0660 /sys/bus/platform/devices/soc:fingerprint_fpc/regulator_enable
+    chmod 0660 /sys/bus/platform/devices/soc:fingerprint_fpc/screen_status
+    chmod 0660 /sys/bus/platform/devices/soc:fingerprint_fpc/vreg_op_cnt
+
 on post-fs-data
     mkdir /data/misc/fpc 0770 system system
     mkdir /data/misc/goodix 0770 system system
