@@ -784,19 +784,16 @@ GnssAdapter::setConfig()
     } else {
         gnssConfigRequested.gpsLock = GNSS_CONFIG_GPS_LOCK_NONE;
     }
-
-    if (gpsConf.AGPS_CONFIG_INJECT) {
-        gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
-                GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
-                GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
-                GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
-        gnssConfigRequested.suplVersion =
-                mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
-        gnssConfigRequested.lppProfile =
-                mLocApi->convertLppProfile(gpsConf.LPP_PROFILE);
-        gnssConfigRequested.aGlonassPositionProtocolMask =
-                gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
-    }
+    gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
+            GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
+            GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
+            GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
+    gnssConfigRequested.suplVersion =
+            mLocApi->convertSuplVersion(gpsConf.SUPL_VER);
+    gnssConfigRequested.lppProfile =
+            mLocApi->convertLppProfile(gpsConf.LPP_PROFILE);
+    gnssConfigRequested.aGlonassPositionProtocolMask =
+            gpsConf.A_GLONASS_POS_PROTOCOL_SELECT;
     if (gpsConf.LPPE_CP_TECHNOLOGY) {
         gnssConfigRequested.flags |= GNSS_CONFIG_FLAGS_LPPE_CONTROL_PLANE_VALID_BIT;
         gnssConfigRequested.lppeControlPlaneMask =
@@ -811,7 +808,7 @@ GnssAdapter::setConfig()
     gnssConfigRequested.blacklistedSvIds.assign(mBlacklistedSvIds.begin(),
                                                 mBlacklistedSvIds.end());
     mLocApi->sendMsg(new LocApiMsg(
-            [this, gpsConf, sapConf, oldMoServerUrl, gnssConfigRequested] () {
+            [this, gpsConf, sapConf, oldMoServerUrl, gnssConfigRequested] () mutable {
         gnssUpdateConfig(oldMoServerUrl, gnssConfigRequested, gnssConfigRequested);
 
         // set nmea mask type
@@ -889,8 +886,7 @@ GnssAdapter::setConfig()
 }
 
 std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldMoServerUrl,
-        const GnssConfig& gnssConfigRequested,
-        const GnssConfig& gnssConfigNeedEngineUpdate, size_t count) {
+        GnssConfig& gnssConfigRequested, GnssConfig& gnssConfigNeedEngineUpdate, size_t count) {
     loc_gps_cfg_s gpsConf = ContextBase::mGps_conf;
     size_t index = 0;
     LocationError err = LOCATION_ERROR_SUCCESS;
@@ -899,12 +895,19 @@ std::vector<LocationError> GnssAdapter::gnssUpdateConfig(const std::string& oldM
         errsList.insert(errsList.begin(), count, LOCATION_ERROR_SUCCESS);
     }
 
-
     std::string serverUrl = getServerUrl();
     std::string moServerUrl = getMoServerUrl();
 
     int serverUrlLen = serverUrl.length();
     int moServerUrlLen = moServerUrl.length();
+
+    if (!ContextBase::mGps_conf.AGPS_CONFIG_INJECT) {
+        LOC_LOGd("AGPS_CONFIG_INJECT is 0. Not setting flags for AGPS configurations");
+        gnssConfigRequested.flags &= ~(GNSS_CONFIG_FLAGS_SET_ASSISTANCE_DATA_VALID_BIT |
+                GNSS_CONFIG_FLAGS_SUPL_VERSION_VALID_BIT |
+                GNSS_CONFIG_FLAGS_AGLONASS_POSITION_PROTOCOL_VALID_BIT |
+                GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT);
+    }
 
     if (gnssConfigRequested.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
         if (gnssConfigNeedEngineUpdate.flags & GNSS_CONFIG_FLAGS_GPS_LOCK_VALID_BIT) {
@@ -1256,7 +1259,7 @@ GnssAdapter::gnssUpdateConfigCommand(GnssConfig config)
 
             mApi.sendMsg(new LocApiMsg(
                     [&adapter, gnssConfigRequested, gnssConfigNeedEngineUpdate,
-                    countOfConfigs, configCollectiveResponse, errs] () {
+                    countOfConfigs, configCollectiveResponse, errs] () mutable {
                 std::vector<LocationError> errsList = adapter.gnssUpdateConfig("",
                         gnssConfigRequested, gnssConfigNeedEngineUpdate, countOfConfigs);
 
