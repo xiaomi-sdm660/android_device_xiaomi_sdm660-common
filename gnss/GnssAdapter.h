@@ -451,6 +451,10 @@ public:
     }
 
     void updateSystemPowerState(PowerStateType systemPowerState);
+    void reportSvPolynomial(const GnssSvPolynomial &svPolynomial);
+    void requestSvPolyForClient(LocationAPI* client,
+                                const LocationCallbacks& callbacks);
+
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
