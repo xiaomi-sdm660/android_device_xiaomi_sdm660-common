@@ -3800,7 +3800,20 @@ GnssAdapter::requestNiNotifyEvent(const GnssNiNotification &notify, const void* 
                     mAdapter.getE911State()) ||                // older modems
                     (LOC_IN_EMERGENCY_SET == mEmergencyState); // newer modems
 
-            if (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type) {
+            if ((mAdapter.mSupportNfwControl || 0 == mAdapter.getAfwControlId()) &&
+                (GNSS_NI_TYPE_SUPL == mNotify.type || GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type)
+                && !bIsInEmergency &&
+                !(GNSS_NI_OPTIONS_PRIVACY_OVERRIDE_BIT & mNotify.options) &&
+                (GNSS_CONFIG_GPS_LOCK_NI & ContextBase::mGps_conf.GPS_LOCK) &&
+                1 == ContextBase::mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED) {
+                /* If all these conditions are TRUE, then deny the NI Request:
+                -'Q' Lock behavior OR 'P' Lock behavior and GNSS is Locked
+                -NI SUPL Request type or NI SUPL Emergency Request type
+                -NOT in an Emergency Call Session
+                -NOT Privacy Override option
+                -NFW is locked and config item NI_SUPL_DENY_ON_NFW_LOCKED = 1 */
+                mApi.informNiResponse(GNSS_NI_RESPONSE_DENY, mData);
+            } else if (GNSS_NI_TYPE_EMERGENCY_SUPL == mNotify.type) {
                 bInformNiAccept = bIsInEmergency ||
                         (GNSS_CONFIG_SUPL_EMERGENCY_SERVICES_NO == ContextBase::mGps_conf.SUPL_ES);
 
@@ -3816,15 +3829,6 @@ GnssAdapter::requestNiNotifyEvent(const GnssNiNotification &notify, const void* 
                 else {
                     mAdapter.requestNiNotify(mNotify, mData, false);
                 }
-            } else if ((mAdapter.mSupportNfwControl || 0 == mAdapter.getAfwControlId()) &&
-                       GNSS_NI_TYPE_SUPL == mNotify.type && !bIsInEmergency &&
-                       !(GNSS_NI_OPTIONS_PRIVACY_OVERRIDE_BIT & mNotify.options) &&
-                       (GNSS_CONFIG_GPS_LOCK_NI & ContextBase::mGps_conf.GPS_LOCK) &&
-                       1 == ContextBase::mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED) {
-                // If 'Q' Lock behavior OR 'P' Lock behavior and GNSS is Locked
-                // If an NI SUPL Request that does not have Privacy Override option comes when
-                // NFW is locked and config item NI_SUPL_DENY_ON_NFW_LOCKED = 1, then deny it
-                mApi.informNiResponse(GNSS_NI_RESPONSE_DENY, mData);
             } else {
                 mAdapter.requestNiNotify(mNotify, mData, false);
             }
