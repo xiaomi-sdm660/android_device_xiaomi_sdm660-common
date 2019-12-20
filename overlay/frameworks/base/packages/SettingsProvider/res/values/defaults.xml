@@ -18,6 +18,9 @@
 -->
 <resources>
 
+    <!-- Whether Bluetooth should be switched on by default -->
+    <bool name="def_bluetooth_on">false</bool>
+
     <!-- Set the automatic brightness mode on by default -->
     <bool name="def_screen_brightness_automatic_mode">true</bool>
 
@@ -32,8 +35,5 @@
 
     <!-- Disable UI touch haptic feedback by default -->
     <bool name="def_haptic_feedback">false</bool>
-    
-    <!-- Whether Bluetooth should be switched on by default -->
-    <bool name="def_bluetooth_on">false</bool>
 
 </resources>

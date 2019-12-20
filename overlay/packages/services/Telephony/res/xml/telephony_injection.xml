@@ -32,14 +32,14 @@
         -->
         <!--<component>com.example.componentA</component>-->
         <!--<component>com.example.componentB</component>-->
+        <component>com.android.internal.telephony.dataconnection.DcTracker</component>
+        <component>com.android.internal.telephony.GsmCdmaPhone</component>
+        <component>com.android.internal.telephony.MultiSimSettingController</component>
+        <component>com.android.internal.telephony.PhoneSwitcher</component>
+        <component>com.android.internal.telephony.RIL</component>
         <component>com.android.internal.telephony.ServiceStateTracker</component>
         <component>com.android.internal.telephony.SubscriptionController</component>
         <component>com.android.internal.telephony.SubscriptionInfoUpdater</component>
-        <component>com.android.internal.telephony.GsmCdmaPhone</component>
-        <component>com.android.internal.telephony.PhoneSwitcher</component>
-        <component>com.android.internal.telephony.dataconnection.DcTracker</component>
-        <component>com.android.internal.telephony.RIL</component>
         <component>com.android.internal.telephony.TelephonyComponentFactory</component>
-        <component>com.android.internal.telephony.MultiSimSettingController</component>
     </components>
 </injection>

@@ -16,11 +16,11 @@
 */
 -->
 <resources>
+  
+    <!-- Remove custom extra padding for the QS icons and statusbar date -->
+    <dimen name="qs_items_padding">8dp</dimen>
 
     <!-- Width for the spacer, used between QS tiles. -->
     <dimen name="qs_quick_tile_space_width">0dp</dimen>
-
-    <!-- Remove custom extra padding for the QS icons and statusbar date -->
-    <dimen name="qs_items_padding">8dp</dimen>
 
 </resources>
