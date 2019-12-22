@@ -58,6 +58,8 @@
 /sys/devices/soc/c177000.i2c/i2c-3/3-005d/enable_dt2w u:object_r:sysfs_tap_to_wake:s0
 /sys/devices/soc/c177000.i2c/i2c-3/3-0038/enable_dt2w u:object_r:sysfs_tap_to_wake:s0
 /proc/touchscreen/enable_dt2w u:object_r:sysfs_tap_to_wake:s0
+/sys/devices/soc/c175000\.i2c/i2c-1/1-[0-9a-f]+/input/input[0-9]+/wake_gesture u:object_r:sysfs_tap_to_wake:s0
+/proc/tp_gesture u:object_r:sysfs_tap_to_wake:s0
 
 # Thermal
 /data/vendor/thermal(/.*)?                      u:object_r:thermal_data_file:s0
