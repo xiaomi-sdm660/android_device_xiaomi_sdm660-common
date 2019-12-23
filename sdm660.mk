@@ -134,6 +134,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.configstore@1.0-service
 
+# Dalvik
+$(call inherit-product, frameworks/native/build/phone-xhdpi-4096-dalvik-heap.mk )
+
 # Display
 PRODUCT_PACKAGES += \
     android.frameworks.displayservice@1.0 \

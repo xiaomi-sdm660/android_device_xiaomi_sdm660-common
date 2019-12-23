@@ -126,15 +126,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.media.codec2=2
 
-# Dalvik
-PRODUCT_PROPERTY_OVERRIDES += \
-    dalvik.vm.heapgrowthlimit=256m \
-    dalvik.vm.heapstartsize=8m \
-    dalvik.vm.heapsize=512m \
-    dalvik.vm.heaptargetutilization=0.75 \
-    dalvik.vm.heapminfree=512k \
-    dalvik.vm.heapmaxfree=8m
-
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.latch_unsignaled=1 \
