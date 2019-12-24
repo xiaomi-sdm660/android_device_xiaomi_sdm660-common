@@ -2118,6 +2118,7 @@ GnssAdapter::stopClientSessions(LocationAPI* client)
     }
     for (auto key : vTimeBasedTrackingClient) {
         stopTimeBasedTrackingMultiplex(key.client, key.id);
+        eraseTrackingSession(key.client, key.id);
     }
 
     /* Distance-based Tracking */
