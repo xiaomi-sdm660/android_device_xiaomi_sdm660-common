@@ -49,6 +49,7 @@ void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& o
 void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out);
 void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);
 void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);
+bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos);
 
 }  // namespace implementation
 }  // namespace V2_0

@@ -32,6 +32,7 @@
 
 #include <log_util.h>
 #include <loc_cfg.h>
+#include <inttypes.h>
 
 #include "LocationUtil.h"
 #include "MeasurementAPIClient.h"
@@ -414,6 +415,41 @@ static void convertGnssData_2_0(GnssMeasurementsNotification& in,
             out.measurements[i].state |= IGnssMeasurementCallback::GnssMeasurementState::STATE_2ND_CODE_LOCK;
     }
     convertGnssClock(in.clock, out.clock);
+
+    const uint32_t UTC_TO_GPS_SECONDS = 315964800;
+    struct timespec currentTime;
+    int64_t sinceBootTimeNanos;
+
+    if (getCurrentTime(currentTime, sinceBootTimeNanos) &&
+        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT &&
+        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT &&
+        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT &&
+        in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT) {
+        int64_t currentTimeNanos = currentTime.tv_sec * 1000000000 + currentTime.tv_nsec;
+        int64_t measTimeNanos = (int64_t)in.clock.timeNs - (int64_t)in.clock.fullBiasNs
+                - (int64_t)in.clock.biasNs - (int64_t)in.clock.leapSecond * 1000000000
+                + (int64_t)UTC_TO_GPS_SECONDS * 1000000000;
+
+        LOC_LOGd("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+                 " measTimeNanos:%" PRIi64 "",
+                 sinceBootTimeNanos, currentTimeNanos, measTimeNanos);
+        if (currentTimeNanos >= measTimeNanos) {
+            int64_t ageTimeNanos = currentTimeNanos - measTimeNanos;
+            LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
+            if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
+                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
+                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                // time uncertainty is 1 ms since it is calculated from utc time that is in ms
+                out.elapsedRealtime.timeUncertaintyNs = 1000000;
+                LOC_LOGd("timestampNs:%" PRIi64 ") timeUncertaintyNs:%" PRIi64 ")",
+                         out.elapsedRealtime.timestampNs,
+                         out.elapsedRealtime.timeUncertaintyNs);
+            }
+        }
+    } else {
+        LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
+    }
 }
 
 static void convertGnssMeasurementsCodeType(GnssMeasurementsCodeType& in,
