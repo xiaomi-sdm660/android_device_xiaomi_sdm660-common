@@ -102,7 +102,8 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     audio.bluetooth.default \
     android.hardware.bluetooth.audio@2.0-impl \
-    libbthost_if
+    libbthost_if \
+    libldacBT_dec
 
 # Boot animation
 TARGET_BOOTANIMATION_SIZE := 1080p
