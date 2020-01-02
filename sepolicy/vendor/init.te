@@ -6,3 +6,4 @@ allow init sysfs_dm:file { open write };
 allow init vendor_default_prop:property_service set;
 allow init sysfs_info:file { open read };
 allow init sysfs:file setattr;
+allow init persist_block_device:lnk_file relabelto;
