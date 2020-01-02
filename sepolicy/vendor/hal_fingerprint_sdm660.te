@@ -33,14 +33,14 @@ binder_use(hal_fingerprint_sdm660)
 r_dir_file(hal_fingerprint_sdm660, firmware_file)
 
 add_service(hal_fingerprint_sdm660, goodixvnd_service)
-add_hwservice(hal_fingerprint_sdm660, goodixhw_service)
 
 allow hal_fingerprint_sdm660 vndbinder_device:chr_file ioctl;
 
-get_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 set_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 
 vndbinder_use(hal_fingerprint_sdm660)
 
 dontaudit hal_fingerprint_sdm660 { media_rw_data_file sdcardfs}:dir search;
 dontaudit hal_fingerprint_sdm660 media_rw_data_file:dir { read open };
+dontaudit hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
+dontaudit hal_fingerprint_sdm660 hal_fingerprint_hwservice:hwservice_manager add;
