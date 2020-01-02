@@ -52,7 +52,7 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String CATEGORY_HALL_WAKEUP = "hall_wakeup";
     public static final String PREF_HALL_WAKEUP = "hall";
     public static final String HALL_WAKEUP_PATH = "/sys/module/hall/parameters/hall_toggle";
-    public static final String HALL_WAKEUP_PROP = "vendor.persist.hall_wakeup";
+    public static final String HALL_WAKEUP_PROP = "persist.service.folio_daemon";
 
     private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
 

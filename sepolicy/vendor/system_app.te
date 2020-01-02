@@ -10,4 +10,4 @@ allow system_app sysfs_thermal:dir search;
 allow system_app sysfs_vibrator:file rw_file_perms;
 allow system_app sysfs_vibrator:dir search;
 
-set_prop(system_app, hall_wakeup_prop);
+set_prop(system_app, system_prop);
