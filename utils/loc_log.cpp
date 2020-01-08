@@ -31,11 +31,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include "log_util.h"
 #include "loc_log.h"
 #include "msg_q.h"
 #include <loc_pla.h>
+#include "LogBuffer.h"
 
 #define  BUFFER_SIZE  120
 
@@ -179,35 +181,6 @@ char *loc_get_time(char *time_string, size_t buf_size)
    return time_string;
 }
 
-
-/*===========================================================================
-FUNCTION loc_logger_init
-
-DESCRIPTION
-   Initializes the state of DEBUG_LEVEL and TIMESTAMP
-
-DEPENDENCIES
-   N/A
-
-RETURN VALUE
-   None
-
-SIDE EFFECTS
-   N/A
-===========================================================================*/
-void loc_logger_init(unsigned long debug, unsigned long timestamp)
-{
-   loc_logger.DEBUG_LEVEL = debug;
-#ifdef TARGET_BUILD_VARIANT_USER
-   // force user builds to 2 or less
-   if (loc_logger.DEBUG_LEVEL > 2) {
-       loc_logger.DEBUG_LEVEL = 2;
-   }
-#endif
-   loc_logger.TIMESTAMP   = timestamp;
-}
-
-
 /*===========================================================================
 FUNCTION get_timestamp
 
@@ -236,3 +209,22 @@ char * get_timestamp(char *str, unsigned long buf_size)
   return str;
 }
 
+/*===========================================================================
+
+FUNCTION log_buffer_insert
+
+DESCRIPTION
+   Insert a log sentence with specific level to the log buffer.
+
+RETURN VALUE
+   N/A
+
+===========================================================================*/
+void log_buffer_insert(char *str, unsigned long buf_size, int level)
+{
+    timespec tv;
+    clock_gettime(CLOCK_BOOTTIME, &tv);
+    uint64_t elapsedTime = (uint64_t)tv.tv_sec + (uint64_t)tv.tv_nsec/1000000000;
+    string ss = str;
+    loc_util::LogBuffer::getInstance()->append(ss, level, elapsedTime);
+}
