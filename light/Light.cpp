@@ -48,8 +48,8 @@ using ::android::base::WriteStringToFile;
 constexpr auto kDefaultMaxLedBrightness = 255;
 constexpr auto kDefaultMaxScreenBrightness = 4095;
 
-// Each step will stay on for 100ms by default.
-constexpr auto kRampStepDuration = 100;
+// Each step will stay on for 150ms by default.
+constexpr auto kRampStepDuration = 150;
 
 // Each value represents a duty percent (0 - 100) for the led pwm.
 constexpr std::array kBrightnessRamp = {0, 12, 25, 37, 50, 72, 85, 100, 85, 72, 50, 37, 25, 12, 0};
