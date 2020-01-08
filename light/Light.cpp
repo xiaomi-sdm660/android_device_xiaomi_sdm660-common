@@ -144,12 +144,12 @@ static void setNotification(const LightState& state) {
         }
 
         /* White */
-        set(WHITE BLINK, 1);
         set(WHITE START_IDX, 0 * RAMP_STEPS);
         set(WHITE DUTY_PCTS, getScaledRamp(whiteBrightness));
         set(WHITE PAUSE_LO, pauseLo);
         set(WHITE PAUSE_HI, pauseHi);
         set(WHITE RAMP_STEP_MS, stepDuration);
+        set(WHITE BLINK, 1);
     } else {
         set(WHITE BRIGHTNESS, whiteBrightness);
     }
