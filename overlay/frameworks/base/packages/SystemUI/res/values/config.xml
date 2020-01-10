@@ -26,6 +26,6 @@
     <integer name="config_maxVisibleNotificationIconsWhenDark">7</integer>
 
     <!-- Doze: check proximity sensor before pulsing? -->
-    <bool name="doze_proximity_check_before_pulse">false</bool>
-    
+    <bool name="doze_proximity_check_before_pulse">true</bool>
+
 </resources>
