@@ -1,3 +1,12 @@
 libqti-perfd-client.so
 libadsprpc.so
+libcdsprpc.so
+libsdsprpc.so
+libfastcvopt.so
+liblistenjni.so
+liblistensoundmodel2.so
 libOpenCL.so
+libnpu.so
+libhta_controller.so
+libhta_hexagon_runtime.so
+unnhal-acc-hta.so
