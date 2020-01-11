@@ -169,8 +169,19 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/devices/soc/soc:fpc1020*   hw_reset 0660 system system
 /sys/devices/soc/soc:fpc1020*   irq 0660 system system
 /sys/devices/soc/soc:fpc1020*   wakeup_enable 0660 system system
-/sys/devices/soc/soc:fpc1020*   fingerdown_wait 0220 system system
+/sys/devices/soc/soc:fpc1020*    fingerdown_wait 0220 system system
 /sys/devices/soc/soc:fpc1020*   compatible_all 0660 system system
+
+# LED
+/sys/class/leds/red      delay_on     0640    system    system
+/sys/class/leds/red      delay_off    0640    system    system
+/sys/class/leds/red      breath       0640    system    system
+/sys/class/leds/green    delay_on     0640    system    system
+/sys/class/leds/green    delay_off    0640    system    system
+/sys/class/leds/green    breath       0640    system    system
+/sys/class/leds/blue     delay_on     0640    system    system
+/sys/class/leds/blue     delay_off    0640    system    system
+/sys/class/leds/blue     breath       0640    system    system
 
 #qg
 /dev/qg                   0660  system     system
