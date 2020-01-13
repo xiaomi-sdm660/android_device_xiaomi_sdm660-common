@@ -753,7 +753,7 @@ vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so|e47baed52f1c0637de34fa55e45a86b
 # Wi-Fi
 vendor/bin/cnss-daemon|a371213adc8fc7677d519c8d942761ffeee0f345
 
-# WiFi Display - from LA.UM.8.2.r1-04300-sdm660.0
+# Wi-Fi (Display)
 bin/wfdservice|d9cccfd6ca14a1d83117533296d6cac2c139c310
 etc/init/wfdservice.rc|311bfdd1675e56499662f39455536b75b78477bb
 etc/wfdconfig.xml|d07f6b0441c0aa8913865100239490fa8687a020
@@ -766,10 +766,10 @@ lib/libmmosal.so|9464733295e192301b2577f52fab720e72c0d152
 lib/libmmparser_lite.so|b1b4161b7097f5feeff0f043e8b94cd94553e4ad
 lib/libmmrtpdecoder.so|ff871cfac4a4d9dac89a612f100ca9de9add9344
 lib/libmmrtpencoder.so|eb32452859323bdfdabcf3780bebad781b367ac4
-lib/libwfdavenhancements.so|94de9381e10e4cdac47cd379b7e883f717fa8439
+lib/libwfdavenhancements.so|0fcde0fffb4f89496a5bdf57c40ca502df5775b7
 lib/libwfdcodecv4l2.so|bfaf6e18013d9cc4665c57c1f9f639b87da3e433
 lib/libwfdcommonutils.so|c02a5d6f5eb17a12ff79b08b77d07d99e3d54de5
-lib/libwfdconfigutils.so|f28efa1221d495cb25fa830eff170d3f45990d0f
+lib/libwfdconfigutils.so|3d2585e3674ae11b2322a38f1b7509908f9e54a1
 lib/libwfdmminterface.so|c2914c60cb412732d45610e67e7e408f6ad7a45a
 lib/libwfdmmsink.so|987b4d5b40fb584763da477ea08b91c0146bb2b1
 lib/libwfdmmsrc.so|43ee8c98670c9395fd2a6edce1db929760fab1c2
@@ -783,8 +783,8 @@ lib/libwfduibcsrc.so|f6f35ca89441967fcf3f6590f45b81d92311a81c
 lib/libwfduibcsrcinterface.so|bfe916d7d1a9395883417b4076a41a50d7cf83ad
 lib64/libmmosal.so|9ceff2581e86d32bc2795dffb96ebe4bdc88f2f7
 lib64/libwfdclient.so|884bfd6710f05d567eb0083a00ee4889f73d796d
-lib64/libwfdnative.so|e109284a91ad1eb6b64b29b78ae5130c3d73e60e
--priv-app/WfdService/WfdService.apk|9da05dab9097ef8b016e99fd646b50167309ee5b
+lib64/libwfdnative.so|587b774c4eb49f188747dd80d67426e68d87d396
+-priv-app/WfdService/WfdService.apk|311d2726d96beba2baa28b6c73dcb6f8a3d99d40
 vendor/bin/wifidisplayhalservice|56ec79e39595e0c34baba8cb16ab5d1931d793db
 vendor/etc/init/com.qualcomm.qti.wifidisplayhal@1.0-service.rc|04e463342cbba4c0e9c311a18238f95dec9359fd
 vendor/lib/com.qualcomm.qti.wifidisplayhal@1.0-halimpl.so|f8d82d7e80e730c01fc0c84f4464762d273b4d62
