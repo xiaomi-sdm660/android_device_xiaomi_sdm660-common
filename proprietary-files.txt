@@ -211,6 +211,19 @@ vendor/lib64/libFidoCrypto_vendor.so|4cc8d054895e7eb78b35c42cbcf7d0184e9e88f4
 vendor/lib/libFIDOKeyProvisioning.so|35703aca065213fa86f095a557ae2dbebccfe336
 vendor/lib64/libFIDOKeyProvisioning.so|4df3293d1c62a5b1454d5162298a09a61d0d9c38
 
+# FM
+lib/fm_helium.so|feb4819f1898c67dfda4f965d7cc2711c74d1a99
+lib/libfm-hci.so|7700b02faa484ff682c618402f62b86bf8588db2
+lib64/fm_helium.so|bc9f6314528630c060b593cef4a8cec786b22467
+lib64/libfm-hci.so|589e9e290acfa18a49deba33606ed158d5e7f898
+vendor/bin/fm_qsoc_patches|b71da2de390de868251dcbf56f141c759227d6d1
+vendor/lib/hw/vendor.qti.hardware.fm@1.0-impl.so|2087fee60eb44c097ee9e6c93f4c873fff280866
+vendor/lib/vendor.qti.hardware.fm@1.0.so|89a7ec5cc673d13afc73116eccff2e58f218a34d
+vendor/lib64/hw/vendor.qti.hardware.fm@1.0-impl.so|506efd87250697bdae271f86ea472785a77b84ef
+vendor/lib64/vendor.qti.hardware.fm@1.0.so|073cace3aa8d0ffa025d9df67c45f8a907109339
+-product/lib/vendor.qti.hardware.fm@1.0.so|a090651122fcad265ae7562c88dca746f893ad36
+-product/lib64/vendor.qti.hardware.fm@1.0.so|fc7ad886f82089edf36509865fadac17a7340f32
+
 # GPS - from LA.UM.7.2.r1-06900-sdm660.0
 vendor/bin/hw/vendor.qti.gnss@2.0-service|7f92f169ef8fac413d517636bf9844c5abb6a044
 vendor/bin/loc_launcher|1705e75180e9bdf1ce7aa00bc9ce1d7c07e8fd74
