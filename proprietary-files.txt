@@ -63,14 +63,29 @@ vendor/lib64/soundfx/libqcvirt.so|09f90491a8ec67db467579a5dd6ef6a8b83723d6
 product/lib64/libaptX_encoder.so|df1c89d7af1bb35808d5fe3496b04ba066c10cbc
 product/lib64/libaptXHD_encoder.so|e13fa70c97caaa24d061678bdee608eb8850a69e
 
-# Bluetooth - from LA.UM.8.2.r1-04300-sdm660.0
+# Bluetooth
+lib/libbtconfigstore.so|07c62170288a756dee2b901be7af7f2cec8cde7e
+lib64/libbtconfigstore.so|0f05f8bce67556ebfa588f5235f997c5ef0cbd51
 vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti|57a0a575a2b1b96176fda1bcb84ea8371c4070d1
 vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc|a979981c55f3dcaf6cf2212e71b901ca4d58b959
-vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so|1d4a9d612e0f39b09aeef1d52b153f30ad409c07
-vendor/lib64/libbtnv.so|b58a40965697418c7b4809026bba17bd51bfb2ef
-vendor/lib64/vendor.qti.hardware.bluetooth_sar@1.0.so|0a1f3b4bd383ed547e667087c0aab922efee3473
-vendor/lib64/vendor.qti.hardware.btconfigstore@1.0.so|f5043d5f1bb02d18e940190f31017d2a1ed97de9
-vendor/lib64/vendor.qti.hardware.fm@1.0.so|fb0eff9ce52c5d2a073253f7c300bc9b54c85684
+vendor/lib/hw/android.hardware.bluetooth@1.0-impl-qti.so|54c572215e4a8011fd6f57a061e8450da878c80c
+vendor/lib/libbt-hidlclient.so|db653f95deffc108ab3c12821589a0e64e8c7a30
+vendor/lib/libbthost_if.so|56a8adf02a487b8f60dbcff3367959ec62547513
+vendor/lib/libbtnv.so|94864efd66734bd7a4942c2ce7e0acffbe3bee82
+vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so|7c0d54f84dd3d2da1806affa7c16dea4bba4d16a
+vendor/lib64/libbt-hidlclient.so|4a4038013bf438627154899d3823c9346c3d84ec
+vendor/lib64/libbthost_if.so|dce04f6d5398838fa65c2e592f952931ced26da4
+vendor/lib64/libbtnv.so|08fc5c0a38eca63ebe6f0cd854f6525537141d44
+
+# Bluetooth Audio
+vendor/lib/hw/vendor.qti.hardware.bluetooth_sar@1.0-impl.so|1360ae1d4f10d3762699d6ce82b456d8a0145a23
+vendor/lib/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so|b2a644519ad0d890274c384f76269de76e706058
+vendor/lib/vendor.qti.hardware.bluetooth_sar@1.0.so|5c24249adf85a30aa66f6a391bf697063d989a87
+vendor/lib/vendor.qti.hardware.btconfigstore@1.0.so|20464213b5f2cdb7d9c10f31b5b53fc03526698f
+vendor/lib64/hw/vendor.qti.hardware.bluetooth_sar@1.0-impl.so|71ad8980142e7d8d754607accc0cffd8f5e68dbd
+vendor/lib64/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so|f9dcf9a19a0b601969bcd606bedb8a8419de9d81
+vendor/lib64/vendor.qti.hardware.bluetooth_sar@1.0.so|9346946b110086a6b473c8226e072e9a0cdbb87e
+vendor/lib64/vendor.qti.hardware.btconfigstore@1.0.so|c51214b092f7e47c2d21989a605c4a8c7e7b85eb
 
 # Charger
 vendor/bin/hvdcp_opti|120837d6d44abfd86515731dd26183be9cdd5596
