@@ -602,6 +602,19 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <version>2.0</version>
     </hal>
     <hal format="hidl">
+        <name>vendor.qti.hardware.qteeconnector</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IAppConnector</name>
+            <instance>default</instance>
+        </interface>
+        <interface>
+            <name>IGPAppConnector</name>
+            <instance>default</instance>
+        </interface>
+    </hal>    
+    <hal format="hidl">
         <name>vendor.qti.hardware.radio.am</name>
         <transport>hwbinder</transport>
         <version>1.0</version>

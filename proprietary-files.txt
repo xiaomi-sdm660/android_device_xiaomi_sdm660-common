@@ -155,10 +155,24 @@ vendor/etc/init/dpmQmiMgr.rc|67569302d3a8828a9118c835e5b69c51b0c8ac68
 vendor/lib64/com.qualcomm.qti.dpm.api@1.0.so|fbff6357ee46dd6d62f490a942ff567b6ce955d1
 vendor/lib64/libdpmqmihal.so|30a170684219dd589d05ce5b446e73b7501f13e3
 
+# DRM (HDCP)
+vendor/lib/libmm-hdcpmgr.so|4af112050d0a5a47980103b309a163a4415de7dd
+vendor/lib64/libmm-hdcpmgr.so|152c347caca4826a64737df11e181472553be446
+
+# DRM (Qualcomm Trusted Execution Enviroment)
+vendor/bin/hw/vendor.qti.hardware.qteeconnector@1.0-service|aaa7d15a9ebb63c0152b8fb3bfd07af929e384d4
+vendor/etc/init/vendor.qti.hardware.qteeconnector@1.0-service.rc|c966350ee67d3a7c73ca7184e3725264025d16f5
+vendor/lib64/hw/vendor.qti.hardware.qteeconnector@1.0-impl.so|1fe6ce202398e0ae3afebd7625c59746e04413e8
+vendor/lib64/vendor.qti.hardware.qteeconnector@1.0.so|3202c209bd8249e3f76dec1108788b1a85b53561
+
 # DRM (Widevine)
 vendor/bin/hw/android.hardware.drm@1.2-service.widevine|1aed116c6cd73ee0c89a5eec050afab5c64b9f87
 vendor/etc/init/android.hardware.drm@1.2-service.widevine.rc|68767969f86126ada017fc09af151e299db651d5
+vendor/lib/liboemcrypto.so|ad286cf38f8b00a5c9b0b0f424e4a5bd1f47f046
 vendor/lib/mediadrm/libwvdrmengine.so|7b0dbc4a1c0e7ababe8835d804a900fba3a82380
+vendor/lib64/libcpion.so|ff24ef248bb35fd3cc1081a63f33c2565dc6351f
+vendor/lib64/libhdcpsrm.so|ee8e7c29e2b716a8bb07c3cbb730e34d8af3c64e
+vendor/lib64/liboemcrypto.so|e44fa8bf9bed1541342390bf316c34fe9f29cc4e
 vendor/lib64/libwvhidl.so|2489dbf5cc572dea567f9f3d3af7b2d269373b46
 vendor/lib64/mediadrm/libwvdrmengine.so|fe15c5e86482cad673789cd6992742d6124b0779
 
