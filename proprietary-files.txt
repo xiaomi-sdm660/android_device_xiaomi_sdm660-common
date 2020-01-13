@@ -761,10 +761,10 @@ vendor/lib64/libsubsystem_control.so|82aaf2bd473d2379b859c648a8d825109e81eaed
 
 # Soter
 -app/SoterService/SoterService.apk|13c54938361c79d484f8750e548415a9a4526b43
-vendor/bin/hw/vendor.qti.hardware.soter@1.0-service|b7153aca501c7cf46607a2f602e4054578d80a97
+vendor/bin/hw/vendor.qti.hardware.soter@1.0-service|4f7e3c8a6cde9efefd8b9bf440fb1ed442e21fd3
 vendor/etc/init/vendor.qti.hardware.soter@1.0-service.rc|76447a61ad5529949365eeb7e8ca000e48bd28ae
-vendor/lib64/vendor.qti.hardware.soter@1.0.so|d131d2fba3ac604233e184fecc3f615a7b0d7423
-vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so|6339cd6fafe713a8ec0e86c8dae4f4b0a186d458
+vendor/lib64/hw/vendor.qti.hardware.soter@1.0-impl.so|9cf774301dfb59173cc2a6871ff851ea6b546f39
+vendor/lib64/vendor.qti.hardware.soter@1.0.so|5815859dc07d3181901596d06612b379e86fe6fd
 
 # Thermal
 vendor/bin/thermal-engine|2660c01a488abef8f50ff6380996809102c8215f
@@ -773,7 +773,6 @@ vendor/lib64/libthermalfeature.so|829b2fc0aa8c863d4b4b331e0a2c00663e01efe6
 vendor/lib64/libthermalioctl.so|2f0ee866e9059b1df9ca7b63815591354e7c77d8
 -vendor/lib/libthermalclient.so|c3aecc7610e8f5775a6f6af2ff7790bef74380a1
 -vendor/lib64/libthermalclient.so|84072e150722cc668320f07a75cb8695ce1a79b0
-
 
 # Time services
 -vendor/app/TimeService/TimeService.apk;PRESIGNED|27f9b81621c446baa8c37581d9bfbca2fd67b496
