@@ -460,14 +460,14 @@ vendor/lib64/libperipheral_client.so|a0dd574c8af3135adae10ef49065fa765906db7a
 # Power-off charging daemon
 -sbin/charger:sbin/chargeonlymode;rootfs|664dfa548b81cac348f1699222160f8d2b4d247c
 
-# Postprocessing - from LA.UM.8.2.r1-04300-sdm660.0
+# Postprocessing
 vendor/bin/hw/vendor.display.color@1.0-service|b091c0d0f898959afedf8a3f83b5e97205fdfbc8
 vendor/bin/mm-pp-dpps|87650deb0e6df4afae33020b23af0d1cf33ec51c
 vendor/etc/init/vendor.display.color@1.0-service.rc|5ad673f879b3685a0e79b5633437e5499cb94f48
 vendor/lib64/libdisp-aba.so|fcb06e36e31d741c92d189ad95bc2f69bbf1e17b
-vendor/lib64/vendor.display.color@1.0.so|caf0c8e260f7aa33200ef209ce664a3eac55e47c
-vendor/lib64/vendor.display.color@1.1.so|6e422a22b92c670d6c18fb15399c116ab98535a5
-vendor/lib64/vendor.display.postproc@1.0.so|8f247ef3d34e0116bd0c7b4068e28cd048abfd3b
+vendor/lib64/vendor.display.color@1.0.so|3939e4d1ab4f74e6bbd04524a9e6211ade9c5d0b
+vendor/lib64/vendor.display.color@1.1.so|ce0030a7e6593236277962ffff290b834eaf1f25
+vendor/lib64/vendor.display.postproc@1.0.so|0b578a42706c770c6c61eccdee8a9e4c89c08b10
 
 # QMI - from LA.UM.8.2.r1-04000-sdm660.0
 vendor/bin/irsc_util|4381ded94ac2775cf186c97c7ad6236eaa209eac
