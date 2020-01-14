@@ -189,15 +189,7 @@ PRODUCT_PACKAGES += \
 # GMS
 PRODUCT_GMS_CLIENTID_BASE := android-xiaomi
 
-# GPS / Location
-PRODUCT_PACKAGES += \
-    android.hardware.gnss@1.0-impl-qti \
-    android.hardware.gnss@1.0-service-qti \
-    libgnss \
-    libgnsspps \
-    libsensorndkbridge \
-    libsynergy_loc_api
-
+# GPS Config
 PRODUCT_COPY_FILES += \
     $(COMMON_PATH)/configs/gps/apdr.conf:$(TARGET_COPY_OUT_VENDOR)/etc/apdr.conf \
     $(COMMON_PATH)/configs/gps/flp.conf:$(TARGET_COPY_OUT_VENDOR)/etc/flp.conf \
@@ -448,7 +440,8 @@ PRODUCT_COPY_FILES += \
 # Sensors
 PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl:64 \
-    android.hardware.sensors@1.0-service
+    android.hardware.sensors@1.0-service \
+    libsensorndkbridge
 
 # Sensor Config
 PRODUCT_COPY_FILES += \
