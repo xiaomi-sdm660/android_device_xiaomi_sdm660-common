@@ -264,6 +264,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.rild.libpath=/system/vendor/lib64/libril-qc-qmi-1.so \
     ro.telephony.default_network=22,20 \
     ro.telephony.iwlan_operation_mode=legacy \
+    ro.telephony.use_old_mnc_mcc_format=true \
     ro.vendor.use_data_netmgrd=true \
     telephony.lteOnCdmaDevice=1
 
