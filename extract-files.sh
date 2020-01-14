@@ -36,11 +36,15 @@ fi
 # Default to sanitizing the vendor folder before extraction
 clean_vendor=true
 ONLY_COMMON=
+ONLY_DEVICE=
 
 while [ "${#}" -gt 0 ]; do
     case "${1}" in
         -o | --only-common )
                 ONLY_COMMON=false
+                ;;
+        -d | --only-device )
+                ONLY_DEVICE=false
                 ;;
         -n | --no-cleanup )
             CLEAN_VENDOR=false
@@ -51,6 +55,7 @@ while [ "${#}" -gt 0 ]; do
         -s | --section )
                 SECTION="${2}"; shift
                 clean_vendor=false
+                CLEAN_VENDOR=false
                 ;;
         * )
                 SRC="${1}"
@@ -92,8 +97,10 @@ function blob_fixup() {
 # Initialize the common helper
 setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true $clean_vendor
 
+if [ -z "${ONLY_DEVICE}" ] && [ -s "${MY_DIR}/proprietary-files.txt" ]; then
 extract "$MY_DIR"/proprietary-files.txt "$SRC" \
     "${KANG}" --section "${SECTION}"
+fi
 
 if [ -z "${ONLY_COMMON}" ] && [ -s "${MY_DIR}/../${DEVICE}/proprietary-files.txt" ]; then
     # Reinitialize the helper for device
