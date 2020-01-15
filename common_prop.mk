@@ -174,6 +174,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     camera.hal1.packagelist=com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android \
     vendor.camera.hal1.packagelist= com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android
 
+# iwlan vowifi corresponding
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.vendor.data.iwlan.enable=true
+
 # IMS
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.dbg.volte_avail_ovr=1 \
