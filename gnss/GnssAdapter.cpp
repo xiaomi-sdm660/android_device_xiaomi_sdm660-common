@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1298,9 +1298,10 @@ void
 GnssAdapter::gnssSvIdConfigUpdate()
 {
     LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
-            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64,
+            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64,
             mGnssSvIdConfig.bdsBlacklistSvMask, mGnssSvIdConfig.gloBlacklistSvMask,
-            mGnssSvIdConfig.qzssBlacklistSvMask, mGnssSvIdConfig.galBlacklistSvMask);
+            mGnssSvIdConfig.qzssBlacklistSvMask, mGnssSvIdConfig.galBlacklistSvMask,
+            mGnssSvIdConfig.sbasBlacklistSvMask);
 
     // Now set required blacklisted SVs
     mLocApi->setBlacklistSv(mGnssSvIdConfig);
@@ -1323,9 +1324,10 @@ LocationError
 GnssAdapter::gnssSvIdConfigUpdateSync()
 {
     LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
-            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64,
+            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64,
             mGnssSvIdConfig.bdsBlacklistSvMask, mGnssSvIdConfig.gloBlacklistSvMask,
-            mGnssSvIdConfig.qzssBlacklistSvMask, mGnssSvIdConfig.galBlacklistSvMask);
+            mGnssSvIdConfig.qzssBlacklistSvMask, mGnssSvIdConfig.galBlacklistSvMask,
+            mGnssSvIdConfig.sbasBlacklistSvMask);
 
     // Now set required blacklisted SVs
     return mLocApi->setBlacklistSvSync(mGnssSvIdConfig);
@@ -1508,12 +1510,14 @@ GnssAdapter::convertToGnssSvIdConfig(
         config.bdsBlacklistSvMask = 0;
         config.qzssBlacklistSvMask = 0;
         config.galBlacklistSvMask = 0;
+        config.sbasBlacklistSvMask = 0;
         retVal = true;
     } else {
         // Parse the vector and convert SV IDs to mask values
         for (GnssSvIdSource source : blacklistedSvIds) {
             uint64_t* svMaskPtr = NULL;
             GnssSvId initialSvId = 0;
+            uint16_t svIndexOffset = 0;
             switch(source.constellation) {
             case GNSS_SV_TYPE_GLONASS:
                 svMaskPtr = &config.gloBlacklistSvMask;
@@ -1531,6 +1535,28 @@ GnssAdapter::convertToGnssSvIdConfig(
                 svMaskPtr = &config.galBlacklistSvMask;
                 initialSvId = GNSS_SV_CONFIG_GAL_INITIAL_SV_ID;
                 break;
+            case GNSS_SV_TYPE_SBAS:
+                // SBAS does not support enable/disable whole constellation
+                // so do not set up svTypeMask for SBAS
+                svMaskPtr = &config.sbasBlacklistSvMask;
+                // SBAS currently has two ranges
+                // range of SV id: 120 to 158 and 183 to 191
+                if (0 == source.svId) {
+                    LOC_LOGd("blacklist all SBAS SV");
+                } else if (source.svId >= GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID) {
+                    // handle SV id in range of 183 to 191
+                    initialSvId = GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID;
+                    svIndexOffset = GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH;
+                } else if ((source.svId >= GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID) &&
+                           (source.svId < (GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID +
+                                           GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH))){
+                        // handle SV id in range of 120 to 158
+                        initialSvId = GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID;
+                    } else {
+                        LOC_LOGe("invalid SBAS sv id %d", source.svId);
+                        svMaskPtr = nullptr;
+                    }
+                    break;
             default:
                 break;
             }
@@ -1545,7 +1571,8 @@ GnssAdapter::convertToGnssSvIdConfig(
                     LOC_LOGe("Invalid sv id %d for sv type %d",
                             source.svId, source.constellation);
                 } else {
-                    *svMaskPtr |= (1ULL << (source.svId - initialSvId));
+                    uint32_t shiftCnt = source.svId + svIndexOffset - initialSvId;
+                    *svMaskPtr |= (1ULL << shiftCnt);
                 }
             }
         }
@@ -1554,41 +1581,49 @@ GnssAdapter::convertToGnssSvIdConfig(
         if (0 != config.gloBlacklistSvMask ||
                 0 != config.bdsBlacklistSvMask ||
                 0 != config.galBlacklistSvMask ||
-                0 != config.qzssBlacklistSvMask) {
+                0 != config.qzssBlacklistSvMask ||
+                0 != config.sbasBlacklistSvMask) {
             retVal = true;
         }
     }
+
+    LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
+            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64,
+            config.bdsBlacklistSvMask, config.gloBlacklistSvMask,
+            config.qzssBlacklistSvMask, config.galBlacklistSvMask,
+            config.sbasBlacklistSvMask);
 
     return retVal;
 }
 
 void GnssAdapter::convertFromGnssSvIdConfig(
-        const GnssSvIdConfig& svConfig, GnssConfig& config)
+        const GnssSvIdConfig& svConfig, std::vector<GnssSvIdSource>& blacklistedSvIds)
 {
     // Convert blacklisted SV mask values to vectors
     if (svConfig.bdsBlacklistSvMask) {
         convertGnssSvIdMaskToList(
-                svConfig.bdsBlacklistSvMask, config.blacklistedSvIds,
+                svConfig.bdsBlacklistSvMask, blacklistedSvIds,
                 GNSS_SV_CONFIG_BDS_INITIAL_SV_ID, GNSS_SV_TYPE_BEIDOU);
-        config.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
     }
     if (svConfig.galBlacklistSvMask) {
         convertGnssSvIdMaskToList(
-                svConfig.galBlacklistSvMask, config.blacklistedSvIds,
+                svConfig.galBlacklistSvMask, blacklistedSvIds,
                 GNSS_SV_CONFIG_GAL_INITIAL_SV_ID, GNSS_SV_TYPE_GALILEO);
-        config.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
     }
     if (svConfig.gloBlacklistSvMask) {
         convertGnssSvIdMaskToList(
-                svConfig.gloBlacklistSvMask, config.blacklistedSvIds,
+                svConfig.gloBlacklistSvMask, blacklistedSvIds,
                 GNSS_SV_CONFIG_GLO_INITIAL_SV_ID, GNSS_SV_TYPE_GLONASS);
-        config.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
     }
     if (svConfig.qzssBlacklistSvMask) {
         convertGnssSvIdMaskToList(
-                svConfig.qzssBlacklistSvMask, config.blacklistedSvIds,
+                svConfig.qzssBlacklistSvMask, blacklistedSvIds,
                 GNSS_SV_CONFIG_QZSS_INITIAL_SV_ID, GNSS_SV_TYPE_QZSS);
-        config.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
+    }
+    if (svConfig.sbasBlacklistSvMask) {
+        convertGnssSvIdMaskToList(
+                svConfig.sbasBlacklistSvMask, blacklistedSvIds,
+                GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID, GNSS_SV_TYPE_SBAS);
     }
 }
 
@@ -1602,6 +1637,7 @@ void GnssAdapter::convertGnssSvIdMaskToList(
 
     // SV ID 0 => All SV IDs in mask
     if (GNSS_SV_CONFIG_ALL_BITS_ENABLED_MASK == svIdMask) {
+        LOC_LOGd("blacklist all SVs in constellation %d", source.constellation);
         source.svId = 0;
         svIds.push_back(source);
         return;
@@ -1612,6 +1648,18 @@ void GnssAdapter::convertGnssSvIdMaskToList(
     while (svIdMask > 0) {
         if (svIdMask & 0x1) {
             source.svId = bitNumber + initialSvId;
+            // SBAS has two ranges:
+            // SBAS - SV 120 to 158, maps to 0 to 38
+            //        SV 183 to 191, maps to 39 to 47
+            // #define GNSS_SV_CONFIG_SBAS_INITIAL_SV_ID     120
+            // #define GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH 39
+            // #define GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID    183
+            if (svType == GNSS_SV_TYPE_SBAS) {
+                if (bitNumber >= GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH) {
+                    source.svId = bitNumber - GNSS_SV_CONFIG_SBAS_INITIAL_SV_LENGTH +
+                                  GNSS_SV_CONFIG_SBAS_INITIAL2_SV_ID;
+                }
+            }
             svIds.push_back(source);
         }
         bitNumber++;
@@ -1645,11 +1693,16 @@ void GnssAdapter::reportGnssSvIdConfig(const GnssSvIdConfig& svIdConfig)
     // Invoke control clients config callback
     if (nullptr != mControlCallbacks.gnssConfigCb &&
             svIdConfig.size == sizeof(GnssSvIdConfig)) {
-        convertFromGnssSvIdConfig(svIdConfig, config);
-        LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
-                ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64,
-                svIdConfig.bdsBlacklistSvMask, svIdConfig.gloBlacklistSvMask,
-                svIdConfig.qzssBlacklistSvMask, svIdConfig.galBlacklistSvMask);
+
+        convertFromGnssSvIdConfig(svIdConfig, config.blacklistedSvIds);
+        if (config.blacklistedSvIds.size() > 0) {
+            config.flags |= GNSS_CONFIG_FLAGS_BLACKLISTED_SV_IDS_BIT;
+        }
+        LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64 ", "
+                 "qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64,
+                 svIdConfig.bdsBlacklistSvMask, svIdConfig.gloBlacklistSvMask,
+                 svIdConfig.qzssBlacklistSvMask, svIdConfig.galBlacklistSvMask,
+                 svIdConfig.sbasBlacklistSvMask);
         mControlCallbacks.gnssConfigCb(config);
     } else {
         LOC_LOGe("Failed to report, size %d", (uint32_t)config.size);
@@ -1710,6 +1763,12 @@ GnssAdapter::gnssSvTypeConfigUpdate(bool sendReset)
              ", sendReset %d",
              mGnssSvTypeConfig.size, mGnssSvTypeConfig.blacklistedSvTypesMask,
              mGnssSvTypeConfig.enabledSvTypesMask, sendReset);
+
+    LOC_LOGd("blacklist bds 0x%" PRIx64 ", glo 0x%" PRIx64
+            ", qzss 0x%" PRIx64 ", gal 0x%" PRIx64 ", sbas 0x%" PRIx64,
+            mGnssSvIdConfig.bdsBlacklistSvMask, mGnssSvIdConfig.gloBlacklistSvMask,
+            mGnssSvIdConfig.qzssBlacklistSvMask, mGnssSvIdConfig.galBlacklistSvMask,
+            mGnssSvIdConfig.sbasBlacklistSvMask);
 
     if (mGnssSvTypeConfig.size == sizeof(mGnssSvTypeConfig)) {
 
@@ -5263,6 +5322,8 @@ GnssAdapter::updateSvConfig(uint32_t         sessionId,
 
     mGnssSvTypeConfig = svTypeConfig;
     mGnssSvIdConfig   = svIdConfig;
+    mBlacklistedSvIds.clear();
+    convertFromGnssSvIdConfig(svIdConfig, mBlacklistedSvIds);
 
     // Send blacklist info
     mLocApi->setBlacklistSv(mGnssSvIdConfig);
@@ -5316,6 +5377,17 @@ uint32_t GnssAdapter::gnssUpdateSvConfigCommand(
 
 void
 GnssAdapter::resetSvConfig(uint32_t sessionId) {
+
+    // Clear blacklisting
+    memset(&mGnssSvIdConfig, 0, sizeof(GnssSvIdConfig));
+    mGnssSvIdConfig.size = sizeof(mGnssSvIdConfig);
+    mBlacklistedSvIds.clear();
+    gnssSvIdConfigUpdate();
+
+    // Reset constellation config, including mGnssSvTypeConfig
+    // when size is set to 0, upon subsequent modem restart, sv type
+    // config will not be sent down to modem
+    gnssSetSvTypeConfig({sizeof(GnssSvTypeConfig), 0, 0});
 
     LocApiResponse* locApiResponse = nullptr;
     if (sessionId != 0) {
