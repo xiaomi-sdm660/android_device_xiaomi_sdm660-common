@@ -5,6 +5,8 @@ typeattribute hal_camera_default data_between_core_and_vendor_violators;
 allow hal_camera_default sysfs:file { getattr open read };
 allow hal_camera_default sysfs_kgsl:file { getattr open read };
 
+allow hal_camera_default media_rw_data_file:file { getattr };
+
 allow hal_camera_default camera_data_file:dir w_dir_perms;
 allow hal_camera_default camera_data_file:file create_file_perms;
 
