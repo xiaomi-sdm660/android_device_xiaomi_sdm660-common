@@ -1,6 +1,25 @@
 # Battery
 genfscon sysfs /devices/soc/c176000.i2c/i2c-2/2-001d            u:object_r:sysfs_battery_supply:s0
 
+# Power
+genfscon debugfs /rpm_stats                                     u:object_r:debugfs_rpm:s0
+genfscon debugfs /system_stats                                  u:object_r:debugfs_rpm:s0
+genfscon debugfs /wlan0                                         u:object_r:debugfs_wlan:s0
+genfscon sysfs /devices/soc/soc:qcom,cpubw                      u:object_r:sysfs_devfreq:s0
+genfscon sysfs /devices/soc/soc:qcom,mincpubw                   u:object_r:sysfs_devfreq:s0
+genfscon sysfs /devices/soc/soc:qcom,memlat-cpu0                u:object_r:sysfs_devfreq:s0
+genfscon sysfs /devices/soc/soc:qcom,memlat-cpu4                u:object_r:sysfs_devfreq:s0
+
+# Graphics
+genfscon sysfs /devices/virtual/graphics/fb0                    u:object_r:sysfs_graphics:s0
+genfscon sysfs /devices/virtual/graphics/fb1                    u:object_r:sysfs_graphics:s0
+genfscon sysfs /devices/virtual/graphics/fb2                    u:object_r:sysfs_graphics:s0
+genfscon sysfs /devices/virtual/graphics/fb3                    u:object_r:sysfs_graphics:s0
+
+# Camera
+genfscon sysfs /devices/soc/ca0c000.qcom,cci/ca0c000.qcom,cci:qcom,camera@3/video4linux/video5/name                                     u:object_r:sysfs_graphics:s0
+genfscon sysfs /camera_sensorid/sensorid                        u:object_r:sysfs_graphics:s0
+
 # RTC
 genfscon sysfs /devices/soc/800f000.qcom,spmi/spmi-0/spmi0-00/800f000.qcom,spmi:qcom,pm660@0:qcom,pm660_rtc/rtc     u:object_r:sysfs_rtc:s0
 

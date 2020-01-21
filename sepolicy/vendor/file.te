@@ -1,8 +1,11 @@
+type debugfs_rpm, debugfs_type, fs_type;
+type debugfs_wlan, debugfs_type, fs_type;
 type ir_dev_file, file_type;
 type proc_dt2w, fs_type, proc_type;
 type fingerprint_data_file, file_type, data_file_type, core_data_file_type;
 type fingerprint_sysfs, fs_type, sysfs_type;
 type sysfs_info, fs_type, sysfs_type;
+type sysfs_msm_subsys, sysfs_type, fs_type;
 
 allow ueventd ir_dev_file:chr_file { create setattr };
 
