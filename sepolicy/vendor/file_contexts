@@ -14,6 +14,8 @@
 /data/vendor/fpc(/.*)?                          u:object_r:fingerprint_vendor_data_file:s0
 /(mnt/vendor)/persist/fpc(/.*)?                 u:object_r:persist_fingerprint_file:s0
 /sys/devices/soc/soc:fpc1020(/.*)?              u:object_r:fingerprint_sysfs:s0
+/sys/bus/platform/devices/soc:fingerprint_fpc(/.*)?  u:object_r:fingerprint_sysfs:s0
+
 
 # Hall Switch
 /sys/module/hall/parameters(/.*)?               u:object_r:hall_dev:s0
