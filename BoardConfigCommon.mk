@@ -40,8 +40,10 @@ endif
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "qualcomm-hidl"
 
-# Broken Headers
+# Broken Files/Headers
 BUILD_BROKEN_VINTF_PRODUCT_COPY_FILES := true
+BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
+
 
 # Architecture
 TARGET_ARCH := arm64
