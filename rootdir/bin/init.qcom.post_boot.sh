@@ -3643,7 +3643,7 @@ case "$target" in
         for memlat in $device/*qcom,devfreq-l3/*cpu*-lat/devfreq/*cpu*-lat
             do
                 echo "mem_latency" > $memlat/governor
-                echo 10 > $memlat/polling_interval
+                echo 8 > $memlat/polling_interval
                 echo 400 > $memlat/mem_latency/ratio_ceil
             done
 
@@ -3657,7 +3657,7 @@ case "$target" in
         for memlat in $device/*cpu*-lat/devfreq/*cpu*-lat
         do
             echo "mem_latency" > $memlat/governor
-            echo 10 > $memlat/polling_interval
+            echo 8 > $memlat/polling_interval
             echo 400 > $memlat/mem_latency/ratio_ceil
             done
 
@@ -3677,7 +3677,7 @@ case "$target" in
             for latfloor in $device/*cpu*-ddr-latfloor*/devfreq/*cpu-ddr-latfloor*
             do
                 echo "compute" > $latfloor/governor
-                echo 10 > $latfloor/polling_interval
+                echo 8 > $latfloor/polling_interval
             done
         done
 
