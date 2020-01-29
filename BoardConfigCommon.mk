@@ -40,6 +40,9 @@ endif
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "qualcomm-hidl"
 
+# Broken Headers
+BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
+
 # APEX image
 DEXPREOPT_GENERATE_APEX_IMAGE := true
 
