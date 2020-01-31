@@ -378,31 +378,41 @@ Return<sp<V1_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement() {
 
 Return<sp<V1_0::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration()  {
     ENTRY_LOG_CALLFLOW();
-    mGnssConfig = new GnssConfiguration(this);
+    if (mGnssConfig == nullptr) {
+        mGnssConfig = new GnssConfiguration(this);
+    }
     return mGnssConfig;
 }
 
 Return<sp<V1_0::IGnssGeofencing>> Gnss::getExtensionGnssGeofencing()  {
     ENTRY_LOG_CALLFLOW();
-    mGnssGeofencingIface = new GnssGeofencing();
+    if (mGnssGeofencingIface == nullptr) {
+        mGnssGeofencingIface = new GnssGeofencing();
+    }
     return mGnssGeofencingIface;
 }
 
 Return<sp<V1_0::IGnssBatching>> Gnss::getExtensionGnssBatching()  {
     ENTRY_LOG_CALLFLOW();
-    mGnssBatching = new GnssBatching();
+    if (mGnssBatching == nullptr) {
+        mGnssBatching = new GnssBatching();
+    }
     return mGnssBatching;
 }
 
 Return<sp<V1_0::IGnssDebug>> Gnss::getExtensionGnssDebug() {
     ENTRY_LOG_CALLFLOW();
-    mGnssDebug = new GnssDebug(this);
+    if (mGnssDebug == nullptr) {
+        mGnssDebug = new GnssDebug(this);
+    }
     return mGnssDebug;
 }
 
 Return<sp<V1_0::IAGnssRil>> Gnss::getExtensionAGnssRil() {
     ENTRY_LOG_CALLFLOW();
-    mGnssRil = new AGnssRil(this);
+    if (mGnssRil == nullptr) {
+        mGnssRil = new AGnssRil(this);
+    }
     return mGnssRil;
 }
 
@@ -589,17 +599,23 @@ Return<bool> Gnss::setCallback_2_0(const sp<V2_0::IGnssCallback>& callback) {
 
 Return<sp<V2_0::IAGnss>> Gnss::getExtensionAGnss_2_0() {
     ENTRY_LOG_CALLFLOW();
-    mAGnssIface_2_0 = new AGnss(this);
+    if (mAGnssIface_2_0 == nullptr) {
+        mAGnssIface_2_0 = new AGnss(this);
+    }
     return mAGnssIface_2_0;
 }
 Return<sp<V2_0::IAGnssRil>> Gnss::getExtensionAGnssRil_2_0() {
-    mGnssRil = new AGnssRil(this);
+    if (mGnssRil == nullptr) {
+        mGnssRil = new AGnssRil(this);
+    }
     return mGnssRil;
 }
 
 Return<sp<V2_0::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_2_0() {
     ENTRY_LOG_CALLFLOW();
-    mGnssConfig = new GnssConfiguration(this);
+    if (mGnssConfig == nullptr) {
+        mGnssConfig = new GnssConfiguration(this);
+    }
     return mGnssConfig;
 }
 Return<sp<V2_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_2_0() {
@@ -639,13 +655,17 @@ Return<bool> Gnss::injectBestLocation_2_0(const V2_0::GnssLocation& gnssLocation
 
 Return<sp<V2_0::IGnssDebug>> Gnss::getExtensionGnssDebug_2_0() {
     ENTRY_LOG_CALLFLOW();
-    mGnssDebug = new GnssDebug(this);
+    if (mGnssDebug == nullptr) {
+        mGnssDebug = new GnssDebug(this);
+    }
     return mGnssDebug;
 }
 
 Return<sp<V2_0::IGnssBatching>> Gnss::getExtensionGnssBatching_2_0() {
     ENTRY_LOG_CALLFLOW();
-    mGnssBatching = new GnssBatching();
+    if (mGnssBatching == nullptr) {
+        mGnssBatching = new GnssBatching();
+    }
     return mGnssBatching;
 }
 
