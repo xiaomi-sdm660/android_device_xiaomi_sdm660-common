@@ -62,6 +62,11 @@ vendor/lib/soundfx/libqcvirt.so|dc3a0247a2073e80ca34021a14500f4f9265b54a
 product/lib64/libaptX_encoder.so|df1c89d7af1bb35808d5fe3496b04ba066c10cbc
 product/lib64/libaptXHD_encoder.so|e13fa70c97caaa24d061678bdee608eb8850a69e
 
+# Bluetooth (A2dp) - from LA.UM.8.2.r1-05100-sdm660.0
+vendor/lib/btaudio_offload_if.so|9d4c16ea63d4a37954eae59c7803f0b6bff1815a
+vendor/lib/hw/vendor.qti.hardware.bluetooth_audio@2.0-impl.so|5d907e913a3145f80d009219341a1a7e1f478a43
+vendor/lib/libbluetooth_audio_session_qti.so|4bc7e0f8c3e38c5b1d6acaa0bbc1f3774458d15b
+
 # Bluetooth - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
 lib/libbtconfigstore.so|07c62170288a756dee2b901be7af7f2cec8cde7e
 lib64/libbtconfigstore.so|0f05f8bce67556ebfa588f5235f997c5ef0cbd51
@@ -69,11 +74,9 @@ vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti|57a0a575a2b1b96176fda1b
 vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc|a979981c55f3dcaf6cf2212e71b901ca4d58b959
 vendor/lib/hw/android.hardware.bluetooth@1.0-impl-qti.so|54c572215e4a8011fd6f57a061e8450da878c80c
 vendor/lib/libbt-hidlclient.so|db653f95deffc108ab3c12821589a0e64e8c7a30
-vendor/lib/libbthost_if.so|56a8adf02a487b8f60dbcff3367959ec62547513
 vendor/lib/libbtnv.so|94864efd66734bd7a4942c2ce7e0acffbe3bee82
 vendor/lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so|7c0d54f84dd3d2da1806affa7c16dea4bba4d16a
 vendor/lib64/libbt-hidlclient.so|4a4038013bf438627154899d3823c9346c3d84ec
-vendor/lib64/libbthost_if.so|dce04f6d5398838fa65c2e592f952931ced26da4
 vendor/lib64/libbtnv.so|08fc5c0a38eca63ebe6f0cd854f6525537141d44
 
 # Bluetooth Audio - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
