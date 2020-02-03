@@ -11,6 +11,7 @@ vendor/lib/libmdsprpc.so|6b3c9f62d95ba9a65d9ce2d21530fa36ebed2414
 vendor/lib/libsdsprpc.so|09e6c5093e6322c71ca98c53865aa5402e415538
 vendor/lib64/libadsp_default_listener.so|ec9a452e318db1ddc5d826dd7cc2b14dd5fb2a14
 vendor/lib64/libadsprpc.so|54fea5f7c11b9913ed2eeb125804e0fb32ed5e21
+vendor/lib64/libcdsprpc.so|44e6a3aec6457464ac87f71680e443fd1c933d16
 vendor/lib64/libfastcvadsp_stub.so|f84fd537f8f176e598c0cb49f0c457f308b67be4
 vendor/lib64/libfastcvopt.so|59d111f7472ed70390d15944a5f304db848447e4
 vendor/lib64/libmdsprpc.so|f9eb09c64dcd2ec4356bab8d1d242901d271edb0
@@ -75,19 +76,6 @@ vendor/lib64/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so|5e06b7b33d084975d6
 vendor/lib64/libbtnv.so|a6793a7b93fa607fcec39da7479566f84ed39aa4
 vendor/lib64/vendor.qti.hardware.bluetooth_sar@1.0.so|9b7ae20ce9d6d2a67fdac94268cec441278cca3d
 vendor/lib64/vendor.qti.hardware.btconfigstore@1.0.so|e08969ef1897ec5958894323f7d6e730a1d7ce25
-
-
-# CDSP - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-vendor/bin/cdsprpcd|c9fc5873c205e1ebb844d18bc10f89dd428a01ee
-vendor/lib/libcdsp_default_listener.so|6347d41d3c3704a04ae0f8e816f071057c483163
-vendor/lib/libcdsprpc.so|b0904719623aab0d7381e9ac61cce7809dfad0b6
-vendor/lib/libfastcrc.so|e48d1bcfebbd9ee2267b971c27e5234e41cc56fc
-vendor/lib/libfastrpc_utf_stub.so|57736a2dbb5555b8e4b00aece6be028eddff818f
-vendor/lib/libsysmon_cdsp_skel.so|0da55092206d94a43a82d5a416969cbfd208acf2
-vendor/lib64/libcdsp_default_listener.so|ebde03266606d634172d41bbc97ba9ebc5606423
-vendor/lib64/libcdsprpc.so|6636d9b8e1c3b80bae94cf1728c5168ef77cca5f
-vendor/lib64/libfastrpc_utf_stub.so|4bdb3be85d07be078325682abd0fc54278290b92
-vendor/lib64/libsysmon_cdsp_skel.so|a76815923b46dbc41ba1a6b0f4942b8da8e52ce0
 
 # Charger - from LA.UM.8.2.r1-05100-sdm660.0
 vendor/bin/hvdcp_opti|7241f7e3391796a13f58dc1eed352aece89982fd
@@ -180,16 +168,6 @@ vendor/etc/init/dpmQmiMgr.rc|67569302d3a8828a9118c835e5b69c51b0c8ac68
 vendor/lib64/com.qualcomm.qti.dpm.api@1.0.so|ab5d46cbf14ce90ab44aaab4dc1520378c568033
 vendor/lib64/libdpmqmihal.so|d5b8330b56d7e0c036b00a817754748bf3137774
 
-# DRM (HDCP) - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-vendor/lib/libmm-hdcpmgr.so|4af112050d0a5a47980103b309a163a4415de7dd
-vendor/lib64/libmm-hdcpmgr.so|152c347caca4826a64737df11e181472553be446
-
-# DRM (Qualcomm Trusted Execution Enviroment) - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-vendor/bin/hw/vendor.qti.hardware.qteeconnector@1.0-service|aaa7d15a9ebb63c0152b8fb3bfd07af929e384d4
-vendor/etc/init/vendor.qti.hardware.qteeconnector@1.0-service.rc|c966350ee67d3a7c73ca7184e3725264025d16f5
-vendor/lib64/hw/vendor.qti.hardware.qteeconnector@1.0-impl.so|1fe6ce202398e0ae3afebd7625c59746e04413e8
-vendor/lib64/vendor.qti.hardware.qteeconnector@1.0.so|3202c209bd8249e3f76dec1108788b1a85b53561
-
 # DRM (Widevine) - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
 vendor/bin/hw/android.hardware.drm@1.2-service.widevine|1aed116c6cd73ee0c89a5eec050afab5c64b9f87
 vendor/etc/init/android.hardware.drm@1.2-service.widevine.rc|68767969f86126ada017fc09af151e299db651d5
@@ -200,63 +178,6 @@ vendor/lib64/libhdcpsrm.so|ee8e7c29e2b716a8bb07c3cbb730e34d8af3c64e
 vendor/lib64/liboemcrypto.so|e44fa8bf9bed1541342390bf316c34fe9f29cc4e
 vendor/lib64/libwvhidl.so|2489dbf5cc572dea567f9f3d3af7b2d269373b46
 vendor/lib64/mediadrm/libwvdrmengine.so|fe15c5e86482cad673789cd6992742d6124b0779
-
-# DSP (SCVE) - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-product/lib/vendor.qti.hardware.scve.objecttracker@1.0-adapter-helper.so|652aa6b2b0a1f5605429e2ded12a760ce39bb26d
-product/lib/vendor.qti.hardware.scve.objecttracker@1.0.so|e80c57426746b30be01fba239ac7c00881c41da0
-product/lib/vendor.qti.hardware.scve.panorama@1.0-adapter-helper.so|9407283f2bdb87b86ac700254c1033007e48bea2
-product/lib/vendor.qti.hardware.scve.panorama@1.0.so|680a69aed4b3ff3edd52aa0637b23838a3ad1c33
-product/lib64/vendor.qti.hardware.scve.objecttracker@1.0-adapter-helper.so|a003a4e3290e7777d52f5695cc6491a376ca71da
-product/lib64/vendor.qti.hardware.scve.objecttracker@1.0.so|8613a107e2e318f67d27888cedea2e583263088f
-product/lib64/vendor.qti.hardware.scve.panorama@1.0-adapter-helper.so|1374198e008c0bcc9f09172eb70dddc458f4790b
-product/lib64/vendor.qti.hardware.scve.panorama@1.0.so|b7a1fd4813ce3204d140ca8110fda6018c709daa
-vendor/etc/scve/facereco/gModel.dat|447e5e3fefe8bcf36db0f7a8595c63fb326879ba
-vendor/lib/libscveBlobDescriptor.so|34a0abee4a0018feb3ae21da3437f89dcbcdd2b0
-vendor/lib/libscveBlobDescriptor_stub.so|c26e9de3c564760734843274577a34d1b6f130d2
-vendor/lib/libscveCommon.so|c5a7f99934777a9883eb316225ed6cb3d926cd9f
-vendor/lib/libscveCommon_stub.so|3a8685352857a64d01b9f9411083b160fd135b87
-vendor/lib/libscveFaceRecognition.so|68f7a265e400a539b6c27aac1410a143b19a98ad
-vendor/lib/libscveObjectSegmentation.so|6ae6cfeb573d4488a3b1ee622058a067b7984823
-vendor/lib/libscveObjectSegmentation_stub.so|d7d62ceac6b104f987b01e75a059bc2ede375ac9
-vendor/lib/libscveObjectTracker.so|aebe68958a14314b8444cabb9e6e3ce1ab84ac96
-vendor/lib/libscveObjectTracker_stub.so|deb807e02a7a3ed218bbbf4bd2391b7eb1b18e81
-vendor/lib/libscvePanorama.so|c376bc563432a3494021c4ceeb632fcb0a2b33a1
-vendor/lib/libscvePanorama_lite.so|c1d2f2f389726c7cf37b115cb69c666a3076f705
-vendor/lib/vendor.qti.hardware.scve.objecttracker@1.0.so|6f968b5eb270e643274c631ab5d9d558ab0b621f
-vendor/lib/vendor.qti.hardware.scve.panorama@1.0.so|5ed9860d826b0438625b5a8101a651ca8b7573f8
-vendor/lib64/libscveBlobDescriptor.so|269ff8fc2a5a576dab62b4e69d2d5ceca1dd3264
-vendor/lib64/libscveBlobDescriptor_stub.so|b8fe6a37a7de62739b015351cb0fac86330af654
-vendor/lib64/libscveCommon.so|a7b6cd225cfcd19918099d9e745d860c0dee8f93
-vendor/lib64/libscveCommon_stub.so|7f5aa0b1fca2e9c56457c1b332e4bea3d5f03a8f
-vendor/lib64/libscveFaceRecognition.so|bc056a7d839c0883c3d50f6bfaf46a3bedd13115
-vendor/lib64/libscveObjectSegmentation.so|f1c5d2f9eadd4dac0d82a354bc6dd18114f043f1
-vendor/lib64/libscveObjectSegmentation_stub.so|8e6a7170164f5cc7b1756d50506e31bd072e6b9c
-vendor/lib64/libscveObjectTracker.so|c800c90a228316589fec4e54cd1253eba9f50c7a
-vendor/lib64/libscveObjectTracker_stub.so|b4ab0472e565a69f3c4dce0d1061fad9e990e42b
-vendor/lib64/libscvePanorama.so|0eec92d7135be55c4c77f62fc397cf009d4b6bcb
-vendor/lib64/libscvePanorama_lite.so|ef7dbeff0c7fbfd5b2faa78dc3521ccbc90d4044
-vendor/lib64/vendor.qti.hardware.scve.objecttracker@1.0.so|0909445e5003b5389e2bd17e06a7174c9b1b8e70
-vendor/lib64/vendor.qti.hardware.scve.panorama@1.0.so|335c2ef02d72b3e44654c746684feb6a11f19175
-
-# ESE-Powermanager - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-product/lib/vendor.qti.esepowermanager@1.0.so|07b5def050ef3200ed8946bf33be4f60049cd4aa
-product/lib64/vendor.qti.esepowermanager@1.0.so|165a6b6f6fec38055a178d2d5903de5756a44571
-vendor/bin/hw/vendor.qti.esepowermanager@1.0-service|4191e27a3e97009789dfcd2c44fd202d152fa61b
-vendor/etc/init/vendor.qti.esepowermanager@1.0-service.rc|58a3866ad5a7613d9392c9adb671eaa7825578a2
-vendor/lib/hw/vendor.qti.esepowermanager@1.0-impl.so|fd95cf6c9b36324fb5d0e5e8498721b65749ee94
-vendor/lib/vendor.qti.esepowermanager@1.0.so|12f57cdb3ea7f7e7a248f9a3d7de4f8e5755ac79
-vendor/lib64/hw/vendor.qti.esepowermanager@1.0-impl.so|b9a03bfc607fb74462346eecacf27a7afda8d114
-vendor/lib64/vendor.qti.esepowermanager@1.0.so|0dc949a16129a9d3d06429723641b6fba11ee1d2
-
-# Fido - from platina-user 10 QKQ1.190910.002 9.12.4 release-keys
-lib/libFidoCryptoJNI.so|16c2a50b7da470440032e51867f95653cb1c6406
-lib/libFidoCrypto_system.so|c538c239bb97553a4683662d6ed6567b3c5033cd
-lib64/libFidoCryptoJNI.so|bb9ee88f7696d5a66da2a0cd2daed429c274fd23
-lib64/libFidoCrypto_system.so|5f5254c97e4b4457e31da70843a004030411a8f3
-vendor/lib/libFidoCrypto_vendor.so|5911ca84a7beba33620c7468e03c685c32ea1a17
-vendor/lib64/libFidoCrypto_vendor.so|4cc8d054895e7eb78b35c42cbcf7d0184e9e88f4
-vendor/lib/libFIDOKeyProvisioning.so|35703aca065213fa86f095a557ae2dbebccfe336
-vendor/lib64/libFIDOKeyProvisioning.so|4df3293d1c62a5b1454d5162298a09a61d0d9c38
 
 # FM - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
 lib/fm_helium.so|feb4819f1898c67dfda4f965d7cc2711c74d1a99
@@ -456,24 +377,6 @@ vendor/lib64/libqti-perfd.so|897d6da7875d746b68c61568d1a8b02e6d989e8c
 vendor/lib64/libqti-util.so|9f5f18d548e3c3b39fbfe0ad078ea7ad4399b70e
 vendor/lib64/vendor.qti.hardware.perf@2.0.so|b05e762bf5c7e86b0d6c1be4c8ae91e3f706dca7
 
-# IOP - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-lib/libqti-iopd-client_system.so|d91db26d17012f654a222bf325793bdce29e0f1b
-lib/libqti-util_system.so|bd0889d0cab15adf5515d001085588700c98c9aa
-lib64/libqti-iopd-client_system.so|1f65e993f79758b2833df88413029d4af059a2eb
-lib64/libqti-util_system.so|26ba8e8a49e312f481985667a983d56367f73bfb
-product/lib/vendor.qti.hardware.iop@1.0.so|8525c29dde11430973e1f26339c915a52de870e9
-product/lib/vendor.qti.hardware.iop@2.0.so|cecd7cef970d48b0709da4eaa9e6966a083a3ab0
-product/lib64/vendor.qti.hardware.iop@1.0.so|a9d2a6bec613954b422a4f50fee70ec0754be65d
-product/lib64/vendor.qti.hardware.iop@2.0.so|0b657aa0eaedb463ef96df94b31010449c5a34a9
-vendor/lib/hw/vendor.qti.hardware.iop@2.0-impl.so|f78fd7791961c0ceea03dfae8154207820c61be9
-vendor/lib/libqti-iopd-client.so|ea48eb1e1d1f97ca9d2f53ffe635f9ab1925679c
-vendor/lib/vendor.qti.hardware.iop@1.0.so|8094748d325b8b71ba48ec07f3d8575b42e21754
-vendor/lib/vendor.qti.hardware.iop@2.0.so|e49a76a90d88b630c5f3f9640cb8996c89f1b851
-vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so|071fea53abd0423bf71af128770a83941386468c
-vendor/lib64/libqti-iopd-client.so|64dcd6acbc758ca4ba7eea3ae351c005e92e95d5
-vendor/lib64/vendor.qti.hardware.iop@1.0.so|8ccdc1463dcb554297b0c96d768126f0ca42b83a
-vendor/lib64/vendor.qti.hardware.iop@2.0.so|d5bafc1daeb1b417bbad1160f92e330610f09b8a
-
 # Peripheral manager - from LA.UM.8.2.r1-05100-sdm660.0
 vendor/bin/pm-proxy|bd8cf7d8228db1556cb9d1b933f3d4ab230ddba4
 vendor/bin/pm-service|4c9c601cb5a35717d0fa0f6718180c849c2419c7
@@ -668,15 +571,6 @@ vendor/lib64/libsensor_reg.so|a8753d3f0e9383d46334f0022166eece70854e5c
 vendor/lib64/sensor_calibrate.so|1f832d04e04c11294d1c96c074c3a2a551d4f095
 vendor/lib64/sensors.ssc.so|0ec630386e5f51dfe77acd0fc7886f01dcfc2c86
 vendor/lib64/vendor.qti.hardware.sensorscalibrate@1.0.so|976417e8085fc4ea4a47d194f129806175a9bb7e
-
-# SSR - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-vendor/bin/ssr_diag|fc0ec4184f749c54335353598b46ba52fc0abd06
-vendor/bin/ssr_setup|aa96ecf862b00cd9cf181c583df96624e0b3a7be
-vendor/bin/subsystem_ramdump|69ff70a0683402f7036f00e94a40e1c0593a2258
-vendor/lib/libSubSystemShutdown.so|eb19681c74152f8f2d7a96c303eac3b7127f0fc9
-vendor/lib/libsubsystem_control.so|cdb6c041ea7b49d04afdeb44088b44b63ed840c8
-vendor/lib64/libSubSystemShutdown.so|2fa4c60e355ce0e77994f2108706beb9e6cdcbdd
-vendor/lib64/libsubsystem_control.so|82aaf2bd473d2379b859c648a8d825109e81eaed
 
 # Soter - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
 -app/SoterService/SoterService.apk|13c54938361c79d484f8750e548415a9a4526b43
