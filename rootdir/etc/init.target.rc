@@ -154,21 +154,22 @@ on post-fs-data
     mkdir /data/vendor/thermal 0771 root system
     mkdir /data/vendor/thermal/config 0771 root system
 
-    #USB controller configuration
-        setprop vendor.usb.rndis.func.name "rndis_bam"
-        setprop vendor.usb.rmnet.func.name "rmnet_bam"
-        setprop vendor.usb.rmnet.inst.name "rmnet"
-        setprop vendor.usb.dpl.inst.name "dpl"
-        setprop vendor.usb.qdss.inst.name "qdss"
-        setprop vendor.usb.controller a800000.dwc3
-        setprop sys.usb.configfs 1
-        write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
+#USB controller configuration
+    setprop vendor.usb.rndis.func.name "rndis_bam"
+    setprop vendor.usb.rmnet.func.name "rmnet_bam"
+    setprop vendor.usb.rmnet.inst.name "rmnet"
+    setprop vendor.usb.dpl.inst.name "dpl"
+    setprop vendor.usb.qdss.inst.name "qdss"
+    setprop vendor.usb.controller a800000.dwc3
+    setprop sys.usb.configfs 1
+    write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
 
 on boot && property:persist.vendor.usb.controller.default=*
     setprop vendor.usb.controller ${persist.vendor.usb.controller.default}
 
 on property:vendor.usb.controller=*
     setprop sys.usb.controller ${vendor.usb.controller}
+    write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
 
 on boot
     start vendor.rmt_storage
