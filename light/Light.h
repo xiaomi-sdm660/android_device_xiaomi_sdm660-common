@@ -48,14 +48,12 @@ class Light : public ILight {
     uint32_t max_screen_brightness_;
 
     std::unordered_map<Type, std::function<void(Type type, const LightState&)>> lights_{
-            {Type::ATTENTION, [this](auto&&... args) { setLightNotification(args...); }},
             {Type::BACKLIGHT, [this](auto&&... args) { setLightBacklight(args...); }},
             {Type::BATTERY, [this](auto&&... args) { setLightNotification(args...); }},
             {Type::NOTIFICATIONS, [this](auto&&... args) { setLightNotification(args...); }}};
 
     // Keep sorted in the order of importance.
-    std::array<std::pair<Type, LightState>, 3> notif_states_ = {{
-            {Type::ATTENTION, {}},
+    std::array<std::pair<Type, LightState>, 2> notif_states_ = {{
             {Type::NOTIFICATIONS, {}},
             {Type::BATTERY, {}},
     }};
