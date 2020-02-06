@@ -41,9 +41,11 @@ class Light : public ILight {
 
   private:
     void setLightBacklight(Type type, const LightState& state);
+    void setLightButtons(Type type, const LightState& state);
     void setLightNotification(Type type, const LightState& state);
     void applyNotificationState(const LightState& state);
 
+    uint32_t max_button_brightness_;
     uint32_t max_led_brightness_;
     uint32_t max_screen_brightness_;
 
@@ -57,6 +59,8 @@ class Light : public ILight {
             {Type::NOTIFICATIONS, {}},
             {Type::BATTERY, {}},
     }};
+
+    std::vector<std::string> buttons_;
 };
 
 }  // namespace implementation
