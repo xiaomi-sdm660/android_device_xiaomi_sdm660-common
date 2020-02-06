@@ -21,6 +21,7 @@
 
 #include <android-base/file.h>
 #include <android-base/logging.h>
+#include <unistd.h>
 
 #include <iomanip>
 
@@ -29,6 +30,8 @@ namespace {
 #define LEDS "/sys/class/leds/"
 #define LCD_LED LEDS "lcd-backlight/"
 #define WHITE LEDS "white/"
+#define BUTTON LEDS "button-backlight/"
+#define BUTTON1 LEDS "button-backlight1/"
 #define BRIGHTNESS "brightness"
 #define MAX_BRIGHTNESS "max_brightness"
 #define BLINK "blink"
@@ -127,6 +130,24 @@ Light::Light() {
         max_led_brightness_ = kDefaultMaxLedBrightness;
         LOG(ERROR) << "Failed to read max LED brightness, fallback to " << kDefaultMaxLedBrightness;
     }
+
+    if (!access(BUTTON BRIGHTNESS, W_OK)) {
+        lights_.emplace(std::make_pair(Type::BUTTONS,
+                                       [this](auto&&... args) { setLightButtons(args...); }));
+        buttons_.emplace_back(BUTTON BRIGHTNESS);
+
+        if (!access(BUTTON1 BRIGHTNESS, W_OK)) {
+            buttons_.emplace_back(BUTTON1 BRIGHTNESS);
+        }
+
+        if (ReadFileToString(BUTTON MAX_BRIGHTNESS, &buf)) {
+            max_button_brightness_ = std::stoi(buf);
+        } else {
+            max_button_brightness_ = kDefaultMaxLedBrightness;
+            LOG(ERROR) << "Failed to read max button brightness, fallback to "
+                       << kDefaultMaxLedBrightness;
+        }
+    }
 }
 
 Return<Status> Light::setLight(Type type, const LightState& state) {
@@ -154,6 +175,13 @@ Return<void> Light::getSupportedTypes(getSupportedTypes_cb _hidl_cb) {
 void Light::setLightBacklight(Type /*type*/, const LightState& state) {
     uint32_t brightness = RgbaToBrightness(state.color, max_screen_brightness_);
     WriteToFile(LCD_LED BRIGHTNESS, brightness);
+}
+
+void Light::setLightButtons(Type /*type*/, const LightState& state) {
+    uint32_t brightness = RgbaToBrightness(state.color, max_button_brightness_);
+    for (auto&& button : buttons_) {
+        WriteToFile(button, brightness);
+    }
 }
 
 void Light::setLightNotification(Type type, const LightState& state) {
