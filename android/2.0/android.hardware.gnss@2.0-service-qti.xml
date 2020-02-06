@@ -29,6 +29,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <hal format="hidl">
         <name>android.hardware.gnss</name>
         <transport>hwbinder</transport>
+        <fqname>@1.0::IGnss/gnss_vendor</fqname>
         <fqname>@1.1::IGnss/default</fqname>
         <fqname>@2.0::IGnss/default</fqname>
     </hal>
