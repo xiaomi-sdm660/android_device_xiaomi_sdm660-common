@@ -26,7 +26,7 @@ property Name is called. -->
                 <Prop Name="vendor.iop.enable_prefetch_ofr" Value="0" />
 
                 <!--System Properties -->
-                <Prop Name="ro.vendor.qti.sys.fw.bg_apps_limit" Value="60" />
+                <Prop Name="ro.vendor.qti.sys.fw.bg_apps_limit" Value="38" />
                 <Prop Name="ro.vendor.at_library" Value="libqti-at.so" />
                 <Prop Name="ro.lmk.enable_userspace_lmk" Value="false" />
                 <Prop Name="vendor.perf.gestureflingboost.enable" Value="true" />
