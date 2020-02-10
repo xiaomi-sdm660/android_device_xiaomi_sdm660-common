@@ -86,7 +86,8 @@ static bool isGnssClient(LocationCallbacks& locationCallbacks)
             locationCallbacks.trackingCb != nullptr ||
             locationCallbacks.gnssLocationInfoCb != nullptr ||
             locationCallbacks.engineLocationsInfoCb != nullptr ||
-            locationCallbacks.gnssMeasurementsCb != nullptr);
+            locationCallbacks.gnssMeasurementsCb != nullptr ||
+            locationCallbacks.gnssSvPolynomialCb != nullptr);
 }
 
 static bool isBatchingClient(LocationCallbacks& locationCallbacks)
