@@ -69,13 +69,6 @@ on init
     write /dev/stune/top-app/schedtune.boost 10
     write /dev/stune/top-app/schedtune.prefer_idle 1
 
-    # Start services for bootanim
-    start surfaceflinger
-    start bootanim
-    start vendor.hwcomposer-2-3
-    start vendor.configstore-hal
-    start vendor.qti.hardware.display.allocator
-
 on post-fs
     chmod 0755 /sys/kernel/debug/tracing
 

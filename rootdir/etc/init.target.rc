@@ -134,6 +134,13 @@ on post-fs
 on init
     write /sys/module/qpnp_rtc/parameters/poweron_alarm 1
 
+    # Start services for bootanim
+    start surfaceflinger
+    start bootanim
+    start vendor.hwcomposer-2-3
+    start vendor.configstore-hal
+    start vendor.qti.hardware.display.allocator
+
 on post-fs-data
     mkdir /data/tombstones/modem 0771 system system
     mkdir /data/tombstones/lpass 0771 system system
