@@ -27,6 +27,9 @@
     <!-- Default screen brightness, from 0 to 255. 78 is 30%. -->
     <integer name="def_screen_brightness">78</integer>
 
+    <!-- 60 seconds for default screen timeout -->
+    <integer name="def_screen_off_timeout">60000</integer>
+
     <!-- Disable UI touch sounds by default -->
     <bool name="def_sound_effects_enabled">false</bool>
 
