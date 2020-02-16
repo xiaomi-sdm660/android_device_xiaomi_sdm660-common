@@ -52,7 +52,7 @@
     <string name="dirac_title">Mi サウンドエンハンサー</string>
     <string name="dirac_summary">オーディオ品質を最適化</string>
     <string name="dirac_headset_title">ヘッドフォンの種類を選択</string>
-    <string name="dirac_preset_title">プリセットを選択してください</string>
+    <string name="dirac_preset_title">プリセットを選択して下さい</string>
     <!-- Dirac settings: Headset types -->
     <string name="dirac_headset_default">デフォルト</string>
     <string name="dirac_headset_earbuds">Mi イヤーバッド</string>
@@ -104,7 +104,7 @@
     <string name="color_blue">青</string>
     <string name="color_minimum">最小</string>
     <string name="saturation">彩度</string>
-    <string name="value">値</string>
+    <string name="value">明度</string>
     <string name="contrast">コントラスト</string>
     <string name="hue">色相</string>
     <string name="grayscale">グレースケール画面</string>
