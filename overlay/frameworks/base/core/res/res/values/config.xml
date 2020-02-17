@@ -1231,4 +1231,9 @@
     <!-- If true, the display will be shifted around in ambient mode. -->
     <bool name="config_enableBurnInProtection">true</bool>
 
+    <!-- Whether or not to hide the navigation bar when the soft keyboard is visible in order to
+         create additional screen real estate outside beyond the keyboard. Note that the user needs
+         to have a confirmed way to dismiss the keyboard when desired. -->
+    <bool name="config_automotiveHideNavBarForKeyboard">true</bool>
+
 </resources>
