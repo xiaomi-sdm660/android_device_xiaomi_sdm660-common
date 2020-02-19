@@ -1,5 +1,7 @@
+allow hal_power_default sysfs_touchpanel:file rw_file_perms;
 allow hal_power_default proc_dt2w:file rw_file_perms;
 allow hal_power_default sysfs_tap_to_wake:file rw_file_perms;
+
 # Allow writing to files in /proc/tp_gesture
 allow hal_power_default proc:file rw_file_perms;
 allow hal_power_default proc:dir search;
