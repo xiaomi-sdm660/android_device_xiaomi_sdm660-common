@@ -16,7 +16,6 @@
 /sys/devices/soc/soc:fpc1020(/.*)?              u:object_r:fingerprint_sysfs:s0
 /sys/bus/platform/devices/soc:fingerprint_fpc(/.*)?  u:object_r:fingerprint_sysfs:s0
 
-
 # Hall Switch
 /sys/module/hall/parameters(/.*)?               u:object_r:hall_dev:s0
 

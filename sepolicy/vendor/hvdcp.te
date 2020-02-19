@@ -1,1 +1,0 @@
-allow hvdcp sysfs:file { open read };
