@@ -1,1 +1,0 @@
-allow hal_light_default sysfs_light:file rw_file_perms;
