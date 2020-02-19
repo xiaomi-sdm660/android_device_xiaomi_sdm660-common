@@ -1,3 +1,0 @@
-allow vndservicemanager hal_fingerprint_default:dir { search read open };
-allow vndservicemanager hal_fingerprint_default:file { read open };
-allow vndservicemanager hal_fingerprint_default:process getattr;
