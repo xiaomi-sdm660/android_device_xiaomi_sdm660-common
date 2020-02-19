@@ -35,6 +35,7 @@
 /sys/devices/platform/HardwareInfo/gsensor  u:object_r:sysfs_info:s0
 
 # IR
+/dev/lirc0                                      u:object_r:spidev_device:s0
 /dev/spidev7.1                                  u:object_r:spidev_device:s0
 
 # Kcal
