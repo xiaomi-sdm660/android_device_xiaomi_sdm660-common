@@ -6,8 +6,4 @@ allow thermal-engine property_socket:sock_file write;
 dontaudit thermal-engine self:capability dac_override;
 
 set_prop(thermal-engine, thermal_engine_prop);
-
-r_dir_file(thermal-engine sysfs_devfreq)
-r_dir_file(thermal-engine sysfs_graphics)
 r_dir_file(thermal-engine sysfs_thermal)
-dontaudit thermal-engine sysfs:dir read;

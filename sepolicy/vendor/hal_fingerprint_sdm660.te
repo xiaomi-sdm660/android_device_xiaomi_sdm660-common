@@ -20,6 +20,7 @@ allow hal_fingerprint_sdm660 fingerprintd_data_file:file create_file_perms;
 allow hal_fingerprint_sdm660 fingerprint_data_file:file rw_file_perms;
 
 allow hal_fingerprint_sdm660 fingerprint_sysfs:file rw_file_perms;
+allow hal_fingerprint_sdm660 fingerprint_sysfs:dir r_dir_perms;
 
 allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
 allow hal_fingerprint_sdm660 rootfs:dir read;
