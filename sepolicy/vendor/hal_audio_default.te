@@ -3,4 +3,4 @@ get_prop(hal_audio_default, dirac_prop)
 set_prop(hal_audio_default, dirac_prop)
 allow hal_audio_default vendor_data_file:dir { create write add_name };
 allow hal_audio_default vendor_data_file:file { append create getattr open read };
-dontaudit hal_audio_default sysfs:dir read;
+allow hal_audio_default sysfs:dir r_dir_perms;

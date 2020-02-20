@@ -1,19 +1,24 @@
-type hal_fingerprint_sdm660, domain, binder_in_vendor_violators;
+type hal_fingerprint_sdm660, domain;
 hal_server_domain(hal_fingerprint_sdm660, hal_fingerprint)
 
 type hal_fingerprint_sdm660_exec, exec_type, vendor_file_type, file_type;
-typeattribute hal_fingerprint_sdm660 data_between_core_and_vendor_violators;
-binder_use(hal_fingerprint_sdm660)
 init_daemon_domain(hal_fingerprint_sdm660)
 
-allow hal_fingerprint_sdm660 fingerprint_device:chr_file { read write open ioctl };
-allow hal_fingerprint_sdm660 { tee_device uhid_device }:chr_file { read write open ioctl };
-allow hal_fingerprint_sdm660 fingerprint_data_file:file rw_file_perms;
+allow hal_fingerprint_sdm660 {
+    fingerprint_device
+    tee_device
+    uhid_device
+}:chr_file rw_file_perms;
+
+# TODO(b/36644492): Remove data_between_core_and_vendor_violators once
+# hal_fingerprint no longer directly accesses fingerprintd_data_file.
+typeattribute hal_fingerprint_sdm660 data_between_core_and_vendor_violators;
+# access to /data/system/users/[0-9]+/fpdata
+
 allow hal_fingerprint_sdm660 fingerprintd_data_file:dir rw_dir_perms;
 allow hal_fingerprint_sdm660 fingerprintd_data_file:file create_file_perms;
-allow hal_fingerprint_sdm660 { fuse mnt_user_file storage_file }:dir search;
-allow hal_fingerprint_sdm660 { mnt_user_file storage_file }:lnk_file read;
-allow hal_fingerprint_sdm660 fingerprint_sysfs:dir r_dir_perms;
+allow hal_fingerprint_sdm660 fingerprint_data_file:file rw_file_perms;
+
 allow hal_fingerprint_sdm660 fingerprint_sysfs:file rw_file_perms;
 
 allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
@@ -25,22 +30,12 @@ allow hal_fingerprint_sdm660 vendor_fp_prop:file { getattr open read };
 
 allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
 
-binder_call(hal_fingerprint_sdm660, vndservicemanager)
+allow hal_fingerprint_sdm660 self:netlink_socket create_socket_perms_no_ioctl;
+
+allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
 binder_call(hal_fingerprint_sdm660, hal_perf_default)
 
-binder_use(hal_fingerprint_sdm660)
-
 r_dir_file(hal_fingerprint_sdm660, firmware_file)
-
-add_service(hal_fingerprint_sdm660, goodixvnd_service)
-
-allow hal_fingerprint_sdm660 vndbinder_device:chr_file ioctl;
-
 set_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 
-vndbinder_use(hal_fingerprint_sdm660)
-
-dontaudit hal_fingerprint_sdm660 { media_rw_data_file sdcardfs}:dir search;
-dontaudit hal_fingerprint_sdm660 media_rw_data_file:dir { read open };
-dontaudit hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
-dontaudit hal_fingerprint_sdm660 hal_fingerprint_hwservice:hwservice_manager add;
+dontaudit hal_fingerprint_default storage_file:dir search;

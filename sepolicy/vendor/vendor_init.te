@@ -10,7 +10,6 @@ allow vendor_init {
 
 allow vendor_init unlabeled:{ dir file } { getattr relabelfrom };
 
-set_prop(vendor_init, camera_prop)
 allow vendor_init media_rw_data_file:file { getattr relabelfrom };
 
 allow vendor_init rootfs:dir { add_name create setattr write };
