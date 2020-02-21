@@ -1,6 +1,17 @@
 # Battery
 genfscon sysfs /devices/soc/c176000.i2c/i2c-2/2-001d            u:object_r:sysfs_battery_supply:s0
 
+genfscon sysfs /devices/soc/soc:fingerprint_fpc/device_prepare  u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fingerprint_fpc/fingerdown_wait u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fingerprint_fpc/irq             u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fingerprint_fpc/irq_enable      u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fingerprint_fpc/wakeup_enable   u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fpc1020/device_prepare          u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fpc1020/fingerdown_wait         u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fpc1020/irq                     u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fpc1020/irq_enable              u:object_r:fingerprint_sysfs:s0
+genfscon sysfs /devices/soc/soc:fpc1020/wakeup_enable           u:object_r:fingerprint_sysfs:s0
+
 # Power
 genfscon debugfs /rpm_stats                                     u:object_r:debugfs_rpm:s0
 genfscon debugfs /system_stats                                  u:object_r:debugfs_rpm:s0
