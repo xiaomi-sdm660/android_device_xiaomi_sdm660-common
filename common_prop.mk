@@ -314,10 +314,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.vsync_event_phase_offset_ns=2000000 \
     ro.surface_flinger.vsync_sf_event_phase_offset_ns=6000000
 
-# Create input surface on the framework side
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.stagefright.c2inputsurface=-1
-
 #Storaged
  PRODUCT_PROPERTY_OVERRIDES += \
     ro.storaged.event.interval=99999
