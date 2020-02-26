@@ -1493,6 +1493,19 @@ GnssAdapter::gnssGetConfigCommand(GnssConfigFlagsMask configMask) {
                     errs[index++] = LOCATION_ERROR_NOT_SUPPORTED;
                 }
             }
+            if (mConfigMask & GNSS_CONFIG_FLAGS_ROBUST_LOCATION_BIT) {
+                uint32_t sessionId = *(mIds+index);
+                 LocApiResponse* locApiResponse =
+                        new LocApiResponse(*mAdapter.getContext(),
+                                           [this, sessionId] (LocationError err) {
+                                           mAdapter.reportResponse(err, sessionId);});
+                if (!locApiResponse) {
+                    LOC_LOGe("memory alloc failed");
+                    mAdapter.reportResponse(LOCATION_ERROR_GENERAL_FAILURE, sessionId);
+                } else {
+                   mApi.getRobustLocationConfig(sessionId, locApiResponse);
+                }
+            }
 
             mAdapter.reportResponse(index, errs, mIds);
             delete[] errs;
@@ -1715,7 +1728,8 @@ void GnssAdapter::reportGnssSvIdConfig(const GnssSvIdConfig& svIdConfig)
                  svIdConfig.bdsBlacklistSvMask, svIdConfig.gloBlacklistSvMask,
                  svIdConfig.qzssBlacklistSvMask, svIdConfig.galBlacklistSvMask,
                  svIdConfig.sbasBlacklistSvMask);
-        mControlCallbacks.gnssConfigCb(config);
+        // use 0 session id to indicate that receiver does not yet care about session id
+        mControlCallbacks.gnssConfigCb(0, config);
     } else {
         LOC_LOGe("Failed to report, size %d", (uint32_t)config.size);
     }
@@ -5501,16 +5515,6 @@ void
 GnssAdapter::configRobustLocation(uint32_t sessionId,
                                   bool enable, bool enableForE911) {
 
-
-    if ((mLocConfigInfo.robustLocationConfigInfo.isValid == true) &&
-            (mLocConfigInfo.robustLocationConfigInfo.enable == enable) &&
-            (mLocConfigInfo.robustLocationConfigInfo.enableFor911 == enableForE911)) {
-        // no change in configuration, inform client of response and simply return
-        reportResponse(LOCATION_ERROR_SUCCESS, sessionId);
-        return;
-    }
-
-
     mLocConfigInfo.robustLocationConfigInfo.isValid = true;
     mLocConfigInfo.robustLocationConfigInfo.enable = enable;
     mLocConfigInfo.robustLocationConfigInfo.enableFor911 = enableForE911;
@@ -5563,6 +5567,32 @@ uint32_t GnssAdapter::configRobustLocationCommand(
 
     sendMsg(new MsgConfigRobustLocation(*this, sessionId, enable, enableForE911));
     return sessionId;
+}
+
+void GnssAdapter::reportGnssConfigEvent(uint32_t sessionId, const GnssConfig& gnssConfig)
+{
+    struct MsgReportGnssConfig : public LocMsg {
+        GnssAdapter& mAdapter;
+        uint32_t     mSessionId;
+        mutable GnssConfig   mGnssConfig;
+        inline MsgReportGnssConfig(GnssAdapter& adapter,
+                                   uint32_t sessionId,
+                                   const GnssConfig& gnssConfig) :
+            LocMsg(),
+            mAdapter(adapter),
+            mSessionId(sessionId),
+            mGnssConfig(gnssConfig) {}
+        inline virtual void proc() const {
+            // Invoke control clients config callback
+            if (nullptr != mAdapter.mControlCallbacks.gnssConfigCb) {
+                mAdapter.mControlCallbacks.gnssConfigCb(mSessionId, mGnssConfig);
+            } else {
+                LOC_LOGe("Failed to report, callback not registered");
+            }
+        }
+    };
+
+    sendMsg(new MsgReportGnssConfig(*this, sessionId, gnssConfig));
 }
 
 /* ==== Eng Hub Proxy ================================================================= */

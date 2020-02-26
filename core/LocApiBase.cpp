@@ -591,6 +591,11 @@ void LocApiBase::handleBatchStatusEvent(BatchingStatus batchStatus)
     TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportBatchStatusChangeEvent(batchStatus));
 }
 
+void LocApiBase::reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConfig)
+{
+    // loop through adapters, and deliver to the first handling adapter.
+    TO_ALL_LOCADAPTERS(mLocAdapters[i]->reportGnssConfigEvent(sessionId, gnssConfig));
+}
 
 enum loc_api_adapter_err LocApiBase::
    open(LOC_API_ADAPTER_EVENT_MASK_T /*mask*/)
@@ -881,6 +886,10 @@ void LocApiBase::
     configRobustLocation(bool /*enabled*/,
                          bool /*enableForE911*/,
                          LocApiResponse* /*adapterResponse*/)
+DEFAULT_IMPL()
+
+void LocApiBase::
+    getRobustLocationConfig(uint32_t sessionId, LocApiResponse* /*adapterResponse*/)
 DEFAULT_IMPL()
 
 } // namespace loc_core

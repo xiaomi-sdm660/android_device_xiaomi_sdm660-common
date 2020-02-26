@@ -414,6 +414,7 @@ public:
     virtual void reportSvEphemerisEvent(GnssSvEphemerisReport & svEphemeris);
     virtual void reportGnssSvIdConfigEvent(const GnssSvIdConfig& config);
     virtual void reportGnssSvTypeConfigEvent(const GnssSvTypeConfig& config);
+    virtual void reportGnssConfigEvent(uint32_t sessionId, const GnssConfig& gnssConfig);
     virtual bool reportGnssEngEnergyConsumedEvent(uint64_t energyConsumedSinceFirstBoot);
     virtual void reportLocationSystemInfoEvent(const LocationSystemInfo& locationSystemInfo);
 
