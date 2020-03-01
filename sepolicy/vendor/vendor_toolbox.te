@@ -5,9 +5,6 @@ init_daemon_domain(vendor_toolbox)
 # Allow vendor_toolbox to use sys_admin capability
 allow vendor_toolbox self:capability sys_admin;
 
-# For the use of /vendor/bin/toybox_vendor from vendor init.rc fragments
-domain_trans(init, vendor_toolbox_exec, vendor_toolbox)
-
 # Allow vendor_toolbox to execute /vendor/bin/toybox_vendor
 allow vendor_toolbox vendor_toolbox_exec:file execute_no_trans;
 
