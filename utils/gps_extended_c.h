@@ -401,6 +401,9 @@ typedef uint64_t GpsLocationExtendedFlags;
 #define GPS_LOCATION_EXTENDED_HAS_DGNSS_REF_STATION_ID         0x40000000000
 /** GpsLocationExtended has dgnss data age */
 #define GPS_LOCATION_EXTENDED_HAS_DGNSS_DATA_AGE               0x80000000000
+ /** GpsLocationExtended has the conformityIndex computed from
+  *  robust location feature. */
+#define GPS_LOCATION_EXTENDED_HAS_CONFORMITY_INDEX             0x100000000000
 
 typedef uint32_t LocNavSolutionMask;
 /* Bitmask to specify whether SBAS ionospheric correction is used  */
@@ -797,6 +800,12 @@ typedef struct {
 
     /**  If DGNSS is used, DGNSS data age in milli-seconds  */
     uint32_t dgnssDataAgeMsec;
+
+    /* When robust location is enabled, this field
+     * will how well the various input data considered for
+     * navigation solution conform to expectations.
+     * Range: 0 (least conforming) to 1 (most conforming) */
+    float conformityIndex;
 } GpsLocationExtended;
 
 enum loc_sess_status {

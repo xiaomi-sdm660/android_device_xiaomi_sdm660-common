@@ -135,8 +135,15 @@ typedef struct {
 } PaceConfigInfo;
 
 typedef struct {
+    bool isValid;
+    bool enable;
+    bool enableFor911;
+} RobustLocationConfigInfo;
+
+typedef struct {
     TuncConfigInfo tuncConfigInfo;
     PaceConfigInfo paceConfigInfo;
+    RobustLocationConfigInfo robustLocationConfigInfo;
 } LocIntegrationConfigInfo;
 
 using namespace loc_core;
@@ -248,8 +255,9 @@ public:
     /* ======== EVENTS ====(Called from QMI Thread)========================================= */
     virtual void handleEngineUpEvent();
     /* ======== UTILITIES ================================================================== */
-    void restartSessions();
+    void restartSessions(bool modemSSR = false);
     void checkAndRestartTimeBasedSession();
+    void suspendSessions();
 
     /* ==== CLIENT ========================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -295,6 +303,7 @@ public:
                         const GnssSvIdConfig& svIdConfig);
     void resetSvConfig(uint32_t sessionId);
     void configLeverArm(uint32_t sessionId, const LeverArmConfigInfo& configInfo);
+    void configRobustLocation(uint32_t sessionId, bool enable, bool enableForE911);
 
     /* ==== NI ============================================================================= */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -362,6 +371,7 @@ public:
                                        const GnssSvIdConfig& svIdConfig);
     uint32_t gnssResetSvConfigCommand();
     uint32_t configLeverArmCommand(const LeverArmConfigInfo& configInfo);
+    uint32_t configRobustLocationCommand(bool enable, bool enableForE911);
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
