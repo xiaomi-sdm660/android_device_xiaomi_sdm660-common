@@ -3914,6 +3914,10 @@ case "$target" in
             echo 614400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
             echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/rtg_boost_freq
 
+            # configure input boost settings
+            echo "0:1017600" > /sys/devices/system/cpu/cpu_boost/input_boost_freq
+            echo 80 > /sys/devices/system/cpu/cpu_boost/input_boost_ms
+
             # configure governor settings for big cluster
             echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
             echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us
