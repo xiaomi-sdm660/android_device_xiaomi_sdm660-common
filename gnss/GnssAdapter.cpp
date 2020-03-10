@@ -3706,10 +3706,6 @@ GnssAdapter::reportSv(GnssSvNotification& svNotify)
                         svUsedIdMask = mGnssSvIdUsedInPosition.qzss_sv_used_ids_mask;
                     }
                 }
-                // QZSS SV id's need to reported as it is to framework, since
-                // framework expects it as it is. See GnssStatus.java.
-                // SV id passed to here by LocApi is 1-based.
-                svNotify.gnssSvs[i].svId += (QZSS_SV_PRN_MIN - 1);
                 break;
             case GNSS_SV_TYPE_NAVIC:
                 if (mGnssSvIdUsedInPosAvail) {
