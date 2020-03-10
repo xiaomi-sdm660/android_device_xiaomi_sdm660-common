@@ -622,6 +622,17 @@ typedef uint16_t GnssMeasUsageInfoValidityMask;
 #define GNSS_CARRIER_PHASE_RESIDUAL_VALID       ((GnssMeasUsageInfoValidityMask)0x00000004ul)
 #define GNSS_CARRIER_PHASE_AMBIGUITY_TYPE_VALID ((GnssMeasUsageInfoValidityMask)0x00000008ul)
 
+typedef uint16_t GnssSvPolyStatusMask;
+#define GNSS_SV_POLY_SRC_ALM_CORR_V02 ((GnssSvPolyStatusMask)0x01)
+#define GNSS_SV_POLY_GLO_STR4_V02 ((GnssSvPolyStatusMask)0x02)
+#define GNSS_SV_POLY_DELETE_V02 ((GnssSvPolyStatusMask)0x04)
+#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_V02 ((GnssSvPolyStatusMask)0x08)
+typedef uint16_t GnssSvPolyStatusMaskValidity;
+#define GNSS_SV_POLY_SRC_ALM_CORR_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x01)
+#define GNSS_SV_POLY_GLO_STR4_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x02)
+#define GNSS_SV_POLY_DELETE_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x04)
+#define GNSS_SV_POLY_SRC_GAL_FNAV_OR_INAV_VALID_V02 ((GnssSvPolyStatusMaskValidity)0x08)
+
 
 typedef struct {
     /** Specifies GNSS signal type
@@ -1014,9 +1025,14 @@ typedef uint32_t LOC_GPS_LOCK_MASK;
 #define isGpsLockAll(lock) (((lock) & ((LOC_GPS_LOCK_MASK)3)) == 3)
 
 /*++ ***********************************************
-**  Satellite Measurement Structure definitions
+**  Satellite Measurement and Satellite Polynomial
+**  structure definitions
 **  ***********************************************
 --*/
+#define GNSS_SV_POLY_VELOCITY_COEF_MAX_SIZE         12
+#define GNSS_SV_POLY_XYZ_0_TH_ORDER_COEFF_MAX_SIZE  3
+#define GNSS_SV_POLY_XYZ_N_TH_ORDER_COEFF_MAX_SIZE  9
+#define GNSS_SV_POLY_SV_CLKBIAS_COEFF_MAX_SIZE      4
 /** Max number of GNSS SV measurement */
 #define GNSS_LOC_SV_MEAS_LIST_MAX_SIZE              128
 
@@ -1573,7 +1589,66 @@ typedef enum
 
    GNSS_SV_POLY_GLO_STR4                = 0x40
    /**< GLONASS String 4 has been received */
-}Gnss_SvPolyStatusMaskType;
+} Gnss_SvPolyStatusMaskType;
+
+
+typedef struct {
+    uint32_t      size;
+    uint16_t     gnssSvId;
+    /** Unique SV Identifier.
+     *  For SV Range of supported constellation, please refer to the
+     *  comment section of gnssSvId in GpsMeasUsageInfo.
+    */
+    int8_t      freqNum;
+    /** Freq index, only valid if u_SysInd is GLO */
+
+    GnssSvPolyStatusMaskValidity svPolyStatusMaskValidity;
+    GnssSvPolyStatusMask         svPolyStatusMask;
+
+    uint32_t    is_valid;
+
+    uint16_t     iode;
+    /* Ephemeris reference time
+       GPS:Issue of Data Ephemeris used [unitless].
+       GLO: Tb 7-bit, refer to ICD02
+    */
+    double      T0;
+    /* Reference time for polynominal calculations
+       GPS: Secs in week.
+       GLO: Full secs since Jan/01/96
+    */
+    double      polyCoeffXYZ0[GNSS_SV_POLY_XYZ_0_TH_ORDER_COEFF_MAX_SIZE];
+    /* C0X, C0Y, C0Z */
+    double      polyCoefXYZN[GNSS_SV_POLY_XYZ_N_TH_ORDER_COEFF_MAX_SIZE];
+    /* C1X, C2X ... C2Z, C3Z */
+    float       polyCoefOther[GNSS_SV_POLY_SV_CLKBIAS_COEFF_MAX_SIZE];
+    /* C0T, C1T, C2T, C3T */
+    float       svPosUnc;       /* SV position uncertainty [m]. */
+    float       ionoDelay;    /* Ionospheric delay at d_T0 [m]. */
+    float       ionoDot;      /* Iono delay rate [m/s].  */
+    float       sbasIonoDelay;/* SBAS Ionospheric delay at d_T0 [m]. */
+    float       sbasIonoDot;  /* SBAS Iono delay rate [m/s].  */
+    float       tropoDelay;   /* Tropospheric delay [m]. */
+    float       elevation;    /* Elevation [rad] at d_T0 */
+    float       elevationDot;      /* Elevation rate [rad/s] */
+    float       elevationUnc;      /* SV elevation [rad] uncertainty */
+    double      velCoef[GNSS_SV_POLY_VELOCITY_COEF_MAX_SIZE];
+    /* Coefficients of velocity poly */
+    uint32_t    enhancedIOD;    /*  Enhanced Reference Time */
+    float gpsIscL1ca;
+    float gpsIscL2c;
+    float gpsIscL5I5;
+    float gpsIscL5Q5;
+    float gpsTgd;
+    float gloTgdG1G2;
+    float bdsTgdB1;
+    float bdsTgdB2;
+    float bdsTgdB2a;
+    float bdsIscB2a;
+    float galBgdE1E5a;
+    float galBgdE1E5b;
+    float navicTgdL5;
+} GnssSvPolynomial;
 
 typedef enum {
     GNSS_EPH_ACTION_UPDATE_SRC_UNKNOWN_V02 = 0, /**<Update ephemeris. Source of ephemeris is unknown  */
