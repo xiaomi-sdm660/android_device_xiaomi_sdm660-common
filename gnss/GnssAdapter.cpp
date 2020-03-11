@@ -3492,12 +3492,18 @@ GnssAdapter::reportPosition(const UlpLocation& ulpLocation,
                 }
             }
 
-            // if PACE is enabled and engine hub is running and the fix is from sensor,
-            // e.g.: DRE, inject DRE fix to modem
-            if ((true == mLocConfigInfo.paceConfigInfo.isValid &&
-                 true == mLocConfigInfo.paceConfigInfo.enable) &&
-                (true == initEngHubProxy()) && (LOC_POS_TECH_MASK_SENSORS & techMask)) {
-                mLocApi->injectPosition(locationInfo, false);
+            // if PACE is enabled
+            if ((true == mLocConfigInfo.paceConfigInfo.isValid) &&
+                    (true == mLocConfigInfo.paceConfigInfo.enable)) {
+                // If fix has sensor contribution, and it is fused fix with DRE engine
+                // contributing to the fix, inject to modem
+                if ((LOC_POS_TECH_MASK_SENSORS & techMask) &&
+                        (locationInfo.flags & GNSS_LOCATION_INFO_OUTPUT_ENG_TYPE_BIT) &&
+                        (locationInfo.locOutputEngType == LOC_OUTPUT_ENGINE_FUSED) &&
+                        (locationInfo.flags & GNSS_LOCATION_INFO_OUTPUT_ENG_MASK_BIT) &&
+                        (locationInfo.locOutputEngMask & DEAD_RECKONING_ENGINE)) {
+                    mLocApi->injectPosition(locationInfo, false);
+                }
             }
         }
     }
