@@ -287,7 +287,6 @@ on property:init.svc.hwcomposer-2-1=restarting
     stop vendor.ppd
 
 on charger
-    load_system_props
     start vendor.qcom-post-boot
     start vendor.hvdcp_opti
     setprop vendor.usb.controller a800000.dwc3
