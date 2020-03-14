@@ -758,7 +758,6 @@ service vendor.msm_irqbal_lb /vendor/bin/msm_irqbalance -f /system/vendor/etc/ms
 
 on property:init.svc.vendor.charger=running
     setprop persist.sys.usb.config mass_storage
-    load_system_props
     start qcom-post-boot
 
     write /sys/devices/system/cpu/cpu1/online 0
