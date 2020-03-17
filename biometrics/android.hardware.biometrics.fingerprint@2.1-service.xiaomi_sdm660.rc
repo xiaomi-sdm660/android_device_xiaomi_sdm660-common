@@ -33,6 +33,15 @@ on boot
     chmod 0660 /sys/bus/platform/devices/soc:fingerprint_fpc/screen_status
     chmod 0660 /sys/bus/platform/devices/soc:fingerprint_fpc/vreg_op_cnt
 
+    chown system system /sys/devices/soc/soc:fpc1020/fingerdown_wait
+    chmod 0220 /sys/devices/soc/soc:fpc1020/fingerdown_wait
+    chown system system /sys/devices/soc/soc:fpc1020/irq
+    chmod 0660 /sys/devices/soc/soc:fpc1020/irq
+    chown system system /sys/devices/soc/soc:fpc1020/hw_reset
+    chmod 0660 /sys/devices/soc/soc:fpc1020/hw_reset
+    chown system system /sys/devices/soc/soc:fpc1020/wakeup_enable
+    chmod 0660 /sys/devices/soc/soc:fpc1020/wakeup_enable
+
 on post-fs-data
     mkdir /data/misc/fpc 0770 system system
     mkdir /data/misc/goodix 0770 system system
