@@ -142,6 +142,7 @@ extern "C" const GnssInterface* getGnssInterface()
 const GnssInterface* getGnssInterface()
 #endif // DEBUG_X86
 {
+   gGnssInterface.initialize();
    return &gGnssInterface;
 }
 
