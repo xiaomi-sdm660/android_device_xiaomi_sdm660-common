@@ -67,6 +67,7 @@ void SystemStatusOsObserver::setSubscriptionObj(IDataItemSubscription* subscript
         inline SetSubsObj(ObserverContext& context, IDataItemSubscription* subscriptionObj) :
                 mContext(context), mSubsObj(subscriptionObj) {}
         void proc() const {
+            LOC_LOGi("SetSubsObj::enter");
             mContext.mSubscriptionObj = mSubsObj;
 
             if (!mContext.mSSObserver->mDataItemToClients.empty()) {
@@ -76,6 +77,7 @@ void SystemStatusOsObserver::setSubscriptionObj(IDataItemSubscription* subscript
                 mContext.mSubscriptionObj->subscribe(dis, mContext.mSSObserver);
                 mContext.mSubscriptionObj->requestData(dis, mContext.mSSObserver);
             }
+            LOC_LOGi("SetSubsObj::exit");
         }
     };
 
@@ -459,8 +461,9 @@ bool SystemStatusOsObserver::connectBackhaul()
                     mFwkActionReqObj(fwkActReq) {}
             virtual ~HandleConnectBackhaul() {}
             void proc() const {
-                LOC_LOGD("HandleConnectBackhaul");
+                LOC_LOGi("HandleConnectBackhaul::enter");
                 mFwkActionReqObj->connectBackhaul();
+                LOC_LOGi("HandleConnectBackhaul::exit");
             }
             IFrameworkActionReq* mFwkActionReqObj;
         };
@@ -488,8 +491,9 @@ bool SystemStatusOsObserver::disconnectBackhaul()
                     mFwkActionReqObj(fwkActReq) {}
             virtual ~HandleDisconnectBackhaul() {}
             void proc() const {
-                LOC_LOGD("HandleDisconnectBackhaul");
+                LOC_LOGi("HandleDisconnectBackhaul::enter");
                 mFwkActionReqObj->disconnectBackhaul();
+                LOC_LOGi("HandleDisconnectBackhaul::exit");
             }
             IFrameworkActionReq* mFwkActionReqObj;
         };
