@@ -445,7 +445,7 @@ Return<bool> Gnss::setCallback_1_1(const sp<V1_1::IGnssCallback>& callback) {
         OdcpiRequestCallback cb = [this](const OdcpiRequestInfo& odcpiRequest) {
             odcpiRequestCb(odcpiRequest);
         };
-        gnssInterface->odcpiInit(cb);
+        gnssInterface->odcpiInit(cb, OdcpiPrioritytype::ODCPI_HANDLER_PRIORITY_LOW);
     }
 
     GnssAPIClient* api = getApi();
@@ -508,6 +508,9 @@ Return<bool> Gnss::injectBestLocation(const GnssLocation& gnssLocation) {
 void Gnss::odcpiRequestCb(const OdcpiRequestInfo& request) {
     ENTRY_LOG_CALLFLOW();
 
+    if (ODCPI_REQUEST_TYPE_STOP == request.type) {
+        return;
+    }
     if (mGnssCbIface_2_0 != nullptr) {
         // For emergency mode, request DBH (Device based hybrid) location
         // Mark Independent from GNSS flag to false.
@@ -575,7 +578,7 @@ Return<bool> Gnss::setCallback_2_0(const sp<V2_0::IGnssCallback>& callback) {
         OdcpiRequestCallback cb = [this](const OdcpiRequestInfo& odcpiRequest) {
             odcpiRequestCb(odcpiRequest);
         };
-        gnssInterface->odcpiInit(cb);
+        gnssInterface->odcpiInit(cb, OdcpiPrioritytype::ODCPI_HANDLER_PRIORITY_LOW);
     }
 
     GnssAPIClient* api = getApi();

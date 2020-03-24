@@ -2257,6 +2257,12 @@ struct OdcpiRequestInfo {
 /* Callback to send ODCPI request to framework */
 typedef std::function<void(const OdcpiRequestInfo& request)> OdcpiRequestCallback;
 
+/* ODCPI callback priorities*/
+enum OdcpiPrioritytype {
+    ODCPI_HANDLER_PRIORITY_LOW,
+    ODCPI_HANDLER_PRIORITY_HIGH
+};
+
 /*
  * Callback with AGNSS(IpV4) status information.
  *

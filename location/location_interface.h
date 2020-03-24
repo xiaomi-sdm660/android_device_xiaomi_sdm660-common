@@ -78,7 +78,7 @@ struct GnssInterface {
     void (*getDebugReport)(GnssDebugReport& report);
     void (*updateConnectionStatus)(bool connected, int8_t type, bool roaming,
                                    NetworkHandle networkHandle);
-    void (*odcpiInit)(const OdcpiRequestCallback& callback);
+    void (*odcpiInit)(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
     void (*odcpiInject)(const Location& location);
     void (*blockCPI)(double latitude, double longitude, float accuracy,
                      int blockDurationMsec, double latLonDiffThreshold);
