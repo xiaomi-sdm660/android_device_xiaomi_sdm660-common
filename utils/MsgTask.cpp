@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2013, 2015, 2017The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2013, 2015, 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -83,10 +83,8 @@ void MsgTask::sendMsg(const LocMsg* msg) const {
 }
 
 void MsgTask::prerun() {
-#ifndef FEATURE_EXTERNAL_AP
     // make sure we do not run in background scheduling group
      set_sched_policy(gettid(), SP_FOREGROUND);
-#endif /* FEATURE_EXTERNAL_AP */
 }
 
 bool MsgTask::run() {

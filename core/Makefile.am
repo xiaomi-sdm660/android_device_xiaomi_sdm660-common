@@ -40,6 +40,10 @@ libloc_core_la_c_sources = \
            SystemStatusOsObserver.cpp \
            SystemStatus.cpp
 
+if USE_EXTERNAL_AP
+AM_CFLAGS += -DFEATURE_EXTERNAL_AP
+endif
+
 library_includedir = $(pkgincludedir)
 
 library_include_HEADERS = $(libloc_core_la_h_sources)

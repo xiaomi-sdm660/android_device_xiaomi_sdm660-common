@@ -77,6 +77,8 @@ extern "C" {
 #include <cutils/properties.h>
 #include <cutils/threads.h>
 #include <cutils/sched_policy.h>
+#else
+#define set_sched_policy(a, b)
 #endif /* FEATURE_EXTERNAL_AP */
 #include <pthread.h>
 #include <sys/time.h>
