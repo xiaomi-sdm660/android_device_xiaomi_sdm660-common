@@ -21,6 +21,7 @@ allow vendor_toolbox {
     persist_display_file
     persist_drm_file
     persist_file
+    persist_fingerprint_file
     persist_hvdcp_file
     persist_misc_file
     persist_qti_fp_file
@@ -35,4 +36,4 @@ allow vendor_toolbox {
     sensors_persist_file
     unlabeled
     vendor_persist_mmi_file
-}:dir { r_dir_perms setattr };
+}:dir { r_dir_perms setattr getattr};
