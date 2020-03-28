@@ -56,10 +56,6 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final String PREF_THERMAL = "thermal";
     public static final String THERMAL_PATH = "/sys/devices/virtual/thermal/thermal_message/sconfig";
 
-    private static final String PREF_ENABLE_DIRAC = "dirac_enabled";
-    private static final String PREF_HEADSET = "dirac_headset_pref";
-    private static final String PREF_PRESET = "dirac_preset_pref";
-
     private static final String CATEGORY_HALL_WAKEUP = "hall_wakeup";
     public static final String PREF_HALL_WAKEUP = "hall";
     public static final String HALL_WAKEUP_PATH = "/sys/module/hall/parameters/hall_toggle";
@@ -109,30 +105,6 @@ public class DeviceSettings extends PreferenceFragment implements
         mTHERMAL.setSummary(mTHERMAL.getEntry());
         mTHERMAL.setOnPreferenceChangeListener(this);
 
-        boolean enhancerEnabled;
-        try {
-            enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
-        } catch (java.lang.NullPointerException e) {
-            getContext().startService(new Intent(getContext(), DiracService.class));
-            try {
-                enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
-            } catch (NullPointerException ne) {
-                // Avoid crash
-                ne.printStackTrace();
-                enhancerEnabled = false;
-            }
-        }
-
-        SecureSettingSwitchPreference enableDirac = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_DIRAC);
-        enableDirac.setOnPreferenceChangeListener(this);
-        enableDirac.setChecked(enhancerEnabled);
-
-        SecureSettingListPreference headsetType = (SecureSettingListPreference) findPreference(PREF_HEADSET);
-        headsetType.setOnPreferenceChangeListener(this);
-
-        SecureSettingListPreference preset = (SecureSettingListPreference) findPreference(PREF_PRESET);
-        preset.setOnPreferenceChangeListener(this);
-
         if (FileUtils.fileWritable(HALL_WAKEUP_PATH)) {
             SecureSettingSwitchPreference hall = (SecureSettingSwitchPreference) findPreference(PREF_HALL_WAKEUP);
             hall.setChecked(FileUtils.getValue(HALL_WAKEUP_PATH).equals("Y"));
@@ -159,33 +131,6 @@ public class DeviceSettings extends PreferenceFragment implements
                 mTHERMAL.setValue((String) value);
                 mTHERMAL.setSummary(mTHERMAL.getEntry());
                 FileUtils.setValue(THERMAL_PATH, (String) value);
-                break;
-
-            case PREF_ENABLE_DIRAC:
-                try {
-                    DiracService.sDiracUtils.setEnabled((boolean) value);
-                } catch (java.lang.NullPointerException e) {
-                    getContext().startService(new Intent(getContext(), DiracService.class));
-                    DiracService.sDiracUtils.setEnabled((boolean) value);
-                }
-                break;
-
-            case PREF_HEADSET:
-                try {
-                    DiracService.sDiracUtils.setHeadsetType(Integer.parseInt(value.toString()));
-                } catch (java.lang.NullPointerException e) {
-                    getContext().startService(new Intent(getContext(), DiracService.class));
-                    DiracService.sDiracUtils.setHeadsetType(Integer.parseInt(value.toString()));
-                }
-                break;
-
-            case PREF_PRESET:
-                try {
-                    DiracService.sDiracUtils.setLevel(String.valueOf(value));
-                } catch (java.lang.NullPointerException e) {
-                    getContext().startService(new Intent(getContext(), DiracService.class));
-                    DiracService.sDiracUtils.setLevel(String.valueOf(value));
-                }
                 break;
 
             case PREF_HALL_WAKEUP:
