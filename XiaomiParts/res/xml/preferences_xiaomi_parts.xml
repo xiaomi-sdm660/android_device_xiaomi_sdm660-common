@@ -78,7 +78,12 @@
                 android:targetClass="org.lineageos.settings.devicex.ButtonSettingsActivity"
                 android:targetPackage="org.lineageos.settings.devicex" />
         </Preference>
-
+        <SwitchPreference
+            android:key="fps_info"
+            android:icon="@drawable/ic_fps_info"
+            android:title="@string/fps_info_title"
+            android:summary="@string/fps_info_summary"
+            android:persistent="true" />        
     </PreferenceCategory>
 
     <PreferenceCategory
