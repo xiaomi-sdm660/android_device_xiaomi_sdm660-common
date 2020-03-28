@@ -66,6 +66,12 @@
                 android:targetClass="org.lineageos.settings.doze.DozeSettingsActivity"
                 android:targetPackage="org.lineageos.settings.doze" />
         </Preference>
+        <SwitchPreference
+            android:key="fps_info"
+            android:icon="@drawable/ic_fps_info"
+            android:title="@string/fps_info_title"
+            android:summary="@string/fps_info_summary"
+            android:persistent="true" />
 
         <Preference
             android:key="device_jason"

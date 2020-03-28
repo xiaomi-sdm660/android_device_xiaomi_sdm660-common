@@ -94,4 +94,8 @@
     <string name="edit_value">Choose new Value</string>
     <string name="default_value">Default Value</string>
     <string name="edit_hint">Value between %1$d and %2$d</string>
+
+    <!-- FPS Info -->
+    <string name="fps_info_title">FPS Overlay</string>
+    <string name="fps_info_summary">Show overlay with with current frames per second</string>
 </resources>

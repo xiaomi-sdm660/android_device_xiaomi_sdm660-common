@@ -22,3 +22,6 @@ type hall_dev, sysfs_type, fs_type;
 type kcal_dev, sysfs_type, fs_type;
 
 type thermal_data_file, file_type, data_file_type;
+
+# XiamiParts
+type sysfs_fpsinfo, sysfs_type, fs_type;
