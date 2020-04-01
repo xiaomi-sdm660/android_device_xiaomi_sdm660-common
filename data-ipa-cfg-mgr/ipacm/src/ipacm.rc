@@ -25,10 +25,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# msm specific files that need to be created on /data
+on post-fs-data
+    mkdir /data/vendor/ipa 0770 radio radio
+    chmod 0770 /data/vendor/ipa
+
 service vendor.ipacm /system/vendor/bin/ipacm
-    class main
+    class late_start
     user radio
     group radio inet
-
-on post-fs
-    start vendor.ipacm
+    writepid /dev/cpuset/system-background/tasks

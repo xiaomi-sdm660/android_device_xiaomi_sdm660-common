@@ -1,0 +1,4 @@
+# Fix for WLAN tethering offload
+# SELinux : avc:  denied  { set } for property=wifi.active.interface pid=2918 uid=1010 gid=1010 scontext=u:r::s0 tcontext=u:object_r:default_prop:s0 tclass=property_service
+allow hal_wifi_default exported_wifi_prop:property_service set;
+
