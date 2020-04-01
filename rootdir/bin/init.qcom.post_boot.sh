@@ -3559,7 +3559,8 @@ case "$target" in
         # Set Memory parameters
         configure_memory_parameters
 
-        if [ `cat /sys/devices/soc0/revision` == "2.0" ]; then
+        rev=`cat /sys/devices/soc0/revision`
+        if [ $rev == "2.0" ] || [ $rev == "2.0.2" ]; then
              # r2.0 related changes
              echo "0:1075200" > /sys/devices/system/cpu/cpu_boost/input_boost_freq
              echo 610000 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/rtg_boost_freq
