@@ -666,9 +666,6 @@
          The user is forbidden from setting the brightness below this level. -->
     <integer name="config_screenBrightnessSettingMinimum">1</integer>
 
-    <!-- Specify custom blanking delay of the display -->
-    <integer name="config_screen_off_delay">0</integer>
-
     <!-- Buttom brightness setting allowed by the power manager.
          The user is forbidden from setting the brightness. -->
     <integer name="config_buttonBrightnessSettingDefault">0</integer>
@@ -735,6 +732,9 @@
     <!-- If true, the doze component is not started until after the screen has been
          turned off and the screen off animation has been performed. -->
     <bool name="config_dozeAfterScreenOffByDefault">true</bool>
+
+    <!-- Whether the display blanks itself when transitioning from a doze to a non-doze state -->
+    <bool name="config_displayBlanksAfterDoze">true</bool>
 
     <!-- Power Management: Specifies whether to decouple the auto-suspend state of the
          device from the display on/off state.
