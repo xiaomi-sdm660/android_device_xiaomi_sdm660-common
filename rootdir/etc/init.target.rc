@@ -43,6 +43,7 @@ on init
 
     # Setup permission for Power HAL
     chown system system /dev/stune/top-app/schedtune.boost
+    chown system system /dev/cpu_dma_latency
     chown system system /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
     chown system system /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
     chown system system /sys/class/kgsl/kgsl-3d0/force_rail_on
@@ -50,7 +51,7 @@ on init
     chown system system /sys/class/kgsl/kgsl-3d0/idle_timer
     chown system system /sys/class/devfreq/soc:qcom,gpubw/min_freq
     chown system system /sys/devices/soc/soc:qcom,cpubw/devfreq/soc:qcom,cpubw/min_freq
-    
+
     # Add a cpuset for the camera daemon
     mkdir /dev/cpuset/camera-daemon 0750 cameraserver cameraserver
     write /dev/cpuset/camera-daemon/cpus 0-7
