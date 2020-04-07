@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2019 The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2020 The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -52,6 +52,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "linux/ipa_qmi_service_v01.h"
 #ifdef FEATURE_IPACM_HAL
 #include "IPACM_OffloadManager.h"
+#include <IPACM_Netlink.h>
 #endif
 
 bool IPACM_Wan::wan_up = false;
@@ -91,6 +92,8 @@ int	IPACM_Wan::ipa_if_num_tether_v4[IPA_MAX_IFACE_ENTRIES];
 int	IPACM_Wan::ipa_if_num_tether_v6[IPA_MAX_IFACE_ENTRIES];
 #endif
 
+uint16_t IPACM_Wan::mtu_default_wan = DEFAULT_MTU_SIZE;
+
 IPACM_Wan::IPACM_Wan(int iface_index,
 	ipacm_wan_iface_type is_sta_mode,
 	uint8_t *mac_addr) : IPACM_Iface(iface_index)
@@ -129,6 +132,7 @@ IPACM_Wan::IPACM_Wan(int iface_index,
 	ext_prop = NULL;
 	is_ipv6_frag_firewall_flt_rule_installed = false;
 	ipv6_frag_firewall_flt_rule_hdl = 0;
+	mtu_size = DEFAULT_MTU_SIZE;
 
 	num_wan_client = 0;
 	header_name_count = 0;
@@ -1818,6 +1822,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 	}
 	IPACMDBG_H("backhaul_is_wan_bridge ?: %d \n", IPACM_Wan::backhaul_is_wan_bridge);
 
+	/* query MTU size of the interface */
+	query_mtu_size();
+
 	if (m_is_sta_mode ==Q6_WAN)
 	{
 		IPACM_Wan::backhaul_mode = m_is_sta_mode;
@@ -1990,7 +1997,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 					IPACMDBG_H("hw-index-enable %d, counter %d\n", IPACM_Iface::ipacmcfg->hw_fnr_stats_support, IPACM_Iface::ipacmcfg->hw_counter_offset + UL_HW);
 					result = m_routing.AddRoutingRule_hw_index(rt_rule, IPACM_Iface::ipacmcfg->hw_counter_offset + UL_HW);
 				} else {
-					result = m_routing.AddRoutingRule(rt_rule);			
+					result = m_routing.AddRoutingRule(rt_rule);
 				}
 #else
 				result = m_routing.AddRoutingRule(rt_rule);
@@ -2105,6 +2112,11 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 				wan_route_rule_v6_hdl_a5[0], 0, iptype);
 	}
 
+	/* set mtu_default_wan to current default wan instance */
+	mtu_default_wan = mtu_size;
+
+	IPACMDBG_H("replace the mtu_default_wan to %d\n", mtu_default_wan);
+
 	ipacm_event_iface_up *wanup_data;
 	wanup_data = (ipacm_event_iface_up *)malloc(sizeof(ipacm_event_iface_up));
 	if (wanup_data == NULL)
@@ -2218,8 +2230,9 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 			IPACMDBG_H("dev %s add producer dependency\n", dev_name);
 			IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 			IPACM_Iface::ipacmcfg->AddRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe],false);
+	}
 #ifdef WAN_IOC_NOTIFY_WAN_STATE
-	} else {
+	else {
 			if ((m_is_sta_mode == Q6_WAN && ipa_pm_q6_check == 0 ) || (m_is_sta_mode == Q6_MHI_WAN))
 			{
 				fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
@@ -2240,9 +2253,8 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 			ipa_pm_q6_check++;
 			IPACMDBG_H("update ipa_pm_q6_check to %d\n", ipa_pm_q6_check);
 	}
-#else
-	}
 #endif
+
 	if(rt_rule != NULL)
 	{
 		free(rt_rule);
@@ -4261,9 +4273,6 @@ int IPACM_Wan::config_wan_firewall_rule(ipa_ip_type iptype)
 	}
 	else if(iptype == IPA_IP_v6)
 	{
-#ifdef FEATURE_IPA_ANDROID
-		add_tcpv6_filtering_rule(flt_rule_v6, IPACM_Wan::num_v6_flt_rule);
-#endif
 		IPACM_Wan::num_v6_flt_rule = IPA_V2_NUM_DEFAULT_WAN_FILTER_RULE_IPV6;
 		if(IPACM_FAILURE == add_icmp_alg_rules(flt_rule_v6, IPACM_Wan::num_v6_flt_rule, IPA_IP_v6))
 		{
@@ -4550,104 +4559,6 @@ fail:
 	return res;
 }
 
-int IPACM_Wan::add_tcpv6_filtering_rule(struct ipa_flt_rule_add *rules, int rule_offset)
-{
-	struct ipa_ioc_get_rt_tbl_indx rt_tbl_idx;
-	struct ipa_flt_rule_add flt_rule_entry;
-	struct ipa_ioc_generate_flt_eq flt_eq;
-	int res = IPACM_SUCCESS;
-
-	if(rules == NULL)
-	{
-		IPACMERR("No filtering table available.\n");
-		return IPACM_FAILURE;
-	}
-	if(rx_prop == NULL)
-	{
-		IPACMERR("No tx property.\n");
-		return IPACM_FAILURE;
-	}
-
-		memset(&rt_tbl_idx, 0, sizeof(rt_tbl_idx));
-		strlcpy(rt_tbl_idx.name, IPACM_Iface::ipacmcfg->rt_tbl_wan_dl.name, IPA_RESOURCE_NAME_MAX);
-		rt_tbl_idx.name[IPA_RESOURCE_NAME_MAX-1] = '\0';
-		rt_tbl_idx.ip = IPA_IP_v6;
-		if(0 != ioctl(m_fd_ipa, IPA_IOC_QUERY_RT_TBL_INDEX, &rt_tbl_idx))
-		{
-			IPACMERR("Failed to get routing table index from name\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-
-		IPACMDBG_H("Routing table %s has index %d\n", rt_tbl_idx.name, rt_tbl_idx.idx);
-		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
-
-		flt_rule_entry.at_rear = true;
-		flt_rule_entry.flt_rule_hdl = -1;
-		flt_rule_entry.status = -1;
-
-		flt_rule_entry.rule.retain_hdr = 1;
-		flt_rule_entry.rule.to_uc = 0;
-		flt_rule_entry.rule.eq_attrib_type = 1;
-		flt_rule_entry.rule.action = IPA_PASS_TO_ROUTING;
-		flt_rule_entry.rule.rt_tbl_idx = rt_tbl_idx.idx;
-
-#ifdef FEATURE_IPA_ANDROID
-		IPACMDBG_H("Add TCP ctrl rules: total num %d\n", IPA_V2_NUM_TCP_WAN_FILTER_RULE_IPV6);
-#endif
-		memcpy(&flt_rule_entry.rule.attrib,
-					 &rx_prop->rx[0].attrib,
-					 sizeof(flt_rule_entry.rule.attrib));
-		memset(&flt_eq, 0, sizeof(flt_eq));
-		memcpy(&flt_eq.attrib, &flt_rule_entry.rule.attrib, sizeof(flt_eq.attrib));
-		flt_eq.ip = IPA_IP_v6;
-		if(0 != ioctl(m_fd_ipa, IPA_IOC_GENERATE_FLT_EQ, &flt_eq))
-		{
-			IPACMERR("Failed to get eq_attrib\n");
-			res = IPACM_FAILURE;
-			goto fail;
-		}
-
-		memcpy(&flt_rule_entry.rule.eq_attrib,
-					 &flt_eq.eq_attrib,
-					 sizeof(flt_rule_entry.rule.eq_attrib));
-
-		flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<1);
-		flt_rule_entry.rule.eq_attrib.protocol_eq_present = 1;
-		flt_rule_entry.rule.eq_attrib.protocol_eq = IPACM_FIREWALL_IPPROTO_TCP;
-
-#ifdef FEATURE_IPA_V3
-		flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<7);
-#else
-		flt_rule_entry.rule.eq_attrib.rule_eq_bitmap |= (1<<8);
-#endif
-		flt_rule_entry.rule.eq_attrib.num_ihl_offset_meq_32 = 1;
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].offset = 12;
-
-		/* add TCP FIN rule*/
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_FIN_SHIFT);
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_FIN_SHIFT);
-		memcpy(&(rules[rule_offset]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
-
-		/* add TCP SYN rule*/
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_SYN_SHIFT);
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_SYN_SHIFT);
-		memcpy(&(rules[rule_offset + 1]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
-
-		/* add TCP RST rule*/
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].value = (((uint32_t)1)<<TCP_RST_SHIFT);
-		flt_rule_entry.rule.eq_attrib.ihl_offset_meq_32[0].mask = (((uint32_t)1)<<TCP_RST_SHIFT);
-		memcpy(&(rules[rule_offset + 2]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
-
-#ifdef FEATURE_IPA_ANDROID
-		IPACM_Wan::num_v6_flt_rule += IPA_V2_NUM_TCP_WAN_FILTER_RULE_IPV6;
-		IPACMDBG_H("Constructed %d ICMP filtering rules for ip type %d\n", IPA_V2_NUM_TCP_WAN_FILTER_RULE_IPV6, IPA_IP_v6);
-#endif
-
-fail:
-	return res;
-}
-
 int IPACM_Wan::del_wan_firewall_rule(ipa_ip_type iptype)
 {
 	if(iptype == IPA_IP_v4)
@@ -4785,6 +4696,7 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 	int fd_wwan_ioctl;
 	memset(&wan_state, 0, sizeof(wan_state));
 #endif
+	int ret = IPACM_SUCCESS;
 
 	IPACMDBG_H("got handle_route_del_evt for STA-mode with ip-family:%d \n", iptype);
 
@@ -4914,24 +4826,19 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			if(delete_offload_frag_rule())
 			{
 				IPACMERR("Failed to delete DL frag rule \n");
-				return IPACM_FAILURE;
+				ret = IPACM_FAILURE;
 			}
-			/* Delete MHI icmpv6 exception rule */
-			if(delete_icmpv6_exception_rule())
-			{
-				IPACMERR("Failed to delete icmpv6 rule \n");
-				return IPACM_FAILURE;
-			}
+
 			/* Delete tcp_fin_rst rule */
 			if(delete_tcp_fin_rst_exception_rule())
 			{
 				IPACMERR("Failed to delete tcp_fin_rst rule \n");
-				return IPACM_FAILURE;
+				ret = IPACM_FAILURE;
 			}
+			return ret;
 		}
 		else
 		{
-
 			wandown_data->backhaul_type = m_is_sta_mode;
 			memcpy(wandown_data->ipv6_prefix, ipv6_prefix, sizeof(wandown_data->ipv6_prefix));
 			evt_data.event = IPA_HANDLE_WAN_DOWN_V6;
@@ -4950,6 +4857,13 @@ int IPACM_Wan::handle_route_del_evt(ipa_ip_type iptype)
 			{
 				memset(IPACM_Wan::wan_up_dev_name, 0, sizeof(IPACM_Wan::wan_up_dev_name));
 			}
+			/* Delete MHI icmpv6 exception rule */
+			if(delete_icmpv6_exception_rule())
+			{
+				IPACMERR("Failed to delete icmpv6 rule \n");
+				return IPACM_FAILURE;
+			}
+
 		}
 	}
 	else
@@ -4989,8 +4903,9 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 			IPACMDBG_H("dev %s delete producer dependency\n", dev_name);
 			IPACMDBG_H("depend Got pipe %d rm index : %d \n", tx_prop->tx[0].dst_pipe, IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
 			IPACM_Iface::ipacmcfg->DelRmDepend(IPACM_Iface::ipacmcfg->ipa_client_rm_map_tbl[tx_prop->tx[0].dst_pipe]);
+		}
 #ifdef WAN_IOC_NOTIFY_WAN_STATE
-		} else {
+		else {
 			IPACMDBG_H("ipa_pm_q6_check to %d\n", ipa_pm_q6_check);
 			if(ipa_pm_q6_check == 1)
 			{
@@ -5012,8 +4927,6 @@ int IPACM_Wan::handle_route_del_evt_ex(ipa_ip_type iptype)
 			else
 				IPACMERR(" ipa_pm_q6_check becomes negative !!!\n");
 		}
-#else
-}
 #endif
 		/* Delete the default route*/
 		if (iptype == IPA_IP_v6)
@@ -5553,6 +5466,9 @@ int IPACM_Wan::handle_down_evt_ex()
 	{
 		goto fail;
 	}
+
+	/* reset the mtu size */
+	mtu_size = DEFAULT_MTU_SIZE;
 
 	if(ip_type == IPA_IP_v4)
 	{
@@ -7912,4 +7828,34 @@ fail:
 		free(pFilteringTable);
 	}
 	return res;
+}
+
+int IPACM_Wan::query_mtu_size()
+{
+	int fd;
+	struct ifreq if_mtu;
+
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if ( fd < 0 ) {
+		IPACMERR("ipacm: socket open failed [%d]\n", fd);
+		return IPACM_FAILURE;
+	}
+
+	strlcpy(if_mtu.ifr_name, dev_name, IFNAMSIZ);
+	IPACMDBG_H("device name: %s\n", dev_name);
+	if_mtu.ifr_name[IFNAMSIZ - 1] = '\0';
+
+	if ( ioctl(fd, SIOCGIFMTU, &if_mtu) < 0 ) {
+		IPACMERR("ioctl failed to get mtu\n");
+		close(fd);
+		return IPACM_FAILURE;
+	}
+	IPACMDBG_H("mtu=[%d]\n", if_mtu.ifr_mtu);
+	if (if_mtu.ifr_mtu < DEFAULT_MTU_SIZE) {
+		mtu_size = if_mtu.ifr_mtu;
+		IPACMDBG_H("replaced mtu=[%d] for (%s)\n", mtu_size, dev_name);
+	}
+
+	close(fd);
+	return IPACM_SUCCESS;
 }
