@@ -129,8 +129,8 @@ IPACM_Lan::IPACM_Lan(int iface_index) : IPACM_Iface(iface_index)
 
 	memset(ipv4_icmp_flt_rule_hdl, 0, NUM_IPV4_ICMP_FLT_RULE * sizeof(uint32_t));
 
-	memset(private_fl_rule_hdl, 0, IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(uint32_t));
-	memset(ipv6_prefix_flt_rule_hdl, 0, NUM_IPV6_PREFIX_FLT_RULE * sizeof(uint32_t));
+	memset(private_fl_rule_hdl, 0, (IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES) * sizeof(uint32_t));
+	memset(ipv6_prefix_flt_rule_hdl, 0, (NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_PREFIX_MTU_RULE) * sizeof(uint32_t));
 	memset(ipv6_icmp_flt_rule_hdl, 0, NUM_IPV6_ICMP_FLT_RULE * sizeof(uint32_t));
 	memset(ipv6_prefix, 0, sizeof(ipv6_prefix));
 
@@ -881,6 +881,11 @@ void IPACM_Lan::event_callback(ipa_cm_event_id event, void *param)
 		{
 			memcpy(ipv6_prefix, data_wan->ipv6_prefix, sizeof(ipv6_prefix));
 			install_ipv6_prefix_flt_rule(data_wan->ipv6_prefix);
+
+			/* MTU might have changed. Need to update ipv4 MTU rule if up */
+			if (IPACM_Wan::isWanUP(ipa_if_num))
+				handle_private_subnet_android(IPA_IP_v4);
+
 			if (data_wan->backhaul_type == Q6_WAN)
 			{
 				ext_prop = IPACM_Iface::ipacmcfg->GetExtProp(IPA_IP_v6);
@@ -1306,6 +1311,9 @@ int IPACM_Lan::handle_wan_down(ipacm_wan_iface_type backhaul_mode)
 		sta_ul_v4_set = false;
 	}
 
+	/* clean MTU rules if needed */
+	handle_private_subnet_android(IPA_IP_v4);
+
 	close(fd);
 	return IPACM_SUCCESS;
 }
@@ -1644,6 +1652,18 @@ int IPACM_Lan::handle_wan_up(ipa_ip_type ip_type)
 
 	if(ip_type == IPA_IP_v4)
 	{
+		/* add MTU rules for ipv4 */
+		handle_private_subnet_android(IPA_IP_v4);
+
+		/* Update ipv6 MTU here if WAN_v6 is up and filter rules were installed */
+		if (IPACM_Wan::isWanUP_V6(ipa_if_num))
+		{
+			if (ipv6_prefix_flt_rule_hdl[0] && ipv6_prefix_flt_rule_hdl[1] ) {
+				delete_ipv6_prefix_flt_rule();
+				install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
+			}
+		}
+
 		if(sta_ul_v4_set == true)
 		{
 			IPACMDBG_H("Filetring rule for IPV4 of STA mode is already configured, sta_ul_v4_set: %d\n",sta_ul_v4_set);
@@ -1886,6 +1906,18 @@ int IPACM_Lan::handle_wan_up_ex(ipacm_ext_prop *ext_prop, ipa_ip_type iptype, ui
 		ret = handle_uplink_filter_rule(ext_prop, iptype, xlat_mux_id);
 		modem_ul_v6_set = true;
 	} else if (iptype ==IPA_IP_v4 && modem_ul_v4_set == false) {
+		/* add MTU rules for ipv4 */
+		handle_private_subnet_android(IPA_IP_v4);
+
+		/* Update ipv6 MTU here if WAN_v6 is up and filter rules were installed */
+		if (IPACM_Wan::isWanUP_V6(ipa_if_num))
+		{
+			if (ipv6_prefix_flt_rule_hdl[0] && ipv6_prefix_flt_rule_hdl[1] ) {
+				delete_ipv6_prefix_flt_rule();
+				install_ipv6_prefix_flt_rule(IPACM_Wan::backhaul_ipv6_prefix);
+			}
+		}
+
 		IPACMDBG_H("check getXlat_Mux_Id:%d\n", IPACM_Wan::getXlat_Mux_Id());
 		IPACMDBG_H("IPA_IP_v4 xlat_mux_id: %d, modem_ul_v4_set %d\n", xlat_mux_id, modem_ul_v4_set);
 		ret = handle_uplink_filter_rule(ext_prop, iptype, xlat_mux_id);
@@ -3059,13 +3091,13 @@ int IPACM_Lan::handle_down_evt()
 		}
 
 #ifdef FEATURE_IPA_ANDROID
-		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES) == false)
+		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES) == false)
 		{
 			IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
-		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES);
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES);
 #else
 		if (m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPACM_Iface::ipacmcfg->ipa_num_private_subnet) == false)
 		{
@@ -4044,7 +4076,7 @@ int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 	ipa_ioc_add_flt_rule* pFilteringTable;
 	bool result;
 
-	len = sizeof(struct ipa_ioc_add_flt_rule) +	IPA_MAX_PRIVATE_SUBNET_ENTRIES * sizeof(struct ipa_flt_rule_add);
+	len = sizeof(struct ipa_ioc_add_flt_rule) + (IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES) * sizeof(struct ipa_flt_rule_add);
 
 	pFilteringTable = (struct ipa_ioc_add_flt_rule *)malloc(len);
 	if (pFilteringTable == NULL)
@@ -4058,7 +4090,7 @@ int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 	pFilteringTable->ep = rx_prop->rx[0].src_pipe;
 	pFilteringTable->global = false;
 	pFilteringTable->ip = iptype;
-	pFilteringTable->num_rules = IPA_MAX_PRIVATE_SUBNET_ENTRIES;
+	pFilteringTable->num_rules = IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES;
 
 	memset(&flt_rule, 0, sizeof(struct ipa_flt_rule_add));
 
@@ -4081,7 +4113,7 @@ int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 		flt_rule.rule.attrib.u.v4.dst_addr_mask = ~0;
 		flt_rule.rule.attrib.u.v4.dst_addr = ~0;
 
-		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES; i++)
 		{
 			memcpy(&(pFilteringTable->rules[i]), &flt_rule, sizeof(struct ipa_flt_rule_add));
 		}
@@ -4107,9 +4139,9 @@ int IPACM_Lan::add_dummy_private_subnet_flt_rule(ipa_ip_type iptype)
 		}
 		else
 		{
-			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES);
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES);
 			/* copy filter rule hdls */
-			for (int i = 0; i < IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+			for (int i = 0; i < IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES; i++)
 			{
 				if (pFilteringTable->rules[i].status == 0)
 				{
@@ -4135,6 +4167,9 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 	int i, len, res = IPACM_SUCCESS;
 	struct ipa_flt_rule_mdfy flt_rule;
 	struct ipa_ioc_mdfy_flt_rule* pFilteringTable;
+	int mtu_rule_cnt = 0;
+	uint16_t mtu[IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES] = { };
+	int mtu_rule_idx = IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 
 	if (rx_prop == NULL)
 	{
@@ -4149,12 +4184,24 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 	}
 	else
 	{
-		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES; i++)
+		for(i=0; i<IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES; i++)
 		{
 			reset_to_dummy_flt_rule(IPA_IP_v4, private_fl_rule_hdl[i]);
 		}
 
-		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPACM_Iface::ipacmcfg->ipa_num_private_subnet) * sizeof(struct ipa_flt_rule_mdfy);
+		/* check how many MTU rules we need to add */
+		for(i = 0; i < IPACM_Iface::ipacmcfg->ipa_num_private_subnet; i++)
+		{
+			mtu[i] = IPACM_Wan::queryMTU(ipa_if_num, IPA_IP_v4);
+
+			if (mtu[i] > 0)
+				mtu_rule_cnt++;
+			else
+				IPACMDBG_H("MTU is zero\n");
+		}
+		IPACMDBG_H("total %d MTU rules are needed\n", mtu_rule_cnt);
+
+		len = sizeof(struct ipa_ioc_mdfy_flt_rule) + (IPACM_Iface::ipacmcfg->ipa_num_private_subnet + mtu_rule_cnt) * sizeof(struct ipa_flt_rule_mdfy);
 		pFilteringTable = (struct ipa_ioc_mdfy_flt_rule*)malloc(len);
 		if (!pFilteringTable)
 		{
@@ -4165,7 +4212,7 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 
 		pFilteringTable->commit = 1;
 		pFilteringTable->ip = iptype;
-		pFilteringTable->num_rules = (uint8_t)IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		pFilteringTable->num_rules = (uint8_t)IPACM_Iface::ipacmcfg->ipa_num_private_subnet + mtu_rule_cnt;
 
 		/* Make LAN-traffic always go A5, use default IPA-RT table */
 		if (false == m_routing.GetRoutingTable(&IPACM_Iface::ipacmcfg->rt_tbl_default_v4))
@@ -4185,16 +4232,32 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
 		IPACMDBG_H("Private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
 
-		memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
-		flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
-
 		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
 		{
+			/* add private subnet rule for ipv4 */
+			flt_rule.rule.action = IPA_PASS_TO_ROUTING;
+			flt_rule.rule.eq_attrib_type = 0;
 			flt_rule.rule_hdl = private_fl_rule_hdl[i];
+			memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+			flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
 			flt_rule.rule.attrib.u.v4.dst_addr_mask = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask;
 			flt_rule.rule.attrib.u.v4.dst_addr = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr;
 			memcpy(&(pFilteringTable->rules[i]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
 			IPACMDBG_H(" IPACM private subnet_addr as: 0x%x entry(%d)\n", flt_rule.rule.attrib.u.v4.dst_addr, i);
+
+			/* add corresponding MTU rule for ipv4 */
+			if (mtu[i] > 0)
+			{
+				flt_rule.rule_hdl = private_fl_rule_hdl[mtu_rule_idx + i];
+				memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
+				flt_rule.rule.attrib.u.v4.src_addr_mask = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_mask;
+				flt_rule.rule.attrib.u.v4.src_addr = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr;
+				flt_rule.rule.attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
+				if (construct_mtu_rule(&flt_rule.rule, IPA_IP_v4, mtu[i]))
+					IPACMERR("Failed to modify MTU filtering rule.\n");
+				memcpy(&(pFilteringTable->rules[mtu_rule_idx + i]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
+				IPACMDBG_H("Adding MTU rule for private subnet 0x%x.\n", flt_rule.rule.attrib.u.v4.src_addr);
+			}
 		}
 
 		if (false == m_filtering.ModifyFilteringRule(pFilteringTable))
@@ -4225,12 +4288,17 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 	struct ipa_ioc_add_flt_rule* flt_rule;
 	struct ipa_flt_rule_add flt_rule_entry;
 	bool result;
+	int rule_cnt = 1;
+
+	uint16_t mtu = IPACM_Wan::queryMTU(ipa_if_num, IPA_IP_v6);
+	if (mtu > 0)
+		rule_cnt ++;
 
 	if(rx_prop != NULL)
 	{
-		len = sizeof(struct ipa_ioc_add_flt_rule) + sizeof(struct ipa_flt_rule_add);
+		len = sizeof(struct ipa_ioc_add_flt_rule) + rule_cnt * sizeof(struct ipa_flt_rule_add);
 
-		flt_rule = (struct ipa_ioc_add_flt_rule *)calloc(1, len);
+		flt_rule = (struct ipa_ioc_add_flt_rule *)calloc(rule_cnt, len);
 		if (!flt_rule)
 		{
 			IPACMERR("Error Locate ipa_flt_rule_add memory...\n");
@@ -4241,7 +4309,7 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 		flt_rule->ep = rx_prop->rx[0].src_pipe;
 		flt_rule->global = false;
 		flt_rule->ip = IPA_IP_v6;
-		flt_rule->num_rules = 1;
+		flt_rule->num_rules = rule_cnt;
 
 		memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));
 
@@ -4267,6 +4335,30 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 		flt_rule_entry.rule.attrib.u.v6.dst_addr_mask[3] = 0x0;
 		memcpy(&(flt_rule->rules[0]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
 
+		memcpy(&flt_rule_entry.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule_entry.rule.attrib)); // this will remove the IPA_FLT_DST_ADDR
+		flt_rule_entry.rule.attrib.u.v6.src_addr[3] = prefix[0];
+		flt_rule_entry.rule.attrib.u.v6.src_addr[2] = prefix[1];
+		flt_rule_entry.rule.attrib.u.v6.src_addr[1] = 0x0;
+		flt_rule_entry.rule.attrib.u.v6.src_addr[0] = 0x0;
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[3] = 0xFFFFFFFF;
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[2] = 0xFFFFFFFF;
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[1] = 0x0;
+		flt_rule_entry.rule.attrib.u.v6.src_addr_mask[0] = 0x0;
+		flt_rule_entry.rule.attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
+
+		/* Add an MTU rule with every new private prefix */
+		if (mtu > 0)
+		{
+			if (construct_mtu_rule(&flt_rule_entry.rule, IPA_IP_v6, mtu))
+			{
+				IPACMERR("Failed to add MTU filtering rule.\n")
+			}
+			else
+			{
+				memcpy(&(flt_rule->rules[1]), &flt_rule_entry, sizeof(struct ipa_flt_rule_add));
+			}
+		}
+
 #ifdef IPA_IOCTL_SET_FNR_COUNTER_INFO
 		/* use index hw-counter */
 		if(ipa_if_cate == WLAN_IF && IPACM_Iface::ipacmcfg->hw_fnr_stats_support)
@@ -4288,9 +4380,14 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 		}
 		else
 		{
-			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 1);
+			IPACM_Iface::ipacmcfg->increaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, 2);
 			ipv6_prefix_flt_rule_hdl[0] = flt_rule->rules[0].flt_rule_hdl;
 			IPACMDBG_H("IPv6 prefix filter rule HDL:0x%x\n", ipv6_prefix_flt_rule_hdl[0]);
+			if (rule_cnt > 1)
+			{
+				ipv6_prefix_flt_rule_hdl[1] = flt_rule->rules[1].flt_rule_hdl;
+				IPACMDBG_H("IPv6 prefix MTU filter rule HDL:0x%x\n", ipv6_prefix_flt_rule_hdl[1]);
+			}
 			free(flt_rule);
 		}
 	}
@@ -4299,12 +4396,12 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 
 void IPACM_Lan::delete_ipv6_prefix_flt_rule()
 {
-	if(m_filtering.DeleteFilteringHdls(ipv6_prefix_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE) == false)
+	if(m_filtering.DeleteFilteringHdls(ipv6_prefix_flt_rule_hdl, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_PREFIX_MTU_RULE) == false)
 	{
-		IPACMERR("Failed to delete ipv6 prefix flt rule.\n");
+		IPACMERR("Failed to delete ipv6 prefix flt rules.\n");
 		return;
 	}
-	IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE);
+	IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v6, NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_PREFIX_MTU_RULE);
 	return;
 }
 
@@ -6334,5 +6431,70 @@ fail:
 	{
 		free(pFilteringTable);
 	}
+	return res;
+}
+
+int IPACM_Lan::construct_mtu_rule(struct ipa_flt_rule *rule, ipa_ip_type iptype, uint16_t mtu)
+{
+	int res = IPACM_SUCCESS;
+	int fd;
+	ipa_ioc_generate_flt_eq flt_eq;
+
+	if (rule == NULL)
+	{
+		IPACMERR("rule is empty");
+		return IPACM_FAILURE;
+	}
+
+	if (mtu == 0)
+	{
+		IPACMERR("mtu is uninitialized");
+		return IPACM_FAILURE;
+	}
+
+	IPACMDBG_H("Adding MTU rule for iptype = %d\n", iptype);
+
+	rule->eq_attrib_type = 1;
+	rule->eq_attrib.rule_eq_bitmap = 0;
+	rule->action = IPA_PASS_TO_EXCEPTION;
+	rule->rt_tbl_hdl = -1;
+
+	/* generate eq */
+	memset(&flt_eq, 0, sizeof(flt_eq));
+	memcpy(&flt_eq.attrib, &rule->attrib, sizeof(flt_eq.attrib));
+	flt_eq.ip = iptype;
+
+	fd = open(IPA_DEVICE_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		IPACMERR("Failed opening %s.\n", IPA_DEVICE_NAME);
+		return IPACM_FAILURE;
+	}
+
+	if (0 != ioctl(fd, IPA_IOC_GENERATE_FLT_EQ, &flt_eq)) //define and cpy attribute to this struct
+	{
+		IPACMERR("Failed to get eq_attrib\n");
+		res = IPACM_FAILURE;
+		goto fail;
+	}
+	memcpy(&rule->eq_attrib,
+		&flt_eq.eq_attrib, sizeof(rule->eq_attrib));
+
+	//add IHL offsets
+#ifdef FEATURE_IPA_V3
+		rule->eq_attrib.rule_eq_bitmap |= (1<<10);
+#else
+		rule->eq_attrib.rule_eq_bitmap |= (1<<4);
+#endif
+	rule->eq_attrib.num_ihl_offset_range_16 = 1;
+	if (iptype == IPA_IP_v4)
+		rule->eq_attrib.ihl_offset_range_16[0].offset = 0x82;
+	else
+		rule->eq_attrib.ihl_offset_range_16[0].offset = 0x84;
+	rule->eq_attrib.ihl_offset_range_16[0].range_low = mtu + 1;
+	rule->eq_attrib.ihl_offset_range_16[0].range_high = UINT16_MAX; //0xFFFF
+
+fail:
+	close(fd);
 	return res;
 }

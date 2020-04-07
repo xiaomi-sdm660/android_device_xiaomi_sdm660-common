@@ -94,7 +94,7 @@ public:
 	ipacm_alg *alg_table;
 
 	/* Store private subnet configuration from XML file */
-	ipa_private_subnet private_subnet_table[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
+	ipa_private_subnet private_subnet_table[IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES];
 
 	/* Store the non nat iface names */
 	NatIfaces *pNatIfaces;

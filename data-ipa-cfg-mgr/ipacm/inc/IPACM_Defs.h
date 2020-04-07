@@ -77,6 +77,7 @@ extern "C"
 
 #define IPA_MAX_IFACE_ENTRIES 20
 #define IPA_MAX_PRIVATE_SUBNET_ENTRIES 3
+#define IPA_MAX_MTU_ENTRIES 3
 #define IPA_MAX_ALG_ENTRIES 20
 #define IPA_MAX_RM_ENTRY 6
 
@@ -106,6 +107,7 @@ extern "C"
 #define TCP_SYN_SHIFT 17
 #define TCP_RST_SHIFT 18
 #define NUM_IPV6_PREFIX_FLT_RULE 1
+#define NUM_IPV6_PREFIX_MTU_RULE 1
 
 /*---------------------------------------------------------------------------
 										Return values indicating error status
@@ -124,6 +126,7 @@ extern "C"
 #define IPA_MAC_ADDR_SIZE  6
 #define IPA_MAX_NUM_SW_PDNS 15
 
+#define DEFAULT_MTU_SIZE 1500
 /*===========================================================================
 										 GLOBAL DEFINITIONS AND DECLARATIONS
 ===========================================================================*/
