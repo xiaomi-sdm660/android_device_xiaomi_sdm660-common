@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -87,6 +87,7 @@ static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& svTypeConfig,
                                    const GnssSvIdConfig& svIdConfig);
 static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
+static uint32_t configRobustLocation(bool enable, bool enableForE911);
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -132,6 +133,7 @@ static const GnssInterface gGnssInterface = {
     gnssUpdateSvConfig,
     gnssResetSvConfig,
     configLeverArm,
+    configRobustLocation,
 };
 
 #ifndef DEBUG_X86
@@ -449,6 +451,14 @@ static uint32_t gnssResetSvConfig() {
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo){
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->configLeverArmCommand(configInfo);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t configRobustLocation(bool enable, bool enableForE911){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configRobustLocationCommand(enable, enableForE911);
     } else {
         return 0;
     }
