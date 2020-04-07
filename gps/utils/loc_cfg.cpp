@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, 2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2015, 2018-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -59,13 +59,15 @@ static uint32_t DEBUG_LEVEL = 0xff;
 static uint32_t TIMESTAMP = 0;
 static uint32_t DATUM_TYPE = 0;
 static bool sVendorEnhanced = true;
+static uint32_t sLogBufferEnabled = 0;
 
 /* Parameter spec table */
 static const loc_param_s_type loc_param_table[] =
 {
-    {"DEBUG_LEVEL",        &DEBUG_LEVEL,        NULL,    'n'},
-    {"TIMESTAMP",          &TIMESTAMP,          NULL,    'n'},
-    {"DATUM_TYPE",         &DATUM_TYPE,         NULL,    'n'},
+    {"DEBUG_LEVEL",             &DEBUG_LEVEL,        NULL, 'n'},
+    {"TIMESTAMP",               &TIMESTAMP,          NULL, 'n'},
+    {"DATUM_TYPE",              &DATUM_TYPE,         NULL, 'n'},
+    {"LOG_BUFFER_ENABLED",      &sLogBufferEnabled,  NULL, 'n'},
 };
 static const int loc_param_num = sizeof(loc_param_table) / sizeof(loc_param_s_type);
 
@@ -241,7 +243,7 @@ int loc_fill_conf_item(char* input_buf,
         config_value.param_name = strtok_r(input_buf, "=", &lasts);
         /* skip lines that do not contain "=" */
         if (config_value.param_name) {
-            config_value.param_str_value = strtok_r(NULL, "=", &lasts);
+            config_value.param_str_value = strtok_r(NULL, "\0", &lasts);
 
             /* skip lines that do not contain two operands */
             if (config_value.param_str_value) {
@@ -429,6 +431,7 @@ void loc_read_conf(const char* conf_file_name, const loc_param_s_type* config_ta
 {
     FILE *conf_fp = NULL;
 
+    log_buffer_init(false);
     if((conf_fp = fopen(conf_file_name, "r")) != NULL)
     {
         LOC_LOGD("%s: using %s", __FUNCTION__, conf_file_name);
@@ -441,6 +444,7 @@ void loc_read_conf(const char* conf_file_name, const loc_param_s_type* config_ta
     }
     /* Initialize logging mechanism with parsed data */
     loc_logger_init(DEBUG_LEVEL, TIMESTAMP);
+    log_buffer_init(sLogBufferEnabled);
 }
 
 /*=============================================================================

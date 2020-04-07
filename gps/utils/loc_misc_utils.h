@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,7 +32,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#include <stddef.h>
+#include <stdint.h>
 /*===========================================================================
 FUNCTION loc_split_string
 
@@ -119,6 +120,27 @@ SIDE EFFECTS
    N/A
 ===========================================================================*/
 void* dlGetSymFromLib(void*& libHandle, const char* libName, const char* symName);
+
+/*===========================================================================
+FUNCTION getQTimerTickCount
+
+DESCRIPTION
+   This function is used to read the QTimer ticks count. This value is globally maintained and
+   must be the same across all processors on a target.
+
+DEPENDENCIES
+   N/A
+
+RETURN VALUE
+    uint64_t QTimer tick count
+
+SIDE EFFECTS
+   N/A
+===========================================================================*/
+
+
+uint64_t getQTimerTickCount();
+
 
 #ifdef __cplusplus
 }

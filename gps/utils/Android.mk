@@ -27,7 +27,8 @@ LOCAL_SRC_FILES += \
     MsgTask.cpp \
     loc_misc_utils.cpp \
     loc_nmea.cpp \
-    LocIpc.cpp
+    LocIpc.cpp \
+    LogBuffer.cpp
 
 # Flag -std=c++11 is not accepted by compiler when LOCAL_CLANG is set to true
 LOCAL_CFLAGS += \

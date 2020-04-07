@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -67,6 +67,7 @@ void SystemStatusOsObserver::setSubscriptionObj(IDataItemSubscription* subscript
         inline SetSubsObj(ObserverContext& context, IDataItemSubscription* subscriptionObj) :
                 mContext(context), mSubsObj(subscriptionObj) {}
         void proc() const {
+            LOC_LOGi("SetSubsObj::enter");
             mContext.mSubscriptionObj = mSubsObj;
 
             if (!mContext.mSSObserver->mDataItemToClients.empty()) {
@@ -76,6 +77,7 @@ void SystemStatusOsObserver::setSubscriptionObj(IDataItemSubscription* subscript
                 mContext.mSubscriptionObj->subscribe(dis, mContext.mSSObserver);
                 mContext.mSubscriptionObj->requestData(dis, mContext.mSSObserver);
             }
+            LOC_LOGi("SetSubsObj::exit");
         }
     };
 
@@ -347,11 +349,6 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
         vector<IDataItemCore*> dataItemVec(dlist.size());
 
         for (auto each : dlist) {
-            IF_LOC_LOGD {
-                string dv;
-                each->stringify(dv);
-                LOC_LOGD("notify: DataItem In Value:%s", dv.c_str());
-            }
 
             IDataItemCore* di = DataItemsFactoryProxy::createNewDataItem(each->getId());
             if (nullptr == di) {
@@ -364,6 +361,11 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
 
             // add this dataitem if updated from last one
             dataItemVec.push_back(di);
+            IF_LOC_LOGD {
+                string dv;
+                di->stringify(dv);
+                LOC_LOGd("notify: DataItem In Value:%s", dv.c_str());
+            }
         }
 
         if (!dataItemVec.empty()) {
@@ -459,8 +461,9 @@ bool SystemStatusOsObserver::connectBackhaul()
                     mFwkActionReqObj(fwkActReq) {}
             virtual ~HandleConnectBackhaul() {}
             void proc() const {
-                LOC_LOGD("HandleConnectBackhaul");
+                LOC_LOGi("HandleConnectBackhaul::enter");
                 mFwkActionReqObj->connectBackhaul();
+                LOC_LOGi("HandleConnectBackhaul::exit");
             }
             IFrameworkActionReq* mFwkActionReqObj;
         };
@@ -488,8 +491,9 @@ bool SystemStatusOsObserver::disconnectBackhaul()
                     mFwkActionReqObj(fwkActReq) {}
             virtual ~HandleDisconnectBackhaul() {}
             void proc() const {
-                LOC_LOGD("HandleDisconnectBackhaul");
+                LOC_LOGi("HandleDisconnectBackhaul::enter");
                 mFwkActionReqObj->disconnectBackhaul();
+                LOC_LOGi("HandleDisconnectBackhaul::exit");
             }
             IFrameworkActionReq* mFwkActionReqObj;
         };
