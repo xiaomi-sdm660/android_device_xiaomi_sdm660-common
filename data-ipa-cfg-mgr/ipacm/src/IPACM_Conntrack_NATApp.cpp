@@ -195,6 +195,12 @@ int NatApp::AddTable(uint32_t pub_ip, uint8_t mux_id)
 		}
 	}
 
+	/* configure NAT initialization paramater */
+	pub_ip_addr = pub_ip;
+	pub_mux_id = mux_id;
+	IPACMDBG(" Set pub_mux_id: %d\t", pub_mux_id);
+
+
 	/* Add back the cached NAT-entry */
 	if (pub_ip == pub_ip_addr_pre)
 	{
@@ -222,6 +228,8 @@ int NatApp::AddTable(uint32_t pub_ip, uint8_t mux_id)
 				/* send connections info to pcie modem only with DL direction */
 				if ((CtList->backhaul_mode == Q6_MHI_WAN) && (cache[cnt].dst_nat == true || cache[cnt].protocol == IPPROTO_TCP))
 				{
+					/* propagate pub_ip info */
+					cache[cnt].public_ip = pub_ip;
 					ret = AddConnection(&cache[cnt]);
 					if(ret > 0)
 					{
@@ -246,9 +254,6 @@ int NatApp::AddTable(uint32_t pub_ip, uint8_t mux_id)
 		}
 	}
 
-	pub_ip_addr = pub_ip;
-	pub_mux_id = mux_id;
-	IPACMDBG(" Set pub_mux_id: %d\t", pub_mux_id);
 	return 0;
 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
+Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -59,7 +59,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define IPV4_DEFAULT_FILTERTING_RULES 3
 
 #ifdef FEATURE_IPA_ANDROID
-#define IPV6_DEFAULT_FILTERTING_RULES 8
+#define IPV6_DEFAULT_FILTERTING_RULES 5
 #else
 #define IPV6_DEFAULT_FILTERTING_RULES 4
 #endif

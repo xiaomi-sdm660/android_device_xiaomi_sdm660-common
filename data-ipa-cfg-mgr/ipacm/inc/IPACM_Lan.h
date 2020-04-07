@@ -113,7 +113,7 @@ public:
 	uint32_t lan_wan_fl_rule_hdl[IPA_WAN_DEFAULT_FILTER_RULE_HANDLES];
 
 	/* store private-subnet filter rule handlers */
-	uint32_t private_fl_rule_hdl[IPA_MAX_PRIVATE_SUBNET_ENTRIES];
+	uint32_t private_fl_rule_hdl[IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES];
 
 	/* LAN-iface's callback function */
 	void event_callback(ipa_cm_event_id event, void *data);
@@ -258,7 +258,7 @@ protected:
 
 	uint32_t ipv4_icmp_flt_rule_hdl[NUM_IPV4_ICMP_FLT_RULE];
 
-	uint32_t ipv6_prefix_flt_rule_hdl[NUM_IPV6_PREFIX_FLT_RULE];
+	uint32_t ipv6_prefix_flt_rule_hdl[NUM_IPV6_PREFIX_FLT_RULE + NUM_IPV6_PREFIX_MTU_RULE];
 	uint32_t ipv6_icmp_flt_rule_hdl[NUM_IPV6_ICMP_FLT_RULE];
 
 	int num_wan_ul_fl_rule_v4;
@@ -464,6 +464,8 @@ private:
 	/* for pcie modem */
 	virtual int add_connection(int client_index, int v6_num);
 	virtual int del_connection(int client_index, int v6_num);
+
+	int construct_mtu_rule(struct ipa_flt_rule *rule, enum ipa_ip_type iptype, uint16_t mtu);
 };
 
 #endif /* IPACM_LAN_H */

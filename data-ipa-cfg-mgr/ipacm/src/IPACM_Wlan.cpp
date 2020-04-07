@@ -1955,16 +1955,16 @@ int IPACM_Wlan::handle_down_evt()
 		}
 		/* delete private-ipv4 filter rules */
 #ifdef FEATURE_IPA_ANDROID
-		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES) == false)
+		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES) == false)
 		{
 			IPACMERR("Error deleting private subnet IPv4 flt rules.\n");
 			res = IPACM_FAILURE;
 			goto fail;
 		}
-		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES);
+		IPACM_Iface::ipacmcfg->decreaseFltRuleCount(rx_prop->rx[0].src_pipe, IPA_IP_v4, IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES);
 #else
-		num_private_subnet_fl_rule = IPACM_Iface::ipacmcfg->ipa_num_private_subnet > IPA_MAX_PRIVATE_SUBNET_ENTRIES?
-			IPA_MAX_PRIVATE_SUBNET_ENTRIES : IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
+		num_private_subnet_fl_rule = IPACM_Iface::ipacmcfg->ipa_num_private_subnet > (IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES)?
+			(IPA_MAX_PRIVATE_SUBNET_ENTRIES + IPA_MAX_MTU_ENTRIES) : IPACM_Iface::ipacmcfg->ipa_num_private_subnet;
 		if(m_filtering.DeleteFilteringHdls(private_fl_rule_hdl, IPA_IP_v4, num_private_subnet_fl_rule) == false)
 		{
 			IPACMERR("Error deleting private subnet flt rules, aborting...\n");
