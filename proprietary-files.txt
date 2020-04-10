@@ -186,6 +186,24 @@ vendor/lib64/libdpmqmihal.so|d5b8330b56d7e0c036b00a817754748bf3137774
 # DPM - from LA.UM.8.2.r1-05700-sdm660.0
 -product/priv-app/dpmserviceapp/dpmserviceapp.apk|cd3fc5c9f5dade06083cfbb2ff3443b668ae4a29
 
+# DRM and SEE - from LA.UM.8.2.r1-06300-sdm660.0
+vendor/bin/qseecomd|a673f923a343a98007410022c1dc9acb5d440889
+vendor/lib64/libdrmfs.so|31df18a6a3ab7115394343e0e067a3983e8183d9
+vendor/lib64/libdrmtime.so|620d9e41f915ffc04afc635f4d080eff56543c65
+vendor/lib64/libGPreqcancel.so|bfff7b7d51e917a16b9a15a27fb81e16d0359348
+vendor/lib64/libGPreqcancel_svc.so|d4216112bda75e1d3b06b679dcd8978da17dca93
+vendor/lib64/libkeymasterdeviceutils.so|b5d4819abb7dbd7908dfe7c6cfa5035e02b10383
+vendor/lib64/libkeymasterprovision.so|8301c24afdf3455ed1730c179b485bb3beaf8199
+vendor/lib64/libkeymasterutils.so|b4fd9216b4ee9c2ef91cca3d08ca030ff51fdad1
+vendor/lib64/libqisl.so|c4e7f283f3d416b784f2ec0f7000d607e044809b
+vendor/lib64/libQSEEComAPI.so|3e68ab8dc83089e5ff64ed2c31da52326c3fd9fe
+vendor/lib64/librpmb.so|0b27e558cc20dffc76fdb578b0d5f38a0ee361c0
+vendor/lib64/libsecureui.so|0001f1d01b0c1805e34d80c74a8a0c28f2f0304d
+vendor/lib64/libsecureui_svcsock.so|e364290497862270cd01d9be84f0141ea92e92f9
+vendor/lib64/libSecureUILib.so|721de37d7f030ce475418960500def7e3628f01a
+vendor/lib64/libssd.so|d6758bd01b360be7bb68f35f56978a5e9a21d3c3
+vendor/lib64/libStDrvInt.so|8de13b46e8f21016c0fffaec34b0a2bacfccec04
+
 # DRM (HDCP) - from LA.UM.8.2.r1-06300-sdm660.0
 vendor/lib/libmm-hdcpmgr.so|1369ce85b3c133c8d4d04167cd894df85212dcfa
 vendor/lib64/libmm-hdcpmgr.so|a80b3cfa28acdb69a5047ab9592c611ab4534799
