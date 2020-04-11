@@ -29,9 +29,9 @@
      OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
      IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
+
 <resources>
     <bool name="profile_supported_avrcp_controller">true</bool>
-    <bool name="profile_supported_ba">true</bool>
     <bool name="profile_supported_hid_device">false</bool>
     <bool name="profile_supported_sap">true</bool>
 </resources>

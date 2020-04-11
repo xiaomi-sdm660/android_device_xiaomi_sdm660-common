@@ -18,6 +18,7 @@
 ** limitations under the License.
 */
 -->
+
 <resources>
     <!-- IDs for each color mode. The values must match the corresponding constants in
          android.view.Display -->
