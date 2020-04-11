@@ -16,6 +16,12 @@ on init
     write /proc/sys/vm/min_free_kbytes 54688
     write /proc/sys/vm/oom_kill_allocating_task 1
 
+    # blkio init setting
+    write /dev/blkio/blkio.weight 1000
+    write /dev/blkio/background/blkio.weight 1000
+    write /dev/blkio/blkio.group_idle 0
+    write /dev/blkio/background/blkio.group_idle 0
+
     # Configure readahead values
     write /sys/block/mmcblk0/bdi/read_ahead_kb 128
     write /sys/block/mmcblk0/queue/read_ahead_kb 128
@@ -123,6 +129,17 @@ on property:sys.boot_completed=1
 
     # Re-enable thermal and BCL hotplug
     write /sys/module/msm_thermal/core_control/enabled 1
+
+    # Setup final blkio
+    # value for group_idle is us
+    write /dev/blkio/blkio.weight 1000
+    write /dev/blkio/background/blkio.weight 10
+    write /dev/blkio/blkio.group_idle 2000
+    write /dev/blkio/background/blkio.group_idle 0
+
+    # Block layer tuning: discard chunk size up to 128MB
+    # Otherwise, contiguous discards can be merged
+    write /sys/block/mmcblk0/queue/discard_max_bytes 134217728
 
     # Set network hostname
     setprop net.hostname SDM660
