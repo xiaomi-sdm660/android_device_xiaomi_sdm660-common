@@ -43,6 +43,10 @@
 #define TAP_TO_WAKE_NODE3 "/sys/touchpanel/double_tap"
 #endif
 
+#ifndef TAP_TO_WAKE_NODE4
+#define TAP_TO_WAKE_NODE4 "/proc/touchpanel/wake_gesture"
+#endif
+
 namespace android {
 namespace hardware {
 namespace power {
@@ -229,6 +233,7 @@ Return<void> Power::setFeature(Feature feature, bool activate)  {
             ::android::base::WriteStringToFile(activate ? "1" : "0", TAP_TO_WAKE_NODE, true);
             ::android::base::WriteStringToFile(activate ? "1" : "0", TAP_TO_WAKE_NODE2, true);
             ::android::base::WriteStringToFile(activate ? "1" : "0", TAP_TO_WAKE_NODE3, true);
+            ::android::base::WriteStringToFile(activate ? "1" : "0", TAP_TO_WAKE_NODE4, true);
             break;
 #endif
         default:
