@@ -1,8 +1,7 @@
-on init
+on boot
     chown system system /dev/goodix_fp
     chmod 0644 /dev/goodix_fp
 
-on boot
     chown system system /sys/bus/platform/devices/soc:fpc1020/irq
     chown system system /sys/bus/platform/devices/soc:fpc1020/wakeup_enable
     chown system system /sys/bus/platform/devices/soc:fpc1020/hw_reset
@@ -42,7 +41,6 @@ on post-fs-data
     mkdir /data/vendor/fpc 0770 system system
     copy /data/vendor/fpc/user.db /data/vendor_de/0/fpdata/user.db
     chown system system /data/vendor_de/0/fpdata/user.db
-    rm /data/vendor/fpc/user.db
 
 service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.1-service.xiaomi_sdm660
     class late_start
