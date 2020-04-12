@@ -424,6 +424,9 @@ vendor/lib64/libqti-perfd-client.so|93c3f90f1b72a21ca325cbb375923b1deba80467
 vendor/lib/libperfgluelayer.so|500a68089bbbda8bae53459c7adeed4048dce3fd
 vendor/lib64/libperfgluelayer.so|4c95e08abc1cef5b39db06579d8f9faceb8f23d4
 
+# Irqbalance - from LA.UM.8.2.r1-05700-sdm660.0
+vendor/bin/msm_irqbalance|0e967f5c7eaf8d863a50996459101be47adf96a2
+
 # Peripheral manager - from LA.UM.8.2.r1-06300-sdm660.0
 vendor/bin/pm-proxy|3182c937d93cc02c6721c053f57fc6794ad7edb3
 vendor/bin/pm-service|835238076f47bf46cee01b27a76a96282eadb309
