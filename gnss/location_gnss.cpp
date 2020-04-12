@@ -73,7 +73,7 @@ static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
 static void getPowerStateChanges(void* powerStateCb);
 
-static void odcpiInit(const OdcpiRequestCallback& callback);
+static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
 static void odcpiInject(const Location& location);
 
 static void blockCPI(double latitude, double longitude, float accuracy,
@@ -142,6 +142,7 @@ extern "C" const GnssInterface* getGnssInterface()
 const GnssInterface* getGnssInterface()
 #endif // DEBUG_X86
 {
+   gGnssInterface.initialize();
    return &gGnssInterface;
 }
 
@@ -348,10 +349,10 @@ static void updateConnectionStatus(bool connected, int8_t type,
     }
 }
 
-static void odcpiInit(const OdcpiRequestCallback& callback)
+static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority)
 {
     if (NULL != gGnssAdapter) {
-        gGnssAdapter->initOdcpiCommand(callback);
+        gGnssAdapter->initOdcpiCommand(callback, priority);
     }
 }
 
