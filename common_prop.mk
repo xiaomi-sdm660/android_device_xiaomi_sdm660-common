@@ -205,7 +205,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.stagefright.enable-player=true \
     media.stagefright.enable-qcp=true \
     media.stagefright.enable-scan=true \
-		media.stagefright.thumbnail.prefer_hw_codecs=true \
+    media.stagefright.thumbnail.prefer_hw_codecs=true \
     mm.enable.qcom_parser=13631471 \
     mm.enable.smoothstreaming=true \
     mmp.enable.3g2=true \
@@ -250,7 +250,6 @@ PRODUCT_ODM_PROPERTIES += \
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
-    DEVICE_PROVISIONED=1 \
     persist.data.df.agg.dl_pkt=10 \
     persist.data.df.agg.dl_size=4096 \
     persist.data.df.dev_name=rmnet_usb0 \
@@ -278,15 +277,18 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.rat_on=combine \
     persist.vendor.radio.sib16_support=1 \
     persist.vendor.radio.procedure_bytes=SKIP \
-    ril.subscription.types=NV,RUIM \
     vendor.rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so \
     ro.telephony.default_network=22,20 \
     ro.telephony.iwlan_operation_mode=legacy \
     ro.telephony.use_old_mnc_mcc_format=true \
-    ro.vendor.use_data_netmgrd=true \
-    telephony.lteOnCdmaDevice=1 \
-    persist.sys.fflag.override.settings_network_and_internet_v2=true
-
+    ro.vendor.use_data_netmgrd=true 
+    
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+    DEVICE_PROVISIONED=1 \
+    persist.sys.fflag.override.settings_network_and_internet_v2=true \
+    ril.subscription.types=NV,RUIM \
+    telephony.lteOnCdmaDevice=1
+    
 # Rendering
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.egl.hw=1 \
