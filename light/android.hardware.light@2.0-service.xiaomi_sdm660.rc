@@ -3,6 +3,7 @@ on boot
     chown system system /sys/class/leds/white/blink
     chown system system /sys/class/leds/white/brightness
     chown system system /sys/class/leds/white/duty_pcts
+    chown system system /sys/class/leds/white/max_brightness
     chown system system /sys/class/leds/white/pause_hi
     chown system system /sys/class/leds/white/pause_lo
     chown system system /sys/class/leds/white/ramp_step_ms
@@ -16,6 +17,10 @@ on boot
     chmod 660 /sys/class/leds/white/ramp_step_ms
     chmod 660 /sys/class/leds/white/start_idx
 
+    chown system system /sys/class/leds/lcd-backlight/max_brightness
+
+    start vendor.light-hal-2-0
+
 service vendor.light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.xiaomi_sdm660
     interface android.hardware.light@2.0::ILight default
     class hal
@@ -23,3 +28,4 @@ service vendor.light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.x
     group system
     # shutting off lights while powering-off
     shutdown critical
+    disabled
