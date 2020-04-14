@@ -31,7 +31,7 @@ using android::sp;
 using android::status_t;
 
 int main() {
-    sp<ILight> service = new Light();
+    android::sp<ILight> service = new Light();
 
     configureRpcThreadpool(1, true);
 
