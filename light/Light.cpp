@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2020 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,76 +17,59 @@
 
 #define LOG_TAG "android.hardware.light@2.0-service.xiaomi_sdm660"
 
-#include <log/log.h>
-#include <fstream>
 #include "Light.h"
 
-namespace android {
-namespace hardware {
-namespace light {
-namespace V2_0 {
-namespace implementation {
+#include <android-base/file.h>
+#include <android-base/logging.h>
 
-#define LEDS                       "/sys/class/leds/"
-#define LCD_LED                    LEDS "lcd-backlight/"
-#define BRIGHTNESS                 "brightness"
-#define WHITE                      LEDS "white/"
-#define BLINK                      "blink"
-#define DUTY_PCTS                  "duty_pcts"
-#define PAUSE_HI                   "pause_hi"
-#define PAUSE_LO                   "pause_lo"
-#define RAMP_STEP_MS               "ramp_step_ms"
-#define START_IDX                  "start_idx"
+#include <iomanip>
 
-#define MAX_LED_BRIGHTNESS    255
-#define MAX_LCD_BRIGHTNESS    4095
+namespace {
 
-/*
- * 8 duty percent steps.
- */
-#define RAMP_STEPS 15
-/*
- * Each step will stay on for 50ms by default.
- */
-#define RAMP_STEP_DURATION 150
-/*
- * Each value represents a duty percent (0 - 100) for the led pwm.
- */
-static int32_t BRIGHTNESS_RAMP[RAMP_STEPS] = {0, 12, 25, 37, 50, 72, 85, 100, 85, 72, 50, 37, 25, 12, 0};
+#define LEDS "/sys/class/leds/"
+#define LCD_LED LEDS "lcd-backlight/"
+#define WHITE LEDS "white/"
+#define BRIGHTNESS "brightness"
+#define MAX_BRIGHTNESS "max_brightness"
+#define BLINK "blink"
+#define DUTY_PCTS "duty_pcts"
+#define PAUSE_HI "pause_hi"
+#define PAUSE_LO "pause_lo"
+#define RAMP_STEP_MS "ramp_step_ms"
+#define START_IDX "start_idx"
 
-/*
- * Write value to path and close file.
- */
-static void set(std::string path, std::string value) {
-    std::ofstream file(path);
-    /* Only write brightness value if stream is open, alive & well */
-    if (file.is_open()) {
-        file << value;
-    } else {
-        /* Fire a warning a bail out */
-        ALOGE("failed to write %s to %s", value.c_str(), path.c_str());
-        return;
-    }
+using ::android::base::ReadFileToString;
+using ::android::base::WriteStringToFile;
+
+// Default max brightness
+constexpr auto kDefaultMaxLedBrightness = 255;
+constexpr auto kDefaultMaxScreenBrightness = 4095;
+
+// Each step will stay on for 100ms by default.
+constexpr auto kRampStepDuration = 100;
+
+// Each value represents a duty percent (0 - 100) for the led pwm.
+constexpr std::array kBrightnessRamp = {0, 12, 25, 37, 50, 72, 85, 100, 85, 72, 50, 37, 25, 12, 0};
+
+// Write value to path and close file.
+bool WriteToFile(const std::string& path, uint32_t content) {
+    return WriteStringToFile(std::to_string(content), path);
 }
 
-static void set(std::string path, int value) {
-    set(path, std::to_string(value));
+bool WriteToFile(const std::string& path, const std::string& content) {
+    return WriteStringToFile(content, path);
 }
 
-static uint32_t getBrightness(const LightState& state) {
-    uint32_t alpha, red, green, blue;
+uint32_t RgbaToBrightness(uint32_t color) {
+    // Extract brightness from AARRGGBB.
+    uint32_t alpha = (color >> 24) & 0xFF;
 
-    /*
-     * Extract brightness from AARRGGBB.
-     */
-    alpha = (state.color >> 24) & 0xFF;
-    red = (state.color >> 16) & 0xFF;
-    green = (state.color >> 8) & 0xFF;
-    blue = state.color & 0xFF;
+    // Retrieve each of the RGB colors
+    uint32_t red = (color >> 16) & 0xFF;
+    uint32_t green = (color >> 8) & 0xFF;
+    uint32_t blue = color & 0xFF;
 
-    /*
-     * Scale RGB brightness if Alpha brightness is not 0xFF.
-     */
+    // Scale RGB colors if a brightness has been applied by the user
     if (alpha != 0xFF) {
         red = red * alpha / 0xFF;
         green = green * alpha / 0xFF;
@@ -95,128 +79,131 @@ static uint32_t getBrightness(const LightState& state) {
     return (77 * red + 150 * green + 29 * blue) >> 8;
 }
 
+inline uint32_t RgbaToBrightness(uint32_t color, uint32_t max_brightness) {
+    return RgbaToBrightness(color) * max_brightness / 0xFF;
+}
+
 /*
  * Scale each value of the brightness ramp according to the
  * brightness of the color.
  */
-static std::string getScaledRamp(uint32_t brightness) {
-    std::string ramp, pad;
+std::string GetScaledDutyPcts(uint32_t brightness) {
+    std::stringstream ramp;
 
-    for (auto const& step : BRIGHTNESS_RAMP) {
-        ramp += pad + std::to_string(step * brightness / 0xFF);
-        pad = ",";
+    for (size_t i = 0; i < kBrightnessRamp.size(); i++) {
+        if (i > 0) ramp << ",";
+        ramp << kBrightnessRamp[i] * brightness / 0xFF;
     }
 
-    return ramp;
+    return ramp.str();
 }
 
-static inline uint32_t scaleBrightness(uint32_t brightness, uint32_t maxBrightness) {
-    return brightness * maxBrightness / 0xFF;
+inline bool IsLit(uint32_t color) {
+    return color & 0x00ffffff;
 }
 
-static inline uint32_t getScaledBrightness(const LightState& state, uint32_t maxBrightness) {
-    return scaleBrightness(getBrightness(state), maxBrightness);
-}
+}  // anonymous namespace
 
-static void handleXiaomiBacklight(Type /*type*/, const LightState& state) {
-    uint32_t brightness = getScaledBrightness(state, MAX_LCD_BRIGHTNESS);
-    set(LCD_LED BRIGHTNESS, brightness);
-}
+namespace android {
+namespace hardware {
+namespace light {
+namespace V2_0 {
+namespace implementation {
 
-static void setNotification(const LightState& state) {
-    uint32_t whiteBrightness = getScaledBrightness(state, MAX_LED_BRIGHTNESS);
+Light::Light() {
+    std::string buf;
 
-    /* Turn off the leds (initially) */
-    set(WHITE BLINK, 0);
-
-    if (state.flashMode == Flash::TIMED) {
-        /*
-         * If the flashOnMs duration is not long enough to fit ramping up
-         * and down at the default step duration, step duration is modified
-         * to fit.
-        */
-        int32_t stepDuration = RAMP_STEP_DURATION;
-        int32_t pauseHi = state.flashOnMs - (stepDuration * RAMP_STEPS * 2);
-        int32_t pauseLo = state.flashOffMs;
-
-        if (pauseHi < 0) {
-            pauseHi = 0;
-        }
-
-        /* White */
-        set(WHITE START_IDX, 0 * RAMP_STEPS);
-        set(WHITE DUTY_PCTS, getScaledRamp(whiteBrightness));
-        set(WHITE PAUSE_LO, pauseLo);
-        set(WHITE PAUSE_HI, pauseHi);
-        set(WHITE RAMP_STEP_MS, stepDuration);
-        set(WHITE BLINK, 1);
+    if (ReadFileToString(LCD_LED MAX_BRIGHTNESS, &buf)) {
+        max_screen_brightness_ = std::stoi(buf);
     } else {
-        set(WHITE BRIGHTNESS, whiteBrightness);
-    }
-}
-
-static inline bool isLit(const LightState& state) {
-    return state.color & 0x00ffffff;
-}
-
-/*
- * Keep sorted in the order of importance.
- */
-static const LightState offState = {};
-static std::vector<std::pair<Type, LightState>> notificationStates = {
-    { Type::ATTENTION, offState },
-    { Type::NOTIFICATIONS, offState },
-    { Type::BATTERY, offState },
-};
-
-static void handleXiaomiNotification(Type type, const LightState& state) {
-    for(auto it : notificationStates) {
-        if (it.first == type) {
-            it.second = state;
-        }
-
-        if  (isLit(it.second)) {
-            setNotification(it.second);
-            return;
-        }
+        max_screen_brightness_ = kDefaultMaxScreenBrightness;
+        LOG(ERROR) << "Failed to read max screen brightness, fallback to "
+                   << kDefaultMaxLedBrightness;
     }
 
-    setNotification(offState);
+    if (ReadFileToString(WHITE MAX_BRIGHTNESS, &buf)) {
+        max_led_brightness_ = std::stoi(buf);
+    } else {
+        max_led_brightness_ = kDefaultMaxLedBrightness;
+        LOG(ERROR) << "Failed to read max LED brightness, fallback to " << kDefaultMaxLedBrightness;
+    }
 }
-
-static std::map<Type, std::function<void(Type type, const LightState&)>> lights = {
-    {Type::BACKLIGHT, handleXiaomiBacklight},
-    {Type::NOTIFICATIONS, handleXiaomiNotification},
-    {Type::BATTERY, handleXiaomiNotification},
-    {Type::ATTENTION, handleXiaomiNotification},
-};
-
-Light::Light() {}
 
 Return<Status> Light::setLight(Type type, const LightState& state) {
-    auto it = lights.find(type);
+    auto it = lights_.find(type);
 
-    if (it == lights.end()) {
+    if (it == lights_.end()) {
         return Status::LIGHT_NOT_SUPPORTED;
     }
 
-    /*
-     * Lock global mutex until light state is updated.
-     */
-
-    std::lock_guard<std::mutex> lock(globalLock);
     it->second(type, state);
+
     return Status::SUCCESS;
 }
 
 Return<void> Light::getSupportedTypes(getSupportedTypes_cb _hidl_cb) {
     std::vector<Type> types;
 
-    for (auto const& light : lights) types.push_back(light.first);
+    for (auto&& light : lights_) types.emplace_back(light.first);
 
     _hidl_cb(types);
 
     return Void();
+}
+
+void Light::setLightBacklight(Type /*type*/, const LightState& state) {
+    uint32_t brightness = RgbaToBrightness(state.color, max_screen_brightness_);
+    WriteToFile(LCD_LED BRIGHTNESS, brightness);
+}
+
+void Light::setLightNotification(Type type, const LightState& state) {
+    bool found = false;
+    for (auto&& [cur_type, cur_state] : notif_states_) {
+        if (cur_type == type) {
+            cur_state = state;
+        }
+
+        // Fallback to battery light
+        if (!found && (cur_type == Type::BATTERY || IsLit(state.color))) {
+            found = true;
+            LOG(DEBUG) << __func__ << ": type=" << toString(cur_type);
+            applyNotificationState(state);
+        }
+    }
+}
+
+void Light::applyNotificationState(const LightState& state) {
+    uint32_t white_brightness = RgbaToBrightness(state.color, max_led_brightness_);
+
+    // Turn off the leds (initially)
+    WriteToFile(WHITE BLINK, 0);
+
+    if (state.flashMode == Flash::TIMED && state.flashOnMs > 0 && state.flashOffMs > 0) {
+        /*
+         * If the flashOnMs duration is not long enough to fit ramping up
+         * and down at the default step duration, step duration is modified
+         * to fit.
+         */
+        int32_t step_duration = kRampStepDuration;
+        int32_t pause_hi = state.flashOnMs - (step_duration * kBrightnessRamp.size() * 2);
+        if (pause_hi < 0) {
+            step_duration = state.flashOnMs / (kBrightnessRamp.size() * 2);
+            pause_hi = 0;
+        }
+
+        LOG(DEBUG) << __func__ << ": color=" << std::hex << state.color << std::dec
+                   << " onMs=" << state.flashOnMs << " offMs=" << state.flashOffMs;
+
+        // White
+        WriteToFile(WHITE START_IDX, 0);
+        WriteToFile(WHITE DUTY_PCTS, GetScaledDutyPcts(white_brightness));
+        WriteToFile(WHITE PAUSE_LO, static_cast<uint32_t>(state.flashOffMs));
+        WriteToFile(WHITE PAUSE_HI, static_cast<uint32_t>(pause_hi));
+        WriteToFile(WHITE RAMP_STEP_MS, static_cast<uint32_t>(step_duration));
+        WriteToFile(WHITE BLINK, 1);
+    } else {
+        WriteToFile(WHITE BRIGHTNESS, white_brightness);
+    }
 }
 
 }  // namespace implementation
