@@ -65,6 +65,19 @@
                 android:targetClass="org.lineageos.settings.doze.DozeSettingsActivity"
                 android:targetPackage="org.lineageos.settings.doze" />
         </Preference>
+
+        <Preference
+            android:key="device_jason"
+            android:persistent="false"
+            android:summary="@string/jason_pref_summary"
+            android:title="@string/jason_pref_title"
+            android:icon="@drawable/ic_jason">
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetClass="org.lineageos.settings.devicex.ButtonSettingsActivity"
+                android:targetPackage="org.lineageos.settings.devicex" />
+        </Preference>
+
     </PreferenceCategory>
 
     <PreferenceCategory
