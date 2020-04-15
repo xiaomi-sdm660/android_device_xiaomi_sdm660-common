@@ -226,6 +226,24 @@
     },
     {
       "PowerHint": "LAUNCH",
+      "Node": "GPUForceClkOn",
+      "Duration": 2500,
+      "Value": "1"
+    },
+    {
+      "PowerHint": "LAUNCH",
+      "Node": "GPUForceRailOn",
+      "Duration": 2500,
+      "Value": "1"
+    },
+    {
+      "PowerHint": "LAUNCH",
+      "Node": "GPUIdleTimer",
+      "Duration": 2500,
+      "Value": "10000"
+    },
+    {
+      "PowerHint": "LAUNCH",
       "Node": "CPUBigClusterMinFreq",
       "Duration": 1000,
       "Value": "1401600"
