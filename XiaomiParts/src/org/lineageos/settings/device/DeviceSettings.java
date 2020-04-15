@@ -44,6 +44,9 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final int MIN_VIBRATION = 116;
     public static final int MAX_VIBRATION = 3596;
 
+    public static final int MIN_LED = 1;
+    public static final int MAX_LED = 64;
+
     private static final String CATEGORY_DISPLAY = "display";
     private static final String PREF_DEVICE_DOZE = "device_doze";
     private static final String PREF_DEVICE_KCAL = "device_kcal";
@@ -142,7 +145,7 @@ public class DeviceSettings extends PreferenceFragment implements
         final String key = preference.getKey();
         switch (key) {
             case PREF_NOTIF_LED:
-                FileUtils.setValue(NOTIF_LED_PATH, (int) value);
+                FileUtils.setValue(NOTIF_LED_PATH, (int) value / 100.0 * (MAX_LED - MIN_LED) + MIN_LED);
                 break;
 
             case PREF_VIBRATION_STRENGTH:
