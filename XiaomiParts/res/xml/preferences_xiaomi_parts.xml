@@ -29,6 +29,17 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:key="notification_led"
+        android:title="@string/notification_title">
+        <org.lineageos.settings.device.preferences.NotificationLedSeekBarPreference
+            android:key="notification_led_brightness"
+            android:title="@string/notification_led_title"
+            android:max="64"
+            app:min="1"
+            android:defaultValue="64" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:key="display"
         android:title="@string/display_title">
 

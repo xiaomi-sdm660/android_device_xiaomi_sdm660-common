@@ -22,6 +22,10 @@
     <!-- KCal -->
     <string name="device_kcal_title">Display Color Calibration</string>
 
+    <!-- Notification LED brightness -->
+    <string name="notification_title">Notification LED</string>
+    <string name="notification_led_title">LED brightness</string>
+
     <!-- Ambient Display -->
     <string name="ambient_display_xiaomi">Xiaomi Doze</string>
     <string name="advanced_doze_summary">Ambient Display</string>
