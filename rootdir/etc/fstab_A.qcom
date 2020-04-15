@@ -11,6 +11,7 @@
 
 # Non-A/B fstab.qcom variant
 #<src>                                   <mnt_point>        <type> <mnt_flags and options>                          <fs_mgr_flags>
+/dev/block/zram0                         none               swap   defaults                                         zramsize=1073741824
 /dev/block/bootdevice/by-name/cust       /metadata          ext4   noatime,nosuid,nodev,discard                     wait,check,formattable
 /dev/block/bootdevice/by-name/userdata   /data              ext4   noatime,nosuid,nodev,barrier=1,noauto_da_alloc,discard   wait,check,fileencryption=ice,quota,reservedsize=512M
 /dev/block/bootdevice/by-name/userdata   /data              f2fs   nosuid,nodev,noatime,inline_xattr,reserve_root=32768,resgid=1065,discard    wait,check,fileencryption=ice,reservedsize=512M
