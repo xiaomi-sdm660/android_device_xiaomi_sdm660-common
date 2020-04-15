@@ -1,6 +1,9 @@
 # Biometric
 /(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660   u:object_r:hal_fingerprint_sdm660_exec:s0
 
+# blkio
+/dev/blkio(/.*)?         u:object_r:blkio_dev:s0
+
 # Goodix Fingerprint
 /data/misc/gf_data(/.*)?                        u:object_r:fingerprint_data_file:s0
 /data/misc/goodix(/.*)?                         u:object_r:fingerprint_data_file:s0

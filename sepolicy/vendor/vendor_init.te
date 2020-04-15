@@ -14,19 +14,23 @@ allow vendor_init media_rw_data_file:file { getattr relabelfrom };
 
 allow vendor_init rootfs:dir { add_name create setattr write };
 allow vendor_init persist_debug_prop:property_service set;
+allow vendor_init persist_debug_prop:file read;
 allow vendor_init persist_dpm_prop:property_service set;
 allow vendor_init qcom_ims_prop:property_service set;
 allow vendor_init thermal_engine_prop:property_service set;
 allow vendor_init vendor_ssr_prop:property_service set;
 allow vendor_init audio_prop:property_service set;
 allow vendor_init vendor_fp_prop:property_service set;
-allow vendor_init power_prop:property_service set;
 allow vendor_init reschedule_service_prop:property_service set;
 allow vendor_init bservice_prop:property_service set;
 
 allow vendor_init rootfs:dir { add_name write };
 allow vendor_init rootfs:lnk_file setattr;
-allow vendor_init fingerprint_data_file:dir setattr;
+allow vendor_init fingerprint_data_file:dir {setattr create};
+
+allow vendor_init blkio_dev:file write;
+allow vendor_init proc_dirty:file write;
+
 set_prop(vendor_init, camera_prop)
 set_prop(vendor_init, vendor_camera_prop)
 set_prop(vendor_init, freq_prop)
