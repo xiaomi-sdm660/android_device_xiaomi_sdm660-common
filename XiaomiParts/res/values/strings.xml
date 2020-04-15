@@ -19,6 +19,10 @@
 
     <string name="display_title">Display</string>
 
+    <!-- Mi Note 3 Settings -->
+    <string name="jason_pref_title">Device Settings</string>
+    <string name="jason_pref_summary">Mi Note 3 extra settings</string>
+
     <!-- KCal -->
     <string name="device_kcal_title">Display Color Calibration</string>
 
