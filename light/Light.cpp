@@ -30,6 +30,7 @@ namespace {
 #define LEDS "/sys/class/leds/"
 #define LCD_LED LEDS "lcd-backlight/"
 #define WHITE LEDS "white/"
+#define RED LEDS "red/"
 #define BUTTON LEDS "button-backlight/"
 #define BUTTON1 LEDS "button-backlight1/"
 #define BRIGHTNESS "brightness"
@@ -128,7 +129,14 @@ Light::Light() {
         max_led_brightness_ = std::stoi(buf);
     } else {
         max_led_brightness_ = kDefaultMaxLedBrightness;
-        LOG(ERROR) << "Failed to read max LED brightness, fallback to " << kDefaultMaxLedBrightness;
+        LOG(ERROR) << "Failed to read max white LED brightness, fallback to " << kDefaultMaxLedBrightness;
+    }
+
+    if (ReadFileToString(RED MAX_BRIGHTNESS, &buf)) {
+        max_red_led_brightness_= std::stoi(buf);
+    } else {
+        max_red_led_brightness_ = kDefaultMaxLedBrightness;
+        LOG(ERROR) << "Failed to read max red LED brightness, fallback to " << kDefaultMaxLedBrightness;
     }
 
     if (!access(BUTTON BRIGHTNESS, W_OK)) {
@@ -202,9 +210,11 @@ void Light::setLightNotification(Type type, const LightState& state) {
 
 void Light::applyNotificationState(const LightState& state) {
     uint32_t white_brightness = RgbaToBrightness(state.color, max_led_brightness_);
+    uint32_t red_brightness = RgbaToBrightness(state.color, max_red_led_brightness_);
 
     // Turn off the leds (initially)
     WriteToFile(WHITE BLINK, 0);
+    WriteToFile(RED BLINK, 0);
 
     if (state.flashMode == Flash::TIMED && state.flashOnMs > 0 && state.flashOffMs > 0) {
         /*
@@ -229,8 +239,17 @@ void Light::applyNotificationState(const LightState& state) {
         WriteToFile(WHITE PAUSE_HI, static_cast<uint32_t>(pause_hi));
         WriteToFile(WHITE RAMP_STEP_MS, static_cast<uint32_t>(step_duration));
         WriteToFile(WHITE BLINK, 1);
+
+        // Red
+        WriteToFile(RED START_IDX, 0);
+        WriteToFile(RED DUTY_PCTS, GetScaledDutyPcts(red_brightness));
+        WriteToFile(RED PAUSE_LO, static_cast<uint32_t>(state.flashOffMs));
+        WriteToFile(RED PAUSE_HI, static_cast<uint32_t>(pause_hi));
+        WriteToFile(RED RAMP_STEP_MS, static_cast<uint32_t>(step_duration));
+        WriteToFile(RED BLINK, 1);
     } else {
         WriteToFile(WHITE BRIGHTNESS, white_brightness);
+        WriteToFile(RED BRIGHTNESS, red_brightness);
     }
 }
 
