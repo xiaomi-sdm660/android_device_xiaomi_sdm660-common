@@ -62,6 +62,9 @@ public class DeviceSettings extends PreferenceFragment implements
 
     private static final String DEVICE_DOZE_PACKAGE_NAME = "org.lineageos.settings.doze";
 
+    private static final String DEVICE_JASON_PACKAGE_NAME = "org.lineageos.settings.devicex";
+    private static final String PREF_DEVICE_JASON = "device_jason";
+
     private SecureSettingListPreference mTHERMAL;
 
     @Override
@@ -82,6 +85,10 @@ public class DeviceSettings extends PreferenceFragment implements
         PreferenceCategory displayCategory = (PreferenceCategory) findPreference(CATEGORY_DISPLAY);
         if (isAppNotInstalled(DEVICE_DOZE_PACKAGE_NAME)) {
             displayCategory.removePreference(findPreference(PREF_DEVICE_DOZE));
+        }
+
+        if (isAppNotInstalled(DEVICE_JASON_PACKAGE_NAME)) {
+            displayCategory.removePreference(findPreference(PREF_DEVICE_JASON));
         }
 
         Preference kcal = findPreference(PREF_DEVICE_KCAL);
