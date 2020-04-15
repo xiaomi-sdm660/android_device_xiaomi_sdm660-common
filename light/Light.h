@@ -47,6 +47,7 @@ class Light : public ILight {
 
     uint32_t max_button_brightness_;
     uint32_t max_led_brightness_;
+    uint32_t max_red_led_brightness_;
     uint32_t max_screen_brightness_;
 
     std::unordered_map<Type, std::function<void(Type type, const LightState&)>> lights_{
