@@ -885,10 +885,6 @@
     <!--  Whether Multiuser UI should be shown -->
     <bool name="config_enableMultiUserUI">true</bool>
 
-    <!-- Whether a software navigation bar should be shown. NOTE: in the future this may be
-                  autodetected from the Configuration. -->
-    <bool name="config_showNavigationBar">true</bool>
-
     <!-- If this is true, device supports Sustained Performance Mode. -->
     <bool name="config_sustainedPerformanceModeSupported">true</bool>
 
