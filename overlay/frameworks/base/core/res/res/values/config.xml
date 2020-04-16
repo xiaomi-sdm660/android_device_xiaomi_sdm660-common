@@ -668,7 +668,7 @@
 
     <!-- Buttom brightness setting allowed by the power manager.
          The user is forbidden from setting the brightness. -->
-    <integer name="config_buttonBrightnessSettingDefault">0</integer>
+    <integer name="config_buttonBrightnessSettingDefault">64</integer>
 
     <!-- Whether camera shutter sound is forced or not  (country specific). -->
     <bool name="config_camera_sound_forced">false</bool>
