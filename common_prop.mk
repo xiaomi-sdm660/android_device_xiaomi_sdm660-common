@@ -92,16 +92,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.audio.feature.keep_alive.enable=false \
     vendor.audio.feature.kpi_optimize.enable=false \
     vendor.audio.feature.maxx_audio.enable=false \
-    vendor.audio.feature.ras.enable=false \
+    vendor.audio.feature.ras.enable=true \
     vendor.audio.feature.record_play_concurency.enable=false \
     vendor.audio.feature.snd_mon.enable=false \
     vendor.audio.feature.src_trkn.enable=true \
     vendor.audio.feature.ssrec.enable=false \
-    vendor.audio.feature.usb_offload.enable=false \
+    vendor.audio.feature.usb_offload.enable=true \
     vendor.audio.feature.usb_offload_burst_mode.enable=false \
     vendor.audio.feature.usb_offload_sidetone_volume.enable=false \
     vendor.audio.feature.vbat.enable=true \
-    vendor.audio.feature.wsa.enable=true
+    vendor.audio.feature.wsa.enable=false
 
 ifneq ($(filter jason,$(TARGET_DEVICE)),)
 PRODUCT_PROPERTY_OVERRIDES += \
