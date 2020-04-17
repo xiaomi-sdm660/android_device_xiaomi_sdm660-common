@@ -15,7 +15,6 @@ allow vendor_toolbox rootfs:dir r_dir_perms;
 allow vendor_toolbox {
     mnt_vendor_file
     persist_alarm_file
-    persist_audio_file
     persist_block_device
     persist_bluetooth_file
     persist_bms_file
@@ -42,7 +41,6 @@ allow vendor_toolbox {
 allow vendor_toolbox {
     mnt_vendor_file
     persist_alarm_file
-    persist_audio_file
     persist_block_device
     persist_bluetooth_file
     persist_bms_file
