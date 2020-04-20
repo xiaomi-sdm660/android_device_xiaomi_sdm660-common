@@ -145,6 +145,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.camera.mainswitch.threshold=419 \
     persist.camera.expose.aux=1
 
+# Charger
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.charger.enable_suspend=true
+
 # Codec2 switch
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.media.codec2=2
@@ -350,3 +354,4 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Zygote preforking
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.device_config.runtime_native.usap_pool_enabled=true
+
