@@ -137,6 +137,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.camera.privapp.list=org.codeaurora.snapcam \
     vendor.camera.aux.packageblacklist=com.google.android.GoogleCamera,com.discord
 
+# Charger
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.charger.enable_suspend=true
+
 # Codec2 switch
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.media.codec2=2
@@ -342,3 +346,4 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Zygote preforking
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.device_config.runtime_native.usap_pool_enabled=true
+
