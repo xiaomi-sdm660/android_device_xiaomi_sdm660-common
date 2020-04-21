@@ -628,7 +628,6 @@ vendor/lib/hw/activity_recognition.sdm660.so|016875ad5a1363a8ec017b286e2fa5372e0
 vendor/lib/libsensor1.so|daca84391e79453c601b135619f4db6eebd4f7cf
 vendor/lib/libsensor_reg.so|ac3a6b735084d308e6f2a07f514339c27c65b11f
 vendor/lib/sensor_calibrate.so|577e491cc10a7ceeda9826fe213c8a0a5e2033d8
-vendor/lib/sensors.ssc.so|69970f125d076dac8711c1d1687f7faeb7a75bed
 vendor/lib/vendor.qti.hardware.sensorscalibrate@1.0.so|f92c441a11ad41b6ca36e7fd9e9f3ddc065c80b2
 vendor/lib64/hw/sensors.sdm660.so|f5df0509f4586eac10ad9994edb6222a69a26043
 vendor/lib64/hw/sensors.sda660.so|f5df0509f4586eac10ad9994edb6222a69a26043
@@ -636,7 +635,6 @@ vendor/lib64/hw/activity_recognition.sdm660.so|9550e75529ef4ac6205c27784eaf54219
 vendor/lib64/libsensor1.so|596362883f49d2e911c8cc2d54f90b2b56d35b18
 vendor/lib64/libsensor_reg.so|a8753d3f0e9383d46334f0022166eece70854e5c
 vendor/lib64/sensor_calibrate.so|1f832d04e04c11294d1c96c074c3a2a551d4f095
-vendor/lib64/sensors.ssc.so|0ec630386e5f51dfe77acd0fc7886f01dcfc2c86
 vendor/lib64/vendor.qti.hardware.sensorscalibrate@1.0.so|976417e8085fc4ea4a47d194f129806175a9bb7e
 
 # Soter - from LA.UM.8.2.r1-06200-sdm660.0
