@@ -18,6 +18,11 @@
     <string name="advanced_settings_summary">Extra Settings</string>
 
     <string name="display_title">Display</string>
+    <string name="audio_title">Audio amplification</string>
+
+        <!-- Audio amplification -->
+    <string name="headphone_gain">Headphone gain</string>
+    <string name="mic_gain">Microphone gain</string>
 
     <!-- Mi Note 3 Settings -->
     <string name="jason_pref_title">Device Settings</string>

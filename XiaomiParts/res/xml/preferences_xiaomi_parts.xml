@@ -41,6 +41,28 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+       android:key="audio"
+       android:title="@string/audio_title">
+
+        <org.lineageos.settings.device.preferences.CustomSeekBarPreference
+            android:defaultValue="2"
+            android:key="headphone_gain"
+            android:max="20"
+            app:min="-20"
+            android:icon="@drawable/ic_headphone"
+            android:title="@string/headphone_gain"/>
+
+        <org.lineageos.settings.device.preferences.CustomSeekBarPreference
+            android:defaultValue="0"
+            android:key="mic_gain"
+            android:max="20"
+            app:min="-10"
+            android:icon="@drawable/ic_mic"
+            android:title="@string/mic_gain"/>
+   </PreferenceCategory>
+
+
+    <PreferenceCategory
         android:key="display"
         android:title="@string/display_title">
 

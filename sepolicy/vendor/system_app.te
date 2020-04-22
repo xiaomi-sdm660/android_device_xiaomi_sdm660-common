@@ -9,9 +9,11 @@ allow system_app sysfs_thermal:file rw_file_perms;
 allow system_app sysfs_thermal:dir search;
 allow system_app sysfs_vibrator:file rw_file_perms;
 allow system_app sysfs_vibrator:dir search;
+allow system_app sysfs_fpsinfo:file rw_file_perms;
+allow system_app sysfs:file { open read getattr write };
+allow system_app sysfs_kgsl:lnk_file read;
 allow system_app sysfs_graphics:dir search;
 allow system_app sysfs_graphics:file rw_file_perms;
 allow system_app sysfs_leds:dir search;
-
+allow system_app sysfs_fpsinfo:file { open read getattr write };
 set_prop(system_app, system_prop);
-allow system_app sysfs_fpsinfo:file rw_file_perms;
