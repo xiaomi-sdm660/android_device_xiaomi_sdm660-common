@@ -21,6 +21,12 @@ on boot
     chown system system /sys/module/hall/parameters/hall_toggle
     chmod 0660 /sys/module/hall/parameters/hall_toggle
 
+# Audio Amplification
+    chown system system /sys/kernel/sound_control/headphone_gain
+    chown system system /sys/kernel/sound_control/mic_gain
+    chmod 0660 /sys/kernel/sound_control/headphone_gain
+    chmod 0660 /sys/kernel/sound_control/mic_gain
+
 # KCal
     chown system system /sys/devices/platform/kcal_ctrl.0/kcal_cont
     chown system system /sys/devices/platform/kcal_ctrl.0/kcal_enable

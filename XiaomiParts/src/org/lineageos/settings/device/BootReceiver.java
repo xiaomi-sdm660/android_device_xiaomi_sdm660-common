@@ -25,6 +25,9 @@ import org.lineageos.settings.device.kcal.Utils;
 
 public class BootReceiver extends BroadcastReceiver implements Utils {
 
+    public static final  String HEADPHONE_GAIN_PATH = "/sys/kernel/sound_control/headphone_gain";
+    public static final  String MIC_GAIN_PATH = "/sys/kernel/sound_control/mic_gain";
+
     public void onReceive(Context context, Intent intent) {
 
         if (Settings.Secure.getInt(context.getContentResolver(), PREF_ENABLED, 0) == 1) {
@@ -52,6 +55,12 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
             FileUtils.setValue(KCAL_HUE, Settings.Secure.getInt(context.getContentResolver(),
                     PREF_HUE, HUE_DEFAULT));
         }
+
+        int gain = Settings.Secure.getInt(context.getContentResolver(),
+                DeviceSettings.PREF_HEADPHONE_GAIN, 0);
+        FileUtils.setValue(HEADPHONE_GAIN_PATH, gain + " " + gain);
+        FileUtils.setValue(MIC_GAIN_PATH, Settings.Secure.getInt(context.getContentResolver(),
+                DeviceSettings.PREF_MIC_GAIN, 0));
 
         FileUtils.setValue(DeviceSettings.NOTIF_LED_PATH, Settings.Secure.getInt(
                 context.getContentResolver(), DeviceSettings.PREF_NOTIF_LED, 100) / 100.0 * (DeviceSettings.MAX_LED - DeviceSettings.MIN_LED) + DeviceSettings.MIN_LED);
