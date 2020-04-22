@@ -32,6 +32,7 @@ import org.lineageos.settings.device.preferences.SecureSettingListPreference;
 import org.lineageos.settings.device.preferences.SecureSettingSwitchPreference;
 import org.lineageos.settings.device.preferences.VibrationSeekBarPreference;
 import org.lineageos.settings.device.preferences.NotificationLedSeekBarPreference;
+import org.lineageos.settings.device.preferences.CustomSeekBarPreference;
 
 import java.lang.Math.*;
 
@@ -47,6 +48,12 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final String NOTIF_LED_PATH = "/sys/class/leds/white/max_brightness";
     
     public static final String PREF_KEY_FPS_INFO = "fps_info";
+    
+    public static final  String CATEGORY_AUDIO_AMPLIFY = "audio_amplify";
+    public static final  String PREF_HEADPHONE_GAIN = "headphone_gain";
+    public static final  String PREF_MIC_GAIN = "mic_gain";
+    public static final  String HEADPHONE_GAIN_PATH = "/sys/kernel/sound_control/headphone_gain";
+    public static final  String MIC_GAIN_PATH = "/sys/kernel/sound_control/mic_gain";
 
     // value of vtg_min and vtg_max
     public static final int MIN_VIBRATION = 116;
@@ -93,6 +100,16 @@ public class DeviceSettings extends PreferenceFragment implements
             VibrationSeekBarPreference vibrationStrength = (VibrationSeekBarPreference) findPreference(PREF_VIBRATION_STRENGTH);
             vibrationStrength.setOnPreferenceChangeListener(this);
         } else { getPreferenceScreen().removePreference(findPreference(CATEGORY_VIBRATOR)); }
+        
+        // Headphone & Mic Gain
+        if (FileUtils.fileWritable(HEADPHONE_GAIN_PATH) && FileUtils.fileWritable(MIC_GAIN_PATH)) {
+           CustomSeekBarPreference headphoneGain = (CustomSeekBarPreference) findPreference(PREF_HEADPHONE_GAIN);
+           headphoneGain.setOnPreferenceChangeListener(this);
+           CustomSeekBarPreference micGain = (CustomSeekBarPreference) findPreference(PREF_MIC_GAIN);
+           micGain.setOnPreferenceChangeListener(this);
+        } else {
+          getPreferenceScreen().removePreference(findPreference(CATEGORY_AUDIO_AMPLIFY));
+        }
 
         PreferenceCategory displayCategory = (PreferenceCategory) findPreference(CATEGORY_DISPLAY);
         if (isAppNotInstalled(DEVICE_DOZE_PACKAGE_NAME)) {
@@ -140,6 +157,14 @@ public class DeviceSettings extends PreferenceFragment implements
             case PREF_VIBRATION_STRENGTH:
                 double vibrationValue = (int) value / 100.0 * (MAX_VIBRATION - MIN_VIBRATION) + MIN_VIBRATION;
                 FileUtils.setValue(VIBRATION_STRENGTH_PATH, vibrationValue);
+                break;
+
+            case PREF_HEADPHONE_GAIN:
+                FileUtils.setValue(HEADPHONE_GAIN_PATH, value + " " + value);
+                break;
+
+            case PREF_MIC_GAIN:
+                FileUtils.setValue(MIC_GAIN_PATH, (int) value);
                 break;
 
             case PREF_THERMAL:

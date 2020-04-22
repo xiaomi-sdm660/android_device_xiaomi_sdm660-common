@@ -26,6 +26,12 @@ on boot
     chmod 0660 /sys/devices/virtual/graphics/fb0/measured_fps
     chown system system /sys/class/graphics/fb0/measured_fps
     chmod 0660 /sys/class/graphics/fb0/measured_fps
+    
+    # Audio Amplification
+    chown system system /sys/kernel/sound_control/headphone_gain
+    chown system system /sys/kernel/sound_control/mic_gain
+    chmod 0660 /sys/kernel/sound_control/headphone_gain
+    chmod 0660 /sys/kernel/sound_control/mic_gain
 
 # KCal
     chown system system /sys/devices/platform/kcal_ctrl.0/kcal_cont
