@@ -70,6 +70,7 @@
 /sys/devices/soc/c175000\.i2c/i2c-1/1-[0-9a-f]+/input/input[0-9]+/wake_gesture u:object_r:sysfs_tap_to_wake:s0
 /sys/touchpanel/double_tap u:object_r:sysfs_tap_to_wake:s0
 /proc/touchpanel/wake_gesture u:object_r:sysfs_tap_to_wake:s0
+/sys/devices/soc/c179000\.i2c/i2c-5/5-[0-9a-f]+/input/input[0-9]+/double_tap_enable u:object_r:sysfs_touchpanel:s0
 
 # Thermal
 /data/vendor/thermal(/.*)?                      u:object_r:thermal_data_file:s0
