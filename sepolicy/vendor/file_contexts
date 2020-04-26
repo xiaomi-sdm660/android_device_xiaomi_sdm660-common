@@ -81,4 +81,3 @@
 
 # Service HALs
 /(vendor|system/vendor)/bin/hw/android\.hardware\.authsecret@1\.0-service u:object_r:hal_authsecret_default_exec:s0
-/sys/class/graphics/fb0/measured_fps                         u:object_r:sysfs_fpsinfo:s0
