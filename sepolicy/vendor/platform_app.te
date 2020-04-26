@@ -1,1 +1,2 @@
 allow platform_app sysfs_graphics:file r_file_perms;
+allow platform_app sysfs_graphics:dir search;

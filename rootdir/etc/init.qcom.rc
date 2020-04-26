@@ -190,8 +190,8 @@ on boot
     chmod 0770 /sys/class/power_supply/battery/device/thermalcall
     chown system system /sys/class/power_supply/battery/device/thermalcall
 
-    chown system graphics /sys//sys/devices/virtual/graphics/fb0/measured_fps
-    chmod 0666 /sys//sys/devices/virtual/graphics/fb0/measured_fps
+    chown system graphics /sys/devices/virtual/graphics/fb0/measured_fps
+    chmod 0666 /sys/devices/virtual/graphics/fb0/measured_fps
 
     mkdir /vendor/mnt/persist/drm 0770 system system
     mkdir /vendor/mnt/persist/bluetooth 0770 bluetooth bluetooth
