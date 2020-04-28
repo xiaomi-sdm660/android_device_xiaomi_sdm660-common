@@ -197,8 +197,6 @@ vendor/lib64/libdpmqmihal.so|d5b8330b56d7e0c036b00a817754748bf3137774
 
 # DRM - from LA.UM.8.2.r1-06300-sdm660.0
 vendor/bin/qseecomd|a673f923a343a98007410022c1dc9acb5d440889
-vendor/lib/libQSEEComAPI.so|613f529ea9816bf3d9318566fe98445c3d47f1c0
-vendor/lib/libsdedrm.so|c8e069bb766dbb5a7c1e1419e22d69197e378609
 vendor/lib64/libdrmfs.so|31df18a6a3ab7115394343e0e067a3983e8183d9
 vendor/lib64/libdrmtime.so|620d9e41f915ffc04afc635f4d080eff56543c65
 vendor/lib64/libGPreqcancel.so|bfff7b7d51e917a16b9a15a27fb81e16d0359348
