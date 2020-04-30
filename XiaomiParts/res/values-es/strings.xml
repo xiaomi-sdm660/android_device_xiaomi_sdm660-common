@@ -15,16 +15,25 @@
 -->
 <resources>
     <string name="advanced_settings">Ajustes Xiaomi</string>
-    <string name="advanced_settings_summary">Ajustes Extras de Xiaomi MI 6X/A2</string>
+    <string name="advanced_settings_summary">Ajustes adicionales</string>
 
     <string name="display_title">Pantalla</string>
 
+    <!-- Mi Note 3 Settings -->
+    <string name="jason_pref_title">Ajustes del dispositivo</string>
+    <string name="jason_pref_summary">Ajustes adicionales de Mi Note 3</string>
+     
     <!-- KCal -->
     <string name="device_kcal_title">Calibrar Color de Pantalla </string>
 
-    <string name="vibration_title">Retroalimentación háptica</string>
-    <string name="vibration_strength_title">Fuerza</string>
+    <!-- Notification LED brightness -->
+    <string name="notification_title">Notificación LED</string>
+    <string name="notification_led_title">Brillo del LED</string>
 
+     <!-- Ambient Display -->
+    <string name="ambient_display_xiaomi">Doze de xiaomi</string>
+    <string name="advanced_doze_summary">Pantalla ambiente</string>
+     
     <!-- Thermal Profiles -->
     <string name="thermal_profile_title">Rendimiento</string>
     <string name="thermal_title">Ajustes de Rendimiento</string>
@@ -87,7 +96,7 @@
     <string name="cat_calibration">Calibración de pantalla</string>
     <string name="kcal_enabled">Encendido</string>
     <string name="set_on_boot">Aplicar al inicio</string>
-    <string name="kcal_disabled">Apagar</string>
+    <string name="kcal_disabled">Apagado</string>
     <string name="color_red">Rojo</string>
     <string name="color_green">Verde</string>
     <string name="color_blue">Azul</string>
@@ -101,16 +110,25 @@
     <string name="edit_value">ELija un nuevo valor</string>
 
     <!-- Presets -->
-    <string name="presets_dialog_title">Seleccione Preset</string>
+    <string name="presets_dialog_title">Seleccione ajuste preestablecido</string>
     <string name="preset_default">Predeterminado</string>
     <string name="preset_version_1">Versión 1</string>
     <string name="preset_version_2">Versión 2</string>
     <string name="preset_version_3">Versión 3</string>
     <string name="preset_triluminous">Triluminoso</string>
     <string name="preset_deep_black_white">Blanco y negro profundo</string>
-    <string name="preset_deep_natural">Profundo natural</string>
+    <string name="preset_deep_natural">Natural profundo</string>
     <string name="preset_cool_amoled">Cool Amoled</string>
     <string name="preset_extreme_amoled">Amoled Extremo</string>
-    <string name="preset_warm_amoled">Calentar Amoled</string>
-    <string name="preset_hybrid_mamba">Mamba híbrida</string>
+    <string name="preset_warm_amoled">Amoled caliente</string>
+    <string name="preset_hybrid_mamba">Mamba híbrido</string>
+     
+    <string name="hall_wakeup_title">Despertar con funda flip</string>
+    <string name="hall_title">Activar levantamiento con funda flip</string>
+    <string name="hall_wakeup_summary">Despertar dispositivo con una funda flip magnética</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="default_value">Valor por defecto</string>
+    <string name="edit_hint">Valor entre %1$d y %2$d</string>
+
 </resources>
