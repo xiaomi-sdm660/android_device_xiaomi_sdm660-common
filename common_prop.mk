@@ -189,10 +189,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # LMKD
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.config.low_ram=false
-    ro.lmk.kill_heaviest_task=true
-    ro.lmk.kill_timeout_ms=100
-    ro.lmk.use_minfree_levels=true
+    ro.config.low_ram=false \
+    ro.lmk.kill_heaviest_task=true \
+    ro.lmk.kill_timeout_ms=100 \
+    ro.lmk.use_minfree_levels=true \
     ro.lmk.log_stats=true
 
 # Media
