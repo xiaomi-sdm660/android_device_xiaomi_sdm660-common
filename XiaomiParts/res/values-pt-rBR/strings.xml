@@ -27,27 +27,6 @@
     
 	<string name="vibration_title">Retorno tátil</string>
     <string name="vibration_strength_title">Força</string>
-    
-	<!-- Thermal Profiles -->
-    <string name="thermal_profile_title">Térmico</string>
-    <string name="thermal_title">Configurações térmica</string>
-    <string name="thermal_summary">Escolha seu perfil Térmico</string>
-    <string name="thermal_dialogTitle">Escolha seu perfil Térmico</string>
-    
-	<!-- Values for Thermal Presets -->
-    <string name="thermal_performance">Performance</string>
-    <string name="thermal_battery">Bateria</string>
-    <string name="thermal_gaming">Jogo</string>
-    <string name="thermal_balance">Equilibrado</string>
-    <string name="thermal_extreme_battery">Bateria Extrema</string>
-    
-	<string name="audio_title">Áudio</string>
-    
-	<!-- Dirac settings -->
-    <string name="dirac_title">Aprimoramento de Som Mi</string>
-    <string name="dirac_summary">Otimizar qualidade de áudio</string>
-    <string name="dirac_headset_title">Escolher tipo de fone de ouvido</string>
-    <string name="dirac_preset_title">Escolha uma predefinição</string>
 
     <!-- kcal -->
     <string name="advanced_settings_kcal">Exibir Calibração de Cores</string>

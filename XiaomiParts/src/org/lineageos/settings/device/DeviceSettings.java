@@ -57,9 +57,6 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_DEVICE_DOZE = "device_doze";
     private static final String PREF_DEVICE_KCAL = "device_kcal";
 
-    public static final String PREF_THERMAL = "thermal";
-    public static final String THERMAL_PATH = "/sys/devices/virtual/thermal/thermal_message/sconfig";
-
     private static final String CATEGORY_HALL_WAKEUP = "hall_wakeup";
     public static final String PREF_HALL_WAKEUP = "hall";
     public static final String HALL_WAKEUP_PATH = "/sys/module/hall/parameters/hall_toggle";
@@ -119,11 +116,6 @@ public class DeviceSettings extends PreferenceFragment implements
             return true;
         });
 
-        mTHERMAL = (SecureSettingListPreference) findPreference(PREF_THERMAL);
-        mTHERMAL.setValue(FileUtils.getValue(THERMAL_PATH));
-        mTHERMAL.setSummary(mTHERMAL.getEntry());
-        mTHERMAL.setOnPreferenceChangeListener(this);
-
         if (FileUtils.fileWritable(HALL_WAKEUP_PATH)) {
             SecureSettingSwitchPreference hall = (SecureSettingSwitchPreference) findPreference(PREF_HALL_WAKEUP);
             hall.setChecked(FileUtils.getValue(HALL_WAKEUP_PATH).equals("Y"));
@@ -152,12 +144,6 @@ public class DeviceSettings extends PreferenceFragment implements
 
             case PREF_MIC_GAIN:
                 FileUtils.setValue(MIC_GAIN_PATH, (int) value);
-                break;
-
-            case PREF_THERMAL:
-                mTHERMAL.setValue((String) value);
-                mTHERMAL.setSummary(mTHERMAL.getEntry());
-                FileUtils.setValue(THERMAL_PATH, (String) value);
                 break;
 
             case PREF_HALL_WAKEUP:
