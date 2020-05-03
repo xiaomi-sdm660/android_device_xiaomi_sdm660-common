@@ -25,10 +25,4 @@ type hall_dev, sysfs_type, fs_type;
 type kcal_dev, sysfs_type, fs_type;
 
 type thermal_data_file, file_type, data_file_type;
-
-# FPS Info
 type sysfs_fpsinfo, sysfs_type, fs_type;
-
-# Audio gain
-type sysfs_headphonegain, sysfs_type, fs_type;
-type sysfs_micgain, sysfs_type, fs_type;

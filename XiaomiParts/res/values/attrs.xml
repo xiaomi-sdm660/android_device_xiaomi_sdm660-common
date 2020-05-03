@@ -2,12 +2,9 @@
 <resources>
     <declare-styleable name="CustomSeekBarPreference">
         <attr name="interval" format="integer" />
-        <attr name="showSign" format="boolean" />
         <attr name="min" format="integer" />
         <attr name="max" format="integer" />
         <attr name="units" format="string|reference" />
         <attr name="defaultText" format="string|reference" />
-        <attr name="showSign" format="boolean" />
-        <attr name="continuousUpdates" format="boolean" />
     </declare-styleable>
 </resources>
