@@ -25,6 +25,18 @@
 # Common Tree Path
 COMMON_PATH := device/xiaomi/sdm660-common
 
+# A/B
+ifeq ($(ENABLE_AB), true)
+AB_OTA_UPDATER := true
+AB_OTA_PARTITIONS ?= \
+    boot \
+    system \
+    vendor
+BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
+BOARD_USES_RECOVERY_AS_BOOT := true
+TARGET_NO_RECOVERY := true
+endif
+
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "qualcomm-hidl"
 
@@ -163,7 +175,7 @@ BOARD_USES_METADATA_PARTITION := true
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 262144
 BOARD_BOOTIMAGE_PARTITION_SIZE := 67108864
-ifneq ($(AB_OTA_UPDATER), true)
+ifneq ($(ENABLE_AB), true)
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_CACHEIMAGE_PARTITION_SIZE := 268435456
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 67108864
@@ -199,7 +211,7 @@ TARGET_USES_QCOM_BSP := false
 # Recovery
 ifneq ($(filter lavender,$(TARGET_DEVICE)),)
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_A.qcom
-else ifeq ($(AB_OTA_UPDATER), true)
+else ifeq ($(ENABLE_AB), true)
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_AB.qcom
 else
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab.qcom
