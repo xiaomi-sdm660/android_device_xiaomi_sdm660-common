@@ -19,14 +19,18 @@
 	<string name="display_title">Display</string>
     
 	<!-- KCal -->
-    
 	<string name="device_kcal_title">Exibir Calibração de Cores</string>
+
     <!-- Ambient Display -->
     <string name="ambient_display_xiaomi">Xiaomi Doze</string>
     <string name="advanced_doze_summary">Tela Ambiente</string>
     
 	<string name="vibration_title">Retorno tátil</string>
     <string name="vibration_strength_title">Força</string>
+
+    <!-- Notification LED brightness -->
+    <string name="notification_title">LED de Notificação</string>
+    <string name="notification_led_title">Brilho do LED</string>
 
     <!-- kcal -->
     <string name="advanced_settings_kcal">Exibir Calibração de Cores</string>
