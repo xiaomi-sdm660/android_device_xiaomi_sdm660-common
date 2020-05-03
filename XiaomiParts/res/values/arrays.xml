@@ -14,21 +14,6 @@
      limitations under the License.
 -->
 <resources>
-    <string-array name="thermal_profiles">
-        <item>@string/thermal_balance</item>
-        <item>@string/thermal_performance</item>
-        <item>@string/thermal_battery</item>
-        <item>@string/thermal_gaming</item>
-        <item>@string/thermal_extreme_battery</item>
-    </string-array>
-    <string-array name="thermal_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-    </string-array>
-
     <!-- kcal -->
     <array name="preset_enteries">
         <item>@string/preset_default</item>
