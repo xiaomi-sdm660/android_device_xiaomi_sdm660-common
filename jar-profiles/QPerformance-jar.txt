@@ -1,3 +1,0 @@
-HPLcom/qualcomm/qti/Performance;->perfHint(ILjava/lang/String;II)I
-HPLcom/qualcomm/qti/Performance;->perfLockRelease()I
-HSPLcom/qualcomm/qti/Performance;-><init>()V
