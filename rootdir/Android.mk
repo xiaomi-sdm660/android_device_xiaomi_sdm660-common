@@ -97,7 +97,7 @@ LOCAL_MODULE_TAGS  := optional
 LOCAL_MODULE_CLASS := ETC
 ifneq ($(filter lavender,$(TARGET_DEVICE)),)
 LOCAL_SRC_FILES    := etc/fstab_A.qcom
-else ifeq ($(AB_OTA_UPDATER), true)
+else ifeq ($(ENABLE_AB), true)
 LOCAL_SRC_FILES    := etc/fstab_AB.qcom
 else
 LOCAL_SRC_FILES    := etc/fstab.qcom
