@@ -948,9 +948,6 @@
          one bar higher than they actually are -->
     <bool name="config_inflateSignalStrength">true</bool>
 
-    <!-- Whether device ignores the RSSNR signal implementation -->
-    <bool name="config_ignoreRssnrSignalLevel">true</bool>
-
     <!-- This string array should be overridden by the device to present a list of network
          attributes.  This is used by the connectivity manager to decide which networks can coexist
          based on the hardware -->
@@ -1013,20 +1010,8 @@
     <!-- Whether the new Auto Selection Network UI should be shown -->
     <bool name="config_enableNewAutoSelectNetworkUI">false</bool>
 
-    <!-- Enable dual LTE capability support-->
-    <bool name="config_dual_LTE_capability">true</bool>
-
-    <!-- Whether the device has outdated qti-telephony-common.jar -->
-    <bool name="config_oldQtiTelephony">false</bool>
-
     <!-- Is the device capable of hot swapping an ICC Card -->
     <bool name="config_hotswapCapable">true</bool>
-
-    <!-- The RadioAccessFamilies supported by the device.
-      Empty is viewed as "all".  Only used on devices which
-      don't support RIL_REQUEST_GET_RADIO_CAPABILITY
-      format is UMTS|LTE|... -->
-    <string translatable="false" name="config_radio_access_family">CDMA|EVDO|GSM|TD_SCDMA|WCDMA|LTE</string>
 
     <!-- Config determines whether to update phone object when voice registration
          state changes. Voice radio tech change will always trigger an update of
@@ -1147,13 +1132,6 @@
          rmem_min,rmem_def,rmem_max,wmem_min,wmem_def,wmem_max -->
     <string name="config_wifi_tcp_buffers" translatable="false">524288,2097152,8388608,262144,524288,4194304</string>
 
-    <!-- Integer parameters of the wifi to cellular handover feature
-         wifi should not stick to bad networks -->
-    <integer name="config_wifi_framework_wifi_score_bad_rssi_threshold_5GHz">-100</integer>
-    <integer name="config_wifi_framework_wifi_score_low_rssi_threshold_5GHz">-100</integer>
-    <integer name="config_wifi_framework_wifi_score_bad_rssi_threshold_24GHz">-100</integer>
-    <integer name="config_wifi_framework_wifi_score_low_rssi_threshold_24GHz">-100</integer>
-
     <!-- dual sap mode is supported on this device. -->
     <bool name="config_wifi_dual_sap_mode_enabled">true</bool>
 
@@ -1203,20 +1181,6 @@
          flag is set for wifi displays.
     -->
     <bool name="config_wifiDisplaySupportsProtectedBuffers">true</bool>
-
-    <!-- Configuration to enable non-default PDP during IWLAN -->
-    <bool name="config_feature_iwlan_enabled">true</bool>
-
-    <!-- IWLAN data service package name to bind to by default. If none is specified in an overlay, an
-         empty string is passed in -->
-    <string name="config_wlan_data_service_package">vendor.qti.iwlan</string>
-
-    <!-- IWLAN network service package name to bind to by default. If none is specified in an overlay, an
-         empty string is passed in -->
-    <string name="config_wlan_network_service_package">vendor.qti.iwlan</string>
-
-    <!-- Telephony qualified networks service package name to bind to by default. -->
-    <string name="config_qualified_networks_service_package">vendor.qti.iwlan</string>
 
     <!-- If true, the display will be shifted around in ambient mode. -->
     <bool name="config_enableBurnInProtection">true</bool>
