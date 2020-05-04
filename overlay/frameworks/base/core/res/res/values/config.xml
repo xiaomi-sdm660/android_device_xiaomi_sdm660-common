@@ -1021,7 +1021,7 @@
     <bool translatable="false" name="skip_restoring_network_selection">true</bool>
 
     <!-- Whether the new Auto Selection Network UI should be shown -->
-    <bool name="config_enableNewAutoSelectNetworkUI">true</bool>
+    <bool name="config_enableNewAutoSelectNetworkUI">false</bool>
 
     <!-- Enable dual LTE capability support-->
     <bool name="config_dual_LTE_capability">true</bool>
