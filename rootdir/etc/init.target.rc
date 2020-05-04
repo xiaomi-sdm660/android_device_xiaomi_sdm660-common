@@ -199,40 +199,6 @@ on boot
     chown system system /sys/class/graphics/fb0/msm_fb_cabc_still
     chown system system /sys/class/graphics/fb0/msm_fb_hbm
 
-# XiaomiParts
-    chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
-    chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
-    chown system system /sys/module/hall/parameters/hall_toggle
-    chmod 0660 /sys/module/hall/parameters/hall_toggle
-
-# KCal
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_cont
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_enable
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_hue
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_sat
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_val
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal_min
-    chown system system /sys/devices/platform/kcal_ctrl.0/kcal
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_cont
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_enable
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_hue
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_sat
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_val
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_min
-    chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal
-
-service folio_daemon /system/bin/folio_daemon
-    class late_start
-    user system
-    group system uhid
-    disabled
-
-on property:persist.service.folio_daemon=0
-    stop folio_daemon
-
-on property:persist.service.folio_daemon=1
-    start folio_daemon
-
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
     class core

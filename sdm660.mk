@@ -264,6 +264,7 @@ PRODUCT_PACKAGES += \
     init.qti.fm.sh \
     init.recovery.qcom.rc \
     init.target.rc \
+    init.xiaomi_parts.rc \
     ueventd.qcom.rc
 
 # Ion
