@@ -258,30 +258,16 @@ PRODUCT_ODM_PROPERTIES += \
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.backup.ntpServer=0.pool.ntp.org \
-    persist.data.df.agg.dl_pkt=10 \
-    persist.data.df.agg.dl_size=4096 \
-    persist.data.df.dev_name=rmnet_usb0 \
-    persist.data.df.dl_mode=5 \
-    persist.data.df.iwlan_mux=9 \
-    persist.data.df.mux_count=8 \
-    persist.data.df.ul_mode=5 \
-    persist.data.netmgrd.qos.enable=true \
-    persist.data.wda.enable=true \
     persist.radio.aosp_usr_pref_sel=true \
     persist.radio.add_power_save=1 \
     persist.radio.VT_CAM_INTERFACE=2 \
     persist.radio.data_con_rprt=1 \
-    persist.radio.schd.cache=3500 \
-    persist.radio.calls.on.ims=1 \
-    persist.rmnet.data.enable=true \
     persist.vendor.data.mode=concurrent \
     persist.vendor.qti.telephony.vt_cam_interface=1 \
     persist.vendor.radio.apm_sim_not_pwdn=1 \
     persist.vendor.radio.atfwd.start=true \
     persist.vendor.radio.custom_ecc=1 \
     persist.vendor.radio.data_con_rprt=1 \
-    persist.vendor.radio.data_ltd_sys_ind=1 \
-    persist.vendor.radio.flexmap_type=none \
     persist.vendor.radio.rat_on=combine \
     persist.vendor.radio.sib16_support=1 \
     persist.vendor.radio.procedure_bytes=SKIP \
@@ -289,14 +275,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.telephony.default_network=9,9 \
     ro.telephony.iwlan_operation_mode=legacy \
     ro.telephony.use_old_mnc_mcc_format=true \
-    ro.vendor.use_data_netmgrd=true 
-    
+    ro.vendor.use_data_netmgrd=true
+
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     DEVICE_PROVISIONED=1 \
     persist.sys.fflag.override.settings_network_and_internet_v2=true \
     ril.subscription.types=NV,RUIM \
     telephony.lteOnCdmaDevice=1
-    
+
 # Rendering
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.egl.hw=1 \
