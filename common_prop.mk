@@ -257,6 +257,7 @@ PRODUCT_ODM_PROPERTIES += \
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
+    persist.backup.ntpServer=0.pool.ntp.org \
     persist.data.df.agg.dl_pkt=10 \
     persist.data.df.agg.dl_size=4096 \
     persist.data.df.dev_name=rmnet_usb0 \
