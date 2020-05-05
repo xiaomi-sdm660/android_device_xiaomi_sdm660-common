@@ -607,25 +607,6 @@ service vendor.irsc_util /vendor/bin/irsc_util "/vendor/etc/sec_config"
     oneshot
     writepid /dev/cpuset/system-background/tasks
 
-service vendor.rmt_storage /vendor/bin/rmt_storage
-    class core
-    user root
-    shutdown critical
-    ioprio rt 0
-
-service vendor.tftp_server /vendor/bin/tftp_server
-   class core
-   user root
-   group root system
-
-service vendor.port-bridge /system/vendor/bin/port-bridge
-    class main
-    user radio
-    group radio system inet
-    disabled
-    oneshot
-    writepid /dev/cpuset/system-background/tasks
-
 service vendor.sensors /vendor/bin/sscrpcd sensorspd
     class early_hal
     user system
