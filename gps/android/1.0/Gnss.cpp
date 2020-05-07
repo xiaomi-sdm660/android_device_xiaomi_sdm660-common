@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  * Not a Contribution
  */
 /*
@@ -28,7 +28,6 @@
 #include "Gnss.h"
 #include <LocationUtil.h>
 #include "battery_listener.h"
-#include "loc_misc_utils.h"
 
 typedef const GnssInterface* (getLocationInterface)();
 
@@ -103,14 +102,25 @@ GnssAPIClient* Gnss::getApi() {
 const GnssInterface* Gnss::getGnssInterface() {
     static bool getGnssInterfaceFailed = false;
     if (nullptr == mGnssInterface && !getGnssInterfaceFailed) {
-        void * libHandle = nullptr;
-        getLocationInterface* getter = (getLocationInterface*)
-                dlGetSymFromLib(libHandle, "libgnss.so", "getGnssInterface");
+        LOC_LOGD("%s]: loading libgnss.so::getGnssInterface ...", __func__);
+        getLocationInterface* getter = NULL;
+        const char *error = NULL;
+        dlerror();
+        void *handle = dlopen("libgnss.so", RTLD_NOW);
+        if (NULL == handle || (error = dlerror()) != NULL)  {
+            LOC_LOGW("dlopen for libgnss.so failed, error = %s", error);
+        } else {
+            getter = (getLocationInterface*)dlsym(handle, "getGnssInterface");
+            if ((error = dlerror()) != NULL)  {
+                LOC_LOGW("dlsym for libgnss.so::getGnssInterface failed, error = %s", error);
+                getter = NULL;
+            }
+        }
 
-        if (nullptr == getter) {
+        if (NULL == getter) {
             getGnssInterfaceFailed = true;
         } else {
-            mGnssInterface = (GnssInterface*)(*getter)();
+            mGnssInterface = (const GnssInterface*)(*getter)();
         }
     }
     return mGnssInterface;
@@ -254,7 +264,14 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
 
 Return<bool> Gnss::injectTime(int64_t timeMs, int64_t timeReferenceMs,
                               int32_t uncertaintyMs) {
-    return true;
+    ENTRY_LOG_CALLFLOW();
+    const GnssInterface* gnssInterface = getGnssInterface();
+    if (nullptr != gnssInterface) {
+        gnssInterface->injectTime(timeMs, timeReferenceMs, uncertaintyMs);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 Return<void> Gnss::deleteAidingData(V1_0::IGnss::GnssAidingData aidingDataFlags)  {

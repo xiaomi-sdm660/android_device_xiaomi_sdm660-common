@@ -46,12 +46,9 @@ void convertGnssLocation(const V1_0::GnssLocation& in, Location& out);
 void convertGnssLocation(const V2_0::GnssLocation& in, Location& out);
 void convertGnssConstellationType(GnssSvType& in, V1_0::GnssConstellationType& out);
 void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& out);
-void convertGnssSvid(GnssSv& in, int16_t& out);
-void convertGnssSvid(GnssMeasurementsData& in, int16_t& out);
 void convertGnssEphemerisType(GnssEphemerisType& in, GnssDebug::SatelliteEphemerisType& out);
 void convertGnssEphemerisSource(GnssEphemerisSource& in, GnssDebug::SatelliteEphemerisSource& out);
 void convertGnssEphemerisHealth(GnssEphemerisHealth& in, GnssDebug::SatelliteEphemerisHealth& out);
-bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos);
 
 }  // namespace implementation
 }  // namespace V2_0

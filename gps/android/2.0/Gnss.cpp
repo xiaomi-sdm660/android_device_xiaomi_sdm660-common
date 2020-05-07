@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
  * Not a Contribution
  */
 /*
@@ -28,7 +28,6 @@
 #include "Gnss.h"
 #include "LocationUtil.h"
 #include "battery_listener.h"
-#include "loc_misc_utils.h"
 
 typedef const GnssInterface* (getLocationInterface)();
 
@@ -146,16 +145,26 @@ GnssAPIClient* Gnss::getApi() {
 
 const GnssInterface* Gnss::getGnssInterface() {
     static bool getGnssInterfaceFailed = false;
-
     if (nullptr == mGnssInterface && !getGnssInterfaceFailed) {
-        void * libHandle = nullptr;
-        getLocationInterface* getter = (getLocationInterface*)
-                dlGetSymFromLib(libHandle, "libgnss.so", "getGnssInterface");
+        LOC_LOGD("%s]: loading libgnss.so::getGnssInterface ...", __func__);
+        getLocationInterface* getter = NULL;
+        const char *error = NULL;
+        dlerror();
+        void *handle = dlopen("libgnss.so", RTLD_NOW);
+        if (NULL == handle || (error = dlerror()) != NULL)  {
+            LOC_LOGW("dlopen for libgnss.so failed, error = %s", error);
+        } else {
+            getter = (getLocationInterface*)dlsym(handle, "getGnssInterface");
+            if ((error = dlerror()) != NULL)  {
+                LOC_LOGW("dlsym for libgnss.so::getGnssInterface failed, error = %s", error);
+                getter = NULL;
+            }
+        }
 
-        if (nullptr == getter) {
+        if (NULL == getter) {
             getGnssInterfaceFailed = true;
         } else {
-            mGnssInterface = (GnssInterface*)(*getter)();
+            mGnssInterface = (const GnssInterface*)(*getter)();
         }
     }
     return mGnssInterface;
@@ -321,7 +330,14 @@ Return<bool> Gnss::injectLocation(double latitudeDegrees,
 
 Return<bool> Gnss::injectTime(int64_t timeMs, int64_t timeReferenceMs,
                               int32_t uncertaintyMs) {
-    return true;
+    ENTRY_LOG_CALLFLOW();
+    const GnssInterface* gnssInterface = getGnssInterface();
+    if (nullptr != gnssInterface) {
+        gnssInterface->injectTime(timeMs, timeReferenceMs, uncertaintyMs);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 Return<void> Gnss::deleteAidingData(V1_0::IGnss::GnssAidingData aidingDataFlags)  {
@@ -369,41 +385,31 @@ Return<sp<V1_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement() {
 
 Return<sp<V1_0::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration()  {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssConfig == nullptr) {
-        mGnssConfig = new GnssConfiguration(this);
-    }
+    mGnssConfig = new GnssConfiguration(this);
     return mGnssConfig;
 }
 
 Return<sp<V1_0::IGnssGeofencing>> Gnss::getExtensionGnssGeofencing()  {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssGeofencingIface == nullptr) {
-        mGnssGeofencingIface = new GnssGeofencing();
-    }
+    mGnssGeofencingIface = new GnssGeofencing();
     return mGnssGeofencingIface;
 }
 
 Return<sp<V1_0::IGnssBatching>> Gnss::getExtensionGnssBatching()  {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssBatching == nullptr) {
-        mGnssBatching = new GnssBatching();
-    }
+    mGnssBatching = new GnssBatching();
     return mGnssBatching;
 }
 
 Return<sp<V1_0::IGnssDebug>> Gnss::getExtensionGnssDebug() {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssDebug == nullptr) {
-        mGnssDebug = new GnssDebug(this);
-    }
+    mGnssDebug = new GnssDebug(this);
     return mGnssDebug;
 }
 
 Return<sp<V1_0::IAGnssRil>> Gnss::getExtensionAGnssRil() {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssRil == nullptr) {
-        mGnssRil = new AGnssRil(this);
-    }
+    mGnssRil = new AGnssRil(this);
     return mGnssRil;
 }
 
@@ -590,23 +596,17 @@ Return<bool> Gnss::setCallback_2_0(const sp<V2_0::IGnssCallback>& callback) {
 
 Return<sp<V2_0::IAGnss>> Gnss::getExtensionAGnss_2_0() {
     ENTRY_LOG_CALLFLOW();
-    if (mAGnssIface_2_0 == nullptr) {
-        mAGnssIface_2_0 = new AGnss(this);
-    }
+    mAGnssIface_2_0 = new AGnss(this);
     return mAGnssIface_2_0;
 }
 Return<sp<V2_0::IAGnssRil>> Gnss::getExtensionAGnssRil_2_0() {
-    if (mGnssRil == nullptr) {
-        mGnssRil = new AGnssRil(this);
-    }
+    mGnssRil = new AGnssRil(this);
     return mGnssRil;
 }
 
 Return<sp<V2_0::IGnssConfiguration>> Gnss::getExtensionGnssConfiguration_2_0() {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssConfig == nullptr) {
-        mGnssConfig = new GnssConfiguration(this);
-    }
+    mGnssConfig = new GnssConfiguration(this);
     return mGnssConfig;
 }
 Return<sp<V2_0::IGnssMeasurement>> Gnss::getExtensionGnssMeasurement_2_0() {
@@ -646,17 +646,13 @@ Return<bool> Gnss::injectBestLocation_2_0(const V2_0::GnssLocation& gnssLocation
 
 Return<sp<V2_0::IGnssDebug>> Gnss::getExtensionGnssDebug_2_0() {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssDebug == nullptr) {
-        mGnssDebug = new GnssDebug(this);
-    }
+    mGnssDebug = new GnssDebug(this);
     return mGnssDebug;
 }
 
 Return<sp<V2_0::IGnssBatching>> Gnss::getExtensionGnssBatching_2_0() {
     ENTRY_LOG_CALLFLOW();
-    if (mGnssBatching == nullptr) {
-        mGnssBatching = new GnssBatching();
-    }
+    mGnssBatching = new GnssBatching();
     return mGnssBatching;
 }
 
