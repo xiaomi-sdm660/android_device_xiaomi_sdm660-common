@@ -197,7 +197,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_CARRIER_PHASE_UNCERTAINTY;
     if (in.flags & GNSS_MEASUREMENTS_DATA_AUTOMATIC_GAIN_CONTROL_BIT)
         out.flags |= IGnssMeasurementCallback::GnssMeasurementFlags::HAS_AUTOMATIC_GAIN_CONTROL;
-    convertGnssSvid(in, out.svid);
+    out.svid = in.svId;
     convertGnssConstellationType(in.svType, out.constellation);
     out.timeOffsetNs = in.timeOffsetNs;
     if (in.stateMask & GNSS_MEASUREMENTS_STATE_CODE_LOCK_BIT)
