@@ -540,7 +540,7 @@ static void convertGnssSvStatus(GnssSvNotification& in, IGnssCallback::GnssSvSta
     }
     for (size_t i = 0; i < out.numSvs; i++) {
         IGnssCallback::GnssSvInfo& info = out.gnssSvList[i];
-        convertGnssSvid(in.gnssSvs[i], info.svid);
+        info.svid = in.gnssSvs[i].svId;
         convertGnssConstellationType(in.gnssSvs[i].type, info.constellation);
         info.cN0Dbhz = in.gnssSvs[i].cN0Dbhz;
         info.elevationDegrees = in.gnssSvs[i].elevation;

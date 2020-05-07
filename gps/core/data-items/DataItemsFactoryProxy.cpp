@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -34,7 +34,6 @@
 #include <DataItemsFactoryProxy.h>
 #include <loc_pla.h>
 #include <log_util.h>
-#include "loc_misc_utils.h"
 
 namespace loc_core
 {
@@ -49,21 +48,40 @@ IDataItemCore* DataItemsFactoryProxy::createNewDataItem(DataItemId id)
         mydi = (*getConcreteDIFunc)(id);
     }
     else {
-        getConcreteDIFunc = (get_concrete_data_item_fn * )
-                dlGetSymFromLib(dataItemLibHandle, DATA_ITEMS_LIB_NAME, DATA_ITEMS_GET_CONCRETE_DI);
-
-        if (NULL != getConcreteDIFunc) {
-            LOC_LOGd("Loaded function %s : %p", DATA_ITEMS_GET_CONCRETE_DI, getConcreteDIFunc);
-            mydi = (*getConcreteDIFunc)(id);
-        }
-        else {
-            // dlysm failed.
-            const char * err = dlerror();
-            if (NULL == err)
-            {
-                err = "Unknown";
+        // first call to this function, symbol not yet loaded
+        if (NULL == dataItemLibHandle) {
+            LOC_LOGD("Loaded library %s",DATA_ITEMS_LIB_NAME);
+            dataItemLibHandle = dlopen(DATA_ITEMS_LIB_NAME, RTLD_NOW);
+            if (NULL == dataItemLibHandle) {
+                // dlopen failed.
+                const char * err = dlerror();
+                if (NULL == err)
+                {
+                    err = "Unknown";
+                }
+                LOC_LOGE("%s:%d]: failed to load library %s; error=%s",
+                     __func__, __LINE__, DATA_ITEMS_LIB_NAME, err);
             }
-            LOC_LOGe("failed to find symbol %s; error=%s", DATA_ITEMS_GET_CONCRETE_DI, err);
+        }
+
+        // load sym - if dlopen handle is obtained and symbol is not yet obtained
+        if (NULL != dataItemLibHandle) {
+            getConcreteDIFunc = (get_concrete_data_item_fn * )
+                                    dlsym(dataItemLibHandle, DATA_ITEMS_GET_CONCRETE_DI);
+            if (NULL != getConcreteDIFunc) {
+                LOC_LOGD("Loaded function %s : %p",DATA_ITEMS_GET_CONCRETE_DI,getConcreteDIFunc);
+                mydi = (*getConcreteDIFunc)(id);
+            }
+            else {
+                // dlysm failed.
+                const char * err = dlerror();
+                if (NULL == err)
+                {
+                    err = "Unknown";
+                }
+                LOC_LOGE("%s:%d]: failed to find symbol %s; error=%s",
+                         __func__, __LINE__, DATA_ITEMS_GET_CONCRETE_DI, err);
+            }
         }
     }
     return mydi;

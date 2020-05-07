@@ -1,6 +1,6 @@
 AC_PREREQ(2.61)
 AC_INIT([location-geofence], 1.0.0)
-AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
