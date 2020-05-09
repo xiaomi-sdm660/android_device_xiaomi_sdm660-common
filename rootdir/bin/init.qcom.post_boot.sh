@@ -2760,14 +2760,6 @@ case "$target" in
 
             # Start cdsprpcd only for sdm660 and disable for sdm630
             start vendor.cdsprpcd
-
-            # Start Host based Touch processing
-                case "$hw_platform" in
-                        "MTP" | "Surf" | "RCM" | "QRD" )
-                        start_hbtp
-                        ;;
-                esac
-            ;;
         esac
         #Apply settings for sdm630 and Tahaa
         case "$soc_id" in
