@@ -148,7 +148,6 @@ on post-fs-data
     mkdir /data/tombstones/wcnss 0771 system system
     mkdir /data/tombstones/dsps 0771 system system
     mkdir /vendor/mnt/persist/qti_fp 0700 system system
-    mkdir /data/vendor/hbtp 0750 system system
     mkdir /data/vendor/tloc 0700 system drmrpc
     mkdir /data/vendor/mac_addr 0770 system system
     mkdir /data/vendor/thermal 0771 root system
