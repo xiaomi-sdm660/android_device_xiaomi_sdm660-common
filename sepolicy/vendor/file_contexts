@@ -1,14 +1,14 @@
 # Biometric
-/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660 u:object_r:hal_fingerprint_sdm660_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660   u:object_r:hal_fingerprint_sdm660_exec:s0
 
 # Goodix Fingerprint
-/dev/goodix_fp*                                 u:object_r:fingerprint_device:s0
 /data/misc/gf_data(/.*)?                        u:object_r:fingerprint_data_file:s0
 /data/misc/goodix(/.*)?                         u:object_r:fingerprint_data_file:s0
 /persist/data/gf*                               u:object_r:fingerprint_data_file:s0
 /data/gf_data(/.*)?                             u:object_r:fingerprintd_data_file:s0
 /data/vendor/gf_data(/.*)?                      u:object_r:fingerprint_vendor_data_file:s0
 /data/vendor/goodix(/.*)?                       u:object_r:fingerprint_vendor_data_file:s0
+/dev/goodix_fp                                  u:object_r:fingerprint_device:s0
 
 # FPC Fingerprint
 /data/vendor/fpc(/.*)?                          u:object_r:fingerprint_vendor_data_file:s0
@@ -43,7 +43,7 @@
 /sys/bus/platform/drivers/kcal_ctrl(/.*)?       u:object_r:kcal_dev:s0
 
 # Light HAL
-/(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660 u:object_r:hal_light_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660                     u:object_r:hal_light_default_exec:s0
 
 # Mlipay
 /(vendor|system/vendor)/bin/mlipayd@1.1         u:object_r:hal_mlipay_default_exec:s0
