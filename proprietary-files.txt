@@ -37,7 +37,9 @@ vendor/lib/rfsa/adsp/capi_v2_aptX_HD.so|eb0e912d25b06f977d5a89345c72d142b7ffb8ae
 vendor/lib/rfsa/adsp/dirac_resource.dar|7728d5b2ee2927a01df5bd6d7edae3736186c844
 vendor/lib/rfsa/adsp/libdirac-capiv2.so|e56031dfaee094d5267e3cc16625cfceaa07cc27
 
-# CDSP - from LA.UM.8.2.r1-06200-sdm660.0
+# CDSP - from LA.UM.8.2.r1-06500-sdm660.0
+lib/libcdsprpc_system.so|8ea57eee376981c9ef785384b2eb42c8f8548ead
+lib64/libcdsprpc_system.so|fab43b21a732bbf0913b802a8f1e14ae480978a6
 vendor/bin/cdsprpcd|6fb2700151a6e6dd57a5d9a388cf3a95d3e8262b
 vendor/lib/libcdsprpc.so|51edd5b43581d518d5c53855fbd87d20862c6409
 vendor/lib/libcdsp_default_listener.so|8e526abeff251bcc36a1e412ae479d705e2e397f
