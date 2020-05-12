@@ -3,7 +3,7 @@ binder_call(hal_camera_default, hal_graphics_allocator_default)
 typeattribute hal_camera_default data_between_core_and_vendor_violators;
 
 allow hal_camera_default sysfs:file { getattr open read };
-allow hal_camera_default sysfs_kgsl:file { getattr open read };
+allow hal_camera_default sysfs_kgsl:file r_file_perms;
 
 allow hal_camera_default media_rw_data_file:file { getattr };
 
