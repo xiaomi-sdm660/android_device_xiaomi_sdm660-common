@@ -2756,10 +2756,15 @@ case "$target" in
 
             # enable LPM
             echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled
+        esac
 
-            # Start cdsprpcd only for sdm660 and disable for sdm630
+        #Apply settings for sdm660 only
+        case "$soc_id" in
+            "317" | "324" | "325" | "326"  )
+            # Start cdsprpcd only for sdm660 and disable for sdm630 and sdm636
             start vendor.cdsprpcd
         esac
+
         #Apply settings for sdm630 and Tahaa
         case "$soc_id" in
             "318" | "327" | "385" )
