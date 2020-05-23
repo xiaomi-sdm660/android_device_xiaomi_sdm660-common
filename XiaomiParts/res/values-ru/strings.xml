@@ -25,7 +25,7 @@
     <string name="device_kcal_title">Калибрация цвета экрана</string>
 
     <!-- Ambient Display -->
-    <string name="ambient_display_xiaomi">Дозе Xiaomi</string>
+    <string name="ambient_display_xiaomi">Индикация событий</string>
     <string name="advanced_doze_summary">Ambient экран</string>
 
     <string name="vibration_title">Вибрация</string>
@@ -34,15 +34,15 @@
     <!-- Thermal Profiles -->
     <string name="thermal_profile_title">Производительность</string>
     <string name="thermal_title">Настройки производительности</string>
-    <string name="thermal_summary">Выберите Ваш профил производительности</string>
-    <string name="thermal_dialogTitle">Выберите Ваш профил производительности</string>
+    <string name="thermal_summary">Выберите Ваш профиль производительности</string>
+    <string name="thermal_dialogTitle">Выберите Ваш профиль производительности</string>
 
     <!-- Values for Thermal Presets -->
     <string name="thermal_performance">Производительность</string>
     <string name="thermal_battery">Энергосбережение</string>
     <string name="thermal_gaming">Игры</string>
     <string name="thermal_balance">Баланс</string>
-    <string name="thermal_extreme_battery">Экстримное энергосбережение</string>
+    <string name="thermal_extreme_battery">Экстримальное энергосбережение</string>
 
     <!-- FP Actions -->
 
@@ -108,7 +108,7 @@
     <string name="color_blue">Синий</string>
     <string name="color_minimum">Минимум</string>
     <string name="saturation">Насыщеность</string>
-    <string name="value">Значение</string>
+    <string name="value">Экспозиция</string>
     <string name="contrast">Контраст</string>
     <string name="hue">Оттенок</string>
     <string name="grayscale">Экран в оттенках серого</string>
@@ -119,7 +119,7 @@
     <string name="kcal_reset">Вернуть пресет по умолчанию</string>
 
     <!-- CustomSeekBarPreference -->
-    <string name="edit_value">Выбрать новое значение</string>
+    <string name="edit_value">Введите новое значение</string>
     <string name="default_value">Значение по умолчанию</string>
     <string name="edit_hint">Значение между %1$d и %2$d</string>
 </resources>
