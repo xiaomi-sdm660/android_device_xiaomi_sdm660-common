@@ -273,7 +273,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so \
     ro.telephony.default_network=9,9 \
     ro.telephony.iwlan_operation_mode=legacy \
-    ro.telephony.use_old_mnc_mcc_format=true \
     ro.vendor.use_data_netmgrd=true
 
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
