@@ -56,6 +56,28 @@ vendor/lib64/libcdsprpc.so|35d6590f6ddc0f306f48558ae8e71aa0b57625b7
 vendor/lib64/libcdsp_default_listener.so|886ba3921f81439cb1b4e520ad622e1089291fa7
 vendor/lib64/libsysmon_cdsp_skel.so|40d3511922c744016c419983b18f97952c23fee5
 
+# Audio - from LA.UM.8.2.r1-06200-sdm660.0
+etc/permissions/audiosphere.xml|3c6d8f14bd99e52a424282fd5d0a5b9b06485dea
+framework/audiosphere.jar|c1679f5aca56f0cb24745b3f7d219acd04833bed
+vendor/lib/libacdb-fts.so|a2f09f2a01c326d6b57b1c0e406c92850ceef439
+vendor/lib/libacdbloader.so|3c294e9ed4ab4640830197f33028b342f9351a0f
+vendor/lib/libacdbrtac.so|98a8a9cf331cc10c755c808da3bf4da5d4de0c2a
+vendor/lib/libadiertac.so|9d6c62200d81e28ccd78aef6ce8e223655f102b6
+vendor/lib/libadm.so|88942852ab679506be8a64ab4b66b25a804e8073
+vendor/lib/libaudcal.so|2c7b95a1c0e43f1c7d8d679f472343776f7bf718
+vendor/lib/libaudioalsa.so|1d8eb7dae06b1cca0cd360a5996bb59a9bd8ba25
+vendor/lib/libaudioparsers.so|d898e3d2cc8177e916052527135258c8d9fc7e89
+vendor/lib/libdrc.so|aa8e8dd2a27803bf8ac36619036e1dc736be540b
+vendor/lib/libqtigef.so|10b64bf536b4edb6c09d047c218cfe4c9a9255f1
+vendor/lib64/libacdb-fts.so|fe3610a7cce613592e90245ce98a23be1763545c
+vendor/lib64/libacdbloader.so|1ca9195a3f00064f3addaf2e9443609d07fd8940
+vendor/lib64/libacdbrtac.so|51d6d796b8d0815b8a7670dfbcd449dd3bb51506
+vendor/lib64/libadiertac.so|8f77a71f76ef3a88d06955c4d6d4d915d62c4c94
+vendor/lib64/libaudcal.so|80ee15046e7a7249a0c9def9bf3f3d94efd3ce6a
+vendor/lib64/libaudioalsa.so|bdf49c709df8a1a7a7e232a6cb1ba6d15af594c7
+vendor/lib64/libaudioparsers.so|ad9394501d467fd264675ead74a4e6bab34eadd5
+vendor/lib64/libqtigef.so|1b7fa4dacefd97f019c342477ff57dc861e70277
+
 # Alarm - from LA.UM.8.2.r1-06200-sdm660.0
 -product/app/PowerOffAlarm/PowerOffAlarm.apk|c214e1f7de878aeebe642857d6283bbeca0c7a3e
 vendor/bin/hw/vendor.qti.hardware.alarm@1.0-service|09991c52c26538bd8fa46492e7e55a6938ac05ac
@@ -71,12 +93,16 @@ product/lib64/com.qualcomm.qti.ant@1.0.so|1a7bee1627309c8eee55dab22b9f25c2302219
 vendor/lib64/com.qualcomm.qti.ant@1.0.so|5ef111c6ecb35b94233ae694d80161e9f61b7cd6
 vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|203528c568c1c5ce33b35dcb9ee9eb7ecb1de206
 
-# Audio FX modules - from LA.UM.8.2.r1-05100-sdm660.0
+# Audio FX modules - from LA.UM.8.2.r1-06200-sdm660.0
 vendor/lib/soundfx/libmisoundfx.so|569ee2df586e95116b79cfb3d89429f2032a7a76
 vendor/lib/soundfx/libasphere.so|eaa35262337a8401aaecf02997e98e24083f064c
-vendor/lib/soundfx/libqcbassboost.so|8bfdb81ed18c0af9806205ab828a0c83dc7fc674
-vendor/lib/soundfx/libqcreverb.so|90fa309115c853fa39bd39fa45e4bc6caf575408
-vendor/lib/soundfx/libqcvirt.so|dc3a0247a2073e80ca34021a14500f4f9265b54a
+vendor/lib/soundfx/libqcbassboost.so|a98106da1036a37816a48ad35d3db2bfd51a9077
+vendor/lib/soundfx/libqcreverb.so|7a41c7c056838ad4236427d1963b38fe4fbe0b5c
+vendor/lib/soundfx/libqcvirt.so|fa2e82a1f5944a653856ce2f41c43df2416679f7
+vendor/lib64/soundfx/libasphere.so|27154ce2eed6902f36ed8c85324cf61c96c8af02
+vendor/lib64/soundfx/libqcbassboost.so|b1d0197cd7f59e2d5e679efa2f85ee76558f6e5a
+vendor/lib64/soundfx/libqcreverb.so|63424b348f7b246d3316c864b9dd8145875e8778
+vendor/lib64/soundfx/libqcvirt.so|eb23489165f6930a87e0be4a4df6321cd8c892f0
 
 # Bluetooth (aptX) - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
 product/lib64/libaptX_encoder.so|df1c89d7af1bb35808d5fe3496b04ba066c10cbc
