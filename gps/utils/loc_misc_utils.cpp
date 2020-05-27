@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -142,4 +142,16 @@ void* dlGetSymFromLib(void*& libHandle, const char* libName, const char* symName
     }
 
     return sym;
+}
+
+uint64_t getQTimerTickCount()
+{
+    uint64_t qTimerCount = 0;
+#if __aarch64__
+    asm volatile("mrs %0, cntvct_el0" : "=r" (qTimerCount));
+#else
+    asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (qTimerCount));
+#endif
+
+    return qTimerCount;
 }

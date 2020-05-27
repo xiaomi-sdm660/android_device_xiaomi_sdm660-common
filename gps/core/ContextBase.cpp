@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014,2016-2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014,2016-2017,2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,7 +30,6 @@
 #define LOG_TAG "LocSvc_CtxBase"
 
 #include <dlfcn.h>
-#include <cutils/sched_policy.h>
 #include <unistd.h>
 #include <ContextBase.h>
 #include <msg_q.h>
@@ -193,7 +192,7 @@ void ContextBase::readConfig()
         mGps_conf.GNSS_DEPLOYMENT = 0;
         mGps_conf.CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED = 0;
         /* default configuration for NI_SUPL_DENY_ON_NFW_LOCKED */
-        mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED = 0;
+        mGps_conf.NI_SUPL_DENY_ON_NFW_LOCKED = 1;
 
         UTIL_READ_CONF(LOC_PATH_GPS_CONF, mGps_conf_table);
         UTIL_READ_CONF(LOC_PATH_SAP_CONF, mSap_conf_table);

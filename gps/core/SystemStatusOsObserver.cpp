@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -38,7 +38,7 @@ namespace loc_core
 {
 template <typename CINT, typename COUT>
 COUT SystemStatusOsObserver::containerTransfer(CINT& inContainer) {
-    COUT outContainer(0);
+    COUT outContainer = {};
     for (auto item : inContainer) {
         outContainer.insert(outContainer.begin(), item);
     }
@@ -67,6 +67,7 @@ void SystemStatusOsObserver::setSubscriptionObj(IDataItemSubscription* subscript
         inline SetSubsObj(ObserverContext& context, IDataItemSubscription* subscriptionObj) :
                 mContext(context), mSubsObj(subscriptionObj) {}
         void proc() const {
+            LOC_LOGi("SetSubsObj::enter");
             mContext.mSubscriptionObj = mSubsObj;
 
             if (!mContext.mSSObserver->mDataItemToClients.empty()) {
@@ -76,6 +77,7 @@ void SystemStatusOsObserver::setSubscriptionObj(IDataItemSubscription* subscript
                 mContext.mSubscriptionObj->subscribe(dis, mContext.mSSObserver);
                 mContext.mSubscriptionObj->requestData(dis, mContext.mSSObserver);
             }
+            LOC_LOGi("SetSubsObj::exit");
         }
     };
 
@@ -101,7 +103,7 @@ void SystemStatusOsObserver::subscribe(const list<DataItemId>& l, IDataItemObser
                 mToRequestData(requestData) {}
 
         void proc() const {
-            unordered_set<DataItemId> dataItemsToSubscribe(0);
+            unordered_set<DataItemId> dataItemsToSubscribe = {};
             mParent->mDataItemToClients.add(mDataItemSet, {mClient}, &dataItemsToSubscribe);
             mParent->mClientToDataItems.add(mClient, mDataItemSet);
 
@@ -147,8 +149,8 @@ void SystemStatusOsObserver::updateSubscription(
                 mDataItemSet(containerTransfer<list<DataItemId>, unordered_set<DataItemId>>(l)) {}
 
         void proc() const {
-            unordered_set<DataItemId> dataItemsToSubscribe(0);
-            unordered_set<DataItemId> dataItemsToUnsubscribe(0);
+            unordered_set<DataItemId> dataItemsToSubscribe = {};
+            unordered_set<DataItemId> dataItemsToUnsubscribe = {};
             unordered_set<IDataItemObserver*> clients({mClient});
             // below removes clients from all entries keyed with the return of the
             // mClientToDataItems.update() call. If leaving an empty set of clients as the
@@ -219,11 +221,11 @@ void SystemStatusOsObserver::unsubscribe(
                 mDataItemSet(containerTransfer<list<DataItemId>, unordered_set<DataItemId>>(l)) {}
 
         void proc() const {
-            unordered_set<DataItemId> dataItemsUnusedByClient(0);
-            unordered_set<IDataItemObserver*> clientToRemove(0);
+            unordered_set<DataItemId> dataItemsUnusedByClient = {};
+            unordered_set<IDataItemObserver*> clientToRemove = {};
+            unordered_set<DataItemId> dataItemsToUnsubscribe = {};
             mParent->mClientToDataItems.trimOrRemove({mClient}, mDataItemSet,  &clientToRemove,
                                                      &dataItemsUnusedByClient);
-            unordered_set<DataItemId> dataItemsToUnsubscribe(0);
             mParent->mDataItemToClients.trimOrRemove(dataItemsUnusedByClient, {mClient},
                                                      &dataItemsToUnsubscribe, nullptr);
 
@@ -259,6 +261,7 @@ void SystemStatusOsObserver::unsubscribeAll(IDataItemObserver* client)
 
         void proc() const {
             unordered_set<DataItemId> diByClient = mParent->mClientToDataItems.getValSet(mClient);
+
             if (!diByClient.empty()) {
                 unordered_set<DataItemId> dataItemsToUnsubscribe;
                 mParent->mClientToDataItems.remove(mClient);
@@ -308,7 +311,7 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
         void proc() const {
             // Update Cache with received data items and prepare
             // list of data items to be sent.
-            unordered_set<DataItemId> dataItemIdsToBeSent(0);
+            unordered_set<DataItemId> dataItemIdsToBeSent = {};
             for (auto item : mDiVec) {
                 if (mParent->updateCache(item)) {
                     dataItemIdsToBeSent.insert(item->getId());
@@ -316,7 +319,7 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
             }
 
             // Send data item to all subscribed clients
-            unordered_set<IDataItemObserver*> clientSet(0);
+            unordered_set<IDataItemObserver*> clientSet = {};
             for (auto each : dataItemIdsToBeSent) {
                 auto clients = mParent->mDataItemToClients.getValSetPtr(each);
                 if (nullptr != clients) {
@@ -347,11 +350,6 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
         vector<IDataItemCore*> dataItemVec(dlist.size());
 
         for (auto each : dlist) {
-            IF_LOC_LOGD {
-                string dv;
-                each->stringify(dv);
-                LOC_LOGD("notify: DataItem In Value:%s", dv.c_str());
-            }
 
             IDataItemCore* di = DataItemsFactoryProxy::createNewDataItem(each->getId());
             if (nullptr == di) {
@@ -364,6 +362,11 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
 
             // add this dataitem if updated from last one
             dataItemVec.push_back(di);
+            IF_LOC_LOGD {
+                string dv;
+                di->stringify(dv);
+                LOC_LOGd("notify: DataItem In Value:%s", dv.c_str());
+            }
         }
 
         if (!dataItemVec.empty()) {
@@ -459,8 +462,9 @@ bool SystemStatusOsObserver::connectBackhaul()
                     mFwkActionReqObj(fwkActReq) {}
             virtual ~HandleConnectBackhaul() {}
             void proc() const {
-                LOC_LOGD("HandleConnectBackhaul");
+                LOC_LOGi("HandleConnectBackhaul::enter");
                 mFwkActionReqObj->connectBackhaul();
+                LOC_LOGi("HandleConnectBackhaul::exit");
             }
             IFrameworkActionReq* mFwkActionReqObj;
         };
@@ -488,8 +492,9 @@ bool SystemStatusOsObserver::disconnectBackhaul()
                     mFwkActionReqObj(fwkActReq) {}
             virtual ~HandleDisconnectBackhaul() {}
             void proc() const {
-                LOC_LOGD("HandleDisconnectBackhaul");
+                LOC_LOGi("HandleDisconnectBackhaul::enter");
                 mFwkActionReqObj->disconnectBackhaul();
+                LOC_LOGi("HandleDisconnectBackhaul::exit");
             }
             IFrameworkActionReq* mFwkActionReqObj;
         };
@@ -518,7 +523,7 @@ void SystemStatusOsObserver::sendCachedDataItems(
     } else {
         string clientName;
         to->getName(clientName);
-        list<IDataItemCore*> dataItems(0);
+        list<IDataItemCore*> dataItems = {};
 
         for (auto each : s) {
             auto citer = mDataItemCache.find(each);

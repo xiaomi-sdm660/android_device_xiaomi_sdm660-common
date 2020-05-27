@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -37,14 +37,37 @@
 #include <sys/time.h>
 #include <time.h>
 
-inline int64_t uptimeMillis()
+#if defined(__GNUC__) && defined(__GNUC_PREREQ)
+#if __GNUC_PREREQ(6,0)
+    #pragma message "GNU C version is above 6"
+#else
+    #pragma message "GNU C version is less than 6"
+    #define NO_UNORDERED_SET_OR_MAP
+#endif
+#endif
+
+// use set/map instead of unordered_set/unordered_map for
+// older GCC versions
+#ifdef NO_UNORDERED_SET_OR_MAP
+#define unordered_set set
+#define unordered_map map
+#endif
+
+inline int64_t sysTimeMillis(int clock)
 {
     struct timespec ts;
     int64_t time_ms = 0;
-    clock_gettime(CLOCK_BOOTTIME, &ts);
+    clock_gettime(clock, &ts);
     time_ms += (ts.tv_sec * 1000000000LL);
     time_ms += ts.tv_nsec + 500000LL;
     return time_ms / 1000000LL;
+}
+
+inline int64_t uptimeMillis() {
+    return sysTimeMillis(CLOCK_MONOTONIC);
+}
+inline int64_t elapsedRealtime() {
+    return sysTimeMillis(CLOCK_BOOTTIME);
 }
 
 extern "C" {
@@ -54,6 +77,8 @@ extern "C" {
 #include <cutils/properties.h>
 #include <cutils/threads.h>
 #include <cutils/sched_policy.h>
+#else
+#define set_sched_policy(a, b)
 #endif /* FEATURE_EXTERNAL_AP */
 #include <pthread.h>
 #include <sys/time.h>
