@@ -48,6 +48,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <linux/rmnet_ipa_fd_ioctl.h>
 
 #define IPA_PCIE_MODEM_RULE_ID_START 69
+#define IPA_PCIE_MODEM_RULE_ID_MAX 1000
 
 class IPACM_Filtering
 {
@@ -80,6 +81,7 @@ private:
 	int fd; /* File descriptor of the IPA device node /dev/ipa */
 	int total_num_offload_rules;
 	int pcie_modem_rule_id;
+	bool pcie_modem_rule_id_in_use[IPA_PCIE_MODEM_RULE_ID_MAX];
 };
 
 #endif //IPACM_FILTERING_H
