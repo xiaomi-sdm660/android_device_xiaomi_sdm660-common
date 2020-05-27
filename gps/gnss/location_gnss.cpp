@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -73,7 +73,7 @@ static void enableNfwLocationAccess(bool enable);
 static void nfwInit(const NfwCbInfo& cbInfo);
 static void getPowerStateChanges(void* powerStateCb);
 
-static void odcpiInit(const OdcpiRequestCallback& callback);
+static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority);
 static void odcpiInject(const Location& location);
 
 static void blockCPI(double latitude, double longitude, float accuracy,
@@ -87,6 +87,7 @@ static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& svTypeConfig,
                                    const GnssSvIdConfig& svIdConfig);
 static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
+static uint32_t configRobustLocation(bool enable, bool enableForE911);
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -132,6 +133,7 @@ static const GnssInterface gGnssInterface = {
     gnssUpdateSvConfig,
     gnssResetSvConfig,
     configLeverArm,
+    configRobustLocation,
 };
 
 #ifndef DEBUG_X86
@@ -140,6 +142,7 @@ extern "C" const GnssInterface* getGnssInterface()
 const GnssInterface* getGnssInterface()
 #endif // DEBUG_X86
 {
+   gGnssInterface.initialize();
    return &gGnssInterface;
 }
 
@@ -346,10 +349,10 @@ static void updateConnectionStatus(bool connected, int8_t type,
     }
 }
 
-static void odcpiInit(const OdcpiRequestCallback& callback)
+static void odcpiInit(const OdcpiRequestCallback& callback, OdcpiPrioritytype priority)
 {
     if (NULL != gGnssAdapter) {
-        gGnssAdapter->initOdcpiCommand(callback);
+        gGnssAdapter->initOdcpiCommand(callback, priority);
     }
 }
 
@@ -449,6 +452,14 @@ static uint32_t gnssResetSvConfig() {
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo){
     if (NULL != gGnssAdapter) {
         return gGnssAdapter->configLeverArmCommand(configInfo);
+    } else {
+        return 0;
+    }
+}
+
+static uint32_t configRobustLocation(bool enable, bool enableForE911){
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configRobustLocationCommand(enable, enableForE911);
     } else {
         return 0;
     }

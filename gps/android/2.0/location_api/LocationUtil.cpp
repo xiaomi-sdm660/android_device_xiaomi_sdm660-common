@@ -30,6 +30,7 @@
 #include <LocationUtil.h>
 #include <log_util.h>
 #include <inttypes.h>
+#include <gps_extended_c.h>
 
 namespace android {
 namespace hardware {
@@ -136,12 +137,17 @@ void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
         if (currentTimeNanos >= locationTimeNanos) {
             int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
             LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
-            if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
+            // the max trusted propagation time 30s for ageTimeNanos to avoid user setting
+            //wrong time, it will affect elapsedRealtimeNanos
+            if (ageTimeNanos >= 0 && ageTimeNanos <= 30000000000) {
                 out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
                 out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
                 out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                // time uncertainty is 1 ms since it is calculated from utc time that is in ms
-                out.elapsedRealtime.timeUncertaintyNs = 1000000;
+                // time uncertainty is the max value between abs(AP_UTC - MP_UTC) and 100ms, to
+                //verify if user change the sys time
+                out.elapsedRealtime.timeUncertaintyNs =
+                        std::max((int64_t)abs(currentTimeNanos - locationTimeNanos),
+                                 (int64_t)100000000);
                 LOC_LOGD("%s]: timestampNs:%" PRIi64 ")",
                         __FUNCTION__, out.elapsedRealtime.timestampNs);
             }
@@ -252,6 +258,64 @@ void convertGnssConstellationType(GnssSvType& in, V2_0::GnssConstellationType& o
         case GNSS_SV_TYPE_UNKNOWN:
         default:
             out = V2_0::GnssConstellationType::UNKNOWN;
+            break;
+    }
+}
+
+void convertGnssSvid(GnssSv& in, int16_t& out)
+{
+    switch (in.type) {
+        case GNSS_SV_TYPE_GPS:
+            out = in.svId;
+            break;
+        case GNSS_SV_TYPE_SBAS:
+            out = in.svId;
+            break;
+        case GNSS_SV_TYPE_GLONASS:
+            out = in.svId - GLO_SV_PRN_MIN + 1;
+            break;
+        case GNSS_SV_TYPE_QZSS:
+            out = in.svId;
+            break;
+        case GNSS_SV_TYPE_BEIDOU:
+            out = in.svId - BDS_SV_PRN_MIN + 1;
+            break;
+        case GNSS_SV_TYPE_GALILEO:
+            out = in.svId - GAL_SV_PRN_MIN + 1;
+            break;
+        default:
+            out = in.svId;
+            break;
+    }
+}
+
+void convertGnssSvid(GnssMeasurementsData& in, int16_t& out)
+{
+    switch (in.svType) {
+        case GNSS_SV_TYPE_GPS:
+            out = in.svId;
+            break;
+        case GNSS_SV_TYPE_SBAS:
+            out = in.svId;
+            break;
+        case GNSS_SV_TYPE_GLONASS:
+            if (in.svId != 255) { // OSN is known
+                out = in.svId - GLO_SV_PRN_MIN + 1;
+            } else { // OSN is not known, report FCN
+                out = in.gloFrequency + 92;
+            }
+            break;
+        case GNSS_SV_TYPE_QZSS:
+            out = in.svId;
+            break;
+        case GNSS_SV_TYPE_BEIDOU:
+            out = in.svId - BDS_SV_PRN_MIN + 1;
+            break;
+        case GNSS_SV_TYPE_GALILEO:
+            out = in.svId - GAL_SV_PRN_MIN + 1;
+            break;
+        default:
+            out = in.svId;
             break;
     }
 }

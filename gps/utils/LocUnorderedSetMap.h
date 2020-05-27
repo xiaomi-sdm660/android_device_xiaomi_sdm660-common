@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, 2017 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,8 +30,15 @@
 #define __LOC_UNORDERDED_SETMAP_H__
 
 #include <algorithm>
-#include <unordered_set>
-#include <unordered_map>
+#include <loc_pla.h>
+
+#ifdef NO_UNORDERED_SET_OR_MAP
+    #include <set>
+    #include <map>
+#else
+    #include <unordered_set>
+    #include <unordered_map>
+#endif
 
 using std::unordered_set;
 using std::unordered_map;
@@ -55,7 +62,7 @@ inline static void trimSet(unordered_set<T>& fromSet, const unordered_set<T>& rV
 // *s1* and *s2* will be left with the intersect removed from them.
 template <typename T>
 static unordered_set<T> removeAndReturnInterset(unordered_set<T>& s1, unordered_set<T>& s2) {
-    unordered_set<T> common(0);
+    unordered_set<T> common = {};
     for (auto b = s2.begin(); b != s2.end(); b++) {
         auto a = find(s1.begin(), s1.end(), *b);
         if (a != s1.end()) {
@@ -73,7 +80,6 @@ template <typename KEY, typename VAL>
 class LocUnorderedSetMap {
     unordered_map<KEY, unordered_set<VAL>> mMap;
 
-
     // Trim the VALs pointed to by *iter*, with everything that also exist in *rVals*.
     // If the set becomes empty, remove the map entry. *goneVals*, if not null, records
     // the trimmed VALs.
@@ -89,7 +95,9 @@ class LocUnorderedSetMap {
 
 public:
     inline LocUnorderedSetMap() {}
-    inline LocUnorderedSetMap(size_t size) : mMap(size) {}
+    inline LocUnorderedSetMap(size_t size) : LocUnorderedSetMap() {
+        mMap.get_allocator().allocate(size);
+    }
 
     inline bool empty() { return mMap.empty(); }
 
@@ -104,12 +112,12 @@ public:
     // If the entry is not in the map, an empty set will be returned.
     inline unordered_set<VAL> getValSet(const KEY& key) {
         auto entry = mMap.find(key);
-        return (entry != mMap.end()) ? entry->second : unordered_set<VAL>(0);
+        return (entry != mMap.end()) ? entry->second : unordered_set<VAL>{};
     }
 
     // This gets all the KEYs from the map
     inline unordered_set<KEY> getKeys() {
-        unordered_set<KEY> keys(0);
+        unordered_set<KEY> keys = {};
         for (auto entry : mMap) {
             keys.insert(entry.first);
         }
@@ -128,6 +136,7 @@ public:
                              unordered_set<KEY>* goneKeys, unordered_set<VAL>* goneVals) {
         trimOrRemove(keys, rVals, goneKeys, goneVals);
     }
+
     inline void trimOrRemove(unordered_set<KEY>& keys, const unordered_set<VAL>& rVals,
                              unordered_set<KEY>* goneKeys, unordered_set<VAL>* goneVals) {
         for (auto key : keys) {
@@ -161,6 +170,7 @@ public:
                     unordered_set<KEY>* newKeys) {
         add(keys, newVals, newKeys);
     }
+
     inline void add(const unordered_set<KEY>& keys, const unordered_set<VAL>& newVals,
                     unordered_set<KEY>* newKeys) {
         for (auto key : keys) {
@@ -174,8 +184,7 @@ public:
     // in effect removed from the keyed VAL set in the map entry.
     // This call would also remove those same VALs from *newVals*.
     inline unordered_set<VAL> update(const KEY& key, unordered_set<VAL>& newVals) {
-        unordered_set<VAL> goneVals(0);
-
+        unordered_set<VAL> goneVals = {};
         if (newVals.empty()) {
             mMap.erase(key);
         } else {
