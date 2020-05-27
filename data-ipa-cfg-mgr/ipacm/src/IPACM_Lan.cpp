@@ -4195,9 +4195,14 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 			mtu[i] = IPACM_Wan::queryMTU(ipa_if_num, IPA_IP_v4);
 
 			if (mtu[i] > 0)
+			{
 				mtu_rule_cnt++;
+				IPACMDBG_H("MTU[%d] is %d\n", i, mtu[i]);
+			}
 			else
-				IPACMDBG_H("MTU is zero\n");
+			{
+				IPACMERR("MTU is 0");
+			}
 		}
 		IPACMDBG_H("total %d MTU rules are needed\n", mtu_rule_cnt);
 
@@ -4227,16 +4232,16 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 
 		flt_rule.rule.retain_hdr = 1;
 		flt_rule.rule.to_uc = 0;
-		flt_rule.rule.action = IPA_PASS_TO_ROUTING;
-		flt_rule.rule.eq_attrib_type = 0;
-		flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
 		IPACMDBG_H("Private filter rule use table: %s\n",IPACM_Iface::ipacmcfg->rt_tbl_default_v4.name);
 
 		for (i = 0; i < (IPACM_Iface::ipacmcfg->ipa_num_private_subnet); i++)
 		{
 			/* add private subnet rule for ipv4 */
+			/* these 3 properties below will be reset during construct_mtu_rule */
 			flt_rule.rule.action = IPA_PASS_TO_ROUTING;
 			flt_rule.rule.eq_attrib_type = 0;
+			flt_rule.rule.rt_tbl_hdl = IPACM_Iface::ipacmcfg->rt_tbl_default_v4.hdl;
+
 			flt_rule.rule_hdl = private_fl_rule_hdl[i];
 			memcpy(&flt_rule.rule.attrib, &rx_prop->rx[0].attrib, sizeof(flt_rule.rule.attrib));
 			flt_rule.rule.attrib.attrib_mask |= IPA_FLT_DST_ADDR;
@@ -4254,7 +4259,9 @@ int IPACM_Lan::handle_private_subnet_android(ipa_ip_type iptype)
 				flt_rule.rule.attrib.u.v4.src_addr = IPACM_Iface::ipacmcfg->private_subnet_table[i].subnet_addr;
 				flt_rule.rule.attrib.attrib_mask |= IPA_FLT_SRC_ADDR;
 				if (construct_mtu_rule(&flt_rule.rule, IPA_IP_v4, mtu[i]))
+				{
 					IPACMERR("Failed to modify MTU filtering rule.\n");
+				}
 				memcpy(&(pFilteringTable->rules[mtu_rule_idx + i]), &flt_rule, sizeof(struct ipa_flt_rule_mdfy));
 				IPACMDBG_H("Adding MTU rule for private subnet 0x%x.\n", flt_rule.rule.attrib.u.v4.src_addr);
 			}
@@ -4292,7 +4299,14 @@ int IPACM_Lan::install_ipv6_prefix_flt_rule(uint32_t* prefix)
 
 	uint16_t mtu = IPACM_Wan::queryMTU(ipa_if_num, IPA_IP_v6);
 	if (mtu > 0)
+	{
+		IPACMDBG_H("MTU is %d\n", mtu);
 		rule_cnt ++;
+	}
+	else
+	{
+		IPACMERR("MTU is 0");
+	}
 
 	if(rx_prop != NULL)
 	{
@@ -6023,6 +6037,7 @@ int IPACM_Lan::add_l2tp_flt_rule(ipa_ip_type iptype, uint8_t *dst_mac, uint32_t 
 	if(m_routing.GetRoutingTable(&rt_tbl) == false)
 	{
 		IPACMERR("Failed to get routing table.\n");
+		free(pFilteringTable);
 		return IPACM_FAILURE;
 	}
 

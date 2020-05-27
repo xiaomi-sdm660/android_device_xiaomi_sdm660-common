@@ -59,6 +59,7 @@ IPACM_Filtering::IPACM_Filtering()
 	}
 	total_num_offload_rules = 0;
 	pcie_modem_rule_id = 0;
+	memset(pcie_modem_rule_id_in_use, 0, sizeof(pcie_modem_rule_id_in_use));
 }
 
 IPACM_Filtering::~IPACM_Filtering()
@@ -702,7 +703,7 @@ bool IPACM_Filtering::AddWanDLFilteringRule(struct ipa_ioc_add_flt_rule const *r
 bool IPACM_Filtering::AddOffloadFilteringRule(struct ipa_ioc_add_flt_rule *flt_rule_tbl, uint8_t mux_id, uint8_t default_path)
 {
 #ifdef WAN_IOCTL_ADD_OFFLOAD_CONNECTION
-	int ret = 0, cnt, pos = 0;
+	int ret = 0, cnt, pos = 0, i;
 	ipa_add_offload_connection_req_msg_v01 qmi_add_msg;
 	int fd_wwan_ioctl = open(WWAN_QMI_IOCTL_DEVICE_NAME, O_RDWR);
 	if(fd_wwan_ioctl < 0)
@@ -799,7 +800,23 @@ bool IPACM_Filtering::AddOffloadFilteringRule(struct ipa_ioc_add_flt_rule *flt_r
 						sizeof(struct ipa_filter_rule_type_v01));
 					IPACMDBG_H("mux-id %d, hashable %d\n", qmi_add_msg.filter_spec_ex2_list[pos].mux_id, qmi_add_msg.filter_spec_ex2_list[pos].is_rule_hashable);
 					pos++;
-					pcie_modem_rule_id = (pcie_modem_rule_id + 1)%100;
+					pcie_modem_rule_id_in_use[pcie_modem_rule_id] = true;
+					for(i = 0; i < IPA_PCIE_MODEM_RULE_ID_MAX; i++)
+					{
+						pcie_modem_rule_id = (pcie_modem_rule_id + 1)%IPA_PCIE_MODEM_RULE_ID_MAX;
+						if(!pcie_modem_rule_id_in_use[pcie_modem_rule_id])
+							break;
+					}
+
+					if(i == IPA_PCIE_MODEM_RULE_ID_MAX)
+					{
+						IPACMERR("all handles are in use, max = %d\n", i);
+						return false;
+					}
+					else
+					{
+						IPACMDBG("next free pcie_modem_rule_id: %d\n", pcie_modem_rule_id);
+					}
 				}
 				else
 				{
@@ -884,6 +901,12 @@ bool IPACM_Filtering::DelOffloadFilteringRule(struct ipa_ioc_del_flt_rule const 
 					/* passing rule-id to wan-driver */
 					qmi_del_msg.filter_handle_list[pos].filter_spec_identifier = flt_rule_tbl->hdl[cnt].hdl;
 					pos++;
+
+					/* set in use to false for future rule additions (need to subtract offset and mod max index) */
+					pcie_modem_rule_id_in_use[(IPA_PCIE_MODEM_RULE_ID_MAX + flt_rule_tbl->hdl[cnt].hdl - IPA_PCIE_MODEM_RULE_ID_START)
+						% IPA_PCIE_MODEM_RULE_ID_MAX] = false;
+					IPACMDBG("freeing pcie_modem_rule_id: %d\n", (IPA_PCIE_MODEM_RULE_ID_MAX + flt_rule_tbl->hdl[cnt].hdl -IPA_PCIE_MODEM_RULE_ID_START)
+						% IPA_PCIE_MODEM_RULE_ID_MAX);
 				}
 				else
 				{
@@ -975,17 +998,18 @@ bool IPACM_Filtering::ModifyFilteringRule(struct ipa_ioc_mdfy_flt_rule* ruleTabl
 	}
 
 	ret = ioctl(fd, IPA_IOC_MDFY_FLT_RULE, ruleTable);
+
+	for (i = 0; i < ruleTable->num_rules; i++)
+	{
+		if (ruleTable->rules[i].status != 0)
+		{
+			IPACMERR("Modifying filter rule %d failed\n", i);
+		}
+	}
+
 	if (ret != 0)
 	{
-		IPACMERR("Failed modifying filtering rule %pK\n", ruleTable);
-
-		for (i = 0; i < ruleTable->num_rules; i++)
-		{
-			if (ruleTable->rules[i].status != 0)
-			{
-				IPACMERR("Modifying filter rule %d failed\n", i);
-			}
-		}
+		IPACMERR("Failed modifying filtering rule IOCTL for %pK\n", ruleTable);
 		return false;
 	}
 

@@ -33,7 +33,7 @@
 
 /* External Includes */
 #include <arpa/inet.h>
-#include <cutils/log.h>
+#include <log/log.h>
 
 /* HIDL Includes */
 #include <android/hardware/tetheroffload/control/1.0/ITetheringOffloadCallback.h>

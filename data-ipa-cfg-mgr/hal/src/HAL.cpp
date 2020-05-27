@@ -39,7 +39,7 @@
 #include <linux/netfilter/nfnetlink_compat.h>
 
 /* External Includes */
-#include <cutils/log.h>
+#include <log/log.h>
 #include <cstring>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -86,7 +86,7 @@ HAL::HAL(IOffloadManager* mgr) : mLogs("HAL Function Calls", 50) {
     mCbCt = nullptr;
 } /* HAL */
 
-void HAL::registerAsSystemService(const char* name) {
+void HAL::registerAsSystemService(const char* name __unused) {
     status_t ret = 0;
 
     ret = IOffloadControl::registerAsService();
