@@ -36,7 +36,9 @@
 #include <loc_cfg.h>
 
 #define GLONASS_SV_ID_OFFSET 64
-#define QZSS_SV_ID_OFFSET    (-192)
+#define QZSS_SV_ID_OFFSET    (192)
+#define BDS_SV_ID_OFFSET     (200)
+#define GALILEO_SV_ID_OFFSET (300)
 #define MAX_SV_COUNT_SUPPORTED_IN_ONE_CONSTELLATION  64
 #define MAX_SATELLITES_IN_USE 12
 #define MSEC_IN_ONE_WEEK      604800000ULL
@@ -429,6 +431,8 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
             sv_meta.talker[0] = 'G';
             sv_meta.talker[1] = 'A';
             sv_meta.mask = sv_cache_info.gal_used_mask;
+            // GALILEO SV ids are from 301-336, So keep svIdOffset 300
+            sv_meta.svIdOffset = GALILEO_SV_ID_OFFSET;
             sv_meta.systemId = SYSTEM_ID_GALILEO;
             if (GNSS_SIGNAL_GALILEO_E1 == signalType) {
                 sv_meta.svCount = sv_cache_info.gal_e1_count;
@@ -440,7 +444,7 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
             sv_meta.talker[0] = 'G';
             sv_meta.talker[1] = 'Q';
             sv_meta.mask = sv_cache_info.qzss_used_mask;
-            // QZSS SV ids are from 193-199. So keep svIdOffset -192
+            // QZSS SV ids are from 193-197. So keep svIdOffset 192
             sv_meta.svIdOffset = QZSS_SV_ID_OFFSET;
             sv_meta.systemId = SYSTEM_ID_QZSS;
             if (GNSS_SIGNAL_QZSS_L1CA == signalType) {
@@ -453,7 +457,8 @@ static loc_nmea_sv_meta* loc_nmea_sv_meta_init(loc_nmea_sv_meta& sv_meta,
             sv_meta.talker[0] = 'G';
             sv_meta.talker[1] = 'B';
             sv_meta.mask = sv_cache_info.bds_used_mask;
-            // BDS SV ids are from 201-235. So keep svIdOffset 0
+            // BDS SV ids are from 201-237. So keep svIdOffset 200
+            sv_meta.svIdOffset = BDS_SV_ID_OFFSET;
             sv_meta.systemId = SYSTEM_ID_BDS;
             if (GNSS_SIGNAL_BEIDOU_B1I == signalType) {
                 sv_meta.svCount = sv_cache_info.bds_b1_count;
@@ -724,6 +729,9 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
         return;
     }
 
+    if (GNSS_SV_TYPE_GLONASS == sv_meta_p->svType) {
+        svIdOffset = 0;
+    }
     svNumber = 1;
     sentenceNumber = 1;
     sentenceCount = svCount / 4 + (svCount % 4 != 0);
@@ -782,13 +790,8 @@ static void loc_nmea_generate_GSV(const GnssSvNotification &svNotify,
             if (sv_meta_p->svType == svNotify.gnssSvs[svNumber - 1].type &&
                     sv_meta_p->signalId == convert_signalType_to_signalId(signalType))
             {
-                uint16_t svId = svNotify.gnssSvs[svNumber - 1].svId;
-                // For QZSS we adjusted SV id's in GnssAdapter, we need to re-adjust here
-                if (GNSS_SV_TYPE_QZSS == svNotify.gnssSvs[svNumber - 1].type) {
-                    svId = svId - (QZSS_SV_PRN_MIN - 1);
-                }
-                length = snprintf(pMarker, lengthRemaining,",%02d,%02d,%03d,",
-                        svId + svIdOffset,
+                length = snprintf(pMarker, lengthRemaining, ",%02d,%02d,%03d,",
+                        svNotify.gnssSvs[svNumber - 1].svId - svIdOffset,
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].elevation), //float to int
                         (int)(0.5 + svNotify.gnssSvs[svNumber - 1].azimuth)); //float to int
 
