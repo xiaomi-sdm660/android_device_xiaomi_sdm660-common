@@ -56,7 +56,7 @@ vendor/lib64/libcdsprpc.so|35d6590f6ddc0f306f48558ae8e71aa0b57625b7
 vendor/lib64/libcdsp_default_listener.so|886ba3921f81439cb1b4e520ad622e1089291fa7
 vendor/lib64/libsysmon_cdsp_skel.so|40d3511922c744016c419983b18f97952c23fee5
 
-# Audio - from LA.UM.8.2.r1-06200-sdm660.0
+# Audio - from LA.UM.8.2.r1-06500-sdm660.0
 etc/permissions/audiosphere.xml|3c6d8f14bd99e52a424282fd5d0a5b9b06485dea
 framework/audiosphere.jar|c1679f5aca56f0cb24745b3f7d219acd04833bed
 vendor/lib/libacdb-fts.so|a2f09f2a01c326d6b57b1c0e406c92850ceef439
@@ -93,16 +93,16 @@ product/lib64/com.qualcomm.qti.ant@1.0.so|1a7bee1627309c8eee55dab22b9f25c2302219
 vendor/lib64/com.qualcomm.qti.ant@1.0.so|5ef111c6ecb35b94233ae694d80161e9f61b7cd6
 vendor/lib64/hw/com.qualcomm.qti.ant@1.0-impl.so|203528c568c1c5ce33b35dcb9ee9eb7ecb1de206
 
-# Audio FX modules - from LA.UM.8.2.r1-06200-sdm660.0
+# Audio FX modules - from LA.UM.8.2.r1-06500-sdm660.0
 vendor/lib/soundfx/libmisoundfx.so|569ee2df586e95116b79cfb3d89429f2032a7a76
 vendor/lib/soundfx/libasphere.so|eaa35262337a8401aaecf02997e98e24083f064c
-vendor/lib/soundfx/libqcbassboost.so|a98106da1036a37816a48ad35d3db2bfd51a9077
-vendor/lib/soundfx/libqcreverb.so|7a41c7c056838ad4236427d1963b38fe4fbe0b5c
-vendor/lib/soundfx/libqcvirt.so|fa2e82a1f5944a653856ce2f41c43df2416679f7
+vendor/lib/soundfx/libqcbassboost.so|e99a5187d056318a29ee2eb31f1069a51b19a176
+vendor/lib/soundfx/libqcreverb.so|5d53d6d23a33ec42e9ad3fe3771cf695d415c7cb
+vendor/lib/soundfx/libqcvirt.so|7735eb4b8a72b1dbaa9cf550613876ecdc090619
 vendor/lib64/soundfx/libasphere.so|27154ce2eed6902f36ed8c85324cf61c96c8af02
-vendor/lib64/soundfx/libqcbassboost.so|b1d0197cd7f59e2d5e679efa2f85ee76558f6e5a
-vendor/lib64/soundfx/libqcreverb.so|63424b348f7b246d3316c864b9dd8145875e8778
-vendor/lib64/soundfx/libqcvirt.so|eb23489165f6930a87e0be4a4df6321cd8c892f0
+vendor/lib64/soundfx/libqcbassboost.so|6db0c8fcc549d8536c338389eba6344a057f590d
+vendor/lib64/soundfx/libqcreverb.so|ad41f054dfa0aaf39baabe48c6aeae03dafb5b8c
+vendor/lib64/soundfx/libqcvirt.so|3513f5ff84f46bbe6f2278d7977206783205fcb6
 
 # Bluetooth (aptX) - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
 product/lib64/libaptX_encoder.so|df1c89d7af1bb35808d5fe3496b04ba066c10cbc
