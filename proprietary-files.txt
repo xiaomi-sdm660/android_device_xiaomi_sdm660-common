@@ -492,9 +492,6 @@ vendor/bin/pm-service|835238076f47bf46cee01b27a76a96282eadb309
 vendor/lib/libperipheral_client.so|6a95436d0d649fff0a48a4662a0781330e723ae1
 vendor/lib64/libperipheral_client.so|18796ea27c31bd39946f23f2b4173bafd26d9216
 
-# Power-off charging daemon - from msm8998
--sbin/charger:rootfs/sbin/chargeonlymode;rootfs|664dfa548b81cac348f1699222160f8d2b4d247c
-
 # Postprocessing - from LA.UM.8.2.r1-06500-sdm660.0
 vendor/bin/hw/vendor.display.color@1.0-service|e8c561e3a169c3007b117515f2946f23a195a5e5
 vendor/bin/mm-pp-dpps|27ed9e9a5f6c4f547c15e396053f283211f65abb
