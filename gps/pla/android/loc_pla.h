@@ -31,7 +31,8 @@
 
 #ifdef __cplusplus
 #include <utils/SystemClock.h>
-#define uptimeMillis android::uptimeMillis
+#define uptimeMillis() android::uptimeMillis()
+#define elapsedRealtime() android::elapsedRealtime()
 #endif
 
 #ifdef __cplusplus

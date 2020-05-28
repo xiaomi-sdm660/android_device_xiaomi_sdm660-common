@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -347,11 +347,6 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
         vector<IDataItemCore*> dataItemVec(dlist.size());
 
         for (auto each : dlist) {
-            IF_LOC_LOGD {
-                string dv;
-                each->stringify(dv);
-                LOC_LOGD("notify: DataItem In Value:%s", dv.c_str());
-            }
 
             IDataItemCore* di = DataItemsFactoryProxy::createNewDataItem(each->getId());
             if (nullptr == di) {
@@ -364,6 +359,11 @@ void SystemStatusOsObserver::notify(const list<IDataItemCore*>& dlist)
 
             // add this dataitem if updated from last one
             dataItemVec.push_back(di);
+            IF_LOC_LOGD {
+                string dv;
+                di->stringify(dv);
+                LOC_LOGd("notify: DataItem In Value:%s", dv.c_str());
+            }
         }
 
         if (!dataItemVec.empty()) {

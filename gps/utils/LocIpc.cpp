@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -139,8 +139,20 @@ protected:
     }
 public:
     inline LocIpcLocalSender(const char* name) : LocIpcSender(),
-            mSock(make_shared<Sock>((nullptr == name) ? -1 : (::socket(AF_UNIX, SOCK_DGRAM, 0)))),
+            mSock(nullptr),
             mAddr({.sun_family = AF_UNIX, {}}) {
+
+        int fd = -1;
+        if (nullptr != name) {
+            fd = ::socket(AF_UNIX, SOCK_DGRAM, 0);
+            if (fd >= 0) {
+                timeval timeout;
+                timeout.tv_sec = 2;
+                timeout.tv_usec = 0;
+                setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+            }
+        }
+        mSock.reset(new Sock(fd));
         if (mSock != nullptr && mSock->isValid()) {
             snprintf(mAddr.sun_path, sizeof(mAddr.sun_path), "%s", name);
         }
