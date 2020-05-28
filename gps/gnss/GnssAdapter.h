@@ -319,8 +319,8 @@ public:
     void deleteAidingData(const GnssAidingData &data, uint32_t sessionId);
     void gnssUpdateXtraThrottleCommand(const bool enabled);
     std::vector<LocationError> gnssUpdateConfig(const std::string& oldMoServerUrl,
-            const GnssConfig& gnssConfigRequested,
-            const GnssConfig& gnssConfigNeedEngineUpdate, size_t count = 0);
+            GnssConfig& gnssConfigRequested,
+            GnssConfig& gnssConfigNeedEngineUpdate, size_t count = 0);
 
     /* ==== GNSS SV TYPE CONFIG ============================================================ */
     /* ==== COMMANDS ====(Called from Client Thread)======================================== */
@@ -451,6 +451,10 @@ public:
     }
 
     void updateSystemPowerState(PowerStateType systemPowerState);
+    void reportSvPolynomial(const GnssSvPolynomial &svPolynomial);
+    void requestSvPolyForClient(LocationAPI* client,
+                                const LocationCallbacks& callbacks);
+
 
     /*======== GNSSDEBUG ================================================================*/
     bool getDebugReport(GnssDebugReport& report);
