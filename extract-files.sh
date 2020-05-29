@@ -21,12 +21,16 @@ DEVICE_COMMON=sdm660-common
 VENDOR=xiaomi
 
 # Load extract_utils and do some sanity checks
-MY_DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$MY_DIR" ]]; then MY_DIR="$PWD"; fi
+COMMON_DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$COMMON_DIR" ]]; then COMMON_DIR="$PWD"; fi
 
-LINEAGE_ROOT="$MY_DIR"/../../..
+if [[ -z "$DEVICE_DIR" ]]; then
+    DEVICE_DIR="${COMMON_DIR}/../${DEVICE}"
+fi
 
-HELPER="$LINEAGE_ROOT"/vendor/carbon/build/tools/extract_utils.sh
+ROOT="$COMMON_DIR"/../../..
+
+HELPER="$ROOT"/vendor/carbon/build/tools/extract_utils.sh
 if [ ! -f "$HELPER" ]; then
     echo "Unable to find helper script at $HELPER"
     exit 1
@@ -34,27 +38,26 @@ fi
 . "$HELPER"
 
 # Default to sanitizing the vendor folder before extraction
-clean_vendor=true
-ONLY_COMMON=
-ONLY_DEVICE=
+CLEAN_VENDOR=true
+ONLY_COMMON=false
+ONLY_DEVICE=false
 
 while [ "${#}" -gt 0 ]; do
     case "${1}" in
         -o | --only-common )
-                ONLY_COMMON=false
+                ONLY_COMMON=true
                 ;;
         -d | --only-device )
-                ONLY_DEVICE=false
+                ONLY_DEVICE=true
                 ;;
         -n | --no-cleanup )
-            CLEAN_VENDOR=false
-            ;;
+                CLEAN_VENDOR=false
+                ;;
         -k | --kang )
                 KANG="--kang"
                 ;;
         -s | --section )
                 SECTION="${2}"; shift
-                clean_vendor=false
                 CLEAN_VENDOR=false
                 ;;
         * )
@@ -91,18 +94,18 @@ function blob_fixup() {
 }
 
 # Initialize the common helper
-setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true $clean_vendor
+setup_vendor "$DEVICE_COMMON" "$VENDOR" "$ROOT" true $CLEAN_VENDOR
 
-if [ -z "${ONLY_DEVICE}" ] && [ -s "${MY_DIR}/proprietary-files.txt" ]; then
-extract "$MY_DIR"/proprietary-files.txt "$SRC" \
-    "${KANG}" --section "${SECTION}"
+if [[ "$ONLY_DEVICE" = "false" ]] && [[ -s "${COMMON_DIR}"/proprietary-files.txt ]]; then
+    extract "$COMMON_DIR"/proprietary-files.txt "$SRC" "${KANG}" --section "${SECTION}"
 fi
-
-if [ -z "${ONLY_COMMON}" ] && [ -s "${MY_DIR}/../${DEVICE}/proprietary-files.txt" ]; then
+if [[ "$ONLY_COMMON" = "false" ]] && [[ -s "${DEVICE_DIR}"/proprietary-files.txt ]]; then
+    if [[ ! "$IS_COMMON" = "true" ]]; then
+        IS_COMMON=false
+    fi
     # Reinitialize the helper for device
-    setup_vendor "$DEVICE" "$VENDOR" "$LINEAGE_ROOT" false "$CLEAN_VENDOR"
-    extract "$MY_DIR"/../$DEVICE/proprietary-files.txt "$SRC" \
-    "${KANG}" --section "${SECTION}"
+    setup_vendor "$DEVICE" "$VENDOR" "$ROOT" "$IS_COMMON" "$CLEAN_VENDOR"
+    extract "${DEVICE_DIR}"/proprietary-files.txt "$SRC" "${KANG}" --section "${SECTION}"
 fi
 
-"$MY_DIR"/setup-makefiles.sh
+"$COMMON_DIR"/setup-makefiles.sh
