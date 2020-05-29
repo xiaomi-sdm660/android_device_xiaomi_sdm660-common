@@ -18,17 +18,22 @@
 set -e
 
 DEVICE_COMMON=sdm660-common
+GUARDED_DEVICES_COMMON="twolip jasmine_sprout wayne clover lavender platina jason whyred"
 VENDOR=xiaomi
 
 INITIAL_COPYRIGHT_YEAR=2018
 
 # Load extract_utils and do some sanity checks
-MY_DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$MY_DIR" ]]; then MY_DIR="$PWD"; fi
+COMMON_DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$COMMON_DIR" ]]; then COMMON_DIR="$PWD"; fi
 
-LINEAGE_ROOT="$MY_DIR"/../../..
+if [[ -z "$DEVICE_DIR" ]]; then
+    DEVICE_DIR="${COMMON_DIR}/../${DEVICE}"
+fi
 
-HELPER="$LINEAGE_ROOT"/vendor/carbon/build/tools/extract_utils.sh
+ROOT="$COMMON_DIR"/../../..
+
+HELPER="$ROOT"/vendor/carbon/build/tools/extract_utils.sh
 if [ ! -f "$HELPER" ]; then
     echo "Unable to find helper script at $HELPER"
     exit 1
@@ -36,27 +41,30 @@ fi
 . "$HELPER"
 
 # Initialize the common helper
-setup_vendor "$DEVICE_COMMON" "$VENDOR" "$LINEAGE_ROOT" true
+setup_vendor "$DEVICE_COMMON" "$VENDOR" "$ROOT" true
 
-# Copyright headers and guards
-write_headers "twolip jasmine_sprout wayne clover lavender platina jason whyred"
-
-write_makefiles "$MY_DIR"/proprietary-files.txt true
-
-# Finish
-write_footers
-
-if [ -s "$MY_DIR"/../$DEVICE/proprietary-files.txt ]; then
+if ([[ "$ONLY_DEVICE" = "false" ]] || [[ -z "$ONLY_DEVICE" ]]) && [[ -s "${COMMON_DIR}"/proprietary-files.txt ]]; then
+    # Copyright headers and guards
+    write_headers "$GUARDED_DEVICES_COMMON"
+    # The common blobs
+    write_makefiles "$COMMON_DIR"/proprietary-files.txt true
+    # Finish
+    write_footers
+fi
+if ([[ "$ONLY_COMMON" = "false" ]] || [[ -z "$ONLY_COMMON" ]]) && [[ -s "${DEVICE_DIR}"/proprietary-files.txt ]]; then
+    # Reinitialize the helper for device and write copyright headers and guards
+    DEVICE_COMMON="$DEVICE"
+    if [[ ! "$IS_COMMON" = "true" ]]; then
+        IS_COMMON=false
+        GUARDED_DEVICES=
+    fi
     # Reinitialize the helper for device
     INITIAL_COPYRIGHT_YEAR="$DEVICE_BRINGUP_YEAR"
-    setup_vendor "$DEVICE" "$VENDOR" "$LINEAGE_ROOT" false
-
+    setup_vendor "$DEVICE" "$VENDOR" "$ROOT" "$IS_COMMON" "$CLEAN_VENDOR"
     # Copyright headers and guards
-    write_headers
-
+    write_headers "$GUARDED_DEVICES"
     # The standard device blobs
-    write_makefiles "$MY_DIR"/../$DEVICE/proprietary-files.txt true
-
+    write_makefiles "${DEVICE_DIR}"/proprietary-files.txt true
     # We are done!
     write_footers
 fi
