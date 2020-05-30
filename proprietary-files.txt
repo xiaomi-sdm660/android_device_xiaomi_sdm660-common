@@ -202,11 +202,11 @@ vendor/lib/soundfx/libdirac.so|f63826a905b520fa524e4c1b147be7cf65240953
 vendor/lib/libDiracAPI_SHARED.so|42b49679d38eca93fead05ea06ddbdc8108fd4b1
 vendor/etc/diracmobile.config|d781cd6798a7481a8f7128d144abfb2b8794212d
 
-# Displays utils - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-vendor/bin/hw/vendor.qti.hardware.qdutils_disp@1.0-service-qti|234174744b0401a7bed49e7b82890e58f2103752
+# Display utils - from LA.UM.8.2.r1-06500-sdm660.0
+vendor/bin/hw/vendor.qti.hardware.qdutils_disp@1.0-service-qti|8bf06b86027ac6279cc4bdf9deaac45763591dee
 vendor/etc/init/vendor.qti.hardware.qdutils_disp@1.0-service-qti.rc|69d9cbc54f8ac0a0fb010f92bfa7de5981d643cf
-vendor/lib/vendor.qti.hardware.qdutils_disp@1.0.so|ea25038448692ee9fe7b6a498e54654ce0928ccd
-vendor/lib64/vendor.qti.hardware.qdutils_disp@1.0.so|f227ee67b99082b8aeea5ef9830a3c23efc7e4c6
+vendor/lib/vendor.qti.hardware.qdutils_disp@1.0.so|b0c1c4331eb33823b707313a4b08a5315160558d
+vendor/lib64/vendor.qti.hardware.qdutils_disp@1.0.so|0f34fc57e4ac74201e286c474f21f9cf680e4177
 
 # DPM - from LA.UM.8.2.r1-06500-sdm660.0
 product/bin/dpmd|90cdd79b564456cef2a0c011afab3896463df5e4
