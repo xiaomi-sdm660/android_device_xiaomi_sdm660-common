@@ -709,20 +709,20 @@ vendor/lib64/lib-imsvtcore.so|3e8f65b548a113d5c56d8dc7071996b57e8385e5
 vendor/lib64/lib-rtpcore.so|0613854e2edf2789b2d7411da2ab545436bf67a9
 vendor/lib64/lib-imsdpl.so|6f2f6ad20792561595c29ae7469d938b82608523
 
-# Sensors - from jasmine-user-10-QKQ1.190910.002-V11.0.4.0.QDIMIXM
-vendor/bin/sensors.qti|1613aa4572fbc6040e57c7ed0932529ea0247f49
-vendor/lib/hw/activity_recognition.sdm660.so|016875ad5a1363a8ec017b286e2fa5372e05e279
-vendor/lib/libsensor1.so|daca84391e79453c601b135619f4db6eebd4f7cf
-vendor/lib/libsensor_reg.so|ac3a6b735084d308e6f2a07f514339c27c65b11f
-vendor/lib/sensor_calibrate.so|577e491cc10a7ceeda9826fe213c8a0a5e2033d8
-vendor/lib/vendor.qti.hardware.sensorscalibrate@1.0.so|f92c441a11ad41b6ca36e7fd9e9f3ddc065c80b2
-vendor/lib64/hw/sensors.sdm660.so|f5df0509f4586eac10ad9994edb6222a69a26043
-vendor/lib64/hw/sensors.sda660.so|f5df0509f4586eac10ad9994edb6222a69a26043
-vendor/lib64/hw/activity_recognition.sdm660.so|9550e75529ef4ac6205c27784eaf54219110023f
-vendor/lib64/libsensor1.so|596362883f49d2e911c8cc2d54f90b2b56d35b18
-vendor/lib64/libsensor_reg.so|a8753d3f0e9383d46334f0022166eece70854e5c
-vendor/lib64/sensor_calibrate.so|1f832d04e04c11294d1c96c074c3a2a551d4f095
-vendor/lib64/vendor.qti.hardware.sensorscalibrate@1.0.so|976417e8085fc4ea4a47d194f129806175a9bb7e
+# Sensors - from LA.UM.8.2.r1-06500-sdm660.0
+product/lib/vendor.qti.hardware.sensorscalibrate@1.0.so|0441544cec7480bc8c746320bd264fc208fd0947
+product/lib64/vendor.qti.hardware.sensorscalibrate@1.0.so|c3fdf7a3c0e84cb1369557393d1f07280fe4a451
+vendor/bin/sensors.qti|926c2715b99298f3ed85987780a01f8786d4de99
+vendor/lib/hw/activity_recognition.sdm660.so|71f3817e1bdff366dd952d097699c48efbf69a4f
+vendor/lib/libsensor1.so|44f4ebe2b8967bf72bc5ba7000999ac836ab7a59
+vendor/lib/libsensor_reg.so|cb6b21d3e8e4a106c80b0247dd15dd1bad91d128
+vendor/lib/sensor_calibrate.so|179fca0ef0646385a3da87a34e65ed3b0a150fa0
+vendor/lib/sensors.ssc.so|a0c9279483cced81bfeebb85b8d741e0855096f4
+vendor/lib64/hw/activity_recognition.sdm660.so|32ede11902fd8d7b1744ff637a0ddfd5f943eb80
+vendor/lib64/libsensor1.so|53fe61e7ff6af22b8ccbb3b7f62c24741b00fadf
+vendor/lib64/libsensor_reg.so|4f9831e506ac31924b417a9a8d544ae61e892f3b
+vendor/lib64/sensor_calibrate.so|8d166398708439c85b90e4cf743d9bd56ba4dc6c
+vendor/lib64/sensors.ssc.so|8fcdcea8149d6903b20b6998639790d48a88962e
 
 # Soter - from LA.UM.8.2.r1-06200-sdm660.0
 -app/SoterService/SoterService.apk|897999e257f5e59ebe2f9ca08a4f5512602f6c5e
