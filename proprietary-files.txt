@@ -391,6 +391,20 @@ vendor/lib64/libtinyxml2_1.so|70942325afdd14eedcf11b3fbbfbc3d98f42f8dc
 vendor/lib/hw/vulkan.sdm660.so|7f677363774e3c12613f004922cb7aba9aa3bf7b
 vendor/lib64/hw/vulkan.sdm660.so|7f37b59e75cb1739b74ff9646dc958591cd7fa23
 
+# IOP - from LA.UM.8.2.r1-06500-sdm660.0
+product/lib/vendor.qti.hardware.iop@1.0.so|983cd9950076bf4e9c2b814dfde6add0826d468d
+product/lib/vendor.qti.hardware.iop@2.0.so|d0789f2247f38d1f7f87a48c7926703b1e44c054
+product/lib64/vendor.qti.hardware.iop@1.0.so|a87a7a3e5091e3d4fa7019454335f4345c46e612
+product/lib64/vendor.qti.hardware.iop@2.0.so|bed4a8487d9aea6090bae5b87ce3235343713e0a
+vendor/bin/hw/vendor.qti.hardware.iop@2.0-service|cd34c88527022cc0533f099d16d2beceea515620
+vendor/etc/init/vendor.qti.hardware.iop@2.0-service.rc|fd11367b2585702190ef2577ce2ce6fc68f3a2f8
+vendor/lib/hw/vendor.qti.hardware.iop@2.0-impl.so|3028eb81937a1748b686191a5bc599cc201645ad
+vendor/lib/libqti-iopd-client.so|4d7207d3e6a3fbe9acaff75a18ef659d0ab6dd91
+vendor/lib/libqti-iopd.so|71560b0c697931e56173efaa006e0e1319dc6e59
+vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so|34fed4ccdde47d65bdd335845690c09f2c8e356e
+vendor/lib64/libqti-iopd-client.so|123189bec7bec4746e9a5f2b173549d13f41f37d
+vendor/lib64/libqti-iopd.so|672bb37dcf7b1fc790e2ae08e55ccb9dd9e3ab99
+
 # Listen - from LA.UM.8.2.r1-06500-sdm660.0
 vendor/lib/hw/sound_trigger.primary.sdm660.so|f24897519d353d5536ca97b0ea899882b170696d
 vendor/lib/libadpcmdec.so|8c72aa1812bfa749f266020366894c8a3873d99c
