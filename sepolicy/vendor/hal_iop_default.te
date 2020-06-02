@@ -1,0 +1,1 @@
+allow hal_iop_default hal_perf_hwservice:hwservice_manager find;
