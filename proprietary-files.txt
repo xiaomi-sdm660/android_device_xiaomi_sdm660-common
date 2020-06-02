@@ -259,6 +259,14 @@ vendor/etc/init/vendor.qti.hardware.tui_comm@1.0-service-qti.rc|2cfc563d7e157937
 vendor/lib/vendor.qti.hardware.tui_comm@1.0.so|a917bd71ccfdbdd89e26704a230c7c148d3cc4b5
 vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so|1ac676dca4c81094b254b62f1b608e471b385847
 
+# ESE - from LA.UM.8.2.r1-06500-sdm660.0
+product/lib/vendor.qti.esepowermanager@1.0.so|3341cf119f0079d97cbb32bfd2ebbef70b5ddff2
+product/lib64/vendor.qti.esepowermanager@1.0.so|93ecaff0ce279b4a9e7598ce83a9b6e1ee28c650
+vendor/bin/hw/vendor.qti.esepowermanager@1.0-service|8adb9b42e9c2db3afb5f05e7f5aa525ccf00dedf
+vendor/etc/init/vendor.qti.esepowermanager@1.0-service.rc|58a3866ad5a7613d9392c9adb671eaa7825578a2
+vendor/lib/hw/vendor.qti.esepowermanager@1.0-impl.so|e54cbf5d492bb343cfce4c53b32b38e23a0ba42c
+vendor/lib64/hw/vendor.qti.esepowermanager@1.0-impl.so|3fff44cbb1cf2cfcfe3886032da210ef0ead3198
+
 # FM - from LA.UM.8.2.r1-06500-sdm660.0
 -product/lib/vendor.qti.hardware.fm@1.0.so|8e13cca2be4c4f9812d656e4cb15bd524fdfdf12
 -product/lib64/vendor.qti.hardware.fm@1.0.so|027c226838e80a04209e5fb6a8882ce78c3b4222
