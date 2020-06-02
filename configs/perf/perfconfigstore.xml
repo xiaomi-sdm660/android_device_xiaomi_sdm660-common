@@ -18,17 +18,15 @@ property Name is called. -->
     <PerfConfigs>
 
                 <!--Vendor Properties -->
-                <Prop Name="vendor.iop.enable_iop" Value="0" />
-                <Prop Name="vendor.iop.enable_uxe" Value="0" />
-                <Prop Name="vendor.perf.iop_v3.enable" Value="0" />
-                <Prop Name="vendor.perf.iop_v3.enable.debug" Value="0" />
-                <Prop Name="vendor.enable.prefetch" Value="0" />
-                <Prop Name="vendor.iop.enable_prefetch_ofr" Value="0" />
+                <Prop Name="vendor.iop.enable_uxe" Value="1" />
+                <Prop Name="vendor.perf.iop_v3.enable" Value="true" />
+                <Prop Name="vendor.perf.iop_v3.enable.debug" Value="false" />
+                <Prop Name="vendor.enable.prefetch" Value="false" />
+                <Prop Name="vendor.iop.enable_prefetch_ofr" Value="false" />
 
                 <!--System Properties -->
                 <Prop Name="ro.vendor.qti.sys.fw.bg_apps_limit" Value="38" />
                 <Prop Name="ro.vendor.at_library" Value="libqti-at.so" />
-                <Prop Name="ro.lmk.enable_userspace_lmk" Value="false" />
                 <Prop Name="vendor.perf.gestureflingboost.enable" Value="true" />
 
     </PerfConfigs>
