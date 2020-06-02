@@ -260,8 +260,8 @@ vendor/lib/vendor.qti.hardware.tui_comm@1.0.so|a917bd71ccfdbdd89e26704a230c7c148
 vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so|1ac676dca4c81094b254b62f1b608e471b385847
 
 # ESE - from LA.UM.8.2.r1-06500-sdm660.0
-product/lib/vendor.qti.esepowermanager@1.0.so|3341cf119f0079d97cbb32bfd2ebbef70b5ddff2
-product/lib64/vendor.qti.esepowermanager@1.0.so|93ecaff0ce279b4a9e7598ce83a9b6e1ee28c650
+product/lib/vendor.qti.esepowermanager@1.0.so:vendor/lib/vendor.qti.esepowermanager@1.0.so|dbba5f7b80df9668eba4785460314c263c83e5c5
+product/lib64/vendor.qti.esepowermanager@1.0.so:vendor/lib64/vendor.qti.esepowermanager@1.0.so|8ae2ac8e8fc16b510f2d716a2dbbbc56512f838c
 vendor/bin/hw/vendor.qti.esepowermanager@1.0-service|8adb9b42e9c2db3afb5f05e7f5aa525ccf00dedf
 vendor/etc/init/vendor.qti.esepowermanager@1.0-service.rc|58a3866ad5a7613d9392c9adb671eaa7825578a2
 vendor/lib/hw/vendor.qti.esepowermanager@1.0-impl.so|e54cbf5d492bb343cfce4c53b32b38e23a0ba42c
