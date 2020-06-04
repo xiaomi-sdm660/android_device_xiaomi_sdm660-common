@@ -86,7 +86,7 @@ HAL::HAL(IOffloadManager* mgr) : mLogs("HAL Function Calls", 50) {
     mCbCt = nullptr;
 } /* HAL */
 
-void HAL::registerAsSystemService(const char* name __unused) {
+void HAL::registerAsSystemService(const char* name) {
     status_t ret = 0;
 
     ret = IOffloadControl::registerAsService();
