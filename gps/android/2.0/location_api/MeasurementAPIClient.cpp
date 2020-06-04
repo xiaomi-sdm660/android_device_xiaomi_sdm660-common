@@ -296,7 +296,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
 
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out)
 {
-    memset(&out, 0, sizeof(IGnssMeasurementCallback::GnssClock));
+    memset(&out, 0, sizeof(out));
     if (in.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT)
         out.gnssClockFlags |= IGnssMeasurementCallback::GnssClockFlags::HAS_LEAP_SECOND;
     if (in.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_UNCERTAINTY_BIT)
@@ -325,6 +325,7 @@ static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback
 static void convertGnssData(GnssMeasurementsNotification& in,
         V1_0::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurementCount = in.count;
     if (out.measurementCount > static_cast<uint32_t>(V1_0::GnssMax::SVS_COUNT)) {
         LOC_LOGW("%s]: Too many measurement %u. Clamps to %d.",
@@ -340,6 +341,7 @@ static void convertGnssData(GnssMeasurementsNotification& in,
 static void convertGnssData_1_1(GnssMeasurementsNotification& in,
         V1_1::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_0);
@@ -362,6 +364,7 @@ static void convertGnssData_1_1(GnssMeasurementsNotification& in,
 static void convertGnssData_2_0(GnssMeasurementsNotification& in,
         V2_0::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_1.v1_0);
