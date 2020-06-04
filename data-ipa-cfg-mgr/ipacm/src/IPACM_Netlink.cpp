@@ -709,7 +709,6 @@ static int ipa_nl_decode_nlmsg
 					if(ret_val != IPACM_SUCCESS)
 					{
 						IPACMERR("Error while getting interface name\n");
-						free(data_fid);
 						return IPACM_FAILURE;
 					}
 					IPACMDBG_H("Got a usb link_up event (Interface %s, %d) \n", dev_name, msg_ptr->nl_link_info.metainfo.ifi_index);
@@ -1780,5 +1779,3 @@ int mask_v6(int index, uint32_t *mask)
 
 	}
 }
-
-
