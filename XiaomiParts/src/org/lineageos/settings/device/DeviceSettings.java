@@ -51,7 +51,7 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final int MAX_VIBRATION = 3596;
 
     public static final int MIN_LED = 1;
-    public static final int MAX_LED = 64;
+    public static final int MAX_LED = 255;
 
     private static final String CATEGORY_DISPLAY = "display";
     private static final String PREF_DEVICE_DOZE = "device_doze";
