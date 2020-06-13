@@ -31,7 +31,6 @@
 #include <utils/Trace.h>
 
 #include "AudioStreaming.h"
-#include "disp-power/display-helper.h"
 
 namespace android {
 namespace hardware {
@@ -199,13 +198,6 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
             }
             break;
         case PowerHint_1_0::LOW_POWER:
-            if (data) {
-                // Device in battery saver mode, enable display low power mode
-                set_display_lpm(true);
-            } else {
-                // Device exiting battery saver mode, disable display low power mode
-                set_display_lpm(false);
-            }
             break;
         default:
             break;
