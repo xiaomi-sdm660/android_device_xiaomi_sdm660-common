@@ -1203,7 +1203,9 @@
     <!-- Telephony qualified networks service package name to bind to by default. -->
     <string name="config_qualified_networks_service_package">vendor.qti.iwlan</string>
 
-
     <!-- Specify custom blanking delay of the display -->
     <integer name="config_screen_off_delay">0</integer>
+
+    <!-- Flag indicating whether the surface flinger has limited alpha compositing functionality in hardware. If set, the window manager will disable alpha trasformation in animations where not strictly needed. -->
+    <bool name="config_sf_limitedAlpha">true</bool>
 </resources>
