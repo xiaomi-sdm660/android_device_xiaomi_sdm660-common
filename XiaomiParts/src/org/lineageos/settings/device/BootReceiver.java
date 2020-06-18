@@ -23,6 +23,8 @@ import android.provider.Settings;
 
 import org.lineageos.settings.device.kcal.Utils;
 
+import java.lang.Math.*;
+
 public class BootReceiver extends BroadcastReceiver implements Utils {
 
     public static final  String HEADPHONE_GAIN_PATH = "/sys/kernel/sound_control/headphone_gain";
@@ -62,8 +64,8 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
         FileUtils.setValue(MIC_GAIN_PATH, Settings.Secure.getInt(context.getContentResolver(),
                 DeviceSettings.PREF_MIC_GAIN, 0));
 
-        FileUtils.setValue(DeviceSettings.NOTIF_LED_PATH, Settings.Secure.getInt(
-                context.getContentResolver(), DeviceSettings.PREF_NOTIF_LED, 100) / 100.0 * (DeviceSettings.MAX_LED - DeviceSettings.MIN_LED) + DeviceSettings.MIN_LED);
+        FileUtils.setValue(DeviceSettings.NOTIF_LED_PATH,(1 + Math.pow(1.05694, Settings.Secure.getInt(
+                context.getContentResolver(), DeviceSettings.PREF_NOTIF_LED, 100))));
         FileUtils.setValue(DeviceSettings.VIBRATION_STRENGTH_PATH, Settings.Secure.getInt(
                 context.getContentResolver(), DeviceSettings.PREF_VIBRATION_STRENGTH, 80) / 100.0 * (DeviceSettings.MAX_VIBRATION - DeviceSettings.MIN_VIBRATION) + DeviceSettings.MIN_VIBRATION);
         FileUtils.setValue(DeviceSettings.THERMAL_PATH, Settings.Secure.getString(

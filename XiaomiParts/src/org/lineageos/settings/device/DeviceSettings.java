@@ -30,6 +30,8 @@ import org.lineageos.settings.device.preferences.VibrationSeekBarPreference;
 import org.lineageos.settings.device.preferences.NotificationLedSeekBarPreference;
 import org.lineageos.settings.device.preferences.CustomSeekBarPreference;
 
+import java.lang.Math.*;
+
 public class DeviceSettings extends PreferenceFragment implements
         Preference.OnPreferenceChangeListener {
 
@@ -45,13 +47,13 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final  String PREF_MIC_GAIN = "mic_gain";
     public static final  String HEADPHONE_GAIN_PATH = "/sys/kernel/sound_control/headphone_gain";
     public static final  String MIC_GAIN_PATH = "/sys/kernel/sound_control/mic_gain";
-    
+
     // value of vtg_min and vtg_max
     public static final int MIN_VIBRATION = 116;
     public static final int MAX_VIBRATION = 3596;
 
     public static final int MIN_LED = 1;
-    public static final int MAX_LED = 64;
+    public static final int MAX_LED = 255;
 
     private static final String CATEGORY_DISPLAY = "display";
     private static final String PREF_DEVICE_DOZE = "device_doze";
@@ -166,7 +168,7 @@ public class DeviceSettings extends PreferenceFragment implements
         final String key = preference.getKey();
         switch (key) {
             case PREF_NOTIF_LED:
-                FileUtils.setValue(NOTIF_LED_PATH, (int) value / 100.0 * (MAX_LED - MIN_LED) + MIN_LED);
+                FileUtils.setValue(NOTIF_LED_PATH, (1 + Math.pow(1.05694, (int) value )));
                 break;
 
             case PREF_VIBRATION_STRENGTH:
