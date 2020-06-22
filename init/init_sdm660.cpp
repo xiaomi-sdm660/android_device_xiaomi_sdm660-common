@@ -116,22 +116,25 @@ void vendor_load_persist_properties()
         
     }
   }
+}
+void vendor_load_properties()
+{
+   std::string product = GetProperty("ro.product.vendor.device", "");	
+   if (product.find("whyred") != std::string::npos)
+   {
+  	std::string region = GetProperty("ro.boot.hwc", "");
 
-    if (product.find("whyred") != std::string::npos) {
-
-    std::ifstream fin;
-    std::string buf;
-
-    fin.open("/proc/cmdline");
-    while (std::getline(fin, buf, ' '))
-        if (buf.find("androidboot.hwc") != std::string::npos)
-            break;
-    fin.close();
-
-    if (buf.find("CN") != std::string::npos || buf.find("Global") != std::string::npos) {
+    if (region.find("CN") != std::string::npos || region.find("Global") != std::string::npos || region.find("GLOBAL") != std::string::npos)
+	{
         property_override_dual("ro.product.model", "ro.vendor.product.model", "Redmi Note 5");
-    } else {
-        property_override_dual("ro.product.model", "ro.vendor.product.model",  "Redmi Note 5 Pro");
+        property_override_dual("ro.product.odm.model", "ro.product.system.model", "Redmi Note 5");
+        property_override_dual("ro.product.vendor.model", "persist.vendor.camera.exif.model", "Redmi Note 5");
+	}
+	else
+	{
+        property_override_dual("ro.product.model", "ro.vendor.product.model", "Redmi Note 5 Pro");
+        property_override_dual("ro.product.odm.model", "ro.product.system.model", "Redmi Note 5 Pro");
+        property_override_dual("ro.product.vendor.model", "persist.vendor.camera.exif.model", "Redmi Note 5 Pro");
+	}
   }
- }
 }
