@@ -1855,7 +1855,7 @@ int IPACM_Wan::handle_route_add_evt(ipa_ip_type iptype)
 		{
 			/* treat Q6_MHI_WAN as STA mode also */
 			IPACMDBG_H("Q6-MHI  ipv4/v6-header already constructed \n");
-			IPACM_Wan::backhaul_mode = m_is_sta_mode;		
+			IPACM_Wan::backhaul_mode = m_is_sta_mode;
 			IPACMDBG_H("Setting up QMAP ID %d.\n", ext_prop->ext[0].mux_id);
 			IPACM_Iface::ipacmcfg->SetQmapId(ext_prop->ext[0].mux_id);
 			/* sending mux-id info to PCIE-modem for UL */
@@ -2567,7 +2567,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 	}
 	else
 	{
-		IPACMDBG_H("in Q6_MHI_WAN mode, skip firewall, use default configuration \n");		
+		IPACMDBG_H("in Q6_MHI_WAN mode, skip firewall, use default configuration \n");
 	}
 	/* construct ipa_ioc_add_flt_rule with N firewall rules */
 	ipa_ioc_add_flt_rule *m_pFilteringTable = NULL;
@@ -3059,7 +3059,7 @@ int IPACM_Wan::config_dft_firewall_rules(ipa_ip_type iptype)
 			}
 			else
 			{
-				IPACMDBG_H("in Q6_MHI_WAN mode, skip ICMPv6 flt rule \n");		
+				IPACMDBG_H("in Q6_MHI_WAN mode, skip ICMPv6 flt rule \n");
 			}
 			/* v6 default route */
 			memset(&flt_rule_entry, 0, sizeof(struct ipa_flt_rule_add));

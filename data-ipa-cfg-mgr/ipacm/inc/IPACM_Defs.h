@@ -109,6 +109,11 @@ extern "C"
 #define NUM_IPV6_PREFIX_FLT_RULE 1
 #define NUM_IPV6_PREFIX_MTU_RULE 1
 
+#define MAX_CONNTRACK_ENTRIES 100
+#define CT_ENTRIES_BUFFER_SIZE 8096
+#define LOOPBACK_MASK 0xFF000000
+#define LOOPBACK_ADDR 0x7F000000
+
 /*---------------------------------------------------------------------------
 										Return values indicating error status
 ---------------------------------------------------------------------------*/
