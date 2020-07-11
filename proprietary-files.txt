@@ -400,7 +400,7 @@ vendor/lib/libhdr_tm.so|0104cdb2789ab1fb54b6b93564300f13ffeefc39
 vendor/lib64/libhdr_tm.so|0744584d9e30a921898695c89e96293901437c08
 
 # Graphics (SDM) - from LA.UM.8.2.r1-05700-sdm660.0
-vendor/lib/libsdm-color.so|325c5b6cff3cf3d7d5d8e479a1c37f7255cbf748
+vendor/lib/libsdm-color.so|fb624abddaf7c5971f470c36dcdd7c7feb060352
 vendor/lib/libsdm-diag.so|fa211dd848a93242e84d1b7fdc5fcf6cb9c25c2f
 vendor/lib/libsdmextension.so|342a6ecc85a93309c86c01466a612cfbe49c69f5
 vendor/lib/libqseed3.so|344d2ce1fe3670f4b0a832a85bd725c4bdb14329
@@ -410,7 +410,7 @@ vendor/lib64/libqseed3.so|6779aaf96283e244122f4cc76cd3cb750ff14ed5
 vendor/lib64/libsdm-color.so|b5e5ec9f5cdad2094891197fd00f8ccdc8340c06
 vendor/lib64/libsdm-diag.so|db4c495e3e64ea0cbc0d079a2aa16862a9b02192
 -vendor/lib64/libsdm-disp-vndapis.so|92fe3602eaaae1847965e8886d2cbef3d0a801f8
-vendor/lib64/libsdmextension.so|f1a7c8f98cfe34375f4e204e0a9283224c86aafe
+vendor/lib64/libsdmextension.so|fb624abddaf7c5971f470c36dcdd7c7feb060352
 vendor/lib64/libtinyxml2_1.so|70942325afdd14eedcf11b3fbbfbc3d98f42f8dc
 
 # Graphics (Vulkan) - from LA.UM.8.2.r1-06700-sdm660.0
