@@ -72,7 +72,6 @@ class Power : public IPower {
     std::shared_ptr<HintManager> mHintManager;
     std::unique_ptr<InteractionHandler> mInteractionHandler;
     std::atomic<bool> mSustainedPerfModeOn;
-    std::atomic<bool> mCameraStreamingMode;
     std::atomic<bool> mReady;
     std::thread mInitThread;
 };
