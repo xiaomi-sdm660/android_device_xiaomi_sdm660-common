@@ -572,7 +572,7 @@ product/etc/permissions/telephony_product_privapp-permissions-qti.xml|68901007ba
 product/etc/permissions/telephonyservice.xml|a39eefcaf85fb8da60044fdbbcfddd95deb031c8
 product/framework/QtiTelephonyServicelibrary.jar|ea30b05eaad3ebee157421b3f31bf8585566b4cd
 product/framework/qcrilhook.jar|23768fda90519d799e682fd058ec85b7b5cd6f89
-product/framework/qti-telephony-common.jar|14e32b1cb0fdc9d7802414e95e41376499b51b11
+product/framework/qti-telephony-common.jar|96154b2576114dd566bbc99a2d9af612de8849df
 product/lib/vendor.qti.hardware.radio.internal.deviceinfo@1.0.so|fff4848e33826eaf20ffc5e70b276fac3075f970
 product/lib64/vendor.qti.hardware.radio.internal.deviceinfo@1.0.so|e373dabf09b40e75f75d58aed4a790809869f96d
 vendor/bin/ATFWD-daemon|540d63133a5edb0e4e39fd0ec6bcf34939f58ca6
