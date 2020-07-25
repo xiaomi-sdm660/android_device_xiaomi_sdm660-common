@@ -18,7 +18,7 @@
 set -e
 
 DEVICE_COMMON=sdm660-common
-GUARDED_DEVICES_COMMON="twolip jasmine_sprout wayne clover lavender platina jason whyred"
+GUARDED_DEVICES_COMMON="tulip jasmine_sprout wayne clover lavender platina jason whyred"
 VENDOR=xiaomi
 
 INITIAL_COPYRIGHT_YEAR=2018
