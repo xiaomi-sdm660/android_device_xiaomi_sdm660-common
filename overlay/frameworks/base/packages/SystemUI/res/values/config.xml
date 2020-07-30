@@ -39,10 +39,10 @@
     <!-- Doze: Table that translates sensor values from the doze_brightness_sensor_type sensor
                to brightness values; -1 means keeping the current brightness. -->
     <integer-array name="config_doze_brightness_sensor_to_brightness">
-        <item>-1</item> <!-- 0: OFF -->
-        <item>4</item> <!-- 1: NIGHT -->
-        <item>7</item> <!-- 2: LOW -->
-        <item>34</item> <!-- 3: HIGH -->
+        <item>1</item> <!-- 0: OFF -->
+        <item>1</item> <!-- 1: NIGHT -->
+        <item>4</item> <!-- 2: LOW -->
+        <item>28</item> <!-- 3: HIGH -->
         <item>34</item> <!-- 4: SUN -->
     </integer-array>
 </resources>
