@@ -615,3 +615,7 @@ PRODUCT_BOOT_JARS += \
 # DeviceSettings
 PRODUCT_PACKAGES += \
    DeviceSettings
+
+# Force triple frame buffers
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.surface_flinger.max_frame_buffer_acquired_buffers=3
