@@ -17,14 +17,6 @@ property Name is called. -->
 <PerfConfigsStore>
     <PerfConfigs>
 
-                <!--Vendor Properties -->
-                <Prop Name="vendor.iop.enable_iop" Value="0" />
-                <Prop Name="vendor.iop.enable_uxe" Value="0" />
-                <Prop Name="vendor.perf.iop_v3.enable" Value="0" />
-                <Prop Name="vendor.perf.iop_v3.enable.debug" Value="0" />
-                <Prop Name="vendor.enable.prefetch" Value="0" />
-                <Prop Name="vendor.iop.enable_prefetch_ofr" Value="0" />
-
                 <!--System Properties -->
                 <Prop Name="ro.vendor.qti.sys.fw.bg_apps_limit" Value="38" />
                 <Prop Name="ro.vendor.at_library" Value="libqti-at.so" />

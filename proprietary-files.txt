@@ -398,20 +398,6 @@ vendor/lib64/hw/vulkan.sdm660.so|7f37b59e75cb1739b74ff9646dc958591cd7fa23
 # IRQ balance - from LA.UM.8.2.r1-06700-sdm660.0
 vendor/bin/msm_irqbalance|0e967f5c7eaf8d863a50996459101be47adf96a2
 
-# IOP - from LA.UM.8.2.r1-06700-sdm660.0
-product/lib/vendor.qti.hardware.iop@1.0.so:vendor/lib/vendor.qti.hardware.iop@1.0.so|a560207b369bbb3e3156cd6e1600da02b202e96a
-product/lib/vendor.qti.hardware.iop@2.0.so:vendor/lib/vendor.qti.hardware.iop@2.0.so|d2cfc71c1ff9bc86b49bfa2517afff4916267314
-product/lib64/vendor.qti.hardware.iop@1.0.so:vendor/lib64/vendor.qti.hardware.iop@1.0.so|2f320d5b31a8d90ead4f1063435ff6608b3b144f
-product/lib64/vendor.qti.hardware.iop@2.0.so:vendor/lib64/vendor.qti.hardware.iop@2.0.so|7fdc8d9219a6d7a335fc91edb4837bccbac9fc49
-vendor/bin/hw/vendor.qti.hardware.iop@2.0-service|e3257b0a7fb944c471eb98623427630b6423fd24
-vendor/etc/init/vendor.qti.hardware.iop@2.0-service.rc|fd11367b2585702190ef2577ce2ce6fc68f3a2f8
-vendor/lib/hw/vendor.qti.hardware.iop@2.0-impl.so|9e0da70364cac83781076d720f6d5be34dcb598a
-vendor/lib/libqti-iopd-client.so|85c8b84858f16772c335fa26c2721e15ecbbde8b
-vendor/lib/libqti-iopd.so|c7e99b52254a09114b4abe4d61759544ff7c2a3a
-vendor/lib64/hw/vendor.qti.hardware.iop@2.0-impl.so|1f087eb93b9ce0f0ee7fdaf6351f5f71f7db1150
-vendor/lib64/libqti-iopd-client.so|fc9878267908f9843882891f902c4d37fee760dd
-vendor/lib64/libqti-iopd.so|4742ea8f5af933958a9671b3aad22aac9a5c2346
-
 # Listen - from LA.UM.8.2.r1-06700-sdm660.0
 vendor/lib/hw/sound_trigger.primary.sdm660.so|336e4af06f2ddd74bf318bae8ce21388c7f90ac6
 vendor/lib/libadpcmdec.so|8c72aa1812bfa749f266020366894c8a3873d99c
