@@ -66,11 +66,6 @@ on init
     write /sys/block/dm-4/queue/read_ahead_kb 2048
     write /sys/block/dm-5/queue/read_ahead_kb 2048
 
-    # set default schedTune value for foreground/top-app
-    write /dev/stune/foreground/schedtune.prefer_idle 1
-    write /dev/stune/top-app/schedtune.boost 10
-    write /dev/stune/top-app/schedtune.prefer_idle 1
-
 on post-fs
     chmod 0755 /sys/kernel/debug/tracing
 

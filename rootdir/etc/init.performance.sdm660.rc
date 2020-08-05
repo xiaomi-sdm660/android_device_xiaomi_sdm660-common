@@ -44,6 +44,11 @@ on init
     write /sys/block/mmcblk0/queue/read_ahead_kb 128
     write /sys/block/mmcblk0rpmb/bdi/read_ahead_kb 128
     write /sys/block/mmcblk0rpmb/queue/read_ahead_kb 128
+    
+    # Adjust TA-Stune
+    write /dev/stune/foreground/schedtune.prefer_idle 1
+    write /dev/stune/top-app/schedtune.boost 5
+    write /dev/stune/top-app/schedtune.prefer_idle 1
 
 on boot
     # Set on boot cpusets
