@@ -1,4 +1,28 @@
 on init
+    # Setup permission for Power HAL
+    chown system system /dev/stune/top-app/schedtune.boost
+    chown system system /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
+    chown system system /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
+    chown system system /sys/class/kgsl/kgsl-3d0/force_rail_on
+    chown system system /sys/class/kgsl/kgsl-3d0/force_clk_on
+    chown system system /sys/class/kgsl/kgsl-3d0/idle_timer
+    chown system system /sys/class/devfreq/soc:qcom,cpubw/min_freq
+    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
+    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
+    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/sample_ms
+    chown system system /sys/class/devfreq/soc:qcom,memlat-cpu4/min_freq
+    chmod 0664 /dev/stune/top-app/schedtune.boost
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/force_rail_on
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/force_clk_on
+    chmod 0664 /sys/class/kgsl/kgsl-3d0/idle_timer
+    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/min_freq
+    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
+    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
+    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/sample_ms
+    chmod 0664 /sys/class/devfreq/soc:qcom,memlat-cpu4/min_freq
+    
     # Set Memory parameters
     write /sys/module/process_reclaim/parameters/min_score_adj 6
     write /sys/module/process_reclaim/parameters/enable_process_reclaim 1
@@ -6,7 +30,7 @@ on init
     write /sys/module/process_reclaim/parameters/pressure_max 70
     write /sys/module/process_reclaim/parameters/swap_opt_eff 30
     write /sys/module/process_reclaim/parameters/per_swap_size 512
-
+    
     # Configure swap
     write /sys/module/vmpressure/parameters/allocstall_threshold 0
     write /proc/sys/vm/vfs_cache_pressure 100
