@@ -1,13 +1,14 @@
-binder_call(hal_camera_default, hal_configstore_default)
-binder_call(hal_camera_default, hal_graphics_allocator_default)
-typeattribute hal_camera_default data_between_core_and_vendor_violators;
-
-allow hal_camera_default sysfs:file { getattr open read };
-allow hal_camera_default sysfs_kgsl:file r_file_perms;
-
-allow hal_camera_default media_rw_data_file:file { getattr };
-
 allow hal_camera_default camera_data_file:dir w_dir_perms;
 allow hal_camera_default camera_data_file:file create_file_perms;
+allow hal_camera_default media_rw_data_file:file { getattr };
+allow hal_camera_default sysfs:file { getattr open read };
+allow hal_camera_default sysfs_kgsl:dir search;
+allow hal_camera_default sysfs_kgsl:file r_file_perms;
+allow hal_camera_default vendor_video_prop:file r_file_perms;
 
+binder_call(hal_camera_default, hal_configstore_default)
+binder_call(hal_camera_default, hal_graphics_allocator_default)
+set_prop(hal_camera_default, exported_camera_prop)
 set_prop(hal_camera_default, vendor_camera_prop)
+set_prop(hal_camera_default, vendor_video_prop)
+typeattribute hal_camera_default data_between_core_and_vendor_violators;

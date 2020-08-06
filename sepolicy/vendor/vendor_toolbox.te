@@ -1,5 +1,4 @@
 type vendor_toolbox, domain;
-
 init_daemon_domain(vendor_toolbox)
 
 # Allow vendor_toolbox to use sys_admin capability

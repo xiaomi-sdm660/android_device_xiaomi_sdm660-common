@@ -1,9 +1,8 @@
-allow thermal-engine thermal_data_file:dir rw_dir_perms;
-allow thermal-engine thermal_data_file:file create_file_perms;
+allow thermal-engine property_socket:sock_file write;
 allow thermal-engine sysfs:dir r_dir_perms;
 allow thermal-engine self:capability { chown fowner };
-allow thermal-engine property_socket:sock_file write;
+allow thermal-engine thermal_data_file:dir rw_dir_perms;
+allow thermal-engine thermal_data_file:file create_file_perms;
 dontaudit thermal-engine self:capability dac_override;
-
 set_prop(thermal-engine, thermal_engine_prop);
 r_dir_file(thermal-engine sysfs_thermal)

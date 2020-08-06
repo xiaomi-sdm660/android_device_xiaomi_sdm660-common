@@ -1,4 +1,5 @@
+allow hal_audio_default diag_device:chr_file { read write };
+allow hal_audio_default sysfs:dir r_dir_perms;
 allow hal_audio_default sysfs_info:file { open getattr read };
 allow hal_audio_default vendor_data_file:dir { create write add_name };
 allow hal_audio_default vendor_data_file:file { append create getattr open read };
-allow hal_audio_default sysfs:dir r_dir_perms;
