@@ -134,8 +134,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.camera.HAL3.enabled=1 \
     persist.vendor.camera.eis.enable=1 \
     persist.vendor.camera.exif.make=Xiaomi \
-    persist.vendor.camera.privapp.list=org.codeaurora.snapcam \
-    vendor.camera.aux.packageblacklist=com.google.android.GoogleCamera,com.discord
+    persist.vendor.camera.privapp.list=org.codeaurora.snapcam
+    vendor.camera.aux.packageblacklist=com.discord \
+    camera.aux.packagelist=com.google.android.GoogleCamera,com.android.camera,org.codeaurora.snapcam \
+    vendor.camera.aux.packagelist=com.google.android.GoogleCamera,com.android.camera,org.codeaurora.snapcam \
+    persist.camera.isp.turbo=1 \
+    persist.camera.set.afd=4 \
+    persist.bokeh.switch.lux=290 \
+    persist.camera.auxswitch.threshold=330 \
+    persist.camera.mainswitch.threshold=419 \
+    persist.camera.expose.aux=1
 
 # Codec2 switch
 PRODUCT_PROPERTY_OVERRIDES += \
