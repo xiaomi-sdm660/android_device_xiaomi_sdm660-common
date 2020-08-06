@@ -1,14 +1,8 @@
-type ir_dev_file, file_type;
 type fingerprint_data_file, file_type, data_file_type, core_data_file_type;
 type fingerprint_sysfs, fs_type, sysfs_type;
+type ir_dev_file, file_type;
 type sysfs_info, fs_type, sysfs_type;
-
-allow ueventd ir_dev_file:chr_file { create setattr };
-
-# Touchscreen wake_gesture
-type sysfs_tap_to_wake, sysfs_type, fs_type;
-type sysfs_touchpanel, fs_type, sysfs_type;
-type proc_dt2w, fs_type, proc_type;
+type thermal_data_file, file_type, data_file_type;
 
 # Fingerprint
 type fingerprintd_device, file_type, dev_type;
@@ -21,7 +15,10 @@ type hall_dev, sysfs_type, fs_type;
 # Kcal
 type kcal_dev, sysfs_type, fs_type;
 
-type thermal_data_file, file_type, data_file_type;
+# Touchscreen wake_gesture
+type proc_dt2w, fs_type, proc_type;
+type sysfs_tap_to_wake, sysfs_type, fs_type;
+type sysfs_touchpanel, fs_type, sysfs_type;
 
 # XiamiParts
 type sysfs_fpsinfo, sysfs_type, fs_type;

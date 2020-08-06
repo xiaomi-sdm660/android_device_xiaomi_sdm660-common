@@ -1,8 +1,12 @@
-allow system_server vendor_keylayout_file:dir search;
-allow system_server vendor_keylayout_file:file r_file_perms;
+allow system_server blkio_dev:dir search;
+allow system_server default_android_service:service_manager add;
+allow system_server exported_camera_prop:file read;
+allow system_server kernel:system syslog_read;
+allow system_server sysfs_battery_supply:file rw_file_perms;
 allow system_server sysfs_vibrator:file rw_file_perms;
-allow system_server sysfs_rtc:file r_file_perms;
+allow system_server thermal_service:service_manager find;
+allow system_server userspace_reboot_exported_prop:file read;
 allow system_server vendor_camera_prop:file { getattr open read };
 allow system_server vendor_default_prop:file { getattr open read };
-allow system_server thermal_service:service_manager find;
-allow system_server sysfs_battery_supply:file rw_file_perms;
+allow system_server vendor_keylayout_file:dir search;
+allow system_server vendor_keylayout_file:file r_file_perms;

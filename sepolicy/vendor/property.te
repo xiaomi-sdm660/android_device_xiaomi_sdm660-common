@@ -1,7 +1,7 @@
 type hal_fingerprint_prop, property_type;
+type ifaa_prop, property_type;
 type mlipay_prop, property_type;
 type vendor_fp_prop, property_type;
-type ifaa_prop, property_type;
 type vendor_camera_prop, property_type;
 
 # Thermal engine

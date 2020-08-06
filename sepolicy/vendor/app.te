@@ -1,6 +1,6 @@
 # Allow appdomain to get vendor_camera_prop
-get_prop(appdomain, vendor_camera_prop)
 binder_call({ appdomain -isolated_app }, hal_mlipay_default)
+get_prop(appdomain, vendor_camera_prop)
 get_prop({ appdomain -isolated_app }, mlipay_prop)
 get_prop({ appdomain -isolated_app }, hal_fingerprint_prop)
 get_prop({ appdomain -isolated_app }, ifaa_prop)

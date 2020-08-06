@@ -1,7 +1,6 @@
 type hal_fingerprint_sdm660, domain;
-hal_server_domain(hal_fingerprint_sdm660, hal_fingerprint)
-
 type hal_fingerprint_sdm660_exec, exec_type, vendor_file_type, file_type;
+hal_server_domain(hal_fingerprint_sdm660, hal_fingerprint)
 init_daemon_domain(hal_fingerprint_sdm660)
 
 allow hal_fingerprint_sdm660 {
@@ -13,43 +12,35 @@ allow hal_fingerprint_sdm660 {
 # TODO(b/36644492): Remove data_between_core_and_vendor_violators once
 # hal_fingerprint no longer directly accesses fingerprintd_data_file.
 typeattribute hal_fingerprint_sdm660 data_between_core_and_vendor_violators;
-# access to /data/system/users/[0-9]+/fpdata
 
+# access to /data/system/users/[0-9]+/fpdata
 allow hal_fingerprint_sdm660 fingerprintd_data_file:dir rw_dir_perms;
 allow hal_fingerprint_sdm660 fingerprintd_data_file:file create_file_perms;
 allow hal_fingerprint_sdm660 fingerprint_data_file:file rw_file_perms;
-
 allow hal_fingerprint_sdm660 fingerprint_sysfs:file rw_file_perms;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:dir r_dir_perms;
 allow hal_fingerprint_sdm660 fingerprint_sysfs:lnk_file read;
+allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
+allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
+allow hal_fingerprint_sdm660 media_rw_data_file:dir search;
+allow hal_fingerprint_sdm660 mnt_user_file:dir search;
+allow hal_fingerprint_sdm660 mnt_user_file:lnk_file r_file_perms;
+allow hal_fingerprint_sdm660 persist_file:dir r_dir_perms;
+allow hal_fingerprint_sdm660 persist_fingerprint_file:file r_file_perms;
+allow hal_fingerprint_sdm660 rootfs:dir read;
+allow hal_fingerprint_sdm660 self:netlink_socket create_socket_perms_no_ioctl;
 allow hal_fingerprint_sdm660 sysfs_devfreq:file r_file_perms;
 allow hal_fingerprint_sdm660 system_data_file:file r_file_perms;
 allow hal_fingerprint_sdm660 sysfs_devfreq:dir search;
 allow hal_fingerprint_sdm660 sysfs_sectouch:dir search;
-
-allow hal_fingerprint_sdm660 persist_file:dir r_dir_perms;
-allow hal_fingerprint_sdm660 persist_fingerprint_file:file r_file_perms;
-
-allow hal_fingerprint_sdm660 mnt_user_file:dir search;
-allow hal_fingerprint_sdm660 mnt_user_file:lnk_file r_file_perms;
 allow hal_fingerprint_sdm660 sdcardfs:dir search;
 allow hal_fingerprint_sdm660 storage_file:dir search;
 allow hal_fingerprint_sdm660 storage_file:lnk_file read;
-
-allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
-allow hal_fingerprint_sdm660 rootfs:dir read;
 allow hal_fingerprint_sdm660 vendor_mpctl_prop:file read;
-
 allow hal_fingerprint_sdm660 vendor_fp_prop:property_service set;
 allow hal_fingerprint_sdm660 vendor_fp_prop:file { getattr open read };
 
-allow hal_fingerprint_sdm660 hal_fingerprint_sdm660:netlink_socket { create bind write read };
-
-allow hal_fingerprint_sdm660 self:netlink_socket create_socket_perms_no_ioctl;
-
-allow hal_fingerprint_sdm660 hal_perf_hwservice:hwservice_manager find;
 binder_call(hal_fingerprint_sdm660, hal_perf_default)
-
 r_dir_file(hal_fingerprint_sdm660, firmware_file)
 set_prop(hal_fingerprint_sdm660, hal_fingerprint_prop)
 

@@ -1,7 +1,8 @@
-allow ueventd kcal_dev:dir r_dir_perms;
-allow ueventd kcal_dev:file rw_file_perms;
-allow ueventd kcal_dev:lnk_file r_file_perms;
 allow ueventd hall_dev:dir r_dir_perms;
 allow ueventd hall_dev:file rw_file_perms;
 allow ueventd hall_dev:lnk_file r_file_perms;
+allow ueventd ir_dev_file:chr_file { create setattr };
+allow ueventd kcal_dev:dir r_dir_perms;
+allow ueventd kcal_dev:file rw_file_perms;
+allow ueventd kcal_dev:lnk_file r_file_perms;
 allow ueventd metadata_file:dir search;

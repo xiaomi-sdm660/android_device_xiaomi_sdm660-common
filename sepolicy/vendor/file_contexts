@@ -1,83 +1,89 @@
+# Amplifier
+/(vendor|system/vendor)/bin/tinymix                                                                                         u:object_r:vendor_tinyalsa_exec:s0
+
 # Biometric
-/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660   u:object_r:hal_fingerprint_sdm660_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660                       u:object_r:hal_fingerprint_sdm660_exec:s0
 
 # blkio
-/dev/blkio(/.*)?         u:object_r:blkio_dev:s0
-
-# Goodix Fingerprint
-/data/misc/gf_data(/.*)?                        u:object_r:fingerprint_data_file:s0
-/data/misc/goodix(/.*)?                         u:object_r:fingerprint_data_file:s0
-/persist/data/gf*                               u:object_r:fingerprint_data_file:s0
-/data/gf_data(/.*)?                             u:object_r:fingerprintd_data_file:s0
-/data/vendor/gf_data(/.*)?                      u:object_r:fingerprint_vendor_data_file:s0
-/data/vendor/goodix(/.*)?                       u:object_r:fingerprint_vendor_data_file:s0
-/dev/goodix_fp                                  u:object_r:fingerprint_device:s0
-
-# FPC Fingerprint
-/data/vendor/fpc(/.*)?                          u:object_r:fingerprint_vendor_data_file:s0
-/(mnt/vendor)/persist/fpc(/.*)?                 u:object_r:persist_fingerprint_file:s0
-/sys/devices/soc/soc:fpc1020(/.*)?              u:object_r:fingerprint_sysfs:s0
-/sys/bus/platform/devices/soc:fingerprint_fpc(/.*)?  u:object_r:fingerprint_sysfs:s0
-
-# Hall Switch
-/sys/module/hall/parameters(/.*)?               u:object_r:hall_dev:s0
+/dev/blkio(/.*)?                                                                                                            u:object_r:blkio_dev:s0
+/dev/blkio/background(/.*)?                                                                                                 u:object_r:blkio_dev:s0
 
 # Firmware
-/firmware                                                     u:object_r:firmware_file:s0
-/bt_firmware                                                  u:object_r:bt_firmware_file:s0
+/firmware                                                                                                                   u:object_r:firmware_file:s0
+/bt_firmware                                                                                                                u:object_r:bt_firmware_file:s0
 
-# Amplifier
-/(vendor|system/vendor)/bin/tinymix                           u:object_r:vendor_tinyalsa_exec:s0
+# FPC Fingerprint
+/data/vendor/fpc(/.*)?                                                                                                      u:object_r:fingerprint_vendor_data_file:s0
+/(mnt/vendor)/persist/fpc(/.*)?                                                                                             u:object_r:persist_fingerprint_file:s0
+/sys/devices/soc/soc:fpc1020(/.*)?                                                                                          u:object_r:fingerprint_sysfs:s0
+/sys/bus/platform/devices/soc:fingerprint_fpc(/.*)?                                                                         u:object_r:fingerprint_sysfs:s0
+
+# Goodix Fingerprint
+/data/misc/gf_data(/.*)?                                                                                                    u:object_r:fingerprint_data_file:s0
+/data/misc/goodix(/.*)?                                                                                                     u:object_r:fingerprint_data_file:s0
+/persist/data/gf*                                                                                                           u:object_r:fingerprint_data_file:s0
+/data/gf_data(/.*)?                                                                                                         u:object_r:fingerprintd_data_file:s0
+/data/vendor/gf_data(/.*)?                                                                                                  u:object_r:fingerprint_vendor_data_file:s0
+/data/vendor/goodix(/.*)?                                                                                                   u:object_r:fingerprint_vendor_data_file:s0
+/dev/goodix_fp                                                                                                              u:object_r:fingerprint_device:s0
+
+# Hall Switch
+/sys/module/hall/parameters(/.*)?                                                                                           u:object_r:hall_dev:s0
 
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
 
 # HW Info
-/sys/devices/platform/HardwareInfo(/.*)? u:object_r:sysfs_info:s0
-/sys/devices/platform/HardwareInfo/gsensor  u:object_r:sysfs_info:s0
+/sys/devices/platform/HardwareInfo(/.*)?                                                                                    u:object_r:sysfs_info:s0
+/sys/devices/platform/HardwareInfo/gsensor                                                                                  u:object_r:sysfs_info:s0
 
 # IR
-/dev/lirc0                                      u:object_r:spidev_device:s0
-/dev/spidev7.1                                  u:object_r:spidev_device:s0
+/dev/lirc0                                                                                                                  u:object_r:spidev_device:s0
+/dev/spidev7.1                                                                                                              u:object_r:spidev_device:s0
 
 # Kcal
-/sys/devices/platform/kcal_ctrl.0(/.*)?         u:object_r:kcal_dev:s0
-/sys/bus/platform/drivers/kcal_ctrl(/.*)?       u:object_r:kcal_dev:s0
-
-# Notification LED
-/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d000/leds/white/max_brightness  u:object_r:sysfs_graphics:s0
-/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d000/leds/white/brightness  u:object_r:sysfs_graphics:s0
+/sys/devices/platform/kcal_ctrl.0(/.*)?                                                                                     u:object_r:kcal_dev:s0
+/sys/bus/platform/drivers/kcal_ctrl(/.*)?                                                                                   u:object_r:kcal_dev:s0
 
 # Light HAL
-/(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660                     u:object_r:hal_light_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.xiaomi_sdm660                                         u:object_r:hal_light_default_exec:s0
 
 # Mlipay
-/(vendor|system/vendor)/bin/mlipayd@1.1         u:object_r:hal_mlipay_default_exec:s0
+/(vendor|system/vendor)/bin/mlipayd@1.1                                                                                     u:object_r:hal_mlipay_default_exec:s0
+
+# Notification LED
+/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d000/leds/white/max_brightness     u:object_r:sysfs_graphics:s0
+/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d000/leds/white/brightness         u:object_r:sysfs_graphics:s0
+
+
+# Misc
+/sys/kernel/debug/mmc0/mmc0:0001/ext_csd                                                                                    u:object_r:debugfs_mmc:s0
 
 # Persist
 /persist/PRSensorData\.txt                                                                                                  u:object_r:sensors_persist_file:s0
 /persist                                                                                                                    u:object_r:mnt_vendor_file:s0
 
 # Shell Script
-/(vendor|system/vendor)/bin/init\.goodix\.sh    u:object_r:init_fingerprint_exec:s0
-
-# Tap to Wake
-/sys/devices/soc/c177000.i2c/i2c-3/3-005d/enable_dt2w u:object_r:sysfs_tap_to_wake:s0
-/sys/devices/soc/c177000.i2c/i2c-3/3-0038/enable_dt2w u:object_r:sysfs_tap_to_wake:s0
-/proc/touchscreen/enable_dt2w u:object_r:sysfs_tap_to_wake:s0
-/sys/devices/soc/c175000\.i2c/i2c-1/1-[0-9a-f]+/input/input[0-9]+/wake_gesture u:object_r:sysfs_tap_to_wake:s0
-/proc/tp_gesture u:object_r:sysfs_tap_to_wake:s0
-/sys/touchpanel/double_tap u:object_r:sysfs_tap_to_wake:s0
-/proc/touchpanel/wake_gesture u:object_r:sysfs_tap_to_wake:s0
-
-# Thermal
-/data/vendor/thermal(/.*)?                      u:object_r:thermal_data_file:s0
-
-# Video4linux sysfs nodes
-/sys/devices/soc/caa0000\.qcom,jpeg/video4linux/video1(/.*)?   u:object_r:sysfs_graphics:s0
-
-# USB
-/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.0-service\.xiaomi_sdm660       u:object_r:hal_usb_default_exec:s0
+/(vendor|system/vendor)/bin/init\.goodix\.sh                                                                                u:object_r:init_fingerprint_exec:s0
+/vendor/bin/sh                                                                                                              u:object_r:vendor_shell_exec:s0
 
 # Service HALs
-/(vendor|system/vendor)/bin/hw/android\.hardware\.authsecret@1\.0-service u:object_r:hal_authsecret_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.authsecret@1\.0-service                                                   u:object_r:hal_authsecret_default_exec:s0
+
+# Tap to Wake
+/sys/devices/soc/c177000.i2c/i2c-3/3-005d/enable_dt2w                                                                       u:object_r:sysfs_tap_to_wake:s0
+/sys/devices/soc/c177000.i2c/i2c-3/3-0038/enable_dt2w                                                                       u:object_r:sysfs_tap_to_wake:s0
+/proc/touchscreen/enable_dt2w                                                                                               u:object_r:sysfs_tap_to_wake:s0
+/sys/devices/soc/c175000\.i2c/i2c-1/1-[0-9a-f]+/input/input[0-9]+/wake_gesture                                              u:object_r:sysfs_tap_to_wake:s0
+/proc/tp_gesture                                                                                                            u:object_r:sysfs_tap_to_wake:s0
+/sys/touchpanel/double_tap                                                                                                  u:object_r:sysfs_tap_to_wake:s0
+/proc/touchpanel/wake_gesture                                                                                               u:object_r:sysfs_tap_to_wake:s0
+
+# Thermal
+/data/vendor/thermal(/.*)?                                                                                                  u:object_r:thermal_data_file:s0
+
+# USB
+/(vendor|system/vendor)/bin/hw/android\.hardware\.usb@1\.0-service\.xiaomi_sdm660                                           u:object_r:hal_usb_default_exec:s0
+
+# Video4linux sysfs nodes
+/sys/devices/soc/caa0000\.qcom,jpeg/video4linux/video1(/.*)?                                                                u:object_r:sysfs_graphics:s0

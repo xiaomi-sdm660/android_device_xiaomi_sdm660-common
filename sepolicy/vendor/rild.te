@@ -1,2 +1,2 @@
-allow rild vendor_file:file ioctl;
 allow rild qcom_ims_prop:file { getattr open read };
+allow rild vendor_file:file ioctl;
