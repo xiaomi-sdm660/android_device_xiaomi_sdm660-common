@@ -54,6 +54,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        
+        <service
+            android:name="org.lineageos.settings.doze.DozeTileService"
+            android:icon="@drawable/ic_doze"
+            android:label="@string/ambient_display_gestures_title"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
 
     </application>
 </manifest>
