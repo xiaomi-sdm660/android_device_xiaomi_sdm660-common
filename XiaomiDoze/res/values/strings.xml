@@ -32,7 +32,7 @@
     <string name="tilt_sensor_title">Tilt Sensor Gestures</string>
 
     <!-- Proximity sensor -->
-    <string name="proximity_sensor_title">Proximity sensor</string>
+    <string name="proximity_sensor_title">Proximity Sensor Gestures</string>
 
     <!-- Hand wave gesture -->
     <string name="hand_wave_gesture_title">Hand wave</string>
