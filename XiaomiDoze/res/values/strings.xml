@@ -29,7 +29,7 @@
     <string name="ambient_display_title">Ambient display</string>
 
     <!-- Tilt sensor -->
-    <string name="tilt_sensor_title">Tilt sensor</string>
+    <string name="tilt_sensor_title">Tilt Sensor Gestures</string>
 
     <!-- Proximity sensor -->
     <string name="proximity_sensor_title">Proximity sensor</string>
@@ -59,4 +59,8 @@
     
     <!-- Doze Tile Service -->
     <string name="ambient_display_gestures_title">Ambient Display Gesture</string>
+    
+    <!-- Raise to Wake Gesture -->
+    <string name="raise_to_wake_gesture_title">Raise To Wake</string>
+    <string name="raise_to_wake_gesture_summary">Tilt Sensor events to raise your device.</string>
 </resources>
