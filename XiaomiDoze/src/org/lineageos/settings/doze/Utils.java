@@ -19,10 +19,11 @@ package org.lineageos.settings.doze;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreference;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -104,10 +105,10 @@ public final class Utils {
         return isGestureEnabled(context, GESTURE_PICK_UP_KEY);
     }
     
-    protected static void setPickUp(Context context, boolean value) {
-	SharedPreferences.Editor e = PreferenceManager.getDefaultSharedPreferences(context).edit();
-	e.putBoolean(GESTURE_PICK_UP_KEY, value);
-	e.commit();
+    protected static void setPickUp(Preference preference, boolean value) {
+        SwitchPreference pickup = (SwitchPreference)preference;
+        pickup.setChecked(value);
+        pickup.setEnabled(!value);
     }
     
     protected static boolean isRaiseToWakeEnabled(Context context) {
