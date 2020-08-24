@@ -19,8 +19,20 @@
 
     <string name="display_title">画面</string>
 
+    <!-- Audio amplification -->
+    <string name="headphone_gain">ヘッドホンゲイン</string>
+    <string name="mic_gain">マイクゲイン</string>
+
+    <!-- Mi Note 3 Settings -->
+    <string name="jason_pref_title">端末設定</string>
+    <string name="jason_pref_summary">Mi Note 3 の追加設定</string>
+
     <!-- KCal -->
     <string name="device_kcal_title">画面の色補正</string>
+
+    <!-- Notification LED brightness -->
+    <string name="notification_title">通知 LED</string>
+    <string name="notification_led_title">LED の明るさ</string>
 
     <!-- Ambient Display -->
     <string name="ambient_display_xiaomi">Xiaomi Doze</string>
@@ -42,17 +54,15 @@
     <string name="thermal_balance">バランス</string>
     <string name="thermal_extreme_battery">超省電力</string>
 
-    <!-- FP Actions -->
-
-    <!-- Values for FP Actions -->
 
     <string name="audio_title">音楽</string>
 
     <!-- Dirac settings -->
     <string name="dirac_title">Mi サウンドエンハンサー</string>
-    <string name="dirac_summary">オーディオ品質を最適化</string>
+    <string name="dirac_summary">オーディオ品質を最適化する</string>
     <string name="dirac_headset_title">ヘッドフォンの種類を選択</string>
-    <string name="dirac_preset_title">プリセットを選択してください</string>
+    <string name="dirac_preset_title">プリセットの選択</string>
+
     <!-- Dirac settings: Headset types -->
     <string name="dirac_headset_default">デフォルト</string>
     <string name="dirac_headset_earbuds">Mi イヤーバッド</string>
@@ -76,8 +86,9 @@
     <string name="dirac_headset_in_ear2">Mi インイヤー2</string>
     <string name="dirac_headset_earphone_basic">Mi イヤフォン ベーシック</string>
     <string name="dirac_headset_earphone">Mi イヤホン</string>
+
     <!-- Dirac settings: Equalizer presets -->
-    <string name="dirac_preset_default">デフォルト</string>
+    <string name="dirac_preset_default">既定</string>
     <string name="dirac_preset_rock">ロック</string>
     <string name="dirac_preset_jazz">ジャズ</string>
     <string name="dirac_preset_pop">ポップ</string>
@@ -89,7 +100,6 @@
     <string name="dirac_preset_dance">ダンス</string>
     <string name="dirac_preset_metal">メタル</string>
 
-    <!-- Audio amplification -->
 
     <!-- kcal -->
     <string name="advanced_settings_kcal">画面の色補正</string>
@@ -104,12 +114,12 @@
     <string name="color_blue">青</string>
     <string name="color_minimum">最小</string>
     <string name="saturation">彩度</string>
-    <string name="value">値</string>
+    <string name="value">明度</string>
     <string name="contrast">コントラスト</string>
     <string name="hue">色相</string>
     <string name="grayscale">グレースケール画面</string>
 
-    <string name="presets_dialog_title">プリセットを選択</string>
+    <string name="presets_dialog_title">プリセットの選択</string>
     <!-- Presets -->
     <string name="preset_default">既定</string>
     <string name="preset_version_1">バージョン 1</string>
@@ -123,8 +133,10 @@
     <string name="preset_warm_amoled">暖色 AMOLED</string>
     <string name="preset_hybrid_mamba">Hybrid Mamba</string>
 
-    <!-- usb fastcharge -->
-
+     <!-- Flip cover wake -->
+     <string name="hall_wakeup_title">フリップカバーの復帰</string>
+     <string name="hall_title">フリップカバーの復帰の有効化</string>
+     <string name="hall_wakeup_summary">マグネットフリップカバーでスリープ解除する</string>
     <!-- menu -->
     <string name="kcal_presets" translatable="false">@string/presets_dialog_title</string>
     <string name="kcal_reset">リセット</string>
@@ -133,9 +145,4 @@
     <string name="edit_value">新しい値を選択して下さい</string>
     <string name="default_value">既定値</string>
     <string name="edit_hint">値は %1$d と %2$d の間です</string>
-     
-     <!-- Flip cover wake -->
-     <string name="hall_wakeup_title">フリップカバーの復帰</string>
-     <string name="hall_title">フリップカバーの復帰の有効化</string>
-     <string name="hall_wakeup_summary">マグネットフリップカバーでスリープ解除する</string>
 </resources>
