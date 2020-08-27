@@ -116,6 +116,8 @@ ifneq ($(filter lavender,$(TARGET_DEVICE)),)
 LOCAL_SRC_FILES    := etc/fstab_A.qcom
 else ifeq ($(ENABLE_AB), true)
 LOCAL_SRC_FILES    := etc/fstab_AB.qcom
+else ifeq ($(ENABLE_ENCRYPTION), true)
+LOCAL_SRC_FILES    := etc/fstab_FE.qcom
 else
 LOCAL_SRC_FILES    := etc/fstab.qcom
 endif
