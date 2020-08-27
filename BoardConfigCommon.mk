@@ -221,6 +221,8 @@ ifneq ($(filter lavender,$(TARGET_DEVICE)),)
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_A.qcom
 else ifeq ($(ENABLE_AB), true)
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_AB.qcom
+else ifeq ($(ENABLE_ENCRYPTION), true)
+TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_FE.qcom
 else
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab.qcom
 endif
