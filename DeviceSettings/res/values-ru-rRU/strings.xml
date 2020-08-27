@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+	 
+	 Translated with <3 by pqhaz
+-->
+<resources>
+    <string name="advanced_settings">Настройки Device</string>
+    <string name="advanced_settings_summary">Дополнительные настройки</string>
+
+    <string name="display_title">Экран</string>
+
+    <!-- KCal -->
+    <string name="device_kcal_title">Калибрация цвета экрана</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display">Ambient экран</string>
+    <string name="advanced_doze_summary">Дополнительные ambient экран</string>
+
+    <string name="vibration_title">Вибрация</string>
+    <string name="vibration_strength_title">Сила</string>
+
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Производительность</string>
+    <string name="thermal_title">Настройки производительности</string>
+    <string name="thermal_summary">Выберите Ваш профил производительности</string>
+    <string name="thermal_dialogTitle">Выберите Ваш профил производительности</string>
+
+    <!-- Values for Thermal Presets -->
+    <string name="thermal_performance">Производительность</string>
+    <string name="thermal_battery">Энергосбережение</string>
+    <string name="thermal_gaming">Игры</string>
+    <string name="thermal_balance">Баланс</string>
+    <string name="thermal_extreme_battery">Экстримное энергосбережение</string>
+
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">Калибрация цвета экрана</string>
+    <string name="cat_colormanagement">Настройки цвета</string>
+    <string name="cat_calibration">Калибрация экрана</string>
+
+    <string name="kcal_enabled">Включено</string>
+    <string name="kcal_disabled">Выключено</string>
+    <string name="set_on_boot">Включать при загрузке</string>
+    <string name="color_red">Красный</string>
+    <string name="color_green">Зелёный</string>
+    <string name="color_blue">Синий</string>
+    <string name="color_minimum">Минимум</string>
+    <string name="saturation">Насыщеность</string>
+    <string name="value">Значение</string>
+    <string name="contrast">Контраст</string>
+    <string name="hue">Оттенок</string>
+    <string name="grayscale">Экран в оттенках серого</string>
+
+    <string name="presets_dialog_title">Выберите пресет</string>
+
+    <!-- menu -->
+    <string name="kcal_reset">Вернуть пресет по умолчанию</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">Выбрать новое значение</string>
+    <string name="default_value">Значение по умолчанию</string>
+    <string name="edit_hint">Значение между %1$d и %2$d</string>
+</resources>
