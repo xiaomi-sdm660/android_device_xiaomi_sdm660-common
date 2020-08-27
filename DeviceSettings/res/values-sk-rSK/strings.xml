@@ -1,63 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2018 The Xiaomi-SDM660 Project
-
+<!-- Copyright (C) 2018-2020 The Xiaomi-SDM660 Project
+     https://github.com/xiaomi-sdm660
+     
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
-
           http://www.apache.org/licenses/LICENSE-2.0
-
      Unless required by applicable law or agreed to in writing, software
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources>
-    <string name="advanced_settings">Device Settings</string>
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+   <string name="advanced_settings">Súčastí zariadenia</string>
     <string name="advanced_settings_summary">Rozšírené nastavenia</string>
+
     <string name="display_title">Displej</string>
+
+    <!-- Mi Note 3 Settings -->
+    <string name="jason_pref_title">Nastavenia zariadenia</string>
+    <string name="jason_pref_summary">Mi Note 3 rozšírené nastavenia</string>
+
+    <!-- KCal -->
     <string name="device_kcal_title">Kalibrácia farieb</string>
-    <string name="vibration_strength_title">Sila vibrácií</string>
+
+    <!-- Notification LED brightness -->
+    <string name="notification_title">Nortifikačná LED</string>
+    <string name="notification_led_title">Jas</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display">Ambietný displej</string>
+    <string name="advanced_doze_summary">Rozšírené nastavenia ambientného displeja</string>
+
+    <string name="vibration_title">Hmatová spätná odozva</string>
+    <string name="vibration_strength_title">Sila</string>
 
     <!-- Thermal Profiles -->
     <string name="thermal_profile_title">Výkon</string>
-    <string name="thermal_title">Nastavenia výkonu</string>
-    <string name="thermal_summary">Výber nastavenia výkonu</string>
-    <string name="thermal_dialogTitle">Výber nastavenia výkonu</string>
+    <string name="thermal_title">Nastavenia Výkonu</string>
+    <string name="thermal_summary">Režim výkonu</string>
+    <string name="thermal_dialogTitle">Režim výkonu</string>
 
+    <!-- Values for Thermal Presets -->
     <string name="thermal_performance">Výkon</string>
     <string name="thermal_battery">Šetrič batérie</string>
-    <string name="thermal_gaming">Gaming</string>
+    <string name="thermal_gaming">Herný</string>
     <string name="thermal_balance">Vyvážený</string>
-    <string name="thermal_extreme_battery">Extrémny šetrič batérie</string>
-    <string name="vibration_title">Vibrácie</string>
+    <string name="thermal_extreme_battery">Extrémny šetrič batŕeie</string>
 
-    <string name="advanced_settings_kcal">Kalibrácia farieb displeja</string>
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">Kalibrácia farieb</string>
+    <string name="cat_colormanagement">Nastavenia farieb</string>
     <string name="cat_calibration">Kalibrácia displeja</string>
-    <string name="set_on_boot">Aktivuj pri štarte systému</string>
+
     <string name="kcal_enabled">Zapnuté</string>
     <string name="kcal_disabled">Vypnuté</string>
+    <string name="set_on_boot">Aktivovať po zapnutí zariadenia</string>
     <string name="color_red">Červená</string>
     <string name="color_green">Zelená</string>
     <string name="color_blue">Modrá</string>
     <string name="color_minimum">Minimum</string>
-    <string name="saturation">Sýtosť</string>
-    <string name="contrast">Kontrast</string>
-    <string name="cat_colormanagement">Nastavenia farieb</string>
+    <string name="saturation">Nasýtenie</string>
     <string name="value">Hodnota</string>
+    <string name="contrast">Kontrast</string>
     <string name="hue">Odtieň</string>
-    <string name="kcal_reset">Východzie nastavenie</string>
-    <string name="presets_dialog_title">Výber nastavenia</string>
-    <string name="preset_default">Default</string>
-    <string name="preset_deep_black_white">Výrazná čierna a biela</string>
-    <string name="preset_extreme_amoled">Extrémny AMOLED</string>
-    <string name="preset_warm_amoled">Teplé farby AMOLED</string>
-    <string name="preset_cool_amoled">Chladné farby AMOLED</string>
-    <string name="preset_deep_natural">Prírodné farby</string>
-    <string name="edit_value">Výber novej hodnoty</string>
-    <string name="default_value">Pôvodná hodnota</string>
-    <string name="edit_hint">Hodnota medzi %1d a %2d</string>
-    <string name="advanced_doze_summary">Ambient display</string>
-    <string name="grayscale">Čiernobiely mód</string>
+    <string name="grayscale">Čiernobiele zobrazenie</string>
+
+    <string name="presets_dialog_title">Výber predvoľby</string>
+    <!-- Presets -->
+    <string name="preset_default">Základná</string>
+    <string name="preset_version_1">Verzia 1</string>
+    <string name="preset_version_2">Verzia 2</string>
+    <string name="preset_version_3">Verzia 3</string>
+    <string name="preset_triluminous">Triluminous</string>
+    <string name="preset_deep_black_white">Sýta čierna a biela</string>
+    <string name="preset_deep_natural">Sýta základná</string>
+    <string name="preset_cool_amoled">Studená - Amoled</string>
+    <string name="preset_extreme_amoled">Extrémny Amoled</string>
+    <string name="preset_warm_amoled">Teplý - Amoled</string>
+    <string name="preset_hybrid_mamba">Hybrid Mamba</string>
+
+    <string name="hall_wakeup_title">Zobudenie preklopením krytu</string>
+    <string name="hall_title">Povoliť zobudenie preklopením krytu</string>
+    <string name="hall_wakeup_summary">Zobudenia zariadenia magnetickým krytom</string>
+    <!-- menu -->
+    <string name="kcal_presets">@string/presets_dialog_title</string>
+    <string name="kcal_reset">Resetovať</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">Zvoliť novú hodnotu</string>
+    <string name="default_value">Základná hodnota</string>
+    <string name="edit_hint">Hodnota medzi %1$d a %2$d</string>
+
+    <!-- FPS Info -->
+    <string name="fps_info_title">Ukazateľ FPS</string>
+    <string name="fps_info_summary">Zobrazovať aktuálny počet snímkov za sekundu</string>
+    
+    <!-- Audio amplification -->
+    <string name="audio_amplify">Zosilnenie zvuku</string>
+    <string name="headphone_gain">Zisk slúchadiel</string>
+    <string name="mic_gain">Zisk mikrofónu</string>
+
 </resources>

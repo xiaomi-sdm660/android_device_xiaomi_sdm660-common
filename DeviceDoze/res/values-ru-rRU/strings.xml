@@ -17,33 +17,52 @@
 -->
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-  <!-- Label for feature switch [CHAR LIMIT=30] -->
-  <string name="switch_bar_on">Включено</string>
-  <!-- Label for feature switch [CHAR LIMIT=30] -->
-  <string name="switch_bar_off">Выключено</string>
-  <!-- Device specific settings -->
-  <string name="device_settings_app_name">Дополнительные настройки</string>
-  <!-- Ambient Display -->
-  <string name="ambient_display_title">Индикация событий</string>
-  <!-- Tilt sensor -->
-  <string name="tilt_sensor_title">Датчик наклона</string>
-  <!-- Proximity sensor -->
-  <string name="proximity_sensor_title">Датчик приближения</string>
-  <!-- Hand wave gesture -->
-  <string name="hand_wave_gesture_title">Взмах рукой</string>
-  <string name="hand_wave_gesture_summary">Проведите ладонью над экраном для просмотра уведомлений</string>
-  <!-- Pick-up gesture -->
-  <string name="pick_up_gesture_title">Поднять</string>
-  <string name="pick_up_gesture_summary">Отображать уведомления при поднятии устройства</string>
-  <!-- Pocket gesture -->
-  <string name="pocket_gesture_title">Карман</string>
-  <string name="pocket_gesture_summary">Отображать уведомления при извлечении устройства из кармана</string>
-  <!-- Proximity wake -->
-  <string name="proximity_wake_title">Включение по датчикам</string>
-  <string name="proximity_wake_enable_summary">Проведите ладонью над экраном, чтобы вывести устройство из режима сна</string>
-  <!-- Dialog texts -->
-  <string name="dialog_ok">OK</string>
-  <!-- Help texts -->
-  <string name="doze_settings_help_title">Информация</string>
-  <string name="doze_settings_help_text">Эти функции используют события датчиков для отображения уведомлений. Датчик проверяется только при поступлении нового уведомления, что помогает сэкономить заряд батареи. Можно активировать включение датчика сразу при отключении экрана устройства, однако это может ускорить разряд батареи.</string>
+    <!-- Label for feature switch [CHAR LIMIT=30] -->
+    <string name="switch_bar_on">Вкл</string>
+
+    <!-- Label for feature switch [CHAR LIMIT=30] -->
+    <string name="switch_bar_off">Выкл</string>
+
+    <!-- Device specific settings -->
+    <string name="device_settings_app_name">Расширенные настройки</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display_title">Ambient дисплей</string>
+
+    <!-- Tilt sensor -->
+    <string name="tilt_sensor_title">Жесты датчика наклона</string>
+
+    <!-- Proximity sensor -->
+    <string name="proximity_sensor_title">Жесты датчика приближения</string>
+
+    <!-- Hand wave gesture -->
+    <string name="hand_wave_gesture_title">Взмах рукой</string>
+    <string name="hand_wave_gesture_summary">Пульсирующие уведомления по взмаху рукой</string>
+
+    <!-- Pick-up gesture -->
+    <string name="pick_up_gesture_title">Подъём</string>
+    <string name="pick_up_gesture_summary">Пульсирующие уведомления при подъёме</string>
+
+    <!-- Pocket gesture -->
+    <string name="pocket_gesture_title">Карман</string>
+    <string name="pocket_gesture_summary">Пульсирующие уведомления при извлечении из кармана</string>
+
+    <!-- Proximity wake -->
+    <string name="proximity_wake_title">Приближение</string>
+    <string name="proximity_wake_enable_summary">Будить устройство взмахом руки</string>
+
+    <!-- Dialog texts -->
+    <string name="dialog_ok">OK</string>
+
+    <!-- Help texts -->
+    <string name="doze_settings_help_title">Помощь</string>
+    <string name="doze_settings_help_text">
+Эти функции используют события датчиков для запуска doze дисплея. Выбранный датчик активируется только тогда, когда устройство получает уведомление, это помогает снизить расход заряда батареи. Также есть возможность включить выбранный датчик, как только экран выключится, это приведет к увеличению расхода заряда батареи.</string>
+    
+    <!-- Doze Tile Service -->
+    <string name="ambient_display_gestures_title">Ambient Display Жесты</string>
+    
+    <!-- Raise to Wake Gesture -->
+    <string name="raise_to_wake_gesture_title">Поднять, чтобы разбудить</string>
+    <string name="raise_to_wake_gesture_summary">Использовать датчик наклона, чтобы разбудить ваше устройство.</string>
 </resources>

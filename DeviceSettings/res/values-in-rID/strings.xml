@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018-2020 The Xiaomi-SDM660 Project
+     https://github.com/xiaomi-sdm660
+     
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="advanced_settings">Konfigurasi perangkat</string>
+    <string name="advanced_settings_summary">Konfigurasi spesifik perangkat</string>
+
+    <string name="display_title">Layar</string>
+
+    <!-- Mi Note 3 Settings -->
+    <string name="jason_pref_title">Setelan layar</string>
+    <string name="jason_pref_summary">Setelan tambahan untuk layar</string>
+
+    <!-- KCal -->
+    <string name="device_kcal_title">Kalibrasi warna layar</string>
+
+    <!-- Notification LED brightness -->
+    <string name="notification_title">LED Notifikasi</string>
+    <string name="notification_led_title">Kecerahan LED</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display">Layar siaga</string>
+    <string name="advanced_doze_summary">setelan spesitik perangkat untuk layar siaga</string>
+
+    <string name="vibration_title">Umpan balik getaran</string>
+    <string name="vibration_strength_title">Kekuatan</string>
+
+    <!-- Thermal Profiles -->
+    <string name="thermal_profile_title">Suhu</string>
+    <string name="thermal_title">Setelan suhu</string>
+    <string name="thermal_summary">Pilih profil suhu</string>
+    <string name="thermal_dialogTitle">Pilih profil suhu yang anda sukai</string>
+
+    <!-- Values for Thermal Presets -->
+    <string name="thermal_performance">Performa</string>
+    <string name="thermal_battery">Baterai</string>
+    <string name="thermal_gaming">Gaming</string>
+    <string name="thermal_balance">Seimbang</string>
+    <string name="thermal_extreme_battery">Hemat baterai ekstrim</string>
+
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">Kalibrasi warna layar</string>
+    <string name="cat_colormanagement">Setelan warna</string>
+    <string name="cat_calibration">Kalibrasi layar</string>
+
+    <string name="kcal_enabled">Hidup</string>
+    <string name="kcal_disabled">Mati</string>
+    <string name="set_on_boot">Setel saat nyala</string>
+    <string name="color_red">Merah</string>
+    <string name="color_green">Hijau</string>
+    <string name="color_blue">Biru</string>
+    <string name="color_minimum">Minimal</string>
+    <string name="saturation">Saturasi</string>
+    <string name="value">Nilai</string>
+    <string name="contrast">Kontras</string>
+    <string name="hue">Hue</string>
+    <string name="grayscale">Layar hitam putih</string>
+
+    <string name="presets_dialog_title">Pilih preset_cool_amoled</string>
+    <!-- Presets -->
+    <string name="preset_default">Bawaan</string>
+    <string name="preset_version_1">Versi 1</string>
+    <string name="preset_version_2">Versi 2</string>
+    <string name="preset_version_3">Versi 3</string>
+    <string name="preset_triluminous">Berkilau</string>
+    <string name="preset_deep_black_white">Warna hitam dan putih yang dalam</string>
+    <string name="preset_deep_natural">Natural dalam</string>
+    <string name="preset_cool_amoled">Amooled dingin</string>
+    <string name="preset_extreme_amoled">Amoled ektrim</string>
+    <string name="preset_warm_amoled">Amoled hangat</string>
+    <string name="preset_hybrid_mamba">Hibrid</string>
+
+    <string name="hall_wakeup_title">Flip cover nyala</string>
+    <string name="hall_title">Aktifkan Flip Cover nyala</string>
+    <string name="hall_wakeup_summary">Nyalakan perangkat saat flip cover magnetik dibuka</string>
+    <!-- menu -->
+    <string name="kcal_presets">@string/presets_dialog_title</string>
+    <string name="kcal_reset">Reset</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">Pilih nilai baru</string>
+    <string name="default_value">Nilai bawaan</string>
+    <string name="edit_hint">Nilai antara %1$d dan %2$d</string>
+
+    <!-- FPS Info -->
+    <string name="fps_info_title">FPS Overlay</string>
+    <string name="fps_info_summary">Menampilkan jumlah bingkai perdetik saat ini</string>
+
+    <!-- Audio amplification -->
+    <string name="audio_amplify">Pengeras suara</string>
+    <string name="headphone_gain">Headphone Gain</string>
+    <string name="mic_gain">Microphone Gain</string>
+
+</resources>

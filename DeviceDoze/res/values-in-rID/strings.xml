@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2018-2020 The Xiaomi-SDM660 Project
+
+     https://github.com/xiaomi-sdm660
+     
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Label for feature switch [CHAR LIMIT=30] -->
+    <string name="switch_bar_on">Hidup</string>
+
+    <!-- Label for feature switch [CHAR LIMIT=30] -->
+    <string name="switch_bar_off">Mati</string>
+
+    <!-- Device specific settings -->
+    <string name="device_settings_app_name">Pengaturan lanjutan</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display_title">Tampilan siaga</string>
+
+    <!-- Tilt sensor -->
+    <string name="tilt_sensor_title">Sensor kemiringan</string>
+
+    <!-- Proximity sensor -->
+    <string name="proximity_sensor_title">Sensor proksimiti</string>
+
+    <!-- Hand wave gesture -->
+    <string name="hand_wave_gesture_title">Lambaian tangan</string>
+    <string name="hand_wave_gesture_summary">Tampilkan notifikasi saat perangkat mendeteksi lambaian tangan</string>
+
+    <!-- Pick-up gesture -->
+    <string name="pick_up_gesture_title">Pick-Up</string>
+    <string name="pick_up_gesture_summary">Tampilkan notifikasi saat perangkat diangkat</string>
+
+    <!-- Pocket gesture -->
+    <string name="pocket_gesture_title">Kantong</string>
+    <string name="pocket_gesture_summary">Tampilkan notifikasi saat perangkat dikeluarkan dari kantong</string>
+
+    <!-- Proximity wake -->
+    <string name="proximity_wake_title">Hidupkan saat sensor proksimiti aktif</string>
+    <string name="proximity_wake_enable_summary">Hidupkan perangkat saat lambaian tangan terdeteksi</string>
+
+    <!-- Dialog texts -->
+    <string name="dialog_ok">OK</string>
+
+    <!-- Help texts -->
+    <string name="doze_settings_help_title">Bantuan</string>
+    <string name="doze_settings_help_text">Fitur ini menggunakan sensor untuk menyalakan layar notifikasi. Sensor yang terpilih hanya akan aktif saat perangkat menerima notifikasi, sehingga dapat mengurangi penggunaan baterai. Terdapat juga opsi untuk mengaktifkan sensor seketika setelah layar perangkat mati, ini akan meningkatkan penggunaan baterai.</string>
+    
+    <!-- Doze Tile Service -->
+    <string name="ambient_display_gestures_title">Gestur tampilan siaga</string>
+    
+    <!-- Raise to Wake Gesture -->
+    <string name="raise_to_wake_gesture_title">Angkat untuk mengaktifkan</string>
+    <string name="raise_to_wake_gesture_summary">Gunakan sensor kemiringan untuk mengaktifkan layar saat perangkat diangkat.</string>
+</resources>
