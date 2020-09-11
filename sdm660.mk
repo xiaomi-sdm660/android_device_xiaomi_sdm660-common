@@ -567,7 +567,8 @@ PRODUCT_PACKAGES += \
     libdng_sdk.vendor_32 \
     libstdc++.vendor_32  \
     vndk-ext \
-    vndk_package
+    vndk_package \
+    com.android.vndk.current.on_vendor
 
 # WiFi
 PRODUCT_PACKAGES += \
