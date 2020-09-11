@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "libperfmgr_test"
+    }
+  ],
+  "pts-experimental": [
+    {
+      "name": "libperfmgr_test"
+    }
+  ]
+}
