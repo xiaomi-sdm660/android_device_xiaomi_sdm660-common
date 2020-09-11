@@ -14,7 +14,7 @@
 // limitations under the License.
 
 cc_library {
-    name: "libdisppower-pixel",
+    name: "libdisppower-xiaomi_sdm660",
     proprietary: true,
     srcs: [
         "disp-power/display-helper.cpp",
@@ -30,16 +30,16 @@ cc_library {
 }
 
 cc_library_headers {
-    name: "pixel_power_headers",
+    name: "xiaomi_sdm660_power_headers",
     vendor: true,
     export_include_dirs: ["hidl"],
 }
 
 cc_binary {
-    name: "android.hardware.power@1.3-service.pixel-libperfmgr",
+    name: "android.hardware.power@1.3-service.xiaomi_sdm660-libperfmgr",
     relative_install_path: "hw",
-    vintf_fragments: ["hidl/android.hardware.power@1.3-service.pixel.xml"],
-    init_rc: ["hidl/android.hardware.power@1.3-service.pixel-libperfmgr.rc"],
+    vintf_fragments: ["hidl/android.hardware.power@1.3-service.xiaomi_sdm660.xml"],
+    init_rc: ["hidl/android.hardware.power@1.3-service.xiaomi_sdm660-libperfmgr.rc"],
     srcs: ["hidl/service.cpp", "hidl/Power.cpp"],
     cflags: [
         "-Wall",
@@ -55,7 +55,7 @@ cc_binary {
         "android.hardware.power@1.1",
         "android.hardware.power@1.2",
         "android.hardware.power@1.3",
-        "libdisppower-pixel",
+        "libdisppower-xiaomi_sdm660",
         "libperfmgr",
     ],
     proprietary: true,
