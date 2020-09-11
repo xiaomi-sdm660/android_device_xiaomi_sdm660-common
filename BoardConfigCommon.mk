@@ -94,7 +94,6 @@ BOARD_VENDOR := xiaomi
 
 # Build Rules
 BUILD_BROKEN_DUP_RULES := true
-BUILD_BROKEN_PHONY_TARGETS := true
 
 # Camera
 USE_DEVICE_SPECIFIC_CAMERA := true
