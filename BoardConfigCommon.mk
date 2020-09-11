@@ -40,6 +40,9 @@ endif
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "qualcomm-hidl"
 
+# Broken Headers
+BUILD_BROKEN_VINTF_PRODUCT_COPY_FILES := true
+
 # Architecture
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
