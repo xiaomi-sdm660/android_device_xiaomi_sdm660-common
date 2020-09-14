@@ -87,6 +87,13 @@ function blob_fixup() {
         patchelf --add-needed camera.sdm660_shim.so "${2}"
         ;;
 
+    vendor/lib64/libril-qc-hal-qmi.so)
+        patchelf --replace-needed "libprotobuf-cpp-full.so" "libprotobuf-cpp-full-v29.so" "${2}"
+        ;;
+
+    vendor/lib64/libwvhidl.so)
+        patchelf --replace-needed "libprotobuf-cpp-lite.so" "libprotobuf-cpp-lite-v29.so" "${2}"
+        ;;
     product/etc/permissions/vendor.qti.hardware.data.connection-V1.{0,1}-java.xml)
         sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
 
