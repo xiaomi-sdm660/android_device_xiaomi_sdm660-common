@@ -22,3 +22,13 @@ cc_library_shared {
 
     proprietary: true,
 }
+
+cc_library_shared {
+    name: "libcutils_shim",
+    srcs: [
+        "libcutils_shim/strdup8to16.cpp",
+        "libcutils_shim/strdup16to8.cpp",
+    ],
+    shared_libs: ["libcutils"],
+    product_specific: true,
+}

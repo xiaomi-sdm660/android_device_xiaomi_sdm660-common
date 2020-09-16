@@ -74,6 +74,10 @@ fi
 function blob_fixup() {
     case "${1}" in
 
+    product/lib64/libdpmframework.so)
+        patchelf --add-needed libcutils_shim.so "${2}"
+        ;;
+
     vendor/bin/mlipayd@1.1)
         patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
         ;;
