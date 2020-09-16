@@ -545,6 +545,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_SOONG_NAMESPACES += \
     $(COMMON_PATH)
 
+# Shims
+PRODUCT_PACKAGES += \
+    libcutils_shim
+
 # Tetheroffload
 PRODUCT_PACKAGES += \
     ipacm \

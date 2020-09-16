@@ -218,7 +218,7 @@ product/framework/dpmapi.jar|4696df9793ad676b305d53b5d7ce65ecf74771ad
 product/lib64/com.qualcomm.qti.dpm.api@1.0.so|a70cfc1be3e06cde6318d6969e114429fe1950bb
 product/lib64/libdpmctmgr.so|597790027ff767d64e89c4a83cdafc18ce4179d5
 product/lib64/libdpmfdmgr.so|eb882f1e5983e18eda9718a1451019cecbead5a6
-product/lib64/libdpmframework.so|68a0df93a458adcc946c5beceddabce13c25c547
+product/lib64/libdpmframework.so|2e8728c506402b5b546b7ab72440cacd019c433a
 product/lib64/libdpmtcm.so|b53544d539e1196717cac122402139c8bf341af1
 vendor/bin/dpmQmiMgr|ecfa5d218dc45839998a613dbb1db6a99cc83fb7
 vendor/etc/init/dpmQmiMgr.rc|67569302d3a8828a9118c835e5b69c51b0c8ac68
