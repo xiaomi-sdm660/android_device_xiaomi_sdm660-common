@@ -92,7 +92,7 @@
     <!-- CustomSeekBarPreference -->
     <string name="edit_value">Выбрать новое значение</string>
     <string name="default_value">Значение по умолчанию</string>
-    <string name="edit_hint">Значение между %1$d и %2$d</string>
+    <string name="edit_hint" formatted="false">Значение между %1$d и %2$d</string>
 
     <!-- FPS Info -->
     <string name="fps_info_title">FPS Показатель</string>

@@ -83,7 +83,7 @@
     <!-- CustomSeekBarPreference -->
     <string name="edit_value">新しい値を選択して下さい</string>
     <string name="default_value">既定値</string>
-    <string name="edit_hint">値は %1$d と %2$d の間です</string>
+    <string name="edit_hint" formatted="false">値は %1$d と %2$d の間です</string>
      
      <!-- Flip cover wake -->
      <string name="hall_wakeup_title">フリップカバーの復帰</string>

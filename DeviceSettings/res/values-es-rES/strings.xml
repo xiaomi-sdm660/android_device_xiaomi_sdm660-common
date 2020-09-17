@@ -84,6 +84,6 @@
 
     <!-- CustomSeekBarPreference -->
     <string name="default_value">Valor por defecto</string>
-    <string name="edit_hint">Valor entre %1$d y %2$d</string>
+    <string name="edit_hint" formatted="false">Valor entre %1$d y %2$d</string>
 
 </resources>

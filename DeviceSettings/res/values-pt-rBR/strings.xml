@@ -92,7 +92,7 @@
     <!-- CustomSeekBarPreference -->
     <string name="edit_value">Escolher novo valor</string>
     <string name="default_value">Valor padrão</string>
-    <string name="edit_hint">Valor entre %1$d e %2$d</string>
+    <string name="edit_hint" formatted="false">Valor entre %1$d e %2$d</string>
 
     <!-- FPS Info -->
     <string name="fps_info_title">Mostrar FPS</string>
