@@ -418,7 +418,7 @@ on post-fs-data
     chmod 2770 /dev/socket/wifihal
 
     # SSC/SLPI sensors
-    mkdir /vendor/mnt/persist/sensors 0775 sensors sensors
+    mkdir /vendor/mnt/persist/sensors 0775 root system
     write /vendor/mnt/persist/sensors/sensors_settings 1
     chown system root /vendor/mnt/persist/sensors/sensors_settings
     chmod 0664 /vendor/mnt/persist/sensors/sensors_settings
