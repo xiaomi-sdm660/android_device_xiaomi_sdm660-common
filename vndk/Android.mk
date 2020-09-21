@@ -29,6 +29,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_INSTALLED_MODULE_STEM := $$(basename $1).so
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_VENDOR_MODULE := true
+LOCAL_CHECK_ELF_FILES := false
 include $$(BUILD_PREBUILT)
 endef
 
