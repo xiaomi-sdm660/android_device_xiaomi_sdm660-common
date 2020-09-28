@@ -1,0 +1,1 @@
+allow platform_app sysfs_kgsl:dir search;
