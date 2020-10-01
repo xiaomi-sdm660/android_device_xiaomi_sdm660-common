@@ -1,0 +1,1 @@
+dontaudit traced_probes debugfs_tracing_debug:file { read open getattr };
