@@ -10,3 +10,5 @@ libnpu.so
 libhta_controller.so
 libhta_hexagon_runtime.so
 unnhal-acc-hta.so
+libprotobuf-cpp-full.so
+libprotobuf-cpp-lite.so
