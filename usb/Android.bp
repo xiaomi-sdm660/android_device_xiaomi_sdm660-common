@@ -21,8 +21,6 @@ cc_binary {
         "libbase",
         "libcutils",
         "libhidlbase",
-        "libhidltransport",
-        "libhwbinder",
         "libutils",
         "libhardware",
         "android.hardware.usb@1.0",
