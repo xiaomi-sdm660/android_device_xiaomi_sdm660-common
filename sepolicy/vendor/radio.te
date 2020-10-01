@@ -3,3 +3,18 @@ binder_call(radio, cnd)
 binder_call(radio, hal_imsrtp)
 allow radio { cameraserver_service mediaextractor_service mediaserver_service mediametrics_service drmserver_service audioserver_service }:service_manager find;
 get_prop(radio, qcom_ims_prop)
+
+dontaudit {
+    cnd
+    netmgrd
+    qti
+    adpl
+    hal_audio_default
+    rild
+    hal_imsrtp
+    hal_rcsservice
+    hal_sensors_default
+    hal_graphics_composer_default
+    sensors
+    vendor_dpmd
+} diag_device:chr_file { read write };
