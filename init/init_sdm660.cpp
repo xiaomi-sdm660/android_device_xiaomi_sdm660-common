@@ -44,7 +44,7 @@
 #include "property_service.h"
 
 using android::base::GetProperty;
-using android::init::property_set;
+using android::base::SetProperty;
 using android::base::ReadFileToString;
 using android::base::Trim;
 
