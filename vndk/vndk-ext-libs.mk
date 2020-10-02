@@ -20,7 +20,6 @@ EXTRA_VENDOR_LIBRARIES_32 := \
     libaudiomanager \
     libaudiopolicy \
     libbinder \
-    libbinderthreadstate \
     libbufferhub \
     libbufferhubqueue \
     libcamera_client \
@@ -28,7 +27,6 @@ EXTRA_VENDOR_LIBRARIES_32 := \
     libgui \
     libharfbuzz_ng \
     libheif \
-    libicuuc \
     libicui18n \
     libinput \
     libmedia \
@@ -45,6 +43,5 @@ EXTRA_VENDOR_LIBRARIES_32 := \
     libvibrator
 
 EXTRA_VENDOR_LIBRARIES_64 := \
-    libicuuc \
     libstdc++ \
     libpowermanager
