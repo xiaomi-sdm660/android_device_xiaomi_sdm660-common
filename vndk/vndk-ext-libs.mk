@@ -19,7 +19,6 @@ EXTRA_VENDOR_LIBRARIES_32 := \
     libaudioclient \
     libaudiomanager \
     libaudiopolicy \
-    libbinder \
     libbufferhub \
     libbufferhubqueue \
     libcamera_client \
