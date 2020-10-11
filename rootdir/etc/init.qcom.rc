@@ -31,6 +31,7 @@ import /vendor/etc/init/hw/init.target.rc
 import /vendor/etc/init/hw/init.performance.sdm660.rc
 import /vendor/etc/init/hw/init.device.rc
 import /vendor/etc/init/hw/init.xiaomi_parts.rc
+import /vendor/etc/init/hw/init.safailnet.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
