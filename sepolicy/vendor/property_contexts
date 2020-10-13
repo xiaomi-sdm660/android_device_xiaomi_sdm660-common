@@ -33,9 +33,6 @@ vidc.enc.dcvs.extra-buff-count          u:object_r:vendor_default_prop:s0
 persist.sys.thermal.                u:object_r:thermal_engine_prop:s0
 sys.thermal.                        u:object_r:thermal_engine_prop:s0
 
-# vendor_default_prop
-vendor.display.lcd_density          u:object_r:vendor_default_prop:s0
-
 # Media
 gpu.stats.debug.level                   u:object_r:vendor_default_prop:s0
 
