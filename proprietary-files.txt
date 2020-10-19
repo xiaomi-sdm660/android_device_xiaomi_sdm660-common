@@ -65,6 +65,7 @@ vendor/lib/libaudioalsa.so|1d8eb7dae06b1cca0cd360a5996bb59a9bd8ba25
 vendor/lib/libaudioparsers.so|d898e3d2cc8177e916052527135258c8d9fc7e89
 vendor/lib/libdrc.so|aa8e8dd2a27803bf8ac36619036e1dc736be540b
 vendor/lib/libqtigef.so|10b64bf536b4edb6c09d047c218cfe4c9a9255f1
+vendor/lib/hw/audio.primary.sdm660.so|7874ea0e303a9c969e186cbcb3bff293d40e9695
 vendor/lib64/libacdb-fts.so|fe3610a7cce613592e90245ce98a23be1763545c
 vendor/lib64/libacdbloader.so|1ca9195a3f00064f3addaf2e9443609d07fd8940
 vendor/lib64/libacdbrtac.so|51d6d796b8d0815b8a7670dfbcd449dd3bb51506
@@ -312,6 +313,7 @@ vendor/bin/loc_launcher|9623f5f96bd262abc5c883610feca43a5ab214b3
 vendor/bin/lowi-server|96eaea12128d352048a0a50f93162cc2f31ee12d
 vendor/bin/slim_daemon|82b35146a3d8b1322d4c7107991f24134160c25c
 vendor/bin/xtra-daemon|a3b63345bcff2c0be89904a3ad06d7bc72f210f1
+vendor/etc/audio_platform_info_intcodec.xml|00ce1ece9acffe2586ac4080b573e89301ae150b
 vendor/etc/cacert_location.pem|0789bf799c7e45d352a83e2f79ddb0cea86db85b
 -vendor/etc/vintf/manifest/vendor.qti.gnss@3.0-service.xml|9b2f6691d6c224bcb9ab9a0d57adfb9e52f1b53e
 vendor/etc/xtra_root_cert.pem|f55a31ec4d9cf8ce2724acadecf00c779f8767db
@@ -399,6 +401,7 @@ vendor/lib/libsdm-diag.so|fa211dd848a93242e84d1b7fdc5fcf6cb9c25c2f
 vendor/lib/libsdmextension.so|342a6ecc85a93309c86c01466a612cfbe49c69f5
 vendor/lib/libqseed3.so|344d2ce1fe3670f4b0a832a85bd725c4bdb14329
 -vendor/lib/libsdm-disp-vndapis.so|a982cb75f67f688353bc39e8d77cb2e9879e3bbb
+vendor/lib/libtinycompress.so|c7e6f7da3e5e00cd8781d59171467f75c3dde814
 vendor/lib/libtinyxml2_1.so|89e1b1af10209dbb8d341cd314750cc64fc33852
 vendor/lib64/libqseed3.so|6779aaf96283e244122f4cc76cd3cb750ff14ed5
 vendor/lib64/libsdm-color.so|b5e5ec9f5cdad2094891197fd00f8ccdc8340c06
