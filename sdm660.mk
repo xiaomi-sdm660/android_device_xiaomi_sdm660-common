@@ -211,7 +211,7 @@ PRODUCT_PACKAGES += \
     libtinyxml \
     vendor.display.config@1.9 \
     vendor.display.config@1.9_vendor
-    
+
 #Density
 TARGET_SCREEN_DENSITY := 400
 
@@ -611,6 +611,7 @@ PRODUCT_PACKAGES += \
     libqsap_sdk \
     libwifi-hal-qcom \
     WifiOverlay \
+    TetheringConfigOverlay \
     wpa_supplicant \
     wpa_supplicant.conf \
     wpa_cli
