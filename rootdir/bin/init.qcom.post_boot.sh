@@ -32,7 +32,7 @@
 function configure_zram_parameters() {
     MemTotalStr=`cat /proc/meminfo | grep MemTotal`
     MemTotal=${MemTotalStr:16:8}
-    
+
     # Zram disk - 75% for Go devices.
     # For 512MB Go device, size = 384MB, set same for Non-Go.
     # For 1GB Go device, size = 768MB, set same for Non-Go.
@@ -96,15 +96,6 @@ if [ "${panel:5:1}" == "x" ]; then
 else
     panel=${panel:2:4}
 fi
-
-if [ $panel -gt 1080 ]; then
-    echo 2 > /proc/sys/kernel/sched_window_stats_policy
-    echo 5 > /proc/sys/kernel/sched_ravg_hist_size
-else
-    echo 3 > /proc/sys/kernel/sched_window_stats_policy
-    echo 3 > /proc/sys/kernel/sched_ravg_hist_size
-fi
-
 
 # Disable wsf for all targets beacause we are using efk.
 # wsf Range : 1..1000 So set to bare minimum value 1.
