@@ -250,13 +250,6 @@ service vendor.cdsprpcd /vendor/bin/cdsprpcd
    group system
    disabled
 
-service vendor.energy-awareness /system/vendor/bin/energy-awareness
-   class main
-   user system
-   group system
-   oneshot
-   writepid /dev/cpuset/system-background/tasks
-
 service vendor.pd_mapper /system/vendor/bin/pd-mapper
      class core
 
