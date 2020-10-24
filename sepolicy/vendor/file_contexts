@@ -54,6 +54,9 @@
 # Mlipay
 /(vendor|system/vendor)/bin/mlipayd@1.1         u:object_r:hal_mlipay_default_exec:s0
 
+# Power
+/(vendor|system/vendor)/bin/hw/android\.hardware\.power@1\.3-service\.xiaomi_sdm660-libperfmgr          u:object_r:hal_power_default_exec:s0
+
 # Persist
 /persist/PRSensorData\.txt                      u:object_r:sensors_persist_file:s0
 

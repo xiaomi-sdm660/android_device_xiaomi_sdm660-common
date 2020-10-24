@@ -29,6 +29,9 @@ persist.vendor.camera.              u:object_r:vendor_camera_prop:s0
 vendor.camera.eis.gyro_name             u:object_r:vendor_camera_prop:s0
 vidc.enc.dcvs.extra-buff-count          u:object_r:vendor_default_prop:s0
 
+# Power
+vendor.powerhal.                        u:object_r:vendor_power_prop:s0
+
 # Thermal engine
 persist.sys.thermal.                u:object_r:thermal_engine_prop:s0
 sys.thermal.                        u:object_r:thermal_engine_prop:s0

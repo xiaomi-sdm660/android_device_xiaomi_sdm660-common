@@ -7,3 +7,14 @@ allow hal_power_default sysfs_tap_to_wake:file rw_file_perms;
 # Allow writing to files in /proc/tp_gesture
 allow hal_power_default proc:file rw_file_perms;
 allow hal_power_default proc:dir search;
+
+r_dir_file(hal_power_default, debugfs_rpm)
+r_dir_file(hal_power_default, sysfs_graphics)
+
+set_prop(hal_power_default, vendor_power_prop)
+allow hal_power_default device_latency:chr_file rw_file_perms;
+allow hal_power_default { sysfs_devfreq sysfs_kgsl }:dir search;
+allow hal_power_default { sysfs_devfreq sysfs_kgsl }:{ file lnk_file } rw_file_perms;
+allow hal_power_default sysfs_devices_system_cpu:file rw_file_perms;
+
+dontaudit hal_power_default cgroup:file read;
