@@ -395,6 +395,7 @@ PRODUCT_PACKAGES += \
 # Overlays
 DEVICE_PACKAGE_OVERLAYS += \
     $(COMMON_PATH)/overlay \
+    $(COMMON_PATH)/overlay-awaken \
     $(COMMON_PATH)/overlay-lineage
 
 # RRO configuration
