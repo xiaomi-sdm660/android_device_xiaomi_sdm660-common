@@ -33,7 +33,7 @@ fi
 
 ROOT="$COMMON_DIR"/../../..
 
-HELPER="$ROOT"/vendor/carbon/build/tools/extract_utils.sh
+HELPER="$ROOT"/vendor/awaken/build/tools/extract_utils.sh
 if [ ! -f "$HELPER" ]; then
     echo "Unable to find helper script at $HELPER"
     exit 1
