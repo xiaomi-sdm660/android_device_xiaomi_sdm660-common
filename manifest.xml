@@ -148,6 +148,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <name>IMapper</name>
             <instance>default</instance>
         </interface>
+        <fqname>@3.0::IMapper/default</fqname>
+        <fqname>@4.0::IMapper/default</fqname>
     </hal>
     <hal format="hidl">
         <name>android.hardware.light</name>
