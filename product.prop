@@ -1,8 +1,4 @@
 
-# Art
-ro.sys.fw.dex2oat_thread_count=8
-audio.safemedia.bypass=true
-
 # Audio
 audio.safemedia.bypass=true
 
