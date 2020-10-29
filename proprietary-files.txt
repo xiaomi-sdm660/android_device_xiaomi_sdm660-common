@@ -656,8 +656,8 @@ vendor/radio/qcril_database/upgrade/3_version_update_wps_config.sql|0571aacaf9fc
 vendor/radio/qcril_database/upgrade/4_version_update_ecc_table.sql|0734c6a2863edadc7a8422b8310d267c594d11a0
 vendor/radio/qcril_database/upgrade/5_version_update_ecc_table.sql|fcb2cba3bfd718ecdc8d3cfac3a0b2b2c7e8c506
 
-# Radio - from cmi RKQ1.200710.002-V12.1.2.0.RJACNXM
-system_ext/framework/qti-telephony-common.jar|98951c48563c5846a58c9a3c4c254f32d0741f36
+# Radio - from cmi RKQ1.200710.002-V12.1.2.0.RJACNXM - modified
+system_ext/framework/qti-telephony-common.jar|6ef78677c097072dbf44eb8fcc938391053ead3b
 
 # Radio (IMS) - from LA.UM.8.2.r1-06700-sdm660.0
 -product/app/imssettings/imssettings.apk|5e24e30b6fb5906e13fd8db1f57e30b8b59028ff
