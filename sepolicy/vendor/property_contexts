@@ -44,6 +44,7 @@ vendor.powerhal.                        u:object_r:vendor_power_prop:s0
 # Thermal engine
 persist.sys.thermal.                    u:object_r:thermal_engine_prop:s0
 sys.thermal.                            u:object_r:thermal_engine_prop:s0
+vendor.thermal.config                   u:object_r:vendor_thermal_prop:s0
 
 # vendor_default_prop
 vendor.camera.cpuperf.en                u:object_r:vendor_default_prop:s0
