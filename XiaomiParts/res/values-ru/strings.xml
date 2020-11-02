@@ -121,5 +121,5 @@
     <!-- CustomSeekBarPreference -->
     <string name="edit_value">Введите новое значение</string>
     <string name="default_value">Значение по умолчанию</string>
-    <string name="edit_hint">Значение между %1$d и %2$d</string>
+    <string name="edit_hint" formatted="false">Значение между %1$d и %2$d</string>
 </resources>

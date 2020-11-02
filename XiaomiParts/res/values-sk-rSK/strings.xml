@@ -98,7 +98,7 @@
     <string name="preset_deep_natural">Prírodné farby</string>
     <string name="edit_value">Výber novej hodnoty</string>
     <string name="default_value">Pôvodná hodnota</string>
-    <string name="edit_hint">Hodnota medzi %1d a %2d</string>
+    <string name="edit_hint" formatted="false">Hodnota medzi %1d a %2d</string>
     <string name="advanced_doze_summary">Ambient display</string>
     <string name="grayscale">Čiernobiely mód</string>
 </resources>

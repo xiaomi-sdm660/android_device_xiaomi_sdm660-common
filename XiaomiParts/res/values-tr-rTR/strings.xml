@@ -56,4 +56,49 @@
     <string name="dirac_preset_country">Yerel</string>
     <string name="dirac_preset_dance">Dans</string>
     <string name="dirac_preset_metal">Metal</string>
+
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">Ekran Renk Kalibrasyonu</string>
+    <string name="cat_colormanagement">Renk Ayarları</string>
+    <string name="cat_calibration">Ekran Kalibrasyonu</string>
+
+    <string name="kcal_enabled">Açık</string>
+    <string name="kcal_disabled">Kapalı</string>
+    <string name="set_on_boot">Açılışta Ayarla</string>
+    <string name="color_red">Kırmızı</string>
+    <string name="color_green">Yeşil</string>
+    <string name="color_blue">Mavi</string>
+    <string name="color_minimum">Minimum</string>
+    <string name="saturation">Doygunluk</string>
+    <string name="value">Değer</string>
+    <string name="contrast">Kontrast</string>
+    <string name="hue">Ton</string>
+    <string name="grayscale">Gri Tonlama Ekranı</string>
+
+    <string name="presets_dialog_title">Ön Ayar Seçin</string>
+    <!-- Presets -->
+    <string name="preset_default">Varsayılan</string>
+    <string name="preset_version_1">Versiyon 1</string>
+    <string name="preset_version_2">Versiyon 2</string>
+    <string name="preset_version_3">Versiyon 3</string>
+    <string name="preset_triluminous">Triluminous</string>
+    <string name="preset_deep_black_white">Derin Siyah Beyaz</string>
+    <string name="preset_deep_natural">Derin Doğal</string>
+    <string name="preset_cool_amoled">Soğuk Amoled</string>
+    <string name="preset_extreme_amoled">Aşırı Amoled</string>
+    <string name="preset_warm_amoled">Sıcak Amoled</string>
+    <string name="preset_hybrid_mamba">Hibrit Mamba</string>
+
+
+    <string name="hall_wakeup_title">Kapaklı Kılıf Uyandırma</string>
+    <string name="hall_title">Kapaklı Kılıf Uyandırmasını Etkinleştir</string>
+    <string name="hall_wakeup_summary">Cihazı manyetik Kapaklı Kılıf ile uyandırın</string>
+    <!-- menu -->
+    <string name="kcal_presets">@string/presets_dialog_title</string>
+    <string name="kcal_reset">Sıfırla</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">Yeni değer seçin</string>
+    <string name="default_value">Varsayılan Değer</string>
+    <string name="edit_hint" formatted="false">%1$d ve %2$d arasında bir değer</string>
 </resources>
