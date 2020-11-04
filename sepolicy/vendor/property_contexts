@@ -38,6 +38,9 @@ persist.vendor.sys.provision.status     u:object_r:mlipay_prop:s0
 # MPCTL
 sys.post_boot.parsed                    u:object_r:vendor_mpctl_prop:s0
 
+# Power
+vendor.powerhal.                        u:object_r:vendor_power_prop:s0
+
 # Thermal engine
 persist.sys.thermal.                    u:object_r:thermal_engine_prop:s0
 sys.thermal.                            u:object_r:thermal_engine_prop:s0

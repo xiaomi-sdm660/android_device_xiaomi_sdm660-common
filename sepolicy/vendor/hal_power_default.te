@@ -6,3 +6,14 @@ allow hal_power_default proc_dt2w:file rw_file_perms;
 allow hal_power_default sysfs_touchpanel:file rw_file_perms;
 allow hal_power_default sysfs_touchpanel:dir search;
 allow hal_power_default sysfs_tap_to_wake:file rw_file_perms;
+
+r_dir_file(hal_power_default, debugfs_rpm)
+r_dir_file(hal_power_default, sysfs_graphics)
+
+allow hal_power_default device_latency:chr_file rw_file_perms;
+allow hal_power_default { sysfs_devfreq sysfs_kgsl }:dir search;
+allow hal_power_default { sysfs_devfreq sysfs_kgsl }:{ file lnk_file } rw_file_perms;
+allow hal_power_default sysfs_devices_system_cpu:file rw_file_perms;
+
+set_prop(hal_power_default, vendor_power_prop)
+
