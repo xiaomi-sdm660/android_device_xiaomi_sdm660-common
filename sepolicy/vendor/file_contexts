@@ -63,6 +63,9 @@
 /persist/PRSensorData\.txt                                                                                                  u:object_r:sensors_persist_file:s0
 /persist                                                                                                                    u:object_r:mnt_vendor_file:s0
 
+# Power
+/(vendor|system/vendor)/bin/hw/android\.hardware\.power@1\.3-service\.xiaomi_sdm660-libperfmgr                              u:object_r:hal_power_default_exec:s0
+
 # Shell Script
 /(vendor|system/vendor)/bin/init\.goodix\.sh                                                                                u:object_r:init_fingerprint_exec:s0
 /vendor/bin/sh                                                                                                              u:object_r:vendor_shell_exec:s0
