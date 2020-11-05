@@ -67,6 +67,9 @@ on post-fs
 
     write /sys/class/graphics/fb0/idle_time 100
 
+on late-fs
+    start themed_bootanimation
+    
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
     setrlimit 8 67108864 67108864
