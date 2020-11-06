@@ -11,6 +11,7 @@
 
 # Non-A/B fstab.qcom variant
 #<src>                                                      <mnt_point>             <type>  <mnt_flags and options>                                                                         <fs_mgr_flags>
+/dev/block/zram0                                            none                    swap    sw                                                                                              zramsize=2147483648
 /dev/block/bootdevice/by-name/cust                          /metadata               ext4    nodev,noatime,nosuid,discard                                                                    wait,check,formattable
 /dev/block/bootdevice/by-name/userdata                      /data                   ext4    nodev,noatime,nosuid,barrier=1,noauto_da_alloc,discard                                          wait,check,fileencryption=ice,quota,reservedsize=512M
 /devices/soc/c084000.sdhci/mmc_host*                        /storage/sdcard1        vfat    nodev,nosuid                                                                                    wait,voldmanaged=sdcard1:auto,encryptable=footer

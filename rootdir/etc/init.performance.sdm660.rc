@@ -49,6 +49,9 @@ on init
     write /dev/stune/foreground/schedtune.prefer_idle 1
     write /dev/stune/top-app/schedtune.boost 5
     write /dev/stune/top-app/schedtune.prefer_idle 1
+    
+    # zRAM
+    write /sys/block/zram0/comp_algorithm "lz4"
 
 on boot
     # Set on boot cpusets
