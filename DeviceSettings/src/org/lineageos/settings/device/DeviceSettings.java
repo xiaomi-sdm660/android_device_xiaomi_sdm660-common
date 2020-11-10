@@ -22,10 +22,6 @@ import android.os.Bundle;
 import androidx.preference.PreferenceFragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
-import android.content.Context;
-import android.content.SharedPreferences;
-import androidx.preference.PreferenceManager;
-import androidx.preference.SwitchPreference;
 
 import org.lineageos.settings.device.kcal.KCalSettingsActivity;
 import org.lineageos.settings.device.preferences.SecureSettingListPreference;
@@ -80,16 +76,11 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String PREF_DEVICE_JASON = "device_jason";
 
     private SecureSettingListPreference mTHERMAL;
-    
-    private static Context mContext;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences_xiaomi_parts, rootKey);
         
-        mContext = this.getContext();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-
         if (FileUtils.fileWritable(NOTIF_LED_PATH)) {
             NotificationLedSeekBarPreference notifLedBrightness =
                     (NotificationLedSeekBarPreference) findPreference(PREF_NOTIF_LED);
@@ -120,8 +111,7 @@ public class DeviceSettings extends PreferenceFragment implements
             displayCategory.removePreference(findPreference(PREF_DEVICE_JASON));
         }
         
-        SwitchPreference fpsInfo = (SwitchPreference) findPreference(PREF_KEY_FPS_INFO);
-        fpsInfo.setChecked(prefs.getBoolean(PREF_KEY_FPS_INFO, false));
+        SecureSettingSwitchPreference fpsInfo = (SecureSettingSwitchPreference) findPreference(PREF_KEY_FPS_INFO);
         fpsInfo.setOnPreferenceChangeListener(this);
 
         Preference kcal = findPreference(PREF_DEVICE_KCAL);
@@ -179,7 +169,7 @@ public class DeviceSettings extends PreferenceFragment implements
                 break;
 
             case PREF_KEY_FPS_INFO:
-                boolean enabled = (Boolean) value;
+                boolean enabled = (boolean) value;
                 Intent fpsinfo = new Intent(this.getContext(), FPSInfoService.class);
                 if (enabled) {
                     this.getContext().startService(fpsinfo);

@@ -20,10 +20,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
-import android.content.SharedPreferences;
-import androidx.preference.PreferenceManager;
 
 import org.lineageos.settings.device.kcal.Utils;
+import org.lineageos.settings.device.preferences.SecureSettingSwitchPreference;
 
 import java.lang.Math.*;
 
@@ -33,8 +32,6 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
     public static final  String MIC_GAIN_PATH = "/sys/kernel/sound_control/mic_gain";
     
     public void onReceive(Context context, Intent intent) {
-
-    	SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (Settings.Secure.getInt(context.getContentResolver(), PREF_ENABLED, 0) == 1) {
             FileUtils.setValue(KCAL_ENABLE, Settings.Secure.getInt(context.getContentResolver(),
@@ -79,7 +76,7 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
         FileUtils.setProp(DeviceSettings.HALL_WAKEUP_PROP, Settings.Secure.getInt(
                 context.getContentResolver(), DeviceSettings.PREF_HALL_WAKEUP, 1) == 1);
 
-        boolean enabled = sharedPrefs.getBoolean(DeviceSettings.PREF_KEY_FPS_INFO, false);
+        boolean enabled = Settings.Secure.getInt(context.getContentResolver(), DeviceSettings.PREF_KEY_FPS_INFO, 0) == 1;
         if (enabled) {
             context.startService(new Intent(context, FPSInfoService.class));
         }
