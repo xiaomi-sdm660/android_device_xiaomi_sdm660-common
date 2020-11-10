@@ -184,8 +184,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # HAL1 apps list
 PRODUCT_PROPERTY_OVERRIDES += \
-    camera.hal1.packagelist=com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android \
-    vendor.camera.hal1.packagelist= com.whatsapp,com.android.camera,com.android.camera2,com.instagram.android
+    camera.hal1.packagelist=com.android.camera,com.android.camera2,com.instagram.android \
+    vendor.camera.hal1.packagelist= com.android.camera,com.android.camera2,com.instagram.android
 
 # iwlan vowifi corresponding
 PRODUCT_PROPERTY_OVERRIDES += \
