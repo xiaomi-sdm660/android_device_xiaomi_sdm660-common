@@ -119,6 +119,9 @@ void vendor_load_persist_properties()
 }
 void vendor_load_properties()
 {
+  property_override("ro.build.description", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
+  property_override_dual("ro.build.fingerprint", "ro.vendor.build.fingerprint", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
+  
    std::string product = GetProperty("ro.product.vendor.device", "");	
    if (product.find("whyred") != std::string::npos)
    {
