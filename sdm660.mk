@@ -404,8 +404,6 @@ DEVICE_PACKAGE_OVERLAYS += \
 TARGET_USES_RRO := true
 PRODUCT_ENFORCE_RRO_TARGETS := *
 PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += \
-    $(COMMON_PATH)/overlay-lineage/lineage-sdk \
-    $(COMMON_PATH)/overlay-lineage/packages/apps/Snap \
     $(COMMON_PATH)/overlay-system
 
 # Powerhint
