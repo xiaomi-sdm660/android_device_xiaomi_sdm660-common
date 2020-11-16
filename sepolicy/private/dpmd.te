@@ -1,1 +1,1 @@
-set_prop(dpmd, ctl_stop_prop)
+set_prop(vendor_dpmd, ctl_stop_prop)
