@@ -1,2 +1,2 @@
 # HALs
-hal_attribute(mlipay)
+hal_attribute_lineage(mlipay)
