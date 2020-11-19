@@ -1,1 +1,3 @@
 type hal_mlipay_hwservice, hwservice_manager_type;
+
+allow hal_camera_default hal_configstore_ISurfaceFlingerConfigs:hwservice_manager{find};

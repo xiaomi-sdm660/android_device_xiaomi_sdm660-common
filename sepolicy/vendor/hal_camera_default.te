@@ -10,4 +10,8 @@ allow hal_camera_default media_rw_data_file:file { getattr };
 allow hal_camera_default camera_data_file:dir w_dir_perms;
 allow hal_camera_default camera_data_file:file create_file_perms;
 
+allow hal_camera_default vendor_default_prop:property_service {set};
+allow hal_camera_default vendor_video_prop:file r_file_perms;
+allow hal_camera_default hal_graphics_allocator_hwservice:hwservice_manager{find};
 set_prop(hal_camera_default, vendor_camera_prop)
+set_prop(hal_camera_default, vendor_video_prop)

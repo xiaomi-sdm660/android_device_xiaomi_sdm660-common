@@ -1,1 +1,2 @@
 sys.listeners.registered   u:object_r:vendor_tee_listener_prop:s0
+vendor.camera.cpuperf.en   u:object_r:vendor_default_prop:s0

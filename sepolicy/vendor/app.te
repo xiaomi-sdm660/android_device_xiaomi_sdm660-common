@@ -5,3 +5,4 @@ get_prop({ appdomain -isolated_app }, mlipay_prop)
 get_prop({ appdomain -isolated_app }, hal_fingerprint_prop)
 get_prop({ appdomain -isolated_app }, ifaa_prop)
 get_prop({ appdomain -isolated_app }, vendor_fp_prop)
+allow vendor_dataservice_app default_android_hwservice:hwservice_manager{find};
