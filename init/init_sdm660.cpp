@@ -41,7 +41,6 @@
 #include <sys/_system_properties.h>
 
 #include "vendor_init.h"
-#include "property_service.h"
 
 using android::base::GetProperty;
 using android::base::SetProperty;
