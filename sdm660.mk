@@ -470,6 +470,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.renderscript@1.0-impl
 
+# Remove unwanted packages
+PRODUCT_PACKAGES += \
+    RemovePackages
+
 # RIL
 PRODUCT_PACKAGES += \
     android.hardware.secure_element@1.0 \
