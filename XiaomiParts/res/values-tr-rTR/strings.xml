@@ -44,6 +44,7 @@
     <string name="dirac_headset_in_ear2">Mi Kulak-İçi 2</string>
     <string name="dirac_headset_earphone_basic">Mi Kulaklık Basit</string>
     <string name="dirac_headset_earphone">Mi Kulaklıkları</string>
+
     <!-- Dirac settings: Equalizer presets -->
     <string name="dirac_preset_default">Varsayılan</string>
     <string name="dirac_preset_rock">Rock</string>
