@@ -121,12 +121,14 @@ ALL_DEFAULT_INSTALLED_MODULES += \
     $(RFS_MSM_MPSS_SYMLINKS) \
     $(RFS_MSM_SLPI_SYMLINKS)
 
-EGL_SYMLINK := $(TARGET_OUT_VENDOR)/lib/libGLESv2_adreno.so
-$(EGL_SYMLINK): $(LOCAL_INSTALLED_MODULE)
+EGL_SYMLINKS := $(TARGET_OUT_VENDOR)/lib/libGLESv2_adreno.so \
+    $(TARGET_OUT_VENDOR)/lib/libEGL_adreno.so \
+    $(TARGET_OUT_VENDOR)/lib64/libEGL_adreno.so
+$(EGL_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
 	@mkdir -p $(dir $@)
 	$(hide) ln -sf egl/$(notdir $@) $@
 
-ALL_DEFAULT_INSTALLED_MODULES += $(EGL_SYMLINK)
+ALL_DEFAULT_INSTALLED_MODULES += $(EGL_SYMLINKS)
 
 subdir_makefiles=$(call first-makefiles-under,$(LOCAL_PATH))
 $(foreach mk,$(subdir_makefiles),$(info including $(mk) ...)$(eval include $(mk)))
