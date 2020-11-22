@@ -295,7 +295,7 @@
                 <route type="mix" sink="voice_rx"
                        sources="Telephony Rx"/>
                 <route type="mix" sink="primary input"
-                       sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,BT SCO Headset Mic,FM Tuner,Telephony Rx"/>
+                       sources="Wired Headset Mic,BT SCO Headset Mic,FM Tuner,Telephony Rx"/>
                 <route type="mix" sink="record_24"
                        sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic"/>
             </routes>
@@ -321,6 +321,7 @@
 
     <xi:include href="/vendor/etc/audio_policy_volumes.xml"/>
     <xi:include href="/vendor/etc/default_volume_tables.xml"/>
+
 
     <!-- End of Volume section -->
 
