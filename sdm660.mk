@@ -214,9 +214,6 @@ PRODUCT_PACKAGES += \
     libtinyxml \
     vendor.display.config@1.9 \
     vendor.display.config@1.9_vendor
-    
-# Density
-TARGET_SCREEN_DENSITY := 400
 
 # DeviceDoze
 PRODUCT_PACKAGES += \
