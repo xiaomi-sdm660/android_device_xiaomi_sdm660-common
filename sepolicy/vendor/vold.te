@@ -1,0 +1,2 @@
+allow vold_prepare_subdirs vold_prepare_subdirs:capability{ fsetid };
+allow vold vendor_apex_file:file getattr; 

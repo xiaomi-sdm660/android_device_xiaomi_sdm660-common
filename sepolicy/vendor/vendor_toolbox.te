@@ -4,6 +4,7 @@ init_daemon_domain(vendor_toolbox)
 
 # Allow vendor_toolbox to use sys_admin capability
 allow vendor_toolbox self:capability sys_admin;
+allow vendor_toolbox vendor_toolbox:capability {dac_override dac_read_search};
 
 # Allow vendor_toolbox to execute /vendor/bin/toybox_vendor
 allow vendor_toolbox vendor_toolbox_exec:file execute_no_trans;

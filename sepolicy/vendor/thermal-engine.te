@@ -2,6 +2,8 @@ allow thermal-engine thermal_data_file:dir rw_dir_perms;
 allow thermal-engine thermal_data_file:file create_file_perms;
 allow thermal-engine sysfs:dir r_dir_perms;
 allow thermal-engine self:capability { chown fowner };
+allow thermal-engine sysfs_devfreq:sysfs_devfreq{search};
+allow thermal-engine sysfs_devfreq:dir{search};
 allow thermal-engine property_socket:sock_file write;
 dontaudit thermal-engine self:capability dac_override;
 
