@@ -25,5 +25,5 @@
 /dev/block/bootdevice/by-name/system                        /                       ext4    ro,barrier=1                                                                                    wait
 /dev/block/bootdevice/by-name/vendor                        /vendor                 ext4    ro,barrier=1                                                                                    wait,recoveryonly
 /dev/block/bootdevice/by-name/boot                          /boot                   emmc    defaults                                                                                        defaults
-
+/dev/block/bootdevice/by-name/misc                          /misc                   emmc    defaults                                                                                        defaults
 /devices/soc/a800000.ssusb/a800000.dwc3/xhci-hcd.0.auto*    /storage/usbotg         vfat    nodev,nosuid                                                                                    wait,voldmanaged=usbotg:auto
