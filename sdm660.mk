@@ -366,6 +366,10 @@ PRODUCT_PACKAGES += \
 #PRODUCT_PACKAGES += \
 #    vendor.lineage.livedisplay@2.0-service-sdm
 
+# Trust HAL
+PRODUCT_PACKAGES += \
+    vendor.lineage.trust@1.0-service
+
 # Media
 PRODUCT_COPY_FILES += \
     $(COMMON_PATH)/configs/media/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
