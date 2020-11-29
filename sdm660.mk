@@ -580,6 +580,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.usb@1.0-service.xiaomi_sdm660
 
+# Vibrator
+PRODUCT_PACKAGES += \
+    vendor.qti.hardware.vibrator.service
+
 # VNDK
 PRODUCT_PACKAGES += \
     libdng_sdk.vendor_32 \
