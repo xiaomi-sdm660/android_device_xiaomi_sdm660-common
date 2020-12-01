@@ -14,6 +14,7 @@ persist.camera.                         u:object_r:camera_prop:s0
 persist.vendor.camera.                  u:object_r:vendor_camera_prop:s0
 vendor.camera.eis.gyro_name             u:object_r:vendor_camera_prop:s0
 vidc.enc.dcvs.extra-buff-count          u:object_r:vendor_default_prop:s0
+ubwc.no.compression                     u:object_r:default_prop:s0
 
 # Fingerprint
 fpc_kpi                                 u:object_r:vendor_default_prop:s0

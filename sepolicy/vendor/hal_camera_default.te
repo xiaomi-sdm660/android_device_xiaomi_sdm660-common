@@ -13,3 +13,5 @@ set_prop(hal_camera_default, exported_camera_prop)
 set_prop(hal_camera_default, vendor_camera_prop)
 set_prop(hal_camera_default, vendor_video_prop)
 typeattribute hal_camera_default data_between_core_and_vendor_violators;
+allow hal_camera_default default_prop:file { getattr open read };
+allow hal_camera_default vendor_video_prop:file { getattr open read };
