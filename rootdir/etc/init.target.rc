@@ -118,9 +118,6 @@ on boot
 #Create folder dump yuv images while debugging
     mkdir /data/vendor/camera 0770 camera camera
 
-#Load WLAN driver
-   insmod /vendor/lib/modules/qca_cld3_wlan.ko
-
 #USB controller configuration
     setprop vendor.usb.rndis.func.name "rndis_bam"
     setprop vendor.usb.rmnet.func.name "rmnet_bam"
