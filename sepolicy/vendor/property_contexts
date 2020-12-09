@@ -46,4 +46,5 @@ persist.sys.thermal.                    u:object_r:thermal_engine_prop:s0
 sys.thermal.                            u:object_r:thermal_engine_prop:s0
 
 # vendor_default_prop
+vendor.camera.cpuperf.en                u:object_r:vendor_default_prop:s0
 vendor.display.lcd_density              u:object_r:vendor_default_prop:s0
