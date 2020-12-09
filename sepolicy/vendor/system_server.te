@@ -1,3 +1,4 @@
+allow system_server app_zygote:process getpgid;
 allow system_server blkio_dev:dir search;
 allow system_server default_android_service:service_manager add;
 allow system_server exported_camera_prop:file read;
