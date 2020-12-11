@@ -37,7 +37,7 @@ public class DeviceSettings extends PreferenceFragment implements
 
     public static final String CATEGORY_VIBRATOR = "vibration";
     public static final String PREF_VIBRATION_STRENGTH = "vibration_strength";
-    public static final String VIBRATION_STRENGTH_PATH = "/sys/devices/virtual/timed_output/vibrator/vtg_level";
+    public static final String VIBRATION_STRENGTH_PATH = "/sys/class/leds/vibrator/vmax_mv";
 
     public static final String CATEGORY_NOTIF = "notification_led";
     public static final String PREF_NOTIF_LED = "notification_led_brightness";

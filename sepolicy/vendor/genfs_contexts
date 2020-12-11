@@ -33,5 +33,8 @@ genfscon sysfs /devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:
 genfscon sysfs /devices/soc/800f000.qcom,spmi/spmi-0/spmi0-03/800f000.qcom,spmi:qcom,pm660l@3:qcom,leds@d000/leds/white                 u:object_r:sysfs_graphics:s0
 
 # XiaomiParts
-genfscon sysfs /kernel/sound_control/headphone_gain                     u:object_r:sysfs_headphonegain:s0
-genfscon sysfs /kernel/sound_control/mic_gain                           u:object_r:sysfs_micgain:s0
+genfscon sysfs /devices/virtual/graphics/fb0/measured_fps       u:object_r:sysfs_fpsinfo:s0
+genfscon sysfs /class/graphics/fb0/measured_fps                 u:object_r:sysfs_fpsinfo:s0
+genfscon sysfs /kernel/sound_control/headphone_gain             u:object_r:sysfs_headphonegain:s0
+genfscon sysfs /kernel/sound_control/mic_gain                   u:object_r:sysfs_micgain:s0
+genfscon sysfs /devices/soc/800f000.qcom,spmi/spmi-0/spmi0-01/800f000.qcom,spmi:qcom,pm660@1:qcom,haptics@c000/leds/vibrator/vmax_mv    u:object_r:sysfs_vibrator:s0

@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
-on boot
-# XiaomiParts
-    chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
-    chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
+on boot    
+    # Haptic adjustment
+    chown system system /sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-01/800f000.qcom,spmi:qcom,pm660@1:qcom,haptics@c000/leds/vibrator/vmax_mv
+    chmod 0660 /sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-01/800f000.qcom,spmi:qcom,pm660@1:qcom,haptics@c000/leds/vibrator/vmax_mv
+    
+    # Hall toggler
     chown system system /sys/module/hall/parameters/hall_toggle
     chmod 0660 /sys/module/hall/parameters/hall_toggle
 
