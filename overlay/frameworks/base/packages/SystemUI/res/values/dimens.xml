@@ -19,9 +19,12 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <!-- Margin on the left side of the carrier text on Keyguard -->
-    <dimen name="keyguard_carrier_text_margin">24dp</dimen>
+    <dimen name="keyguard_carrier_text_margin">16dp</dimen>
 
     <!-- Margin on the right side of the system icon group on Keyguard. -->
-    <dimen name="system_icons_keyguard_padding_end">16dp</dimen>
+    <dimen name="system_icons_keyguard_padding_end">6dp</dimen>
+    
+    <!-- Padding between signal cluster and battery icon -->
+    <dimen name="signal_cluster_battery_padding">6dp</dimen>
 
 </resources>

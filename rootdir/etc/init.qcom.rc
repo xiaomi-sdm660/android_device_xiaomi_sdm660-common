@@ -191,6 +191,10 @@ on boot
 
     chmod 0770 /sys/class/power_supply/battery/device/thermalcall
     chown system system /sys/class/power_supply/battery/device/thermalcall
+    
+    # SysInfo
+    chown system system /sys/class/thermal/thermal_zone4/temp
+    chmod 0660 /sys/class/thermal/thermal_zone4/temp
 
     mkdir /vendor/mnt/persist/drm 0770 system system
     mkdir /vendor/mnt/persist/bluetooth 0770 bluetooth bluetooth
