@@ -1,0 +1,15 @@
+android_app {
+    name: "DeviceSettings",
+
+    static_libs: [
+        "androidx.core_core",
+        "androidx.preference_preference",
+    ],
+
+    resource_dirs: ["res"],
+    srcs: ["src/**/*.java"],
+
+    certificate: "platform",
+    privileged: true,
+    platform_apis: true,
+}

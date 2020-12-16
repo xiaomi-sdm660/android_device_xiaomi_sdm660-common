@@ -18,5 +18,5 @@
       <item name="preferenceTheme">@style/PreferenceTheme</item>
   </style>
 
-  <style name="PreferenceTheme" parent="@style/PreferenceThemeOverlay.SettingsBase" />
+  <style name="PreferenceTheme" parent="@android:style/Theme.DeviceDefault.Settings" />
 </resources>
