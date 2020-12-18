@@ -29,6 +29,7 @@
 
 # Post boot configuration script targeted at sdm660/sdm636
 
+if echo "$available_governors" | grep interactive; then
 function configure_zram_parameters() {
     MemTotalStr=`cat /proc/meminfo | grep MemTotal`
     MemTotal=${MemTotalStr:16:8}
@@ -75,6 +76,10 @@ function configure_zram_parameters() {
         swapon /dev/block/zram0 -p 32758
     fi
 }
+fi
+
+mkswap /dev/block/zram0 > /dev/null 2>&1
+swapon -p 2 /dev/block/zram0 > /dev/null 2>&1
 
 configure_zram_parameters
 
