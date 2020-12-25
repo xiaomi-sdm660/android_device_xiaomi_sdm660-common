@@ -2,7 +2,7 @@
 /(vendor|system/vendor)/bin/tinymix                                                                                         u:object_r:vendor_tinyalsa_exec:s0
 
 # Biometric
-/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.1-service\.xiaomi_sdm660                       u:object_r:hal_fingerprint_sdm660_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.biometrics\.fingerprint@2\.2-service\.xiaomi_sdm660                       u:object_r:hal_fingerprint_sdm660_exec:s0
 
 # blkio
 /dev/blkio(/.*)?                                                                                                            u:object_r:blkio_dev:s0
