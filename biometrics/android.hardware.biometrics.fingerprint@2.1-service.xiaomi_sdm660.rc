@@ -55,6 +55,7 @@ service vendor.fps_hal /vendor/bin/hw/android.hardware.biometrics.fingerprint@2.
     class late_start
     user system
     group system uhid input
+    writepid /dev/cpuset/system-background/tasks
 
 service vendor.goodix_script /vendor/bin/init.goodix.sh
     class late_start
