@@ -211,7 +211,6 @@ TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab_AB.qcom
 else
 TARGET_RECOVERY_FSTAB := $(COMMON_PATH)/rootdir/etc/fstab.qcom
 endif
-BOARD_HAS_LARGE_FILESYSTEM := true
 
 # Renderscript
 OVERRIDE_RS_DRIVER := libRSDriver_adreno.so
