@@ -89,7 +89,6 @@ TARGET_NO_BOOTLOADER := true
 
 # Board
 TARGET_BOARD_PLATFORM := sdm660
-TARGET_BOARD_PLATFORM_GPU := qcom-adreno512
 BOARD_VENDOR := xiaomi
 
 # Build Rules
