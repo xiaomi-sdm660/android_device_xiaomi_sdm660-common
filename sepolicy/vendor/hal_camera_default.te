@@ -1,5 +1,6 @@
 allow hal_camera_default camera_data_file:dir w_dir_perms;
 allow hal_camera_default camera_data_file:file create_file_perms;
+allow hal_camera_default hal_graphics_allocator_hwservice:hwservice_manager find;
 allow hal_camera_default media_rw_data_file:file { getattr };
 allow hal_camera_default sysfs:file { getattr open read };
 allow hal_camera_default sysfs_kgsl:dir search;
@@ -9,6 +10,7 @@ allow hal_camera_default vendor_default_prop:property_service set;
 
 hal_client_domain(hal_camera_default, hal_configstore)
 binder_call(hal_camera_default, hal_graphics_allocator_default)
+get_prop(hal_camera_default, vendor_video_prop)
 set_prop(hal_camera_default, exported_camera_prop)
 set_prop(hal_camera_default, vendor_camera_prop)
 set_prop(hal_camera_default, vendor_video_prop)
