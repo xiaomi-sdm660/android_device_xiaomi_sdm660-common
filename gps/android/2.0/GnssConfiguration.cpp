@@ -39,7 +39,7 @@ GnssConfiguration::GnssConfiguration(Gnss* gnss) : mGnss(gnss) {
 }
 
 // Methods from ::android::hardware::gps::V1_0::IGnssConfiguration follow.
-Return<bool> GnssConfiguration::setSuplEs(bool enabled)  {
+Return<bool> GnssConfiguration::setSuplEs(bool /*enabled*/)  {
     // deprecated function. Must return false to pass VTS
     return false;
 }
