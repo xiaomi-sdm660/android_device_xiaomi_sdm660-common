@@ -215,11 +215,14 @@ PRODUCT_PACKAGES += \
     hwcomposer.sdm660 \
     memtrack.sdm660 \
     libdisplayconfig \
+    libdisplayconfig.qti.vendor \
+    libdisplayconfig.qti \
     libqdMetaData \
     libqdMetaData.system \
+    libstagefright_enc_common \
     libtinyxml \
-    vendor.display.config@1.9 \
-    vendor.display.config@1.9_vendor
+    vendor.display.config@2.0 \
+    vendor.display.config@2.0.vendor
 
 # DeviceDoze
 PRODUCT_PACKAGES += \
