@@ -1,70 +1,73 @@
 #!/bin/bash
 #
-# Copyright (C) 2018 The LineageOS Project
+# Copyright (C) 2016 The CyanogenMod Project
+# Copyright (C) 2017-2020 The LineageOS Project
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 #
 
 set -e
 
 DEVICE_COMMON=sdm660-common
-GUARDED_DEVICES_COMMON="tulip jasmine_sprout wayne clover lavender platina jason whyred"
 VENDOR=xiaomi
 
-INITIAL_COPYRIGHT_YEAR=2018
-
 # Load extract_utils and do some sanity checks
-COMMON_DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$COMMON_DIR" ]]; then COMMON_DIR="$PWD"; fi
+MY_DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "${MY_DIR}" ]]; then MY_DIR="${PWD}"; fi
 
-if [[ -z "$DEVICE_DIR" ]]; then
-    DEVICE_DIR="${COMMON_DIR}/../${DEVICE}"
-fi
+ANDROID_ROOT="${MY_DIR}/../../.."
 
-ROOT="$COMMON_DIR"/../../..
-
-HELPER="$LINEAGE_ROOT"/vendor/lineage/build/tools/extract_utils.sh
-if [ ! -f "$HELPER" ]; then
-    echo "Unable to find helper script at $HELPER"
+HELPER="${ANDROID_ROOT}/tools/extract-utils/extract_utils.sh"
+if [ ! -f "${HELPER}" ]; then
+    echo "Unable to find helper script at ${HELPER}"
     exit 1
 fi
-. "$HELPER"
+source "${HELPER}"
 
-# Initialize the common helper
-setup_vendor "$DEVICE_COMMON" "$VENDOR" "$ROOT" true
+# Initialize the helper for common
+setup_vendor "${DEVICE_COMMON}" "${VENDOR}" "${ANDROID_ROOT}" true
 
-if ([[ "$ONLY_DEVICE" = "false" ]] || [[ -z "$ONLY_DEVICE" ]]) && [[ -s "${COMMON_DIR}"/proprietary-files.txt ]]; then
-    # Copyright headers and guards
-    write_headers "$GUARDED_DEVICES_COMMON"
-    # The common blobs
-    write_makefiles "$COMMON_DIR"/proprietary-files.txt true
+# Warning headers and guards
+write_headers "clover jasmine_sprout jason lavender platina tulip wayne whyred"
+
+# The standard common blobs
+write_makefiles "${MY_DIR}/proprietary-files.txt" true
+
+printf "\n%s\n" "ifeq (\$(BOARD_HAVE_QCOM_FM),true)" >> "${PRODUCTMK}"
+write_makefiles "${MY_DIR}/proprietary-files-fm.txt" true
+echo "endif" >> "${PRODUCTMK}"
+
+# Finish
+write_footers
+
+if [ -s "${MY_DIR}/../$DEVICE_SPECIFIED_COMMON/proprietary-files.txt" ]; then
+    DEVICE_COMMON="${DEVICE_SPECIFIED_COMMON}"
+
+    # Reinitialize the helper for device specified common
+    setup_vendor "${DEVICE_SPECIFIED_COMMON}" "${VENDOR}" "${ANDROID_ROOT}" true
+
+    # Warning headers and guards
+    write_headers "${DEVICE_SPECIFIED_COMMON_DEVICE}"
+
+    # The standard device specified common blobs
+    write_makefiles "${MY_DIR}/../${DEVICE_SPECIFIED_COMMON}/proprietary-files.txt" true
+
     # Finish
     write_footers
+
+    DEVICE_COMMON="sdm660-common"
 fi
-if ([[ "$ONLY_COMMON" = "false" ]] || [[ -z "$ONLY_COMMON" ]]) && [[ -s "${DEVICE_DIR}"/proprietary-files.txt ]]; then
-    # Reinitialize the helper for device and write copyright headers and guards
-    DEVICE_COMMON="$DEVICE"
-    if [[ ! "$IS_COMMON" = "true" ]]; then
-        IS_COMMON=false
-        GUARDED_DEVICES=
-    fi
+
+if [ -s "${MY_DIR}/../${DEVICE}/proprietary-files.txt" ]; then
     # Reinitialize the helper for device
-    INITIAL_COPYRIGHT_YEAR="$DEVICE_BRINGUP_YEAR"
-    setup_vendor "$DEVICE" "$VENDOR" "$ROOT" "$IS_COMMON" "$CLEAN_VENDOR"
-    # Copyright headers and guards
-    write_headers "$GUARDED_DEVICES"
+    setup_vendor "${DEVICE}" "${VENDOR}" "${ANDROID_ROOT}" false
+
+    # Warning headers and guards
+    write_headers
+
     # The standard device blobs
-    write_makefiles "${DEVICE_DIR}"/proprietary-files.txt true
-    # We are done!
+    write_makefiles "${MY_DIR}/../${DEVICE}/proprietary-files.txt" true
+
+    # Finish
     write_footers
 fi

@@ -1,18 +1,9 @@
 #!/bin/bash
 #
-# Copyright (C) 2018 The LineageOS Project
+# Copyright (C) 2016 The CyanogenMod Project
+# Copyright (C) 2017-2020 The LineageOS Project
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 #
 
 set -e
@@ -21,34 +12,37 @@ DEVICE_COMMON=sdm660-common
 VENDOR=xiaomi
 
 # Load extract_utils and do some sanity checks
-COMMON_DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$COMMON_DIR" ]]; then COMMON_DIR="$PWD"; fi
+MY_DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "${MY_DIR}" ]]; then MY_DIR="${PWD}"; fi
 
-if [[ -z "$DEVICE_DIR" ]]; then
-    DEVICE_DIR="${COMMON_DIR}/../${DEVICE}"
-fi
+ANDROID_ROOT="${MY_DIR}/../../.."
 
-ROOT="$COMMON_DIR"/../../..
-
-HELPER="$ROOT"/vendor/carbon/build/tools/extract_utils.sh
-if [ ! -f "$HELPER" ]; then
-    echo "Unable to find helper script at $HELPER"
+HELPER="${ANDROID_ROOT}/tools/extract-utils/extract_utils.sh"
+if [ ! -f "${HELPER}" ]; then
+    echo "Unable to find helper script at ${HELPER}"
     exit 1
 fi
-. "$HELPER"
+source "${HELPER}"
 
 # Default to sanitizing the vendor folder before extraction
 CLEAN_VENDOR=true
-ONLY_COMMON=false
-ONLY_DEVICE=false
+
+ONLY_COMMON=
+ONLY_DEVICE_COMMON=
+ONLY_TARGET=
+KANG=
+SECTION=
 
 while [ "${#}" -gt 0 ]; do
     case "${1}" in
-        -o | --only-common )
+        --only-common )
                 ONLY_COMMON=true
                 ;;
-        -d | --only-device )
-                ONLY_DEVICE=true
+        --only-device-common )
+                ONLY_DEVICE_COMMON=true
+                ;;
+        --only-target )
+                ONLY_TARGET=true
                 ;;
         -n | --no-cleanup )
                 CLEAN_VENDOR=false
@@ -67,36 +61,52 @@ while [ "${#}" -gt 0 ]; do
     shift
 done
 
-if [ -z "$SRC" ]; then
-    SRC=adb
+if [ -z "${SRC}" ]; then
+    SRC="adb"
 fi
 
 function blob_fixup() {
     case "${1}" in
 
-    product/lib64/libdpmframework.so)
-        patchelf --add-needed libcutils_shim.so "${2}"
+    system_ext/lib64/libdpmframework.so)
+        "${PATCHELF}" --add-needed libcutils_shim.so "${2}"
+        ;;
+    system_ext/etc/init/dpmd.rc)
+        sed -i "s|/system/product/bin/|/system/system_ext/bin/|g" "${2}"
+        ;;
+    system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.0-java.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.1-java.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.2-java.xml)
+        sed -i 's|product|system_ext|g' "${2}"
+        ;;
+    system_ext/etc/permissions/com.qti.dpmframework.xml | system_ext/etc/permissions/dpmapi.xml | system_ext/etc/permissions/telephonyservice.xml)
+        sed -i "s|/system/product/framework/|/system/system_ext/framework/|g" "${2}"
+        ;;
+    system_ext/etc/permissions/qcrilhook.xml)
+        sed -i "s|/product/framework/qcrilhook.jar|/system_ext/framework/qcrilhook.jar|g" "${2}"
+        ;;
+    system_ext/etc/permissions/vendor.qti.hardware.data.connection-V1.0-java.xml | system_ext/etc/permissions/vendor.qti.hardware.data.connection-V1.1-java.xml)
+        sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
+        sed -i "s|product|system_ext|g" "${2}"
         ;;
 
     vendor/bin/mlipayd@1.1)
-        patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        "${PATCHELF}" --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
         ;;
 
     vendor/lib64/libmlipay.so | vendor/lib64/libmlipay@1.1.so)
-        patchelf --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        "${PATCHELF}" --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
         sed -i "s|/system/etc/firmware|/vendor/firmware\x0\x0\x0\x0|g" "${2}"
         ;;
 
     vendor/lib/hw/camera.sdm660.so)
-        patchelf --add-needed camera.sdm660_shim.so "${2}"
+        "${PATCHELF}" --add-needed camera.sdm660_shim.so "${2}"
         ;;
 
     vendor/lib64/libril-qc-hal-qmi.so)
-        patchelf --replace-needed "libprotobuf-cpp-full.so" "libprotobuf-cpp-full-v29.so" "${2}"
+        "${PATCHELF}" --replace-needed "libprotobuf-cpp-full.so" "libprotobuf-cpp-full-v29.so" "${2}"
         ;;
 
     vendor/lib64/libwvhidl.so)
-        patchelf --replace-needed "libprotobuf-cpp-lite.so" "libprotobuf-cpp-lite-v29.so" "${2}"
+        "${PATCHELF}" --replace-needed "libprotobuf-cpp-lite.so" "libprotobuf-cpp-lite-v29.so" "${2}"
         ;;
     product/etc/permissions/vendor.qti.hardware.data.connection-V1.{0,1}-java.xml)
         sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
@@ -104,19 +114,28 @@ function blob_fixup() {
     esac
 }
 
-# Initialize the common helper
-setup_vendor "$DEVICE_COMMON" "$VENDOR" "$ROOT" true $CLEAN_VENDOR
+if [ -z "${ONLY_TARGET}" ] && [ -z "${ONLY_DEVICE_COMMON}" ]; then
+    # Initialize the helper for common device
+    setup_vendor "${DEVICE_COMMON}" "${VENDOR}" "${ANDROID_ROOT}" true "${CLEAN_VENDOR}"
 
-if [[ "$ONLY_DEVICE" = "false" ]] && [[ -s "${COMMON_DIR}"/proprietary-files.txt ]]; then
-    extract "$COMMON_DIR"/proprietary-files.txt "$SRC" "${KANG}" --section "${SECTION}"
+    extract "${MY_DIR}/proprietary-files.txt" "${SRC}" ${KANG} --section "${SECTION}"
+    extract "${MY_DIR}/proprietary-files-fm.txt" "${SRC}" "${KANG}" --section "${SECTION}"
 fi
-if [[ "$ONLY_COMMON" = "false" ]] && [[ -s "${DEVICE_DIR}"/proprietary-files.txt ]]; then
-    if [[ ! "$IS_COMMON" = "true" ]]; then
-        IS_COMMON=false
-    fi
+
+if [ -z "${ONLY_COMMON}" ] && [ -z "${ONLY_TARGET}" ] && [ -s "${MY_DIR}/../${DEVICE_SPECIFIED_COMMON}/proprietary-files.txt" ];then
+    # Reinitialize the helper for device specified common
+    source "${MY_DIR}/../${DEVICE_SPECIFIED_COMMON}/extract-files.sh"
+    setup_vendor "${DEVICE_SPECIFIED_COMMON}" "${VENDOR}" "${ANDROID_ROOT}" false "${CLEAN_VENDOR}"
+
+    extract "${MY_DIR}/../${DEVICE_SPECIFIED_COMMON}/proprietary-files.txt" "${SRC}" "${KANG}" --section "${SECTION}"
+fi
+
+if [ -z "${ONLY_COMMON}" ] && [ -z "${ONLY_DEVICE_COMMON}" ] && [ -s "${MY_DIR}/../${DEVICE}/proprietary-files.txt" ]; then
     # Reinitialize the helper for device
-    setup_vendor "$DEVICE" "$VENDOR" "$ROOT" "$IS_COMMON" "$CLEAN_VENDOR"
-    extract "${DEVICE_DIR}"/proprietary-files.txt "$SRC" "${KANG}" --section "${SECTION}"
+    source "${MY_DIR}/../${DEVICE}/extract-files.sh"
+    setup_vendor "${DEVICE}" "${VENDOR}" "${ANDROID_ROOT}" false "${CLEAN_VENDOR}"
+
+    extract "${MY_DIR}/../${DEVICE}/proprietary-files.txt" "${SRC}" "${KANG}" --section "${SECTION}"
 fi
 
-"$COMMON_DIR"/setup-makefiles.sh
+"${MY_DIR}/setup-makefiles.sh"
