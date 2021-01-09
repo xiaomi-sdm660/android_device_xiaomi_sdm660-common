@@ -338,7 +338,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # WFD
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.debug.wfd.enable=1 \
+    persist.debug.wfd.enable=0 \
     persist.sys.wfd.virtual=0
 
 # Zygote preforking
