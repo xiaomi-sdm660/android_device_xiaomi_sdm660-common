@@ -242,7 +242,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     vendor.rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so \
     ro.telephony.default_network=9,9 \
     ro.telephony.iwlan_operation_mode=legacy \
-    ro.vendor.use_data_netmgrd=true
+    ro.vendor.use_data_netmgrd=true \
+    persist.vendor.radio.add_power_save=1
 
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     DEVICE_PROVISIONED=1 \
