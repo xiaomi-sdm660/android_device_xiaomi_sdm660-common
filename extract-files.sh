@@ -74,8 +74,29 @@ fi
 function blob_fixup() {
     case "${1}" in
 
-    product/lib64/libdpmframework.so)
+    system_ext/lib64/libdpmframework.so)
         "$PATCHELF" --add-needed libcutils_shim.so "${2}"
+        ;;
+        
+    system_ext/etc/init/dpmd.rc)
+        sed -i "s|/system/product/bin/|/system/system_ext/bin/|g" "${2}"
+        ;;
+        
+    system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.0-java.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.1-java.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.2-java.xml)
+        sed -i 's|product|system_ext|g' "${2}"
+        ;;
+        
+    system_ext/etc/permissions/com.qti.dpmframework.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice.xml | system_ext/etc/permissions/dpmapi.xml | system_ext/etc/permissions/telephonyservice.xml)
+        sed -i "s|/system/product/framework/|/system/system_ext/framework/|g" "${2}"
+        ;;
+        
+    system_ext/etc/permissions/qcrilhook.xml)
+        sed -i "s|/product/framework/qcrilhook.jar|/system_ext/framework/qcrilhook.jar|g" "${2}"
+        ;;
+        
+    system_ext/etc/permissions/vendor.qti.hardware.data.connection-V1.0-java.xml | system_ext/etc/permissions/vendor.qti.hardware.data.connection-V1.1-java.xml)
+        sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
+        sed -i "s|product|system_ext|g" "${2}"
         ;;
 
     vendor/bin/mlipayd@1.1)
@@ -97,9 +118,6 @@ function blob_fixup() {
 
     vendor/lib64/libwvhidl.so)
         "$PATCHELF" --replace-needed "libprotobuf-cpp-lite.so" "libprotobuf-cpp-lite-v29.so" "${2}"
-        ;;
-    product/etc/permissions/vendor.qti.hardware.data.connection-V1.{0,1}-java.xml)
-        sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
 
     esac
 }
