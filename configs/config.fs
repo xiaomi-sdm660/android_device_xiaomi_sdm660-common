@@ -34,24 +34,6 @@ user: AID_SYSTEM
 group: AID_SYSTEM
 caps: BLOCK_SUSPEND NET_ADMIN
 
-[vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti-lazy]
-mode: 0755
-user: AID_BLUETOOTH
-group: AID_BLUETOOTH
-caps: BLOCK_SUSPEND NET_ADMIN
-
-[system/vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti-lazy]
-mode: 0755
-user: AID_SYSTEM
-group: AID_SYSTEM
-caps: BLOCK_SUSPEND NET_ADMIN
-
-[system/bin/cnss-daemon]
-mode: 0755
-user: AID_BLUETOOTH
-group: AID_BLUETOOTH
-caps: NET_BIND_SERVICE
-
 [vendor/bin/pm-service]
 mode: 0755
 user: AID_SYSTEM
@@ -64,12 +46,6 @@ user: AID_SYSTEM
 group: AID_SYSTEM
 caps: NET_BIND_SERVICE SYS_BOOT
 
-[system/bin/pm-service]
-mode: 0755
-user: AID_SYSTEM
-group: AID_SYSTEM
-caps: NET_BIND_SERVICE SYS_BOOT
-
 [vendor/bin/pd-mapper]
 mode: 0755
 user: AID_SYSTEM
@@ -77,12 +53,6 @@ group: AID_SYSTEM
 caps: NET_BIND_SERVICE
 
 [system/vendor/bin/pd-mapper]
-mode: 0755
-user: AID_SYSTEM
-group: AID_SYSTEM
-caps: NET_BIND_SERVICE
-
-[system/bin/pd-mapper]
 mode: 0755
 user: AID_SYSTEM
 group: AID_SYSTEM
@@ -166,12 +136,6 @@ user:  AID_GPS
 group: AID_GPS
 caps: SETUID SETGID
 
-[vendor/bin/xtwifi-client]
-mode: 0755
-user:  AID_GPS
-group: AID_GPS
-caps: NET_BIND_SERVICE BLOCK_SUSPEND WAKE_ALARM
-
 [vendor/bin/sensors.qti]
 mode: 0755
 user: AID_SYSTEM
@@ -183,12 +147,6 @@ mode: 0755
 user:  AID_GPS
 group: AID_GPS
 caps: SETUID SETGID
-
-[vendor/bin/xtwifi-client]
-mode: 0755
-user:  AID_GPS
-group: AID_GPS
-caps: NET_BIND_SERVICE BLOCK_SUSPEND WAKE_ALARM
 
 [firmware/]
 mode: 0771
