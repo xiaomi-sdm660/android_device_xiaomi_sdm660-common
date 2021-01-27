@@ -162,13 +162,18 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.hwc.enable_vds=1 \
     ro.opengles.version=196610 \
     ro.qualcomm.cabl=0 \
-    ro.sf.blurs_are_expensive=1 \
-    ro.surface_flinger.supports_background_blur=1 \
     vendor.display.disable_skip_validate=1 \
     vendor.gralloc.enable_fb_ubwc=1 \
     vendor.video.disable.ubwc=1 \
     vendor.display.enable_default_color_mode=0 \
     video.disable.ubwc=1
+
+# Blur
+ifneq ($(filter lavender,$(TARGET_DEVICE)),)
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.sf.blurs_are_expensive=1 \
+    ro.surface_flinger.supports_background_blur=1
+endif
 
 # The default sf phase offset is set to 6ms, to avoid it be included into next
 # vsync threshold, set high fps early sf and next vsync threshold phase offset
