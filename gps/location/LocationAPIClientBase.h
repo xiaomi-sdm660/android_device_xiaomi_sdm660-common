@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -200,9 +200,11 @@ private:
 class LocationAPIClientBase {
 public:
     LocationAPIClientBase();
-    virtual ~LocationAPIClientBase();
     LocationAPIClientBase(const LocationAPIClientBase&) = delete;
     LocationAPIClientBase& operator=(const LocationAPIClientBase&) = delete;
+
+    void destroy();
+    void onLocationApiDestroyCompleteCb();
 
     void locAPISetCallbacks(LocationCallbacks& locationCallbacks);
     void removeSession(uint32_t session);
@@ -282,6 +284,9 @@ public:
     inline virtual void onGnssNiResponseCb(LocationError /*error*/) {}
 
     inline virtual void onLocationSystemInfoCb(LocationSystemInfo /*locationSystemInfo*/) {}
+
+protected:
+    virtual ~LocationAPIClientBase();
 
 private:
     // private inner classes
@@ -421,10 +426,10 @@ private:
     public:
         StopTrackingRequest(LocationAPIClientBase& API) : mAPI(API) {}
         inline void onResponse(LocationError error, uint32_t id) {
-            mAPI.onStopTrackingCb(error);
             if (error == LOCATION_ERROR_SUCCESS) {
                 mAPI.removeSession(id);
             }
+            mAPI.onStopTrackingCb(error);
         }
         LocationAPIClientBase& mAPI;
     };

@@ -46,7 +46,7 @@ GnssBatching::GnssBatching() : mApi(nullptr) {
 
 GnssBatching::~GnssBatching() {
     if (mApi != nullptr) {
-        delete mApi;
+        mApi->destroy();
         mApi = nullptr;
     }
 }
@@ -56,7 +56,7 @@ GnssBatching::~GnssBatching() {
 Return<bool> GnssBatching::init(const sp<V1_0::IGnssBatchingCallback>& callback) {
     if (mApi != nullptr) {
         LOC_LOGD("%s]: mApi is NOT nullptr, delete it first", __FUNCTION__);
-        delete mApi;
+        mApi->destroy();
         mApi = nullptr;
     }
 
@@ -135,7 +135,7 @@ Return<void> GnssBatching::cleanup() {
 Return<bool> GnssBatching::init_2_0(const sp<V2_0::IGnssBatchingCallback>& callback) {
     if (mApi != nullptr) {
         LOC_LOGD("%s]: mApi is NOT nullptr, delete it first", __FUNCTION__);
-        delete mApi;
+        mApi->destroy();
         mApi = nullptr;
     }
 
