@@ -299,9 +299,7 @@ vendor/bin/loc_launcher|72130c59ca686ebfb588c4b724adb5572a5a33d2
 vendor/bin/lowi-server|9da7b8da6a9ab3c48a9d11d0b1f302938ea6b185
 vendor/bin/slim_daemon|a5ba577ac1cde4f3d3e3d1d4c4ad0b7e8908873f
 vendor/bin/xtra-daemon|f596e41b47179dbbb7d423c25b15afbb8a153541
-vendor/etc/cacert_location.pem|0789bf799c7e45d352a83e2f79ddb0cea86db85b
 -vendor/etc/vintf/manifest/vendor.qti.gnss@3.0-service.xml|9b2f6691d6c224bcb9ab9a0d57adfb9e52f1b53e
-vendor/etc/xtra_root_cert.pem|f55a31ec4d9cf8ce2724acadecf00c779f8767db
 vendor/lib64/hw/vendor.qti.gnss@3.0-impl.so|7e89f3bc23cf3694d5cc214142018ab0c3558407
 vendor/lib64/libcacertclient.so|e04aa49d3b3b4534f5eb2b1ccea69ff8fee0182c
 vendor/lib64/libdataitems.so|780958151b4a6bf31b2848dfe37664889c82f214
