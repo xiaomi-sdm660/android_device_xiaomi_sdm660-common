@@ -468,6 +468,13 @@ typedef uint32_t GnssAdditionalSystemInfoMask;
 #define NAVIC_SV_PRN_MIN    401
 #define NAVIC_SV_PRN_MAX    414
 
+/* Checking svIdOneBase can be set to the corresponding bit in mask */
+#define svFitsMask(mask, svIdOneBase)                 \
+    ((svIdOneBase) >= 1 && (svIdOneBase) <= (sizeof(mask) << 3))
+/* Setting svIdOneBase specific bit in the mask if the bit offset fits */
+#define setSvMask(mask, svIdOneBase)                  \
+    if (svFitsMask(mask, svIdOneBase)) mask |= (1ULL << ((svIdOneBase) - 1))
+
 typedef enum {
     LOC_RELIABILITY_NOT_SET = 0,
     LOC_RELIABILITY_VERY_LOW = 1,

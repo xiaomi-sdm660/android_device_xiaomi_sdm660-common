@@ -88,6 +88,7 @@ static uint32_t gnssUpdateSvConfig(const GnssSvTypeConfig& svTypeConfig,
 static uint32_t gnssResetSvConfig();
 static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo);
 static uint32_t configRobustLocation(bool enable, bool enableForE911);
+static bool isSS5HWEnabled();
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -134,6 +135,7 @@ static const GnssInterface gGnssInterface = {
     gnssResetSvConfig,
     configLeverArm,
     configRobustLocation,
+    isSS5HWEnabled,
 };
 
 #ifndef DEBUG_X86
@@ -455,6 +457,13 @@ static uint32_t configLeverArm(const LeverArmConfigInfo& configInfo){
     } else {
         return 0;
     }
+}
+
+static bool isSS5HWEnabled() {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->isSS5HWEnabled();
+    }
+    return false;
 }
 
 static uint32_t configRobustLocation(bool enable, bool enableForE911){
