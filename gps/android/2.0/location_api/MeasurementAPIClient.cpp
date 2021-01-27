@@ -296,7 +296,7 @@ static void convertGnssMeasurement(GnssMeasurementsData& in,
 
 static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback::GnssClock& out)
 {
-    memset(&out, 0, sizeof(IGnssMeasurementCallback::GnssClock));
+    memset(&out, 0, sizeof(out));
     if (in.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT)
         out.gnssClockFlags |= IGnssMeasurementCallback::GnssClockFlags::HAS_LEAP_SECOND;
     if (in.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_TIME_UNCERTAINTY_BIT)
@@ -325,6 +325,7 @@ static void convertGnssClock(GnssMeasurementsClock& in, IGnssMeasurementCallback
 static void convertGnssData(GnssMeasurementsNotification& in,
         V1_0::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurementCount = in.count;
     if (out.measurementCount > static_cast<uint32_t>(V1_0::GnssMax::SVS_COUNT)) {
         LOC_LOGW("%s]: Too many measurement %u. Clamps to %d.",
@@ -340,6 +341,7 @@ static void convertGnssData(GnssMeasurementsNotification& in,
 static void convertGnssData_1_1(GnssMeasurementsNotification& in,
         V1_1::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_0);
@@ -362,6 +364,7 @@ static void convertGnssData_1_1(GnssMeasurementsNotification& in,
 static void convertGnssData_2_0(GnssMeasurementsNotification& in,
         V2_0::IGnssMeasurementCallback::GnssData& out)
 {
+    memset(&out, 0, sizeof(out));
     out.measurements.resize(in.count);
     for (size_t i = 0; i < in.count; i++) {
         convertGnssMeasurement(in.measurements[i], out.measurements[i].v1_1.v1_0);
@@ -436,12 +439,16 @@ static void convertGnssData_2_0(GnssMeasurementsNotification& in,
         if (currentTimeNanos >= measTimeNanos) {
             int64_t ageTimeNanos = currentTimeNanos - measTimeNanos;
             LOC_LOGD("%s]: ageTimeNanos:%" PRIi64 ")", __FUNCTION__, ageTimeNanos);
-            if (ageTimeNanos >= 0 && ageTimeNanos <= sinceBootTimeNanos) {
+            // the max trusted propagation time 100ms for ageTimeNanos to avoid user setting
+            //wrong time, it will affect elapsedRealtimeNanos
+            if (ageTimeNanos <= 100000000) {
                 out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
                 out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
                 out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                // time uncertainty is 1 ms since it is calculated from utc time that is in ms
-                out.elapsedRealtime.timeUncertaintyNs = 1000000;
+                // time uncertainty is the max value between abs(AP_UTC - MP_UTC) and 100ms, to
+                //verify if user change the sys time
+                out.elapsedRealtime.timeUncertaintyNs =
+                        std::max(ageTimeNanos, (int64_t)100000000);
                 LOC_LOGd("timestampNs:%" PRIi64 ") timeUncertaintyNs:%" PRIi64 ")",
                          out.elapsedRealtime.timestampNs,
                          out.elapsedRealtime.timeUncertaintyNs);

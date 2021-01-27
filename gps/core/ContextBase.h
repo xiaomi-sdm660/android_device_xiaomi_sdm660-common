@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2017, 2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -76,6 +76,7 @@ typedef struct loc_gps_cfg_s
     uint32_t       GNSS_DEPLOYMENT;
     uint32_t       CUSTOM_NMEA_GGA_FIX_QUALITY_ENABLED;
     uint32_t       NI_SUPL_DENY_ON_NFW_LOCKED;
+    uint32_t       ENABLE_NMEA_PRINT;
 } loc_gps_cfg_s_type;
 
 /* NOTE: the implementaiton of the parser casts number
