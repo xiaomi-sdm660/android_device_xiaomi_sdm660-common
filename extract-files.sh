@@ -74,14 +74,10 @@ fi
 function blob_fixup() {
     case "${1}" in
 
-    system_ext/lib64/libdpmframework.so)
-        "$PATCHELF" --add-needed libcutils_shim.so "${2}"
-        ;;
-        
     system_ext/etc/init/dpmd.rc)
         sed -i "s|/system/product/bin/|/system/system_ext/bin/|g" "${2}"
         ;;
-        
+    
     system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.0-java.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.1-java.xml | system_ext/etc/permissions/com.qualcomm.qti.imscmservice-V2.2-java.xml)
         sed -i 's|product|system_ext|g' "${2}"
         ;;
@@ -98,26 +94,31 @@ function blob_fixup() {
         sed -i 's/xml version="2.0"/xml version="1.0"/' "${2}"
         sed -i "s|product|system_ext|g" "${2}"
         ;;
-
-    vendor/bin/mlipayd@1.1)
-        "$PATCHELF" --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        
+    system_ext/lib64/libdpmframework.so)
+        "${PATCHELF}" --add-needed libcutils_shim.so "${2}"
         ;;
 
+    vendor/bin/mlipayd@1.1)
+        "${PATCHELF}" --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        ;;
+    
     vendor/lib64/libmlipay.so | vendor/lib64/libmlipay@1.1.so)
-        "$PATCHELF" --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
+        "${PATCHELF}" --remove-needed vendor.xiaomi.hardware.mtdservice@1.0.so "${2}"
         sed -i "s|/system/etc/firmware|/vendor/firmware\x0\x0\x0\x0|g" "${2}"
         ;;
 
     vendor/lib/hw/camera.sdm660.so)
-        "$PATCHELF" --add-needed camera.sdm660_shim.so "${2}"
+        "${PATCHELF}" --add-needed camera.sdm660_shim.so "${2}"
         ;;
 
     vendor/lib64/libril-qc-hal-qmi.so)
-        "$PATCHELF" --replace-needed "libprotobuf-cpp-full.so" "libprotobuf-cpp-full-v29.so" "${2}"
+        "${PATCHELF}" --replace-needed "libprotobuf-cpp-full.so" "libprotobuf-cpp-full-v29.so" "${2}"
         ;;
 
     vendor/lib64/libwvhidl.so)
-        "$PATCHELF" --replace-needed "libprotobuf-cpp-lite.so" "libprotobuf-cpp-lite-v29.so" "${2}"
+        "${PATCHELF}" --replace-needed "libprotobuf-cpp-lite.so" "libprotobuf-cpp-lite-v29.so" "${2}"
+        ;;
 
     esac
 }
