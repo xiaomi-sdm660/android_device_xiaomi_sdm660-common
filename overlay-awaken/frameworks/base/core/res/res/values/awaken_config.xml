@@ -15,9 +15,7 @@
     limitations under the License.
 -->
 <resources>
-
-    <bool name="config_useSystemClockforRotationSensor">false</bool>
-
+    
     <!-- Whether to cleanup fingerprints upon connection to the daemon and when user switches -->
     <bool name="config_cleanupUnusedFingerprints">true</bool>
 
@@ -27,10 +25,6 @@
     <!-- Time to give to the proximity sensor before toggling the flashlight with the Power button.
        Set to -1 to disable the proximity sensor check at all-->
     <integer name="config_flashlightProximityTimeout">300</integer>
-
-    <string-array translatable="false" name="config_customPermissionsList">
-        <item>com.google.android.apps.wellbeing</item>
-    </string-array>
 
     <!-- Is the battery LED intrusive? Used to decide if there should be a disable option -->
     <bool name="config_intrusiveBatteryLed">true</bool>
@@ -42,5 +36,12 @@
     <!-- Do the battery/notification LEDs support pulsing?
          Used to decide if we show pulse settings -->
     <bool name="config_ledCanPulse">true</bool>
+    
+    <!-- Smart charging -->
+    <integer name="config_smartChargingBatteryLevel">90</integer>
+    <integer name="config_smartChargingBatteryResumeLevel">50</integer>
+    <string name="config_SmartChargingSysfsNode" translatable="false">/sys/class/power_supply/battery/charging_enabled</string>
+    <string name="config_SmartChargingSuspendValue" translatable="false">0</string>
+    <string name="config_SmartChargingResumeValue" translatable="false">1</string>
 
 </resources>
