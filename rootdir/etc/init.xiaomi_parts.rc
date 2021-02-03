@@ -15,11 +15,9 @@
 #
 
 on boot
-    # XiaomiParts
+    # Haptic strength
     chown system system /sys/devices/virtual/timed_output/vibrator/vtg_level
     chmod 0660 /sys/devices/virtual/timed_output/vibrator/vtg_level
-    chown system system /sys/module/hall/parameters/hall_toggle
-    chmod 0660 /sys/module/hall/parameters/hall_toggle
     
     # FPS
     chown system system /sys/devices/virtual/graphics/fb0/measured_fps

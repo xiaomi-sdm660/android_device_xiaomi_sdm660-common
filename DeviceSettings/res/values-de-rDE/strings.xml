@@ -60,6 +60,4 @@
     <string name="edit_hint" formatted="false">Wert zwischen %1d und %2d</string>
     <string name="advanced_doze_summary">Inaktivitätsdisplay</string>
     <string name="grayscale">Graustufen-Modus</string>
-    <string name="hall_title">Aktiviere Aufwecken mit Flip Cover </string>
-    <string name="hall_wakeup_summary">Schalte das Gerät AN und AUS mit einem magnetischen Flip Cover</string>
 </resources>

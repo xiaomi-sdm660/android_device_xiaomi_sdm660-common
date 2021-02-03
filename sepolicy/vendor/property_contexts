@@ -25,9 +25,6 @@ sys.fp.                                 u:object_r:hal_fingerprint_prop:s0
 ro.boot.fpsensor                        u:object_r:hal_fingerprint_prop:s0
 persist.sys.fp.info                     u:object_r:hal_fingerprint_prop:s0
 
-# Hall wakeup
-persist.service.folio_daemon            u:object_r:system_prop:s0
-
 # Media
 gpu.stats.debug.level                   u:object_r:vendor_default_prop:s0
 

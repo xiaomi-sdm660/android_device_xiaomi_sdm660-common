@@ -71,10 +71,6 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
                 context.getContentResolver(), DeviceSettings.PREF_VIBRATION_STRENGTH, 80) / 100.0 * (DeviceSettings.MAX_VIBRATION - DeviceSettings.MIN_VIBRATION) + DeviceSettings.MIN_VIBRATION);
         FileUtils.setValue(DeviceSettings.THERMAL_PATH, Settings.Secure.getString(
                 context.getContentResolver(), DeviceSettings.PREF_THERMAL));
-        FileUtils.setValue(DeviceSettings.HALL_WAKEUP_PATH, Settings.Secure.getInt(
-                context.getContentResolver(), DeviceSettings.PREF_HALL_WAKEUP, 1) == 1 ? "Y" : "N");
-        FileUtils.setProp(DeviceSettings.HALL_WAKEUP_PROP, Settings.Secure.getInt(
-                context.getContentResolver(), DeviceSettings.PREF_HALL_WAKEUP, 1) == 1);
 
         boolean enabled = Settings.Secure.getInt(context.getContentResolver(), DeviceSettings.PREF_KEY_FPS_INFO, 0) == 1;
         if (enabled) {

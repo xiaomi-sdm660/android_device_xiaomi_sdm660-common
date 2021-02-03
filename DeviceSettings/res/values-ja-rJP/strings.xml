@@ -74,8 +74,6 @@
     <string name="preset_warm_amoled">暖色 AMOLED</string>
     <string name="preset_hybrid_mamba">Hybrid Mamba</string>
 
-    <!-- usb fastcharge -->
-
     <!-- menu -->
     <string name="kcal_presets" translatable="false">@string/presets_dialog_title</string>
     <string name="kcal_reset">リセット</string>
@@ -84,9 +82,5 @@
     <string name="edit_value">新しい値を選択して下さい</string>
     <string name="default_value">既定値</string>
     <string name="edit_hint" formatted="false">値は %1$d と %2$d の間です</string>
-     
-     <!-- Flip cover wake -->
-     <string name="hall_wakeup_title">フリップカバーの復帰</string>
-     <string name="hall_title">フリップカバーの復帰の有効化</string>
-     <string name="hall_wakeup_summary">マグネットフリップカバーでスリープ解除する</string>
+
 </resources>
