@@ -82,9 +82,6 @@
     <string name="preset_warm_amoled">Теплый Amoled</string>
     <string name="preset_hybrid_mamba">Гибридная Мамба</string>
 
-    <string name="hall_wakeup_title">Пробуждение умным чехлом</string>
-    <string name="hall_title">Включить пробуждение откидной крышкой</string>
-    <string name="hall_wakeup_summary">Пробуждение устройства через магнитную откидную крышку</string>
     <!-- menu -->
     <string name="kcal_presets">@string/presets_dialog_title</string>
     <string name="kcal_reset">Сбросить</string>

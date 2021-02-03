@@ -77,10 +77,6 @@
     <string name="preset_extreme_amoled">Amoled Extremo</string>
     <string name="preset_warm_amoled">Amoled caliente</string>
     <string name="preset_hybrid_mamba">Mamba híbrido</string>
-     
-    <string name="hall_wakeup_title">Despertar con funda flip</string>
-    <string name="hall_title">Activar levantamiento con funda flip</string>
-    <string name="hall_wakeup_summary">Despertar dispositivo con una funda flip magnética</string>
 
     <!-- CustomSeekBarPreference -->
     <string name="default_value">Valor por defecto</string>
