@@ -27,9 +27,6 @@
 /data/vendor/goodix(/.*)?                                                                                                   u:object_r:fingerprint_vendor_data_file:s0
 /dev/goodix_fp                                                                                                              u:object_r:fingerprint_device:s0
 
-# Hall Switch
-/sys/module/hall/parameters(/.*)?                                                                                           u:object_r:hall_dev:s0
-
 # HVDCP
 /sys/devices(/platform)?/soc/[a-z0-9]+\.i2c/i2c-[0-9]+/[0-9]+-[a-z0-9]+/[a-z0-9]+\.i2c:qcom,[a-z0-9]+@[a-z0-9]:qcom,smb[a-z0-9]+-parallel-slave@[0-9]+/power_supply/parallel(/.*)? u:object_r:sysfs_usb_supply:s0
 

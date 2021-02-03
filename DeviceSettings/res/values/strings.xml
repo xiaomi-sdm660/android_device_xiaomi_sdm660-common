@@ -82,9 +82,6 @@
     <string name="preset_warm_amoled">Warm Amoled</string>
     <string name="preset_hybrid_mamba">Hybrid Mamba</string>
 
-    <string name="hall_wakeup_title">Flip Cover Wakeup</string>
-    <string name="hall_title">Enable Flip Cover Wakeup</string>
-    <string name="hall_wakeup_summary">Wakeup device via magnetic Flip Cover</string>
     <!-- menu -->
     <string name="kcal_presets">@string/presets_dialog_title</string>
     <string name="kcal_reset">Reset</string>
