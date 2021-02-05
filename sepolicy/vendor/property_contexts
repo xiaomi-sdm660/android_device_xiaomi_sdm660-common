@@ -7,12 +7,18 @@ persist.audio.fluence.voicecomm         u:object_r:vendor_default_prop:s0
 
 # Camera
 camera.                                 u:object_r:camera_prop:s0
-cameradaemon.SaveMemAtBoot              u:object_r:camera_prop:s0
-cpp.set.clock                           u:object_r:camera_prop:s0
-disable.cpp.power.collapse              u:object_r:camera_prop:s0
-persist.camera.                         u:object_r:camera_prop:s0
-persist.vendor.camera.                  u:object_r:vendor_camera_prop:s0
-vendor.camera.eis.gyro_name             u:object_r:vendor_camera_prop:s0
+camera.clientname                       u:object_r:camera_prop:s0
+camera.debug.                           u:object_r:camera_prop:s0
+camera.facebeauty.version               u:object_r:camera_prop:s0
+camera.llvd.preview.disable             u:object_r:camera_prop:s0
+camera.sensor.                          u:object_r:camera_prop:s0
+camera.test.novtsgsi                    u:object_r:camera_prop:s0
+cameradaemon.SaveMemAtBoot              u:object_r:vendor_default_prop:s0
+cpp.set.clock                           u:object_r:vendor_default_prop:s0
+disable.cpp.power.collapse              u:object_r:vendor_default_prop:s0
+persist.camera.                         u:object_r:vendor_default_prop:s0
+persist.vendor.camera.                  u:object_r:camera_prop:s0
+vendor.camera.eis.gyro_name             u:object_r:camera_prop:s0
 vidc.enc.dcvs.extra-buff-count          u:object_r:vendor_default_prop:s0
 
 # Fingerprint
