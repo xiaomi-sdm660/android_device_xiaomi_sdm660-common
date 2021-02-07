@@ -32,6 +32,7 @@
 
 <config>
     <!-- These are telephony components that need to freely run in the background -->
+    <allow-in-power-save package="com.android.hotwordenrollment.common.util" />
     <allow-in-power-save package="com.qualcomm.atfwd" />
     <allow-in-power-save package="com.qualcomm.qti.telephonyservice" />
     <allow-in-power-save package="com.qualcomm.qcrilmsgtunnel" />
@@ -51,6 +52,7 @@
     <allow-in-power-save package="com.skyhook.blp" />
     <allow-in-power-save package="org.lineageos.settings.device" />
     <!-- These telephony applications need access to non-[System]SDK APIs -->
+    <hidden-api-whitelisted-app package="com.android.hotwordenrollment.common.util" />
     <hidden-api-whitelisted-app package="com.qualcomm.uimremoteserver" />
     <hidden-api-whitelisted-app package="com.qualcomm.uimremoteclient" />
     <hidden-api-whitelisted-app package="com.qualcomm.atfwd" />

@@ -398,6 +398,12 @@ vendor/lib64/libtinyxml2_1.so|70942325afdd14eedcf11b3fbbfbc3d98f42f8dc
 vendor/lib/hw/vulkan.sdm660.so|976dc51608ebdbed8ced26809e3b776c47695c39
 vendor/lib64/hw/vulkan.sdm660.so|0b282ec0dc482134fd0ba168cd367a8a008ceb5f
 
+# HotwordEnrollment
+-product/priv-app/HotwordEnrollmentOKGoogleWCD9340/HotwordEnrollmentOKGoogleWCD9340.apk|1cbc6ae6490cfc6e16619773809b9afcc9998f91;PRESIGNED
+-product/priv-app/HotwordEnrollmentXGoogleWCD9340/HotwordEnrollmentXGoogleWCD9340.apk|24b4885a1f9194c65f378a2afd8e08b4b11842d8;PRESIGNED
+-system_ext/framework/com.android.hotwordenrollment.common.util.jar|bef92589e75a6da6043f85f4b9b0e85866429624
+system_ext/etc/permissions/com.android.hotwordenrollment.common.util.xml|563a58554d9c0dd0608552b644fbf74519a447bb
+
 # IRQ balance - from LA.UM.8.2.r1-07400-sdm660.0
 vendor/bin/msm_irqbalance|0e967f5c7eaf8d863a50996459101be47adf96a2
 
