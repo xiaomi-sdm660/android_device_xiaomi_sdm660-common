@@ -96,13 +96,8 @@ case "$baseband" in
     fi
 
     case "$baseband" in
-        "svlte2a" | "csfb")
-          start qmiproxy
-        ;;
         "sglte" | "sglte2" )
-          if [ "x$sgltecsfb" != "xtrue" ]; then
-              start qmiproxy
-          else
+          if [ "x$sgltecsfb" = "xtrue" ]; then
               setprop persist.vendor.radio.voice.modem.index 0
           fi
         ;;

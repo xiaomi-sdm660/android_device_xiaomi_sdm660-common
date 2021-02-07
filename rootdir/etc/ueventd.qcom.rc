@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2015, 2017-2020, The Linux Foundation. All rights reserved.
+# Copyright (c) 2012-2015, 2017-2019, The Linux Foundation. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -55,11 +55,8 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/dpl_ctrl             0660   usb        usb
 /dev/ipa_odl_ctl          0660   radio      radio
 /dev/ipa_adpl             0660   system     oem_2905
-/dev/spidev7.1            0660   system	    system
-/dev/hab                  0666   system     system
 /dev/synx_device          0660   root       camera
 /dev/hab                  0666   system     system
-/dev/hgsl                 0666   system     system
 
 #permissions for CSVT
 /dev/smd11                0660   radio      radio
@@ -132,7 +129,6 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/v4l-subdev*          0660   system     camera
 /dev/qseecom              0660   system     drmrpc
 /dev/qce                  0660   system     drmrpc
-/dev/qce                  0660   system     drmrpc
 /dev/smcinvoke            0660   system     drmrpc
 /dev/qsee_ipc_irq_spss    0660   system     drmrpc
 /dev/seemplog             0660   system     system
@@ -146,9 +142,9 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/sec_nvm_*            0660   system     system
 /dev/cryptoapp            0660   system     system
 /dev/spdaemon_ssr         0660   system     system
-/dev/spu_hal_ssr          0660   system     system
-/dev/cam-hyp-intf*        0660   system     camera
-/dev/iuicc*               0660   system     system
+/dev/iuicc                0660   system     system
+/dev/iuicc0               0660   system     system
+/dev/iuicc1               0660   system     system
 /dev/gemini0              0660   system     camera
 /dev/jpeg0                0660   system     camera
 /dev/jpeg1                0660   system     camera
@@ -165,24 +161,6 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/mhi_qdss             0660   system    oem_2902
 /sys/class/qdss_bridge/mhi_qdss  mode      0660     system   oem_2902
 
-# fpc fingerprint
-/sys/devices/soc/soc:fpc1020*   hw_reset 0660 system system
-/sys/devices/soc/soc:fpc1020*   irq 0660 system system
-/sys/devices/soc/soc:fpc1020*   wakeup_enable 0660 system system
-/sys/devices/soc/soc:fpc1020*    fingerdown_wait 0220 system system
-/sys/devices/soc/soc:fpc1020*   compatible_all 0660 system system
-
-# LED
-/sys/class/leds/red      delay_on     0640    system    system
-/sys/class/leds/red      delay_off    0640    system    system
-/sys/class/leds/red      breath       0640    system    system
-/sys/class/leds/green    delay_on     0640    system    system
-/sys/class/leds/green    delay_off    0640    system    system
-/sys/class/leds/green    breath       0640    system    system
-/sys/class/leds/blue     delay_on     0640    system    system
-/sys/class/leds/blue     delay_off    0640    system    system
-/sys/class/leds/blue     breath       0640    system    system
-
 #qg
 /dev/qg                   0660  system     system
 /dev/qg_battery           0660  system     system
@@ -197,7 +175,6 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/devices/soc/a000000.qcom,wcnss-wlan/net/wlan0/queues/rx-* rps_cpus           0660   system     system
 /sys/devices/soc/a000000.qcom,wcnss-wlan/net/p2p0/queues/rx-* rps_cpus            0660   system     system
 /dev/spidev0.0            0660   system     audio
-/dev/i2c-7                0660   system     audio
 /dev/msm_camera/*         0660   system     camera
 /dev/gemini/              0660   system     camera
 /dev/mercury0             0660   system     camera
@@ -239,8 +216,6 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/msm_preproc_ctl      0660   system     audio
 /dev/msm_rtac             0660   system     audio
 /dev/msm_voicememo        0660   system     audio
-/dev/aud_pasthru_adsp     0660   system     audio
-/dev/msm_audio_ion        0660   system     audio
 /dev/ttyHSL1              0660   system     system
 /dev/ttyHS1               0660   system     system
 /dev/mdm                  0660   system     radio
@@ -262,9 +237,7 @@ firmware_directories /vendor/firmware_mnt/image/
 /dev/tsc_ci0              0660   media       media
 
 # sensors
-# /dev/sensors only supports an ioctl to get the current SLPI timestamp
-# allow the sensors daemon to perform this as non-root
-/dev/sensors              0660   root       system
+/dev/sensors              0660   system     system
 /sys/devices/i2c-12/12-*  pollrate_ms 0664 system system
 /sys/devices/f9925000.i2c/i2c-0/0-*                 enable         0660    input    system
 /sys/devices/f9925000.i2c/i2c-0/0-*                 poll_delay     0660    input    system
@@ -301,25 +274,6 @@ firmware_directories /vendor/firmware_mnt/image/
 
 # GNSS Device premissions
 /dev/gnss_sirf             0660   gps     gps
-
-# native sensors input
-/sys/devices/virtual/input/input*   enable_int       0660  system   input
-/sys/devices/virtual/input/input*   gyro_op_mode     0660  system   input
-/sys/devices/virtual/input/input*   acc_range        0660  system   input
-/sys/devices/virtual/input/input*   acc_value        0660  system   input
-/sys/devices/virtual/input/input*   gyro_odr         0660  system   input
-/sys/devices/virtual/input/input*   fifo_data_sel    0660  system   input
-/sys/devices/virtual/input/input*   fifo_watermark   0660  system   input
-/sys/devices/virtual/input/input*   enable           0660  system   input
-/sys/devices/virtual/input/input*   acc_odr          0660  system   input
-/sys/devices/virtual/input/input*   temperature      0660  system   input
-/sys/devices/virtual/input/input*   acc_op_mode      0660  system   input
-/sys/devices/virtual/input/input*   fifo_bytecount   0660  system   input
-/sys/devices/virtual/input/input*   gyro_range       0660  system   input
-/sys/devices/virtual/input/input*   gyro_value       0660  system   input
-
-# GNSS PPS Device premissions
-/dev/pps*                  0660   gps     gps
 
 # laser sensor access
 /sys/devices/virtual/input/input*                   enable_ps_sensor 0660  system   input
@@ -399,6 +353,8 @@ firmware_directories /vendor/firmware_mnt/image/
 #Memory Offline
 /sys/devices/system/memory/memory* state    0660 system system
 
+/sys/devices/virtual/hdcp/msm_hdcp  min_level_change 0664    system  graphics
+
 # sys-fs display
 /sys/class/graphics/fb*     hpd                      0664    system  graphics
 /sys/class/graphics/fb*     res_info                 0664    system  graphics
@@ -428,11 +384,3 @@ firmware_directories /vendor/firmware_mnt/image/
 /sys/class/graphics/fb0     modes                    0664    system  graphics
 /sys/class/graphics/fb0     mode                     0664    system  graphics
 /sys/class/graphics/fb0     msm_cmd_autorefresh_en   0664    system  graphics
-/sys/class/kgsl/kgsl-3d0    pwrscale                 0664    root  system
-/sys/class/kgsl/kgsl-3d0    devfreq/governor         0664    root  system
-/sys/class/kgsl/kgsl-3d0    force_rail_on            0664    root  system
-/sys/class/kgsl/kgsl-3d0    force_bus_on             0664    root  system
-/sys/class/kgsl/kgsl-3d0    force_clk_on             0664    root  system
-/sys/class/kgsl/kgsl-3d0    bus_split                0664    root  system
-/sys/class/graphics/fb0     dynamic_bitclk           0664    system  graphics
-/sys/devices/virtual/hdcp/msm_hdcp  min_level_change 0664    system  graphics
