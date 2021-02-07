@@ -27,11 +27,264 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+target=`getprop ro.board.platform`
+low_ram=`getprop ro.config.low_ram`
+if [ -f /sys/devices/soc0/soc_id ]; then
+    platformid=`cat /sys/devices/soc0/soc_id`
+else
+    platformid=`cat /sys/devices/system/soc/soc0/id`
+fi
+
+start_msm_irqbalance_8939()
+{
+	if [ -f /vendor/bin/msm_irqbalance ]; then
+		case "$platformid" in
+		    "239" | "293" | "294" | "295" | "304" | "338" | "313" | "353" | "354")
+			start vendor.msm_irqbalance;;
+		esac
+	fi
+}
+
+start_msm_irqbalance_msmnile()
+{
+         if [ -f /vendor/bin/msm_irqbalance ]; then
+                start vendor.msm_irqbalance
+         fi
+}
+
+start_msm_irqbalance_kona()
+{
+         if [ -f /vendor/bin/msm_irqbalance ]; then
+                start vendor.msm_irqbalance
+         fi
+}
+
+start_msm_irqbalance_lito()
+{
+         if [ -f /vendor/bin/msm_irqbalance ]; then
+                start vendor.msm_irqbalance
+         fi
+}
+
+start_msm_irqbalance_atoll()
+{
+         if [ -f /vendor/bin/msm_irqbalance ]; then
+                start vendor.msm_irqbalance
+         fi
+}
+
+start_msm_irqbalance660()
+{
+	if [ -f /vendor/bin/msm_irqbalance ]; then
+		case "$platformid" in
+		    "317" | "321" | "324" | "325" | "326" | "336" | "345" | "346" | "360" | "393")
+			start vendor.msm_irqbalance;;
+		    "318" | "327" | "385")
+			start vendor.msm_irqbl_sdm630;;
+		esac
+	fi
+}
+
+start_msm_irqbalance()
+{
+	if [ -f /vendor/bin/msm_irqbalance ]; then
+			start vendor.msm_irqbalance
+	fi
+}
+
+baseband=`getprop ro.baseband`
 echo 1 > /proc/sys/net/ipv6/conf/default/accept_ra_defrtr
 
-if [ -f /vendor/bin/msm_irqbalance ]; then
-        start vendor.msm_irqbalance
-fi
+case "$baseband" in
+        "svlte2a")
+        start bridgemgrd
+        ;;
+esac
+
+case "$target" in
+    "sdm660" | "sdm636")
+        if [ -f /sys/devices/soc0/soc_id ]; then
+             soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+             soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+             hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+             hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+        start_msm_irqbalance660
+        ;;
+    "msm8916")
+        start_msm_irqbalance_8939
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+            soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        if [ -f /sys/devices/soc0/platform_subtype_id ]; then
+             platform_subtype_id=`cat /sys/devices/soc0/platform_subtype_id`
+        fi
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+             hw_platform=`cat /sys/devices/soc0/hw_platform`
+        fi
+        case "$soc_id" in
+             "239")
+                  case "$hw_platform" in
+                       "Surf")
+                            case "$platform_subtype_id" in
+                                 "1")
+                                      setprop qemu.hw.mainkeys 0
+                                      ;;
+                            esac
+                            ;;
+                       "MTP")
+                          case "$platform_subtype_id" in
+                               "3")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                          esac
+                          ;;
+                  esac
+                  ;;
+        esac
+        ;;
+    "msm8994" | "msm8992" | "msm8998" | "apq8098_latv" | "sdm845" | "sdm710" | "qcs605" | "sm6150" | "trinket" | "bengal")
+        start_msm_irqbalance
+        ;;
+    "msm8996")
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+             hw_platform=`cat /sys/devices/soc0/hw_platform`
+        fi
+        case "$hw_platform" in
+                "MTP" | "CDP")
+                #Loop through the sysfs nodes and determine the correct sysfs to change the permission and ownership.
+                        for count in 0 1 2 3 4 5 6 7 8 9 10
+                        do
+                                dir="/sys/devices/soc/75ba000.i2c/i2c-12/12-0020/input/input"$count
+                                if [ -d "$dir" ]; then
+                                     chmod 0660 $dir/secure_touch_enable
+                                     chmod 0440 $dir/secure_touch
+                                     chown system.drmrpc $dir/secure_touch_enable
+                                     chown system.drmrpc $dir/secure_touch
+                                     break
+                                fi
+                        done
+                        ;;
+        esac
+        ;;
+    "msmnile")
+        start_msm_irqbalance_msmnile
+        ;;
+    "kona")
+        start_msm_irqbalance_kona
+        ;;
+    "lito")
+        start_msm_irqbalance_lito
+        ;;
+    "atoll")
+        start_msm_irqbalance_atoll
+        ;;
+    "msm8937")
+        start_msm_irqbalance_8939
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+            soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+             hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+             hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+	if [ "$low_ram" != "true" ]; then
+             case "$soc_id" in
+                  "294" | "295" | "303" | "307" | "308" | "309" | "313" | "320" | "353" | "354" | "363" | "364")
+                       case "$hw_platform" in
+                            "Surf")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                            "MTP")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                            "RCM")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                            "QRD")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       esac
+                       ;;
+             esac
+        fi
+        ;;
+    "msm8953")
+	start_msm_irqbalance_8939
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+            soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+             hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+             hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+        case "$soc_id" in
+             "293" | "304" | "338" | "351" | "349" | "350" )
+                  case "$hw_platform" in
+                       "Surf")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "MTP")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "RCM")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "QRD")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                  esac
+                  ;;
+       esac
+        ;;
+    "sdm710")
+        if [ -f /sys/devices/soc0/soc_id ]; then
+            soc_id=`cat /sys/devices/soc0/soc_id`
+        else
+            soc_id=`cat /sys/devices/system/soc/soc0/id`
+        fi
+
+        if [ -f /sys/devices/soc0/hw_platform ]; then
+             hw_platform=`cat /sys/devices/soc0/hw_platform`
+        else
+             hw_platform=`cat /sys/devices/system/soc/soc0/hw_platform`
+        fi
+        case "$soc_id" in
+             "336" | "337" | "347" | "360" | "393" )
+                  case "$hw_platform" in
+                       "Surf")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "MTP")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "RCM")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                       "QRD")
+                                    setprop qemu.hw.mainkeys 0
+                                    ;;
+                  esac
+                  ;;
+       esac
+        ;;
+esac
 
 #
 # Make modem config folder and copy firmware config to that folder for RIL
@@ -57,5 +310,16 @@ fi
 chmod g-w /data/vendor/modem_config
 setprop ro.vendor.ril.mbn_copy_completed 1
 
-#set default loglevel to KERN_WARNING
-echo "4 4 1 4" > /proc/sys/kernel/printk
+#check build variant for printk logging
+#current default minimum boot-time-default
+buildvariant=`getprop ro.build.type`
+case "$buildvariant" in
+    "userdebug" | "eng")
+        #set default loglevel to KERN_INFO
+        echo "6 6 1 7" > /proc/sys/kernel/printk
+        ;;
+    *)
+        #set default loglevel to KERN_WARNING
+        echo "4 4 1 4" > /proc/sys/kernel/printk
+        ;;
+esac
