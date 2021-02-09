@@ -231,6 +231,10 @@ on post-fs-data
 
     # Create directory used by display clients
     mkdir /data/vendor/display 0770 system graphics
+    
+    # Create apex symlinked dirs
+    mkdir /data/vendor/metadata_apex 0755 root system
+    mkdir /data/vendor/metadata_apex/sessions 0700 root system
 
     # Change lm related dirs
     mkdir /data/vendor/lm 0700 root root
