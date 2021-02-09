@@ -1,2 +1,7 @@
+# Apex Metadata
+/data/vendor/metadata_apex(/.*)?              u:object_r:apex_metadata_file:s0
+/data/vendor/metadata_apex/sessions(/.*)?     u:object_r:apex_metadata_file:s0
+
 # Executables
-/system/bin/chargeonlymode      u:object_r:charger_exec:s0
+/system/bin/chargeonlymode                    u:object_r:charger_exec:s0
+
