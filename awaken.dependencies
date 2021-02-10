@@ -1,19 +1,19 @@
 [
   {
     "remote"      : "github",
-    "repository"  : "xiaomi-sdm660/android_kernel_xiaomi_sdm660",
+    "repository"  : "OdSazib/halcyon_kernel_sdm660",
     "target_path" : "kernel/xiaomi/sdm660",
-    "branch"      : "11-EAS"
+    "branch"      : "11-HMP"
   },
   {
     "remote"      : "github",
-    "repository"  : "xiaomi-sdm660/android_vendor_xiaomi_sdm660-common",
+    "repository"  : "OdSazib/vendor_xiaomi_sdm660-common",
     "target_path" : "vendor/xiaomi/sdm660-common",
-    "branch"      : "11"
+    "branch"      : "11-HMP"
   },
   {
     "remote"      : "github",
-    "repository"  : "xiaomi-sdm660/android_vendor_xiaomi_MiuiCamera",
+    "repository"  : "OdSazib/vendor_xiaomi_MiuiCamera",
     "target_path" : "vendor/xiaomi/MiuiCamera",
     "branch"      : "sdm660"
   }

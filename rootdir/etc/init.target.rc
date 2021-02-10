@@ -28,34 +28,13 @@
 #
 
 on init
-    write /dev/stune/foreground/schedtune.prefer_idle 1
-    write /dev/stune/top-app/schedtune.boost 10
-    write /dev/stune/top-app/schedtune.prefer_idle 1
-
-    # Setup permission for Power HAL
-    chown system system /dev/stune/top-app/schedtune.boost
-    chown system system /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
-    chown system system /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
-    chown system system /sys/class/kgsl/kgsl-3d0/force_rail_on
-    chown system system /sys/class/kgsl/kgsl-3d0/force_clk_on
-    chown system system /sys/class/kgsl/kgsl-3d0/idle_timer
-    chown system system /sys/class/devfreq/soc:qcom,cpubw/min_freq
-    chown system system /sys/class/devfreq/soc:qcom,gpubw/min_freq
-    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
-    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
-    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_length
-
-    chmod 0664 /dev/stune/top-app/schedtune.boost
-    chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
-    chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/max_freq
-    chmod 0664 /sys/class/kgsl/kgsl-3d0/force_rail_on
-    chmod 0664 /sys/class/kgsl/kgsl-3d0/force_clk_on
-    chmod 0664 /sys/class/kgsl/kgsl-3d0/idle_timer
-    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/min_freq
-    chown 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_length
-    chmod 0664 /sys/class/devfreq/soc:qcom,gpubw/min_freq
-    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
-    chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
+    write /dev/stune/foreground/schedtune.sched_boost_no_override 1
+    write /dev/stune/top-app/schedtune.sched_boost_no_override 1
+    write /dev/stune/schedtune.colocate 0
+    write /dev/stune/background/schedtune.colocate 0
+    write /dev/stune/system-background/schedtune.colocate 0
+    write /dev/stune/foreground/schedtune.colocate 0
+    write /dev/stune/top-app/schedtune.colocate 1
 
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
@@ -129,15 +108,6 @@ on boot
     setprop vendor.usb.qdss.inst.name "qdss"
     write /sys/module/usb_f_qcrndis/parameters/rndis_dl_max_xfer_size 15916
     setprop sys.usb.configfs 1
-
-    # Touchpanel
-    chown system system /sys/touchpanel/capacitive_keys
-    chown system system /sys/touchpanel/double_tap
-    chown system system /sys/touchpanel/reversed_keys
-
-    chmod 0664 /sys/touchpanel/capacitive_keys
-    chmod 0664 /sys/touchpanel/double_tap
-    chmod 0664 /sys/touchpanel/reversed_keys
     
     # SmartCharging
     chown system system /sys/class/power_supply/battery/input_suspend
@@ -216,6 +186,12 @@ service vendor.cdsprpcd /vendor/bin/cdsprpcd
 #    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch_enable
 #    chown system drmrpc /sys/devices/f9966000.i2c/i2c-1/1-0020/secure_touch
 #
+
+service energy-awareness /system/vendor/bin/energy-awareness
+    class main
+    user system
+    group system
+    oneshot
 
 service vendor.pd_mapper /system/vendor/bin/pd-mapper
      class core

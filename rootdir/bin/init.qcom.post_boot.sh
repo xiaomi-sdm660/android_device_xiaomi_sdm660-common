@@ -551,6 +551,8 @@ else
     # Disable wsf for all targets beacause we are using efk.
     # wsf Range : 1..1000 So set to bare minimum value 1.
     echo 1 > /proc/sys/vm/watermark_scale_factor
+    
+    configure_zram_parameters
 
     configure_read_ahead_kb_values
 
@@ -1501,6 +1503,13 @@ case "$target" in
                 echo 1 > /sys/module/lpm_levels/lpm_workarounds/dynamic_clock_gating
                 # Enable timer migration to little cluster
                 echo 1 > /proc/sys/kernel/power_aware_timer_migration
+                
+                case "$soc_id" in
+                        "277" | "278")
+                        # Start energy-awareness for 8976
+                        start energy-awareness
+                ;;
+                esac
 
                 # Set Memory parameters
                 configure_memory_parameters
@@ -2380,16 +2389,42 @@ case "$target" in
             panel=${panel:2:4}
         fi
 
+        if [ $panel -gt 1080 ]; then
+            echo 2 > /proc/sys/kernel/sched_window_stats_policy
+            echo 5 > /proc/sys/kernel/sched_ravg_hist_size
+        else
+            echo 3 > /proc/sys/kernel/sched_window_stats_policy
+            echo 3 > /proc/sys/kernel/sched_ravg_hist_size
+        fi
+        
         #Apply settings for sdm660, sdm636,sda636
         case "$soc_id" in
                 "317" | "324" | "325" | "326" | "345" | "346" )
 
+            echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
+            echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
+            echo 30 > /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres
+            echo 100 > /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms
+            echo 1 > /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster
+            echo 4 > /sys/devices/system/cpu/cpu4/core_ctl/task_thres
+
+            # Setting b.L scheduler parameters
+            echo 96 > /proc/sys/kernel/sched_upmigrate
+            echo 90 > /proc/sys/kernel/sched_downmigrate
+            echo 140 > /proc/sys/kernel/sched_group_upmigrate
+            echo 120 > /proc/sys/kernel/sched_group_downmigrate
+            echo 0 > /proc/sys/kernel/sched_select_prev_cpu_us
+            echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
+            echo 400000 > /proc/sys/kernel/sched_freq_dec_notify
+            echo 5 > /proc/sys/kernel/sched_spill_nr_run
+            echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
+            echo 100000 > /proc/sys/kernel/sched_short_burst_ns
+            echo 1 > /proc/sys/kernel/sched_prefer_sync_wakee_to_waker
+            echo 20 > /proc/sys/kernel/sched_small_wakee_task_load
+
             # cpuset settings
-            echo 0-7 > /dev/cpuset/top-app/cpus
-            echo 0-3,6-7 > /dev/cpuset/foreground/cpus
-            echo 0-1 > /dev/cpuset/background/cpus
+            echo 0-3 > /dev/cpuset/background/cpus
             echo 0-3 > /dev/cpuset/system-background/cpus
-            echo 0-3 > /dev/cpuset/restricted/cpus
 
             # disable thermal bcl hotplug to switch governor
             echo 0 > /sys/module/msm_thermal/core_control/enabled
@@ -2397,17 +2432,38 @@ case "$target" in
             # online CPU0
             echo 1 > /sys/devices/system/cpu/cpu0/online
             # configure governor settings for little cluster
-            echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-            echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us
-            echo 500 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us
+            echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+            echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load
+            echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif
+            echo "19000 1401600:39000" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
+            echo 90 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
+            echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
+            echo 1401600 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
+            echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
+            echo "85 1747200:95" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
+            echo 39000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
+            echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis
             echo 633600 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+            echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/ignore_hispeed_on_notif
+            echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/fast_ramp_down
+            
             # online CPU4
             echo 1 > /sys/devices/system/cpu/cpu4/online
             # configure governor settings for big cluster
-            echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-            echo 20000 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us
-            echo 500 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us
+            echo "interactive" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+            echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load
+            echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif
+            echo "19000 1401600:39000" > /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
+            echo 90 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
+            echo 20000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
+            echo 1401600 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
+            echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
+            echo "85 1401600:90 2150400:95" > /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
+            echo 39000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
+            echo 59000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis
             echo 1113600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+            echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/ignore_hispeed_on_notif
+            echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/fast_ramp_down
 
             # bring all cores online
             echo 1 > /sys/devices/system/cpu/cpu0/online
