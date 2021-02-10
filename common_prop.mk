@@ -36,7 +36,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.config.media_vol_steps=25 \
     ro.vendor.audio.sdk.fluencetype=fluence \
     ro.vendor.audio.sdk.ssr=false \
-    vendor.audio.adm.buffering.ms=12 \
     vendor.audio.dolby.ds2.enabled=false \
     vendor.audio.dolby.ds2.hardbypass=false \
     vendor.audio.flac.sw.decoder.24bit=true \
@@ -110,6 +109,15 @@ else
 PRODUCT_PROPERTY_OVERRIDES += \
     vendor.audio.feature.spkr_prot.enable=true
 endif
+
+ifneq ($(filter lavender,$(TARGET_DEVICE)),)
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.audio.adm.buffering.ms=12
+else
+PRODUCT_PROPERTY_OVERRIDES += \
+    vendor.audio.adm.buffering.ms=6
+endif
+
 
 # Bluetooth
 PRODUCT_PROPERTY_OVERRIDES += \
