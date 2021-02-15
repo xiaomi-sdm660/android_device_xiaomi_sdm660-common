@@ -13,7 +13,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dex2oat-filter=speed \
     dalvik.vm.dex2oat-threads=8 \
     dalvik.vm.image-dex2oat-filter=speed \
-    ro.sys.fw.dex2oat_thread_count=8 \
     ro.vendor.qti.am.reschedule_service=true
 
 # Audio
@@ -22,7 +21,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     audio.deep_buffer.media=true \
     audio.offload.min.duration.secs=30 \
     audio.offload.video=true \
-    audio.safemedia.bypass=true \
     audio.sys.noisy.broadcast.delay=600 \
     audio.sys.offload.pstimeout.secs=3 \
     persist.audio.in_mmap_delay_micros=100 \
@@ -117,7 +115,6 @@ endif
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.bluetooth.a2dp_offload.disabled=false \
     persist.bluetooth.bluetooth_audio_hal.disabled=false \
-    persist.vendor.bt.a2dp_offload_cap=sbc-aac-aptx-aptxhd-ldac \
     persist.vendor.bt.aac_frm_ctl.enabled=true \
     persist.vendor.qcom.bluetooth.enable.splita2dp=false \
     ro.vendor.bluetooth.wipower=false \
@@ -133,7 +130,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.camera.HAL3.enabled=1 \
     persist.vendor.camera.eis.enable=1 \
     persist.vendor.camera.exif.make=Xiaomi \
-    persist.vendor.camera.privapp.list=org.codeaurora.snapcam \
     vendor.camera.aux.packageblacklist=com.discord \
     camera.aux.packagelist=com.google.android.GoogleCamera,com.android.camera,org.codeaurora.snapcam \
     vendor.camera.aux.packagelist=com.google.android.GoogleCamera,com.android.camera,org.codeaurora.snapcam
@@ -159,21 +155,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.early_phase_offset_ns=1500000 \
     debug.cpurend.vsync=true \
     debug.hwui.use_buffer_age=false \
-    persist.hwc.enable_vds=1 \
     ro.opengles.version=196610 \
-    ro.qualcomm.cabl=0 \
     vendor.display.disable_skip_validate=1 \
     vendor.gralloc.enable_fb_ubwc=1 \
-    vendor.video.disable.ubwc=1 \
-    vendor.display.enable_default_color_mode=0 \
-    video.disable.ubwc=1
-
-# Blur
-ifneq ($(filter lavender,$(TARGET_DEVICE)),)
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.sf.blurs_are_expensive=1 \
-    ro.surface_flinger.supports_background_blur=1
-endif
+    vendor.display.enable_default_color_mode=0
 
 # The default sf phase offset is set to 6ms, to avoid it be included into next
 # vsync threshold, set high fps early sf and next vsync threshold phase offset
@@ -183,19 +168,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.high_fps_early_gl_phase_offset_ns=9000000 \
     debug.sf.phase_offset_threshold_for_next_vsync_ns=6100000
 
-# Fling
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.min.fling_velocity=160 \
-    ro.max.fling_velocity=20000
-
 # Graphics
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.egl=adreno \
     ro.hardware.vulkan=adreno
-
-# GMS
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.com.google.clientidbase.ms=android-xiaomi-rev2
 
 # HAL1 apps list
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -222,46 +198,25 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.lmk.downgrade_pressure=100 \
     ro.lmk.kill_heaviest_task=true\
     ro.lmk.kill_timeout_ms=100 \
-    ro.lmk.use_minfree_levels=true \
-    ro.lmk.log_stats=true \
-    ro.lmk.use_psi=false
+    ro.lmk.use_minfree_levels=true
 
 # Media
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.stagefright.omx_default_rank.sw-audio=1 \
     debug.stagefright.omx_default_rank=0 \
-    media.aac_51_output_enabled=true \
-    media.stagefright.enable-aac=true \
-    media.stagefright.enable-http=true \
-    media.stagefright.enable-player=true \
-    media.stagefright.enable-qcp=true \
-    media.stagefright.enable-scan=true \
     media.stagefright.thumbnail.prefer_hw_codecs=true \
-    mm.enable.qcom_parser=13631471 \
-    mm.enable.smoothstreaming=true \
-    mmp.enable.3g2=true \
-    persist.mm.enable.prefetch=true \
     vendor.vidc.dec.enable.downscalar=1 \
     vendor.vidc.enc.disable.pq=true \
     vendor.vidc.enc.disable_bframes=1 \
-    vidc.enc.dcvs.extra-buff-count=2 \
-    vidc.enc.target_support_bframe=1
+    vidc.enc.dcvs.extra-buff-count=2
 
 # Memory optimizations
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.qti.sys.fw.bservice_enable=true
 
-# Netflix custom property
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.netflix.bsp_rev=Q660-13149-1
-
 # OEM Unlock reporting
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.oem_unlock_supported=1
-
-# Proximity
-PRODUCT_PROPERTY_OVERRIDES += \
-    gsm.proximity.enable=true
 
 # QCOM
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -280,11 +235,6 @@ PRODUCT_ODM_PROPERTIES += \
 
 # Radio
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.backup.ntpServer=0.pool.ntp.org \
-    persist.radio.aosp_usr_pref_sel=true \
-    persist.radio.add_power_save=1 \
-    persist.radio.VT_CAM_INTERFACE=2 \
-    persist.radio.data_con_rprt=1 \
     persist.vendor.data.mode=concurrent \
     persist.vendor.qti.telephony.vt_cam_interface=1 \
     persist.vendor.radio.apm_sim_not_pwdn=1 \
@@ -310,8 +260,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     debug.enable.sglscale=1 \
     debug.sf.disable_hwc=0 \
     debug.sf.gpu_comp_tiling=1 \
-    debug.sf.recomputecrop=0 \
-    persist.hwc.ptor.enable=true
+    debug.sf.recomputecrop=0
 
 # Sensor
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -330,10 +279,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.max_virtual_display_dimension=4096 \
     ro.surface_flinger.protected_contents=true
 
-#Storaged
- PRODUCT_PROPERTY_OVERRIDES += \
-    ro.storaged.event.interval=99999
-
 # System restart
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.ssr.restart_level=ALL_ENABLE
@@ -342,15 +287,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     sys.thermal.data.path=/data/vendor/thermal/
 
-# Time daemon
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.timed.enable=true
-
 # WFD
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.debug.wfd.enable=1 \
     persist.sys.wfd.virtual=0
 
-# Zygote preforking
+# ZRAM
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.device_config.runtime_native.usap_pool_enabled=true
+    ro.zram.mark_idle_delay_mins=60 \
+    ro.zram.first_wb_delay_mins=180 \
+    ro.zram.periodic_wb_delay_hours=24
