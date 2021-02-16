@@ -1,6 +1,8 @@
 # Apex Metadata
-/data/vendor/metadata_apex(/.*)?              u:object_r:apex_metadata_file:s0
-/data/vendor/metadata_apex/sessions(/.*)?     u:object_r:apex_metadata_file:s0
+/data/apex/sessions(/.*)?                     u:object_r:apex_metadata_file:s0
+/data/apex/active(/.*)?                       u:object_r:apex_metadata_file:s0
+/data/apex/backup(/.*)?                       u:object_r:apex_metadata_file:s0
+/data/apex/hashtree(/.*)?                     u:object_r:apex_metadata_file:s0
 
 # Executables
 /system/bin/chargeonlymode                    u:object_r:charger_exec:s0
