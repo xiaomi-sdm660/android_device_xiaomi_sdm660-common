@@ -40,8 +40,10 @@ on init
     chown system system /sys/class/kgsl/kgsl-3d0/force_clk_on
     chown system system /sys/class/kgsl/kgsl-3d0/idle_timer
     chown system system /sys/class/devfreq/soc:qcom,cpubw/min_freq
+    chown system system /sys/class/devfreq/soc:qcom,gpubw/min_freq
     chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
     chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
+    chown system system /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_length
 
     chmod 0664 /dev/stune/top-app/schedtune.boost
     chmod 0664 /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
@@ -50,6 +52,8 @@ on init
     chmod 0664 /sys/class/kgsl/kgsl-3d0/force_clk_on
     chmod 0664 /sys/class/kgsl/kgsl-3d0/idle_timer
     chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/min_freq
+    chown 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_length
+    chmod 0664 /sys/class/devfreq/soc:qcom,gpubw/min_freq
     chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hyst_trigger_count
     chmod 0664 /sys/class/devfreq/soc:qcom,cpubw/bw_hwmon/hist_memory
 
