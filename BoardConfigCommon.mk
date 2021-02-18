@@ -37,13 +37,17 @@ BOARD_USES_RECOVERY_AS_BOOT := true
 TARGET_NO_RECOVERY := true
 endif
 
+# APEX image
+ifeq ($(ENABLE_APEX), true)
+DEXPREOPT_GENERATE_APEX_IMAGE := true
+endif
+
 # ANT+
 BOARD_ANT_WIRELESS_DEVICE := "qualcomm-hidl"
 
 # Broken Files/Headers
 BUILD_BROKEN_VINTF_PRODUCT_COPY_FILES := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
-
 
 # Architecture
 TARGET_ARCH := arm64
