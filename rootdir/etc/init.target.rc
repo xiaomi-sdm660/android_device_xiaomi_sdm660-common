@@ -138,6 +138,10 @@ on boot
     chmod 0664 /sys/touchpanel/capacitive_keys
     chmod 0664 /sys/touchpanel/double_tap
     chmod 0664 /sys/touchpanel/reversed_keys
+    
+    # SmartCharging
+    chown system system /sys/class/power_supply/battery/input_suspend
+    chmod 0666 /sys/class/power_supply/battery/input_suspend
 
 #Peripheral manager
 service vendor.per_mgr /system/vendor/bin/pm-service
