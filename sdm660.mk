@@ -47,8 +47,9 @@ COMMON_PATH := device/xiaomi/sdm660-common
 # Inherit properties
 $(call inherit-product, $(COMMON_PATH)/common_prop.mk)
 
-# Inherit properties (system/build.prop)
+# Inherit properties ($PATH_PROP)
 TARGET_SYSTEM_PROP += $(COMMON_PATH)/system.prop
+TARGET_SYSTEM_EXT_PROP += $(COMMON_PATH)/system_ext.prop
 
 # A/B
 ifeq ($(ENABLE_AB), true)
