@@ -229,8 +229,6 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 # QCOM
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.cne.feature=1 \
-    persist.vendor.dpm.feature=1 \
-    persist.vendor.dpm.nsrm.bkg.evt=3955 \
     persist.vendor.qcomsysd.enabled=1 \
     ro.vendor.extension_library=libqti-perfd-client.so
 
