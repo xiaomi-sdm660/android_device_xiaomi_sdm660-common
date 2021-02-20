@@ -68,10 +68,6 @@ gsm.proximity.enable=true
 # Time daemon
 persist.timed.enable=true
 
-# QCOM
-persist.vendor.dpm.feature=1    
-persist.vendor.dpm.nsrm.bkg.evt=3955
-
 # Radio
 persist.backup.ntpServer=0.pool.ntp.org
 persist.radio.aosp_usr_pref_sel=true
