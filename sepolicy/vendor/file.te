@@ -21,3 +21,6 @@ type sysfs_touchpanel, fs_type, sysfs_type;
 type sysfs_fpsinfo, sysfs_type, fs_type;
 type sysfs_headphonegain, sysfs_type, fs_type;
 type sysfs_micgain, sysfs_type, fs_type;
+
+# Sockets
+type audio_socket, file_type;
