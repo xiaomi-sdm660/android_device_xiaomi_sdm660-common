@@ -544,6 +544,10 @@ vendor/lib64/libqmiservices.so|211b9ed2d358246dc51cba2aaa47bff06930add6
 vendor/lib64/libqrtr.so|c7ca700c1f4759aa673a6c5478ca492487bbea70
 vendor/lib64/libqsocket.so|40816476d857f2ad07490415f6ff7433517ccef8
 
+# QTI Display - from LA.UM.9.6.2.r1-03300-89xx.0
+vendor/lib/libdisplayconfig.qti.so|7992c42b4cc784348381d824037216cff9922b22
+vendor/lib64/libdisplayconfig.qti.so|ed995e14b48117b77fe8a496d00d3f879b8c7dc3
+
 # Radio - from LA.UM.8.2.r1-07400-sdm660.0
 -product/framework/QtiTelephonyServicelibrary.jar:system_ext/framework/QtiTelephonyServicelibrary.jar|ea30b05eaad3ebee157421b3f31bf8585566b4cd
 -product/framework/qcrilhook.jar:system_ext/framework/qcrilhook.jar|5138c90b44466794167df88d4060545c93832ba8
