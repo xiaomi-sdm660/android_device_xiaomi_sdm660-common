@@ -73,6 +73,9 @@
 # Service HALs
 /(vendor|system/vendor)/bin/hw/android\.hardware\.authsecret@1\.0-service                                                   u:object_r:hal_authsecret_default_exec:s0
 
+# Sockets
+/dev/socket/audio_hw_socket                                                                                                 u:object_r:audio_socket:s0
+
 # Tap to Wake
 /sys/devices/soc/c177000.i2c/i2c-3/3-005d/enable_dt2w                                                                       u:object_r:sysfs_tap_to_wake:s0
 /sys/devices/soc/c177000.i2c/i2c-3/3-0038/enable_dt2w                                                                       u:object_r:sysfs_tap_to_wake:s0

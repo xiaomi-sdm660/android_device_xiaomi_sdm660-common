@@ -1,3 +1,4 @@
+allow hal_audio_default audio_socket:sock_file rw_file_perms;
 allow hal_audio_default diag_device:chr_file { read write };
 allow hal_audio_default sysfs:dir r_dir_perms;
 allow hal_audio_default sysfs_info:file { open getattr read };
