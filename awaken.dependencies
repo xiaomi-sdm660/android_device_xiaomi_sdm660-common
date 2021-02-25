@@ -16,5 +16,11 @@
     "repository"  : "xiaomi-sdm660/android_vendor_xiaomi_MiuiCamera",
     "target_path" : "vendor/xiaomi/MiuiCamera",
     "branch"      : "sdm660"
+  },
+  {
+    "remote"      : "github",
+    "repository"  : "xiaomi-sdm660/vendor_xiaomi_dirac",
+    "target_path" : "vendor/xiaomi/dirac",
+    "branch"      : "11"
   }
 ]
