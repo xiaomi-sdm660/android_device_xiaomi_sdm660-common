@@ -14,7 +14,7 @@
 // limitations under the License.
 
 cc_library {
-    name: "libdisppower-xiaomi_sdm660",
+    name: "libdisppower",
     proprietary: true,
     srcs: [
         "disp-power/InteractionHandler.cpp",
@@ -28,38 +28,26 @@ cc_library {
     ],
 }
 
-cc_library_headers {
-    name: "xiaomi_sdm660_power_headers",
-    vendor: true,
-    export_include_dirs: ["hidl"],
-}
-
 cc_binary {
-    name: "android.hardware.power@1.3-service.xiaomi_sdm660-libperfmgr",
+    name: "android.hardware.power-service.xiaomi_sdm660-libperfmgr",
     relative_install_path: "hw",
-    vintf_fragments: ["hidl/android.hardware.power@1.3-service.xiaomi_sdm660.xml"],
-    init_rc: ["hidl/android.hardware.power@1.3-service.xiaomi_sdm660-libperfmgr.rc"],
-    srcs: [
-        "hidl/service.cpp",
-        "hidl/Power.cpp",
-        "hidl/power-helper.c",
-    ],
-    cflags: [
-        "-Wall",
-        "-Werror",
-    ],
+    init_rc: ["aidl/android.hardware.power-service.xiaomi_sdm660-libperfmgr.rc"],
+    vintf_fragments: ["aidl/android.hardware.power-service.xiaomi_sdm660.xml"],
+    vendor: true,
     shared_libs: [
+        "android.hardware.power-ndk_platform",
         "libbase",
-        "libhidlbase",
+        "libcutils",
         "liblog",
         "libutils",
-        "libcutils",
-        "android.hardware.power@1.0",
-        "android.hardware.power@1.1",
-        "android.hardware.power@1.2",
-        "android.hardware.power@1.3",
-        "libdisppower-xiaomi_sdm660",
+        "libbinder_ndk",
+        "libdisppower",
         "libperfmgr",
+        "pixel-power-ext-ndk_platform",
     ],
-    proprietary: true,
+    srcs: [
+        "aidl/service.cpp",
+        "aidl/Power.cpp",
+        "aidl/PowerExt.cpp",
+    ],
 }

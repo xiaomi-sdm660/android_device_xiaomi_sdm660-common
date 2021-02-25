@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "android.hardware.power@1.3-service.xiaomi_sdm660-libperfmgr"
+#define LOG_TAG "android.hardware.power@-service.xiaomi_sdm660-libperfmgr"
+#define ATRACE_TAG (ATRACE_TAG_POWER | ATRACE_TAG_HAL)
 
 #include <fcntl.h>
 #include <poll.h>
@@ -64,14 +65,15 @@ bool InteractionHandler::Init() {
     if (mState != INTERACTION_STATE_UNINITIALIZED)
         return true;
 
-    mIdleFd = fb_idle_open();
+    int fd = fb_idle_open();
+    if (fd < 0)
+        return false;
+    mIdleFd = fd;
 
     mEventFd = eventfd(0, EFD_NONBLOCK);
     if (mEventFd < 0) {
         ALOGE("Unable to create event fd (%d)", errno);
-        if (mIdleFd >= 0) {
-            close(mIdleFd);
-        }
+        close(mIdleFd);
         return false;
     }
 
@@ -94,9 +96,7 @@ void InteractionHandler::Exit() {
     mThread->join();
 
     close(mEventFd);
-    if (mIdleFd >= 0) {
-        close(mIdleFd);
-    }
+    close(mIdleFd);
 }
 
 void InteractionHandler::PerfLock() {
@@ -104,6 +104,7 @@ void InteractionHandler::PerfLock() {
     if (!mHintManager->DoHint("INTERACTION")) {
         ALOGE("%s: do hint INTERACTION failed", __func__);
     }
+    ATRACE_INT("interaction_lock", 1);
 }
 
 void InteractionHandler::PerfRel() {
@@ -111,6 +112,7 @@ void InteractionHandler::PerfRel() {
     if (!mHintManager->EndHint("INTERACTION")) {
         ALOGE("%s: end hint INTERACTION failed", __func__);
     }
+    ATRACE_INT("interaction_lock", 0);
 }
 
 size_t InteractionHandler::CalcTimespecDiffMs(struct timespec start, struct timespec end) {
@@ -121,6 +123,7 @@ size_t InteractionHandler::CalcTimespecDiffMs(struct timespec start, struct time
 }
 
 void InteractionHandler::Acquire(int32_t duration) {
+    ATRACE_CALL();
 
     std::lock_guard<std::mutex> lk(mLock);
     if (mState == INTERACTION_STATE_UNINITIALIZED) {
@@ -166,6 +169,7 @@ void InteractionHandler::Acquire(int32_t duration) {
 void InteractionHandler::Release() {
     std::lock_guard<std::mutex> lk(mLock);
     if (mState == INTERACTION_STATE_WAITING) {
+        ATRACE_CALL();
         PerfRel();
         mState = INTERACTION_STATE_IDLE;
     } else {
@@ -190,6 +194,7 @@ void InteractionHandler::WaitForIdle(int32_t wait_ms, int32_t timeout_ms) {
     ssize_t ret;
     struct pollfd pfd[2];
 
+    ATRACE_CALL();
 
     ALOGV("%s: wait:%d timeout:%d", __func__, wait_ms, timeout_ms);
 
@@ -204,18 +209,6 @@ void InteractionHandler::WaitForIdle(int32_t wait_ms, int32_t timeout_ms) {
         return;
     } else if (ret < 0) {
         ALOGE("%s: error in poll while waiting", __func__);
-        return;
-    }
-
-    if (mIdleFd < 0) {
-        ret = poll(pfd, 1, timeout_ms);
-        if (ret > 0) {
-            ALOGV("%s: wait for duration aborted", __func__);
-            return;
-        } else if (ret < 0) {
-            ALOGE("%s: Error on waiting for duration (%zd)", __func__, ret);
-            return;
-        }
         return;
     }
 
