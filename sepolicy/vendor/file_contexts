@@ -18,9 +18,6 @@
 /sys/devices/soc/soc:fpc1020(/.*)?                                                                                          u:object_r:fingerprint_sysfs:s0
 /sys/bus/platform/devices/soc:fingerprint_fpc(/.*)?                                                                         u:object_r:fingerprint_sysfs:s0
 
-# Debugfs
-/sys/kernel/debug/system_stats                                                                                              u:object_r:debugfs:s0
-
 # Goodix Fingerprint
 /data/misc/gf_data(/.*)?                                                                                                    u:object_r:fingerprint_data_file:s0
 /data/misc/goodix(/.*)?                                                                                                     u:object_r:fingerprint_data_file:s0
@@ -64,7 +61,7 @@
 /persist                                                                                                                    u:object_r:mnt_vendor_file:s0
 
 # Power
-/(vendor|system/vendor)/bin/hw/android\.hardware\.power@1\.3-service\.xiaomi_sdm660-libperfmgr                              u:object_r:hal_power_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.power-service\.xiaomi_sdm660-libperfmgr                                   u:object_r:hal_power_default_exec:s0
 
 # Shell Script
 /(vendor|system/vendor)/bin/init\.goodix\.sh                                                                                u:object_r:init_fingerprint_exec:s0

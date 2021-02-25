@@ -1,0 +1,15 @@
+service vendor.power-hal-aidl /vendor/bin/hw/android.hardware.power-service.xiaomi_sdm660-libperfmgr
+    class hal
+    user root
+    group system
+    priority -20
+
+# restart powerHAL when framework died
+on property:init.svc.zygote=restarting && property:vendor.powerhal.state=*
+    setprop vendor.powerhal.state ""
+    setprop vendor.powerhal.rendering ""
+    restart vendor.power-hal-aidl
+
+# initialize powerHAL when boot is completed
+on property:sys.boot_completed=1
+    setprop vendor.powerhal.init 1

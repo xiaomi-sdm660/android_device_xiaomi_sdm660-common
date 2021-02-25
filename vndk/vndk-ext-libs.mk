@@ -44,3 +44,6 @@ EXTRA_VENDOR_LIBRARIES_32 := \
 EXTRA_VENDOR_LIBRARIES_64 := \
     libstdc++ \
     libpowermanager
+
+EXTRA_SYSTEM_LIBRARIES_64 := \
+    libblasV8
