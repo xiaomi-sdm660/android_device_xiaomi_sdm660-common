@@ -66,6 +66,7 @@ public:
 private:
     void setCallbacks();
     ~BatchingAPIClient();
+
     std::mutex mMutex;
     sp<V1_0::IGnssBatchingCallback> mGnssBatchingCbIface;
     uint32_t mDefaultId;

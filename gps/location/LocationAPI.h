@@ -235,8 +235,11 @@ public:
         collectiveResponseCallback returns:
                 LOCATION_ERROR_SUCCESS if session was successful
                 LOCATION_ERROR_INVALID_PARAMETER if any other parameters are invalid
-                LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason */
-    virtual uint32_t* gnssUpdateConfig(GnssConfig config) override;
+                LOCATION_ERROR_GENERAL_FAILURE if failure for any other reason
+
+      PLEASE NOTE: It is caller's resposibility to FREE the memory of the return value.
+                   The memory must be freed by delete [].*/
+    virtual uint32_t* gnssUpdateConfig(const GnssConfig& config) override;
 
     /* gnssGetConfig fetches the current constellation and SV configuration
        on the GNSS engine.
@@ -250,7 +253,10 @@ public:
            LOCATION_ERROR_CALLBACK_MISSING If no gnssConfigCallback
                                            was passed in createInstance
            LOCATION_ERROR_NOT_SUPPORTED If read of requested configuration
-                                        is not supported */
+                                        is not supported
+
+      PLEASE NOTE: It is caller's resposibility to FREE the memory of the return value.
+                   The memory must be freed by delete [].*/
     uint32_t* gnssGetConfig(GnssConfigFlagsMask mask);
 
     /* delete specific gnss aiding data for testing, which returns a session id
@@ -263,27 +269,17 @@ public:
     virtual uint32_t gnssDeleteAidingData(GnssAidingData& data) override;
 
     /** @brief
-        Reset the constellation settings to modem default.
-
-        @param
-        None
-
-        @return
-        A session id that will be returned in responseCallback to
-        match command with response. This effect is global for all
-        clients of LocationAPI responseCallback returns:
-                LOCATION_ERROR_SUCCESS if successful
-                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
-    */
-    virtual uint32_t resetConstellationConfig() override;
-
-    /** @brief
-        Configure the constellation to be used by the GNSS engine on
+        Configure the constellation and SVs to be used by the GNSS engine on
         modem.
 
         @param
-        constellationConfig: specify the constellation configuration
-        used by GNSS engine.
+        constellationEnablementConfig: configuration to enable/disable SV
+        constellation to be used by SPE engine. When size in
+        constellationEnablementConfig is set to 0, this indicates to reset SV
+        constellation configuration to modem NV default.
+
+        blacklistSvConfig: configuration to blacklist or unblacklist SVs
+        used by SPE engine
 
         @return
         A session id that will be returned in responseCallback to
@@ -293,8 +289,26 @@ public:
                 LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
     */
     virtual uint32_t configConstellations(
-            const GnssSvTypeConfig& svTypeConfig,
-            const GnssSvIdConfig&   svIdConfig) override;
+            const GnssSvTypeConfig& constellationEnablementConfig,
+            const GnssSvIdConfig&   blacklistSvConfig) override;
+
+    /** @brief
+        Configure the secondary band of constellations to be used by
+        the GNSS engine on modem.
+
+        @param
+        secondaryBandConfig: configuration the secondary band usage
+        for SPE engine
+
+        @return
+        A session id that will be returned in responseCallback to
+        match command with response. This effect is global for all
+        clients of LocationAPI responseCallback returns:
+                LOCATION_ERROR_SUCCESS if successful
+                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
+    */
+    virtual uint32_t configConstellationSecondaryBand(
+            const GnssSvTypeConfig& secondaryBandConfig) override;
 
     /** @brief
         Enable or disable the constrained time uncertainty feature.
@@ -395,6 +409,39 @@ public:
                 LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
     */
     virtual uint32_t configRobustLocation(bool enable, bool enableForE911) override;
+
+    /** @brief
+        Config the minimal GPS week used by modem GNSS engine.
+
+        @param
+        minGpsWeek: minimal GPS week to be used by modem GNSS engine.
+
+        @return
+        A session id that will be returned in responseCallback to
+        match command with response. This effect is global for all
+        clients of LocationAPI responseCallback returns:
+                LOCATION_ERROR_SUCCESS if successful
+                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
+    */
+    virtual uint32_t configMinGpsWeek(uint16_t minGpsWeek) override;
+
+    /** @brief
+        Configure the vehicle body-to-Sensor mount parameters and
+        other parameters for dead reckoning position engine.
+
+        @param
+        dreConfig: vehicle body-to-Sensor mount angles and other
+        parameters.
+
+        @return
+        A session id that will be returned in responseCallback to
+        match command with response. This effect is global for all
+        clients of LocationAPI responseCallback returns:
+                LOCATION_ERROR_SUCCESS if successful
+                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
+    */
+    virtual uint32_t configDeadReckoningEngineParams(
+            const DeadReckoningEngineConfig& dreConfig) override;
 };
 
 #endif /* LOCATIONAPI_H */

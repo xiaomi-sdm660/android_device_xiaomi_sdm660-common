@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,6 +30,8 @@
 #define ENGINE_HUB_PROXY_BASE_H
 
 namespace loc_core {
+
+using namespace loc_util;
 
 class EngineHubProxyBase {
 public:
@@ -104,6 +106,12 @@ public:
 
     inline virtual bool configLeverArm(const LeverArmConfigInfo& configInfo) {
         (void) configInfo;
+        return false;
+    }
+
+    inline virtual bool configDeadReckoningEngineParams(
+            const DeadReckoningEngineConfig& dreConfig) {
+        (void) dreConfig;
         return false;
     }
 };

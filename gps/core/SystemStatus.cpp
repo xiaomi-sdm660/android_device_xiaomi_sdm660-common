@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, 2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -1285,6 +1285,14 @@ void SystemStatus::destroyInstance()
 {
     delete mInstance;
     mInstance = NULL;
+}
+
+void SystemStatus::resetNetworkInfo() {
+    for (int i=0; i<mCache.mNetworkInfo.size(); ++i) {
+        // Reset all the cached NetworkInfo Items as disconnected
+        eventConnectionStatus(false, mCache.mNetworkInfo[i].mType, mCache.mNetworkInfo[i].mRoaming,
+                mCache.mNetworkInfo[i].mNetworkHandle);
+    }
 }
 
 IOsObserver* SystemStatus::getOsObserver()

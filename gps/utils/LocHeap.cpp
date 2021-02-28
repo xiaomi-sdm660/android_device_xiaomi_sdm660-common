@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,6 +27,8 @@
  *
  */
 #include <LocHeap.h>
+
+namespace loc_util {
 
 class LocHeapNode {
     friend class LocHeap;
@@ -266,6 +268,8 @@ LocRankable* LocHeap::remove(LocRankable& rankable) {
     return locNode;
 }
 
+} // namespace loc_util
+
 #ifdef __LOC_UNIT_TEST__
 bool LocHeap::checkTree() {
     return ((NULL == mTree) || mTree->checkNodes());
@@ -273,82 +277,4 @@ bool LocHeap::checkTree() {
 uint32_t LocHeap::getTreeSize() {
     return (NULL == mTree) ? 0 : mTree->getSize();
 }
-#endif
-
-#ifdef __LOC_DEBUG__
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-class LocHeapDebug : public LocHeap {
-public:
-    bool checkTree() {
-        return ((NULL == mTree) || mTree->checkNodes());
-    }
-
-    uint32_t getTreeSize() {
-        return (NULL == mTree) ? 0 : (mTree->getSize());
-    }
-};
-
-class LocHeapDebugData : public LocRankable {
-    const int mID;
-public:
-    LocHeapDebugData(int id) : mID(id) {}
-    inline virtual int ranks(LocRankable& rankable) {
-        LocHeapDebugData* testData = dynamic_cast<LocHeapDebugData*>(&rankable);
-        return testData->mID - mID;
-    }
-};
-
-// For Linux command line testing:
-// compilation: g++ -D__LOC_HOST_DEBUG__ -D__LOC_DEBUG__ -g -I. -I../../../../vendor/qcom/proprietary/gps-internal/unit-tests/fakes_for_host -I../../../../system/core/include LocHeap.cpp
-// test: valgrind --leak-check=full ./a.out 100
-int main(int argc, char** argv) {
-    srand(time(NULL));
-    int tries = atoi(argv[1]);
-    int checks = tries >> 3;
-    LocHeapDebug heap;
-    int treeSize = 0;
-
-    for (int i = 0; i < tries; i++) {
-        if (i % checks == 0 && !heap.checkTree()) {
-            printf("tree check failed before %dth op\n", i);
-        }
-        int r = rand();
-
-        if (r & 1) {
-            LocHeapDebugData* data = new LocHeapDebugData(r >> 1);
-            heap.push(dynamic_cast<LocRankable&>(*data));
-            treeSize++;
-        } else {
-            LocRankable* rankable = heap.pop();
-            if (rankable) {
-                delete rankable;
-            }
-            treeSize ? treeSize-- : 0;
-        }
-
-        printf("%s: %d == %d\n", (r&1)?"push":"pop", treeSize, heap.getTreeSize());
-        if (treeSize != heap.getTreeSize()) {
-            printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            tries = i+1;
-            break;
-        }
-    }
-
-    if (!heap.checkTree()) {
-        printf("!!!!!!!!!!tree check failed at the end after %d ops!!!!!!!\n", tries);
-    } else {
-        printf("success!\n");
-    }
-
-    for (LocRankable* data = heap.pop(); NULL != data; data = heap.pop()) {
-        delete data;
-    }
-
-    return 0;
-}
-
 #endif

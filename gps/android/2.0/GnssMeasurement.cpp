@@ -71,18 +71,15 @@ Return<GnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback(
         return ret;
     }
 
+    clearInterfaces();
+
     mGnssMeasurementCbIface = callback;
     mGnssMeasurementCbIface->linkToDeath(mGnssMeasurementDeathRecipient, 0);
 
     return mApi->measurementSetCallback(callback);
 }
 
-Return<void> GnssMeasurement::close()  {
-    if (mApi == nullptr) {
-        LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
-        return Void();
-    }
-
+void GnssMeasurement::clearInterfaces() {
     if (mGnssMeasurementCbIface != nullptr) {
         mGnssMeasurementCbIface->unlinkToDeath(mGnssMeasurementDeathRecipient);
         mGnssMeasurementCbIface = nullptr;
@@ -95,6 +92,15 @@ Return<void> GnssMeasurement::close()  {
         mGnssMeasurementCbIface_2_0->unlinkToDeath(mGnssMeasurementDeathRecipient);
         mGnssMeasurementCbIface_2_0 = nullptr;
     }
+}
+
+Return<void> GnssMeasurement::close()  {
+    if (mApi == nullptr) {
+        LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
+        return Void();
+    }
+
+    clearInterfaces();
     mApi->measurementClose();
 
     return Void();
@@ -119,6 +125,8 @@ Return<GnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallback_1_1(
         LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
         return ret;
     }
+
+    clearInterfaces();
 
     mGnssMeasurementCbIface_1_1 = callback;
     mGnssMeasurementCbIface_1_1->linkToDeath(mGnssMeasurementDeathRecipient, 0);
@@ -148,6 +156,8 @@ Return<V1_0::IGnssMeasurement::GnssMeasurementStatus> GnssMeasurement::setCallba
         LOC_LOGE("%s]: mApi is nullptr", __FUNCTION__);
         return ret;
     }
+
+    clearInterfaces();
 
     mGnssMeasurementCbIface_2_0 = callback;
     mGnssMeasurementCbIface_2_0->linkToDeath(mGnssMeasurementDeathRecipient, 0);

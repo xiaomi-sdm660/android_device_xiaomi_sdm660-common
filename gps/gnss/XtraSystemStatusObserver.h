@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -33,12 +33,29 @@
 #include <MsgTask.h>
 #include <LocIpc.h>
 #include <LocTimer.h>
+#include <stdlib.h>
 
 using namespace std;
 using namespace loc_util;
 using loc_core::IOsObserver;
 using loc_core::IDataItemObserver;
 using loc_core::IDataItemCore;
+
+struct StartDgnssNtripParams {
+    GnssNtripConnectionParams ntripParams;
+    string                    nmea;
+
+    void clear() {
+        ntripParams.hostNameOrIp.clear();
+        ntripParams.mountPoint.clear();
+        ntripParams.username.clear();
+        ntripParams.password.clear();
+        ntripParams.port = 0;
+        ntripParams.useSSL = false;
+        ntripParams.requiresNmeaLocation = false;
+        nmea.clear();
+    }
+};
 
 class XtraSystemStatusObserver : public IDataItemObserver {
 public :
@@ -62,6 +79,10 @@ public :
     inline const MsgTask* getMsgTask() { return mMsgTask; }
     void subscribe(bool yes);
     bool onStatusRequested(int32_t xtraStatusUpdated);
+    void startDgnssSource(const StartDgnssNtripParams& params);
+    void restartDgnssSource();
+    void stopDgnssSource();
+    void updateNmeaToDgnssServer(const string& nmea);
 
 private:
     IOsObserver*    mSystemStatusObsrvr;
@@ -76,6 +97,7 @@ private:
     bool mReqStatusReceived;
     bool mIsConnectivityStatusKnown;
     shared_ptr<LocIpcSender> mSender;
+    string mNtripParamsString;
 
     class DelayLocTimer : public LocTimer {
         LocIpcSender& mSender;

@@ -39,7 +39,7 @@ GnssConfiguration::GnssConfiguration(Gnss* gnss) : mGnss(gnss) {
 }
 
 // Methods from ::android::hardware::gps::V1_0::IGnssConfiguration follow.
-Return<bool> GnssConfiguration::setSuplEs(bool /*enabled*/)  {
+Return<bool> GnssConfiguration::setSuplEs(bool enabled)  {
     // deprecated function. Must return false to pass VTS
     return false;
 }
@@ -70,7 +70,6 @@ Return<bool> GnssConfiguration::setSuplVersion(uint32_t version)  {
         default:
             LOC_LOGE("%s]: invalid version: 0x%x.", __FUNCTION__, version);
             return false;
-            break;
     }
 
     return mGnss->updateConfiguration(config);
@@ -102,13 +101,12 @@ Return<bool> GnssConfiguration::setSuplMode(uint8_t mode)  {
         default:
             LOC_LOGE("%s]: invalid mode: %d.", __FUNCTION__, mode);
             return false;
-            break;
     }
 
     return mGnss->updateConfiguration(config);
 }
 
-Return<bool> GnssConfiguration::setLppProfile(uint8_t lppProfile) {
+Return<bool> GnssConfiguration::setLppProfile(uint8_t lppProfileMask) {
     if (mGnss == nullptr) {
         LOC_LOGE("%s]: mGnss is nullptr", __FUNCTION__);
         return false;
@@ -117,23 +115,19 @@ Return<bool> GnssConfiguration::setLppProfile(uint8_t lppProfile) {
     GnssConfig config = {};
     config.size = sizeof(GnssConfig);
     config.flags = GNSS_CONFIG_FLAGS_LPP_PROFILE_VALID_BIT;
-    switch (lppProfile) {
-        case 0:
-            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE;
-            break;
-        case 1:
-            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_USER_PLANE;
-            break;
-        case 2:
-            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE;
-            break;
-        case 3:
-            config.lppProfile = GNSS_CONFIG_LPP_PROFILE_USER_PLANE_AND_CONTROL_PLANE;
-            break;
-        default:
-            LOC_LOGE("%s]: invalid lppProfile: %d.", __FUNCTION__, lppProfile);
-            return false;
-            break;
+    config.lppProfileMask = GNSS_CONFIG_LPP_PROFILE_RRLP_ON_LTE; //default
+
+    if (lppProfileMask & (1<<0)) {
+        config.lppProfileMask |= GNSS_CONFIG_LPP_PROFILE_USER_PLANE_BIT;
+    }
+    if (lppProfileMask & (1<<1)) {
+        config.lppProfileMask |= GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE_BIT;
+    }
+    if (lppProfileMask & (1<<2)) {
+        config.lppProfileMask |= GNSS_CONFIG_LPP_PROFILE_USER_PLANE_OVER_NR5G_SA_BIT;
+    }
+    if (lppProfileMask & (1<<3)) {
+        config.lppProfileMask |= GNSS_CONFIG_LPP_PROFILE_CONTROL_PLANE_OVER_NR5G_SA_BIT;
     }
 
     return mGnss->updateConfiguration(config);
@@ -192,7 +186,6 @@ Return<bool> GnssConfiguration::setGpsLock(uint8_t lock) {
     default:
         LOC_LOGE("%s]: invalid lock: %d.", __FUNCTION__, lock);
         return false;
-        break;
     }
 
     mGnss->updateConfiguration(config);

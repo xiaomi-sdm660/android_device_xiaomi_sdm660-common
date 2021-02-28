@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, 2017-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2014, 2017-2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -39,9 +39,7 @@ namespace loc_core {
 class LocContext : public ContextBase {
     static const MsgTask* mMsgTask;
     static ContextBase* mContext;
-    static const MsgTask* getMsgTask(LocThread::tCreate tCreator,
-                                     const char* name, bool joinable = true);
-    static const MsgTask* getMsgTask(const char* name, bool joinable = true);
+    static const MsgTask* getMsgTask(const char* name);
     static pthread_mutex_t mGetLocContextMutex;
 
 protected:
@@ -52,11 +50,7 @@ public:
     static const char* mLBSLibName;
     static const char* mLocationHalName;
 
-    static ContextBase* getLocContext(LocThread::tCreate tCreator, LocMsg* firstMsg,
-                                        const char* name, bool joinable = true);
-    inline static ContextBase* getLocContext(const char* name, bool joinable = true) {
-        return getLocContext(NULL, NULL, name, joinable);
-    }
+    static ContextBase* getLocContext(const char* name);
 
     static void injectFeatureConfig(ContextBase *context);
 };

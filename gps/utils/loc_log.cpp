@@ -38,8 +38,13 @@
 #include "msg_q.h"
 #include <loc_pla.h>
 #include "LogBuffer.h"
-
+#include <unordered_map>
+#include <fstream>
+#include <algorithm>
+#include <string>
+#include <cctype>
 #define  BUFFER_SIZE  120
+#define  LOG_TAG_LEVEL_CONF_FILE_PATH "/data/vendor/location/gps.prop"
 
 // Logging Improvements
 const char *loc_logger_boolStr[]={"False","True"};
@@ -52,10 +57,16 @@ const char EXIT_TAG[]   = "Exiting";
 const char ENTRY_TAG[]  = "Entering";
 const char EXIT_ERROR_TAG[]  = "Exiting with error";
 
+int build_type_prop = BUILD_TYPE_PROP_NA;
+
 const string gEmptyStr = "";
 const string gUnknownStr = "UNKNOWN";
 /* Logging Mechanism */
 loc_logger_s_type loc_logger;
+
+/* tag base logging control map*/
+static std::unordered_map<std::string, uint8_t> tag_level_map;
+static bool tag_map_inited = false;
 
 /* returns the least signification bit that is set in the mask
    Param
@@ -216,4 +227,56 @@ void log_buffer_insert(char *str, unsigned long buf_size, int level)
     uint64_t elapsedTime = (uint64_t)tv.tv_sec + (uint64_t)tv.tv_nsec/1000000000;
     string ss = str;
     loc_util::LogBuffer::getInstance()->append(ss, level, elapsedTime);
+}
+
+void log_tag_level_map_init()
+{
+    if (tag_map_inited) {
+        return;
+    }
+
+    std::string filename = LOG_TAG_LEVEL_CONF_FILE_PATH;
+
+    std::ifstream s(filename);
+    if (!s.is_open()) {
+        ALOGE("cannot open file:%s", LOG_TAG_LEVEL_CONF_FILE_PATH);
+    } else {
+        std::string line;
+        while (std::getline(s, line)) {
+            line.erase(std::remove(line.begin(), line.end(), ' '), line.end());
+            int pos = line.find('=');
+            if (pos <= 0 || pos >= (line.size() - 1)) {
+                ALOGE("wrong format in gps.prop");
+                continue;
+            }
+            std::string tag = line.substr(0, pos);
+            std::string level = line.substr(pos+1, 1);
+            if (!std::isdigit(*(level.begin()))) {
+                ALOGE("wrong format in gps.prop");
+                continue;
+            }
+            tag_level_map[tag] = (uint8_t)std::stoul(level);
+        }
+    }
+    tag_map_inited = true;
+}
+
+int get_tag_log_level(const char* tag)
+{
+    if (!tag_map_inited) {
+        return -1;
+    }
+
+    // in case LOG_TAG isn't defined in a source file, use the global log level
+    if (tag == NULL) {
+        return loc_logger.DEBUG_LEVEL;
+    }
+    int log_level;
+    auto search = tag_level_map.find(std::string(tag));
+    if (tag_level_map.end() != search) {
+        log_level = search->second;
+    } else {
+        log_level = loc_logger.DEBUG_LEVEL;
+    }
+    return log_level;
 }

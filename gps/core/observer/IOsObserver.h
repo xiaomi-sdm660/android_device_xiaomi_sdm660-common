@@ -1,4 +1,4 @@
-/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -91,8 +91,8 @@ public:
     inline virtual void turnOn (DataItemId /*dit*/, int /*timeOut*/){}
     inline virtual void turnOff (DataItemId /*dit*/) {}
 #ifdef USE_GLIB
-    inline virtual bool connectBackhaul() { return false; }
-    inline virtual bool disconnectBackhaul() { return false; }
+    inline virtual bool connectBackhaul(const string& clientName) { return false; }
+    inline virtual bool disconnectBackhaul(const string& clientName) { return false; }
 #endif
 
     /**
