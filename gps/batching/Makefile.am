@@ -22,8 +22,7 @@ libbatching_la_SOURCES = \
 
 if USE_GLIB
 libbatching_la_CFLAGS = -DUSE_GLIB $(AM_CFLAGS) @GLIB_CFLAGS@
-#libbatching_la_LDFLAGS = -lstdc++ -g -Wl,-z,defs -lpthread $(requiredlibs) @GLIB_LIBS@ -shared -avoid-version
-libbatching_la_LDFLAGS = -lstdc++ -g -Wl,-z,defs -lpthread $(requiredlibs) @GLIB_LIBS@ -avoid-version
+libbatching_la_LDFLAGS = -lstdc++ -g -Wl,-z,defs -lpthread $(requiredlibs) @GLIB_LIBS@ -shared -version-info 1:0:0
 libbatching_la_CPPFLAGS = -DUSE_GLIB $(AM_CFLAGS) $(AM_CPPFLAGS) @GLIB_CFLAGS@
 else
 libbatching_la_CFLAGS = $(AM_CFLAGS)

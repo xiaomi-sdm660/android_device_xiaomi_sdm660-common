@@ -168,6 +168,11 @@ void convertGnssSvid(GnssSv& in, int16_t& out)
         case GNSS_SV_TYPE_GALILEO:
             out = in.svId - GAL_SV_PRN_MIN + 1;
             break;
+        case GNSS_SV_TYPE_NAVIC:
+            /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
+              will update this once Android give Navic svid definiitons */
+            out = in.svId - NAVIC_SV_PRN_MIN + 1;
+            break;
         default:
             out = in.svId;
             break;
@@ -198,6 +203,11 @@ void convertGnssSvid(GnssMeasurementsData& in, int16_t& out)
             break;
         case GNSS_SV_TYPE_GALILEO:
             out = in.svId - GAL_SV_PRN_MIN + 1;
+            break;
+        case GNSS_SV_TYPE_NAVIC:
+            /*Android doesn't define Navic svid range yet, use Naviv svid [1, 14] now
+              will update this once Android give Navic svid definiitons */
+            out = in.svId - NAVIC_SV_PRN_MIN + 1;
             break;
         default:
             out = in.svId;

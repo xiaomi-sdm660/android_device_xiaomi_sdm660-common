@@ -426,10 +426,10 @@ private:
     public:
         StopTrackingRequest(LocationAPIClientBase& API) : mAPI(API) {}
         inline void onResponse(LocationError error, uint32_t id) {
+            mAPI.onStopTrackingCb(error);
             if (error == LOCATION_ERROR_SUCCESS) {
                 mAPI.removeSession(id);
             }
-            mAPI.onStopTrackingCb(error);
         }
         LocationAPIClientBase& mAPI;
     };

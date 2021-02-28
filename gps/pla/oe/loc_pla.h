@@ -85,6 +85,10 @@ extern "C" {
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#define MAX_COMMAND_STR_LEN (255)
+#define BOOT_KPI_FILE "/sys/kernel/debug/bootkpi/kpi_values"
 #ifndef OFF_TARGET
 #include <glib.h>
 #define strlcat g_strlcat
@@ -107,6 +111,9 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/etc/quipc.conf"
+#define LOC_PATH_ANT_CORR_STR      "/etc/gnss_antenna_info.conf"
+#define LOC_PATH_SLIM_CONF_STR     "/etc/slim.conf"
+#define LOC_PATH_VPE_CONF_STR      "/etc/vpeglue.conf"
 
 #ifdef FEATURE_EXTERNAL_AP
 #define PROPERTY_VALUE_MAX 92
@@ -117,6 +124,49 @@ inline int property_get(const char* key, char* value, const char* default_value)
     return strlen(value);
 }
 #endif /* FEATURE_EXTERNAL_AP */
+
+/*!
+ * @brief Function for memory block copy
+ *
+ * @param[out] p_Dest     Destination buffer.
+ * @param[in]  q_DestSize Destination buffer size.
+ * @param[in]  p_Src      Source buffer.
+ * @param[in]  q_SrcSize  Source buffer size.
+ *
+ * @return Number of bytes copied.
+ */
+static inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
+{
+    size_t res = (q_DestSize < q_SrcSize) ? q_DestSize : q_SrcSize;
+    if (p_Dest && p_Src && q_DestSize > 0 && q_SrcSize > 0) {
+        memcpy(p_Dest, p_Src, res);
+    } else {
+        res = 0;
+    }
+    return res;
+}
+
+/*API for boot kpi marker prints  */
+static inline int loc_boot_kpi_marker(const char * pFmt, ...)
+{
+    int result = 0;
+    FILE *stream = NULL;
+    char data[MAX_COMMAND_STR_LEN] = {};
+    char buf[MAX_COMMAND_STR_LEN] = {};
+
+    va_list ap;
+    va_start(ap, pFmt);
+    vsnprintf(&buf[0], sizeof(buf), pFmt, ap);
+    snprintf(data, sizeof(data), "echo -n %s > %s", buf, BOOT_KPI_FILE);
+    stream = popen(data, "w" );
+    if (NULL == stream) {
+        result = -1;
+    } else {
+        pclose(stream);
+    }
+    va_end(ap);
+    return result;
+}
 
 #ifdef __cplusplus
 }

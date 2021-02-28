@@ -92,6 +92,7 @@ public:
 
 private:
     virtual ~GnssAPIClient();
+
     sp<V1_0::IGnssCallback> mGnssCbIface;
     sp<V1_0::IGnssNiCallback> mGnssNiCbIface;
     std::mutex mMutex;

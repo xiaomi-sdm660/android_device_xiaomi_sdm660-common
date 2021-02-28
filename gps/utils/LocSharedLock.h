@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -49,9 +49,11 @@ inline int32_t android_atomic_dec(volatile int32_t *addr)
     volatile std::atomic_int_least32_t* a = (volatile std::atomic_int_least32_t*)addr;
     return std::atomic_fetch_sub_explicit(a, 1, std::memory_order_release);
 }
-
 #endif /* FEATURE_EXTERNAL_AP */
- // This is a utility created for use cases such that there are more than
+
+namespace loc_util {
+
+// This is a utility created for use cases such that there are more than
 // one client who need to share the same lock, but it is not predictable
 // which of these clients is to last to go away. This shared lock deletes
 // itself when the last client calls its drop() method. To add a cient,
@@ -73,5 +75,7 @@ public:
     // unlocking the lock to leave the critical section
     inline void unlock() { pthread_mutex_unlock(&mMutex); }
 };
+
+} //namespace loc_util
 
 #endif //__LOC_SHARED_LOCK__

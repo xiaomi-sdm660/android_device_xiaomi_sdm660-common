@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2018 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -35,16 +35,16 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <unordered_set>
+#include <mutex>
 #include <LocThread.h>
 
 using namespace std;
 
 namespace loc_util {
 
-
 class LocIpcRecver;
 class LocIpcSender;
-class LocIpcRunnable;
 
 class ILocIpcListener {
 protected:
@@ -56,10 +56,39 @@ public:
     virtual void onReceive(const char* data, uint32_t len, const LocIpcRecver* recver) = 0;
 };
 
+class LocIpcQrtrWatcher {
+    const unordered_set<int> mServicesToWatch;
+    unordered_set<int> mClientsToWatch;
+    mutex mMutex;
+    inline bool isInWatch(const unordered_set<int>& idsToWatch, int id) {
+        return idsToWatch.find(id) != idsToWatch.end();
+    }
+protected:
+    inline virtual ~LocIpcQrtrWatcher() {}
+    inline LocIpcQrtrWatcher(unordered_set<int> servicesToWatch)
+            : mServicesToWatch(servicesToWatch) {}
+public:
+    enum class ServiceStatus { UP, DOWN };
+    inline bool isServiceInWatch(int serviceId) {
+        return isInWatch(mServicesToWatch, serviceId);
+    }
+    inline bool isClientInWatch(int nodeId) {
+        lock_guard<mutex> lock(mMutex);
+        return isInWatch(mClientsToWatch, nodeId);
+    }
+    inline void addClientToWatch(int nodeId) {
+        lock_guard<mutex> lock(mMutex);
+        mClientsToWatch.emplace(nodeId);
+    }
+    virtual void onServiceStatusChange(int sericeId, int instanceId, ServiceStatus status,
+                                       const LocIpcSender& sender) = 0;
+    inline virtual void onClientGone(int nodeId, int portId) {}
+    inline const unordered_set<int>& getServicesToWatch() { return mServicesToWatch; }
+};
 
 class LocIpc {
 public:
-    inline LocIpc() : mRunnable(nullptr) {}
+    inline LocIpc() = default;
     inline virtual ~LocIpc() {
         stopNonBlockingListening();
     }
@@ -82,9 +111,16 @@ public:
     static unique_ptr<LocIpcRecver>
             getLocIpcInetTcpRecver(const shared_ptr<ILocIpcListener>& listener,
                                    const char* serverName, int32_t port);
+    inline static unique_ptr<LocIpcRecver>
+            getLocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
+                                int service, int instance) {
+        const shared_ptr<LocIpcQrtrWatcher> qrtrWatcher = nullptr;
+        return getLocIpcQrtrRecver(listener, service, instance, qrtrWatcher);
+    }
     static unique_ptr<LocIpcRecver>
             getLocIpcQrtrRecver(const shared_ptr<ILocIpcListener>& listener,
-                                int service, int instance);
+                                int service, int instance,
+                                const shared_ptr<LocIpcQrtrWatcher>& qrtrWatcher);
 
     static pair<shared_ptr<LocIpcSender>, unique_ptr<LocIpcRecver>>
             getLocIpcQmiLocServiceSenderRecverPair(const shared_ptr<ILocIpcListener>& listener,
@@ -114,7 +150,6 @@ public:
 
 private:
     LocThread mThread;
-    LocIpcRunnable *mRunnable;
 };
 
 /* this is only when client needs to implement Sender / Recver that are not already provided by
@@ -127,14 +162,14 @@ protected:
     virtual ssize_t send(const uint8_t data[], uint32_t length, int32_t msgId) const = 0;
 public:
     virtual ~LocIpcSender() = default;
-    virtual void informRecverRestarted() {}
     inline bool isSendable() const { return isOperable(); }
     inline bool sendData(const uint8_t data[], uint32_t length, int32_t msgId) const {
         return isSendable() && (send(data, length, msgId) > 0);
     }
-    virtual unique_ptr<LocIpcRecver> getRecver(const shared_ptr<ILocIpcListener>& /*listener*/) {
+    virtual unique_ptr<LocIpcRecver> getRecver(const shared_ptr<ILocIpcListener>& listener) {
         return nullptr;
     }
+    inline virtual void copyDestAddrFrom(const LocIpcSender& otherSender) {}
 };
 
 class LocIpcRecver {

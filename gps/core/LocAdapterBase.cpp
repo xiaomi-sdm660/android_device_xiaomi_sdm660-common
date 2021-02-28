@@ -88,8 +88,8 @@ void LocAdapterBase::
                         const GpsLocationExtended& locationExtended,
                         enum loc_sess_status status,
                         LocPosTechMask loc_technology_mask,
-                        GnssDataNotification* /*pDataNotify*/,
-                        int /*msInWeek*/)
+                        GnssDataNotification* pDataNotify,
+                        int msInWeek)
 {
     if (mLocAdapterProxyBase != NULL) {
         mLocAdapterProxyBase->reportPositionEvent((UlpLocation&)location,
@@ -162,7 +162,7 @@ DEFAULT_IMPL(false)
 bool LocAdapterBase::
     requestNiNotifyEvent(const GnssNiNotification &/*notify*/,
                          const void* /*data*/,
-                         const LocInEmergency /*emergencyState*/)
+                         const LocInEmergency emergencyState)
 DEFAULT_IMPL(false)
 
 void LocAdapterBase::
@@ -313,6 +313,15 @@ LocAdapterBase::getCapabilities()
         if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_LOCATION_PRIVACY)) {
             mask |= LOCATION_CAPABILITIES_PRIVACY_BIT;
         }
+        if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_MEASUREMENTS_CORRECTION)) {
+            mask |= LOCATION_CAPABILITIES_MEASUREMENTS_CORRECTION_BIT;
+        }
+        if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_ROBUST_LOCATION)) {
+            mask |= LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT;
+        }
+        if (ContextBase::isFeatureSupported(LOC_SUPPORTED_FEATURE_EDGNSS)) {
+            mask |= LOCATION_CAPABILITIES_EDGNSS_BIT;
+        }
     } else {
         LOC_LOGE("%s]: attempt to get capabilities before they are known.", __func__);
     }
@@ -335,7 +344,7 @@ LocAdapterBase::updateClientsEventMask()
 DEFAULT_IMPL()
 
 void
-LocAdapterBase::stopClientSessions(LocationAPI* /*client*/)
+LocAdapterBase::stopClientSessions(LocationAPI* client)
 DEFAULT_IMPL()
 
 void

@@ -37,10 +37,6 @@ PKG_CHECK_MODULES([LOCCORE], [loc-core])
 AC_SUBST([LOCCORE_CFLAGS])
 AC_SUBST([LOCCORE_LIBS])
 
-PKG_CHECK_MODULES([GEOFENCE], [location-geofence])
-AC_SUBST([GEOFENCE_CFLAGS])
-AC_SUBST([GEOFENCE_LIBS])
-
 AC_ARG_WITH([locpla_includes],
       AC_HELP_STRING([--with-locpla-includes=@<:@dir@:>@],
          [specify the path to locpla-includes in loc-pla_git.bb]),

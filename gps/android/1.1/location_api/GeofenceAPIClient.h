@@ -46,6 +46,7 @@ class GeofenceAPIClient : public LocationAPIClientBase
 {
 public:
     GeofenceAPIClient(const sp<V1_0::IGnssGeofenceCallback>& callback);
+
     void geofenceAdd(uint32_t geofence_id, double latitude, double longitude,
             double radius_meters, int32_t last_transition, int32_t monitor_transitions,
             uint32_t notification_responsiveness_ms, uint32_t unknown_timer_ms);
@@ -63,9 +64,9 @@ public:
     void onResumeGeofencesCb(size_t count, LocationError* errors, uint32_t* ids) final;
 
 private:
-   virtual ~GeofenceAPIClient() = default;
+    virtual ~GeofenceAPIClient() = default;
 
-   sp<V1_0::IGnssGeofenceCallback> mGnssGeofencingCbIface;
+    sp<V1_0::IGnssGeofenceCallback> mGnssGeofencingCbIface;
 };
 
 }  // namespace implementation

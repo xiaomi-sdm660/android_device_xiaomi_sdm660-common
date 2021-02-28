@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,6 +31,8 @@
 
 #include <stddef.h>
 #include <string.h>
+
+namespace loc_util {
 
 // abstract class to be implemented by client to provide a rankable class
 class LocRankable {
@@ -92,5 +94,7 @@ public:
     uint32_t getTreeSize();
 #endif
 };
+
+} // namespace loc_util
 
 #endif //__LOC_HEAP__

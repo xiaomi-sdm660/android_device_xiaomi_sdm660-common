@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014, 2020 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -59,6 +59,36 @@ extern "C" {
 #define LOC_PATH_APDR_CONF_STR     "/vendor/etc/apdr.conf"
 #define LOC_PATH_XTWIFI_CONF_STR   "/vendor/etc/xtwifi.conf"
 #define LOC_PATH_QUIPC_CONF_STR    "/vendor/etc/quipc.conf"
+#define LOC_PATH_ANT_CORR_STR      "/vendor/etc/gnss_antenna_info.conf"
+#define LOC_PATH_SLIM_CONF_STR     "/vendor/etc/slim.conf"
+#define LOC_PATH_VPE_CONF_STR      "/vendor/etc/vpeglue.conf"
+
+/*!
+ * @brief Function for memory block copy
+ *
+ * @param[out] p_Dest     Destination buffer.
+ * @param[in]  q_DestSize Destination buffer size.
+ * @param[in]  p_Src      Source buffer.
+ * @param[in]  q_SrcSize  Source buffer size.
+ *
+ * @return Number of bytes copied.
+ */
+static inline size_t memscpy (void *p_Dest, size_t q_DestSize, const void *p_Src, size_t q_SrcSize)
+{
+    size_t res = (q_DestSize < q_SrcSize) ? q_DestSize : q_SrcSize;
+    if (p_Dest && p_Src && q_DestSize > 0 && q_SrcSize > 0) {
+        memcpy(p_Dest, p_Src, res);
+    } else {
+        res = 0;
+    }
+    return res;
+}
+
+/*API for boot kpi marker prints  */
+inline int loc_boot_kpi_marker(const char * pFmt, ...)
+{
+    return -1;
+}
 
 #ifdef __cplusplus
 }

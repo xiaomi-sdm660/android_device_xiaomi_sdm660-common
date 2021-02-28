@@ -75,6 +75,7 @@ struct GnssMeasurement : public V2_0::IGnssMeasurement {
     sp<V1_1::IGnssMeasurementCallback> mGnssMeasurementCbIface_1_1 = nullptr;
     sp<V2_0::IGnssMeasurementCallback> mGnssMeasurementCbIface_2_0 = nullptr;
     MeasurementAPIClient* mApi;
+    void clearInterfaces();
 };
 
 }  // namespace implementation
