@@ -10,7 +10,7 @@
 
 # Non-A/B fstab.qcom variant
 #<src>                                                      <mnt_point>            <type>  <mnt_flags and options>                                                                           <fs_mgr_flags>
-/dev/block/zram0                                            none                   swap    defaults                                                                                          zramsize=50%
+/dev/block/zram0                                            none                   swap    defaults                                                                                          zramsize=50%,zram_backingdev_size=512M
 /dev/block/bootdevice/by-name/system                        /                      ext4    ro,barrier=1,discard                                                                              wait,avb
 /dev/block/bootdevice/by-name/userdata                      /data                  ext4    nosuid,nodev,barrier=1,noauto_da_alloc,noatime,lazytime                                           wait,resize,check,fileencryption=ice,crashcheck,quota,reservedsize=128M
 /dev/block/bootdevice/by-name/misc                          /misc                  emmc    defaults                                                                                          defaults
