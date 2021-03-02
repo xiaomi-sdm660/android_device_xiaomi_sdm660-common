@@ -103,6 +103,7 @@ static bool measCorrSetCorrections(const GnssMeasurementCorrections gnssMeasCorr
 static void measCorrClose();
 static uint32_t antennaInfoInit(const antennaInfoCb antennaInfoCallback);
 static void antennaInfoClose();
+static uint32_t configEngineRunState(PositioningEngineMask engType, LocEngineRunState engState);
 
 static const GnssInterface gGnssInterface = {
     sizeof(GnssInterface),
@@ -160,7 +161,8 @@ static const GnssInterface gGnssInterface = {
     disablePPENtripStream,
     gnssUpdateSecondaryBandConfig,
     gnssGetSecondaryBandConfig,
-    resetNetworkInfo
+    resetNetworkInfo,
+    configEngineRunState
 };
 
 #ifndef DEBUG_X86
@@ -578,5 +580,13 @@ static void disablePPENtripStream(){
     if (NULL != gGnssAdapter) {
         // Call will be enabled once GnssAdapter impl. is ready.
         gGnssAdapter->disablePPENtripStreamCommand();
+    }
+}
+
+static uint32_t configEngineRunState(PositioningEngineMask engType, LocEngineRunState engState) {
+    if (NULL != gGnssAdapter) {
+        return gGnssAdapter->configEngineRunStateCommand(engType, engState);
+    } else {
+        return 0;
     }
 }

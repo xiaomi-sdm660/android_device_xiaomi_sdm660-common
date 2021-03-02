@@ -39,6 +39,8 @@
 #include <XtraSystemStatusObserver.h>
 #include <map>
 #include <functional>
+#include <loc_misc_utils.h>
+#include <queue>
 
 #define MAX_URL_LEN 256
 #define NMEA_SENTENCE_MAX_LENGTH 200
@@ -177,6 +179,23 @@ typedef uint16_t  DGnssStateBitMask;
 #define DGNSS_STATE_NO_NMEA_PENDING           0X02
 #define DGNSS_STATE_NTRIP_SESSION_STARTED     0X04
 
+class GnssReportLoggerUtil {
+public:
+    typedef void (*LogGnssLatency)(const GnssLatencyInfo& gnssLatencyMeasInfo);
+
+    GnssReportLoggerUtil() : mLogLatency(nullptr) {
+        const char* libname = "liblocdiagiface.so";
+        void* libHandle = nullptr;
+        mLogLatency = (LogGnssLatency)dlGetSymFromLib(libHandle, libname, "LogGnssLatency");
+    }
+
+    bool isLogEnabled();
+    void log(const GnssLatencyInfo& gnssLatencyMeasInfo);
+
+private:
+    LogGnssLatency mLogLatency;
+};
+
 class GnssAdapter : public LocAdapterBase {
 
     /* ==== Engine Hub ===================================================================== */
@@ -258,6 +277,9 @@ class GnssAdapter : public LocAdapterBase {
     BlockCPIInfo mBlockCPIInfo;
     bool mPowerOn;
     uint32_t mAllowFlpNetworkFixes;
+    std::queue<GnssLatencyInfo> mGnssLatencyInfoQueue;
+    GnssReportLoggerUtil mLogger;
+    bool mDreIntEnabled;
 
     /* === Misc callback from QMI LOC API ============================================== */
     GnssEnergyConsumedCallback mGnssEnergyConsumedCb;
@@ -290,6 +312,8 @@ protected:
     /* ==== CLIENT ========================================================================= */
     virtual void updateClientsEventMask();
     virtual void stopClientSessions(LocationAPI* client);
+    inline void setNmeaReportRateConfig();
+    void logLatencyInfo();
 
 public:
 
@@ -434,6 +458,8 @@ public:
     inline void antennaInfoCloseCommand() { mIsAntennaInfoInterfaceOpened = false; }
     uint32_t configMinGpsWeekCommand(uint16_t minGpsWeek);
     uint32_t configDeadReckoningEngineParamsCommand(const DeadReckoningEngineConfig& dreConfig);
+    uint32_t configEngineRunStateCommand(PositioningEngineMask engType,
+                                         LocEngineRunState engState);
 
     /* ========= ODCPI ===================================================================== */
     /* ======== COMMANDS ====(Called from Client Thread)==================================== */
@@ -489,6 +515,11 @@ public:
     virtual bool reportGnssAdditionalSystemInfoEvent(
             GnssAdditionalSystemInfo& additionalSystemInfo);
     virtual void reportNfwNotificationEvent(GnssNfwNotification& notification);
+    virtual void reportLatencyInfoEvent(const GnssLatencyInfo& gnssLatencyInfo);
+    virtual bool reportQwesCapabilities
+    (
+        const std::unordered_map<LocationQwesFeatureType, bool> &featureMap
+    );
 
     /* ======== UTILITIES ================================================================= */
     bool needReportForGnssClient(const UlpLocation& ulpLocation,
@@ -589,6 +620,7 @@ public:
     void setSuplHostServer(const char* server, int port, LocServerType type);
     void notifyClientOfCachedLocationSystemInfo(LocationAPI* client,
                                                 const LocationCallbacks& callbacks);
+    LocationCapabilitiesMask getCapabilities();
     void updateSystemPowerStateCommand(PowerStateType systemPowerState);
 
     /*==== DGnss Usable Report Flag ====================================================*/

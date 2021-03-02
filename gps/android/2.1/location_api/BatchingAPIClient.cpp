@@ -30,6 +30,7 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "LocSvc_BatchingAPIClient"
 
+#include <inttypes.h>
 #include <log_util.h>
 #include <loc_cfg.h>
 
@@ -191,7 +192,7 @@ void BatchingAPIClient::flushBatchedLocations()
 
 void BatchingAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 {
-    LOC_LOGD("%s]: (%02x)", __FUNCTION__, capabilitiesMask);
+    LOC_LOGD("%s]: (%" PRIu64 ")", __FUNCTION__, capabilitiesMask);
     mLocationCapabilitiesMask = capabilitiesMask;
 }
 

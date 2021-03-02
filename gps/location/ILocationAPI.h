@@ -363,6 +363,44 @@ public:
                 LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
     */
     virtual uint32_t configDeadReckoningEngineParams(const DeadReckoningEngineConfig& dreConfig)=0;
+
+    /** @brief
+        This API is used to instruct the specified engine to be in
+        the pause/resume state. <br/>
+
+        When the engine is placed in paused state, the engine will
+        stop. If there is an on-going session, engine will no longer
+        produce fixes. In the paused state, calling API to delete
+        aiding data from the paused engine may not have effect.
+        Request to delete Aiding data shall be issued after
+        engine resume. <br/>
+
+        Currently, only DRE engine will support pause/resume
+        request. responseCb() will return not supported when request
+        is made to pause/resume none-DRE engine. <br/>
+
+        Request to pause/resume DRE engine can be made with or
+        without an on-going session. With QDR engine, on resume,
+        GNSS position & heading re-acquisition is needed for DR
+        engine to engage. If DR engine is already in the requested
+        state, the request will be no-op.  <br/>
+
+        @param
+        engType: the engine that is instructed to change its run
+        state. <br/>
+
+        engState: the new engine run state that the engine is
+        instructed to be in. <br/>
+
+        @return
+        A session id that will be returned in responseCallback to
+        match command with response. This effect is global for all
+        clients of LocationAPI responseCallback returns:
+                LOCATION_ERROR_SUCCESS if successful
+                LOCATION_ERROR_INVALID_PARAMETER if any parameters are invalid
+    */
+    virtual uint32_t configEngineRunState(PositioningEngineMask engType,
+                                          LocEngineRunState engState) = 0;
 };
 
 #endif /* ILOCATIONAPI_H */

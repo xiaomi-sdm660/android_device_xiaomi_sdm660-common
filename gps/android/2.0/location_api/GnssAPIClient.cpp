@@ -31,6 +31,7 @@
 #define LOG_TAG "LocSvc_GnssAPIClient"
 #define SINGLE_SHOT_MIN_TRACKING_INTERVAL_MSEC (590 * 60 * 60 * 1000) // 590 hours
 
+#include <inttypes.h>
 #include <log_util.h>
 #include <loc_cfg.h>
 
@@ -349,7 +350,7 @@ void GnssAPIClient::requestCapabilities() {
 // callbacks
 void GnssAPIClient::onCapabilitiesCb(LocationCapabilitiesMask capabilitiesMask)
 {
-    LOC_LOGD("%s]: (%02x)", __FUNCTION__, capabilitiesMask);
+    LOC_LOGD("%s]: (%" PRIu64 ")", __FUNCTION__, capabilitiesMask);
     mLocationCapabilitiesMask = capabilitiesMask;
     mLocationCapabilitiesCached = true;
 

@@ -109,6 +109,8 @@ struct GnssInterface {
     uint32_t (*gnssUpdateSecondaryBandConfig)(const GnssSvTypeConfig& secondaryBandConfig);
     uint32_t (*gnssGetSecondaryBandConfig)();
     void (*resetNetworkInfo)();
+    uint32_t (*configEngineRunState)(PositioningEngineMask engType,
+                                     LocEngineRunState engState);
 };
 
 struct BatchingInterface {

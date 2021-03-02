@@ -623,80 +623,16 @@ static void convertGnssData_2_1(GnssMeasurementsNotification& in,
 static void convertElapsedRealtimeNanos(GnssMeasurementsNotification& in,
         ::android::hardware::gnss::V2_0::ElapsedRealtime& elapsedRealtime)
 {
-    struct timespec currentTime;
-    int64_t sinceBootTimeNanos;
-
-    if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
-        if (in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_ELAPSED_REAL_TIME_BIT) {
-            uint64_t qtimerDiff = 0;
-            uint64_t qTimerTickCount = getQTimerTickCount();
-            if (qTimerTickCount >= in.clock.elapsedRealTime) {
-                qtimerDiff = qTimerTickCount - in.clock.elapsedRealTime;
-            }
-            LOC_LOGv("sinceBootTimeNanos:%" PRIi64 " in.clock.elapsedRealTime=%" PRIi64 ""
-                     " qTimerTickCount=%" PRIi64 " qtimerDiff=%" PRIi64 "",
-                     sinceBootTimeNanos, in.clock.elapsedRealTime, qTimerTickCount, qtimerDiff);
-            uint64_t qTimerDiffNanos = qTimerTicksToNanos(double(qtimerDiff));
-
-            /* If the time difference between Qtimer on modem side and Qtimer on AP side
-               is greater than one second we assume this is a dual-SoC device such as
-               Kona and will try to get Qtimer on modem side and on AP side and
-               will adjust our difference accordingly */
-            if (qTimerDiffNanos > 1000000000) {
-                uint64_t qtimerDelta = getQTimerDeltaNanos();
-                if (qTimerDiffNanos >= qtimerDelta) {
-                    qTimerDiffNanos -= qtimerDelta;
-                }
-            }
-
-            if (sinceBootTimeNanos >= qTimerDiffNanos) {
-                elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
-                elapsedRealtime.timestampNs = sinceBootTimeNanos - qTimerDiffNanos;
-                elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                elapsedRealtime.timeUncertaintyNs = in.clock.elapsedRealTimeUnc;
-            }
-        } else {
-            const uint32_t UTC_TO_GPS_SECONDS = 315964800;
-
-            if (in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_LEAP_SECOND_BIT &&
-                in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_FULL_BIAS_BIT &&
-                in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_BIT &&
-                in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_BIAS_UNCERTAINTY_BIT) {
-                int64_t currentTimeNanos = currentTime.tv_sec * 1000000000 + currentTime.tv_nsec;
-                int64_t measTimeNanos = (int64_t)in.clock.timeNs - (int64_t)in.clock.fullBiasNs
-                        - (int64_t)in.clock.biasNs - (int64_t)in.clock.leapSecond * 1000000000
-                        + (int64_t)UTC_TO_GPS_SECONDS * 1000000000;
-
-                LOC_LOGv("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
-                         " measTimeNanos:%" PRIi64 "",
-                         sinceBootTimeNanos, currentTimeNanos, measTimeNanos);
-                if (currentTimeNanos >= measTimeNanos) {
-                    int64_t ageTimeNanos = currentTimeNanos - measTimeNanos;
-                    LOC_LOGv("ageTimeNanos:%" PRIi64 ")", ageTimeNanos);
-                    // the max trusted propagation time 100ms for ageTimeNanos to avoid user
-                    // setting wrong time, it will affect elapsedRealtimeNanos
-                    if (ageTimeNanos <= 100000000) {
-                        elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
-                        elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
-                        elapsedRealtime.flags |=
-                                V2_0::ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-                        // time uncertainty is 1 ms since it is calculated from utc time that
-                        // is in ms
-                        // time uncertainty is the max value between abs(AP_UTC - MP_UTC) and 100ms,
-                        // to verify if user change the sys time
-                        elapsedRealtime.timeUncertaintyNs =
-                                std::max(ageTimeNanos, (int64_t)100000000);
-                    }
-                }
-            } else {
-                LOC_LOGe("Failed to calculate elapsedRealtimeNanos timestamp");
-            }
-        }
+    if (in.clock.flags & GNSS_MEASUREMENTS_CLOCK_FLAGS_ELAPSED_REAL_TIME_BIT) {
+        elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+        elapsedRealtime.timestampNs = in.clock.elapsedRealTime;
+        elapsedRealtime.flags |= V2_0::ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+        elapsedRealtime.timeUncertaintyNs = in.clock.elapsedRealTimeUnc;
+        LOC_LOGd("elapsedRealtime.timestampNs=%" PRIi64 ""
+                 " elapsedRealtime.timeUncertaintyNs=%" PRIi64 " elapsedRealtime.flags=0x%X",
+                 elapsedRealtime.timestampNs,
+                 elapsedRealtime.timeUncertaintyNs, elapsedRealtime.flags);
     }
-    LOC_LOGv("elapsedRealtime.timestampNs=%" PRIi64 ""
-             " elapsedRealtime.timeUncertaintyNs=%" PRIi64 " elapsedRealtime.flags=0x%X",
-             elapsedRealtime.timestampNs,
-             elapsedRealtime.timeUncertaintyNs, elapsedRealtime.flags);
 }
 
 }  // namespace implementation
