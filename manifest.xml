@@ -227,6 +227,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             <name>ISensors</name>
             <instance>default</instance>
         </interface>
+        <interface>
+            <name>ISensorManager</name>
+            <instance>default</instance>
+        </interface>
     </hal>
     <hal format="hidl">
         <name>android.hardware.thermal</name>
