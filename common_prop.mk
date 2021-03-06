@@ -277,7 +277,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # System restart
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.ssr.restart_level=ALL_ENABLE
+    persist.vendor.ssr.restart_level=ALL_ENABLE \
+    ro.build.shutdown_timeout=2
 
 # Thermal configs path
 PRODUCT_PROPERTY_OVERRIDES += \
