@@ -112,16 +112,16 @@ void vendor_load_persist_properties()
         property_override ("persist.vendor.audio.calfile6","/vendor/etc/acdbdata/QRD/sdm660-snd-card-skush/QRD_SKUSH_Speaker_cal.acdb");
         property_override ("persist.vendor.audio.calfile7","/vendor/etc/acdbdata/QRD/sdm660-snd-card-skush/QRD_SKUSH_workspaceFile.qwsp");
         property_override ("persist.vendor.audio.calfile8","/vendor/etc/acdbdata/adsp_avs_config.acdb");
-        
+
     }
   }
 }
 void vendor_load_properties()
 {
-  property_override("ro.build.description", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
-  property_override_dual("ro.build.fingerprint", "ro.vendor.build.fingerprint", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
+  property_override("ro.build.description", "wayne-user 8.1.0 OPM1.171019.011 V9.5.11.0.ODCCNFA release-keys");
+  property_override("ro.build.fingerprint", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
   
-   std::string product = GetProperty("ro.product.vendor.device", "");	
+   std::string product = GetProperty("ro.product.vendor.device", "");
    if (product.find("whyred") != std::string::npos)
    {
   	std::string region = GetProperty("ro.boot.hwc", "");
