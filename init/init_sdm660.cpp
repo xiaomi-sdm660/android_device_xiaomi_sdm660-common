@@ -102,6 +102,14 @@ void property_override_dual(char const system_prop[],
     property_override(vendor_prop, value);
 }
 
+void property_override_multifp(char const buildfp[], char const systemfp[],
+        char const bootimagefp[], char const vendorfp[], char const value[]) {
+    property_override(buildfp, value);
+    property_override(systemfp, value);
+    property_override(bootimagefp, value);
+    property_override(vendorfp, value);
+}
+
 void vendor_load_persist_properties()
 {
     std::string product = GetProperty("ro.product.vendor.device", "");
@@ -158,7 +166,8 @@ void vendor_load_properties()
     property_override("dalvik.vm.heapminfree", heapminfree);
     property_override("dalvik.vm.heapmaxfree", heapmaxfree);
     
-    property_override_dual("ro.build.fingerprint", "ro.vendor.build.fingerprint", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
+    property_override_multifp("ro.build.fingerprint", "ro.system.build.fingerprint", "ro.bootimage.build.fingerprint",
+        "ro.vendor.build.fingerprint", "xiaomi/wayne/wayne:8.1.0/OPM1.171019.011/V9.5.11.0.ODCCNFA:user/release-keys");
   
    std::string product = GetProperty("ro.product.vendor.device", "");	
    if (product.find("whyred") != std::string::npos)
