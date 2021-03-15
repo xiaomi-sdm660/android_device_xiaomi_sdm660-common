@@ -435,7 +435,8 @@ PRODUCT_COPY_FILES += \
 
 # Power
 PRODUCT_PACKAGES += \
-    android.hardware.power-service.xiaomi_sdm660-libperfmgr
+    android.hardware.power-service.xiaomi_sdm660-libperfmgr \
+    android.hardware.power.stats@1.0-service.mock
 
 # Powerhint
 ifeq ($(EAS_POWERHINT_VARIANT), sdm636)
