@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2018 The LineageOS Project
+# Copyright (C) 2020 Paranoid Android
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ fi
 
 ROOT="$COMMON_DIR"/../../..
 
-HELPER="$ROOT"/vendor/awaken/build/tools/extract_utils.sh
+HELPER="$ROOT"/tools/extract-utils/extract_utils.sh
 if [ ! -f "$HELPER" ]; then
     echo "Unable to find helper script at $HELPER"
     exit 1
@@ -121,7 +121,15 @@ function blob_fixup() {
         ;;
 
     esac
+
+    device_blob_fixup "$@"
 }
+
+if ! typeset -f device_blob_fixup > /dev/null; then
+    device_blob_fixup() {
+        :
+    }
+fi
 
 # Initialize the common helper
 setup_vendor "$DEVICE_COMMON" "$VENDOR" "$ROOT" true $CLEAN_VENDOR

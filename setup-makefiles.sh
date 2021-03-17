@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2018 The LineageOS Project
+# Copyright (C) 2020 Paranoid Android
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,10 +18,8 @@
 set -e
 
 DEVICE_COMMON=sdm660-common
-GUARDED_DEVICES_COMMON="tulip jasmine_sprout wayne clover lavender platina jason whyred"
+GUARDED_DEVICES_COMMON="clover jasmine_sprout jason lavender platina tulip wayne whyred"
 VENDOR=xiaomi
-
-INITIAL_COPYRIGHT_YEAR=2018
 
 # Load extract_utils and do some sanity checks
 COMMON_DIR="${BASH_SOURCE%/*}"
@@ -33,7 +31,7 @@ fi
 
 ROOT="$COMMON_DIR"/../../..
 
-HELPER="$ROOT"/vendor/awaken/build/tools/extract_utils.sh
+HELPER="$ROOT"/tools/extract-utils/extract_utils.sh
 if [ ! -f "$HELPER" ]; then
     echo "Unable to find helper script at $HELPER"
     exit 1
@@ -59,7 +57,6 @@ if ([[ "$ONLY_COMMON" = "false" ]] || [[ -z "$ONLY_COMMON" ]]) && [[ -s "${DEVIC
         GUARDED_DEVICES=
     fi
     # Reinitialize the helper for device
-    INITIAL_COPYRIGHT_YEAR="$DEVICE_BRINGUP_YEAR"
     setup_vendor "$DEVICE" "$VENDOR" "$ROOT" "$IS_COMMON" "$CLEAN_VENDOR"
     # Copyright headers and guards
     write_headers "$GUARDED_DEVICES"

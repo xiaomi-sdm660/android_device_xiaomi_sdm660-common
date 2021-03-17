@@ -1,4 +1,4 @@
-This repository contains device configuration for Xiaomi SDM660 devices
+### This repository contains device configuration for Xiaomi-SDM660 devices
 
 Basic   | Spec Sheet
 -------:|:----------
@@ -10,16 +10,27 @@ ROM     | 32/64/128GB
 RAM     | 3/4/6GB
 Android | 8.1.0
 
-Note:
-Depends on: android_packages_resources_devicesettings from LineageOS
+## Notes:
+ - Depends on: android_packages_resources_devicesettings from LineageOS
+ - Depends on: LA.QSSI.11.0.r1-09100-qssi.0 tag for vendor_codeaurora_telephony
+ - Depends on: LA.UM.9.6.2.r1-03600-89xx.0 tag for GPS and WFD
 
-Currently Supported Devices: wayne (MI 6X), jasmine_sprout (MI A2), clover (MI PAD 4 /4 Plus),
-lavender (Redmi Note 7) and platina (Mi 8 Lite)
+## Currently Supported Devices:
+ - clover (MI PAD 4 /4 Plus)
+ - jason (Redmi Note 3)
+ - jasmine_sprout (MI A2)
+ - lavender (Redmi Note 7)
+ - platina (Mi 8 Lite)
+ - tulip (Redmi Note 6 Pro)
+ - wayne (MI 6X)
+ - whyred (Redmi Note 5)
+
 ## Copyright
 
 ```
 #
 # Copyright (C) 2018 The LineageOS Project
+# Copyright (C) 2018-2021 Xiaomi-SDM660 Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
