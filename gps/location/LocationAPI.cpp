@@ -857,18 +857,3 @@ uint32_t LocationControlAPI::configDeadReckoningEngineParams(
     pthread_mutex_unlock(&gDataMutex);
     return id;
 }
-
-uint32_t LocationControlAPI::configEngineRunState(
-        PositioningEngineMask engType, LocEngineRunState engState) {
-    uint32_t id = 0;
-    pthread_mutex_lock(&gDataMutex);
-
-    if (gData.gnssInterface != NULL) {
-        id = gData.gnssInterface->configEngineRunState(engType, engState);
-    } else {
-        LOC_LOGe("No gnss interface available for Location Control API");
-    }
-
-    pthread_mutex_unlock(&gDataMutex);
-    return id;
-}

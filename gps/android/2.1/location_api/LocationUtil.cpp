@@ -85,22 +85,109 @@ void convertGnssLocation(Location& in, V1_0::GnssLocation& out)
     out.timestamp = static_cast<V1_0::GnssUtcTime>(in.timestamp);
 }
 
+bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos)
+{
+    struct timespec sinceBootTime;
+    struct timespec sinceBootTimeTest;
+    bool clockGetTimeSuccess = false;
+    const uint32_t MAX_TIME_DELTA_VALUE_NANOS = 10000;
+    const uint32_t MAX_GET_TIME_COUNT = 20;
+    /* Attempt to get CLOCK_REALTIME and CLOCK_BOOTIME in succession without an interruption
+    or context switch (for up to MAX_GET_TIME_COUNT times) to avoid errors in the calculation */
+    for (uint32_t i = 0; i < MAX_GET_TIME_COUNT; i++) {
+        if (clock_gettime(CLOCK_BOOTTIME, &sinceBootTime) != 0) {
+            break;
+        };
+        if (clock_gettime(CLOCK_REALTIME, &currentTime) != 0) {
+            break;
+        }
+        if (clock_gettime(CLOCK_BOOTTIME, &sinceBootTimeTest) != 0) {
+            break;
+        };
+        sinceBootTimeNanos = sinceBootTime.tv_sec * 1000000000 + sinceBootTime.tv_nsec;
+        int64_t sinceBootTimeTestNanos =
+            sinceBootTimeTest.tv_sec * 1000000000 + sinceBootTimeTest.tv_nsec;
+        int64_t sinceBootTimeDeltaNanos = sinceBootTimeTestNanos - sinceBootTimeNanos;
+
+        /* sinceBootTime and sinceBootTimeTest should have a close value if there was no
+        interruption or context switch between clock_gettime for CLOCK_BOOTIME and
+        clock_gettime for CLOCK_REALTIME */
+        if (sinceBootTimeDeltaNanos < MAX_TIME_DELTA_VALUE_NANOS) {
+            clockGetTimeSuccess = true;
+            break;
+        } else {
+            LOC_LOGd("Delta:%" PRIi64 "ns time too large, retry number #%u...",
+                     sinceBootTimeDeltaNanos, i + 1);
+        }
+    }
+    return clockGetTimeSuccess;
+}
+
 void convertGnssLocation(Location& in, V2_0::GnssLocation& out)
 {
     memset(&out, 0, sizeof(V2_0::GnssLocation));
     convertGnssLocation(in, out.v1_0);
 
-    if (in.flags & LOCATION_HAS_ELAPSED_REAL_TIME) {
-        out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
-        out.elapsedRealtime.timestampNs = in.elapsedRealTime;
-        out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
-        out.elapsedRealtime.timeUncertaintyNs = in.elapsedRealTimeUnc;
-        LOC_LOGd("out.elapsedRealtime.timestampNs=%" PRIi64 ""
-                 " out.elapsedRealtime.timeUncertaintyNs=%" PRIi64 ""
-                 " out.elapsedRealtime.flags=0x%X",
-                 out.elapsedRealtime.timestampNs,
-                 out.elapsedRealtime.timeUncertaintyNs, out.elapsedRealtime.flags);
+    struct timespec currentTime;
+    int64_t sinceBootTimeNanos;
+
+    if (getCurrentTime(currentTime, sinceBootTimeNanos)) {
+        if (in.flags & LOCATION_HAS_ELAPSED_REAL_TIME) {
+            uint64_t qtimerDiff = 0;
+            uint64_t qTimerTickCount = getQTimerTickCount();
+            if (qTimerTickCount >= in.elapsedRealTime) {
+                qtimerDiff = qTimerTickCount - in.elapsedRealTime;
+            }
+            LOC_LOGd("sinceBootTimeNanos:%" PRIi64 " in.elapsedRealTime=%" PRIi64 ""
+                     " qTimerTickCount=%" PRIi64 " qtimerDiff=%" PRIi64 "",
+                     sinceBootTimeNanos, in.elapsedRealTime, qTimerTickCount, qtimerDiff);
+            uint64_t qTimerDiffNanos = qTimerTicksToNanos(double(qtimerDiff));
+
+            /* If the time difference between Qtimer on modem side and Qtimer on AP side
+               is greater than one second we assume this is a dual-SoC device such as
+               Kona and will try to get Qtimer on modem side and on AP side and
+               will adjust our difference accordingly */
+            if (qTimerDiffNanos > 1000000000) {
+                uint64_t qtimerDelta = getQTimerDeltaNanos();
+                if (qTimerDiffNanos >= qtimerDelta) {
+                    qTimerDiffNanos -= qtimerDelta;
+                }
+            }
+
+            if (sinceBootTimeNanos >= qTimerDiffNanos) {
+                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                out.elapsedRealtime.timestampNs = sinceBootTimeNanos - qTimerDiffNanos;
+                out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                out.elapsedRealtime.timeUncertaintyNs = in.elapsedRealTimeUnc;
+            }
+        } else {
+            int64_t currentTimeNanos = currentTime.tv_sec*1000000000 + currentTime.tv_nsec;
+            int64_t locationTimeNanos = in.timestamp*1000000;
+            LOC_LOGd("sinceBootTimeNanos:%" PRIi64 " currentTimeNanos:%" PRIi64 ""
+                     " locationTimeNanos:%" PRIi64 "",
+                     sinceBootTimeNanos, currentTimeNanos, locationTimeNanos);
+            if (currentTimeNanos >= locationTimeNanos) {
+                int64_t ageTimeNanos = currentTimeNanos - locationTimeNanos;
+                LOC_LOGd("ageTimeNanos:%" PRIi64 ")", ageTimeNanos);
+                // the max trusted propagation time 100ms for ageTimeNanos to avoid user setting
+                // wrong time, it will affect elapsedRealtimeNanos
+                if (ageTimeNanos <= 100000000) {
+                    out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIMESTAMP_NS;
+                    out.elapsedRealtime.timestampNs = sinceBootTimeNanos - ageTimeNanos;
+                    out.elapsedRealtime.flags |= ElapsedRealtimeFlags::HAS_TIME_UNCERTAINTY_NS;
+                    // time uncertainty is the max value between abs(AP_UTC - MP_UTC) and 100ms, to
+                    // verify if user change the sys time
+                    out.elapsedRealtime.timeUncertaintyNs =
+                            std::max(ageTimeNanos, (int64_t)100000000);
+                }
+            }
+        }
     }
+    LOC_LOGd("out.elapsedRealtime.timestampNs=%" PRIi64 ""
+             " out.elapsedRealtime.timeUncertaintyNs=%" PRIi64 ""
+             " out.elapsedRealtime.flags=0x%X",
+             out.elapsedRealtime.timestampNs,
+             out.elapsedRealtime.timeUncertaintyNs, out.elapsedRealtime.flags);
 }
 
 void convertGnssLocation(const V1_0::GnssLocation& in, Location& out)

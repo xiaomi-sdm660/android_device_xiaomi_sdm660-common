@@ -428,12 +428,4 @@ LocAdapterBase::requestCapabilitiesCommand(LocationAPI* client)
     sendMsg(new MsgRequestCapabilities(*this, client));
 }
 
-void
-LocAdapterBase::reportLatencyInfoEvent(const GnssLatencyInfo& /*gnssLatencyInfo*/)
-DEFAULT_IMPL()
-
-bool LocAdapterBase::
-    reportQwesCapabilities(const std::unordered_map<LocationQwesFeatureType, bool> &featureMap)
-DEFAULT_IMPL(false)
-
 } // namespace loc_core

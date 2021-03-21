@@ -209,8 +209,7 @@ typedef enum {
     GNSS_LOCATION_INFO_CONFORMITY_INDEX_BIT             = (1<<28), // conformity index
     GNSS_LOCATION_INFO_LLA_VRP_BASED_BIT                = (1<<29), // VRP-based lat/long/alt
     GNSS_LOCATION_INFO_ENU_VELOCITY_VRP_BASED_BIT       = (1<<30), // VRP-based east/north/up vel
-    GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT      = (1ULL<<31), // Valid DR solution status
-    GNSS_LOCATION_INFO_ALTITUDE_ASSUMED_BIT             = (1ULL<<32), // Valid altitude assumed
+    GNSS_LOCATION_INFO_DR_SOLUTION_STATUS_MASK_BIT      = (1ULL<<31), // DR solution status
 } GnssLocationInfoFlagBits;
 
 typedef enum {
@@ -234,8 +233,7 @@ typedef enum {
     GEOFENCE_STATUS_AVAILABILE_YES,
 } GeofenceStatusAvailable;
 
-// Set of masks for Modem and QWES capabilities.
-typedef uint64_t LocationCapabilitiesMask;
+typedef uint32_t LocationCapabilitiesMask;
 typedef enum {
     // supports startTracking API with minInterval param
     LOCATION_CAPABILITIES_TIME_BASED_TRACKING_BIT           = (1<<0),
@@ -269,85 +267,7 @@ typedef enum {
     LOCATION_CAPABILITIES_CONFORMITY_INDEX_BIT               = (1<<14),
     // support precise location edgnss
     LOCATION_CAPABILITIES_EDGNSS_BIT                        = (1<<15),
-    // Modem supports Carrier Phase for Precise Positioning
-    // Measurement Engine (PPME).
-    LOCATION_CAPABILITIES_QWES_CARRIER_PHASE_BIT            = (1<<16),
-    // Modem supports SV Polynomial for tightly coupled external
-    // DR support. This is a Standalone Feature.
-    LOCATION_CAPABILITIES_QWES_SV_POLYNOMIAL_BIT            = (1<<17),
-    // Modem supports SV Ephemeris for tightly coupled external
-    // PPE engines. This is a Standalone Feature.
-    LOCATION_CAPABILITIES_QWES_SV_EPHEMERIS_BIT            = (1<<18),
-    // Modem supports GNSS Single Frequency feature. This is a
-    // Standalone Feature.
-    LOCATION_CAPABILITIES_QWES_GNSS_SINGLE_FREQUENCY        = (1<<19),
-    // Modem supports GNSS Multi Frequency feature. Multi Frequency
-    // enables Single frequency also.
-    LOCATION_CAPABILITIES_QWES_GNSS_MULTI_FREQUENCY         = (1<<20),
-    // This mask indicates VPe license bundle is enabled. VEPP
-    // bundle include Carrier Phase and SV Polynomial features.
-    LOCATION_CAPABILITIES_QWES_VPE                          = (1<<21),
-    // This mask indicates support for CV2X Location basic features.
-    // This bundle includes features for GTS Time & Freq, C-TUNC
-    // (Constrained Time uncertainity.
-    LOCATION_CAPABILITIES_QWES_CV2X_LOCATION_BASIC          = (1<<22),
-    // This mask indicates support for CV2X Location premium features.
-    // This bundle includes features for CV2X Location Basic features,
-    // QDR3 feature, and PACE. (Position Assisted Clock Estimator.
-    LOCATION_CAPABILITIES_QWES_CV2X_LOCATION_PREMIUM         = (1<<23),
-    // This mask indicates that PPE (Precise Positioning Engine)
-    // library is enabled or Precise Positioning Framework (PPF)
-    // is available. This bundle includes features for Carrier
-    // Phase and SV Ephermeris.
-    LOCATION_CAPABILITIES_QWES_PPE                          = (1<<24),
-    // This mask indicates QDR2_C license bundle is enabled. This
-    // bundle includes features for SV Polynomial.
-    LOCATION_CAPABILITIES_QWES_QDR2                         = (1<<25),
-    // This mask indicates QDR3_C license bundle is enabled. This
-    // bundle includes features for SV Polynomial.
-    LOCATION_CAPABILITIES_QWES_QDR3                         = (1<<26),
 } LocationCapabilitiesBits;
-
-typedef uint8_t LocationQwesFeatureType;
-typedef enum {
-    // Modem supports Carrier Phase for Precise Positioning
-    // Measurement Engine (PPME).
-    LOCATION_QWES_FEATURE_TYPE_CARRIER_PHASE                 = 1,
-    // Modem supports SV Polynomial for tightly coupled external
-    // DR support. This is a Standalone Feature.
-    LOCATION_QWES_FEATURE_TYPE_SV_POLYNOMIAL,
-    // Modem supports SV Ephemeris for tightly coupled external
-    // PPE support. This is a Standalone Feature.
-    LOCATION_QWES_FEATURE_TYPE_SV_EPH,
-    // Modem supports GNSS Single Frequency feature. This is a
-    // Standalone Feature.
-    LOCATION_QWES_FEATURE_TYPE_GNSS_SINGLE_FREQUENCY,
-    // Modem supports GNSS Multi Frequency feature. Multi Frequency
-    // enables Single frequency also.
-    LOCATION_QWES_FEATURE_TYPE_GNSS_MULTI_FREQUENCY,
-    // This indicates Time and Frequency status.
-    LOCATION_QWES_FEATURE_TYPE_TIME_FREQUENCY,
-    // This indicates Time Uncertainty  status.
-    LOCATION_QWES_FEATURE_TYPE_TIME_UNCERTAINTY,
-    // This indicates Clock Estimate status.
-    LOCATION_QWES_FEATURE_TYPE_CLOCK_ESTIMATE,
-    // This mask indicates that PPE (Precise Positioning Engine)
-    // library is enabled or Precise Positioning Framework (PPF)
-    // is available. This bundle includes features for Carrier
-    // Phase and SV Ephermeris.
-    LOCATION_QWES_FEATURE_TYPE_PPE,
-    // This indicates QDR2_C license bundle is enabled. This
-    // bundle includes features for SV Polynomial.
-    LOCATION_QWES_FEATURE_TYPE_QDR2,
-    // This indicates QDR3_C license bundle is enabled. This
-    // bundle includes features for SV Polynomial.
-    LOCATION_QWES_FEATURE_TYPE_QDR3,
-    // This indicates VEPP license bundle is enabled. VEPP
-    // bundle include Carrier Phase and SV Polynomial features.
-    LOCATION_QWES_FEATURE_TYPE_VPE,
-    // Max value
-    LOCATION_QWES_FEATURE_TYPE_MAX
-} LocationQwesFeatureTypes;
 
 typedef enum {
     LOCATION_TECHNOLOGY_TYPE_GNSS = 0,
@@ -807,16 +727,6 @@ typedef enum {
         (STANDARD_POSITIONING_ENGINE|DEAD_RECKONING_ENGINE| \
         PRECISE_POSITIONING_ENGINE|VP_POSITIONING_ENGINE)
 
-/** Specify the position engine running state. <br/> */
-enum LocEngineRunState {
-    /** Request the position engine to be put into resume state.
-     *  <br/> */
-    LOC_ENGINE_RUN_STATE_PAUSE   = 1,
-    /** Request the position engine to be put into resume state.
-     *  <br/> */
-    LOC_ENGINE_RUN_STATE_RESUME   = 2,
-};
-
 typedef uint64_t GnssDataMask;
 typedef enum {
     // Jammer Indicator is available
@@ -1241,8 +1151,6 @@ typedef struct {
     // VRR-based east, north, and up velocity
     float enuVelocityVRPBased[3];
     DrSolutionStatusMask drSolutionStatusMask;
-    // true: altitude is assumed, false: altitude is calculated
-    bool altitudeAssumed;
 } GnssLocationInfoNotification;
 
 typedef struct {
@@ -2032,23 +1940,4 @@ typedef struct {
     uint32_t port;
     bool useSSL;
 } GnssNtripConnectionParams;
-
-typedef struct {
-    uint64_t meQtimer1;
-    uint64_t meQtimer2;
-    uint64_t meQtimer3;
-    uint64_t peQtimer1;
-    uint64_t peQtimer2;
-    uint64_t peQtimer3;
-    uint64_t smQtimer1;
-    uint64_t smQtimer2;
-    uint64_t smQtimer3;
-    uint64_t locMwQtimer;
-    uint64_t hlosQtimer1;
-    uint64_t hlosQtimer2;
-    uint64_t hlosQtimer3;
-    uint64_t hlosQtimer4;
-    uint64_t hlosQtimer5;
-} GnssLatencyInfo;
-
 #endif /* LOCATIONDATATYPES_H */

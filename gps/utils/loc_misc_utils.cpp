@@ -307,15 +307,15 @@ void loc_convert_lla_gnss_to_vrp(double lla[3], float rollPitchYaw[3],
     float rn = A6DOF_WGS_B * sf * sfr + lla[2];
     float re = A6DOF_WGS_A * sfr + lla[2];
 
-    float deltaNEU[3];
+    float deltaNED[3];
 
     // gps_pos_lla = imu_pos_lla + Cbn*la_b .* [1/geo.Rn; 1/(geo.Re*geo.cL); -1];
-    Matrix_MxV(cnb, leverArm, deltaNEU);
+    Matrix_MxV(cnb, leverArm, deltaNED);
 
     // NED to lla conversion
-    lla[0] = lla[0] + deltaNEU[0] / rn;
-    lla[1] = lla[1] + deltaNEU[1] / (re * cl);
-    lla[2] = lla[2] + deltaNEU[2];
+    lla[0] = lla[0] + deltaNED[0] / rn;
+    lla[1] = lla[1] + deltaNED[1] / (re * cl);
+    lla[2] = lla[2] - deltaNED[2];
 }
 
 // Used for convert velocity from GSNS based to VRP based

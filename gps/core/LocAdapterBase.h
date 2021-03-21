@@ -236,9 +236,6 @@ public:
                              removeClientCompleteCallback rmClientCb);
     void requestCapabilitiesCommand(LocationAPI* client);
 
-    virtual void reportLatencyInfoEvent(const GnssLatencyInfo& gnssLatencyInfo);
-    virtual bool reportQwesCapabilities(
-            const std::unordered_map<LocationQwesFeatureType, bool> &featureMap);
 };
 
 } // namespace loc_core

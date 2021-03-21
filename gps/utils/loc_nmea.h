@@ -81,8 +81,7 @@ void loc_nmea_generate_pos(const UlpLocation &location,
                                unsigned char generate_nmea,
                                bool custom_gga_fix_quality,
                                std::vector<std::string> &nmeaArraystr,
-                               int& indexOfGGA,
-                               bool isTagBlockGroupingEnabled);
+                               int& indexOfGGA);
 
 #define DEBUG_NMEA_MINSIZE 6
 #define DEBUG_NMEA_MAXSIZE 4096

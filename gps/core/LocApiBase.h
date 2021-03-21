@@ -36,13 +36,6 @@
 #include <MsgTask.h>
 #include <LocSharedLock.h>
 #include <log_util.h>
-#ifdef NO_UNORDERED_SET_OR_MAP
-    #include <map>
-#else
-    #include <unordered_map>
-#endif
-#include <inttypes.h>
-#include <functional>
 
 using namespace loc_util;
 
@@ -201,11 +194,6 @@ public:
     void reportGnssAdditionalSystemInfo(GnssAdditionalSystemInfo& additionalSystemInfo);
     void sendNfwNotification(GnssNfwNotification& notification);
     void reportGnssConfig(uint32_t sessionId, const GnssConfig& gnssConfig);
-    void reportLatencyInfo(GnssLatencyInfo& gnssLatencyInfo);
-    void reportQwesCapabilities
-    (
-        const std::unordered_map<LocationQwesFeatureType, bool> &featureMap
-    );
 
     void geofenceBreach(size_t count, uint32_t* hwIds, Location& location,
             GeofenceBreachType breachType, uint64_t timestamp);
@@ -344,27 +332,6 @@ public:
                                               LocApiResponse* adapterResponse=nullptr);
     virtual void getConstellationMultiBandConfig(uint32_t sessionId,
                                         LocApiResponse* adapterResponse=nullptr);
-};
-
-class ElapsedRealtimeEstimator {
-private:
-    int64_t mCurrentClockDiff;
-    int64_t mPrevUtcTimeNanos;
-    int64_t mPrevBootTimeNanos;
-    int64_t mFixTimeStablizationThreshold;
-    int64_t mInitialTravelTime;
-    int64_t mPrevDataTimeNanos;
-public:
-
-    ElapsedRealtimeEstimator(int64_t travelTimeNanosEstimate):
-            mInitialTravelTime(travelTimeNanosEstimate) {reset();}
-    int64_t getElapsedRealtimeEstimateNanos(int64_t curDataTimeNanos,
-            bool isCurDataTimeTrustable, uint32_t tbf);
-    inline int64_t getElapsedRealtimeUncNanos() { return 5000000;}
-    void reset();
-
-    static int64_t getElapsedRealtimeQtimer(int64_t qtimerTicksAtOrigin);
-    static bool getCurrentTime(struct timespec& currentTime, int64_t& sinceBootTimeNanos);
 };
 
 typedef LocApiBase* (getLocApi_t)(LOC_API_ADAPTER_EVENT_MASK_T exMask,
