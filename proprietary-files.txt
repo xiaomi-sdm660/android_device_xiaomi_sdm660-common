@@ -275,7 +275,7 @@ vendor/etc/init/vendor.qti.hardware.tui_comm@1.0-service-qti.rc|2cfc563d7e157937
 vendor/lib/vendor.qti.hardware.tui_comm@1.0.so|d91fa64c3c48f447013401b4dbc5a7dc7d061eaa
 vendor/lib64/vendor.qti.hardware.tui_comm@1.0.so|182440c6d1f9dde20ee12420ec6319104388b8f3
 
-# ESE - from LA.UM.9.6.2.r1-03600-89xx.0
+# ESE - from LA.UM.9.6.2.r1-03300-89xx.0
 product/lib/vendor.qti.esepowermanager@1.0.so:vendor/lib/vendor.qti.esepowermanager@1.0.so|ec6a8a900d902002c3f15b1d28d115bbf7bcd118
 product/lib/vendor.qti.esepowermanager@1.1.so:vendor/lib/vendor.qti.esepowermanager@1.1.so|0ffa7c22bc15136f2254df992193f8c60c5d13bb
 product/lib64/vendor.qti.esepowermanager@1.0.so:vendor/lib64/vendor.qti.esepowermanager@1.0.so|956996730bcb6207c06f37b156bfd9d24db43034
@@ -652,7 +652,7 @@ vendor/radio/qcril_database/upgrade/5_version_update_ecc_table.sql|fcb2cba3bfd71
 -system_ext/priv-app/qcrilmsgtunnel/qcrilmsgtunnel.apk|7327981ef14fcd6e87732851f77505676eb4b849
 system_ext/lib/vendor.qti.hardware.radio.internal.deviceinfo@1.0.so|c7d66dd81a14ed58939ec877984f7d526bcf1578
 
-# Radio - from LA.UM.9.6.2.r1-03600-89xx.0
+# Radio - from LA.UM.9.6.2.r1-03300-89xx.0
 -system_ext/framework/qti-telephony-common.jar|f299a07201e2ce4cd65d28faa3b9730746e201ae
 
 # Radio (IMS) - from LA.UM.8.2.r1-07400-sdm660.0
@@ -754,7 +754,7 @@ system_ext/lib64/vendor.qti.ims.factory@1.0.so|fbebef1b0de8dbb2a2d059175bf53fa08
 system_ext/lib64/vendor.qti.ims.rcsconfig@1.0.so|2ffe2c86e070f5b8d406f5cf27913fe2ecab60e3
 system_ext/lib64/vendor.qti.ims.rcsconfig@1.1.so|414629865b66fe0dced9de924c78d32c01ad5fb1
 
-# Radio (IMS) - from LA.UM.9.6.2.r1-03600-89xx.0
+# Radio (IMS) - from LA.UM.9.6.2.r1-03300-89xx.0
 -system_ext/priv-app/ims/ims.apk|d1ccd646ccc64a52d3b34ff17c73319558896396
 system_ext/lib/vendor.qti.imsrtpservice@3.0.so|a5318e8e9b4465cb9f5ff5d322461a5ba53a6f91
 system_ext/lib64/com.qualcomm.qti.uceservice@2.0.so|c1ab8dc5de956caf0060a33922d402d0ec6c732e
@@ -776,7 +776,7 @@ vendor/lib/vendor.qti.imsrtpservice@3.0.so|1333f4cb493bfcf6f9c7f5d6b15c3af38b681
 vendor/lib64/com.qualcomm.qti.uceservice@2.0.so|1faf0fe6af1f6b71c8c812c35cb37e110777a8b2
 vendor/lib64/com.qualcomm.qti.uceservice@2.1.so|2e8adbfac57d37698e111b706f1fde665d588f70
 vendor/lib64/com.qualcomm.qti.uceservice@2.2.so|92da73814ba6c14502d5f43862339f7061e11894
-vendor/lib64/lib-imsvtcore.so|cdcf34a515027f75efe8f1db4645dfdc28c31a28
+vendor/lib64/lib-imsvtcore.so|6055d42a288d49d7d1d8ca031485f0d6f65c35f4
 vendor/lib64/vendor.qti.ims.rcsconfig@1.0.so|58fcc2a491826ecc3ca3cbc72b20f46c9108e0a4
 vendor/lib64/vendor.qti.ims.rcsconfig@1.1.so|5d71371d3eb10481f95a018481dfb62a5929110d
 vendor/lib64/vendor.qti.imsrtpservice@3.0-service-Impl.so|939193852a791072058e87949f10dc62456f7d06
@@ -821,24 +821,24 @@ vendor/lib64/libthermalioctl.so|2f0ee866e9059b1df9ca7b63815591354e7c77d8
 -vendor/lib/libthermalclient.so|c3aecc7610e8f5775a6f6af2ff7790bef74380a1
 -vendor/lib64/libthermalclient.so|84072e150722cc668320f07a75cb8695ce1a79b0
 
-# Time services -from LA.UM.9.6.2.r1-03600-89xx.0
+# Time services -from LA.UM.9.6.2.r1-03300-89xx.0
 -vendor/app/TimeService/TimeService.apk|1a5f39aa2969feee50ff81ec870b5e2669ae515e
 -vendor/lib/libtime_genoff.so|0e73ee0b125f4538d4afd76b4a4cd009176e98b1
 -vendor/lib64/libtime_genoff.so|3f57de1aeb7aa113a0a579cebed85ab4405b9b49
 vendor/bin/time_daemon|a27ac4aeafb41158b96046edbd553ae76835b4ed
 vendor/etc/init/init.time_daemon.rc|b253ca2a498757e14e1d7a051bf504ae09218f51
 
-# WiFi - from LA.UM.9.6.2.r1-03600-89xx.0
-vendor/bin/cnss-daemon|a904f7cf86d6c72f5ad0c37516d419c39e2e2464
+# WiFi - from LA.UM.9.6.2.r1-03300-89xx.0
+vendor/bin/cnss-daemon|1878e5ab3ade5c97255b0a02613dbe69e36a8f97
 
-# WFD - from LA.UM.9.6.2.r1-03600-89xx.0
+# WFD - from LA.UM.9.6.2.r1-03300-89xx.0
 -framework/WfdCommon.jar|0faa0fdf415b1ecdc92dfe6a52946a3248b7b02b
 -priv-app/WfdService/WfdService.apk|b99c24571581465e637c7f6a6efc7c36042e56ea
 bin/wfdservice|96a583c0efeaf90352b26c20c904ee156238b90f
 etc/init/wfdservice.rc|311bfdd1675e56499662f39455536b75b78477bb
 etc/wfdconfig.xml|d07f6b0441c0aa8913865100239490fa8687a020
 etc/wfdconfigsink.xml|5b4a96f251fd83c2eee520d06bea2b5b159fcd36
-lib/com.qualcomm.qti.wifidisplayhal@1.0.so|9e1000674de86c91933598297625a71e45828dc8
+lib/com.qualcomm.qti.wifidisplayhal@1.0.so|aa89ab6f11d1d9f22862b8c4076d34172d6f0e8d
 lib/libFileMux.so|4e05cd5e9913311ad17543d204adcd6d60cc8754
 lib/libOmxMux.so|033f86f26c34c4ec715ee65b1a2cfbef467a1e61
 lib/libwfdavenhancements.so|dd3b57ae90eaa606d069927f5d345b38cc8eba48
@@ -846,8 +846,9 @@ lib/libwfdclient.so|f8bc675421610ed19dcd9e535e9c7a384a89d37d
 lib/libwfdcodecv4l2.so|fc0dc6c233ed5e98e47bb0168ba5722cb3a6100a
 lib/libwfdcommonutils.so|b9926c36f1389a71cc4dd76a0b2945557f3333ad
 lib/libwfdconfigutils.so|297d166db9c148261c96cf1e3a5ff7f86576cac4
+lib/libwfddisplayconfig.so|f06b58228ea5fc570ad0403be5db4a4f8e11f108
 lib/libwfdmminterface.so|668c1fa38a6d94ae36d74cdf8e3e538de41425fc
-lib/libwfdmmsink.so|787a29412044ea1b215a59d0a00e4c7e3a71ba91
+lib/libwfdmmsink.so|d5a5ef1490c8a7a84b6ea034afd02efef0950336
 lib/libwfdmmsrc.so|cf8f8a63d2474a339d56471d745c572c14c0cb49
 lib/libwfdnative.so|ba926c39a6b5c6a60c1d4f65e9629eb719bafee0
 lib/libwfdrtsp.so|ff172aaf2df1d5ea4da247bc1af16d68304c7389
@@ -866,13 +867,15 @@ product/lib/vendor.qti.hardware.sigma_miracast@1.0.so|4d8cbb72f99275430b98882fea
 product/lib64/vendor.qti.hardware.sigma_miracast@1.0.so|0e4901cf394fa8a197c113df94267225fd42a5fd
 system_ext/lib/libmmosal.so|8c7f0a071f84ec2ac9522bf448cb902a3ece2405
 system_ext/lib/libmmparser_lite.so|c15126ec35cd6f484ffcf170a87ccde009d40645
+system_ext/lib/libmmrtpdecoder.so|a990ab20d1c970c827b8e12fe377c4965da7b7f5
+system_ext/lib/libmmrtpencoder.so|c1d969d3600a9b9a7505e4d1f18ab3ac0f111406
 system_ext/lib64/libmmosal.so|ef19a38be8283c87eabe96f74bc8a71881ab1f0a
 system_ext/lib64/libmmparser_lite.so|bd6d507a5c39b4997ded630cc0005673f37763a0
-vendor/bin/wifidisplayhalservice|5539a269192e5d4012162651118833a726fdec7a
+vendor/bin/wifidisplayhalservice|9a5bbc21cbcaa50263d2cca5f220d8f435933ac6
 vendor/etc/init/com.qualcomm.qti.wifidisplayhal@1.0-service.rc|04e463342cbba4c0e9c311a18238f95dec9359fd
-vendor/lib/com.qualcomm.qti.wifidisplayhal@1.0-halimpl.so|97e78ec41b25af26cd9bf91f938bc05325486e8b
+vendor/lib/com.qualcomm.qti.wifidisplayhal@1.0-halimpl.so|04334ac3883c64b6201cef433ff9c3045585890a
 vendor/lib/com.qualcomm.qti.wifidisplayhal@1.0.so|9e1000674de86c91933598297625a71e45828dc8
-vendor/lib/libmiracast.so|50f47a0a5a912bbccf121546db77ed396a684d25
+vendor/lib/libmiracast.so|74a024cff799d50314b9b119adb4435d9361ba0e
 vendor/lib/libmmosal.so|e23d6d1b2a035c08ffd7ac72d5241ebff37f0d14
 vendor/lib/libwfdcommonutils_proprietary.so|1d0b71c302a88ee30b33660e005fccdbabae904a
 vendor/lib/libwfddisplayconfig_proprietary.so|a3a23a87c0a531f887302bf9edeab90f7a68fcd8
@@ -881,15 +884,15 @@ vendor/lib/libwfdhdcpcp.so|0b8a69106f573a013479b231064c94b539c15e14
 vendor/lib/libwfdmmservice.so|ccdf23feee6f25493297cab321003a2b11177027
 vendor/lib/libwfdmodulehdcpsession.so|6e87f31c53f5c8cfcbbf27d5f5df1154ff6f6e96
 vendor/lib/vendor.qti.hardware.sigma_miracast@1.0.so|eaf070a871631b33ae40da2823ad4b4393f26a4a
-vendor/lib64/libmiracast.so|731c11bcbce88813cb42f7a6b00b67df0ca6bbcb
+vendor/lib64/libmiracast.so|8c6bdb1d54486542f392d042aeb66571f2235f13
 vendor/lib64/libmmosal.so|e9fdb48163e92b089cea0c397723a8416436c272
 vendor/lib64/libwfdhdcpcp.so|1a3384745b7ec87cda5ff58a43872b1374f6fc9b
 vendor/lib64/vendor.qti.hardware.sigma_miracast@1.0.so|5be9cd005e79619fbbc0c4bad97a388655eda945
 
-# WFD Dependency - from LA.UM.9.6.2.r1-03600-89xx.0
-vendor/lib/libdisplayconfig.qti.so|af86c698dbf1c9b4cdca8cda27550210eb559b3a
+# WFD Dependency - from LA.UM.9.6.2.r1-03300-89xx.0
+vendor/lib/libdisplayconfig.qti.so|7992c42b4cc784348381d824037216cff9922b22
 vendor/lib/vendor.display.config@2.0.so|c4320cbe4dfb16dc246af37914deec2381ff7561
-vendor/lib64/libdisplayconfig.qti.so|d5e01a88d524f14dd498b6fc2546130c54841fbb
+vendor/lib64/libdisplayconfig.qti.so|ed995e14b48117b77fe8a496d00d3f879b8c7dc3
 vendor/lib64/vendor.display.config@2.0.so|bf4cd1afb96d6f6a7c088e1ddbd40d189754646a
 
 # Common Camera - from Pie
