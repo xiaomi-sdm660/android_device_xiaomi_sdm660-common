@@ -889,12 +889,6 @@ vendor/lib64/libmmosal.so|e9fdb48163e92b089cea0c397723a8416436c272
 vendor/lib64/libwfdhdcpcp.so|1a3384745b7ec87cda5ff58a43872b1374f6fc9b
 vendor/lib64/vendor.qti.hardware.sigma_miracast@1.0.so|5be9cd005e79619fbbc0c4bad97a388655eda945
 
-# WFD Dependency - from LA.UM.9.6.2.r1-03300-89xx.0
-vendor/lib/libdisplayconfig.qti.so|7992c42b4cc784348381d824037216cff9922b22
-vendor/lib/vendor.display.config@2.0.so|c4320cbe4dfb16dc246af37914deec2381ff7561
-vendor/lib64/libdisplayconfig.qti.so|ed995e14b48117b77fe8a496d00d3f879b8c7dc3
-vendor/lib64/vendor.display.config@2.0.so|bf4cd1afb96d6f6a7c088e1ddbd40d189754646a
-
 # Common Camera - from Pie
 vendor/lib/libchromaflash.so|cf85560822e04014b8950a1abae9c2843069101d
 vendor/lib/libllvd_smore.so|740de4c339772df80858ddd9390f91ead71eadeb
