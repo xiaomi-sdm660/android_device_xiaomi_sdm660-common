@@ -815,13 +815,13 @@ vendor/lib/libsubsystem_control.so|fe08da9f6a0e73a97231055c4ca8279a68432476
 vendor/lib64/libSubSystemShutdown.so|c934b2df57be86fdfb9bdf2046f9289af5e7a62c
 vendor/lib64/libsubsystem_control.so|b2e8c7eb9d999137ae99ea38f85d7dac59c6dcc2
 
-# Thermal - from jasmine-user-10-QKQ1.190910.002-V11.0.19.0.QDIMIXM
-vendor/bin/thermal-engine|459c3fb5ab99ac95cff15387358c1d0e239a5735
-vendor/lib/libthermalfeature.so|b2a90496eb99301cc0f065fe97782358858668a3
-vendor/lib64/libthermalfeature.so|1c408911610e5b6a11853aff1900860f9e9a861f
-vendor/lib64/libthermalioctl.so|2f0ee866e9059b1df9ca7b63815591354e7c77d8
--vendor/lib/libthermalclient.so|c3aecc7610e8f5775a6f6af2ff7790bef74380a1
--vendor/lib64/libthermalclient.so|84072e150722cc668320f07a75cb8695ce1a79b0
+# Thermal - from wayne Miui 9.7.4
+-vendor/lib/libthermalclient.so|d5c6c82b15423e95e991d757bab1b4a27fb88848
+-vendor/lib64/libthermalclient.so|3412ce67da6a58d7f44a65e6b8af8cc5bfb9f506
+vendor/bin/thermal-engine|0be3686204fc600f8dd8607fff10cd7fd273186e
+vendor/lib/libthermalfeature.so|1f1eb616ba26b309a2fda7de40c2163a4acaaa35
+vendor/lib64/libthermalfeature.so|829b2fc0aa8c863d4b4b331e0a2c00663e01efe6
+vendor/lib64/libthermalioctl.so|7c7a784d8ead3d932d164cfc953b09e621060d90
 
 # Time services -from LA.UM.9.6.2.r1-03300-89xx.0
 -vendor/app/TimeService/TimeService.apk|1a5f39aa2969feee50ff81ec870b5e2669ae515e
