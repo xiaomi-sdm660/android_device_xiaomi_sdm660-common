@@ -267,6 +267,12 @@
       "Value": "10000"
     },
     {
+      "PowerHint": "AUDIO_LAUNCH",
+      "Node": "PMQoSCpuDmaLatency",
+      "Duration": 0,
+      "Value": "43"
+    },
+    {
       "PowerHint": "AUDIO_STREAMING",
       "Node": "PMQoSCpuDmaLatency",
       "Duration": 2000,
