@@ -4,6 +4,9 @@ type ir_dev_file, file_type;
 type sysfs_info, fs_type, sysfs_type;
 type thermal_data_file, file_type, data_file_type;
 
+# Fast Charge
+type sysfs_fcharge, sysfs_type, fs_type;
+
 # Fingerprint
 type fingerprintd_device, file_type, dev_type;
 type persist_fingerprint_file, file_type;

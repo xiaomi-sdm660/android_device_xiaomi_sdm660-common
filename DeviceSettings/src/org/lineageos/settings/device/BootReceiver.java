@@ -79,6 +79,10 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
         FileUtils.setValue(DeviceSettings.THERMAL_PATH, Settings.Secure.getInt(context.getContentResolver(),
                 DeviceSettings.PREF_THERMAL, 0));
 
+        // USB Fastcharge
+        FileUtils.setValue(DeviceSettings.USB_FASTCHARGE_PATH, Settings.Secure.getInt(context.getContentResolver(),
+                DeviceSettings.PREF_USB_FASTCHARGE, 0));
+
         // FPS Info
         boolean enabled = Settings.Secure.getInt(context.getContentResolver(), 
                 DeviceSettings.PREF_KEY_FPS_INFO, 0) == 1;

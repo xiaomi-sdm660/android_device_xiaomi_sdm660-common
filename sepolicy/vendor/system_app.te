@@ -3,6 +3,7 @@ allow system_app hal_mlipay_default:binder call;
 allow system_app kcal_dev:file rw_file_perms;
 allow system_app kcal_dev:dir search;
 allow system_app proc_vmallocinfo:file read;
+allow system_app sysfs_fcharge:file rw_file_perms;
 allow system_app sysfs_thermal:file rw_file_perms;
 allow system_app sysfs_thermal:dir search;
 allow system_app sysfs_vibrator:file rw_file_perms;

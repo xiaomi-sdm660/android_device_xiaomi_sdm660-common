@@ -100,4 +100,9 @@
     <string name="headphone_gain">Headphone Gain</string>
     <string name="mic_gain">Microphone Gain</string>
 
+    <!-- USB fastcharge -->
+    <string name="usb_fastcharge_title">USB Fastcharge</string>
+    <string name="fastcharge_title">Enable USB Fastcharge</string>
+    <string name="fastcharge_summary">Charge upto 900mA when connected to a computer via USB 3.0 port</string>
+
 </resources>

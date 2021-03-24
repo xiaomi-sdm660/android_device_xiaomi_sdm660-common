@@ -31,6 +31,10 @@ on boot
     chmod 0660 /sys/kernel/sound_control/headphone_gain
     chmod 0660 /sys/kernel/sound_control/mic_gain
 
+    # USB Fastcharge
+    chown system system /sys/kernel/fast_charge/force_fast_charge
+    chmod 0660 /sys/kernel/fast_charge/force_fast_charge
+
 # KCal
     chown system system /sys/devices/platform/kcal_ctrl.0/kcal_cont
     chown system system /sys/devices/platform/kcal_ctrl.0/kcal_enable
