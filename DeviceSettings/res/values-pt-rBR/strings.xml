@@ -95,8 +95,8 @@
     <string name="fps_info_title">Mostrar FPS</string>
     <string name="fps_info_summary">Mostra os quadros por segundo sobrepostos na tela</string>
     
-    <!-- Audio amplification -->
-    <string name="audio_amplify">Amplificar audio</string>
+    <!-- Audio -->
+    <string name="audio_title">Audio</string>
     <string name="headphone_gain">Ganho do headphone</string>
     <string name="mic_gain">Ganho do microfone</string>
 

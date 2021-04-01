@@ -95,8 +95,8 @@
     <string name="fps_info_title">FPS Overlay</string>
     <string name="fps_info_summary">Menampilkan jumlah bingkai perdetik saat ini</string>
 
-    <!-- Audio amplification -->
-    <string name="audio_amplify">Pengeras suara</string>
+    <!-- Audio -->
+    <string name="audio_title">Pengeras suara</string>
     <string name="headphone_gain">Headphone Gain</string>
     <string name="mic_gain">Microphone Gain</string>
 

@@ -95,8 +95,8 @@
     <string name="fps_info_title">FPS 오버레이</string>
     <string name="fps_info_summary">현재 FPS를 나타내는 오버레이를 표시합니다.</string>
     
-    <!-- Audio amplification -->
-    <string name="audio_amplify">오디오 앰프</string>
+    <!-- Audio -->
+    <string name="audio_title">오디오 앰프</string>
     <string name="headphone_gain">헤드폰 게인</string>
     <string name="mic_gain">마이크 게인</string>
 

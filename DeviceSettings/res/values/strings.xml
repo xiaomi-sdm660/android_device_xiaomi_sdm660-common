@@ -95,9 +95,14 @@
     <string name="fps_info_title">FPS Overlay</string>
     <string name="fps_info_summary">Show overlay with current frames per second</string>
     
-    <!-- Audio amplification -->
-    <string name="audio_amplify">Amplify Audio</string>
+    <!-- Audio -->
+    <string name="audio_title">Audio</string>
+    
+    <!-- Headphone and Microphone Gain -->
     <string name="headphone_gain">Headphone Gain</string>
     <string name="mic_gain">Microphone Gain</string>
-
+    
+    <!-- Dirac -->
+    <string name="dirac_pref_title">Mi Sound</string>
+    <string name="dirac_pref_summary">Improve audio quality with Mi Sound Enhancer</string>
 </resources>

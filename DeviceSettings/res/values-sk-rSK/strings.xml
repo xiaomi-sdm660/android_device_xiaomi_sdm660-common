@@ -95,8 +95,8 @@
     <string name="fps_info_title">Ukazateľ FPS</string>
     <string name="fps_info_summary">Zobrazovať aktuálny počet snímkov za sekundu</string>
     
-    <!-- Audio amplification -->
-    <string name="audio_amplify">Zosilnenie zvuku</string>
+    <!-- Audio -->
+    <string name="audio_title">Zosilnenie zvuku</string>
     <string name="headphone_gain">Zisk slúchadiel</string>
     <string name="mic_gain">Zisk mikrofónu</string>
 

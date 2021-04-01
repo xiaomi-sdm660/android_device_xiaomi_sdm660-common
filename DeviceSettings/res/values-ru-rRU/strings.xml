@@ -95,8 +95,8 @@
     <string name="fps_info_title">FPS Показатель</string>
     <string name="fps_info_summary">Показать наложение с текущими кадрами в секунду</string>
     
-    <!-- Audio amplification -->
-    <string name="audio_amplify">Усиление звука</string>
+    <!-- Audio -->
+    <string name="audio_title">Усиление звука</string>
     <string name="headphone_gain">Усиление наушников</string>
     <string name="mic_gain">Усиление микрофона</string>
     
