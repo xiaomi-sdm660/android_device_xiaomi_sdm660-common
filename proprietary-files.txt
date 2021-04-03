@@ -824,9 +824,6 @@ vendor/lib64/libthermalioctl.so|7c7a784d8ead3d932d164cfc953b09e621060d90
 vendor/bin/time_daemon|a27ac4aeafb41158b96046edbd553ae76835b4ed
 vendor/etc/init/init.time_daemon.rc|b253ca2a498757e14e1d7a051bf504ae09218f51
 
-# WiFi - from LA.UM.9.6.2.r1-03300-89xx.0
-vendor/bin/cnss-daemon|1878e5ab3ade5c97255b0a02613dbe69e36a8f97
-
 # WFD - from LA.UM.9.6.2.r1-03300-89xx.0
 -framework/WfdCommon.jar|0faa0fdf415b1ecdc92dfe6a52946a3248b7b02b
 -priv-app/WfdService/WfdService.apk|b99c24571581465e637c7f6a6efc7c36042e56ea
