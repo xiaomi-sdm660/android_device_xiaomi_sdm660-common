@@ -1,4 +1,4 @@
-on boot
+on early-boot
     # Notification LED
     chown system system /sys/class/leds/white/blink
     chown system system /sys/class/leds/white/brightness
@@ -40,8 +40,6 @@ on boot
 
     chown system system /sys/class/leds/lcd-backlight/max_brightness
 
-    start vendor.light-hal-2-0
-
 service vendor.light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.xiaomi_sdm660
     interface android.hardware.light@2.0::ILight default
     class hal
@@ -49,4 +47,3 @@ service vendor.light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.x
     group system
     # shutting off lights while powering-off
     shutdown critical
-    disabled
