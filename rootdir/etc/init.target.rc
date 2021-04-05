@@ -131,9 +131,7 @@ on boot
     setprop sys.usb.configfs 1
 
     # Touchpanel
-    chown system system /sys/touchpanel/capacitive_keys
     chown system system /sys/touchpanel/double_tap
-    chown system system /sys/touchpanel/reversed_keys
 
     chmod 0664 /sys/touchpanel/capacitive_keys
     chmod 0664 /sys/touchpanel/double_tap
