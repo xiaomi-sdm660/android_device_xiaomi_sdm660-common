@@ -796,11 +796,11 @@ vendor/lib/libthermalfeature.so|1f1eb616ba26b309a2fda7de40c2163a4acaaa35
 vendor/lib64/libthermalfeature.so|829b2fc0aa8c863d4b4b331e0a2c00663e01efe6
 vendor/lib64/libthermalioctl.so|7c7a784d8ead3d932d164cfc953b09e621060d90
 
-# Time services -from LA.UM.8.2.r1-07400-sdm660.0
--vendor/app/TimeService/TimeService.apk|c935b678fdaed033513f044f6492361c3370f9f0
--vendor/lib/libtime_genoff.so|d3d9308d4a5d736eb442f6e9daab47cdc5bb61c7
--vendor/lib64/libtime_genoff.so|216cbb72e22a0ca76d766dc0b84055c5b31e0a4c
-vendor/bin/time_daemon|a213fb73b9b1cbbdb631851a337ffd64ae08367e
+# Time services - from LA.UM.9.2.r1-01800-SDMxx0.0
+-vendor/app/TimeService/TimeService.apk|d8ea5450a8eec829ffe2fd2c43a922793ac22d01
+-vendor/lib/libtime_genoff.so|bd13c34aef67e1d513dd23c731435d50202d0741
+-vendor/lib64/libtime_genoff.so|f5a0dec271a7b79da80230d8988a6b602f333322
+vendor/bin/time_daemon|a27ac4aeafb41158b96046edbd553ae76835b4ed
 vendor/etc/init/init.time_daemon.rc|b253ca2a498757e14e1d7a051bf504ae09218f51
 
 # WFD - from LA.UM.9.2.r1-01800-SDMxx0.0
