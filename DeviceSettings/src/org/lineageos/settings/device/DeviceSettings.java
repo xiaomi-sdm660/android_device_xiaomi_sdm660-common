@@ -42,22 +42,24 @@ public class DeviceSettings extends PreferenceFragment implements
     public static final String CATEGORY_NOTIF = "notification_led";
     public static final String PREF_NOTIF_LED = "notification_led_brightness";
     public static final String NOTIF_LED_PATH = "/sys/class/leds/white/max_brightness";
-    
-    public static final String PREF_KEY_FPS_INFO = "fps_info";
-    
-    public static final  String CATEGORY_AUDIO = "audio";
+
+    public static final  String CATEGORY_AUDIO_AMPLIFY = "audio_amplify";
     public static final  String PREF_HEADPHONE_GAIN = "headphone_gain";
     public static final  String PREF_MIC_GAIN = "mic_gain";
     public static final  String HEADPHONE_GAIN_PATH = "/sys/kernel/sound_control/headphone_gain";
     public static final  String MIC_GAIN_PATH = "/sys/kernel/sound_control/mic_gain";
-    
-    private static final String DIRAC_PACKAGE_NAME = "com.xiaomi.dirac";
-    private static final String PREF_DIRAC = "dirac";
+
+    private static final String PREF_ENABLE_DIRAC = "dirac_enabled";
+    private static final String PREF_HEADSET = "dirac_headset_pref";
+    private static final String PREF_PRESET = "dirac_preset_pref";
+
+    public static final String PREF_KEY_FPS_INFO = "fps_info";
 
     // value of vtg_min and vtg_max
     public static final int MIN_VIBRATION = 116;
     public static final int MAX_VIBRATION = 3596;
 
+    // value of min_led and max_led
     public static final int MIN_LED = 1;
     public static final int MAX_LED = 255;
 
@@ -73,67 +75,97 @@ public class DeviceSettings extends PreferenceFragment implements
     private static final String DEVICE_JASON_PACKAGE_NAME = "org.lineageos.settings.devicex";
     private static final String PREF_DEVICE_JASON = "device_jason";
 
+    private SecureSettingSwitchPreference mEnableDirac;
+    private SecureSettingListPreference mHeadsetType;
+    private SecureSettingListPreference mPreset;
     private SecureSettingListPreference mTHERMAL;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences_xiaomi_parts, rootKey);
-        
+
+        // LED Brightness
         if (FileUtils.fileWritable(NOTIF_LED_PATH)) {
             NotificationLedSeekBarPreference notifLedBrightness =
                     (NotificationLedSeekBarPreference) findPreference(PREF_NOTIF_LED);
             notifLedBrightness.setOnPreferenceChangeListener(this);
         } else { getPreferenceScreen().removePreference(findPreference(CATEGORY_NOTIF)); }
 
+        // Haptic Strength
         if (FileUtils.fileWritable(VIBRATION_STRENGTH_PATH)) {
             VibrationSeekBarPreference vibrationStrength = (VibrationSeekBarPreference) findPreference(PREF_VIBRATION_STRENGTH);
             vibrationStrength.setOnPreferenceChangeListener(this);
         } else { getPreferenceScreen().removePreference(findPreference(CATEGORY_VIBRATOR)); }
-        
-        PreferenceCategory audioCategory = (PreferenceCategory) findPreference(CATEGORY_AUDIO);
+
+        // Amplify Audio 
+        PreferenceCategory gainCategory = (PreferenceCategory) findPreference(CATEGORY_AUDIO_AMPLIFY);
         // Headphone Gain
         if (FileUtils.fileWritable(HEADPHONE_GAIN_PATH)) {
            CustomSeekBarPreference headphoneGain = (CustomSeekBarPreference) findPreference(PREF_HEADPHONE_GAIN);
            headphoneGain.setOnPreferenceChangeListener(this);
         } else {
-          audioCategory.removePreference(findPreference(PREF_HEADPHONE_GAIN));
+          gainCategory.removePreference(findPreference(PREF_HEADPHONE_GAIN));
         }
         // Mic Gain
         if (FileUtils.fileWritable(MIC_GAIN_PATH)) {
            CustomSeekBarPreference micGain = (CustomSeekBarPreference) findPreference(PREF_MIC_GAIN);
            micGain.setOnPreferenceChangeListener(this);
         } else {
-          audioCategory.removePreference(findPreference(PREF_MIC_GAIN));
-        }
-        // Access to Dirac
-        if (isAppNotInstalled(DIRAC_PACKAGE_NAME)) {
-            audioCategory.removePreference(findPreference(PREF_DIRAC));
+          gainCategory.removePreference(findPreference(PREF_MIC_GAIN));
         }
 
+        // Display Category
         PreferenceCategory displayCategory = (PreferenceCategory) findPreference(CATEGORY_DISPLAY);
+        // Doze
         if (isAppNotInstalled(DEVICE_DOZE_PACKAGE_NAME)) {
             displayCategory.removePreference(findPreference(PREF_DEVICE_DOZE));
         }
-
+        // Jason Settings
         if (isAppNotInstalled(DEVICE_JASON_PACKAGE_NAME)) {
             displayCategory.removePreference(findPreference(PREF_DEVICE_JASON));
         }
-        
+        //FPS Info
         SecureSettingSwitchPreference fpsInfo = (SecureSettingSwitchPreference) findPreference(PREF_KEY_FPS_INFO);
         fpsInfo.setOnPreferenceChangeListener(this);
-
+        // KCAL
         Preference kcal = findPreference(PREF_DEVICE_KCAL);
-
         kcal.setOnPreferenceClickListener(preference -> {
             Intent intent = new Intent(getActivity().getApplicationContext(), KCalSettingsActivity.class);
             startActivity(intent);
             return true;
         });
 
+        // Thermal Switch
         mTHERMAL = (SecureSettingListPreference) findPreference(PREF_THERMAL);
         mTHERMAL.setValue(FileUtils.getValue(THERMAL_PATH));
         mTHERMAL.setSummary(mTHERMAL.getEntry());
         mTHERMAL.setOnPreferenceChangeListener(this);
+
+        // Dirac
+        boolean enhancerEnabled;
+        try {
+            enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
+        } catch (java.lang.NullPointerException e) {
+            getContext().startService(new Intent(getContext(), DiracService.class));
+            try {
+                enhancerEnabled = DiracService.sDiracUtils.isDiracEnabled();
+            } catch (NullPointerException ne) {
+                // Avoid crash
+                ne.printStackTrace();
+                enhancerEnabled = false;
+            }
+        }
+
+        // Dirac Switch
+        mEnableDirac = (SecureSettingSwitchPreference) findPreference(PREF_ENABLE_DIRAC);
+        mEnableDirac.setOnPreferenceChangeListener(this);
+        mEnableDirac.setChecked(enhancerEnabled);
+        // Headset
+        mHeadsetType = (SecureSettingListPreference) findPreference(PREF_HEADSET);
+        mHeadsetType.setOnPreferenceChangeListener(this);
+        // Preset
+        mPreset = (SecureSettingListPreference) findPreference(PREF_PRESET);
+        mPreset.setOnPreferenceChangeListener(this);
 
     }
 
@@ -158,10 +190,31 @@ public class DeviceSettings extends PreferenceFragment implements
                 FileUtils.setValue(MIC_GAIN_PATH, (int) value);
                 break;
 
-            case PREF_THERMAL:
-                mTHERMAL.setValue((String) value);
-                mTHERMAL.setSummary(mTHERMAL.getEntry());
-                FileUtils.setValue(THERMAL_PATH, (String) value);
+            case PREF_ENABLE_DIRAC:
+                try {
+                    DiracService.sDiracUtils.setEnabled((boolean) value);
+                } catch (java.lang.NullPointerException e) {
+                    getContext().startService(new Intent(getContext(), DiracService.class));
+                    DiracService.sDiracUtils.setEnabled((boolean) value);
+                }
+                break;
+
+            case PREF_HEADSET:
+                try {
+                    DiracService.sDiracUtils.setHeadsetType(Integer.parseInt(value.toString()));
+                } catch (java.lang.NullPointerException e) {
+                    getContext().startService(new Intent(getContext(), DiracService.class));
+                    DiracService.sDiracUtils.setHeadsetType(Integer.parseInt(value.toString()));
+                }
+                break;
+
+            case PREF_PRESET:
+                try {
+                    DiracService.sDiracUtils.setLevel(String.valueOf(value));
+                } catch (java.lang.NullPointerException e) {
+                    getContext().startService(new Intent(getContext(), DiracService.class));
+                    DiracService.sDiracUtils.setLevel(String.valueOf(value));
+                }
                 break;
 
             case PREF_KEY_FPS_INFO:
@@ -172,6 +225,12 @@ public class DeviceSettings extends PreferenceFragment implements
                 } else {
                     this.getContext().stopService(fpsinfo);
                 }
+                break;
+
+            case PREF_THERMAL:
+                mTHERMAL.setValue((String) value);
+                mTHERMAL.setSummary(mTHERMAL.getEntry());
+                FileUtils.setValue(THERMAL_PATH, (String) value);
                 break;
                 
             default:

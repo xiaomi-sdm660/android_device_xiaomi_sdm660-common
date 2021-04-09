@@ -140,6 +140,14 @@ PRODUCT_PRODUCT_PROPERTIES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.media.codec2=2
 
+# Dirac
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.audio.soundfx.dirac=true \
+    persist.audio.dirac.speaker=true \
+    persist.dirac.acs.controller=qem \
+    persist.dirac.acs.ignore_error=1 \
+    persist.dirac.acs.storeSettings=1
+
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.latch_unsignaled=1 \

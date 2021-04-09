@@ -37,6 +37,10 @@ It allows additional grants on top of privapp-permissions-platform.xml
       <permission name="android.permission.INTERACT_ACROSS_USERS"/>
     </privapp-permissions>
 
+    <privapp-permissions package="se.dirac.acs">
+      <permission name="android.permission.INTERACT_ACROSS_USERS"/>
+    </privapp-permissions>
+
     <privapp-permissions package="android.ext.services">
       <permission name="android.permission.PROVIDE_RESOLVER_RANKER_SERVICE"/>
     </privapp-permissions>
