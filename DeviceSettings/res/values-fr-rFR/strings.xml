@@ -21,10 +21,6 @@
 
     <string name="display_title">Affichage</string>
 
-    <!-- Mi Note 3 Settings -->
-    <string name="jason_pref_title">Paramètres avancés</string>
-    <string name="jason_pref_summary">Paramètres propres au Mi Note 3</string>
-
     <!-- KCal -->
     <string name="device_kcal_title">Étalonnage des couleurs</string>
 
@@ -94,7 +90,7 @@
 
     <!-- Dirac settings -->
     <string name="dirac_title">Amélioration audio Mi</string>
-    <string name="dirac_summary">Améliorer la qualité audio</string>
+    <string name="dirac_summary">Optimiser la qualité audio</string>
     <string name="dirac_headset_title">Sélectionnez le type d\'écouteurs</string>
     <string name="dirac_preset_title">Choisir une présélection</string>
     

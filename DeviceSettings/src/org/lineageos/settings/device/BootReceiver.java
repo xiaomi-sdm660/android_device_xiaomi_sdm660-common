@@ -79,6 +79,9 @@ public class BootReceiver extends BroadcastReceiver implements Utils {
         FileUtils.setValue(DeviceSettings.USB_FASTCHARGE_PATH, Settings.Secure.getInt(context.getContentResolver(),
                 DeviceSettings.PREF_USB_FASTCHARGE, 0));
 
+        // Dirac
+        context.startService(new Intent(context, DiracService.class));
+
         // FPS Info
         boolean enabled = Settings.Secure.getInt(context.getContentResolver(), 
                 DeviceSettings.PREF_KEY_FPS_INFO, 0) == 1;
