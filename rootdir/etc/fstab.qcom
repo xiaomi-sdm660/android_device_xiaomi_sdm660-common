@@ -11,7 +11,7 @@
 
 # Non-A/B fstab.qcom variant
 #<src>                                                      <mnt_point>             <type>  <mnt_flags and options>                                                                            <fs_mgr_flags>
-/dev/block/zram0                                            none                    swap    defaults                                                                                           zramsize=2415919104,max_comp_streams=8
+/dev/block/zram0                                            none                    swap    defaults                                                                                           zramsize=50%
 /dev/block/bootdevice/by-name/userdata                      /data                   ext4    nodev,noatime,nosuid,barrier=1,noauto_da_alloc,discard,lazytime                                    wait,check,encryptable=footer,quota,reservedsize=128M
 /dev/block/bootdevice/by-name/userdata                      /data                   f2fs    nodev,noatime,nosuid,nodiratime,fsync_mode=nobarrier,background_gc=on                              wait,check,encryptable=footer,quota,reservedsize=128M
 /devices/soc/c084000.sdhci/mmc_host*                        /storage/sdcard1        auto    nodev,nosuid                                                                                       wait,voldmanaged=sdcard1:auto,encryptable=userdata
