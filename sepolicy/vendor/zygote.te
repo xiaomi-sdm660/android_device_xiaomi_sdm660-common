@@ -1,1 +1,0 @@
-allow zygote exported_camera_prop:file { read write };

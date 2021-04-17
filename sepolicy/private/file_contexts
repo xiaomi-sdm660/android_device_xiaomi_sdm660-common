@@ -1,11 +1,5 @@
-# Apex Metadata
-/data/apex/sessions(/.*)?                     u:object_r:apex_metadata_file:s0
-/data/apex/active(/.*)?                       u:object_r:apex_metadata_file:s0
-/data/apex/backup(/.*)?                       u:object_r:apex_metadata_file:s0
-/data/apex/hashtree(/.*)?                     u:object_r:apex_metadata_file:s0
-
 # Executables
-/system/bin/chargeonlymode                    u:object_r:charger_exec:s0
+/system/bin/chargeonlymode                              u:object_r:charger_exec:s0
 
 # OTA packages
-/data/awaken_updates(/.*)?                    u:object_r:ota_package_file:s0
+/data/awaken_updates(/.*)?                              u:object_r:ota_package_file:s0

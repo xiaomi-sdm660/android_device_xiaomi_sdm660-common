@@ -1,0 +1,3 @@
+allow wcnss_service sysfs:file { read open };
+allow wcnss_service sysfs_net:dir search;
+allow wcnss_service vendor_shell_exec:file execute_no_trans;

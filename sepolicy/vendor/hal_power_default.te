@@ -1,25 +1,10 @@
-# Allow writing to files in /proc/tp_gesture
-allow hal_power_default proc:file rw_file_perms;
-allow hal_power_default proc:dir search;
-allow hal_power_default proc_dt2w:file rw_file_perms;
-
-allow hal_power_default sysfs_touchpanel:file rw_file_perms;
-allow hal_power_default sysfs_touchpanel:dir search;
-allow hal_power_default sysfs_tap_to_wake:file rw_file_perms;
-
-r_dir_file(hal_power_default, sysfs_graphics)
-
+allow hal_power_default cgroup:file read;
 allow hal_power_default device_latency:chr_file rw_file_perms;
 allow hal_power_default { sysfs_devfreq sysfs_kgsl }:dir search;
 allow hal_power_default { sysfs_devfreq sysfs_kgsl }:{ file lnk_file } rw_file_perms;
 allow hal_power_default sysfs_devices_system_cpu:file rw_file_perms;
-allow hal_power_default sysfs:file { read open getattr };
+allow hal_power_default sysfs_touchpanel:dir search;
+allow hal_power_default sysfs_touchpanel:file rw_file_perms;
 
-allow hal_power_default proc:file { write };
 r_dir_file(hal_power_default, sysfs_graphics)
-
-# To dump
-allow hal_power_default cgroup:file read;
-
 set_prop(hal_power_default, vendor_power_prop)
-

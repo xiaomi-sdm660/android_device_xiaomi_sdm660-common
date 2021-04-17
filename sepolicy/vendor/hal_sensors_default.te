@@ -1,7 +1,4 @@
-allow hal_sensors_default diag_device:chr_file { read write };
-allow hal_sensors_default sysfs:file { read open };
-allow hal_sensors_default sysfs_info:file { read write };
-set_prop(hal_sensors_default, camera_prop)
-
 allow hal_sensors_default audio_socket:sock_file rw_file_perms;
+
 unix_socket_connect(hal_sensors_default, audio, hal_audio_default)
+set_prop(hal_sensors_default, camera_prop)

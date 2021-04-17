@@ -1,0 +1,2 @@
+dontaudit hal_atrace_default debugfs_tracing_debug:file write;
+dontaudit traced_probes debugfs_tracing_debug:file read;
