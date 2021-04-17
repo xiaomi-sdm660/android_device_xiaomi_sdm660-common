@@ -1,7 +1,5 @@
-# Allow appdomain to get vendor_camera_prop
-binder_call({ appdomain -isolated_app }, hal_mlipay_default)
-get_prop(appdomain, vendor_camera_prop)
-get_prop({ appdomain -isolated_app }, mlipay_prop)
 get_prop({ appdomain -isolated_app }, hal_fingerprint_prop)
-get_prop({ appdomain -isolated_app }, ifaa_prop)
-get_prop({ appdomain -isolated_app }, vendor_fp_prop)
+get_prop({ appdomain -isolated_app }, mlipay_prop)
+
+allow { appdomain -isolated_app } adsprpcd_file:dir r_dir_perms;
+allow { appdomain -isolated_app } public_adsprpcd_file:file r_file_perms;

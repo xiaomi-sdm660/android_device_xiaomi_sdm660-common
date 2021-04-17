@@ -1,2 +1,0 @@
-allow platform_app blkio_dev:dir search;
-allow platform_app sysfs_kgsl:dir search;
