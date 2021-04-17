@@ -1,1 +1,0 @@
-allow dnsmasq netd:unix_stream_socket { getattr };

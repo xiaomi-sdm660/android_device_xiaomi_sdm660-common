@@ -1,15 +1,11 @@
 type hal_fingerprint_prop, property_type;
-type ifaa_prop, property_type;
 type mlipay_prop, property_type;
-type vendor_fp_prop, property_type;
-type vendor_camera_prop, property_type;
 
 # Dirac
 type dirac_prop, property_type;
 
+# Power
+type vendor_power_prop, property_type;
+
 # Thermal engine
 type thermal_engine_prop, property_type;
-
-# Power
-type power_prop, property_type;
-type vendor_power_prop, property_type;

@@ -1,0 +1,2 @@
+set_prop(netmgrd, vendor_radio_prop)
+set_prop(netmgrd, vendor_data_ko_prop)

@@ -1,2 +1,0 @@
-r_dir_file(rmt_storage, sysfs_data)
-r_dir_file(rmt_storage, sysfs_ssr)
