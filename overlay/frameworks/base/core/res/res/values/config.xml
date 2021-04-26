@@ -1012,10 +1012,11 @@
     <!-- Flag indicating whether we should enable smart battery. -->
     <bool name="config_smart_battery_available">true</bool>
 
-    <!-- Smart charge sysfs node and value for suspend/resume charging-->
-    <string name="config_SmartChargingSysfsNode" translatable="false">/sys/class/power_supply/battery/input_suspend</string>
-    <string name="config_SmartChargingSupspendValue" translatable="false">1</string>
-    <string name="config_SmartChargingResumeValue" translatable="false">0</string>
+    <!-- Smart charging -->
+    <bool name="config_smartChargingAvailable">true</bool>
+    <string name="config_smartChargingSysfsNode" translatable="false">/sys/class/power_supply/battery/input_suspend</string>
+    <string name="config_smartChargingSuspendValue" translatable="false">1</string>
+    <string name="config_smartChargingResumeValue" translatable="false">0</string>
 
     <!-- Enables or disables fading edges when marquee is enabled in TextView.
          Off by default, since the framebuffer readback used to implement the
@@ -1129,13 +1130,13 @@
         <!-- ID0:Fingerprint:Strong -->
         <item>0:2:15</item>
     </string-array>
-    
+
     <!-- Shows the required view for in-display fingerprint -->
     <bool name="config_supportsInDisplayFingerprint">false</bool>
-    
+
     <!-- Specify if the fingerprint hardware support gestures-->
     <bool name="config_fingerprintSupportsGestures">true</bool>
-    
+
     <!-- SQLite -->
     <string name="db_default_journal_mode">MEMORY</string>
     <string name="db_default_sync_mode">OFF</string>
