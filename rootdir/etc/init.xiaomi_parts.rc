@@ -46,15 +46,3 @@ on boot
     chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_val
     chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal_min
     chmod 660 /sys/devices/platform/kcal_ctrl.0/kcal
-
-service folio_daemon /system/bin/folio_daemon
-    class late_start
-    user system
-    group system uhid
-    disabled
-
-on property:persist.service.folio_daemon=0
-    stop folio_daemon
-
-on property:persist.service.folio_daemon=1
-    start folio_daemon
