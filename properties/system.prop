@@ -1,0 +1,81 @@
+# Audio
+audio.safemedia.bypass=true
+audio.offload.min.duration.secs=30
+persist.vendor.audio.hac.enable=false
+persist.vendor.audio_hal.dsp_bit_width_enforce_mode=24
+
+# Bluetooth
+persist.vendor.bt.a2dp_offload_cap=sbc-aac-aptx-aptxhd-ldac
+
+# Camera
+persist.vendor.camera.privapp.list=org.codeaurora.snapcam
+
+# Charger
+ro.charger.enable_suspend=true
+ro.charger.disable_init_blank=true
+
+# CNE
+persist.vendor.cne.feature=1
+
+# DPM
+persist.vendor.dpm.feature=1
+
+# Disable GC freed lines
+dalvik.vm.debug.alloc=0
+
+# Display
+debug.sf.enable_hwc_vds=1
+debug.sf.latch_unsignaled=1
+persist.vendor.color.matrix=2
+persist.hwc.enable_vds=1
+ro.qualcomm.cabl=0
+video.disable.ubwc=1
+
+# Fwk detect
+ro.vendor.qti.va_aosp.support=1
+
+# IMS
+persist.dbg.volte_avail_ovr=1
+persist.dbg.vt_avail_ovr=1
+persist.vendor.ims.disableUserAgent=0
+
+# Netmgr
+persist.vendor.data.iwlan.enable=true
+persist.vendor.data.mode=concurrent
+
+# Proximity
+gsm.proximity.enable=true
+
+# Time daemon
+persist.timed.enable=true
+
+# Radio
+persist.backup.ntpServer=0.pool.ntp.org
+persist.radio.aosp_usr_pref_sel=true
+persist.radio.add_power_save=1
+persist.radio.VT_CAM_INTERFACE=2 
+persist.radio.data_con_rprt=1
+DEVICE_PROVISIONED=1
+ril.subscription.types=NV,RUIM
+telephony.lteOnCdmaDevice=1
+
+# Rendering
+persist.hwc.ptor.enable=true
+
+# SSR
+persist.vendor.ssr.restart_level=ALL_ENABLE
+
+# Zygote preforking
+persist.device_config.runtime_native.usap_pool_enabled=true
+
+# Thermal configs path
+sys.thermal.data.path=/data/vendor/thermal/
+
+# WFD
+persist.debug.wfd.enable=1
+persist.sys.wfd.virtual=0
+
+# ZRAM
+ro.zram.mark_idle_delay_mins=60
+ro.zram.first_wb_delay_mins=180
+ro.zram.periodic_wb_delay_hours=24

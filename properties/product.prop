@@ -1,0 +1,61 @@
+# Audio
+ro.config.media_vol_steps=25
+ro.config.vc_call_vol_steps=7
+
+# Blur
+ro.sf.blurs_are_expensive=1
+ro.surface_flinger.supports_background_blur=1
+
+# Fling
+ro.min.fling_velocity=160
+ro.max.fling_velocity=20000
+
+# GMS
+ro.com.google.clientidbase.ms=android-xiaomi-rev2
+ro.com.google.clientidbase=android-xiaomi
+ro.atrace.core.services=com.google.android.gms,com.google.android.gms.ui,com.google.android.gms.persistent
+ro.url.legal=http://www.google.com/intl/%s/mobile/android/basic/phone-legal.html
+ro.url.legal.android_privacy=http://www.google.com/intl/%s/mobile/android/basic/privacy.html
+ro.error.receiver.system.apps=com.google.android.gms
+ro.setupwizard.enterprise_mode=1
+ro.opa.eligible_device=true
+ro.setupwizard.rotation_locked=true
+ro.config.bt_sco_vol_steps=30
+
+# Gboard
+ro.com.google.ime.kb_pad_port_b=1
+
+# Graphics
+ro.hardware.egl=adreno
+ro.hardware.vulkan=adreno
+
+# IORAP
+ro.iorapd.enable=true
+
+# LMKD
+ro.lmk.log_stats=true
+ro.lmk.use_psi=false
+ro.lmk.low=1001
+ro.lmk.medium=800
+ro.lmk.critical=0
+ro.lmk.critical_upgrade=false
+ro.lmk.upgrade_pressure=100
+ro.lmk.downgrade_pressure=100
+ro.lmk.kill_heaviest_task=true
+ro.lmk.kill_timeout_ms=100
+ro.lmk.use_minfree_levels=true
+
+# OEM Unlock reporting
+ro.oem_unlock_supported=1
+
+# SELinux
+ro.build.selinux=1
+
+# SurfaceFlinger
+ro.surface_flinger.max_frame_buffer_acquired_buffers=3
+ro.surface_flinger.force_hwc_copy_for_virtual_displays=true
+ro.surface_flinger.max_virtual_display_dimension=4096
+
+#Storaged
+ro.storaged.event.interval=99999
+
