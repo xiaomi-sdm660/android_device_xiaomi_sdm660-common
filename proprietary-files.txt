@@ -205,9 +205,9 @@ vendor/etc/cne/wqeclient/VZW/VZW_profile4.xml|ff91feb5060a6df07e3e4d9bc99ae58bcc
 vendor/etc/cne/wqeclient/VZW/VZW_profile5.xml|f76c894f3c6d5b6ed35113a088dc3174c900501b
 vendor/etc/cne/wqeclient/VZW/VZW_profile6.xml|14d136e7fcc682311757d3edc0b9d3eaeba11815
 
-# Dirac - from Xiaomi
+# Dirac - from jasmine V11.0.23.0.QDIMIXM
 vendor/etc/diracmobile.config|88fa19095df9e256f0af510df266f749bf60e258
-vendor/etc/diracvdd.bin|b54270d4f44acc2bb2be8e1cdb3e54fb2c6be07b
+vendor/etc/diracvdd.bin|f9b07ace60490649c44411504909c7bf8bc73d59
 vendor/lib/libDiracAPI_SHARED.so|42b49679d38eca93fead05ea06ddbdc8108fd4b1
 vendor/lib/soundfx/libdirac.so|f63826a905b520fa524e4c1b147be7cf65240953
 
@@ -265,14 +265,14 @@ vendor/etc/init/vendor.qti.hardware.qteeconnector@1.0-service.rc|c966350ee67d3a7
 vendor/lib64/hw/vendor.qti.hardware.qteeconnector@1.0-impl.so|57707e6f61b289e43a503cdef1db221c766d3f57
 vendor/lib64/vendor.qti.hardware.qteeconnector@1.0.so|50ee00e9ecf66258efbc544492982af16b5c91d6
 
-# DRM (Widevine) - from jasmine-user-10-QKQ1.190910.002-V11.0.19.0.QDIMIXM
--vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.2-service.widevine.xml|dc8a52744f09f7175903260ec8f7ea2364237509
+# DRM (Widevine) - from jasmine V11.0.23.0.QDIMIXM
+-vendor/etc/vintf/manifest/manifest_android.hardware.drm@1.2-service.widevine.xml|1b556a6b981dfe8c5d62311b59758d370dd6dd10
 vendor/bin/hw/android.hardware.drm@1.2-service.widevine|1aed116c6cd73ee0c89a5eec050afab5c64b9f87
 vendor/etc/init/android.hardware.drm@1.2-service.widevine.rc|dee5b7838ac561a2292e89fc0c4ccd1932224215
 vendor/lib/mediadrm/libwvdrmengine.so|a8bdbbfb3aa222095f1cb7658ec5c46fa41dd560
 vendor/lib64/libcpion.so|ff24ef248bb35fd3cc1081a63f33c2565dc6351f
 vendor/lib64/libhdcpsrm.so|ee8e7c29e2b716a8bb07c3cbb730e34d8af3c64e
-vendor/lib64/libwvhidl.so|38677623330ec145a62afdef110c713c9492671c
+vendor/lib64/libwvhidl.so|adb4b2c6e65b98310d051b8b00573b55bc365435
 vendor/lib64/mediadrm/libwvdrmengine.so|80280a2292db04a1eb3750df6897dea96f0f62f5
 
 # DRM (TUI) - from LA.UM.8.2.r1-07500-sdm660.0
@@ -430,13 +430,19 @@ vendor/lib64/libkeymasterdeviceutils.so|ea44915adfee57f1bd813b2184987565d396ab82
 vendor/lib64/libkeymasterprovision.so|25505bda86672a5ae31f75b8f8af0a3560ef648f
 vendor/lib64/libkeymasterutils.so|2791994395cd10eb1092b8bd8fea15987e17421d
 
-# Listen - from LA.UM.8.2.r1-07500-sdm660.0
-vendor/lib/libadpcmdec.so|8c72aa1812bfa749f266020366894c8a3873d99c
-vendor/lib/libgcs-calwrapper.so|cbf3dbe43161b68adfaf48a9da4e7fedd7b02f5a
-vendor/lib/libgcs-ipc.so|215c2dded9ccd0fc015db2d7008824e332886d2b
-vendor/lib/libgcs-osal.so|5f0c6798dbeb9c806706b0cf217440662452364c
-vendor/lib/libgcs.so|ccb6ac9c27021cf4f2ec09994742c38b700c2583
-vendor/lib/libsmwrapper.so|7f7bd7045ced84928ec46b457ec5f21d5228ea3a
+# Listen -  from jasmine V11.0.23.0.QDIMIXM
+vendor/lib/hw/sound_trigger.primary.sdm660.so|8bae35ddf095f33543413bec940f538a7fada63b
+vendor/lib/libadpcmdec.so|6e9be864a1380e099a2d68237e13a724f3143314
+vendor/lib/libgcs-calwrapper.so|a7ee01ad02f69c182b9f28cb1c10b105ec8d607f
+vendor/lib/libgcs-ipc.so|d2a33d059bc02c6f635c350f0c3d524a0216557d
+vendor/lib/libgcs-osal.so|dfae7d1bb15b7bd19fef7427f0a6f6df28d5d30a
+vendor/lib/libgcs.so|91e2a7e52bbc076eb3761586bcaf623160612a79
+vendor/lib/libsmwrapper.so|d28c31e4dd25de2eb7d1face701b0f6acf1b1d0e
+vendor/lib64/hw/sound_trigger.primary.sdm660.so|2989053c3d24dc7b1ca9c26e33be602179dde614
+vendor/lib64/libgcs-calwrapper.so|af4043256e4412b7826498747d1659586c4de92b
+vendor/lib64/libgcs-ipc.so|fac3d20785b674b21227c7e1b6c4e713623516a6
+vendor/lib64/libgcs-osal.so|5eca0a8d8ea32505d5b8d69b3e13bf640b34976a
+vendor/lib64/libgcs.so|6d1afd3ff39ba705659e09c22fd9c54ff3047594
 
 # Media - from LA.UM.8.2.r1-07500-sdm660.0
 -vendor/lib/libgpustats.so|86d0490b5ccdbeeba64c4f06a9f1503d01eaeabc
