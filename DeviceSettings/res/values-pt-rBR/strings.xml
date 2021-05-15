@@ -37,19 +37,6 @@
     <string name="vibration_title">Retorno de vibração</string>
     <string name="vibration_strength_title">Intensidade</string>
 
-    <!-- Thermal Profiles -->
-    <string name="thermal_profile_title">Temperatura</string>
-    <string name="thermal_title">Configurações de temperatura</string>
-    <string name="thermal_summary">Permite escolher o perfil de Temperatura adotado pelo aparelho</string>
-    <string name="thermal_dialogTitle">Escolha o perfil de Temperatura</string>
-
-    <!-- Values for Thermal Presets -->
-    <string name="thermal_performance">Desempenho</string>
-    <string name="thermal_battery">Bateria</string>
-    <string name="thermal_gaming">Jogos</string>
-    <string name="thermal_balance">Balanceado</string>
-    <string name="thermal_extreme_battery">Bateria Extrema</string>
-
     <string name="audio_title">Áudio</string>
 
     <!-- Dirac settings -->

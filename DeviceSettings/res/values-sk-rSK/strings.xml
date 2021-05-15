@@ -37,19 +37,6 @@
     <string name="vibration_title">Hmatová spätná odozva</string>
     <string name="vibration_strength_title">Sila</string>
 
-    <!-- Thermal Profiles -->
-    <string name="thermal_profile_title">Výkon</string>
-    <string name="thermal_title">Nastavenia Výkonu</string>
-    <string name="thermal_summary">Režim výkonu</string>
-    <string name="thermal_dialogTitle">Režim výkonu</string>
-
-    <!-- Values for Thermal Presets -->
-    <string name="thermal_performance">Výkon</string>
-    <string name="thermal_battery">Šetrič batérie</string>
-    <string name="thermal_gaming">Herný</string>
-    <string name="thermal_balance">Vyvážený</string>
-    <string name="thermal_extreme_battery">Extrémny šetrič batŕeie</string>
-
     <!-- Dirac settings -->
     <string name="dirac_title">Mi vylepšenie zvuku</string>
     <string name="dirac_summary">Optimalizácia kvality zvuku</string>

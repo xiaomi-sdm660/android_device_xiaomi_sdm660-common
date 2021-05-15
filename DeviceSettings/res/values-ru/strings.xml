@@ -31,19 +31,6 @@
     <string name="vibration_title">Вибрация</string>
     <string name="vibration_strength_title">Сила</string>
 
-    <!-- Thermal Profiles -->
-    <string name="thermal_profile_title">Производительность</string>
-    <string name="thermal_title">Настройки производительности</string>
-    <string name="thermal_summary">Выберите Ваш профиль производительности</string>
-    <string name="thermal_dialogTitle">Выберите Ваш профиль производительности</string>
-
-    <!-- Values for Thermal Presets -->
-    <string name="thermal_performance">Производительность</string>
-    <string name="thermal_battery">Энергосбережение</string>
-    <string name="thermal_gaming">Игры</string>
-    <string name="thermal_balance">Баланс</string>
-    <string name="thermal_extreme_battery">Экстримальное энергосбережение</string>
-
     <string name="audio_title">Аудио</string>
 
     <!-- Dirac settings -->

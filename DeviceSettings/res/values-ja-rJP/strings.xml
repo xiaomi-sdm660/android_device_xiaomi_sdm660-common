@@ -29,19 +29,6 @@
     <string name="vibration_title">振動フィードバック</string>
     <string name="vibration_strength_title">強さ</string>
 
-    <!-- Thermal Profiles -->
-    <string name="thermal_profile_title">パフォーマンス</string>
-    <string name="thermal_title">パフォーマンスの設定</string>
-    <string name="thermal_summary">パフォーマンス設定を選択して下さい</string>
-    <string name="thermal_dialogTitle">パフォーマンス設定を選択して下さい</string>
-
-    <!-- Values for Thermal Presets -->
-    <string name="thermal_performance">高性能</string>
-    <string name="thermal_battery">省電力</string>
-    <string name="thermal_gaming">ゲーム</string>
-    <string name="thermal_balance">バランス</string>
-    <string name="thermal_extreme_battery">超省電力</string>
-
     <string name="audio_title">サウンドエンハンサ</string>
 
     <!-- Dirac settings -->
