@@ -16,9 +16,85 @@
      limitations under the License.
 -->
 <resources>
+    <string name="advanced_settings">Paramètres avancés</string>
+    <string name="advanced_settings_summary">Paramètres propres à l\'appareil</string>
+
+    <string name="display_title">Affichage</string>
+
+    <!-- Mi Note 3 Settings -->
+    <string name="jason_pref_title">Paramètres avancés</string>
+    <string name="jason_pref_summary">Paramètres propres au Mi Note 3</string>
+
+    <!-- KCal -->
+    <string name="device_kcal_title">Étalonnage des couleurs</string>
+
+    <!-- Notification LED brightness -->
+    <string name="notification_title">LED de notifications</string>
+    <string name="notification_led_title">Luminosité de la LED</string>
+
+    <!-- Ambient Display -->
+    <string name="ambient_display">Affichage ambiant</string>
+    <string name="advanced_doze_summary">Paramètres d\'affichage ambiant propres à l\'appareil</string>
+
+    <string name="vibration_title">Retour haptique</string>
+    <string name="vibration_strength_title">Force</string>
+
+    <!-- kcal -->
+    <string name="advanced_settings_kcal">Étalonnage des couleurs</string>
+    <string name="cat_colormanagement">Paramètres de couleurs</string>
+    <string name="cat_calibration">Étalonnage de l\'affichage</string>
+
+    <string name="kcal_enabled">Activé</string>
+    <string name="kcal_disabled">Désactivé</string>
+    <string name="set_on_boot">Activer au démarrage</string>
+    <string name="color_red">Rouge</string>
+    <string name="color_green">Vert</string>
+    <string name="color_blue">Bleu</string>
+    <string name="color_minimum">Minimum</string>
+    <string name="saturation">Saturation</string>
+    <string name="value">Valeur</string>
+    <string name="contrast">Contraste</string>
+    <string name="hue">Teinte</string>
+    <string name="grayscale">Affichage en niveaux de gris</string>
+
+    <string name="presets_dialog_title">Choisir une présélection</string>
+    <!-- Presets -->
+    <string name="preset_default">Par défaut</string>
+    <string name="preset_version_1">Version 1</string>
+    <string name="preset_version_2">Version 2</string>
+    <string name="preset_version_3">Version 3</string>
+    <string name="preset_triluminous">Triluminous</string>
+    <string name="preset_deep_black_white">Deep Black and White</string>
+    <string name="preset_deep_natural">Deep Natural</string>
+    <string name="preset_cool_amoled">Cool Amoled</string>
+    <string name="preset_extreme_amoled">Extreme Amoled</string>
+    <string name="preset_warm_amoled">Warm Amoled</string>
+    <string name="preset_hybrid_mamba">Hybrid Mamba</string>
+
+    <!-- menu -->
+    <string name="kcal_presets">@string/presets_dialog_title</string>
+    <string name="kcal_reset">Réglages d\'origine</string>
+
+    <!-- CustomSeekBarPreference -->
+    <string name="edit_value">Saisir la nouvelle valeur</string>
+    <string name="default_value">Valeur par défaut</string>
+    <string name="edit_hint">Valeur entre %1$d et %2$d</string>
+
+    <!-- FPS Info -->
+    <string name="fps_info_title">Superposition FPS</string>
+    <string name="fps_info_summary">Afficher le nombre d\'images par seconde en superposition</string>
+
+    <!-- Audio amplification -->
+    <string name="audio_amplify">Amplification audio</string>
+    <string name="headphone_gain">Gain de l\'écouteur</string>
+    <string name="mic_gain">Gain du microphone</string>
+
+     <!-- Dirac -->
+    <string name="audio_title">Dirac</string>
+
     <!-- Dirac settings -->
     <string name="dirac_title">Amélioration audio Mi</string>
-    <string name="dirac_summary">Optimiser la qualité audio</string>
+    <string name="dirac_summary">Améliorer la qualité audio</string>
     <string name="dirac_headset_title">Sélectionnez le type d\'écouteurs</string>
     <string name="dirac_preset_title">Choisir une présélection</string>
     
