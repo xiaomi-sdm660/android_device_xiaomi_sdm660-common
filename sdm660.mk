@@ -603,6 +603,7 @@ PRODUCT_BOOT_JARS += \
 
 # DeviceSettings
 PRODUCT_PACKAGES += \
+    DeviceSettings
 
 # Force triple frame buffers
 PRODUCT_PROPERTY_OVERRIDES += \
