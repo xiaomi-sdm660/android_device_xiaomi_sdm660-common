@@ -29,6 +29,51 @@ vendorPath = '../../../vendor/' + vendor + '/' + device + '/proprietary'
 needSHA1 = False
 
 
+class Section:
+    def __init__(self, name, group):
+        self.name = name
+        self.group = group
+
+    def __repr__(self):
+        return repr(self.name)
+
+    def apply(self):
+        if self.group:
+            lines.append(self.name)
+            # Ignore leading '-' while sorting
+            self.group = sorted(self.group, key=lambda line: line[1:] if line.startswith('-') else line)
+            lines.extend(self.group)
+            lines.append('')
+
+
+def sort_file(ignore_section=""):
+    grp = []
+    sections = []
+    name = ""
+
+    for line in lines:
+        if len(line) != 0:
+            if line[0] == '#':
+                if name and grp:
+                    sections.append(Section(name, grp))
+                    grp = []
+                if ignore_section and ignore_section in line:
+                    name = ""
+                else:
+                    name = line
+            elif name:
+                grp.append(line)
+
+    if name and grp:
+        sections.append(Section(name, grp))
+
+    lines.clear()
+
+    sections = sorted(sections, key=lambda sec: str.lower(sec.name))
+    for section in sections:
+        section.apply()
+
+
 def cleanup():
     for index, line in enumerate(lines):
         # Skip empty or commented lines
@@ -37,6 +82,7 @@ def cleanup():
 
         # Drop SHA1 hash, if existing
         lines[index] = line.split('|')[0]
+    lines.append('')
 
 
 def update():
@@ -62,12 +108,21 @@ def update():
                 hash = sha1(f.read()).hexdigest()
 
             lines[index] = '%s|%s' % (line, hash)
+    lines.append('')
 
 
-if len(sys.argv) == 2 and sys.argv[1] == '-c':
-    cleanup()
+if len(sys.argv) >= 2:
+    if sys.argv[1] == '-c':
+        cleanup()
+    elif sys.argv[1] == '-s':
+        if len(sys.argv) == 3:
+            sort_file(sys.argv[2])
+        else:
+            sort_file()
+    else:
+        update()
 else:
     update()
 
 with open('proprietary-files.txt', 'w') as file:
-    file.write('\n'.join(lines) + '\n')
+    file.write('\n'.join(lines))
